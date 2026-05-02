@@ -22,9 +22,21 @@ fi
 
 enabled="$(awk -F',' '$1=="codex"{print $6}' "${REGISTRY}" | tail -n1)"
 notes="$(awk -F',' '$1=="codex"{print $7}' "${REGISTRY}" | tail -n1)"
+status="$(awk -F',' '$1=="codex"{print $8}' "${REGISTRY}" | tail -n1)"
+intake_policy="$(awk -F',' '$1=="codex"{print $11}' "${REGISTRY}" | tail -n1)"
 
 if [[ "${enabled}" != "no" ]]; then
   echo "[FAIL] codex registry enabled must be no, got: ${enabled}" >&2
+  exit 2
+fi
+
+if [[ "${status}" != "disabled" ]]; then
+  echo "[FAIL] codex registry status must be disabled, got: ${status}" >&2
+  exit 2
+fi
+
+if [[ "${intake_policy}" != "pilot-first" ]]; then
+  echo "[FAIL] codex registry intake_policy must be pilot-first, got: ${intake_policy}" >&2
   exit 2
 fi
 
@@ -34,4 +46,3 @@ if ! printf "%s\n" "${notes}" | rg -q '~/.codex'; then
 fi
 
 echo "[PASS] global codex target policy ready"
-

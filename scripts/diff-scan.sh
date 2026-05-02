@@ -51,8 +51,8 @@ today="$(date +%F)"
 
 found=0
 
-while IFS=',' read -r repo group priority sync_mode branch enabled notes; do
-  if [[ "${repo}" == "repo" || -z "${repo}" || "${enabled}" != "yes" ]]; then
+while IFS=',' read -r repo group priority sync_mode branch enabled notes status owner last_reviewed_on intake_policy; do
+  if [[ "${repo}" == "repo" || -z "${repo}" || "${enabled}" != "yes" || "${status}" == "disabled" ]]; then
     continue
   fi
 
@@ -74,6 +74,10 @@ while IFS=',' read -r repo group priority sync_mode branch enabled notes; do
     echo
     echo "- 分组：${group}"
     echo "- 优先级：${priority}"
+    echo "- 状态：${status}"
+    echo "- owner：${owner}"
+    echo "- intake_policy：${intake_policy}"
+    echo "- 上次复审：${last_reviewed_on}"
     echo "- 关注说明：${notes}"
     echo "- 变更文件："
     while IFS= read -r line; do

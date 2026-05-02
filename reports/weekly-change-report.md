@@ -6,95 +6,30 @@
 - 阶段：harden-gdk
 - 强制模式：0
 
-## codex
+## codex-cookbook
 
-- 分组：runtime-target
-- 优先级：P0
-- 关注说明：gdk 实战验证目标项目
+- 分组：knowledge
+- 优先级：P1
+- 状态：active
+- owner：gdk-team
+- intake_policy：observe-first
+- 上次复审：2026-05-02
+- 关注说明：Codex Cookbook 实战模板
 - 变更文件：
-  - AGENTS.md
-  - README.md
-  - control/catalog/README.md
-  - control/scripts/README.md
-  - control/scripts/activate-profile.sh
-  - control/scripts/archive-guidance.sh
-  - control/scripts/doctor.sh
-  - control/scripts/git-codex.sh
-  - control/scripts/render-config.sh
-  - control/scripts/sync-skills-vendor.sh
-  - control/scripts/sync-vendor.sh
-  - control/state/README.md
-  - control/workflows/README.md
-  - control/workflows/bugfix-flow.md
-  - control/workflows/feature-flow.md
-  - control/workflows/refactor-flow.md
-  - mcp/secrets/README.md
-  - skills/.system/imagegen/SKILL.md
-  - skills/.system/imagegen/scripts/image_gen.py
-  - skills/.system/imagegen/scripts/remove_chroma_key.py
-  - skills/.system/openai-docs/SKILL.md
-  - skills/.system/openai-docs/scripts/resolve-latest-model-info.js
-  - skills/.system/plugin-creator/SKILL.md
-  - skills/.system/plugin-creator/scripts/create_basic_plugin.py
-  - skills/.system/skill-creator/SKILL.md
-  - skills/.system/skill-creator/scripts/generate_openai_yaml.py
-  - skills/.system/skill-creator/scripts/init_skill.py
-  - skills/.system/skill-creator/scripts/quick_validate.py
-  - skills/.system/skill-installer/SKILL.md
-  - skills/.system/skill-installer/scripts/github_utils.py
-  - skills/.system/skill-installer/scripts/install-skill-from-github.py
-  - skills/.system/skill-installer/scripts/list-skills.py
   - skills/README.md
-  - skills/scripts/check-skills.sh
-  - vendor/README.md
-  - vendor/plugins/superpowers/1.1.9/.github/workflows/ci.yml
-  - vendor/plugins/superpowers/1.1.9/README.md
-  - vendor/plugins/superpowers/1.1.9/skills/brainstorming/SKILL.md
-  - vendor/plugins/superpowers/1.1.9/skills/brainstorming/scripts/frame-template.html
-  - vendor/plugins/superpowers/1.1.9/skills/brainstorming/scripts/helper.js
-  - vendor/plugins/superpowers/1.1.9/skills/brainstorming/scripts/server.cjs
-  - vendor/plugins/superpowers/1.1.9/skills/brainstorming/scripts/start-server.sh
-  - vendor/plugins/superpowers/1.1.9/skills/brainstorming/scripts/stop-server.sh
-  - vendor/plugins/superpowers/1.1.9/skills/chinese-code-review/SKILL.md
-  - vendor/plugins/superpowers/1.1.9/skills/chinese-commit-conventions/SKILL.md
-  - vendor/plugins/superpowers/1.1.9/skills/chinese-documentation/SKILL.md
-  - vendor/plugins/superpowers/1.1.9/skills/chinese-git-workflow/SKILL.md
-  - vendor/plugins/superpowers/1.1.9/skills/dispatching-parallel-agents/SKILL.md
-  - vendor/plugins/superpowers/1.1.9/skills/executing-plans/SKILL.md
-  - vendor/plugins/superpowers/1.1.9/skills/finishing-a-development-branch/SKILL.md
-  - vendor/plugins/superpowers/1.1.9/skills/mcp-builder/SKILL.md
-  - vendor/plugins/superpowers/1.1.9/skills/receiving-code-review/SKILL.md
-  - vendor/plugins/superpowers/1.1.9/skills/requesting-code-review/SKILL.md
-  - vendor/plugins/superpowers/1.1.9/skills/subagent-driven-development/SKILL.md
-  - vendor/plugins/superpowers/1.1.9/skills/systematic-debugging/SKILL.md
-  - vendor/plugins/superpowers/1.1.9/skills/test-driven-development/SKILL.md
-  - vendor/plugins/superpowers/1.1.9/skills/using-git-worktrees/SKILL.md
-  - vendor/plugins/superpowers/1.1.9/skills/using-superpowers/SKILL.md
-  - vendor/plugins/superpowers/1.1.9/skills/verification-before-completion/SKILL.md
-  - vendor/plugins/superpowers/1.1.9/skills/workflow-runner/SKILL.md
-  - vendor/plugins/superpowers/1.1.9/skills/writing-plans/SKILL.md
-  - vendor/plugins/superpowers/1.1.9/skills/writing-skills/SKILL.md
-  - vendor/plugins/superpowers/1.1.9/tests/claude-code/README.md
-  - vendor/skills/caveman/1.0.0/SKILL.md
-  - vendor/skills/codex-parallel-collab/3.1.0/README.md
-  - vendor/skills/codex-parallel-collab/3.1.0/SKILL.md
-  - vendor/skills/commit-daily-summary/3.1.0/README.md
-  - vendor/skills/commit-daily-summary/3.1.0/SKILL.md
-  - vendor/skills/project-daily-summary/3.1.0/README.md
-  - vendor/skills/project-daily-summary/3.1.0/SKILL.md
-  - vendor/skills/research-note-wrap/3.1.0/README.md
-  - vendor/skills/research-note-wrap/3.1.0/SKILL.md
-  - vendor/skills/session-wrap/3.1.0/README.md
-  - vendor/skills/session-wrap/3.1.0/SKILL.md
-  - vendor/skills/worktree-closeout/3.1.0/README.md
-  - vendor/skills/worktree-closeout/3.1.0/SKILL.md
-  - vendor/skills/worktree-closeout/3.1.0/scripts/scan_closeout.py
+  - skills/junshi-fazheng/SKILL.md
+  - skills/junshi-wenchen/SKILL.md
+  - skills/junshi/SKILL.md
 - 建议动作：进入 adoption-matrix 评估（adopt / observe / reject）
 
 ## global-dev-kit
 
 - 分组：gdk-core
 - 优先级：P0
+- 状态：active
+- owner：gdk-team
+- intake_policy：adopt-first
+- 上次复审：2026-05-02
 - 关注说明：主落地仓库
 - 变更文件：
   - .github/workflows/ci.yml
@@ -103,6 +38,7 @@
   - README.md
   - docs/changes/README.md
   - docs/runbooks/README.md
+  - optional-skills/artifact-gated-lite/SKILL.md
   - optional-skills/cross-team-handoff/SKILL.md
   - optional-skills/incident-rca-report/SKILL.md
   - optional-skills/test-flakiness-triage/SKILL.md
@@ -144,6 +80,10 @@
 
 - 分组：delivery
 - 优先级：P1
+- 状态：active
+- owner：gdk-team
+- intake_policy：observe-first
+- 上次复审：2026-05-02
 - 关注说明：大型 Agent 工程参考
 - 变更文件：
   - AGENTS.md
@@ -152,10 +92,6 @@
   - scripts/install.sh
   - scripts/release.py
   - skills/mlops/inference/obliteratus/SKILL.md
-  - skills/productivity/google-workspace/scripts/_hermes_home.py
-  - skills/productivity/google-workspace/scripts/google_api.py
-  - skills/productivity/google-workspace/scripts/gws_bridge.py
-  - skills/productivity/google-workspace/scripts/setup.py
   - ui-tui/README.md
 - 建议动作：进入 adoption-matrix 评估（adopt / observe / reject）
 
@@ -163,6 +99,10 @@
 
 - 分组：agent-ecosystem
 - 优先级：P1
+- 状态：active
+- owner：gdk-team
+- intake_policy：observe-first
+- 上次复审：2026-05-02
 - 关注说明：团队协作能力参考
 - 变更文件：
   - README.md
@@ -173,6 +113,10 @@
 
 - 分组：agent-ecosystem
 - 优先级：P2
+- 状态：active
+- owner：gdk-team
+- intake_policy：observe-first
+- 上次复审：2026-05-02
 - 关注说明：轻量团队技能样例
 - 变更文件：
   - README.md
@@ -184,12 +128,15 @@
 
 - 分组：agent-ecosystem
 - 优先级：P1
+- 状态：active
+- owner：gdk-team
+- intake_policy：adopt-first
+- 上次复审：2026-05-02
 - 关注说明：可组合技能体系
 - 变更文件：
   - README.md
   - diagnose/SKILL.md
   - diagnose/scripts/hitl-loop.template.sh
-  - improve-codebase-architecture/SKILL.md
   - scripts/link-skills.sh
   - scripts/list-skills.sh
   - skills/caveman/SKILL.md

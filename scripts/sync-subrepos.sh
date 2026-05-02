@@ -49,12 +49,12 @@ echo "[INFO] registry=${REGISTRY}"
 echo "[INFO] phase=${phase_name}"
 echo "[INFO] force=${FORCE}"
 
-while IFS=',' read -r repo group priority sync_mode branch enabled notes; do
+while IFS=',' read -r repo group priority sync_mode branch enabled notes status owner last_reviewed_on intake_policy; do
   if [[ "${repo}" == "repo" || -z "${repo}" ]]; then
     continue
   fi
-  if [[ "${enabled}" != "yes" ]]; then
-    echo "[SKIP] ${repo}: disabled"
+  if [[ "${enabled}" != "yes" || "${status}" == "disabled" ]]; then
+    echo "[SKIP] ${repo}: disabled (enabled=${enabled} status=${status})"
     ((skip+=1))
     continue
   fi
