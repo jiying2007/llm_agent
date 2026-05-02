@@ -267,6 +267,18 @@
   - `rtk scripts/check-gdk-harden-readiness.sh . --require-pilot --skip-full-suite`
 - 验证结果：通过；delivery 采纳深度检查已进入默认主门禁。
 
+### 2026-05-02（Wave10 全量 observe 收口）
+- 变更范围：将剩余全部稳定 `observe + done` 条目升级为 `adopt + done`，并把 observe 深度脚本调整为“无 observe 行即通过”语义。
+- 触发原因：执行“全部稳定 observe 项升级为 adopt”要求，完成本阶段 observe 队列清零。
+- 更新条目：`subrepos/adoption-matrix.md`、`scripts/check-observe-intake-depth.sh`、`scripts/README.md`、`reports/wave10-all-stable-observe-to-adopt-2026-05-02.md`、`reports/post-freeze-kickoff-2026-05-02.md`。
+- 验证命令：
+  - `rtk scripts/check-observe-intake-depth.sh .`
+  - `rtk scripts/check-delivery-adopt-depth.sh .`
+  - `rtk scripts/check-doc-sync.sh .`
+  - `rtk scripts/check-adoption-matrix-status.sh .`
+  - `rtk scripts/check-gdk-harden-readiness.sh . --require-pilot --skip-full-suite`
+- 验证结果：通过；`observe+done` 已清零并保持主门禁通过。
+
 ### 2026-05-01
 - 变更范围：新增 `codex` 子仓纳入治理；补齐全量子仓覆盖；落地 `subrepos/`、`scripts/`、`reports/` 治理骨架；在 `global-dev-kit` 落地 `artifact-gated-lite`（profile + optional skill + runbook）。
 - 触发原因：需要压缩迭代周期并建立可持续增量吸收机制。

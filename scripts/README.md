@@ -101,6 +101,8 @@ observe 吸收深度检查脚本（`observe+done` 行必须同时具备 Agent/Sk
 scripts/check-observe-intake-depth.sh .
 ```
 
+当 `observe+done` 行为 0（已全部收口为 `adopt/reject`）时，脚本返回通过并提示 backlog cleared。
+
 delivery 采纳深度检查脚本（`delivery + adopt + done` 行必须同时具备 Agent/Skill/Workflow 三层证据，并附 wave 任务包报告证据）：
 
 ```bash

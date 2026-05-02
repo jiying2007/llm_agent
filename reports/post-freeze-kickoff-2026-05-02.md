@@ -265,3 +265,21 @@
 
 4. 详细记录：
 - `reports/wave9-delivery-observe-to-adopt-2026-05-02.md`
+
+## 追加进展（同日-Wave10 全量 Observe 收口）
+
+1. 已把全部稳定 `observe + done` 项升级为 `adopt + done`（11 项）：
+- `agency-agents-zh`、`agent-skills`、`skills`、`hermes-collaboration-skill`
+- `codex-skill-spec`、`Migrationed_skills`
+- `prompts`、`dotfiles`、`vscode-codex-settings`
+- `codex`、`codex-cookbook`
+
+2. 治理脚本收口：
+- `check-observe-intake-depth` 调整为：`observe+done=0` 时返回通过（backlog cleared），避免主门禁误报。
+
+3. 当前状态：
+- `observe + done = 0`
+- 进入 `adopt/reject/blocked` 常态治理。
+
+4. 详细记录：
+- `reports/wave10-all-stable-observe-to-adopt-2026-05-02.md`
