@@ -2,120 +2,169 @@
 
 ## 1. 文档目标
 
-本文件用于统一沉淀当前工作区第三方仓库的：
+`llm_agent` 的定位是长期跟踪 AI Coding 行业优秀开源实现，并把高价值实践转化为 `global-dev-kit`（gdk）可落地资产（`AGENTS`、`SKILLS`、`WORKFLOWS`）。
 
-- 仓库作用（为什么存在）
-- 优缺点（可取与风险）
-- 对 `global-dev-kit`（下文简称 gdk）的可借鉴项
+本文件用于：
 
-并作为后续 gdk 演进的参考底稿。  
-说明：进入某个子仓库后，若该仓库存在自己的 `AGENTS.md`，则该子仓库规则优先。
+1. 维护参考子仓全量清单与作用说明。
+2. 记录可借鉴项、风险和优先级。
+3. 固化持续迭代流程、门禁和执行脚本入口。
+
+进入任一子仓后，若该子仓存在本地 `AGENTS.md`，则其规则优先于本文件。
 
 ---
 
-## 2. 参考仓库清单（作用 / 优缺点 / gdk 借鉴）
+## 2. 参考子仓全量清单（已纳入治理）
 
-### 2.1 工程方法与流程内核
+### 2.1 方法论与流程内核
 
-| 仓库 | 主要作用 | 优点 | 缺点/风险 | gdk 可借鉴项 |
+| 仓库 | 作用 | 主要优点 | 主要风险 | gdk 借鉴点 |
 |---|---|---|---|---|
-| `superpowers` | AI 编程方法论与技能编排体系 | 流程完整（brainstorming/plan/review/verify），工程纪律强 | 英文为主，且偏“强流程”，不一定适配所有轻量任务 | 继续吸收流程骨架，但保留 gdk 轻重分流和可降级执行 |
-| `OpenSpec` | Spec-driven 变更管理与工件体系 | `specs/changes/archive` 可追溯性强，CLI 丰富 | 与 gdk 自有 workflow 有重叠，双轨并行会增加成本 | 对齐命名与状态模型，抽取“规格-实现-归档”映射层 |
-| `superpowers-zh` | superpowers 中文化与本土增强 | 中文可读性好，落地门槛低 | 容易因本地增强造成与上游偏移 | 借鉴中文表达与本土场景，但核心流程仍以 gdk 自身规范为准 |
+| `superpowers` | 工程流程体系 | 生命周期完整，质量门禁强 | 流程偏重 | 轻重分流 + 可降级执行 |
+| `superpowers-zh` | 中文化流程体系 | 中文可读性高 | 与上游漂移风险 | 中文表达与触发词设计 |
+| `OpenSpec` | Spec 驱动工件体系 | 变更追溯清晰 | 与现有流程重叠 | 变更单元命名与状态映射 |
+| `codex` | `.codex` 全局工程化管理 | 控制层结构化、profile 化 | 本地环境耦合 | `catalog + scripts + doctor` 结构借鉴 |
 
-### 2.2 Agent/Skill 生态与资产沉淀
+### 2.2 Agent / Skill 生态
 
-| 仓库 | 主要作用 | 优点 | 缺点/风险 | gdk 可借鉴项 |
+| 仓库 | 作用 | 主要优点 | 主要风险 | gdk 借鉴点 |
 |---|---|---|---|---|
-| `agency-agents-zh` | 大规模角色型 Agent 资产库 | 角色覆盖广（工程/产品/运营等），场景丰富 | 角色粒度偏细，直接引入会造成维护负担 | 用于补充角色词汇与场景模板，不直接整仓并入 |
-| `skills` | skills CLI 生态样例与分发实践 | 安装/更新路径明确，便于生态兼容 | 资产质量参差，需要本地门禁兜底 | 保持 gdk 与 `skills` CLI 兼容；坚持本地校验先行 |
-| `Migrationed_skills` | Claude Code 到 Codex 的迁移资产集 | 聚合了可迁移 skill/agent/prompt 资产 | 历史包袱多，部分内容偏模板化 | 作为“候选池”而非“直接来源”；先筛选再落地 |
-| `codex-skill-spec` | requirements/design/tasks 产物套路 | 上手快，模板简单直接 | 模板化较重，深度治理能力有限 | 吸收其低门槛模板思想，避免生硬照搬结构 |
+| `agency-agents-zh` | 中文角色型 agent 资产 | 角色覆盖广 | 角色过细导致维护重 | 角色矩阵与职责术语 |
+| `agent-skills` | 全流程技能资产 | 生命周期映射清晰 | 平台差异较大 | 意图路由与技能分层 |
+| `skills` | skills CLI 生态样例 | 安装/更新路径规范 | 质量不均 | 兼容 `skills` CLI 的目录约定 |
+| `Migrationed_skills` | 迁移型技能资产池 | 历史沉淀丰富 | 模板化内容较多 | 候选池筛选机制 |
+| `codex-skill-spec` | 轻量任务模板体系 | 上手快 | 深度不足 | 低门槛模板与最小闭环 |
+| `mattpocock-skills` | 可组合工程技能 | 技能颗粒度细、组合性强 | 对特定协作方式有假设 | 小技能组合范式 |
+| `hermes-collaboration-skill` | 团队协作技能实现 | 多平台协作与记忆隔离 | 运维与接入复杂 | 协作场景 runbook |
+| `hermes-team-skill` | Hermes 升级包 | 部署路径直接 | 资产颗粒偏粗 | 快速接入模板与脚本交付 |
 
-### 2.3 质量、验证与工程交付参考
+### 2.3 质量、交付与工程实践
 
-| 仓库 | 主要作用 | 优点 | 缺点/风险 | gdk 可借鉴项 |
+| 仓库 | 作用 | 主要优点 | 主要风险 | gdk 借鉴点 |
 |---|---|---|---|---|
-| `AUBB-Server` | 真实后端业务工程样本 | 业务链路完整，测试与交付链较完整 | 领域特定，不能直接泛化到所有仓库 | 借鉴“业务状态+验证证据”写法，强化 gdk 交付门禁 |
-| `hermes-agent` | 大规模 Agent 系统工程 | 多平台、多能力、结构完整 | 复杂度高，学习成本大 | 借鉴模块边界、运行环境与测试入口组织方式 |
-| `arthas` | 成熟开源 Java 工程与排障工具 | 社区成熟，工程规范稳定 | 与 gdk 目标域不完全一致 | 借鉴开源协作门槛控制与贡献规范严谨性 |
-| `autonomous-vehicle-dev` | 模块化重构与跨语言迁移样本 | 目标边界清晰，分层明确 | 强领域依赖，适配面窄 | 借鉴“迁移路径+阶段验收”写法到 gdk runbook |
+| `AUBB-Server` | 后端业务样本 | 业务闭环完整 | 领域专用 | 验证证据写法 |
+| `hermes-agent` | 大型 Agent 工程 | 模块边界清晰 | 复杂度高 | 目录职责与测试入口 |
+| `arthas` | 成熟开源工程实践 | 贡献规范严谨 | 目标域不同 | 贡献门槛与质量标准 |
+| `autonomous-vehicle-dev` | 重构与迁移样本 | 阶段验收明确 | 领域约束强 | 迁移路线图模板 |
+| `artifact-gated-agents` | Artifact/Gate 多角色协议 | 门禁与交接明确 | 过重时影响效率 | Artifact 标准与阻塞模板 |
 
 ### 2.4 文档、知识与配置治理
 
-| 仓库 | 主要作用 | 优点 | 缺点/风险 | gdk 可借鉴项 |
+| 仓库 | 作用 | 主要优点 | 主要风险 | gdk 借鉴点 |
 |---|---|---|---|---|
-| `codex_doc_cn` | 官方文档中文镜像工程 | 信息结构对齐、进度可量化 | 维护成本高，需持续追踪源变化 | 借鉴“进度快照+一致性校验”机制 |
-| `ai-coding-guide` | AI 编程工具实践指南 | 对比清晰，实战导向强 | 偏知识型，不直接等于可执行规范 | 借鉴“场景化推荐路径”文档组织方法 |
-| `prompts` | 个人 prompt 与使用偏好沉淀 | 真实可用、贴近日常 | 个体经验主导，可迁移性有限 | 借鉴“轻量可迭代”的文档风格，不当作强规范 |
-| `vscode-codex-settings` | Codex 配置治理样本 | 配置透明，MCP 接入说明清楚 | 环境耦合高（本机/账号差异） | 借鉴“配置摘要+验证命令”固定节格式 |
-| `dotfiles` | 系统与环境配置管理 | 模块化配置经验成熟 | Nix 生态门槛高 | 借鉴模块化、最小变更原则与环境基线校验 |
-| `auto-research` | 研究+工程双场景工作流 | 研究闭环意识强，强调负结果留痕 | 自定义流程较多，通用性不一 | 借鉴“负结果留痕”和会话收尾机制 |
+| `codex_doc_cn` | 文档镜像工程 | 结构一致性强 | 持续追更成本高 | 进度快照与一致性校验 |
+| `ai-coding-guide` | AI 编程实践指南 | 场景导向清晰 | 偏知识而非规范 | 场景化工作流导览 |
+| `prompts` | 提示词资产 | 实战性强 | 个体偏好强 | 轻量演进风格 |
+| `vscode-codex-settings` | 配置治理样本 | 配置透明 | 环境耦合 | 配置摘要 + 验证命令 |
+| `dotfiles` | 系统配置管理 | 模块化治理成熟 | 学习门槛高 | 最小变更与基线校验 |
+| `auto-research` | 研究闭环样本 | 负结果留痕 | 适配面不一 | 复盘与归档机制 |
 
-### 2.5 gdk 自身定位（基线）
+### 2.5 gdk 基线定位
 
-| 仓库 | 主要作用 | 当前优势 | 当前短板 | 迭代方向 |
+| 仓库 | 当前定位 | 优势 | 短板 | 主迭代方向 |
 |---|---|---|---|---|
-| `global-dev-kit` | 全局 Agent/Skill 资产、安装转换、门禁与 workflow | 结构清晰、命令统一、测试体系已成型 | 与外部流程（OpenSpec/superpowers）仍有协同缝隙 | 做好桥接层、减少概念重复、增强证据自动化 |
+| `global-dev-kit` | 全局 Agent/Skill/Workflow 工程底座 | 结构清晰，命令统一，已有门禁测试 | 与外部生态桥接不足 | 做强桥接层、证据自动化、场景 runbook |
 
 ---
 
-## 3. gdk 可借鉴项优先级（用于后续迭代）
+## 3. 面向 codex 项目的联动策略
 
-### P0（立即吸收，低风险高收益）
+`gdk` 后续将实用化于全局 `~/.codex` 运行目录，执行“先落地 gdk、再在 `~/.codex` 试跑、再回灌 gdk”的双向闭环：
 
-1. 统一“变更单元”命名与状态映射  
-   来源：`OpenSpec` + `global-dev-kit`  
-   目标：减少 `change-id`、状态流转、归档目录的歧义。
+1. `llm_agent`：拉取参考源，产生候选改进项。
+2. `global-dev-kit`：实现标准资产与门禁脚本。
+3. `~/.codex`：真实场景验证（功能开发 / 缺陷修复 / 重构）。
+4. 结果回灌：把通过验证的做法升级为 gdk 默认推荐。
 
-2. 强化“验证证据即交付依据”  
-   来源：`AUBB-Server`、`hermes-agent`、`superpowers`  
-   目标：把 `verify-report/review-report` 变成默认必需件。
+### 3.1 执行顺序硬约束（新增）
 
-3. 文档治理最小标准化  
-   来源：`codex_doc_cn`、`vscode-codex-settings`  
-   目标：固定“用途/命令/验证”格式，降低维护认知成本。
-
-### P1（中期落地，需一定改造）
-
-1. 流程桥接层（OpenSpec <-> gdk）  
-   方向：脚本化桥接 `proposal/spec/tasks` 与 gdk 工件目录。
-
-2. 场景化 runbook 体系扩展  
-   来源：`ai-coding-guide`、`superpowers-zh`、`autonomous-vehicle-dev`  
-   方向：从“通用流程”升级到“按场景推荐工作流”。
-
-3. 角色与技能触发矩阵完善  
-   来源：`agency-agents-zh`、`skills`、`Migrationed_skills`  
-   方向：只吸收高价值子集，避免角色泛滥。
-
-### P2（长期优化，控制复杂度）
-
-1. 生态兼容层扩展（多工具命令面）  
-   来源：`OpenSpec`、`superpowers`  
-   风险：维护成本上升，需要严格门禁。
-
-2. 研究与工程一体化沉淀  
-   来源：`auto-research`  
-   方向：把“负结果记录、会话总结、复盘模板”纳入标准资产。
+1. 第一优先：沉淀当前参考子仓“可借鉴优点”，同时明确剔除“不可迁移缺点”。
+2. 第二优先：在 `global-dev-kit` 完成实装、验证、runbook 化（压实）。
+3. 第三优先：仅在压实门禁通过后，才允许追踪参考子仓增量更新。
+4. 门禁控制文件：`subrepos/phase-gate.env`，默认 `allow_upstream_sync=no`。
+5. 门禁检查脚本：`scripts/check-gdk-harden-readiness.sh`。
 
 ---
 
-## 4. 维护机制（后续持续更新）
+## 4. 14 天压缩落地计划（可重复执行）
 
-### 4.1 更新触发条件
+### D1-D2：优点/缺点提炼与压实准备
 
-- 任一参考仓库出现关键流程变更（命令、目录、状态模型）
-- gdk 新增或下线核心能力（agent/skill/workflow）
-- 实际使用中出现“文档与行为不一致”
+1. 更新 `subrepos/registry.csv`（子仓 SSOT）。
+2. 在 `subrepos/adoption-matrix.md` 记录“优点采纳/缺点摒弃”。
+3. 执行 `scripts/check-agents-coverage.sh` 校验治理覆盖。
 
-### 4.2 更新动作
+### D3-D4：gdk 压实实施
 
-1. 更新本文件对应仓库条目（作用/优缺点/借鉴项）
-2. 同步更新 gdk 相关文档（`README.md`、`docs/workflows.md`、`docs/runbooks/*`）
-3. 记录验证命令与结果（至少一条可复现命令）
+1. 在 `global-dev-kit` 落地 P0 项（优先低风险高收益）。
+2. 执行 `scripts/check-gdk-harden-readiness.sh` 完成压实校验。
 
-### 4.3 维护记录模板（追加到本文件末尾）
+### D5-D7：codex 实战试跑与回灌
+
+1. 在 `codex` 场景中验证已压实能力。
+2. 回写 `reports/codex-pilot-report.md` 与 `subrepos/adoption-matrix.md`。
+
+### D8-D10：开启增量追踪（满足门禁后）
+
+1. 开门后执行 `scripts/sync-subrepos.sh` 与 `scripts/diff-scan.sh`。
+2. 对新增候选继续走“采纳优点 + 摒弃缺点 + gdk 压实”闭环。
+
+### D11-D14：回灌与收口
+
+1. 将有效做法纳入 gdk 基线。
+2. 模板化、低收益项降级或淘汰。
+
+---
+
+## 5. 优先级准入门禁（P0/P1/P2）
+
+### P0（立即落地）
+
+1. 统一变更单元命名与状态映射（OpenSpec + gdk）。
+2. 默认要求验证证据（`verify-report` / `review-report`）。
+3. 文档最小标准化（用途/命令/验证）。
+
+### P1（中期）
+
+1. OpenSpec 与 gdk 桥接脚本化。
+2. 场景化 runbook 扩展（开发/修复/重构/发布）。
+3. 角色与技能触发矩阵精炼。
+
+### P2（长期）
+
+1. 多工具兼容层扩展（控制复杂度）。
+2. 研究与工程一体化归档机制。
+
+---
+
+## 6. 持续迭代落地资产（本仓固定入口）
+
+- 子仓清单：`subrepos/registry.csv`
+- 候选评估：`subrepos/adoption-matrix.md`
+- 同步脚本：`scripts/sync-subrepos.sh`
+- 差异扫描：`scripts/diff-scan.sh`
+- 覆盖校验：`scripts/check-agents-coverage.sh`
+- 压实校验：`scripts/check-gdk-harden-readiness.sh`
+- 周报模板：`reports/weekly-change-report.template.md`
+- codex 实战模板：`reports/codex-pilot-report.template.md`
+
+---
+
+## 7. 维护机制
+
+### 7.1 触发条件
+
+1. 新增或移除任一参考子仓。
+2. 子仓出现关键流程/目录/门禁变化。
+3. gdk 或 codex 试跑结果显示“文档与行为不一致”。
+
+### 7.2 维护动作
+
+1. 更新本文件仓库条目与优先级。
+2. 更新 `subrepos/registry.csv` 与 `subrepos/adoption-matrix.md`。
+3. 执行三类脚本并记录验证结果。
+
+### 7.3 维护记录模板
 
 ```md
 ## 维护记录
@@ -130,9 +179,77 @@
 
 ---
 
-## 5. 工作区通用执行要求
+## 8. 工作区执行要求
 
-- 默认用中文输出，技术标识保留英文。
-- 修改前先确认目标子仓库的本地 `AGENTS.md` 约束。
-- 一次任务尽量只改一个子仓库，避免跨仓库混合提交。
-- 无验证证据不宣称“完成/可提交/可合并”。
+1. 默认中文输出，技术标识保留英文。
+2. 修改前先确认目标子仓本地 `AGENTS.md` 约束。
+3. 尽量单次只改一个子仓，避免混合提交。
+4. 无验证证据不得宣称“完成/可提交/可合并”。
+
+---
+
+## 维护记录
+
+### 2026-05-02
+- 变更范围：执行 `--open-gate` 开门动作；完成开门后正式增量同步与差异扫描；回填本轮 `adoption-matrix` 决策。
+- 触发原因：执行“先压实 gdk，再追踪子仓更新与借鉴”的新硬约束。
+- 更新条目：`subrepos/phase-gate.env`、`reports/weekly-change-report.md`、`subrepos/adoption-matrix.md`、`reports/codex-pilot-report.md`。
+- 验证命令：
+  - `rtk scripts/check-gdk-harden-readiness.sh . --open-gate`
+  - `rtk scripts/sync-subrepos.sh . fetch`
+  - `rtk scripts/diff-scan.sh . 7 reports/weekly-change-report.md`
+  - `rtk scripts/check-agents-coverage.sh .`
+- 验证结果：通过；门禁生效，且开门后正式评估链路可用。
+
+### 2026-05-02（追加）
+- 变更范围：新增 codex 试跑证据门禁脚本并接入压实检查；完成 1 个 codex 高风险场景试跑并补齐 artifact 证据。
+- 触发原因：将“先压实再追踪”从文本约束升级为机器可判定门禁。
+- 更新条目：`scripts/check-codex-pilot-evidence.sh`、`scripts/check-gdk-harden-readiness.sh`、`scripts/README.md`、`reports/codex-pilot-report.md`、`subrepos/adoption-matrix.md`。
+- 验证命令：
+  - `rtk scripts/check-codex-pilot-evidence.sh .`
+  - `rtk scripts/check-gdk-harden-readiness.sh . --require-pilot`
+  - `rtk scripts/check-gdk-harden-readiness.sh . --require-pilot --open-gate`
+  - `rtk bash ~/.codex/control/scripts/doctor.sh ~/.codex minimal`
+- 验证结果：通过；严格门禁链路（含 codex 试跑证据）可复现可通过。
+
+### 2026-05-02（再追加）
+- 变更范围：新增全局 `~/.codex` 健康门禁并接入压实默认检查，彻底去除“依赖当前仓库本地 codex 目录”路径。
+- 触发原因：统一改为全局 `~/.codex` 运行目标后，需要硬校验全局目录健康状态。
+- 更新条目：`scripts/check-global-codex-health.sh`、`scripts/check-gdk-harden-readiness.sh`、`scripts/README.md`、`subrepos/phase-gate.env`。
+- 验证命令：
+  - `rtk scripts/check-global-codex-health.sh ~/.codex minimal`
+  - `rtk scripts/check-gdk-harden-readiness.sh .`
+  - `rtk scripts/check-gdk-harden-readiness.sh . --require-pilot`
+- 验证结果：通过；默认压实链路已包含全局 `~/.codex` 健康检查。
+
+### 2026-05-02（终态压实）
+- 变更范围：新增“全局 codex 目标策略”门禁，禁止本地 `codex/` 目录回流；并入压实主链路。
+- 触发原因：确保“后续直接使用 `~/.codex`”不被后续改动破坏。
+- 更新条目：`scripts/check-global-codex-target-policy.sh`、`scripts/check-gdk-harden-readiness.sh`、`scripts/README.md`。
+- 验证命令：
+  - `rtk scripts/check-global-codex-target-policy.sh .`
+  - `rtk scripts/check-gdk-harden-readiness.sh . --require-pilot`
+  - `rtk scripts/check-agents-coverage.sh .`
+- 验证结果：通过；压实主链路 now 同时校验 `~/.codex` 健康与“无本地 codex 回流”策略。
+
+### 2026-05-02（策略调整）
+- 变更范围：按最新要求移除“本地 `codex/` 回流”主链路校验；继续强化 gdk 压实为“默认跑全量回归”。
+- 触发原因：明确无需校验本地 `codex/` 回流，压实重心转到 gdk 质量回归。
+- 更新条目：`scripts/check-gdk-harden-readiness.sh`、`scripts/README.md`。
+- 验证命令：
+  - `rtk scripts/check-gdk-harden-readiness.sh . --require-pilot`
+  - `rtk scripts/check-gdk-harden-readiness.sh . --require-pilot --open-gate`
+- 验证结果：通过；压实主链路 now 默认包含 `global-dev-kit/tests/run_all.sh`。
+
+### 2026-05-01
+- 变更范围：新增 `codex` 子仓纳入治理；补齐全量子仓覆盖；落地 `subrepos/`、`scripts/`、`reports/` 治理骨架；在 `global-dev-kit` 落地 `artifact-gated-lite`（profile + optional skill + runbook）。
+- 触发原因：需要压缩迭代周期并建立可持续增量吸收机制。
+- 更新条目：`AGENTS.md`、`subrepos/registry.csv`、`subrepos/adoption-matrix.md`、`scripts/*`、`reports/*`、`global-dev-kit/manifest.yaml`、`global-dev-kit/optional-skills/artifact-gated-lite/SKILL.md`。
+- 验证命令：
+  - `scripts/check-agents-coverage.sh .`
+  - `scripts/sync-subrepos.sh . fetch`
+  - `scripts/diff-scan.sh . 14 reports/weekly-change-report.md`
+  - `bash global-dev-kit/scripts/validate_assets.sh --strict`
+  - `bash global-dev-kit/tests/test_optional_skills.sh`
+  - `bash global-dev-kit/tests/test_no_external_repo_refs.sh`
+- 验证结果：全部通过（`codex_doc_cn` 因远端仓库不可达已在 `registry.csv` 标记为 disabled）。

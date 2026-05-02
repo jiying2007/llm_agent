@@ -1,0 +1,252 @@
+# 子仓增量变更周报
+
+- 生成日期：2026-05-02
+- 扫描窗口：最近 7 天
+- 规则：仅保留 AGENTS/SKILL/README/workflow/scripts 相关变更
+- 阶段：harden-gdk
+- 强制模式：0
+
+## codex
+
+- 分组：runtime-target
+- 优先级：P0
+- 关注说明：gdk 实战验证目标项目
+- 变更文件：
+  - AGENTS.md
+  - README.md
+  - control/catalog/README.md
+  - control/scripts/README.md
+  - control/scripts/activate-profile.sh
+  - control/scripts/archive-guidance.sh
+  - control/scripts/doctor.sh
+  - control/scripts/git-codex.sh
+  - control/scripts/render-config.sh
+  - control/scripts/sync-skills-vendor.sh
+  - control/scripts/sync-vendor.sh
+  - control/state/README.md
+  - control/workflows/README.md
+  - control/workflows/bugfix-flow.md
+  - control/workflows/feature-flow.md
+  - control/workflows/refactor-flow.md
+  - mcp/secrets/README.md
+  - skills/.system/imagegen/SKILL.md
+  - skills/.system/imagegen/scripts/image_gen.py
+  - skills/.system/imagegen/scripts/remove_chroma_key.py
+  - skills/.system/openai-docs/SKILL.md
+  - skills/.system/openai-docs/scripts/resolve-latest-model-info.js
+  - skills/.system/plugin-creator/SKILL.md
+  - skills/.system/plugin-creator/scripts/create_basic_plugin.py
+  - skills/.system/skill-creator/SKILL.md
+  - skills/.system/skill-creator/scripts/generate_openai_yaml.py
+  - skills/.system/skill-creator/scripts/init_skill.py
+  - skills/.system/skill-creator/scripts/quick_validate.py
+  - skills/.system/skill-installer/SKILL.md
+  - skills/.system/skill-installer/scripts/github_utils.py
+  - skills/.system/skill-installer/scripts/install-skill-from-github.py
+  - skills/.system/skill-installer/scripts/list-skills.py
+  - skills/README.md
+  - skills/scripts/check-skills.sh
+  - vendor/README.md
+  - vendor/plugins/superpowers/1.1.9/.github/workflows/ci.yml
+  - vendor/plugins/superpowers/1.1.9/README.md
+  - vendor/plugins/superpowers/1.1.9/skills/brainstorming/SKILL.md
+  - vendor/plugins/superpowers/1.1.9/skills/brainstorming/scripts/frame-template.html
+  - vendor/plugins/superpowers/1.1.9/skills/brainstorming/scripts/helper.js
+  - vendor/plugins/superpowers/1.1.9/skills/brainstorming/scripts/server.cjs
+  - vendor/plugins/superpowers/1.1.9/skills/brainstorming/scripts/start-server.sh
+  - vendor/plugins/superpowers/1.1.9/skills/brainstorming/scripts/stop-server.sh
+  - vendor/plugins/superpowers/1.1.9/skills/chinese-code-review/SKILL.md
+  - vendor/plugins/superpowers/1.1.9/skills/chinese-commit-conventions/SKILL.md
+  - vendor/plugins/superpowers/1.1.9/skills/chinese-documentation/SKILL.md
+  - vendor/plugins/superpowers/1.1.9/skills/chinese-git-workflow/SKILL.md
+  - vendor/plugins/superpowers/1.1.9/skills/dispatching-parallel-agents/SKILL.md
+  - vendor/plugins/superpowers/1.1.9/skills/executing-plans/SKILL.md
+  - vendor/plugins/superpowers/1.1.9/skills/finishing-a-development-branch/SKILL.md
+  - vendor/plugins/superpowers/1.1.9/skills/mcp-builder/SKILL.md
+  - vendor/plugins/superpowers/1.1.9/skills/receiving-code-review/SKILL.md
+  - vendor/plugins/superpowers/1.1.9/skills/requesting-code-review/SKILL.md
+  - vendor/plugins/superpowers/1.1.9/skills/subagent-driven-development/SKILL.md
+  - vendor/plugins/superpowers/1.1.9/skills/systematic-debugging/SKILL.md
+  - vendor/plugins/superpowers/1.1.9/skills/test-driven-development/SKILL.md
+  - vendor/plugins/superpowers/1.1.9/skills/using-git-worktrees/SKILL.md
+  - vendor/plugins/superpowers/1.1.9/skills/using-superpowers/SKILL.md
+  - vendor/plugins/superpowers/1.1.9/skills/verification-before-completion/SKILL.md
+  - vendor/plugins/superpowers/1.1.9/skills/workflow-runner/SKILL.md
+  - vendor/plugins/superpowers/1.1.9/skills/writing-plans/SKILL.md
+  - vendor/plugins/superpowers/1.1.9/skills/writing-skills/SKILL.md
+  - vendor/plugins/superpowers/1.1.9/tests/claude-code/README.md
+  - vendor/skills/caveman/1.0.0/SKILL.md
+  - vendor/skills/codex-parallel-collab/3.1.0/README.md
+  - vendor/skills/codex-parallel-collab/3.1.0/SKILL.md
+  - vendor/skills/commit-daily-summary/3.1.0/README.md
+  - vendor/skills/commit-daily-summary/3.1.0/SKILL.md
+  - vendor/skills/project-daily-summary/3.1.0/README.md
+  - vendor/skills/project-daily-summary/3.1.0/SKILL.md
+  - vendor/skills/research-note-wrap/3.1.0/README.md
+  - vendor/skills/research-note-wrap/3.1.0/SKILL.md
+  - vendor/skills/session-wrap/3.1.0/README.md
+  - vendor/skills/session-wrap/3.1.0/SKILL.md
+  - vendor/skills/worktree-closeout/3.1.0/README.md
+  - vendor/skills/worktree-closeout/3.1.0/SKILL.md
+  - vendor/skills/worktree-closeout/3.1.0/scripts/scan_closeout.py
+- 建议动作：进入 adoption-matrix 评估（adopt / observe / reject）
+
+## global-dev-kit
+
+- 分组：gdk-core
+- 优先级：P0
+- 关注说明：主落地仓库
+- 变更文件：
+  - .github/workflows/ci.yml
+  - .github/workflows/release.yml
+  - AGENTS.md
+  - README.md
+  - docs/changes/README.md
+  - docs/runbooks/README.md
+  - optional-skills/cross-team-handoff/SKILL.md
+  - optional-skills/incident-rca-report/SKILL.md
+  - optional-skills/test-flakiness-triage/SKILL.md
+  - scripts/catalog_assets.sh
+  - scripts/check_format.sh
+  - scripts/convert_assets.sh
+  - scripts/devkit.sh
+  - scripts/install_assets.sh
+  - scripts/lib_manifest.sh
+  - scripts/skill_match.sh
+  - scripts/sync_codex_assets.sh
+  - scripts/validate_assets.sh
+  - scripts/workflow.sh
+  - skills/adr-writer/SKILL.md
+  - skills/bsp-porting-playbook/SKILL.md
+  - skills/cmake-cross-build/SKILL.md
+  - skills/commit-pr-quality-gate/SKILL.md
+  - skills/component-api-stability/SKILL.md
+  - skills/driver-bringup-checklist/SKILL.md
+  - skills/fault-injection-recovery/SKILL.md
+  - skills/integration-hil-sil/SKILL.md
+  - skills/interface-contract-design/SKILL.md
+  - skills/interrupt-dma-patterns/SKILL.md
+  - skills/performance-profiling-embedded/SKILL.md
+  - skills/protocol-stack-integration/SKILL.md
+  - skills/register-map-design/SKILL.md
+  - skills/release-versioning/SKILL.md
+  - skills/requirements-triage/SKILL.md
+  - skills/rtos-task-design/SKILL.md
+  - skills/static-analysis-c-cpp/SKILL.md
+  - skills/systematic-debugging/SKILL.md
+  - skills/task-breakdown/SKILL.md
+  - skills/toolchain-debug-openocd-gdb/SKILL.md
+  - skills/unit-test-embedded/SKILL.md
+  - skills/verification-before-completion/SKILL.md
+- 建议动作：进入 adoption-matrix 评估（adopt / observe / reject）
+
+## hermes-agent
+
+- 分组：delivery
+- 优先级：P1
+- 关注说明：大型 Agent 工程参考
+- 变更文件：
+  - AGENTS.md
+  - README.md
+  - scripts/build_model_catalog.py
+  - scripts/install.sh
+  - scripts/release.py
+  - skills/mlops/inference/obliteratus/SKILL.md
+  - skills/productivity/google-workspace/scripts/_hermes_home.py
+  - skills/productivity/google-workspace/scripts/google_api.py
+  - skills/productivity/google-workspace/scripts/gws_bridge.py
+  - skills/productivity/google-workspace/scripts/setup.py
+  - ui-tui/README.md
+- 建议动作：进入 adoption-matrix 评估（adopt / observe / reject）
+
+## hermes-collaboration-skill
+
+- 分组：agent-ecosystem
+- 优先级：P1
+- 关注说明：团队协作能力参考
+- 变更文件：
+  - README.md
+  - github/workflows/ci.yml
+- 建议动作：进入 adoption-matrix 评估（adopt / observe / reject）
+
+## hermes-team-skill
+
+- 分组：agent-ecosystem
+- 优先级：P2
+- 关注说明：轻量团队技能样例
+- 变更文件：
+  - README.md
+  - SKILL.md
+  - scripts/project_memory_manager.py
+- 建议动作：进入 adoption-matrix 评估（adopt / observe / reject）
+
+## mattpocock-skills
+
+- 分组：agent-ecosystem
+- 优先级：P1
+- 关注说明：可组合技能体系
+- 变更文件：
+  - README.md
+  - diagnose/SKILL.md
+  - diagnose/scripts/hitl-loop.template.sh
+  - improve-codebase-architecture/SKILL.md
+  - scripts/link-skills.sh
+  - scripts/list-skills.sh
+  - skills/caveman/SKILL.md
+  - skills/deprecated/README.md
+  - skills/deprecated/design-an-interface/SKILL.md
+  - skills/deprecated/qa/SKILL.md
+  - skills/deprecated/request-refactor-plan/SKILL.md
+  - skills/deprecated/triage-issue/SKILL.md
+  - skills/deprecated/ubiquitous-language/SKILL.md
+  - skills/design-an-interface/SKILL.md
+  - skills/diagnose/SKILL.md
+  - skills/diagnose/scripts/hitl-loop.template.sh
+  - skills/domain-model/SKILL.md
+  - skills/edit-article/SKILL.md
+  - skills/engineering/README.md
+  - skills/engineering/diagnose/SKILL.md
+  - skills/engineering/diagnose/scripts/hitl-loop.template.sh
+  - skills/engineering/domain-model/SKILL.md
+  - skills/engineering/github-triage/SKILL.md
+  - skills/engineering/grill-with-docs/SKILL.md
+  - skills/engineering/improve-codebase-architecture/SKILL.md
+  - skills/engineering/setup-matt-pocock-skills/SKILL.md
+  - skills/engineering/tdd/SKILL.md
+  - skills/engineering/to-issues/SKILL.md
+  - skills/engineering/to-prd/SKILL.md
+  - skills/engineering/triage/SKILL.md
+  - skills/engineering/zoom-out/SKILL.md
+  - skills/git-guardrails-claude-code/SKILL.md
+  - skills/git-guardrails-claude-code/scripts/block-dangerous-git.sh
+  - skills/github-triage/SKILL.md
+  - skills/grill-me/SKILL.md
+  - skills/improve-codebase-architecture/SKILL.md
+  - skills/migrate-to-shoehorn/SKILL.md
+  - skills/misc/README.md
+  - skills/misc/git-guardrails-claude-code/SKILL.md
+  - skills/misc/git-guardrails-claude-code/scripts/block-dangerous-git.sh
+  - skills/misc/migrate-to-shoehorn/SKILL.md
+  - skills/misc/scaffold-exercises/SKILL.md
+  - skills/misc/setup-pre-commit/SKILL.md
+  - skills/obsidian-vault/SKILL.md
+  - skills/personal/README.md
+  - skills/personal/edit-article/SKILL.md
+  - skills/personal/obsidian-vault/SKILL.md
+  - skills/productivity/README.md
+  - skills/productivity/caveman/SKILL.md
+  - skills/productivity/grill-me/SKILL.md
+  - skills/productivity/write-a-skill/SKILL.md
+  - skills/qa/SKILL.md
+  - skills/request-refactor-plan/SKILL.md
+  - skills/scaffold-exercises/SKILL.md
+  - skills/setup-pre-commit/SKILL.md
+  - skills/tdd/SKILL.md
+  - skills/to-issues/SKILL.md
+  - skills/to-prd/SKILL.md
+  - skills/triage-issue/SKILL.md
+  - skills/ubiquitous-language/SKILL.md
+  - skills/write-a-skill/SKILL.md
+  - skills/zoom-out/SKILL.md
+- 建议动作：进入 adoption-matrix 评估（adopt / observe / reject）
+

@@ -1,0 +1,25 @@
+repo,group,priority,sync_mode,branch,enabled,notes
+AUBB-Server,delivery,P2,fetch,main,yes,后端业务样本
+Migrationed_skills,skill-pool,P1,fetch,main,yes,迁移技能候选池
+OpenSpec,workflow-core,P0,fetch,main,yes,Spec 工件体系
+agency-agents-zh,agent-ecosystem,P1,fetch,main,yes,中文角色资产库
+agent-skills,agent-ecosystem,P1,fetch,main,yes,技能驱动开发流程
+ai-coding-guide,knowledge,P1,fetch,main,yes,场景化实践指南
+arthas,delivery,P2,fetch,master,yes,成熟开源工程规范
+artifact-gated-agents,workflow-core,P0,fetch,main,yes,Artifact/Gate 协议参考
+auto-research,knowledge,P2,fetch,main,yes,调研闭环与留痕
+autonomous-vehicle-dev,delivery,P1,fetch,main,yes,阶段式迁移样本
+codex,runtime-target,P0,pull,main,no,改用全局 ~/.codex（不再使用当前仓库本地 codex 目录）
+codex-skill-spec,skill-pool,P1,fetch,main,yes,轻量技能模板
+codex_doc_cn,knowledge,P1,fetch,main,no,远程仓库不可达(Repository not found)
+dotfiles,config,P2,fetch,master,yes,环境基线管理
+global-dev-kit,gdk-core,P0,pull,main,yes,主落地仓库
+hermes-agent,delivery,P1,fetch,main,yes,大型 Agent 工程参考
+hermes-collaboration-skill,agent-ecosystem,P1,fetch,main,yes,团队协作能力参考
+hermes-team-skill,agent-ecosystem,P2,fetch,main,yes,轻量团队技能样例
+mattpocock-skills,agent-ecosystem,P1,fetch,main,yes,可组合技能体系
+prompts,knowledge,P2,fetch,main,yes,提示词资产沉淀
+skills,agent-ecosystem,P1,fetch,main,yes,skills CLI 生态
+superpowers,workflow-core,P0,fetch,main,yes,流程主干来源
+superpowers-zh,workflow-core,P0,fetch,main,yes,中文流程增强
+vscode-codex-settings,config,P1,fetch,main,yes,配置治理样例
