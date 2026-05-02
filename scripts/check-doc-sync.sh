@@ -36,12 +36,18 @@ required_tokens=(
   "check-doc-sync.sh"
   "check-adoption-matrix-status.sh"
   "check-observe-intake-depth.sh"
+  "check-runtime-routing.sh"
+  "check-codex-pilot-coverage.sh"
+  "check-upstream-intake-readiness.sh"
   "generate-adoption-matrix-summary.sh"
   "run-post-freeze-cycle.sh"
   "--check-skill-metadata"
   "--check-routing-conflicts"
   "--check-doc-sync"
   "--check-observe-intake-depth"
+  "--check-runtime-routing"
+  "--check-pilot-coverage"
+  "--check-upstream-intake"
 )
 
 for token in "${required_tokens[@]}"; do

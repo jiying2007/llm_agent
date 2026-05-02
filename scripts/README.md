@@ -47,6 +47,11 @@ scripts/check-gdk-harden-readiness.sh . --check-observe-intake-depth
 # 显式打开 delivery 采纳深度检查（默认已开启）
 scripts/check-gdk-harden-readiness.sh . --check-delivery-adopt-depth
 
+# 显式打开生产级路由、pilot 覆盖、上游吸收检查（默认已开启）
+scripts/check-gdk-harden-readiness.sh . --check-runtime-routing
+scripts/check-gdk-harden-readiness.sh . --check-pilot-coverage
+scripts/check-gdk-harden-readiness.sh . --check-upstream-intake
+
 # 临时跳过某类新增检查（不建议）
 scripts/check-gdk-harden-readiness.sh . --skip-skill-metadata-check
 scripts/check-gdk-harden-readiness.sh . --skip-routing-conflicts-check
@@ -54,6 +59,9 @@ scripts/check-gdk-harden-readiness.sh . --skip-doc-sync-check
 scripts/check-gdk-harden-readiness.sh . --skip-matrix-status-check
 scripts/check-gdk-harden-readiness.sh . --skip-observe-intake-depth-check
 scripts/check-gdk-harden-readiness.sh . --skip-delivery-adopt-depth-check
+scripts/check-gdk-harden-readiness.sh . --skip-runtime-routing-check
+scripts/check-gdk-harden-readiness.sh . --skip-pilot-coverage-check
+scripts/check-gdk-harden-readiness.sh . --skip-upstream-intake-check
 ```
 
 若未开门，`sync-subrepos.sh` / `diff-scan.sh` 会返回 `[BLOCK]`。  
@@ -64,6 +72,14 @@ codex 试跑证据检查脚本：
 ```bash
 scripts/check-codex-pilot-evidence.sh .
 ```
+
+codex 六类 pilot coverage 检查脚本：
+
+```bash
+scripts/check-codex-pilot-coverage.sh .
+```
+
+当 `pilot_full_coverage_ready=yes` 时，该脚本会强制校验六类场景字段、场景章节、`ImplementationPlan/ReviewReport/TestReport` artifact 标签与命令级 Evidence Index。
 
 全局 `~/.codex` 健康检查脚本：
 
@@ -107,6 +123,20 @@ delivery 采纳深度检查脚本（`delivery + adopt + done` 行必须同时具
 
 ```bash
 scripts/check-delivery-adopt-depth.sh .
+```
+
+生产级 runtime routing 资产检查脚本：
+
+```bash
+scripts/check-runtime-routing.sh .
+```
+
+该脚本会同时调用 `global-dev-kit/scripts/check_profile_coherence.sh`，防止 profile 继承后重复声明 Agent/Skill 或引用漂移。
+
+上游吸收生产准入检查脚本：
+
+```bash
+scripts/check-upstream-intake-readiness.sh .
 ```
 
 当前默认不强制 `--require-pilot`。  

@@ -190,6 +190,21 @@
 
 ## 维护记录
 
+### 2026-05-02（去冗余与顺序压实）
+- 变更范围：清理 `global-dev-kit` profile 继承重复声明；统一 Evidence Index 模板字段；新增 profile coherence 机校门禁并接入 runtime routing 与全量回归。
+- 触发原因：多轮增量补丁后需要防止 Agent/Skill/Workflow 资产出现冗余、重复和主辅技能顺序歧义。
+- 更新条目：`global-dev-kit/manifest.yaml`、`global-dev-kit/scripts/check_profile_coherence.sh`、`global-dev-kit/tests/test_profile_coherence.sh`、`global-dev-kit/scripts/workflow.sh`、`global-dev-kit/scripts/check_change_governance.sh`、`global-dev-kit/docs/*`、`scripts/check-runtime-routing.sh`、`reports/gdk-production-landing-implementation-2026-05-02.md`。
+- 验证命令：
+  - `rtk global-dev-kit/tests/test_profile_coherence.sh`
+  - `rtk global-dev-kit/tests/test_change_governance.sh`
+  - `rtk global-dev-kit/tests/test_workflow.sh`
+  - `rtk global-dev-kit/tests/test_evidence_index.sh`
+  - `rtk global-dev-kit/tests/run_all.sh`
+  - `rtk scripts/check-runtime-routing.sh .`
+  - `rtk scripts/check-doc-sync.sh .`
+  - `rtk scripts/check-gdk-harden-readiness.sh . --require-pilot`
+- 验证结果：通过；profile coherence 已进入 runtime routing 与 gdk 全量回归，主压实门禁含 pilot 与全局 `~/.codex` 健康检查通过。
+
 ### 2026-05-02
 - 变更范围：执行 `--open-gate` 开门动作；完成开门后正式增量同步与差异扫描；回填本轮 `adoption-matrix` 决策。
 - 触发原因：执行“先压实 gdk，再追踪子仓更新与借鉴”的新硬约束。
@@ -278,6 +293,42 @@
   - `rtk scripts/check-adoption-matrix-status.sh .`
   - `rtk scripts/check-gdk-harden-readiness.sh . --require-pilot --skip-full-suite`
 - 验证结果：通过；`observe+done` 已清零并保持主门禁通过。
+
+### 2026-05-02（生产级落地补齐）
+- 变更范围：补齐 gdk 生产级运行入口、profile 分层、runtime routing、Evidence Index 自动化、pilot coverage 字段门禁、上游吸收准入和生产安装备份/报告能力。
+- 触发原因：执行“完成 gdk 生产级落地”的补齐计划，确保 `~/.codex` 以 gdk 作为统一生产分发层。
+- 更新条目：`global-dev-kit/manifest.yaml`、`global-dev-kit/scripts/install_assets.sh`、`global-dev-kit/scripts/evidence_index.sh`、`global-dev-kit/scripts/devkit.sh`、`global-dev-kit/optional-skills/*`、`global-dev-kit/docs/runbooks/*`、`scripts/check-runtime-routing.sh`、`scripts/check-codex-pilot-coverage.sh`、`scripts/check-upstream-intake-readiness.sh`、`scripts/check-gdk-harden-readiness.sh`、`reports/codex-pilot-report.md`、`reports/gdk-production-landing-implementation-2026-05-02.md`。
+- 验证命令：
+  - `rtk global-dev-kit/tests/test_install.sh`
+  - `rtk global-dev-kit/tests/test_evidence_index.sh`
+  - `rtk scripts/check-runtime-routing.sh .`
+  - `rtk scripts/check-codex-pilot-coverage.sh .`
+  - `rtk scripts/check-upstream-intake-readiness.sh .`
+  - `rtk global-dev-kit/tests/run_all.sh`
+  - `rtk scripts/check-gdk-harden-readiness.sh . --require-pilot`
+- 验证结果：通过；生产级基础设施已接入主门禁，六类 pilot 后续由 full coverage 门禁继续压实。
+
+### 2026-05-02（生产安装试跑）
+- 变更范围：执行真实 `~/.codex` 生产安装，使用 `personal-core + release-hardening`，叠加生产级 optional skills，并生成安装报告与回滚备份。
+- 触发原因：继续推动 gdk 从“可发布”进入全局 `~/.codex` 生产试跑。
+- 更新条目：`reports/gdk-install-report-2026-05-02.md`、`reports/codex-pilot-report.md`、`reports/gdk-production-landing-implementation-2026-05-02.md`、`subrepos/adoption-matrix.md`。
+- 验证命令：
+  - `rtk bash -lc 'cd global-dev-kit && bash scripts/devkit.sh validate --strict'`
+  - `rtk bash -lc 'cd global-dev-kit && bash scripts/devkit.sh install --tool codex --target ~/.codex --mode copy --profile personal-core --extra-profile release-hardening --with-optional-skill planning-execution-loop --with-optional-skill skill-composition-governance --with-optional-skill security-supply-chain --with-optional-skill cross-team-handoff --with-optional-skill artifact-gated-lite --backup --install-report ../reports/gdk-install-report-2026-05-02.md --lock-version 0.3.0'`
+  - `rtk scripts/check-global-codex-health.sh ~/.codex minimal`
+  - `rtk scripts/check-gdk-harden-readiness.sh . --require-pilot`
+- 验证结果：通过；安装报告生成，回滚点为 `/home/aiot03/.codex/.gdk-backups/20260502T104514Z`。
+
+### 2026-05-02（六类 Pilot 全覆盖）
+- 变更范围：将 codex pilot 从字段级检查升级为 full coverage 检查；补齐新功能、缺陷修复、重构、发布收口、团队交接、上游吸收六类 gdk 自举试跑证据。
+- 触发原因：继续推动 gdk 从生产安装进入可机校的场景覆盖，避免仅凭字段声明完成。
+- 更新条目：`scripts/check-codex-pilot-coverage.sh`、`scripts/README.md`、`reports/codex-pilot-report.md`、`reports/gdk-production-landing-implementation-2026-05-02.md`、`subrepos/adoption-matrix.md`。
+- 验证命令：
+  - `rtk scripts/check-codex-pilot-evidence.sh .`
+  - `rtk scripts/check-codex-pilot-coverage.sh .`
+  - `rtk scripts/check-doc-sync.sh .`
+  - `rtk scripts/check-gdk-harden-readiness.sh . --require-pilot`
+- 验证结果：通过；`pilot_full_coverage_ready=yes` 已由六类场景 artifact 与命令级 Evidence Index 支撑。
 
 ### 2026-05-01
 - 变更范围：新增 `codex` 子仓纳入治理；补齐全量子仓覆盖；落地 `subrepos/`、`scripts/`、`reports/` 治理骨架；在 `global-dev-kit` 落地 `artifact-gated-lite`（profile + optional skill + runbook）。

@@ -14,6 +14,9 @@ CHECK_DOC_SYNC=1
 CHECK_MATRIX_STATUS=1
 CHECK_OBSERVE_INTAKE_DEPTH=1
 CHECK_DELIVERY_ADOPT_DEPTH=1
+CHECK_RUNTIME_ROUTING=1
+CHECK_PILOT_COVERAGE=1
+CHECK_UPSTREAM_INTAKE=1
 
 for arg in "${@:2}"; do
   case "${arg}" in
@@ -47,6 +50,15 @@ for arg in "${@:2}"; do
     --check-delivery-adopt-depth)
       CHECK_DELIVERY_ADOPT_DEPTH=1
       ;;
+    --check-runtime-routing)
+      CHECK_RUNTIME_ROUTING=1
+      ;;
+    --check-pilot-coverage)
+      CHECK_PILOT_COVERAGE=1
+      ;;
+    --check-upstream-intake)
+      CHECK_UPSTREAM_INTAKE=1
+      ;;
     --skip-skill-metadata-check)
       CHECK_SKILL_METADATA=0
       ;;
@@ -65,9 +77,18 @@ for arg in "${@:2}"; do
     --skip-delivery-adopt-depth-check)
       CHECK_DELIVERY_ADOPT_DEPTH=0
       ;;
+    --skip-runtime-routing-check)
+      CHECK_RUNTIME_ROUTING=0
+      ;;
+    --skip-pilot-coverage-check)
+      CHECK_PILOT_COVERAGE=0
+      ;;
+    --skip-upstream-intake-check)
+      CHECK_UPSTREAM_INTAKE=0
+      ;;
     *)
       echo "[FAIL] unknown arg: ${arg}" >&2
-      echo "usage: scripts/check-gdk-harden-readiness.sh <root> [--open-gate] [--require-pilot] [--skip-global-codex-check] [--skip-full-suite] [--check-skill-metadata] [--check-routing-conflicts] [--check-doc-sync] [--check-matrix-status] [--check-observe-intake-depth] [--check-delivery-adopt-depth] [--skip-skill-metadata-check] [--skip-routing-conflicts-check] [--skip-doc-sync-check] [--skip-matrix-status-check] [--skip-observe-intake-depth-check] [--skip-delivery-adopt-depth-check]" >&2
+      echo "usage: scripts/check-gdk-harden-readiness.sh <root> [--open-gate] [--require-pilot] [--skip-global-codex-check] [--skip-full-suite] [--check-skill-metadata] [--check-routing-conflicts] [--check-doc-sync] [--check-matrix-status] [--check-observe-intake-depth] [--check-delivery-adopt-depth] [--check-runtime-routing] [--check-pilot-coverage] [--check-upstream-intake] [--skip-skill-metadata-check] [--skip-routing-conflicts-check] [--skip-doc-sync-check] [--skip-matrix-status-check] [--skip-observe-intake-depth-check] [--skip-delivery-adopt-depth-check] [--skip-runtime-routing-check] [--skip-pilot-coverage-check] [--skip-upstream-intake-check]" >&2
       exit 1
       ;;
   esac
@@ -117,6 +138,14 @@ if [[ "${CHECK_DELIVERY_ADOPT_DEPTH}" -eq 1 ]]; then
   bash "${ROOT}/scripts/check-delivery-adopt-depth.sh" "${ROOT}"
 fi
 
+if [[ "${CHECK_RUNTIME_ROUTING}" -eq 1 ]]; then
+  bash "${ROOT}/scripts/check-runtime-routing.sh" "${ROOT}"
+fi
+
+if [[ "${CHECK_UPSTREAM_INTAKE}" -eq 1 ]]; then
+  bash "${ROOT}/scripts/check-upstream-intake-readiness.sh" "${ROOT}"
+fi
+
 if [[ "${CHECK_FULL_SUITE}" -eq 1 ]]; then
   bash "${GDK_DIR}/tests/run_all.sh"
   echo "[PASS] gdk full regression suite passed"
@@ -124,6 +153,9 @@ fi
 
 if [[ "${REQUIRE_PILOT}" -eq 1 ]]; then
   bash "${ROOT}/scripts/check-codex-pilot-evidence.sh" "${ROOT}"
+  if [[ "${CHECK_PILOT_COVERAGE}" -eq 1 ]]; then
+    bash "${ROOT}/scripts/check-codex-pilot-coverage.sh" "${ROOT}"
+  fi
 fi
 
 if [[ "${CHECK_GLOBAL_CODEX}" -eq 1 ]]; then
