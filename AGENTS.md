@@ -190,6 +190,17 @@
 
 ## 维护记录
 
+### 2026-05-03（使用指南补齐）
+- 变更范围：补齐 `llm_agent` 根使用指南、持续维护指南、gdk 最新 README/usage/commands/production deployment，并新增 `~/.codex/AGENTS.md` 与 gdk 配合指南。
+- 触发原因：需要让后续维护者无需依赖历史会话即可执行参考仓吸收、gdk 压实、生产部署、pilot 验证和 `~/.codex` 策略配合。
+- 更新条目：`README.md`、`docs/llm-agent-maintenance-guide.md`、`global-dev-kit/README.md`、`global-dev-kit/docs/usage.md`、`global-dev-kit/docs/commands.md`、`global-dev-kit/docs/runbooks/production-deployment.md`、`global-dev-kit/docs/codex-agents-integration.md`、`scripts/README.md`。
+- 验证命令：
+  - `rtk scripts/check-doc-sync.sh .`
+  - `rtk scripts/check-runtime-routing.sh .`
+  - `rtk bash -lc "cd global-dev-kit && bash scripts/devkit.sh validate --strict"`
+  - `rtk scripts/check-gdk-harden-readiness.sh . --require-pilot`
+- 验证结果：通过；文档同步、runtime routing、gdk strict validate、gdk full regression suite、codex pilot evidence/coverage 与全局 `~/.codex` health 均通过。
+
 ### 2026-05-02（去冗余与顺序压实）
 - 变更范围：清理 `global-dev-kit` profile 继承重复声明；统一 Evidence Index 模板字段；新增 profile coherence 机校门禁并接入 runtime routing 与全量回归。
 - 触发原因：多轮增量补丁后需要防止 Agent/Skill/Workflow 资产出现冗余、重复和主辅技能顺序歧义。

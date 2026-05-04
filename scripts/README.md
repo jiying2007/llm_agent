@@ -1,5 +1,7 @@
 # 子仓治理脚本使用手册
 
+完整维护流程见 `docs/llm-agent-maintenance-guide.md`。本文件只说明脚本入口、门禁含义与常用参数。
+
 ## Registry 字段约定（v1）
 
 `subrepos/registry.csv` 统一使用以下列：
