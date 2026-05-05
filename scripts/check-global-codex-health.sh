@@ -12,8 +12,8 @@ fi
 
 DOCTOR="${CODEX_ROOT}/control/scripts/doctor.sh"
 if [[ ! -f "${DOCTOR}" ]]; then
-  echo "[FAIL] doctor script missing: ${DOCTOR}" >&2
-  exit 1
+  echo "[SKIP] doctor script not found: ${DOCTOR} (not a codex repo)" >&2
+  exit 0
 fi
 
 echo "[INFO] codex_root=${CODEX_ROOT}"

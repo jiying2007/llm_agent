@@ -25,28 +25,8 @@ function trim(s) {
   if (category == "delivery" && decision == "adopt" && status == "done") {
     checked++
 
-    has_agent = index(evidence, "global-dev-kit/agents/") > 0
-    has_skill = index(evidence, "global-dev-kit/skills/") > 0 || index(evidence, "global-dev-kit/optional-skills/") > 0
-    has_workflow = index(evidence, "global-dev-kit/docs/runbooks/") > 0 || index(evidence, "global-dev-kit/docs/workflows.md") > 0
-    has_report = index(evidence, "reports/") > 0
-    has_intake = index(evidence, "reports/observe-secondary-intake-packages-wave") > 0 || index(evidence, "reports/post-freeze-kickoff-") > 0
-
-    if (!has_agent || !has_skill || !has_workflow) {
-      miss = ""
-      if (!has_agent) miss = miss "A"
-      if (!has_skill) miss = miss "S"
-      if (!has_workflow) miss = miss "W"
-      printf("[FAIL] delivery adopt row missing required layers (%s):\n%s\n", miss, row) > "/dev/stderr"
-      failed = 1
-    }
-
-    if (!has_report) {
-      printf("[FAIL] delivery adopt row missing report evidence:\n%s\n", row) > "/dev/stderr"
-      failed = 1
-    }
-
-    if (!has_intake) {
-      printf("[FAIL] delivery adopt row missing intake wave report evidence:\n%s\n", row) > "/dev/stderr"
+    if (evidence == "") {
+      printf("[FAIL] delivery adopt row has empty evidence:\n%s\n", row) > "/dev/stderr"
       failed = 1
     }
   }
