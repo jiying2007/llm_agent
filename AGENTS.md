@@ -14,6 +14,31 @@
 
 ---
 
+## 1.1 意图路由表（AI 自动执行）
+
+> 当用户表达以下意图时，AI 应自动执行对应流程，无需用户手动指定工具或脚本。
+
+| 用户意图 | 触发关键词 | 执行动作 | 涉及脚本/技能 |
+|----------|-----------|---------|--------------|
+| 接入新仓库 | 接入、新增子仓、add repo、onboard、纳入治理 | 加载 `repo-onboarding` 技能，执行克隆→注册→深度分析→生成报告→更新治理文件 | `scripts/new-repo-onboard.sh` + AI 深度分析 |
+| 全面检查 | 检查、check、验证、门禁、健康检查 | 运行一键检查，汇总所有门禁结果 | `scripts/check-all.sh` / `scripts/devkit.sh check` |
+| 同步子仓 | 同步、sync、拉取更新、fetch | 拉取所有 enabled 子仓最新代码 | `scripts/sync-subrepos.sh` |
+| 差异扫描 | 差异、diff、变更、最近变化 | 扫描子仓近 N 天变更 | `scripts/diff-scan.sh` |
+| 生成周报 | 周报、weekly report、本周汇总 | 自动生成本周变更周报 | `scripts/generate-weekly-report.sh` |
+| 清理报告 | 清理、归档、cleanup、prune | 归档过期报告 | `scripts/cleanup-reports.sh` |
+| 版本发布 | 发布、release、tag、版本 | 执行发布流程 | `scripts/version-manager.sh` |
+| 健康检查 | 健康、health、状态 | 检查工作区整体健康状态 | `scripts/health-check.sh` |
+| 安装 hook | hook、pre-commit、提交检查 | 安装 git pre-commit hook | `scripts/install-pre-commit-hook.sh` |
+| 优化 gdk | 优化、改进、升级 gdk、enhance | 加载 `project-release-hardening` 技能，执行优化→验证→发布 | `global-dev-kit/scripts/devkit.sh` |
+
+**执行原则：**
+1. 用户说意图，AI 自动选择工具和流程
+2. 不需要用户记住脚本名称或参数
+3. 执行后自动汇报结果
+4. 失败时自动诊断并建议修复
+
+---
+
 ## 2. 参考子仓全量清单（已纳入治理）
 
 ### 2.1 方法论与流程内核
