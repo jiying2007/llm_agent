@@ -80,19 +80,25 @@ scripts/check-gdk-harden-readiness.sh . --skip-upstream-intake-check
 若未开门，`sync-subrepos.sh` / `diff-scan.sh` 会返回 `[BLOCK]`。  
 紧急一次性绕过：追加 `--force`（建议仅临时使用并留痕）。
 
-codex 试跑证据检查脚本：
+codex pilot 统一检查脚本（合并 evidence + coverage + 场景验证）：
 
 ```bash
-scripts/check-codex-pilot-evidence.sh .
+# 完整检查（默认模式：evidence + coverage + 场景验证）
+scripts/check-codex-pilot.sh .
+
+# 只检查 4 个基础证据字段
+scripts/check-codex-pilot.sh . evidence
+
+# 只检查 7 个覆盖字段
+scripts/check-codex-pilot.sh . coverage
+
+# 完整检查（等价于默认模式）
+scripts/check-codex-pilot.sh . full
 ```
 
-codex 六类 pilot coverage 检查脚本：
+当 `pilot_full_coverage_ready=yes` 时，`coverage` 和 `full` 模式会强制校验六类场景字段、场景章节、`ImplementationPlan/ReviewReport/TestReport` artifact 标签与命令级 Evidence Index。
 
-```bash
-scripts/check-codex-pilot-coverage.sh .
-```
-
-当 `pilot_full_coverage_ready=yes` 时，该脚本会强制校验六类场景字段、场景章节、`ImplementationPlan/ReviewReport/TestReport` artifact 标签与命令级 Evidence Index。
+> **旧脚本兼容提示**：`check-codex-pilot-evidence.sh` 和 `check-codex-pilot-coverage.sh` 已标记为弃用，会自动转发到新脚本。
 
 全局 `~/.codex` 健康检查脚本：
 
@@ -243,7 +249,65 @@ scripts/check-global-codex-target-policy.sh [WORKSPACE_ROOT]
 
 详细排查参见：`docs/runbooks/quality-gate-checklist.md`
 
-## 7. 工作区健康检查
+## 7. 一键门禁检查
+
+```bash
+# 运行所有 check-* 脚本并汇总结果
+scripts/check-all.sh
+
+# 快速模式（跳过耗时的 check-gdk-harden-readiness.sh）
+scripts/check-all.sh --quick
+
+# 详细模式（显示每个脚本的完整输出）
+scripts/check-all.sh --verbose
+
+# 组合使用
+scripts/check-all.sh --quick --verbose
+```
+
+功能：
+- 自动发现 `scripts/check-*.sh` 并逐个运行
+- 记录每个脚本的 PASS/FAIL 状态
+- 最后输出汇总表（脚本名 + 状态标记）
+- `--quick` 模式跳过耗时的 `check-gdk-harden-readiness.sh`
+- 退出码：全部通过返回 0，否则返回 1
+
+## 8. 统一入口 devkit.sh
+
+```bash
+# 查看帮助
+scripts/devkit.sh help
+
+# 一键门禁检查
+scripts/devkit.sh check --quick
+scripts/devkit.sh check --full
+
+# 新仓库接入
+scripts/devkit.sh onboard <repo-path> --adopt
+scripts/devkit.sh onboard <repo-path> --observe
+
+# 子仓同步
+scripts/devkit.sh sync fetch
+scripts/devkit.sh sync status
+
+# 差异扫描（默认 7 天）
+scripts/devkit.sh diff
+scripts/devkit.sh diff 14
+
+# 健康检查
+scripts/devkit.sh health
+
+# 生成周报
+scripts/devkit.sh weekly-report
+
+# 清理过期报告
+scripts/devkit.sh cleanup --dry-run
+scripts/devkit.sh cleanup
+```
+
+`devkit.sh` 是 `llm_agent` 工作区的统一运维入口，将分散的脚本按功能聚合为子命令，降低记忆成本。
+
+## 9. 工作区健康检查
 
 ```bash
 scripts/health-check.sh [WORKSPACE_ROOT]
@@ -254,7 +318,7 @@ scripts/health-check.sh [WORKSPACE_ROOT]
 - 检查项包括：目录结构完整性、关键文件存在性、registry 格式、subrepos 子仓可达性、脚本可执行性。
 - 输出通过/失败/警告三级状态报告。
 
-## 8. 版本管理
+## 10. 版本管理
 
 ```bash
 scripts/version-manager.sh [ACTION] [OPTIONS]

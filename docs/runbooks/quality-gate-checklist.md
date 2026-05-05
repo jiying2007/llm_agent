@@ -1,6 +1,6 @@
 # 质量门禁 Check 脚本 Runbook
 
-本 runbook 覆盖 `scripts/` 目录下 11 个质量门禁检查脚本的用途、用法、通过标准与失败排查。
+本 runbook 覆盖 `scripts/` 目录下 10 个质量门禁检查脚本的用途、用法、通过标准与失败排查。
 
 ---
 
@@ -24,48 +24,42 @@ scripts/check-adoption-matrix-status.sh [WORKSPACE_ROOT]
 
 ---
 
-## 2. check-codex-pilot-coverage.sh
+## 2. check-codex-pilot.sh
 
-**用途**: 校验 codex pilot 报告中六类场景（新功能、缺陷修复、重构、发布收口、团队交接、上游吸收）的覆盖率。当 `pilot_full_coverage_ready=yes` 时强制全量覆盖。
+**用途**: 统一校验 codex pilot 报告的完整性。支持三种模式：`evidence`（4 个基础证据字段）、`coverage`（7 个覆盖字段 + 场景验证）、`full`（全部检查，默认）。
 
 **用法**:
 ```bash
-scripts/check-codex-pilot-coverage.sh [WORKSPACE_ROOT]
+scripts/check-codex-pilot.sh [WORKSPACE_ROOT] [MODE]
 ```
+- `MODE` 可选：`evidence` | `coverage` | `full`（默认 `full`）
 
-**通过标准**:
+**通过标准（evidence 模式）**:
 - `reports/codex-pilot-report.md` 存在。
+- 门禁证据状态节存在。
+- 以下字段值均为 `yes`：`pilot_high_risk_case_done`、`artifact_labels_complete`、`review_test_consistent`、`command_evidence_recorded`。
+
+**通过标准（coverage 模式）**:
+- 以下 7 个字段均存在于报告中：`pilot_full_coverage_ready`、`pilot_feature_delivery_done`、`pilot_bugfix_delivery_done`、`pilot_refactor_hardening_done`、`pilot_release_hardening_done`、`pilot_team_handoff_done`、`pilot_upstream_intake_done`。
 - `pilot_full_coverage_ready=yes` 时，六类场景字段均为 `yes`。
 - 每个 `yes` 场景对应章节存在，且包含 `ImplementationPlan`、`ReviewReport`、`TestReport` artifact 标签。
 - 命令级 Evidence Index 中包含对应场景的可复现命令。
 
-**失败排查**:
-- `[FAIL] scenario field not yes` → 在 pilot 报告中补齐对应场景的试跑证据。
-- `[FAIL] missing artifact tag` → 在场景章节中补充 `ImplementationPlan` / `ReviewReport` / `TestReport` 标签。
-- `[FAIL] missing command-level evidence` → 在 Evidence Index 中添加可复现命令。
-
----
-
-## 3. check-codex-pilot-evidence.sh
-
-**用途**: 校验 codex pilot 证据的基本完整性，确认关键字段值为 `yes`。
-
-**用法**:
-```bash
-scripts/check-codex-pilot-evidence.sh [WORKSPACE_ROOT]
-```
-
-**通过标准**:
-- `reports/codex-pilot-report.md` 存在。
-- 以下字段值均为 `yes`：`pilot_completed`、`evidence_artifacts_present`、`command_level_evidence`。
+**通过标准（full 模式）**: 同时满足 evidence 和 coverage 的全部通过标准。
 
 **失败排查**:
 - `[FAIL] pilot evidence key not ready: xxx=<missing/empty>` → 在 pilot 报告中找到对应字段，确认试跑已完成且证据已补充。
+- `[FAIL] pilot coverage field missing: xxx` → 在 pilot 报告中补齐对应覆盖字段。
+- `[FAIL] scenario field not yes` → 在 pilot 报告中补齐对应场景的试跑证据。
+- `[FAIL] missing artifact tag` → 在场景章节中补充 `ImplementationPlan` / `ReviewReport` / `TestReport` 标签。
+- `[FAIL] missing command-level evidence` → 在 Evidence Index 中添加可复现命令。
 - 报告不存在 → 先执行 codex 试跑并生成 `reports/codex-pilot-report.md`。
+
+> **旧脚本兼容**: `check-codex-pilot-evidence.sh` 和 `check-codex-pilot-coverage.sh` 已标记弃用，自动转发到本脚本。
 
 ---
 
-## 4. check-delivery-adopt-depth.sh
+## 3. check-delivery-adopt-depth.sh
 
 **用途**: 校验 `delivery` 类 `adopt + done` 行具备 Agent/Skill/Workflow 三层证据及 wave 任务包报告。
 
@@ -88,7 +82,7 @@ scripts/check-delivery-adopt-depth.sh [WORKSPACE_ROOT]
 
 ---
 
-## 5. check-doc-sync.sh
+## 4. check-doc-sync.sh
 
 **用途**: 校验治理文档之间的同步一致性，确保 `registry.csv`、`scripts/README.md`、`adoption-matrix.md` 之间无遗漏引用。
 
@@ -111,7 +105,7 @@ scripts/check-doc-sync.sh [WORKSPACE_ROOT]
 
 ---
 
-## 6. check-global-codex-health.sh
+## 5. check-global-codex-health.sh
 
 **用途**: 校验全局 `~/.codex` 目录的健康状态，依赖 codex control 层的 `doctor.sh`。
 
@@ -134,7 +128,7 @@ scripts/check-global-codex-health.sh [CODEX_ROOT] [PROFILE]
 
 ---
 
-## 7. check-global-codex-target-policy.sh
+## 6. check-global-codex-target-policy.sh
 
 **用途**: 确保工作区未回退到使用本地 `codex/` 目录，强制使用全局 `~/.codex` 作为运行目标。
 
@@ -154,7 +148,7 @@ scripts/check-global-codex-target-policy.sh [WORKSPACE_ROOT]
 
 ---
 
-## 8. check-observe-intake-depth.sh
+## 7. check-observe-intake-depth.sh
 
 **用途**: 校验 `observe + done` 行具备 Agent/Skill/Workflow 三层证据及 intake 任务包报告。当无 `observe+done` 行时自动通过。
 
@@ -174,7 +168,7 @@ scripts/check-observe-intake-depth.sh [WORKSPACE_ROOT]
 
 ---
 
-## 9. check-runtime-routing.sh
+## 8. check-runtime-routing.sh
 
 **用途**: 校验 `global-dev-kit` 的 runtime routing 资产完整性，同时调用 `check_profile_coherence.sh` 防止 profile 继承后重复声明。
 
@@ -196,7 +190,7 @@ scripts/check-runtime-routing.sh [WORKSPACE_ROOT]
 
 ---
 
-## 10. check-skill-metadata.sh
+## 9. check-skill-metadata.sh
 
 **用途**: 校验 `global-dev-kit` 中所有 skill 的 `SKILL.md` 元数据完整性。
 
@@ -217,7 +211,7 @@ scripts/check-skill-metadata.sh [WORKSPACE_ROOT]
 
 ---
 
-## 11. check-skill-routing-conflicts.sh
+## 10. check-skill-routing-conflicts.sh
 
 **用途**: 检测 `global-dev-kit` 中 skill 路由的 intent 关键词冲突，防止多个 skill 匹配同一意图导致歧义。
 
@@ -239,7 +233,7 @@ scripts/check-skill-routing-conflicts.sh [WORKSPACE_ROOT]
 
 ## 综合使用
 
-所有 11 个门禁均已接入 `check-gdk-harden-readiness.sh` 主链路，默认自动执行。可单独运行任一脚本进行快速定位：
+所有 10 个门禁均已接入 `check-gdk-harden-readiness.sh` 主链路，默认自动执行。可单独运行任一脚本进行快速定位：
 
 ```bash
 # 一次性运行全部门禁

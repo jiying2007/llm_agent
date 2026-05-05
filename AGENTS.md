@@ -148,6 +148,8 @@
 - 差异扫描：`scripts/diff-scan.sh`
 - 覆盖校验：`scripts/check-agents-coverage.sh`
 - 压实校验：`scripts/check-gdk-harden-readiness.sh`
+- 一键门禁：`scripts/check-all.sh`（`--quick` 跳过耗时项，`--verbose` 显示详细输出）
+- 统一入口：`scripts/devkit.sh`（`check`/`onboard`/`sync`/`diff`/`health`/`weekly-report`/`cleanup`）
 - 周报模板：`reports/weekly-change-report.template.md`
 - codex 实战模板：`reports/codex-pilot-report.template.md`
 - 新仓库接入脚本：`scripts/new-repo-onboard.sh`
