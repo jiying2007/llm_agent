@@ -199,3 +199,20 @@ scripts/check-agents-coverage.sh .
 - 检查项：
   - 子仓是否存在本地 `AGENTS.md`
   - 根 `AGENTS.md` 是否包含子仓名称
+
+## 4. 新仓库接入
+
+当有新参考仓库需要纳入 llm_agent 治理时，使用一键接入脚本：
+
+```bash
+scripts/new-repo-onboard.sh <repo-path> [--adopt|--observe|--selective|--pilot]
+```
+
+功能：
+- 自动注册到 `registry.csv`
+- 生成/追加仓库 `AGENTS.md`
+- 更新 `adoption-matrix.md`
+- 运行基础检查
+- 生成接入报告到 `reports/`
+
+详细流程参见：`docs/runbooks/new-repo-onboarding.md`

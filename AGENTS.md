@@ -150,6 +150,8 @@
 - 压实校验：`scripts/check-gdk-harden-readiness.sh`
 - 周报模板：`reports/weekly-change-report.template.md`
 - codex 实战模板：`reports/codex-pilot-report.template.md`
+- 新仓库接入脚本：`scripts/new-repo-onboard.sh`
+- 新仓库接入 Runbook：`docs/runbooks/new-repo-onboarding.md`
 
 ---
 
