@@ -152,9 +152,9 @@ if [[ "${CHECK_FULL_SUITE}" -eq 1 ]]; then
 fi
 
 if [[ "${REQUIRE_PILOT}" -eq 1 ]]; then
-  bash "${ROOT}/scripts/check-codex-pilot-evidence.sh" "${ROOT}"
+  bash "${ROOT}/scripts/check-codex-pilot.sh" "${ROOT}" evidence
   if [[ "${CHECK_PILOT_COVERAGE}" -eq 1 ]]; then
-    bash "${ROOT}/scripts/check-codex-pilot-coverage.sh" "${ROOT}"
+    bash "${ROOT}/scripts/check-codex-pilot.sh" "${ROOT}" coverage
   fi
 fi
 
