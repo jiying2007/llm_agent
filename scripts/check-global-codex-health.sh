@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+# 注意: 此脚本依赖 ~/.codex/control/scripts/doctor.sh，仅适用于有 codex control 层的环境
 
 CODEX_ROOT="${1:-$HOME/.codex}"
 PROFILE="${2:-minimal}"

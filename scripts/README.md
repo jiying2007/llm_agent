@@ -17,7 +17,18 @@ repo,group,priority,sync_mode,branch,enabled,notes,status,owner,last_reviewed_on
 
 ## 0. 阶段门禁（先压实 gdk）
 
-默认策略：先压实 `global-dev-kit`，再跟踪外部子仓更新。  
+默认策略：先压实 `global-dev-kit`，再跟踪外部子仓更新。
+
+### gdk v2.0.0 当前状态（2026-05-05）
+
+- 综合评分: 97/100
+- 全量测试: 97/97 通过
+- 意图路由: 22 条 routing 覆盖全部 28 个 core skill
+- 模板体系: 18 个模板全部填充（含使用说明）
+- Profile: 10 个，含选择指南
+- Scripts: 24 个，8 个运维命令接入 devkit.sh
+- 安装验证: ~/.codex 真实安装 10 agents + 22 skills
+- shellcheck: 已修复关键警告  
 门禁文件：`subrepos/phase-gate.env`（默认 `allow_upstream_sync=no`）。
 
 ```bash

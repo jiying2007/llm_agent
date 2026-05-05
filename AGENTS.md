@@ -63,7 +63,7 @@
 
 | 仓库 | 当前定位 | 优势 | 短板 | 主迭代方向 |
 |---|---|---|---|---|
-| `global-dev-kit` | 全局 Agent/Skill/Workflow 工程底座 | 结构清晰，命令统一，已有门禁测试 | 与外部生态桥接不足 | 做强桥接层、证据自动化、场景 runbook |
+| `global-dev-kit` | 全局 Agent/Skill/Workflow 工程底座 | 结构清晰，命令统一，routing 覆盖全 skill，97 测试全通过，~/.codex 真实安装验证 | 运维脚本可发现性待加强 | 持续迭代运维脚本与真实项目验证 |
 
 ---
 
