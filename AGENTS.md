@@ -154,6 +154,8 @@
 - codex 实战模板：`reports/codex-pilot-report.template.md`
 - 新仓库接入脚本：`scripts/new-repo-onboard.sh`
 - 新仓库接入 Runbook：`docs/runbooks/new-repo-onboarding.md`
+- CI/CD 配置：`.gitlab-ci.yml`
+- Runner 设置：`docs/setup-gitlab-runner.md`
 
 ---
 

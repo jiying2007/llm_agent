@@ -1,0 +1,89 @@
+stages:
+  - validate
+  - test
+  - report
+
+# Stage 1: validate
+validate-scripts:
+  stage: validate
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache bash
+  script:
+    - echo "检查 shell 脚本语法..."
+    - |
+      failed=0
+      for f in scripts/*.sh; do
+        if ! bash -n "$f" 2>/dev/null; then
+          echo "[FAIL] 语法错误: $f"
+          failed=1
+        fi
+      done
+      exit $failed
+  allow_failure: true
+
+validate-registry:
+  stage: validate
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache bash
+  script:
+    - echo "检查 registry.csv 格式..."
+    - |
+      line_num=0
+      while IFS=',' read -r name group priority vcs branch enabled desc status owner date policy; do
+        line_num=$((line_num + 1))
+        if [[ $line_num -eq 1 ]]; then continue; fi
+        cols=$(head -1 subrepos/registry.csv | tr ',' '\n' | wc -l)
+        actual=$(echo "$name,$group,$priority,$vcs,$branch,$enabled,$desc,$status,$owner,$date,$policy" | tr ',' '\n' | wc -l)
+        if [[ "$actual" -ne "$cols" ]]; then
+          echo "[FAIL] 行 $line_num 列数不匹配: 期望 $cols 实际 $actual"
+          exit 1
+        fi
+      done < subrepos/registry.csv
+      echo "[PASS] registry.csv 格式正确"
+  allow_failure: true
+
+# Stage 2: test
+check-coverage:
+  stage: test
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache bash
+  script:
+    - bash scripts/check-agents-coverage.sh .
+  allow_failure: true
+
+check-docs:
+  stage: test
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache bash
+  script:
+    - bash scripts/check-doc-sync.sh .
+  allow_failure: true
+
+full-check:
+  stage: test
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache bash
+  script:
+    - bash scripts/check-all.sh --quick
+  allow_failure: true
+
+# Stage 3: report
+weekly-report:
+  stage: report
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache bash
+  script:
+    - bash scripts/generate-weekly-report.sh
+  artifacts:
+    paths:
+      - reports/weekly-report-*.md
+    expire_in: 30 days
+  only:
+    - schedules
+  allow_failure: true
