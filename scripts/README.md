@@ -216,3 +216,53 @@ scripts/new-repo-onboard.sh <repo-path> [--adopt|--observe|--selective|--pilot]
 - 生成接入报告到 `reports/`
 
 详细流程参见：`docs/runbooks/new-repo-onboarding.md`
+
+## 5. 备份回滚
+
+```bash
+scripts/backup-rollback.sh [ACTION] [OPTIONS]
+```
+
+功能：
+- 提供安装资产的备份和回滚能力。
+- `backup`：创建当前 `~/.codex` 的完整备份快照。
+- `rollback`：从已有备份点恢复 `~/.codex`。
+- `list`：列出所有可用备份点。
+- 支持自动清理过期备份。
+
+## 6. 全局 codex 目标策略校验
+
+```bash
+scripts/check-global-codex-target-policy.sh [WORKSPACE_ROOT]
+```
+
+功能：
+- 确保工作区未回退到使用本地 `codex/` 目录。
+- 校验 `registry.csv` 中 codex 行的策略指向全局 `~/.codex`。
+- 已接入 `check-gdk-harden-readiness.sh` 主链路。
+
+详细排查参见：`docs/runbooks/quality-gate-checklist.md`
+
+## 7. 工作区健康检查
+
+```bash
+scripts/health-check.sh [WORKSPACE_ROOT]
+```
+
+功能：
+- 对 `llm_agent` 工作区执行综合健康检查。
+- 检查项包括：目录结构完整性、关键文件存在性、registry 格式、subrepos 子仓可达性、脚本可执行性。
+- 输出通过/失败/警告三级状态报告。
+
+## 8. 版本管理
+
+```bash
+scripts/version-manager.sh [ACTION] [OPTIONS]
+```
+
+功能：
+- 管理 `global-dev-kit` 的版本锁定和升级路径。
+- `check`：检查当前版本状态。
+- `lock`：锁定当前版本号。
+- `upgrade`：执行版本升级并验证。
+- 支持版本回退和变更日志生成。

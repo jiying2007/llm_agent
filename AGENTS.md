@@ -275,7 +275,7 @@
 ### 2026-05-02（Wave8 二次吸收）
 - 变更范围：把 observe 证据从“可引用”升级为“命令级字段可机校”；同步 Agent/Skill/Workflow 三层规则并回填矩阵证据。
 - 触发原因：继续推进“质量优先”的压实目标，避免 Evidence Index 仅停留在文本描述层。
-- 更新条目：`global-dev-kit/scripts/workflow.sh`、`global-dev-kit/scripts/check_change_governance.sh`、`global-dev-kit/tests/test_workflow.sh`、`global-dev-kit/agents/test-validation-engineer/AGENTS.md`、`global-dev-kit/agents/code-review-governor/AGENTS.md`、`global-dev-kit/skills/verification-before-completion/SKILL.md`、`global-dev-kit/skills/commit-pr-quality-gate/SKILL.md`、`global-dev-kit/docs/runbooks/evidence-index-delivery.md`、`global-dev-kit/docs/runbooks/config-baseline-governance.md`、`global-dev-kit/docs/runbooks/prompt-evolution-delivery.md`、`reports/observe-secondary-intake-packages-wave8-2026-05-02.md`、`subrepos/adoption-matrix.md`。
+- 更新条目：`global-dev-kit/scripts/workflow.sh`、`global-dev-kit/scripts/check_change_governance.sh`、`global-dev-kit/tests/test_workflow.sh`、`global-dev-kit/agents/test-validation-engineer/AGENTS.md`、`global-dev-kit/agents/code-review-governor/AGENTS.md`、`global-dev-kit/skills/verification-before-completion/SKILL.md`、`global-dev-kit/skills/commit-pr-quality-gate/SKILL.md`、`global-dev-kit/docs/runbooks/evidence-index-delivery.md`、`global-dev-kit/docs/runbooks/config-baseline-governance.md`、`global-dev-kit/docs/runbooks/prompt-evolution-delivery.md`、`reports/observe-secondary-intake-packages-wave8-2026-05-02.md（已归档至 archives/）`、`subrepos/adoption-matrix.md`。
 - 验证命令：
   - `rtk global-dev-kit/tests/test_workflow.sh`
   - `rtk global-dev-kit/tests/test_change_governance.sh`
@@ -289,7 +289,7 @@
 ### 2026-05-02（Wave9 delivery 升级）
 - 变更范围：将 `delivery` 类稳定项从 `observe` 分批升级为 `adopt`，并新增 `delivery adopt` 深度门禁脚本纳入主链路。
 - 触发原因：执行“Wave9 先升级 delivery 类”的压实目标，确保采纳决策具备机器可判定质量门禁。
-- 更新条目：`subrepos/adoption-matrix.md`、`scripts/check-delivery-adopt-depth.sh`、`scripts/check-gdk-harden-readiness.sh`、`scripts/README.md`、`reports/wave9-delivery-observe-to-adopt-2026-05-02.md`、`reports/post-freeze-kickoff-2026-05-02.md`。
+- 更新条目：`subrepos/adoption-matrix.md`、`scripts/check-delivery-adopt-depth.sh`、`scripts/check-gdk-harden-readiness.sh`、`scripts/README.md`、`reports/wave9-delivery-observe-to-adopt-2026-05-02.md（已归档至 archives/）`、`reports/post-freeze-kickoff-2026-05-02.md（已归档至 archives/）`。
 - 验证命令：
   - `rtk scripts/check-delivery-adopt-depth.sh .`
   - `rtk scripts/check-doc-sync.sh .`
@@ -301,7 +301,7 @@
 ### 2026-05-02（Wave10 全量 observe 收口）
 - 变更范围：将剩余全部稳定 `observe + done` 条目升级为 `adopt + done`，并把 observe 深度脚本调整为“无 observe 行即通过”语义。
 - 触发原因：执行“全部稳定 observe 项升级为 adopt”要求，完成本阶段 observe 队列清零。
-- 更新条目：`subrepos/adoption-matrix.md`、`scripts/check-observe-intake-depth.sh`、`scripts/README.md`、`reports/wave10-all-stable-observe-to-adopt-2026-05-02.md`、`reports/post-freeze-kickoff-2026-05-02.md`。
+- 更新条目：`subrepos/adoption-matrix.md`、`scripts/check-observe-intake-depth.sh`、`scripts/README.md`、`reports/wave10-all-stable-observe-to-adopt-2026-05-02.md（已归档至 archives/）`、`reports/post-freeze-kickoff-2026-05-02.md（已归档至 archives/）`。
 - 验证命令：
   - `rtk scripts/check-observe-intake-depth.sh .`
   - `rtk scripts/check-delivery-adopt-depth.sh .`

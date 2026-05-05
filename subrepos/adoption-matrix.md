@@ -42,4 +42,4 @@
 
 | 日期 | 来源仓库 | 类别标签 | 候选能力 | 价值 | 适配成本 | 风险 | 决策 | 验收状态 | 回灌目标 | 证据 |
 |---|---|---|---|---|---|---|---|---|---|---|
-| YYYY-MM-DD | superpowers | workflow-core | 示例：完成前验证门禁 | 高 | 中 | 低 | adopt | pending | global-dev-kit, codex | reports/weekly-change-report.md |
+
