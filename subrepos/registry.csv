@@ -24,3 +24,4 @@ skills,agent-ecosystem,P1,fetch,main,yes,skills CLI 生态,active,gdk-team,2026-
 superpowers,workflow-core,P0,fetch,main,yes,流程主干来源,active,gdk-team,2026-05-02,adopt-first
 superpowers-zh,workflow-core,P0,fetch,main,yes,中文流程增强,active,gdk-team,2026-05-02,adopt-first
 vscode-codex-settings,config,P1,fetch,main,yes,配置治理样例,active,gdk-team,2026-05-02,observe-first
+Trellis,reference,P2,pull,main,yes,知识管理工具参考仓,active,aiot03,2026-05-05,observe-first
