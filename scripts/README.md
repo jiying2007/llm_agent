@@ -330,3 +330,62 @@ scripts/version-manager.sh [ACTION] [OPTIONS]
 - `lock`：锁定当前版本号。
 - `upgrade`：执行版本升级并验证。
 - 支持版本回退和变更日志生成。
+
+## 11. 自动生成周报
+
+```bash
+scripts/generate-weekly-report.sh [WORKSPACE_ROOT]
+```
+
+功能：
+- 自动汇总最近 7 天 git 提交摘要。
+- 读取 `subrepos/registry.csv` 中 `enabled=yes` 的子仓同步状态。
+- 统计 `adoption-matrix.md` 决策分布与本周变更。
+- 运行质量门禁快速检查（health-check / matrix-status / agents-coverage）。
+- 输出报告到 `reports/weekly-report-YYYY-MM-DD.md`。
+
+建议配合 cron 定时执行：
+```bash
+# 每周五下午 6 点自动生成周报
+0 18 * * 5 cd /home/aiot03/aiot/llm_agent && bash scripts/generate-weekly-report.sh
+```
+
+## 12. 清理归档旧报告
+
+```bash
+scripts/cleanup-reports.sh [WORKSPACE_ROOT] [--dry-run] [--days N]
+```
+
+功能：
+- 将 `reports/` 中超过指定天数的 `.md` 报告移入 `reports/archive/`。
+- 保留 `.template.md` 模板文件不移动。
+- `--dry-run`：只显示会移动的文件，不实际执行。
+- `--days N`：自定义天数阈值，默认 30 天。
+
+示例：
+```bash
+# 模拟清理（查看哪些文件会被归档）
+scripts/cleanup-reports.sh . --dry-run
+
+# 清理 60 天前的报告
+scripts/cleanup-reports.sh . --days 60
+```
+
+## 13. 安装 Pre-commit Hook
+
+```bash
+scripts/install-pre-commit-hook.sh [WORKSPACE_ROOT]
+```
+
+功能：
+- 安装 git pre-commit hook 到 `.git/hooks/pre-commit`。
+- 自动备份已有 hook（`.bak.YYYYMMDDHHMMSS`）。
+
+hook 检查项：
+1. **Shell 脚本语法**：对 `scripts/*.sh` 及暂存区中的 `.sh` 文件执行 `bash -n` 语法检查。
+2. **AGENTS.md 引用文件**：检查 `AGENTS.md` 中反引号引用的 `.md/.sh/.py/.csv/.json/.yaml/.yml/.env` 文件是否存在。
+3. **registry.csv 格式**：校验表头、列数（11列）、`enabled`（yes/no）和 `status`（active/disabled）字段值。
+
+跳过 hook 检查：`git commit --no-verify`
+
+卸载 hook：`rm .git/hooks/pre-commit`
