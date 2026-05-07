@@ -1,4 +1,4 @@
-# gdk v1 冻结前检查清单（发布级）
+# adk v1 冻结前检查清单（发布级）
 
 ## 使用方式
 
@@ -23,19 +23,19 @@
   - 验证命令：`rtk scripts/check-skill-routing-conflicts.sh .`
   - 证据：
 - [ ] `manifest` 与技能目录一致
-  - 验证命令：`rtk bash global-dev-kit/scripts/validate_assets.sh --strict`
+  - 验证命令：`rtk bash agent-dev-kit/scripts/validate_assets.sh --strict`
   - 证据：
 
 ## C. 工作流与 Artifact 门禁
 
 - [ ] 工作流状态机可用（`proposed -> applied -> verified -> review-passed`）
-  - 验证命令：`rtk global-dev-kit/tests/test_workflow.sh`
+  - 验证命令：`rtk agent-dev-kit/tests/test_workflow.sh`
   - 证据：
 - [ ] `review --result` 与 `artifact:ReviewReport/TestReport` 结论一致性生效
-  - 验证命令：`rtk global-dev-kit/tests/test_workflow.sh`
+  - 验证命令：`rtk agent-dev-kit/tests/test_workflow.sh`
   - 证据：
 - [ ] 变更工件强制项齐全（proposal/design/tasks/checklist/negative-results）
-  - 验证命令：`rtk global-dev-kit/tests/test_workflow.sh`
+  - 验证命令：`rtk agent-dev-kit/tests/test_workflow.sh`
   - 证据：
 
 ## D. 治理与文档一致性门禁
@@ -52,11 +52,11 @@
 
 ## E. 回归与试跑门禁
 
-- [ ] gdk 全量测试通过
-  - 验证命令：`rtk bash global-dev-kit/tests/run_all.sh`
+- [ ] adk 全量测试通过
+  - 验证命令：`rtk bash agent-dev-kit/tests/run_all.sh`
   - 证据：
 - [ ] 压实总门禁通过（含技能/路由/文档）
-  - 验证命令：`rtk scripts/check-gdk-harden-readiness.sh .`
+  - 验证命令：`rtk scripts/check-adk-harden-readiness.sh .`
   - 证据：
 - [ ] codex 试跑证据通过（高风险场景）
   - 验证命令：`rtk scripts/check-codex-pilot-evidence.sh .`

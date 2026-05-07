@@ -22,7 +22,7 @@
 | agent-ecosystem | 6 | 0 | 0 | 6 |
 | config | 2 | 0 | 0 | 2 |
 | delivery | 4 | 0 | 0 | 4 |
-| gdk-core | 1 | 0 | 0 | 1 |
+| adk-core | 1 | 0 | 0 | 1 |
 | knowledge | 4 | 0 | 1 | 5 |
 | runtime-target | 1 | 0 | 0 | 1 |
 | skill-pool | 2 | 0 | 0 | 2 |

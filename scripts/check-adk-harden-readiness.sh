@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT="${1:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
-GDK_DIR="${ROOT}/global-dev-kit"
+ADK_DIR="${ROOT}/agent-dev-kit"
 GATE_FILE="${ROOT}/subrepos/phase-gate.env"
 AUTO_OPEN=0
 REQUIRE_PILOT=0
@@ -88,14 +88,14 @@ for arg in "${@:2}"; do
       ;;
     *)
       echo "[FAIL] unknown arg: ${arg}" >&2
-      echo "usage: scripts/check-gdk-harden-readiness.sh <root> [--open-gate] [--require-pilot] [--skip-global-codex-check] [--skip-full-suite] [--check-skill-metadata] [--check-routing-conflicts] [--check-doc-sync] [--check-matrix-status] [--check-observe-intake-depth] [--check-delivery-adopt-depth] [--check-runtime-routing] [--check-pilot-coverage] [--check-upstream-intake] [--skip-skill-metadata-check] [--skip-routing-conflicts-check] [--skip-doc-sync-check] [--skip-matrix-status-check] [--skip-observe-intake-depth-check] [--skip-delivery-adopt-depth-check] [--skip-runtime-routing-check] [--skip-pilot-coverage-check] [--skip-upstream-intake-check]" >&2
+      echo "usage: scripts/check-adk-harden-readiness.sh <root> [--open-gate] [--require-pilot] [--skip-global-codex-check] [--skip-full-suite] [--check-skill-metadata] [--check-routing-conflicts] [--check-doc-sync] [--check-matrix-status] [--check-observe-intake-depth] [--check-delivery-adopt-depth] [--check-runtime-routing] [--check-pilot-coverage] [--check-upstream-intake] [--skip-skill-metadata-check] [--skip-routing-conflicts-check] [--skip-doc-sync-check] [--skip-matrix-status-check] [--skip-observe-intake-depth-check] [--skip-delivery-adopt-depth-check] [--skip-runtime-routing-check] [--skip-pilot-coverage-check] [--skip-upstream-intake-check]" >&2
       exit 1
       ;;
   esac
 done
 
-if [[ ! -d "${GDK_DIR}" ]]; then
-  echo "[FAIL] global-dev-kit not found: ${GDK_DIR}" >&2
+if [[ ! -d "${ADK_DIR}" ]]; then
+  echo "[FAIL] agent-dev-kit not found: ${ADK_DIR}" >&2
   exit 1
 fi
 
@@ -104,15 +104,15 @@ if [[ ! -f "${GATE_FILE}" ]]; then
   exit 1
 fi
 
-echo "[INFO] check gdk harden readiness"
-echo "[INFO] gdk=${GDK_DIR}"
+echo "[INFO] check adk harden readiness"
+echo "[INFO] adk=${ADK_DIR}"
 echo "[INFO] gate=${GATE_FILE}"
 
-bash "${GDK_DIR}/scripts/validate_assets.sh" --strict
-bash "${GDK_DIR}/tests/test_optional_skills.sh"
-bash "${GDK_DIR}/tests/test_no_external_repo_refs.sh"
+bash "${ADK_DIR}/scripts/validate_assets.sh" --strict
+bash "${ADK_DIR}/tests/test_optional_skills.sh"
+bash "${ADK_DIR}/tests/test_no_external_repo_refs.sh"
 
-echo "[PASS] gdk harden baseline checks passed"
+echo "[PASS] adk harden baseline checks passed"
 
 if [[ "${CHECK_SKILL_METADATA}" -eq 1 ]]; then
   bash "${ROOT}/scripts/check-skill-metadata.sh" "${ROOT}"
@@ -147,8 +147,8 @@ if [[ "${CHECK_UPSTREAM_INTAKE}" -eq 1 ]]; then
 fi
 
 if [[ "${CHECK_FULL_SUITE}" -eq 1 ]]; then
-  bash "${GDK_DIR}/tests/run_all.sh"
-  echo "[PASS] gdk full regression suite passed"
+  bash "${ADK_DIR}/tests/run_all.sh"
+  echo "[PASS] adk full regression suite passed"
 fi
 
 if [[ "${REQUIRE_PILOT}" -eq 1 ]]; then

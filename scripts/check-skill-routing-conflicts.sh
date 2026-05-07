@@ -2,8 +2,8 @@
 set -euo pipefail
 
 ROOT="${1:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
-GDK_DIR="${ROOT}/global-dev-kit"
-MANIFEST="${GDK_DIR}/manifest.yaml"
+ADK_DIR="${ROOT}/agent-dev-kit"
+MANIFEST="${ADK_DIR}/manifest.yaml"
 
 if [[ ! -f "${MANIFEST}" ]]; then
   echo "[FAIL] manifest missing: ${MANIFEST}" >&2
@@ -46,7 +46,7 @@ append_items() {
   while IFS= read -r item; do
     [[ -z "${item}" ]] && continue
     IFS='|' read -r name path <<< "${item}"
-    file="${GDK_DIR}/${path}"
+    file="${ADK_DIR}/${path}"
     [[ -f "${file}" ]] || continue
 
     while IFS= read -r trigger; do

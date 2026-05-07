@@ -88,7 +88,7 @@ else
 ## 接入后待办
 
 - [ ] 深度分析 AGENT|SKILL|PROFILE|WORKFLOW
-- [ ] 评估对 global-dev-kit 的借鉴价值
+- [ ] 评估对 agent-dev-kit 的借鉴价值
 - [ ] 更新 adoption-matrix 决策
 AGENTSEOF
 fi
@@ -98,7 +98,7 @@ echo "[Step 3/5] 更新 adoption-matrix"
 if grep -q "${REPO_NAME}" "${MATRIX}" 2>/dev/null; then
   echo "  -> 已在 adoption-matrix 中，跳过"
 else
-  echo "| ${DATE} | ${REPO_NAME} | pending | pending | pending | pending | pending | pending | pending | global-dev-kit | pending |" >> "${MATRIX}"
+  echo "| ${DATE} | ${REPO_NAME} | pending | pending | pending | pending | pending | pending | pending | agent-dev-kit | pending |" >> "${MATRIX}"
   echo "  -> 已添加到 adoption-matrix"
 fi
 
@@ -125,10 +125,10 @@ cat > "${REPORT}" << REPORTEOF
 ## 后续步骤
 
 1. **深度分析**: 对仓库做全量 AGENT|SKILL|PROFILE|WORKFLOW 分析
-2. **评估价值**: 确定对 gdk 的借鉴点和风险
+2. **评估价值**: 确定对 adk 的借鉴点和风险
 3. **决策**: 在 adoption-matrix 中更新 decision 和 status
-4. **实装**（如 adopt）: 在 global-dev-kit 中落地借鉴点
-5. **验证**: 运行 \`scripts/check-gdk-harden-readiness.sh . --require-pilot\`
+4. **实装**（如 adopt）: 在 agent-dev-kit 中落地借鉴点
+5. **验证**: 运行 \`scripts/check-adk-harden-readiness.sh . --require-pilot\`
 REPORTEOF
 
 echo ""
@@ -145,5 +145,5 @@ echo ""
 echo "下一步:"
 echo "  1. 对 ${REPO_NAME} 做深度分析（AGENT|SKILL|PROFILE|WORKFLOW）"
 echo "  2. 更新 adoption-matrix.md 中的决策和状态"
-echo "  3. 如果决定 adopt，在 global-dev-kit 中实装借鉴点"
-echo "  4. 运行 scripts/check-gdk-harden-readiness.sh . --require-pilot 验证"
+echo "  3. 如果决定 adopt，在 agent-dev-kit 中实装借鉴点"
+echo "  4. 运行 scripts/check-adk-harden-readiness.sh . --require-pilot 验证"

@@ -2,7 +2,7 @@
 
 - 试跑日期：2026-05-02
 - 目标仓库：`~/.codex`
-- 对应 gdk 版本/分支：`global-dev-kit`（本地当前工作分支）
+- 对应 adk 版本/分支：`agent-dev-kit`（本地当前工作分支）
 - 执行人：Codex（自动化落地）
 
 ## 门禁证据状态
@@ -25,22 +25,22 @@
 1. `~/.codex` 作为全局运行目录纳入试跑目标（不再依赖当前仓库本地 `codex/`）。
 2. 阶段门禁已开启：`subrepos/phase-gate.env` 中 `allow_upstream_sync=yes`。
 3. 开门后正式执行了 `sync + diff` 增量评估（见 `weekly-change-report.md`）。
-4. 已在 `global-dev-kit` 落地 `artifact-gated-lite`：
+4. 已在 `agent-dev-kit` 落地 `artifact-gated-lite`：
    - profile：`artifact-gated-lite`
    - optional skill：`artifact-gated-lite`
    - runbook：`docs/runbooks/artifact-gated-delivery.md`
 5. 关键验证已通过：
-   - `rtk scripts/check-gdk-harden-readiness.sh . --open-gate`
+   - `rtk scripts/check-adk-harden-readiness.sh . --open-gate`
    - `rtk scripts/sync-subrepos.sh . fetch`
    - `rtk scripts/diff-scan.sh . 7 reports/weekly-change-report.md`
 6. 本轮 `adoption-matrix` 已回填（adopt/observe/reject）。
-7. 六类 codex pilot 已完成 gdk 自举试跑：新功能、缺陷修复、重构、发布收口、团队交接、上游吸收。
+7. 六类 codex pilot 已完成 adk 自举试跑：新功能、缺陷修复、重构、发布收口、团队交接、上游吸收。
 8. 生产级 pilot coverage 字段已补齐；当前 `pilot_full_coverage_ready=yes`，表示六类场景均已有可复现命令证据与 artifact 记录。
 9. 已完成一次真实 `~/.codex` 生产安装：
    - profile：`personal-core + release-hardening`
    - optional skills：`planning-execution-loop`、`skill-composition-governance`、`security-supply-chain`、`cross-team-handoff`、`artifact-gated-lite`
-   - 安装报告：`reports/gdk-install-report-2026-05-02.md`
-   - 回滚备份：`/home/aiot03/.codex/.gdk-backups/20260502T104514Z`
+   - 安装报告：`reports/adk-install-report-2026-05-02.md`
+   - 回滚备份：`/home/aiot03/.codex/.adk-backups/20260502T104514Z`
 
 ## 试跑场景 A（已完成）
 
@@ -85,12 +85,12 @@ known_issues:
 status: READY
 owner: Codex
 scope:
-- 使用 `copy` 模式安装 gdk 到 `~/.codex`
+- 使用 `copy` 模式安装 adk 到 `~/.codex`
 - 安装前备份 `agents/skills`
 - 生成安装报告并执行健康检查
 inputs:
-- global-dev-kit/manifest.yaml
-- global-dev-kit/scripts/install_assets.sh
+- agent-dev-kit/manifest.yaml
+- agent-dev-kit/scripts/install_assets.sh
 handoff_to:
 - 后续六类 pilot 场景
 
@@ -103,18 +103,18 @@ findings:
 must_fix:
 - None
 can_follow_up:
-- 六类 pilot 已完成 gdk 自举试跑；后续仍需补真实业务任务样例
+- 六类 pilot 已完成 adk 自举试跑；后续仍需补真实业务任务样例
 
 [artifact:TestReport]
 status: PASS
 owner: Codex
 tests_run:
-- `rtk bash -lc 'cd global-dev-kit && bash scripts/devkit.sh validate --strict'` -> `Validation passed. strict=1 quick=0`
-- `rtk bash -lc 'cd global-dev-kit && bash scripts/devkit.sh install --tool codex --target ~/.codex --mode copy --profile personal-core --extra-profile release-hardening --with-optional-skill planning-execution-loop --with-optional-skill skill-composition-governance --with-optional-skill security-supply-chain --with-optional-skill cross-team-handoff --with-optional-skill artifact-gated-lite --backup --install-report ../reports/gdk-install-report-2026-05-02.md --lock-version 0.3.0'` -> `backup=/home/aiot03/.codex/.gdk-backups/20260502T104514Z`
+- `rtk bash -lc 'cd agent-dev-kit && bash scripts/devkit.sh validate --strict'` -> `Validation passed. strict=1 quick=0`
+- `rtk bash -lc 'cd agent-dev-kit && bash scripts/devkit.sh install --tool codex --target ~/.codex --mode copy --profile personal-core --extra-profile release-hardening --with-optional-skill planning-execution-loop --with-optional-skill skill-composition-governance --with-optional-skill security-supply-chain --with-optional-skill cross-team-handoff --with-optional-skill artifact-gated-lite --backup --install-report ../reports/adk-install-report-2026-05-02.md --lock-version 0.3.0'` -> `backup=/home/aiot03/.codex/.adk-backups/20260502T104514Z`
 - `rtk scripts/check-global-codex-health.sh ~/.codex minimal` -> `errors=0 warnings=0`
-- `rtk scripts/check-gdk-harden-readiness.sh . --require-pilot` -> `global codex health ready`
+- `rtk scripts/check-adk-harden-readiness.sh . --require-pilot` -> `global codex health ready`
 known_issues:
-- 生产安装和六类 gdk 自举 pilot 已完成；真实业务任务样例仍需后续补充
+- 生产安装和六类 adk 自举 pilot 已完成；真实业务任务样例仍需后续补充
 
 ## 试跑场景 C：新功能交付（已完成）
 
@@ -130,8 +130,8 @@ scope:
 - 用代表性功能交付输入触发 skill routing
 - 记录命令级证据，作为新功能 delivery pilot
 inputs:
-- global-dev-kit/optional-skills/planning-execution-loop/SKILL.md
-- global-dev-kit/scripts/skill_match.sh
+- agent-dev-kit/optional-skills/planning-execution-loop/SKILL.md
+- agent-dev-kit/scripts/skill_match.sh
 handoff_to:
 - 后续真实功能开发任务默认采用计划审查与检查点闭环
 
@@ -150,14 +150,14 @@ can_follow_up:
 status: PASS
 owner: Codex
 tests_run:
-- `rtk bash -lc 'cd global-dev-kit && bash scripts/devkit.sh match --skill planning-execution-loop --scope optional-skill --text "复杂任务需要计划审查和执行检查点时"'` -> `match=true skill=planning-execution-loop`
+- `rtk bash -lc 'cd agent-dev-kit && bash scripts/devkit.sh match --skill planning-execution-loop --scope optional-skill --text "复杂任务需要计划审查和执行检查点时"'` -> `match=true skill=planning-execution-loop`
 known_issues:
 - None
 
 ## Evidence Index（命令级）
 | Command | Exit Code | Result Summary | Evidence Path | Layer | Related Artifact |
 |---|---:|---|---|---|---|
-| `rtk bash -lc 'cd global-dev-kit && bash scripts/devkit.sh match --skill planning-execution-loop --scope optional-skill --text "复杂任务需要计划审查和执行检查点时"'` | 0 | planning-execution-loop 正例触发成功 | reports/codex-pilot-report.md#试跑场景-c新功能交付已完成 | Skill | TestReport |
+| `rtk bash -lc 'cd agent-dev-kit && bash scripts/devkit.sh match --skill planning-execution-loop --scope optional-skill --text "复杂任务需要计划审查和执行检查点时"'` | 0 | planning-execution-loop 正例触发成功 | reports/codex-pilot-report.md#试跑场景-c新功能交付已完成 | Skill | TestReport |
 
 ## 试跑场景 D：缺陷修复（已完成）
 
@@ -172,8 +172,8 @@ scope:
 - 验证 `evidence_index.sh` 能写入命令、退出码、结果摘要、证据路径、层级与关联工件
 - 将缺陷修复 pilot 映射到 evidence 能力回归
 inputs:
-- global-dev-kit/scripts/evidence_index.sh
-- global-dev-kit/tests/test_evidence_index.sh
+- agent-dev-kit/scripts/evidence_index.sh
+- agent-dev-kit/tests/test_evidence_index.sh
 handoff_to:
 - 后续 bugfix 任务的 TestReport / negative-results 证据沉淀
 
@@ -192,14 +192,14 @@ can_follow_up:
 status: PASS
 owner: Codex
 tests_run:
-- `rtk bash -lc 'cd global-dev-kit && bash tests/test_evidence_index.sh'` -> `[PASS] evidence index`
+- `rtk bash -lc 'cd agent-dev-kit && bash tests/test_evidence_index.sh'` -> `[PASS] evidence index`
 known_issues:
 - None
 
 ## Evidence Index（命令级）
 | Command | Exit Code | Result Summary | Evidence Path | Layer | Related Artifact |
 |---|---:|---|---|---|---|
-| `rtk bash -lc 'cd global-dev-kit && bash tests/test_evidence_index.sh'` | 0 | Evidence Index 字段与追加逻辑回归通过 | reports/codex-pilot-report.md#试跑场景-d缺陷修复已完成 | Workflow | TestReport |
+| `rtk bash -lc 'cd agent-dev-kit && bash tests/test_evidence_index.sh'` | 0 | Evidence Index 字段与追加逻辑回归通过 | reports/codex-pilot-report.md#试跑场景-d缺陷修复已完成 | Workflow | TestReport |
 
 ## 试跑场景 E：重构压实（已完成）
 
@@ -211,11 +211,11 @@ scenario_key: pilot_refactor_hardening_done
 status: READY
 owner: Codex
 scope:
-- 执行 gdk strict validation
+- 执行 adk strict validation
 - 证明本轮新增 Agent/Skill/Workflow 资产仍满足 manifest 与结构约束
 inputs:
-- global-dev-kit/manifest.yaml
-- global-dev-kit/scripts/validate_assets.sh
+- agent-dev-kit/manifest.yaml
+- agent-dev-kit/scripts/validate_assets.sh
 handoff_to:
 - 后续较大重构前后的资产一致性门禁
 
@@ -234,14 +234,14 @@ can_follow_up:
 status: PASS
 owner: Codex
 tests_run:
-- `rtk bash -lc 'cd global-dev-kit && bash scripts/devkit.sh validate --strict'` -> `Validation passed. strict=1 quick=0`
+- `rtk bash -lc 'cd agent-dev-kit && bash scripts/devkit.sh validate --strict'` -> `Validation passed. strict=1 quick=0`
 known_issues:
 - None
 
 ## Evidence Index（命令级）
 | Command | Exit Code | Result Summary | Evidence Path | Layer | Related Artifact |
 |---|---:|---|---|---|---|
-| `rtk bash -lc 'cd global-dev-kit && bash scripts/devkit.sh validate --strict'` | 0 | strict validation 通过 | reports/codex-pilot-report.md#试跑场景-e重构压实已完成 | Agent | TestReport |
+| `rtk bash -lc 'cd agent-dev-kit && bash scripts/devkit.sh validate --strict'` | 0 | strict validation 通过 | reports/codex-pilot-report.md#试跑场景-e重构压实已完成 | Agent | TestReport |
 
 ## 试跑场景 F：发布收口（已完成）
 
@@ -257,8 +257,8 @@ scope:
 - 带入 `security-supply-chain` optional skill 与 `--lock-version 0.3.0`
 - 验证安装计划不会直接写入生产目录
 inputs:
-- global-dev-kit/scripts/install_assets.sh
-- global-dev-kit/manifest.yaml
+- agent-dev-kit/scripts/install_assets.sh
+- agent-dev-kit/manifest.yaml
 handoff_to:
 - 后续正式发布前的 dry-run 与回滚点审查
 
@@ -277,14 +277,14 @@ can_follow_up:
 status: PASS
 owner: Codex
 tests_run:
-- `rtk bash -lc 'cd global-dev-kit && bash scripts/devkit.sh install --tool codex --target /tmp/gdk-release-pilot-codex --mode copy --profile release-hardening --with-optional-skill security-supply-chain --install-report /tmp/gdk-release-pilot-install.md --lock-version 0.3.0 --dry-run'` -> `Install completed`
+- `rtk bash -lc 'cd agent-dev-kit && bash scripts/devkit.sh install --tool codex --target /tmp/adk-release-pilot-codex --mode copy --profile release-hardening --with-optional-skill security-supply-chain --install-report /tmp/adk-release-pilot-install.md --lock-version 0.3.0 --dry-run'` -> `Install completed`
 known_issues:
 - None
 
 ## Evidence Index（命令级）
 | Command | Exit Code | Result Summary | Evidence Path | Layer | Related Artifact |
 |---|---:|---|---|---|---|
-| `rtk bash -lc 'cd global-dev-kit && bash scripts/devkit.sh install --tool codex --target /tmp/gdk-release-pilot-codex --mode copy --profile release-hardening --with-optional-skill security-supply-chain --install-report /tmp/gdk-release-pilot-install.md --lock-version 0.3.0 --dry-run'` | 0 | release-hardening dry-run 安装计划通过 | reports/codex-pilot-report.md#试跑场景-f发布收口已完成 | Workflow | TestReport |
+| `rtk bash -lc 'cd agent-dev-kit && bash scripts/devkit.sh install --tool codex --target /tmp/adk-release-pilot-codex --mode copy --profile release-hardening --with-optional-skill security-supply-chain --install-report /tmp/adk-release-pilot-install.md --lock-version 0.3.0 --dry-run'` | 0 | release-hardening dry-run 安装计划通过 | reports/codex-pilot-report.md#试跑场景-f发布收口已完成 | Workflow | TestReport |
 
 ## 试跑场景 G：团队交接（已完成）
 
@@ -299,8 +299,8 @@ scope:
 - 验证 `cross-team-handoff` 在已安装 optional skills 中具备可触发入口
 - 用代表性交接输入触发 skill routing
 inputs:
-- global-dev-kit/optional-skills/cross-team-handoff/SKILL.md
-- global-dev-kit/scripts/skill_match.sh
+- agent-dev-kit/optional-skills/cross-team-handoff/SKILL.md
+- agent-dev-kit/scripts/skill_match.sh
 handoff_to:
 - 后续团队协作任务的交接清单模板
 
@@ -319,14 +319,14 @@ can_follow_up:
 status: PASS
 owner: Codex
 tests_run:
-- `rtk bash -lc 'cd global-dev-kit && bash scripts/devkit.sh match --skill cross-team-handoff --scope optional-skill --text "模块即将交接给其他团队维护"'` -> `match=true skill=cross-team-handoff`
+- `rtk bash -lc 'cd agent-dev-kit && bash scripts/devkit.sh match --skill cross-team-handoff --scope optional-skill --text "模块即将交接给其他团队维护"'` -> `match=true skill=cross-team-handoff`
 known_issues:
 - None
 
 ## Evidence Index（命令级）
 | Command | Exit Code | Result Summary | Evidence Path | Layer | Related Artifact |
 |---|---:|---|---|---|---|
-| `rtk bash -lc 'cd global-dev-kit && bash scripts/devkit.sh match --skill cross-team-handoff --scope optional-skill --text "模块即将交接给其他团队维护"'` | 0 | cross-team-handoff 正例触发成功 | reports/codex-pilot-report.md#试跑场景-g团队交接已完成 | Skill | TestReport |
+| `rtk bash -lc 'cd agent-dev-kit && bash scripts/devkit.sh match --skill cross-team-handoff --scope optional-skill --text "模块即将交接给其他团队维护"'` | 0 | cross-team-handoff 正例触发成功 | reports/codex-pilot-report.md#试跑场景-g团队交接已完成 | Skill | TestReport |
 
 ## 试跑场景 H：上游吸收（已完成）
 
@@ -372,6 +372,6 @@ known_issues:
 
 ## 下一步
 
-1. 将六类 pilot 从“gdk 自举试跑”继续推进到真实业务任务试跑。
+1. 将六类 pilot 从“adk 自举试跑”继续推进到真实业务任务试跑。
 2. 对真实业务试跑继续记录 artifact 标签、命令、退出码、review/test 一致性与 Evidence Index。
 3. 若真实业务试跑发现触发噪音或流程过重，回灌 `runtime-routing.md` 与 profile 默认组合。

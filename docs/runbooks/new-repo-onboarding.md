@@ -28,7 +28,7 @@ AI 会自动完成：克隆 → 注册 → 深度分析 → 生成报告 → 更
 
 收到新仓库候选后，先回答 3 个问题：
 
-1. **它解决什么问题？** — 必须能用一句话说清对 gdk 的借鉴价值
+1. **它解决什么问题？** — 必须能用一句话说清对 adk 的借鉴价值
 2. **它的质量如何？** — 有活跃维护？有文档？有测试？
 3. **它与现有子仓重叠吗？** — 查 registry.csv 确认无重复
 
@@ -54,7 +54,7 @@ git clone <repo-url> <repo-name>
 ```
 
 字段说明：
-- group: gdk-core / reference / ecosystem
+- group: adk-core / reference / ecosystem
 - priority: P0 / P1 / P2
 - intake_policy: adopt-first / observe-first / selective-adopt / pilot-first
 
@@ -104,8 +104,8 @@ scripts/sync-subrepos.sh . fetch
 
 ### 如果决定 adopt（采纳）
 
-1. 在 global-dev-kit 中实装借鉴点
-2. 运行 `scripts/check-gdk-harden-readiness.sh . --require-pilot`
+1. 在 agent-dev-kit 中实装借鉴点
+2. 运行 `scripts/check-adk-harden-readiness.sh . --require-pilot`
 3. 更新 adoption-matrix 状态为 done
 4. 在 reports/ 记录采纳证据
 

@@ -31,7 +31,7 @@ fi
 if [[ "${allow_sync}" != "yes" && "${FORCE}" -ne 1 ]]; then
   echo "[BLOCK] upstream diff scan disabled by phase gate" >&2
   echo "[INFO] phase=${phase_name} allow_upstream_sync=${allow_sync}" >&2
-  echo "[INFO] run scripts/check-gdk-harden-readiness.sh first" >&2
+  echo "[INFO] run scripts/check-adk-harden-readiness.sh first" >&2
   echo "[INFO] override once: scripts/diff-scan.sh . ${SINCE_DAYS} ${OUT} --force" >&2
   exit 3
 fi

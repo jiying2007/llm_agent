@@ -1,4 +1,4 @@
-# gdk v1 迁移与回滚方案（2026-05-02）
+# adk v1 迁移与回滚方案（2026-05-02）
 
 ## 1. 变更类型判定
 
@@ -7,7 +7,7 @@
 1. `subrepos/registry.csv` 字段从 7 列扩展到 11 列：
 - 旧：`repo,group,priority,sync_mode,branch,enabled,notes`
 - 新：`repo,group,priority,sync_mode,branch,enabled,notes,status,owner,last_reviewed_on,intake_policy`
-2. `check-gdk-harden-readiness` 默认新增三类强校验：
+2. `check-adk-harden-readiness` 默认新增三类强校验：
 - `check-skill-metadata`
 - `check-skill-routing-conflicts`
 - `check-doc-sync`
@@ -21,7 +21,7 @@
   - `scripts/check-skill-metadata.sh`
   - `scripts/check-skill-routing-conflicts.sh`
   - `scripts/check-doc-sync.sh`
-  - `scripts/check-gdk-harden-readiness.sh`
+  - `scripts/check-adk-harden-readiness.sh`
 - 文档同步：
   - `scripts/README.md`
   - `subrepos/adoption-matrix.md`
@@ -32,7 +32,7 @@
 
 3. 验证迁移结果
 - `rtk scripts/check-doc-sync.sh .`
-- `rtk scripts/check-gdk-harden-readiness.sh . --require-pilot`
+- `rtk scripts/check-adk-harden-readiness.sh . --require-pilot`
 
 ## 3. 回滚策略
 
@@ -41,7 +41,7 @@
 当新增门禁导致紧急阻断时，先降级到“兼容模式”：
 
 ```bash
-rtk scripts/check-gdk-harden-readiness.sh . \
+rtk scripts/check-adk-harden-readiness.sh . \
   --require-pilot \
   --skip-skill-metadata-check \
   --skip-routing-conflicts-check \
@@ -56,22 +56,22 @@ rtk scripts/check-gdk-harden-readiness.sh . \
 若需恢复到重构前脚本版本：
 
 1. 回退以下文件到上一个稳定提交：
-- `scripts/check-gdk-harden-readiness.sh`
+- `scripts/check-adk-harden-readiness.sh`
 - `scripts/diff-scan.sh`
 - `scripts/sync-subrepos.sh`
 - `scripts/check-global-codex-target-policy.sh`
 - `subrepos/registry.csv`
 - `subrepos/adoption-matrix.md`
 2. 回退后强制复验：
-- `rtk scripts/check-gdk-harden-readiness.sh . --skip-full-suite`
+- `rtk scripts/check-adk-harden-readiness.sh . --skip-full-suite`
 
 ## 4. 回滚演练记录（已执行）
 
 - 时间：2026-05-02 09:52:51 CST
 - 演练命令：
-  - `rtk scripts/check-gdk-harden-readiness.sh . --require-pilot --skip-skill-metadata-check --skip-routing-conflicts-check --skip-doc-sync-check --skip-full-suite`
+  - `rtk scripts/check-adk-harden-readiness.sh . --require-pilot --skip-skill-metadata-check --skip-routing-conflicts-check --skip-doc-sync-check --skip-full-suite`
 - 演练结果：
-  - `[PASS] gdk harden baseline checks passed`
+  - `[PASS] adk harden baseline checks passed`
   - `[PASS] codex pilot evidence ready`
   - `[PASS] global codex health ready`
 

@@ -1,8 +1,8 @@
-# llm_agent 工作区总览与 gdk 迭代依据
+# llm_agent 工作区总览与 adk 迭代依据
 
 ## 1. 文档目标
 
-`llm_agent` 的定位是长期跟踪 AI Coding 行业优秀开源实现，并把高价值实践转化为 `global-dev-kit`（gdk）可落地资产（`AGENTS`、`SKILLS`、`WORKFLOWS`）。
+`llm_agent` 的定位是长期跟踪 AI Coding 行业优秀开源实现，并把高价值实践转化为 `agent-dev-kit`（adk）可落地资产（`AGENTS`、`SKILLS`、`WORKFLOWS`）。
 
 本文件用于：
 
@@ -29,7 +29,7 @@
 | 版本发布 | 发布、release、tag、版本 | 执行发布流程 | `scripts/version-manager.sh` |
 | 健康检查 | 健康、health、状态 | 检查工作区整体健康状态 | `scripts/health-check.sh` |
 | 安装 hook | hook、pre-commit、提交检查 | 安装 git pre-commit hook | `scripts/install-pre-commit-hook.sh` |
-| 优化 gdk | 优化、改进、升级 gdk、enhance | 加载 `project-release-hardening` 技能，执行优化→验证→发布 | `global-dev-kit/scripts/devkit.sh` |
+| 优化 adk | 优化、改进、升级 adk、enhance | 加载 `project-release-hardening` 技能，执行优化→验证→发布 | `agent-dev-kit/scripts/devkit.sh` |
 
 **执行原则：**
 1. 用户说意图，AI 自动选择工具和流程
@@ -43,7 +43,7 @@
 
 ### 2.1 方法论与流程内核
 
-| 仓库 | 作用 | 主要优点 | 主要风险 | gdk 借鉴点 |
+| 仓库 | 作用 | 主要优点 | 主要风险 | adk 借鉴点 |
 |---|---|---|---|---|
 | `superpowers` | 工程流程体系 | 生命周期完整，质量门禁强 | 流程偏重 | 轻重分流 + 可降级执行 |
 | `superpowers-zh` | 中文化流程体系 | 中文可读性高 | 与上游漂移风险 | 中文表达与触发词设计 |
@@ -52,7 +52,7 @@
 
 ### 2.2 Agent / Skill 生态
 
-| 仓库 | 作用 | 主要优点 | 主要风险 | gdk 借鉴点 |
+| 仓库 | 作用 | 主要优点 | 主要风险 | adk 借鉴点 |
 |---|---|---|---|---|
 | `agency-agents-zh` | 中文角色型 agent 资产 | 角色覆盖广 | 角色过细导致维护重 | 角色矩阵与职责术语 |
 | `agent-skills` | 全流程技能资产 | 生命周期映射清晰 | 平台差异较大 | 意图路由与技能分层 |
@@ -67,7 +67,7 @@
 
 ### 2.3 质量、交付与工程实践
 
-| 仓库 | 作用 | 主要优点 | 主要风险 | gdk 借鉴点 |
+| 仓库 | 作用 | 主要优点 | 主要风险 | adk 借鉴点 |
 |---|---|---|---|---|
 | `AUBB-Server` | 后端业务样本 | 业务闭环完整 | 领域专用 | 验证证据写法 |
 | `hermes-agent` | 大型 Agent 工程 | 模块边界清晰 | 复杂度高 | 目录职责与测试入口 |
@@ -77,7 +77,7 @@
 
 ### 2.4 文档、知识与配置治理
 
-| 仓库 | 作用 | 主要优点 | 主要风险 | gdk 借鉴点 |
+| 仓库 | 作用 | 主要优点 | 主要风险 | adk 借鉴点 |
 |---|---|---|---|---|
 | `codex_doc_cn` | 文档镜像工程 | 结构一致性强 | 持续追更成本高 | 进度快照与一致性校验 |
 | `ai-coding-guide` | AI 编程实践指南 | 场景导向清晰 | 偏知识而非规范 | 场景化工作流导览 |
@@ -86,30 +86,30 @@
 | `dotfiles` | 系统配置管理 | 模块化治理成熟 | 学习门槛高 | 最小变更与基线校验 |
 | `auto-research` | 研究闭环样本 | 负结果留痕 | 适配面不一 | 复盘与归档机制 |
 
-### 2.5 gdk 基线定位
+### 2.5 adk 基线定位
 
 | 仓库 | 当前定位 | 优势 | 短板 | 主迭代方向 |
 |---|---|---|---|---|
-| `global-dev-kit` | 全局 Agent/Skill/Workflow 工程底座 | 结构清晰，routing 覆盖全 skill，97 测试全通过，~/.codex 真实安装验证 | 运维脚本可发现性待加强 | 持续迭代运维脚本与真实项目验证 |
+| `agent-dev-kit` | 全局 Agent/Skill/Workflow 工程底座 | 结构清晰，routing 覆盖全 skill，97 测试全通过，~/.codex 真实安装验证 | 运维脚本可发现性待加强 | 持续迭代运维脚本与真实项目验证 |
 
 ---
 
 ## 3. 面向 codex 项目的联动策略
 
-`gdk` 后续将实用化于全局 `~/.codex` 运行目录，执行“先落地 gdk、再在 `~/.codex` 试跑、再回灌 gdk”的双向闭环：
+`adk` 后续将实用化于全局 `~/.codex` 运行目录，执行“先落地 adk、再在 `~/.codex` 试跑、再回灌 adk”的双向闭环：
 
 1. `llm_agent`：拉取参考源，产生候选改进项。
-2. `global-dev-kit`：实现标准资产与门禁脚本。
+2. `agent-dev-kit`：实现标准资产与门禁脚本。
 3. `~/.codex`：真实场景验证（功能开发 / 缺陷修复 / 重构）。
-4. 结果回灌：把通过验证的做法升级为 gdk 默认推荐。
+4. 结果回灌：把通过验证的做法升级为 adk 默认推荐。
 
 ### 3.1 执行顺序硬约束（新增）
 
 1. 第一优先：沉淀当前参考子仓“可借鉴优点”，同时明确剔除“不可迁移缺点”。
-2. 第二优先：在 `global-dev-kit` 完成实装、验证、runbook 化（压实）。
+2. 第二优先：在 `agent-dev-kit` 完成实装、验证、runbook 化（压实）。
 3. 第三优先：仅在压实门禁通过后，才允许追踪参考子仓增量更新。
 4. 门禁控制文件：`subrepos/phase-gate.env`，默认 `allow_upstream_sync=no`。
-5. 门禁检查脚本：`scripts/check-gdk-harden-readiness.sh`。
+5. 门禁检查脚本：`scripts/check-adk-harden-readiness.sh`。
 
 ---
 
@@ -123,10 +123,10 @@
 2. 在 `subrepos/adoption-matrix.md` 记录“优点采纳/缺点摒弃”。
 3. 执行 `scripts/check-agents-coverage.sh` 校验治理覆盖。
 
-### D3-D4：gdk 压实实施
+### D3-D4：adk 压实实施
 
-1. 在 `global-dev-kit` 落地 P0 项（优先低风险高收益）。
-2. 执行 `scripts/check-gdk-harden-readiness.sh` 完成压实校验。
+1. 在 `agent-dev-kit` 落地 P0 项（优先低风险高收益）。
+2. 执行 `scripts/check-adk-harden-readiness.sh` 完成压实校验。
 
 ### D5-D7：codex 实战试跑与回灌
 
@@ -136,11 +136,11 @@
 ### D8-D10：开启增量追踪（满足门禁后）
 
 1. 开门后执行 `scripts/sync-subrepos.sh` 与 `scripts/diff-scan.sh`。
-2. 对新增候选继续走“采纳优点 + 摒弃缺点 + gdk 压实”闭环。
+2. 对新增候选继续走“采纳优点 + 摒弃缺点 + adk 压实”闭环。
 
 ### D11-D14：回灌与收口
 
-1. 将有效做法纳入 gdk 基线。
+1. 将有效做法纳入 adk 基线。
 2. 模板化、低收益项降级或淘汰。
 
 ---
@@ -149,13 +149,13 @@
 
 ### P0（立即落地）
 
-1. 统一变更单元命名与状态映射（OpenSpec + gdk）。
+1. 统一变更单元命名与状态映射（OpenSpec + adk）。
 2. 默认要求验证证据（`verify-report` / `review-report`）。
 3. 文档最小标准化（用途/命令/验证）。
 
 ### P1（中期）
 
-1. OpenSpec 与 gdk 桥接脚本化。
+1. OpenSpec 与 adk 桥接脚本化。
 2. 场景化 runbook 扩展（开发/修复/重构/发布）。
 3. 角色与技能触发矩阵精炼。
 
@@ -173,7 +173,7 @@
 - 同步脚本：`scripts/sync-subrepos.sh`
 - 差异扫描：`scripts/diff-scan.sh`
 - 覆盖校验：`scripts/check-agents-coverage.sh`
-- 压实校验：`scripts/check-gdk-harden-readiness.sh`
+- 压实校验：`scripts/check-adk-harden-readiness.sh`
 - 一键门禁：`scripts/check-all.sh`（`--quick` 跳过耗时项，`--verbose` 显示详细输出）
 - 统一入口：`scripts/devkit.sh`（`check`/`onboard`/`sync`/`diff`/`health`/`weekly-report`/`cleanup`）
 - 周报模板：`reports/weekly-change-report.template.md`
@@ -191,7 +191,7 @@
 
 1. 新增或移除任一参考子仓。
 2. 子仓出现关键流程/目录/门禁变化。
-3. gdk 或 codex 试跑结果显示“文档与行为不一致”。
+3. adk 或 codex 试跑结果显示“文档与行为不一致”。
 
 ### 7.2 维护动作
 
@@ -229,7 +229,7 @@
 
 | 版本 | 日期 | 主要变更 |
 |------|------|----------|
-| v2.0.0 | 2026-05-05 | gdk 全面优化，97/100 分，97 测试全通过 |
+| v2.0.0 | 2026-05-05 | adk 全面优化，97/100 分，97 测试全通过 |
 | v1.0.0 | 2026-05-02 | 生产级落地，~/.codex 安装验证 |
 | v0.3.0 | 2026-05-01 | 初始版本，26 子仓治理骨架 |
 

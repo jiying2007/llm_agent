@@ -2,7 +2,7 @@
 
 ## 概述
 
-本手册指导如何将 global-dev-kit 部署到生产环境。
+本手册指导如何将 agent-dev-kit 部署到生产环境。
 
 ## 前置条件
 
@@ -127,13 +127,13 @@ echo "状态: 成功" >> deploy-report.txt
 rm -rf docs/changes/test-deploy
 
 # 清理临时文件
-rm -rf /tmp/gdk-*
+rm -rf /tmp/adk-*
 ```
 
 #### 4.3 通知相关人员
 ```bash
 # 发送部署通知
-echo "global-dev-kit 1.0.0 部署完成" | mail -s "部署通知" team@example.com
+echo "agent-dev-kit 1.0.0 部署完成" | mail -s "部署通知" team@example.com
 ```
 
 ## 回滚流程
@@ -141,7 +141,7 @@ echo "global-dev-kit 1.0.0 部署完成" | mail -s "部署通知" team@example.c
 ### 1. 识别问题
 ```bash
 # 检查错误日志
-tail -100 /var/log/gdk.log
+tail -100 /var/log/adk.log
 
 # 运行健康检查
 bash scripts/health-check.sh check-all --verbose
@@ -279,8 +279,8 @@ mv backup.tar.gz.gpg /secure/backup/
 ### 3. 日志管理
 ```bash
 # 配置日志轮转
-cat > /etc/logrotate.d/gdk <<EOF
-/var/log/gdk.log {
+cat > /etc/logrotate.d/adk <<EOF
+/var/log/adk.log {
     daily
     rotate 7
     compress
@@ -396,7 +396,7 @@ CONTEXT.md
 ### 3. 日志文件
 ```bash
 # 部署日志
-/var/log/gdk.log
+/var/log/adk.log
 
 # 测试日志
 test-output.log

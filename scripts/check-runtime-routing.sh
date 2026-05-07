@@ -2,8 +2,8 @@
 set -euo pipefail
 
 ROOT="${1:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
-GDK_DIR="${ROOT}/global-dev-kit"
-MANIFEST="${GDK_DIR}/manifest.yaml"
+ADK_DIR="${ROOT}/agent-dev-kit"
+MANIFEST="${ADK_DIR}/manifest.yaml"
 
 if [[ ! -f "${MANIFEST}" ]]; then
   echo "[FAIL] manifest missing: ${MANIFEST}" >&2
@@ -33,14 +33,14 @@ done
 
 for skill in planning-execution-loop skill-composition-governance security-supply-chain; do
   require_token "  - name: ${skill}" "${MANIFEST}"
-  require_path "global-dev-kit/optional-skills/${skill}/SKILL.md"
+  require_path "agent-dev-kit/optional-skills/${skill}/SKILL.md"
 done
 
 for runbook in runtime-routing.md planning-execution-loop.md production-deployment.md upstream-intake.md compatibility-matrix.md security-supply-chain.md team-delivery.md; do
-  require_path "global-dev-kit/docs/runbooks/${runbook}"
+  require_path "agent-dev-kit/docs/runbooks/${runbook}"
 done
 
 bash "${ROOT}/scripts/check-skill-routing-conflicts.sh" "${ROOT}"
-bash "${GDK_DIR}/scripts/check_profile_coherence.sh"
+bash "${ADK_DIR}/scripts/check_profile_coherence.sh"
 
 echo "[PASS] runtime routing production assets ready"

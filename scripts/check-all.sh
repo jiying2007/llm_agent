@@ -20,7 +20,7 @@ for arg in "$@"; do
       echo "用法: $(basename "$0") [--quick] [--verbose]"
       echo ""
       echo "选项:"
-      echo "  --quick     跳过耗时脚本（check-gdk-harden-readiness.sh）"
+      echo "  --quick     跳过耗时脚本（check-adk-harden-readiness.sh）"
       echo "  --verbose   显示每个脚本的完整输出"
       echo "  --help      显示此帮助信息"
       exit 0
@@ -35,7 +35,7 @@ done
 # --- 自动发现 check-* 脚本 --------------------------------------------------
 SKIP_SCRIPTS=()
 if [[ ${QUICK_MODE} -eq 1 ]]; then
-  SKIP_SCRIPTS+=("check-gdk-harden-readiness.sh")
+  SKIP_SCRIPTS+=("check-adk-harden-readiness.sh")
 fi
 
 discover_check_scripts() {
@@ -133,7 +133,7 @@ echo "------------------------------------------"
 echo "总计: ${TOTAL}   通过: ${PASSED}   失败: ${FAILED}"
 
 if [[ ${QUICK_MODE} -eq 1 ]]; then
-  echo "提示: --quick 模式已跳过 check-gdk-harden-readiness.sh"
+  echo "提示: --quick 模式已跳过 check-adk-harden-readiness.sh"
 fi
 
 echo ""

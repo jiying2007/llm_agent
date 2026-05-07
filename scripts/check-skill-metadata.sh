@@ -2,8 +2,8 @@
 set -euo pipefail
 
 ROOT="${1:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
-GDK_DIR="${ROOT}/global-dev-kit"
-MANIFEST="${GDK_DIR}/manifest.yaml"
+ADK_DIR="${ROOT}/agent-dev-kit"
+MANIFEST="${ADK_DIR}/manifest.yaml"
 
 if [[ ! -f "${MANIFEST}" ]]; then
   echo "[FAIL] manifest missing: ${MANIFEST}" >&2
@@ -63,7 +63,7 @@ check_item() {
   local name path quality_tier file declared_name version last_updated
 
   IFS='|' read -r name path quality_tier <<< "${item}"
-  file="${GDK_DIR}/${path}"
+  file="${ADK_DIR}/${path}"
 
   if [[ -n "${seen_names[${name}]:-}" ]]; then
     echo "[FAIL] duplicate skill name across manifest sections: ${name}" >&2

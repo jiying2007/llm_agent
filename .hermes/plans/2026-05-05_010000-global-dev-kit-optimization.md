@@ -1,7 +1,7 @@
 # Global Dev Kit 完全体优化计划
 
 ## 目标
-将 global-dev-kit 从 0.3.0 版本推进到 1.0.0 完全体 release 状态，达到架构先进、功能完备、质量可靠、文档齐全、生产就绪、可扩展性强的目标。
+将 agent-dev-kit 从 0.3.0 版本推进到 1.0.0 完全体 release 状态，达到架构先进、功能完备、质量可靠、文档齐全、生产就绪、可扩展性强的目标。
 
 ## 当前状态
 - 版本：0.3.0
@@ -62,7 +62,7 @@
 **具体任务**：
 1. 分析 artifact-gated-agents 的产物标签体系
    - 提取适合嵌入式开发的标签
-   - 定义 global-dev-kit 的产物标签
+   - 定义 agent-dev-kit 的产物标签
    - 创建标签使用指南
 
 2. 在 `scripts/workflow.sh` 中实现门禁机制
@@ -122,7 +122,7 @@
 **具体任务**：
 1. 分析 OpenSpec 的 Spec 驱动流程
    - 理解 Spec 的作用和结构
-   - 设计适合 global-dev-kit 的 Spec 流程
+   - 设计适合 agent-dev-kit 的 Spec 流程
    - 创建 Spec 模板
 
 2. 建立 specs 与 changes 的关联机制
@@ -243,7 +243,7 @@
 **具体任务**：
 1. 借鉴 hermes-agent 的文档结构
    - 分析 hermes-agent 的文档组织
-   - 优化 global-dev-kit 的文档结构
+   - 优化 agent-dev-kit 的文档结构
    - 建立文档索引
 
 2. 增加使用指南和示例

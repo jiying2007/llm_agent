@@ -15,11 +15,11 @@ repo,group,priority,sync_mode,branch,enabled,notes,status,owner,last_reviewed_on
 - `last_reviewed_on`：最近复审日期（`YYYY-MM-DD`）
 - `intake_policy`：吸收策略（如 `adopt-first`、`observe-first`、`selective-adopt`、`pilot-first`）
 
-## 0. 阶段门禁（先压实 gdk）
+## 0. 阶段门禁（先压实 adk）
 
-默认策略：先压实 `global-dev-kit`，再跟踪外部子仓更新。
+默认策略：先压实 `agent-dev-kit`，再跟踪外部子仓更新。
 
-### gdk v2.0.0 当前状态（2026-05-05）
+### adk v2.0.0 当前状态（2026-05-05）
 
 - 综合评分: 97/100
 - 全量测试: 97/97 通过
@@ -33,48 +33,48 @@ repo,group,priority,sync_mode,branch,enabled,notes,status,owner,last_reviewed_on
 
 ```bash
 # 先做压实检查（严格校验 + 可选技能回归 + 外部引用门禁）
-scripts/check-gdk-harden-readiness.sh .
+scripts/check-adk-harden-readiness.sh .
 
 # 通过后自动开门（可选）
-scripts/check-gdk-harden-readiness.sh . --open-gate
+scripts/check-adk-harden-readiness.sh . --open-gate
 
 # 要求 codex 试跑证据也必须就绪（更严格）
-scripts/check-gdk-harden-readiness.sh . --require-pilot
-scripts/check-gdk-harden-readiness.sh . --require-pilot --open-gate
+scripts/check-adk-harden-readiness.sh . --require-pilot
+scripts/check-adk-harden-readiness.sh . --require-pilot --open-gate
 
 # 若临时不检查全局 ~/.codex 健康（不建议）
-scripts/check-gdk-harden-readiness.sh . --skip-global-codex-check
+scripts/check-adk-harden-readiness.sh . --skip-global-codex-check
 
-# 若临时跳过 gdk 全量回归（不建议）
-scripts/check-gdk-harden-readiness.sh . --skip-full-suite
+# 若临时跳过 adk 全量回归（不建议）
+scripts/check-adk-harden-readiness.sh . --skip-full-suite
 
 # 显式打开三类新增门禁检查（默认已开启）
-scripts/check-gdk-harden-readiness.sh . --check-skill-metadata --check-routing-conflicts --check-doc-sync
+scripts/check-adk-harden-readiness.sh . --check-skill-metadata --check-routing-conflicts --check-doc-sync
 
 # 显式打开矩阵状态检查（默认已开启）
-scripts/check-gdk-harden-readiness.sh . --check-matrix-status
+scripts/check-adk-harden-readiness.sh . --check-matrix-status
 
 # 显式打开 observe 吸收深度检查（默认已开启）
-scripts/check-gdk-harden-readiness.sh . --check-observe-intake-depth
+scripts/check-adk-harden-readiness.sh . --check-observe-intake-depth
 
 # 显式打开 delivery 采纳深度检查（默认已开启）
-scripts/check-gdk-harden-readiness.sh . --check-delivery-adopt-depth
+scripts/check-adk-harden-readiness.sh . --check-delivery-adopt-depth
 
 # 显式打开生产级路由、pilot 覆盖、上游吸收检查（默认已开启）
-scripts/check-gdk-harden-readiness.sh . --check-runtime-routing
-scripts/check-gdk-harden-readiness.sh . --check-pilot-coverage
-scripts/check-gdk-harden-readiness.sh . --check-upstream-intake
+scripts/check-adk-harden-readiness.sh . --check-runtime-routing
+scripts/check-adk-harden-readiness.sh . --check-pilot-coverage
+scripts/check-adk-harden-readiness.sh . --check-upstream-intake
 
 # 临时跳过某类新增检查（不建议）
-scripts/check-gdk-harden-readiness.sh . --skip-skill-metadata-check
-scripts/check-gdk-harden-readiness.sh . --skip-routing-conflicts-check
-scripts/check-gdk-harden-readiness.sh . --skip-doc-sync-check
-scripts/check-gdk-harden-readiness.sh . --skip-matrix-status-check
-scripts/check-gdk-harden-readiness.sh . --skip-observe-intake-depth-check
-scripts/check-gdk-harden-readiness.sh . --skip-delivery-adopt-depth-check
-scripts/check-gdk-harden-readiness.sh . --skip-runtime-routing-check
-scripts/check-gdk-harden-readiness.sh . --skip-pilot-coverage-check
-scripts/check-gdk-harden-readiness.sh . --skip-upstream-intake-check
+scripts/check-adk-harden-readiness.sh . --skip-skill-metadata-check
+scripts/check-adk-harden-readiness.sh . --skip-routing-conflicts-check
+scripts/check-adk-harden-readiness.sh . --skip-doc-sync-check
+scripts/check-adk-harden-readiness.sh . --skip-matrix-status-check
+scripts/check-adk-harden-readiness.sh . --skip-observe-intake-depth-check
+scripts/check-adk-harden-readiness.sh . --skip-delivery-adopt-depth-check
+scripts/check-adk-harden-readiness.sh . --skip-runtime-routing-check
+scripts/check-adk-harden-readiness.sh . --skip-pilot-coverage-check
+scripts/check-adk-harden-readiness.sh . --skip-upstream-intake-check
 ```
 
 若未开门，`sync-subrepos.sh` / `diff-scan.sh` 会返回 `[BLOCK]`。  
@@ -150,7 +150,7 @@ scripts/check-delivery-adopt-depth.sh .
 scripts/check-runtime-routing.sh .
 ```
 
-该脚本会同时调用 `global-dev-kit/scripts/check_profile_coherence.sh`，防止 profile 继承后重复声明 Agent/Skill 或引用漂移。
+该脚本会同时调用 `agent-dev-kit/scripts/check_profile_coherence.sh`，防止 profile 继承后重复声明 Agent/Skill 或引用漂移。
 
 上游吸收生产准入检查脚本：
 
@@ -245,7 +245,7 @@ scripts/check-global-codex-target-policy.sh [WORKSPACE_ROOT]
 功能：
 - 确保工作区未回退到使用本地 `codex/` 目录。
 - 校验 `registry.csv` 中 codex 行的策略指向全局 `~/.codex`。
-- 已接入 `check-gdk-harden-readiness.sh` 主链路。
+- 已接入 `check-adk-harden-readiness.sh` 主链路。
 
 详细排查参见：`docs/runbooks/quality-gate-checklist.md`
 
@@ -255,7 +255,7 @@ scripts/check-global-codex-target-policy.sh [WORKSPACE_ROOT]
 # 运行所有 check-* 脚本并汇总结果
 scripts/check-all.sh
 
-# 快速模式（跳过耗时的 check-gdk-harden-readiness.sh）
+# 快速模式（跳过耗时的 check-adk-harden-readiness.sh）
 scripts/check-all.sh --quick
 
 # 详细模式（显示每个脚本的完整输出）
@@ -269,7 +269,7 @@ scripts/check-all.sh --quick --verbose
 - 自动发现 `scripts/check-*.sh` 并逐个运行
 - 记录每个脚本的 PASS/FAIL 状态
 - 最后输出汇总表（脚本名 + 状态标记）
-- `--quick` 模式跳过耗时的 `check-gdk-harden-readiness.sh`
+- `--quick` 模式跳过耗时的 `check-adk-harden-readiness.sh`
 - 退出码：全部通过返回 0，否则返回 1
 
 ## 8. 统一入口 devkit.sh
@@ -325,7 +325,7 @@ scripts/version-manager.sh [ACTION] [OPTIONS]
 ```
 
 功能：
-- 管理 `global-dev-kit` 的版本锁定和升级路径。
+- 管理 `agent-dev-kit` 的版本锁定和升级路径。
 - `check`：检查当前版本状态。
 - `lock`：锁定当前版本号。
 - `upgrade`：执行版本升级并验证。

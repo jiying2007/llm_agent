@@ -23,11 +23,11 @@ awk -F'|' '
 
     if (decision == "adopt" && status == "done") {
       checked++
-      if (target !~ /global-dev-kit|codex/) {
+      if (target !~ /agent-dev-kit|codex/) {
         print "[FAIL] adopt row missing production target:" $0 > "/dev/stderr"
         failed=1
       }
-      if (evidence !~ /global-dev-kit\/|reports\/|scripts\//) {
+      if (evidence !~ /agent-dev-kit\/|reports\/|scripts\//) {
         print "[FAIL] adopt row missing local evidence:" $0 > "/dev/stderr"
         failed=1
       }

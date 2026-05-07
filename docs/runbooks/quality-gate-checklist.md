@@ -71,14 +71,14 @@ scripts/check-delivery-adopt-depth.sh [WORKSPACE_ROOT]
 **通过标准**:
 - `subrepos/adoption-matrix.md` 存在。
 - 所有 `delivery` + `adopt` + `done` 行的 `证据` 列同时包含：
-  - Agent 层证据（`global-dev-kit/agents/` 路径）
-  - Skill 层证据（`global-dev-kit/skills/` 路径）
-  - Workflow 层证据（`global-dev-kit/docs/workflows.md` 或 `global-dev-kit/scripts/workflow.sh`）
+  - Agent 层证据（`agent-dev-kit/agents/` 路径）
+  - Skill 层证据（`agent-dev-kit/skills/` 路径）
+  - Workflow 层证据（`agent-dev-kit/docs/workflows.md` 或 `agent-dev-kit/scripts/workflow.sh`）
   - Wave 报告证据（`reports/wave*-*.md`）
 
 **失败排查**:
 - `[FAIL] delivery adopt row missing xxx evidence` → 在 `subrepos/adoption-matrix.md` 对应行的 `证据` 列补充缺失的证据路径。
-- 确保 global-dev-kit 中对应的 Agent/Skill/Workflow 资产已落地。
+- 确保 agent-dev-kit 中对应的 Agent/Skill/Workflow 资产已落地。
 
 ---
 
@@ -122,7 +122,7 @@ scripts/check-global-codex-health.sh [CODEX_ROOT] [PROFILE]
 - `doctor.sh` 以指定 profile 运行返回 exit 0。
 
 **失败排查**:
-- `[FAIL] global codex dir missing` → 确认 `~/.codex` 已正确安装（运行 `global-dev-kit/scripts/install_assets.sh`）。
+- `[FAIL] global codex dir missing` → 确认 `~/.codex` 已正确安装（运行 `agent-dev-kit/scripts/install_assets.sh`）。
 - `[FAIL] doctor script missing` → 确认 codex control 层已部署，`~/.codex/control/scripts/doctor.sh` 存在。
 - doctor 运行失败 → 查看 doctor 输出，按提示修复 `~/.codex` 目录结构。
 
@@ -170,7 +170,7 @@ scripts/check-observe-intake-depth.sh [WORKSPACE_ROOT]
 
 ## 8. check-runtime-routing.sh
 
-**用途**: 校验 `global-dev-kit` 的 runtime routing 资产完整性，同时调用 `check_profile_coherence.sh` 防止 profile 继承后重复声明。
+**用途**: 校验 `agent-dev-kit` 的 runtime routing 资产完整性，同时调用 `check_profile_coherence.sh` 防止 profile 继承后重复声明。
 
 **用法**:
 ```bash
@@ -178,7 +178,7 @@ scripts/check-runtime-routing.sh [WORKSPACE_ROOT]
 ```
 
 **通过标准**:
-- `global-dev-kit/manifest.yaml` 存在。
+- `agent-dev-kit/manifest.yaml` 存在。
 - manifest 中定义的所有 skill 在 routing 中有对应条目。
 - routing 条目的 intent 关键词无冲突。
 - profile coherence 检查通过（无重复 Agent/Skill 声明）。
@@ -186,13 +186,13 @@ scripts/check-runtime-routing.sh [WORKSPACE_ROOT]
 **失败排查**:
 - `[FAIL] missing routing for skill: xxx` → 在 manifest 的 routing 部分为该 skill 添加路由条目。
 - `[FAIL] duplicate intent keyword` → 修正 routing 中冲突的 intent 关键词。
-- profile coherence 失败 → 运行 `global-dev-kit/scripts/check_profile_coherence.sh` 查看详细输出，清理重复声明。
+- profile coherence 失败 → 运行 `agent-dev-kit/scripts/check_profile_coherence.sh` 查看详细输出，清理重复声明。
 
 ---
 
 ## 9. check-skill-metadata.sh
 
-**用途**: 校验 `global-dev-kit` 中所有 skill 的 `SKILL.md` 元数据完整性。
+**用途**: 校验 `agent-dev-kit` 中所有 skill 的 `SKILL.md` 元数据完整性。
 
 **用法**:
 ```bash
@@ -200,20 +200,20 @@ scripts/check-skill-metadata.sh [WORKSPACE_ROOT]
 ```
 
 **通过标准**:
-- `global-dev-kit/manifest.yaml` 存在。
+- `agent-dev-kit/manifest.yaml` 存在。
 - manifest 中声明的每个 skill 目录下存在 `SKILL.md`。
 - 每个 `SKILL.md` 包含必填字段：`name`、`description`、`version`、`intent_keywords`、`quality_tier`。
 
 **失败排查**:
 - `[FAIL] SKILL.md missing in: xxx` → 在对应 skill 目录创建 `SKILL.md`，按模板填充。
 - `[FAIL] missing field in SKILL.md: xxx` → 在 `SKILL.md` 头部 frontmatter 补充缺失字段。
-- `[FAIL] manifest missing` → 确认 `global-dev-kit/manifest.yaml` 存在。
+- `[FAIL] manifest missing` → 确认 `agent-dev-kit/manifest.yaml` 存在。
 
 ---
 
 ## 10. check-skill-routing-conflicts.sh
 
-**用途**: 检测 `global-dev-kit` 中 skill 路由的 intent 关键词冲突，防止多个 skill 匹配同一意图导致歧义。
+**用途**: 检测 `agent-dev-kit` 中 skill 路由的 intent 关键词冲突，防止多个 skill 匹配同一意图导致歧义。
 
 **用法**:
 ```bash
@@ -221,7 +221,7 @@ scripts/check-skill-routing-conflicts.sh [WORKSPACE_ROOT]
 ```
 
 **通过标准**:
-- `global-dev-kit/manifest.yaml` 存在。
+- `agent-dev-kit/manifest.yaml` 存在。
 - 所有 skill 的 `intent_keywords` 无完全重复项。
 - 同一 quality_tier 内的 skill 不共享相同关键词。
 
@@ -233,11 +233,11 @@ scripts/check-skill-routing-conflicts.sh [WORKSPACE_ROOT]
 
 ## 综合使用
 
-所有 10 个门禁均已接入 `check-gdk-harden-readiness.sh` 主链路，默认自动执行。可单独运行任一脚本进行快速定位：
+所有 10 个门禁均已接入 `check-adk-harden-readiness.sh` 主链路，默认自动执行。可单独运行任一脚本进行快速定位：
 
 ```bash
 # 一次性运行全部门禁
-scripts/check-gdk-harden-readiness.sh . --require-pilot
+scripts/check-adk-harden-readiness.sh . --require-pilot
 
 # 单独运行某个门禁
 scripts/check-adoption-matrix-status.sh .

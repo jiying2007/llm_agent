@@ -1,4 +1,4 @@
-# global-dev-kit install report
+# agent-dev-kit install report
 
 - manifest_version: 0.3.0
 - tool: codex
@@ -8,7 +8,7 @@
 - optional_skills: planning-execution-loop skill-composition-governance security-supply-chain cross-team-handoff artifact-gated-lite
 - agents_count: 8
 - skills_count: 13
-- backup: /home/aiot03/.codex/.gdk-backups/20260502T104514Z
+- backup: /home/aiot03/.codex/.adk-backups/20260502T104514Z
 
 ## Agents
 - application-engineer

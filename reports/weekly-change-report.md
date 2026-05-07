@@ -3,7 +3,7 @@
 - 生成日期：2026-05-02
 - 扫描窗口：最近 7 天
 - 规则：仅保留 AGENTS/SKILL/README/workflow/scripts 相关变更
-- 阶段：harden-gdk
+- 阶段：harden-adk
 - 强制模式：0
 
 ## codex-cookbook
@@ -11,7 +11,7 @@
 - 分组：knowledge
 - 优先级：P1
 - 状态：active
-- owner：gdk-team
+- owner：adk-team
 - intake_policy：observe-first
 - 上次复审：2026-05-02
 - 关注说明：Codex Cookbook 实战模板
@@ -22,12 +22,12 @@
   - skills/junshi/SKILL.md
 - 建议动作：进入 adoption-matrix 评估（adopt / observe / reject）
 
-## global-dev-kit
+## agent-dev-kit
 
-- 分组：gdk-core
+- 分组：adk-core
 - 优先级：P0
 - 状态：active
-- owner：gdk-team
+- owner：adk-team
 - intake_policy：adopt-first
 - 上次复审：2026-05-02
 - 关注说明：主落地仓库
@@ -81,7 +81,7 @@
 - 分组：delivery
 - 优先级：P1
 - 状态：active
-- owner：gdk-team
+- owner：adk-team
 - intake_policy：observe-first
 - 上次复审：2026-05-02
 - 关注说明：大型 Agent 工程参考
@@ -100,7 +100,7 @@
 - 分组：agent-ecosystem
 - 优先级：P1
 - 状态：active
-- owner：gdk-team
+- owner：adk-team
 - intake_policy：observe-first
 - 上次复审：2026-05-02
 - 关注说明：团队协作能力参考
@@ -114,7 +114,7 @@
 - 分组：agent-ecosystem
 - 优先级：P2
 - 状态：active
-- owner：gdk-team
+- owner：adk-team
 - intake_policy：observe-first
 - 上次复审：2026-05-02
 - 关注说明：轻量团队技能样例
@@ -129,7 +129,7 @@
 - 分组：agent-ecosystem
 - 优先级：P1
 - 状态：active
-- owner：gdk-team
+- owner：adk-team
 - intake_policy：adopt-first
 - 上次复审：2026-05-02
 - 关注说明：可组合技能体系

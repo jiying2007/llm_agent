@@ -15,7 +15,7 @@
 ### <repo>
 
 - 变更摘要：
-- 对 gdk 的潜在收益：
+- 对 adk 的潜在收益：
 - 风险：
 - 建议决策：adopt / observe / reject
 - 证据：
