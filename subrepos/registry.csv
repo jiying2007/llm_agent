@@ -14,7 +14,7 @@ codex-cookbook,knowledge,P1,fetch,main,yes,Codex Cookbook 实战模板,active,gd
 codex-skill-spec,skill-pool,P1,fetch,main,yes,轻量技能模板,active,gdk-team,2026-05-02,observe-first
 codex_doc_cn,knowledge,P1,fetch,main,no,远程仓库不可达(Repository not found),disabled,gdk-team,2026-05-02,blocked
 dotfiles,config,P2,fetch,master,yes,环境基线管理,active,gdk-team,2026-05-02,selective-adopt
-global-dev-kit,gdk-core,P0,pull,main,yes,主落地仓库,active,gdk-team,2026-05-02,adopt-first
+agent-dev-kit,gdk-core,P0,pull,main,yes,主落地仓库,active,gdk-team,2026-05-02,adopt-first
 hermes-agent,delivery,P1,fetch,main,yes,大型 Agent 工程参考,active,gdk-team,2026-05-02,observe-first
 hermes-collaboration-skill,agent-ecosystem,P1,fetch,main,yes,团队协作能力参考,active,gdk-team,2026-05-02,observe-first
 hermes-team-skill,agent-ecosystem,P2,fetch,main,yes,轻量团队技能样例,active,gdk-team,2026-05-02,observe-first
