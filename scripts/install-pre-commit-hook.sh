@@ -122,9 +122,11 @@ if [[ -f "$REGISTRY_FILE" ]]; then
     REG_PASSED=true
 
     # 检查 header 行
-    EXPECTED_HEADER="repo,group,priority,sync_mode,branch,enabled,notes,status,owner,last_reviewed_on,intake_policy"
+    EXPECTED_HEADER="repo,group,priority,sync_mode,branch,enabled,notes,status,owner,last_reviewed_on,intake_policy,grade"
     ACTUAL_HEADER="$(head -1 "$REGISTRY_FILE")"
-    if [[ "$ACTUAL_HEADER" == "$EXPECTED_HEADER" ]]; then
+    # 兼容 11 列(旧)和 12 列(新，含 grade)
+    EXPECTED_HEADER_OLD="repo,group,priority,sync_mode,branch,enabled,notes,status,owner,last_reviewed_on,intake_policy"
+    if [[ "$ACTUAL_HEADER" == "$EXPECTED_HEADER" || "$ACTUAL_HEADER" == "$EXPECTED_HEADER_OLD" ]]; then
         pass "registry.csv 表头格式正确"
     else
         fail "registry.csv 表头不匹配"
@@ -135,21 +137,22 @@ if [[ -f "$REGISTRY_FILE" ]]; then
 
     # 检查每行列数
     LINE_NUM=1
-    EXPECTED_COLS=11
+    EXPECTED_COLS=12
+    EXPECTED_COLS_OLD=11
     while IFS= read -r line; do
         LINE_NUM=$((LINE_NUM + 1))
         [[ -z "$line" ]] && continue
         # 跳过注释行
         [[ "$line" == '#'* ]] && continue
         ACTUAL_COLS="$(echo "$line" | awk -F',' '{print NF}')"
-        if [[ "$ACTUAL_COLS" -ne "$EXPECTED_COLS" ]]; then
-            fail "registry.csv 第 ${LINE_NUM} 行: 期望 ${EXPECTED_COLS} 列，实际 ${ACTUAL_COLS} 列"
+        if [[ "$ACTUAL_COLS" -ne "$EXPECTED_COLS" && "$ACTUAL_COLS" -ne "$EXPECTED_COLS_OLD" ]]; then
+            fail "registry.csv 第 ${LINE_NUM} 行: 期望 ${EXPECTED_COLS} 或 ${EXPECTED_COLS_OLD} 列，实际 ${ACTUAL_COLS} 列"
             REG_PASSED=false
         fi
     done < <(tail -n +2 "$REGISTRY_FILE")
 
-    # 检查 enabled 字段值
-    while IFS=',' read -r repo group priority sync_mode branch enabled notes status owner last_reviewed intake_policy; do
+    # 检查 enabled 字段值 (兼容 11/12 列)
+    while IFS=',' read -r repo group priority sync_mode branch enabled notes status owner last_reviewed intake_policy grade; do
         [[ "$repo" == "repo" ]] && continue
         if [[ "$enabled" != "yes" && "$enabled" != "no" ]]; then
             fail "registry.csv: 仓库 '$repo' enabled 字段值非法: '$enabled' (应为 yes/no)"

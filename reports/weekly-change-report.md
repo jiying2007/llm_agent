@@ -1,64 +1,152 @@
 # 子仓增量变更周报
 
-- 生成日期：2026-05-02
+- 生成日期：2026-05-08
 - 扫描窗口：最近 7 天
 - 规则：仅保留 AGENTS/SKILL/README/workflow/scripts 相关变更
-- 阶段：harden-adk
+- 阶段：harden-gdk
 - 强制模式：0
-
-## codex-cookbook
-
-- 分组：knowledge
-- 优先级：P1
-- 状态：active
-- owner：adk-team
-- intake_policy：observe-first
-- 上次复审：2026-05-02
-- 关注说明：Codex Cookbook 实战模板
-- 变更文件：
-  - skills/README.md
-  - skills/junshi-fazheng/SKILL.md
-  - skills/junshi-wenchen/SKILL.md
-  - skills/junshi/SKILL.md
-- 建议动作：进入 adoption-matrix 评估（adopt / observe / reject）
 
 ## agent-dev-kit
 
-- 分组：adk-core
+- 分组：gdk-core
 - 优先级：P0
 - 状态：active
-- owner：adk-team
+- owner：gdk-team
 - intake_policy：adopt-first
 - 上次复审：2026-05-02
 - 关注说明：主落地仓库
 - 变更文件：
+  - AGENTS.md
+  - docs/changes/README.md
+  - docs/explorations/README.md
+  - docs/runbooks/README.md
+  - docs/specs/README.md
   - .github/workflows/ci.yml
   - .github/workflows/release.yml
-  - AGENTS.md
-  - README.md
-  - docs/changes/README.md
-  - docs/runbooks/README.md
+  - optional-skills/adk-artifact-gated-lite/SKILL.md
+  - optional-skills/adk-cross-team-handoff/SKILL.md
+  - optional-skills/adk-data-fetch/adk-email-imap-fetch/SKILL.md
+  - optional-skills/adk-data-fetch/adk-fetch-url-content/SKILL.md
+  - optional-skills/adk-data-fetch/SKILL.md
+  - optional-skills/adk-incident-rca-report/SKILL.md
+  - optional-skills/adk-planning-execution-loop/SKILL.md
+  - optional-skills/adk-security-supply-chain/SKILL.md
+  - optional-skills/adk-skill-composition-governance/SKILL.md
+  - optional-skills/adk-test-flakiness-triage/SKILL.md
   - optional-skills/artifact-gated-lite/SKILL.md
   - optional-skills/cross-team-handoff/SKILL.md
+  - optional-skills/data-fetch/email-imap-fetch/SKILL.md
+  - optional-skills/data-fetch/fetch-url-content/SKILL.md
+  - optional-skills/data-fetch/SKILL.md
+  - optional-skills/gdk-artifact-gated-lite/SKILL.md
+  - optional-skills/gdk-cross-team-handoff/SKILL.md
+  - optional-skills/gdk-data-fetch/gdk-email-imap-fetch/SKILL.md
+  - optional-skills/gdk-data-fetch/gdk-fetch-url-content/SKILL.md
+  - optional-skills/gdk-data-fetch/SKILL.md
+  - optional-skills/gdk-incident-rca-report/SKILL.md
+  - optional-skills/gdk-planning-execution-loop/SKILL.md
+  - optional-skills/gdk-security-supply-chain/SKILL.md
+  - optional-skills/gdk-skill-composition-governance/SKILL.md
+  - optional-skills/gdk-test-flakiness-triage/SKILL.md
   - optional-skills/incident-rca-report/SKILL.md
+  - optional-skills/planning-execution-loop/SKILL.md
+  - optional-skills/security-supply-chain/SKILL.md
+  - optional-skills/skill-composition-governance/SKILL.md
   - optional-skills/test-flakiness-triage/SKILL.md
+  - README.md
+  - scripts/auto-ops.sh
+  - scripts/backup-rollback.sh
   - scripts/catalog_assets.sh
+  - scripts/check_change_governance.sh
   - scripts/check_format.sh
+  - scripts/check_profile_coherence.sh
   - scripts/convert_assets.sh
   - scripts/devkit.sh
+  - scripts/enhanced-gate-check.sh
+  - scripts/evidence_index.sh
+  - scripts/health-check.sh
   - scripts/install_assets.sh
   - scripts/lib_manifest.sh
+  - scripts/monitoring.sh
+  - scripts/openspec_bridge.sh
+  - scripts/performance.sh
+  - scripts/quality-gate-check.sh
+  - scripts/release-manager.sh
+  - scripts/security.sh
   - scripts/skill_match.sh
   - scripts/sync_codex_assets.sh
   - scripts/validate_assets.sh
+  - scripts/version-manager.sh
   - scripts/workflow.sh
+  - skills/adk-adr-writer/SKILL.md
+  - skills/adk-bsp-porting-playbook/SKILL.md
+  - skills/adk-chinese-code-review/SKILL.md
+  - skills/adk-chinese-commit-conventions/SKILL.md
+  - skills/adk-cmake-cross-build/SKILL.md
+  - skills/adk-code-simplification/SKILL.md
+  - skills/adk-commit-pr-quality-gate/SKILL.md
+  - skills/adk-component-api-stability/SKILL.md
+  - skills/adk-context-engineering/SKILL.md
+  - skills/adk-diagnose-loop/SKILL.md
+  - skills/adk-driver-bringup-checklist/SKILL.md
+  - skills/adk-fault-injection-recovery/SKILL.md
+  - skills/adk-grill-with-docs/SKILL.md
+  - skills/adk-integration-hil-sil/SKILL.md
+  - skills/adk-interface-contract-design/SKILL.md
+  - skills/adk-interrupt-dma-patterns/SKILL.md
+  - skills/adk-performance-profiling-embedded/SKILL.md
+  - skills/adk-protocol-stack-integration/SKILL.md
+  - skills/adk-register-map-design/SKILL.md
+  - skills/adk-release-versioning/SKILL.md
+  - skills/adk-requirements-triage/SKILL.md
+  - skills/adk-rtos-task-design/SKILL.md
+  - skills/adk-static-analysis-c-cpp/SKILL.md
+  - skills/adk-systematic-debugging/SKILL.md
+  - skills/adk-task-breakdown/SKILL.md
+  - skills/adk-toolchain-debug-openocd-gdb/SKILL.md
+  - skills/adk-unit-test-embedded/SKILL.md
+  - skills/adk-verification-before-completion/SKILL.md
   - skills/adr-writer/SKILL.md
   - skills/bsp-porting-playbook/SKILL.md
+  - skills/chinese-code-review/SKILL.md
+  - skills/chinese-commit-conventions/SKILL.md
   - skills/cmake-cross-build/SKILL.md
+  - skills/code-simplification/SKILL.md
   - skills/commit-pr-quality-gate/SKILL.md
   - skills/component-api-stability/SKILL.md
+  - skills/context-engineering/SKILL.md
+  - skills/diagnose-loop/SKILL.md
   - skills/driver-bringup-checklist/SKILL.md
   - skills/fault-injection-recovery/SKILL.md
+  - skills/gdk-adr-writer/SKILL.md
+  - skills/gdk-bsp-porting-playbook/SKILL.md
+  - skills/gdk-chinese-code-review/SKILL.md
+  - skills/gdk-chinese-commit-conventions/SKILL.md
+  - skills/gdk-cmake-cross-build/SKILL.md
+  - skills/gdk-code-simplification/SKILL.md
+  - skills/gdk-commit-pr-quality-gate/SKILL.md
+  - skills/gdk-component-api-stability/SKILL.md
+  - skills/gdk-context-engineering/SKILL.md
+  - skills/gdk-diagnose-loop/SKILL.md
+  - skills/gdk-driver-bringup-checklist/SKILL.md
+  - skills/gdk-fault-injection-recovery/SKILL.md
+  - skills/gdk-grill-with-docs/SKILL.md
+  - skills/gdk-integration-hil-sil/SKILL.md
+  - skills/gdk-interface-contract-design/SKILL.md
+  - skills/gdk-interrupt-dma-patterns/SKILL.md
+  - skills/gdk-performance-profiling-embedded/SKILL.md
+  - skills/gdk-protocol-stack-integration/SKILL.md
+  - skills/gdk-register-map-design/SKILL.md
+  - skills/gdk-release-versioning/SKILL.md
+  - skills/gdk-requirements-triage/SKILL.md
+  - skills/gdk-rtos-task-design/SKILL.md
+  - skills/gdk-static-analysis-c-cpp/SKILL.md
+  - skills/gdk-systematic-debugging/SKILL.md
+  - skills/gdk-task-breakdown/SKILL.md
+  - skills/gdk-toolchain-debug-openocd-gdb/SKILL.md
+  - skills/gdk-unit-test-embedded/SKILL.md
+  - skills/gdk-verification-before-completion/SKILL.md
+  - skills/grill-with-docs/SKILL.md
   - skills/integration-hil-sil/SKILL.md
   - skills/interface-contract-design/SKILL.md
   - skills/interrupt-dma-patterns/SKILL.md
@@ -74,126 +162,7 @@
   - skills/toolchain-debug-openocd-gdb/SKILL.md
   - skills/unit-test-embedded/SKILL.md
   - skills/verification-before-completion/SKILL.md
-- 建议动作：进入 adoption-matrix 评估（adopt / observe / reject）
-
-## hermes-agent
-
-- 分组：delivery
-- 优先级：P1
-- 状态：active
-- owner：adk-team
-- intake_policy：observe-first
-- 上次复审：2026-05-02
-- 关注说明：大型 Agent 工程参考
-- 变更文件：
-  - AGENTS.md
-  - README.md
-  - scripts/build_model_catalog.py
-  - scripts/install.sh
-  - scripts/release.py
-  - skills/mlops/inference/obliteratus/SKILL.md
-  - ui-tui/README.md
-- 建议动作：进入 adoption-matrix 评估（adopt / observe / reject）
-
-## hermes-collaboration-skill
-
-- 分组：agent-ecosystem
-- 优先级：P1
-- 状态：active
-- owner：adk-team
-- intake_policy：observe-first
-- 上次复审：2026-05-02
-- 关注说明：团队协作能力参考
-- 变更文件：
-  - README.md
-  - github/workflows/ci.yml
-- 建议动作：进入 adoption-matrix 评估（adopt / observe / reject）
-
-## hermes-team-skill
-
-- 分组：agent-ecosystem
-- 优先级：P2
-- 状态：active
-- owner：adk-team
-- intake_policy：observe-first
-- 上次复审：2026-05-02
-- 关注说明：轻量团队技能样例
-- 变更文件：
-  - README.md
-  - SKILL.md
-  - scripts/project_memory_manager.py
-- 建议动作：进入 adoption-matrix 评估（adopt / observe / reject）
-
-## mattpocock-skills
-
-- 分组：agent-ecosystem
-- 优先级：P1
-- 状态：active
-- owner：adk-team
-- intake_policy：adopt-first
-- 上次复审：2026-05-02
-- 关注说明：可组合技能体系
-- 变更文件：
-  - README.md
-  - diagnose/SKILL.md
-  - diagnose/scripts/hitl-loop.template.sh
-  - scripts/link-skills.sh
-  - scripts/list-skills.sh
-  - skills/caveman/SKILL.md
-  - skills/deprecated/README.md
-  - skills/deprecated/design-an-interface/SKILL.md
-  - skills/deprecated/qa/SKILL.md
-  - skills/deprecated/request-refactor-plan/SKILL.md
-  - skills/deprecated/triage-issue/SKILL.md
-  - skills/deprecated/ubiquitous-language/SKILL.md
-  - skills/design-an-interface/SKILL.md
-  - skills/diagnose/SKILL.md
-  - skills/diagnose/scripts/hitl-loop.template.sh
-  - skills/domain-model/SKILL.md
-  - skills/edit-article/SKILL.md
-  - skills/engineering/README.md
-  - skills/engineering/diagnose/SKILL.md
-  - skills/engineering/diagnose/scripts/hitl-loop.template.sh
-  - skills/engineering/domain-model/SKILL.md
-  - skills/engineering/github-triage/SKILL.md
-  - skills/engineering/grill-with-docs/SKILL.md
-  - skills/engineering/improve-codebase-architecture/SKILL.md
-  - skills/engineering/setup-matt-pocock-skills/SKILL.md
-  - skills/engineering/tdd/SKILL.md
-  - skills/engineering/to-issues/SKILL.md
-  - skills/engineering/to-prd/SKILL.md
-  - skills/engineering/triage/SKILL.md
-  - skills/engineering/zoom-out/SKILL.md
-  - skills/git-guardrails-claude-code/SKILL.md
-  - skills/git-guardrails-claude-code/scripts/block-dangerous-git.sh
-  - skills/github-triage/SKILL.md
-  - skills/grill-me/SKILL.md
-  - skills/improve-codebase-architecture/SKILL.md
-  - skills/migrate-to-shoehorn/SKILL.md
-  - skills/misc/README.md
-  - skills/misc/git-guardrails-claude-code/SKILL.md
-  - skills/misc/git-guardrails-claude-code/scripts/block-dangerous-git.sh
-  - skills/misc/migrate-to-shoehorn/SKILL.md
-  - skills/misc/scaffold-exercises/SKILL.md
-  - skills/misc/setup-pre-commit/SKILL.md
-  - skills/obsidian-vault/SKILL.md
-  - skills/personal/README.md
-  - skills/personal/edit-article/SKILL.md
-  - skills/personal/obsidian-vault/SKILL.md
-  - skills/productivity/README.md
-  - skills/productivity/caveman/SKILL.md
-  - skills/productivity/grill-me/SKILL.md
-  - skills/productivity/write-a-skill/SKILL.md
-  - skills/qa/SKILL.md
-  - skills/request-refactor-plan/SKILL.md
-  - skills/scaffold-exercises/SKILL.md
-  - skills/setup-pre-commit/SKILL.md
-  - skills/tdd/SKILL.md
-  - skills/to-issues/SKILL.md
-  - skills/to-prd/SKILL.md
-  - skills/triage-issue/SKILL.md
-  - skills/ubiquitous-language/SKILL.md
-  - skills/write-a-skill/SKILL.md
-  - skills/zoom-out/SKILL.md
+  - templates/workflows/emergency-workflow-template.md
+  - templates/workflows/standard-workflow-template.md
 - 建议动作：进入 adoption-matrix 评估（adopt / observe / reject）
 
