@@ -95,7 +95,7 @@
 
 | 仓库 | 当前定位 | 优势 | 短板 | 主迭代方向 |
 |---|---|---|---|---|
-| `agent-dev-kit` | 全局 Agent/Skill/Workflow 工程底座 | 结构清晰，routing 覆盖全 skill，97 测试全通过，~/.codex 真实安装验证 | 运维脚本可发现性待加强 | 持续迭代运维脚本与真实项目验证 |
+| `agent-dev-kit` | 嵌入式系统开发 Agent/Skill/Workflow 工程底座 | 结构清晰，routing 覆盖全 skill，97 测试全通过，~/.codex 真实安装验证 | 运维脚本可发现性待加强 | 持续迭代运维脚本与真实项目验证 |
 
 ---
 
