@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# 安装备份和回滚脚本
+# ============================================================================
+# backup-rollback.sh — llm_agent 工作区级备份回滚
+#
+# 职责: 备份和回滚整个工作区的配置和数据
+# 特点: 功能更完整，支持多种备份场景
+# 对应: agent-dev-kit/scripts/backup-rollback.sh 是仓库内精简版
+# ============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"

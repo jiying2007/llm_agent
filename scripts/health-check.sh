@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# 健康检查脚本
+# ============================================================================
+# health-check.sh — llm_agent 工作区级健康检查
+#
+# 职责: 检查整个工作区的健康状态，包括所有子仓、脚本、配置等
+# 特点: 功能更完整，覆盖范围更广
+# 对应: agent-dev-kit/scripts/health-check.sh 是仓库内精简版
+# ============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"

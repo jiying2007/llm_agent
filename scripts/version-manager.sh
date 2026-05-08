@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# 版本锁定和升级路径脚本
+# ============================================================================
+# version-manager.sh — llm_agent 工作区级版本管理
+#
+# 职责: 管理整个工作区的版本锁定和升级路径
+# 特点: 功能更完整，支持多种版本管理场景
+# 对应: agent-dev-kit/scripts/version-manager.sh 是仓库内精简版
+# ============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
