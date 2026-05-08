@@ -239,7 +239,7 @@ ok "模式检测完成"
 # ════════════════════════════════════════════════════════════════════════════
 log "环节 7/8: AI 自动吸收..."
 
-if [[ "$MODE" != "--report-only" ]]; then
+if [[ "$REPORT_ONLY" != "true" ]]; then
     bash "$SCRIPT_DIR/auto-absorb.sh" "" --auto 2>&1 | tee -a "$REPORT_FILE" || true
     echo "" >> "$REPORT_FILE"
 fi
