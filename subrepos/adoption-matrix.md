@@ -37,6 +37,19 @@
 | 2026-05-02 | agent-dev-kit | adk-core | 压实总门禁编排（metadata/routing/doc-sync/full-suite/pilot）与发布级回归基线 | 高 | 中 | 低 | adopt | done | agent-dev-kit, codex | reports/adk-production-landing-implementation-2026-05-02.md |
 | 2026-05-02 | codex-cookbook | knowledge | Codex 实战模板与 cookbook 任务样例（经验模板已吸收，不并入 core 流程强约束） | 中 | 低 | 中 | adopt | done | agent-dev-kit | agent-dev-kit/docs/runbooks/lead-agent-convergence-delivery.md |
 | 2026-05-02 | codex_doc_cn | knowledge | 文档镜像同步机制（远端不可达，暂不吸收；解除条件：仓库恢复可访问或提供可用替代镜像） | 低 | 中 | 中 | reject | blocked | agent-dev-kit | subrepos/registry.csv |
+| 2026-05-08 | workspace | knowledge | 维护指南（日常健康检查、adk 压实检查、生产级放行检查） | 高 | 低 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/docs/runbooks/workspace-maintenance-guide.md |
+| 2026-05-08 | workspace | delivery | GitLab Runner 安装配置（Debian/RHEL/Docker 三种方式） | 中 | 低 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/docs/runbooks/gitlab-runner-setup.md |
+| 2026-05-08 | workspace | knowledge | Pilot 试跑完整证据链（六类试跑场景 artifact 记录） | 高 | 低 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/docs/runbooks/codex-pilot-evidence.md |
+| 2026-05-08 | workspace | knowledge | 27 条候选能力完整评估矩阵（含决策、验收状态、证据） | 高 | 低 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/docs/reference-adoption-matrix.md |
+| 2026-05-08 | workspace | knowledge | "道法术器"四层方法论框架（哲学→组织→战术→工具） | 高 | 低 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/docs/best-practices-cookbook.md |
+| 2026-05-08 | workspace | knowledge | 9 款工具速查表（30 秒决策矩阵 + 能力对比表） | 中 | 低 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/docs/reference/tool-cheatsheet.md |
+| 2026-05-08 | workspace | delivery | 子仓治理脚本完整使用手册（24+ 脚本用法） | 高 | 低 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/docs/runbooks/workspace-scripts-guide.md |
+| 2026-05-08 | workspace | workflow-core | 完整 Artifact 门禁协议（21 类标签、12 角色矩阵） | 高 | 低 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/docs/runbooks/artifact-gated-protocol-full.md |
+| 2026-05-08 | workspace | adk-core | 意图路由表 + 子仓清单 + 优先级门禁治理全景 | 高 | 低 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/docs/workspace-governance.md |
+| 2026-05-08 | superpowers | workflow-core | 贡献规范（94% PR 拒绝率策略） | 中 | 低 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/docs/reference/superpowers-agents.md |
+| 2026-05-08 | workspace | workflow-core | Artifact 门禁协议模式（统一标签+状态+交接） | 高 | 低 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/skills/adk-artifact-gating/SKILL.md |
+| 2026-05-08 | workspace | workflow-core | Pilot 试跑框架模式（场景+证据+门禁） | 高 | 低 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/skills/adk-pilot-framework/SKILL.md |
+| 2026-05-08 | workspace | workflow-core | 子仓接入工作流模式（扫描+分析+决策） | 高 | 低 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/skills/adk-intake-workflow/SKILL.md |
 
 ## 模板
 
