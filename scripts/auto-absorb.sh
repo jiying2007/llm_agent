@@ -186,7 +186,7 @@ main() {
     # ---- 阶段 1: 吸收 superpowers ----
     if [[ -z "$REPO_NAME" || "$REPO_NAME" == "superpowers" ]]; then
         log_info "阶段 1: 吸收 superpowers"
-        local sp_dir="$LLM_AGENT_ROOT/skills-superpowers"
+        local sp_dir="$LLM_AGENT_ROOT/superpowers"
 
         if [[ -d "$sp_dir" ]]; then
             # 吸收核心文档
@@ -194,9 +194,9 @@ main() {
                 "$GDK_ROOT/docs/reference/superpowers-agents.md" \
                 "superpowers 的 AGENTS.md 含贡献规范（94% PR 拒绝率策略）"
 
-            # 吸收 workflow 文档
-            if [[ -d "$sp_dir/docs/workflows" ]]; then
-                for wf in "$sp_dir/docs/workflows"/*.md; do
+            # 吸收 workflow 文档（commands 目录）
+            if [[ -d "$sp_dir/commands" ]]; then
+                for wf in "$sp_dir/commands"/*.md; do
                     [[ -f "$wf" ]] || continue
                     local wf_name=$(basename "$wf" .md)
                     absorb_file "$wf" \
@@ -205,14 +205,28 @@ main() {
                 done
             fi
 
-            # 吸收 best practices
-            if [[ -d "$sp_dir/docs/best-practices" ]]; then
-                for bp in "$sp_dir/docs/best-practices"/*.md; do
-                    [[ -f "$bp" ]] || continue
-                    local bp_name=$(basename "$bp" .md)
-                    absorb_file "$bp" \
-                        "$GDK_ROOT/docs/best-practices/superpowers-$bp_name.md" \
-                        "superpowers best practice: $bp_name"
+            # 吸收 best practices（skills 目录）
+            if [[ -d "$sp_dir/skills" ]]; then
+                for skill_dir in "$sp_dir/skills"/*/; do
+                    [[ -d "$skill_dir" ]] || continue
+                    local skill_name=$(basename "$skill_dir")
+                    local skill_file="$skill_dir/SKILL.md"
+                    if [[ -f "$skill_file" ]]; then
+                        absorb_file "$skill_file" \
+                            "$GDK_ROOT/docs/best-practices/superpowers-$skill_name.md" \
+                            "superpowers skill: $skill_name"
+                    fi
+                done
+            fi
+
+            # 吸收设计规格文档
+            if [[ -d "$sp_dir/docs/superpowers/specs" ]]; then
+                for spec in "$sp_dir/docs/superpowers/specs"/*.md; do
+                    [[ -f "$spec" ]] || continue
+                    local spec_name=$(basename "$spec" .md)
+                    absorb_file "$spec" \
+                        "$GDK_ROOT/docs/specs/superpowers-$spec_name.md" \
+                        "superpowers spec: $spec_name"
                 done
             fi
         else
