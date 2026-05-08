@@ -24,6 +24,7 @@
 | 全面检查 | 检查、check、验证、门禁、健康检查 | 运行一键检查，汇总所有门禁结果 | `scripts/check-all.sh` / `scripts/devkit.sh check` |
 | 同步子仓 | 同步、sync、拉取更新、fetch | 拉取所有 enabled 子仓最新代码 | `scripts/sync-subrepos.sh` |
 | 差异扫描 | 差异、diff、变更、最近变化 | 扫描子仓近 N 天变更 | `scripts/diff-scan.sh` |
+| 深度分析 | 深度分析、拆解、analyze、prompt分析、skill拆解 | 加载 `adk-repo-prompt-analyzer` + `adk-skill-deep-analyzer` 技能，执行四阶段 Prompt 逆向 + 八阶段 Skill 深度拆解 | `scripts/analyze-repo.sh` |
 | 生成周报 | 周报、weekly report、本周汇总 | 自动生成本周变更周报 | `scripts/generate-weekly-report.sh` |
 | 清理报告 | 清理、归档、cleanup、prune | 归档过期报告 | `scripts/cleanup-reports.sh` |
 | 版本发布 | 发布、release、tag、版本 | 执行发布流程 | `scripts/version-manager.sh` |
