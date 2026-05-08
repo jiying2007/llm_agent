@@ -32,6 +32,9 @@
 | 安装 hook | hook、pre-commit、提交检查 | 安装 git pre-commit hook | `scripts/install-pre-commit-hook.sh` |
 | 一键流水线 | 流水线、pipeline、一键更新、全量更新 | 执行 8 步闭环: 同步→差异→分级→分析→采纳→模式检测→AI吸收→报告 | `scripts/pipeline-subrepo-update.sh` |
 | 优化 adk | 优化、改进、升级 adk、enhance | 加载 `project-release-hardening` 技能，执行优化→验证→发布 | `agent-dev-kit/scripts/devkit.sh` |
+| 自动吸收 | 吸收、absorb、自动吸收、提取模式 | AI 自动从参考子仓吸收高价值资产（文件/文档/模式），带审核点机制和自动备份 | `scripts/auto-absorb.sh` |
+| 备份回滚 | 备份、回滚、backup、rollback、恢复 | 创建安装备份、列出备份、恢复或回滚到指定版本 | `scripts/backup-rollback.sh` / `agent-dev-kit/scripts/backup-rollback.sh` |
+| 冻结后周期 | 冻结后、post-freeze、冻结后检查、周期执行 | 冻结后执行周期性检查：文档同步→差异扫描→采纳矩阵状态→摘要生成 | `scripts/run-post-freeze-cycle.sh` |
 
 **执行原则：**
 1. 用户说意图，AI 自动选择工具和流程
@@ -184,6 +187,10 @@
 - 新仓库接入 Runbook：`docs/runbooks/new-repo-onboarding.md`
 - CI/CD 配置：`.gitlab-ci.yml`
 - Runner 设置：`docs/setup-gitlab-runner.md`
+- AI 自动吸收脚本：`scripts/auto-absorb.sh`（`--dry-run` 只分析 / `--auto` 全自动 / `--apply` 逐项审核）
+- 备份回滚脚本：`agent-dev-kit/scripts/backup-rollback.sh`（`backup`/`restore`/`list`/`rollback`/`verify`）
+- 采纳矩阵摘要：`scripts/generate-adoption-matrix-summary.sh`（解析 `adoption-matrix.md` 生成状态汇总 + blocked 明细）
+- 冻结后周期脚本：`scripts/run-post-freeze-cycle.sh`（串联 `check-doc-sync` → `diff-scan` → `check-adoption-matrix-status` → `generate-adoption-matrix-summary`）
 
 ---
 

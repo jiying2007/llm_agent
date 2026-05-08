@@ -17,7 +17,6 @@
 - 关注说明：主落地仓库
 - 变更文件：
   - AGENTS.md
-  - docs/changes/README.md
   - docs/explorations/README.md
   - docs/runbooks/README.md
   - docs/specs/README.md
@@ -76,11 +75,11 @@
   - scripts/release-manager.sh
   - scripts/security.sh
   - scripts/skill_match.sh
-  - scripts/sync_codex_assets.sh
   - scripts/validate_assets.sh
   - scripts/version-manager.sh
   - scripts/workflow.sh
   - skills/adk-adr-writer/SKILL.md
+  - skills/adk-artifact-gating/SKILL.md
   - skills/adk-bsp-porting-playbook/SKILL.md
   - skills/adk-chinese-code-review/SKILL.md
   - skills/adk-chinese-commit-conventions/SKILL.md
@@ -93,10 +92,12 @@
   - skills/adk-driver-bringup-checklist/SKILL.md
   - skills/adk-fault-injection-recovery/SKILL.md
   - skills/adk-grill-with-docs/SKILL.md
+  - skills/adk-intake-workflow/SKILL.md
   - skills/adk-integration-hil-sil/SKILL.md
   - skills/adk-interface-contract-design/SKILL.md
   - skills/adk-interrupt-dma-patterns/SKILL.md
   - skills/adk-performance-profiling-embedded/SKILL.md
+  - skills/adk-pilot-framework/SKILL.md
   - skills/adk-protocol-stack-integration/SKILL.md
   - skills/adk-register-map-design/SKILL.md
   - skills/adk-release-versioning/SKILL.md
