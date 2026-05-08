@@ -12,7 +12,7 @@
 - 优先级：P0
 - 状态：active
 - owner：gdk-team
-- intake_policy：adopt-first
+- intake_policy：adopt-first,S
 - 上次复审：2026-05-02
 - 关注说明：主落地仓库
 - 变更文件：
@@ -53,6 +53,7 @@
   - optional-skills/security-supply-chain/SKILL.md
   - optional-skills/skill-composition-governance/SKILL.md
   - optional-skills/test-flakiness-triage/SKILL.md
+  - .out-of-scope/README.md
   - README.md
   - scripts/auto-ops.sh
   - scripts/backup-rollback.sh
@@ -60,6 +61,7 @@
   - scripts/check_change_governance.sh
   - scripts/check_format.sh
   - scripts/check_profile_coherence.sh
+  - scripts/check-terminology-consistency.sh
   - scripts/convert_assets.sh
   - scripts/devkit.sh
   - scripts/enhanced-gate-check.sh
@@ -98,8 +100,10 @@
   - skills/adk-protocol-stack-integration/SKILL.md
   - skills/adk-register-map-design/SKILL.md
   - skills/adk-release-versioning/SKILL.md
+  - skills/adk-repo-prompt-analyzer/SKILL.md
   - skills/adk-requirements-triage/SKILL.md
   - skills/adk-rtos-task-design/SKILL.md
+  - skills/adk-skill-deep-analyzer/SKILL.md
   - skills/adk-static-analysis-c-cpp/SKILL.md
   - skills/adk-systematic-debugging/SKILL.md
   - skills/adk-task-breakdown/SKILL.md

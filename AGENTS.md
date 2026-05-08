@@ -30,6 +30,7 @@
 | 版本发布 | 发布、release、tag、版本 | 执行发布流程 | `scripts/version-manager.sh` |
 | 健康检查 | 健康、health、状态 | 检查工作区整体健康状态 | `scripts/health-check.sh` |
 | 安装 hook | hook、pre-commit、提交检查 | 安装 git pre-commit hook | `scripts/install-pre-commit-hook.sh` |
+| 一键流水线 | 流水线、pipeline、一键更新、全量更新 | 执行 7 步闭环: 同步→差异→分级→分析→采纳→模式检测→报告 | `scripts/pipeline-subrepo-update.sh` |
 | 优化 adk | 优化、改进、升级 adk、enhance | 加载 `project-release-hardening` 技能，执行优化→验证→发布 | `agent-dev-kit/scripts/devkit.sh` |
 
 **执行原则：**
