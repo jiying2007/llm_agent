@@ -7,7 +7,7 @@
 `subrepos/registry.csv` 统一使用以下列：
 
 ```csv
-repo,group,priority,sync_mode,branch,enabled,notes,status,owner,last_reviewed_on,intake_policy
+repo,group,priority,sync_mode,branch,enabled,notes,status,owner,last_reviewed_on,intake_policy,grade
 ```
 
 - `status`：`active` / `disabled`
@@ -384,7 +384,7 @@ scripts/install-pre-commit-hook.sh [WORKSPACE_ROOT]
 hook 检查项：
 1. **Shell 脚本语法**：对 `scripts/*.sh` 及暂存区中的 `.sh` 文件执行 `bash -n` 语法检查。
 2. **AGENTS.md 引用文件**：检查 `AGENTS.md` 中反引号引用的 `.md/.sh/.py/.csv/.json/.yaml/.yml/.env` 文件是否存在。
-3. **registry.csv 格式**：校验表头、列数（11列）、`enabled`（yes/no）和 `status`（active/disabled）字段值。
+3. **registry.csv 格式**：校验表头、列数（12列）、`enabled`（yes/no）和 `status`（active/disabled）字段值。
 
 跳过 hook 检查：`git commit --no-verify`
 
