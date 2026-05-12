@@ -25,3 +25,4 @@ superpowers,workflow-core,P0,fetch,main,yes,流程主干来源,active,gdk-team,2
 superpowers-zh,workflow-core,P0,fetch,main,yes,中文流程增强,active,gdk-team,2026-05-02,adopt-first,A
 vscode-codex-settings,config,P1,fetch,main,no,仅3次提交; 配置样本简单; grade=C; 建议放弃,disabled,gdk-team,2026-05-02,observe-first,C
 Trellis,reference,P2,pull,main,yes,知识管理工具参考仓,active,aiot03,2026-05-05,observe-first,B
+vibeflow,workflow-core,P0,fetch,main,yes,SDD+Harness交付编排层; 36 skills覆盖全流程; Claude Code/Codex/OpenCode,active,aiot03,2026-05-12,observe-first,S
