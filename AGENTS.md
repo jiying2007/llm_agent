@@ -71,6 +71,7 @@
 | `codex-cookbook` | Codex 协作手册 | "道法术器"方法论框架，军师技能分层设计 | 仅 Codex 平台 | 分层触发与三段式写法 |
 | `Trellis` | 知识管理工具参考 | 结构化知识组织 | 领域专用 | 知识图谱与关联查询借鉴 |
 | `vibeflow` | SDD+Harness 交付编排层 | 36 skills 覆盖全流程（brainstorm→design→build→review→ship），中文文档完善 | 仅 Claude Code/Codex/OpenCode 平台 | 交付链路编排、阶段门禁、TDD 流程、复盘机制借鉴 |
+| `agent-browser` | 浏览器自动化 CLI | Rust 原生高性能，Accessibility-tree 快照 + @eN ref 交互，Chrome CDP，无需 Playwright/Puppeteer | 仅浏览器操作场景 | 浏览器自动化 skill 设计、快照压缩策略、ref 交互范式 |
 
 ### 2.3 质量、交付与工程实践
 

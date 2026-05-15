@@ -65,3 +65,34 @@
 | 日期 | 来源仓库 | 类别标签 | 候选能力 | 价值 | 适配成本 | 风险 | 决策 | 验收状态 | 回灌目标 | 证据 |
 |---|---|---|---|---|---|---|---|---|---|---|
 
+
+## agent-browser（浏览器自动化 CLI）
+
+**来源**: https://github.com/vercel-labs/agent-browser
+**版本**: v0.27.0
+**语言**: Rust
+**Stars**: 33k+
+**评估日期**: 2026-05-15
+**策略**: observe-first
+
+### 优点
+
+1. **Rust 原生高性能** — 浏览器操作延迟极低
+2. **Accessibility-tree 快照** — 用 @eN ref 交互，200-400 tokens 即可描述页面
+3. **CDP 直连** — 不依赖 Playwright/Puppeteer，更轻量
+4. **CLI 原生** — 一行命令完成 open/snapshot/click/fill/screenshot
+5. **Skills 系统** — 内置 core/slack/electron/dogfood 等技能
+6. **Chrome for Testing** — 自动下载管理浏览器版本
+
+### adk 借鉴点
+
+1. 浏览器自动化 skill 设计模式
+2. 快照压缩策略（Accessibility-tree vs raw HTML）
+3. @eN ref 交互范式
+4. CLI-first 的工具设计哲学
+
+### 当前状态
+
+- 已安装全局命令 `agent-browser`
+- 已下载 Chrome 148.0.7778.167
+- 测试通过：open/snapshot/screenshot/close
