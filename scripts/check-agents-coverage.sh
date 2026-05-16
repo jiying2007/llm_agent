@@ -4,6 +4,7 @@ set -u
 
 ROOT="${1:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 ROOT_AGENTS="${ROOT}/AGENTS.md"
+OVERLAY_DIR="${ROOT}/subrepos/agents"
 
 if [[ ! -f "${ROOT_AGENTS}" ]]; then
   echo "[ERROR] root AGENTS.md not found: ${ROOT_AGENTS}" >&2
@@ -20,7 +21,11 @@ while IFS= read -r repo; do
   [[ "${repo}" == "." || -z "${repo}" ]] && continue
 
   local_state="YES"
-  if [[ ! -e "${ROOT}/${repo}/AGENTS.md" ]]; then
+  if [[ -e "${ROOT}/${repo}/AGENTS.md" ]]; then
+    local_state="YES"
+  elif [[ -e "${OVERLAY_DIR}/${repo}.md" ]]; then
+    local_state="OVERLAY"
+  else
     local_state="NO"
     ((missing_local+=1))
   fi
@@ -42,4 +47,3 @@ if ((missing_local > 0 || missing_root > 0)); then
 fi
 
 echo "[OK] AGENTS coverage complete"
-

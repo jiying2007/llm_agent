@@ -126,6 +126,18 @@ scripts/check-skill-routing-conflicts.sh .
 scripts/check-doc-sync.sh .
 ```
 
+tracked 文件权限检查脚本：
+
+```bash
+# 检查工作区权限是否匹配 Git index：100644 不可执行，100755 可执行
+scripts/check-file-modes.sh .
+
+# 修复工作区权限漂移，不改 Git index
+scripts/check-file-modes.sh . --fix
+```
+
+该检查已接入 `scripts/check-all.sh` 和 `scripts/check-adk-harden-readiness.sh`。文档、README、manifest、skill、template 默认不应带 executable bit；`scripts/*.sh`、可直接执行的测试脚本和稳定 CLI 包装层应保持 executable bit。
+
 adoption-matrix 状态检查脚本（真实记录不得有 `pending`，`blocked` 必须写解除条件）：
 
 ```bash
@@ -206,6 +218,7 @@ scripts/check-agents-coverage.sh .
 
 - 检查项：
   - 子仓是否存在本地 `AGENTS.md`
+  - 若上游参考子仓不适合直接写入治理文件，可使用根仓托管覆盖文件 `subrepos/agents/<repo>.md`
   - 根 `AGENTS.md` 是否包含子仓名称
 
 ## 4. 新仓库接入

@@ -54,6 +54,7 @@
 | `superpowers` | 工程流程体系 | 生命周期完整，质量门禁强 | 流程偏重 | 轻重分流 + 可降级执行 |
 | `superpowers-zh` | 中文化流程体系 | 中文可读性高 | 与上游漂移风险 | 中文表达与触发词设计 |
 | `OpenSpec` | Spec 驱动工件体系 | 变更追溯清晰 | 与现有流程重叠 | 变更单元命名与状态映射 |
+| `flow-kit` | 纯 Markdown 流程包 | 跨工具引用简单、无运行时依赖 | 手工复制模式难治理 | 轻量流程入口与模板组织 |
 | `codex` | `.codex` 全局工程化管理 | 控制层结构化、profile 化 | 本地环境耦合 | `catalog + scripts + doctor` 结构借鉴 |
 
 ### 2.2 Agent / Skill 生态
@@ -70,6 +71,7 @@
 | `hermes-team-skill` | Hermes 升级包 | 部署路径直接 | 资产颗粒偏粗 | 快速接入模板与脚本交付 |
 | `codex-cookbook` | Codex 协作手册 | "道法术器"方法论框架，军师技能分层设计 | 仅 Codex 平台 | 分层触发与三段式写法 |
 | `Trellis` | 知识管理工具参考 | 结构化知识组织 | 领域专用 | 知识图谱与关联查询借鉴 |
+| `superpowers-openspec-team-skills` | Superpowers + OpenSpec 团队技能包 | explicit opt-in、记忆闭环、团队工作流分层清晰 | 直接安装易绕过 adk 压实链路 | 显式触发、记忆模板、OpenSpec 协同边界 |
 | `vibeflow` | SDD+Harness 交付编排层 | 36 skills 覆盖全流程（brainstorm→design→build→review→ship），中文文档完善 | 仅 Claude Code/Codex/OpenCode 平台 | 交付链路编排、阶段门禁、TDD 流程、复盘机制借鉴 |
 | `agent-browser` | 浏览器自动化 CLI | Rust 原生高性能，Accessibility-tree 快照 + @eN ref 交互，Chrome CDP，无需 Playwright/Puppeteer | 仅浏览器操作场景 | 浏览器自动化 skill 设计、快照压缩策略、ref 交互范式 |
 
