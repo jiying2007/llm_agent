@@ -31,7 +31,7 @@ for profile in personal-core team-core openspec-driven large-refactor incident-r
   require_token "  ${profile}:" "${MANIFEST}"
 done
 
-for skill in planning-execution-loop skill-composition-governance security-supply-chain; do
+for skill in adk-planning-execution-loop adk-skill-composition-governance adk-security-supply-chain; do
   require_token "  - name: ${skill}" "${MANIFEST}"
   require_path "agent-dev-kit/optional-skills/${skill}/SKILL.md"
 done
@@ -41,6 +41,6 @@ for runbook in runtime-routing.md planning-execution-loop.md production-deployme
 done
 
 bash "${ROOT}/scripts/check-skill-routing-conflicts.sh" "${ROOT}"
-bash "${ADK_DIR}/scripts/check_profile_coherence.sh"
+bash "${ADK_DIR}/scripts/check-profile-coherence.sh"
 
 echo "[PASS] runtime routing production assets ready"

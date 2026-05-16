@@ -17,13 +17,14 @@
 
 ## 1. 定位
 
-`llm_agent` 是 adk 的上游治理工作区，负责三件事：
+`llm_agent` 是 adk 的上游治理工作区，负责四件事：
 
 1. 管理参考子仓清单与同步策略。
 2. 从参考子仓提炼可采纳实践，并记录采纳/观察/拒绝原因。
-3. 推动 `agent-dev-kit` 落地、验证、部署到 `~/.codex`，再把真实运行结果回灌。
+3. 推动 `agent-dev-kit` 落地、验证，并导出可交接资产。
+4. 将 adk 资产交给 `~/codex` 作为声明式 Codex Home 源，再由 `~/codex` build/apply 到 `~/.codex`，最后把真实运行结果回灌。
 
-不推荐在 `llm_agent` 中直接改 `~/.codex` 运行资产。生产运行资产应由 `agent-dev-kit/scripts/devkit.sh install` 生成，并由报告记录版本、profile、optional skill、备份路径和健康检查结果。
+不推荐在 `llm_agent` 中直接改 `~/.codex` 运行资产。生产运行资产应先由 `agent-dev-kit` 导出，经 `~/codex` 注册到 `src/codex-home/` 与 `manifests/`，再由 `~/codex/scripts/build.sh` 和 `~/codex/scripts/apply.sh` 注入 `~/.codex`。报告需记录 adk 版本、profile、optional skill、`~/codex` build/apply 证据和 `~/.codex` 健康检查结果。
 
 ## 2. 目录职责
 
@@ -35,7 +36,8 @@
 | `subrepos/phase-gate.env` | 是否允许追踪上游更新 | 默认先压实 adk，再开门同步 |
 | `scripts/` | 治理、同步、门禁脚本 | 新脚本必须写入 `scripts/README.md` |
 | `reports/` | pilot、安装、周报、wave 记录 | 生产结论必须有报告证据 |
-| `agent-dev-kit/` | adk 源资产与测试 | 所有生产能力最终在这里压实 |
+| `agent-dev-kit/` | adk 源资产与测试 | 所有候选能力先在这里压实并导出 |
+| `~/codex` | 本机 Codex CLI 声明式资产仓库 | 吸收 adk 资产，执行 build/doctor/apply，再影响 `~/.codex` |
 
 ## 3. 维护流程
 
@@ -64,7 +66,7 @@ rtk scripts/check-adk-harden-readiness.sh .
 rtk scripts/check-adk-harden-readiness.sh . --require-pilot
 ```
 
-适用场景：准备声明 adk 可用于 `~/.codex` 生产运行，或准备重新部署到 `~/.codex`。
+适用场景：准备声明 adk 可进入 `~/codex` 生产分发链路，或准备由 `~/codex` 重新 apply 到 `~/.codex`。
 
 该门禁会检查：
 
@@ -81,7 +83,7 @@ rtk scripts/check-adk-harden-readiness.sh . --require-pilot
 - adk full regression suite
 - codex pilot evidence
 - codex pilot coverage
-- global `~/.codex` health
+- `~/codex` build/apply 证据与 global `~/.codex` health
 
 ### 3.4 参考子仓同步
 
@@ -125,25 +127,29 @@ rtk scripts/check-adk-harden-readiness.sh . --require-pilot
 | profile / manifest | `rtk agent-dev-kit/tests/test_profile_coherence.sh` + `rtk agent-dev-kit/tests/run_all.sh` | 防止继承重复与未知引用 |
 | install / convert 脚本 | `rtk agent-dev-kit/tests/run_all.sh` | 必须覆盖安装、转换、dry-run |
 | root 门禁脚本 | `rtk scripts/check-adk-harden-readiness.sh . --require-pilot` | 影响生产放行链路 |
-| `~/.codex` 部署 | `rtk scripts/check-adk-harden-readiness.sh . --require-pilot` + install report | 必须保留 backup |
+| `~/codex -> ~/.codex` 部署 | `rtk scripts/check-adk-harden-readiness.sh . --require-pilot` + `~/codex` apply plan / dry-run / health 证据 | 必须保留 backup |
 
 ## 5. 生产部署流程
 
-生产部署只从 `agent-dev-kit` 执行，不手工复制单个 Agent/Skill。
+生产部署不从 `agent-dev-kit` 直接写入 `~/.codex`。adk 只负责校验并导出 Codex 格式资产；`~/codex` 负责注册源资产、构建产物、生成 apply plan，并最终注入 `~/.codex`。
 
 ```bash
 rtk bash -lc "cd agent-dev-kit && bash scripts/devkit.sh validate --strict"
-rtk bash -lc "cd agent-dev-kit && bash scripts/devkit.sh install --tool codex --target ~/.codex --mode copy --profile personal-core --extra-profile release-hardening --with-optional-skill planning-execution-loop --with-optional-skill skill-composition-governance --with-optional-skill security-supply-chain --with-optional-skill cross-team-handoff --with-optional-skill artifact-gated-lite --backup --install-report ../reports/adk-install-report-$(date +%F).md --lock-version 0.3.0"
+rtk bash -lc "cd agent-dev-kit && bash scripts/devkit.sh convert --target codex --profile personal-core --extra-profile release-hardening --with-optional-skill adk-planning-execution-loop --with-optional-skill adk-skill-composition-governance --with-optional-skill adk-security-supply-chain --with-optional-skill adk-cross-team-handoff --with-optional-skill adk-artifact-gated-lite --codex-profile team-collab --out ../reports/adk-codex-handoff --clean"
+rtk bash -lc "cd agent-dev-kit && bash scripts/devkit.sh codex-handoff --codex-root ~/codex"
+rtk bash -lc "cd ~/codex && rtk bash scripts/build.sh --profile team-collab"
+rtk bash -lc "cd ~/codex && rtk bash scripts/plan.sh --target ~/.codex --output build/apply-plan.json"
+rtk bash -lc "cd ~/codex && rtk bash scripts/apply.sh --profile team-collab --dry-run"
 rtk scripts/check-global-codex-health.sh ~/.codex minimal
 rtk scripts/check-adk-harden-readiness.sh . --require-pilot
 ```
 
 生产安装纪律：
 
-- 使用 `copy`，避免 adk 工作区未提交改动影响 `~/.codex`。
-- 使用 `--backup`，生成回滚点。
-- 使用 `--install-report`，记录 profile、optional skill、数量与 backup。
-- 使用 `--lock-version`，防止误装不匹配版本。
+- adk 导出目录只作为交接输入，不直接作为 `~/.codex` 来源。
+- `~/codex` 侧必须更新源资产与 manifest，并运行 build / doctor / apply dry-run。
+- 真正写入 `~/.codex` 时由 `~/codex/scripts/apply.sh` 负责备份、覆盖策略和回滚计划。
+- 使用 adk `manifest.yaml` 版本和 `~/codex` apply plan 双重记录，防止误装不匹配版本。
 - 安装后必须跑 `check-global-codex-health.sh`。
 
 ## 6. 回滚流程
@@ -165,16 +171,17 @@ rtk scripts/check-adk-harden-readiness.sh . --require-pilot
 
 ## 7. `~/.codex/AGENTS.md` 与 adk 的关系
 
-`~/.codex/AGENTS.md` 是运行时总策略层，adk 是 Agent/Skill/Profile 资产供应层。二者不要互相替代。
+`~/codex` 是 Codex Home 的声明式资产仓库，`~/.codex/AGENTS.md` 是运行时总策略层，adk 是 Agent/Skill/Profile 资产供应层。三者不要互相替代。
 
 推荐职责边界：
 
 | 层级 | 放什么 | 不放什么 |
 |---|---|---|
+| `llm_agent/agent-dev-kit` | adk 源资产、测试、profile、runbook、导出物 | 生产运行时的临时状态 |
+| `~/codex/src/codex-home` + `~/codex/manifests` | 经治理的 Codex Home 源资产与声明式关系 | 未登记来源、未审查第三方资产 |
 | `~/.codex/AGENTS.md` | 全局行为规则、命令硬约束、沟通风格、流程升级/降级、技能路由总原则 | 大量具体 Agent/Skill 正文、参考仓细节、一次性试跑报告 |
-| `~/.codex/agents/` | adk 安装后的角色 Agent | 手工复制的第三方 Agent |
-| `~/.codex/skills/` | adk 安装后的稳定技能 + 个人已治理技能 | 未审查第三方技能 |
-| `llm_agent/agent-dev-kit` | 源资产、测试、profile、runbook | 生产运行时的临时状态 |
+| `~/.codex/agents/` | `~/codex` apply 后的运行 Agent | 手工复制的第三方 Agent |
+| `~/.codex/skills/` | `~/codex` apply 后的运行 Skill + 系统保留 skill | 未审查第三方技能 |
 | `llm_agent/reports` | 安装、pilot、回归、上游吸收证据 | 密钥或私人业务数据 |
 
 `~/.codex/AGENTS.md` 建议保留这些与 adk 配合的规则：
@@ -183,20 +190,21 @@ rtk scripts/check-adk-harden-readiness.sh . --require-pilot
 ## agent-dev-kit 配合规则
 
 - `agent-dev-kit` 是嵌入式系统开发 Agent/Skill/Profile 的生产资产来源。
-- 不手工把参考仓资产直接复制进 `~/.codex/agents` 或 `~/.codex/skills`。
-- adk 资产更新必须先在 `llm_agent/agent-dev-kit` 通过回归，再用 `scripts/devkit.sh install` 安装。
+- 不手工把参考仓资产或 adk 导出物直接复制进 `~/.codex/agents` 或 `~/.codex/skills`。
+- adk 资产更新必须先在 `llm_agent/agent-dev-kit` 通过回归，再交给 `~/codex` 注册、build、doctor 和 apply。
 - 长任务优先使用 `planning-execution-loop`。
 - 多技能冲突时以 `skill-composition-governance` 判定 primary/supporting/fallback。
 - 第三方技能、脚本或参考资产进入全局环境前必须使用 `security-supply-chain`。
 - 完成前必须使用 `verification-before-completion` 核对证据。
-- 涉及 `~/.codex` 生产可用性结论时，必须附 `check-global-codex-health.sh ~/.codex minimal` 证据。
+- 涉及 `~/.codex` 生产可用性结论时，必须同时附 `~/codex` build/apply 证据和 `check-global-codex-health.sh ~/.codex minimal` 证据。
 ```
 
-当前不建议让 adk 覆盖 `~/.codex/AGENTS.md`。原因：
+当前不建议让 adk 覆盖 `~/.codex/AGENTS.md`，也不建议绕过 `~/codex` 直接写入 `~/.codex`。原因：
 
 - `AGENTS.md` 包含个人环境硬约束，如 `rtk` 命令前缀、沟通偏好、文档目录、并行策略。
-- adk 安装器的职责是分发 `agents/` 与 `skills/`，不是替换个人全局策略。
-- 若要把 adk 的策略沉淀进 `~/.codex/AGENTS.md`，应采用“追加小节 + 人工审阅 + 健康检查”的方式。
+- `~/codex` 负责 Codex Home 源资产、manifest、build、apply 和 drift 管理。
+- adk 的职责是提供经过门禁压实的上游资产，不是替换个人全局策略或运行目录管理器。
+- 若要把 adk 的策略沉淀进 `~/.codex/AGENTS.md`，应先进入 `~/codex` 源资产，再采用“追加小节 + 人工审阅 + 健康检查”的方式。
 
 ## 8. 常见问题
 

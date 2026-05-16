@@ -17,6 +17,7 @@ CHECK_DELIVERY_ADOPT_DEPTH=1
 CHECK_RUNTIME_ROUTING=1
 CHECK_PILOT_COVERAGE=1
 CHECK_UPSTREAM_INTAKE=1
+CHECK_CODEX_HANDOFF=1
 
 for arg in "${@:2}"; do
   case "${arg}" in
@@ -59,6 +60,9 @@ for arg in "${@:2}"; do
     --check-upstream-intake)
       CHECK_UPSTREAM_INTAKE=1
       ;;
+    --check-codex-handoff)
+      CHECK_CODEX_HANDOFF=1
+      ;;
     --skip-skill-metadata-check)
       CHECK_SKILL_METADATA=0
       ;;
@@ -86,9 +90,12 @@ for arg in "${@:2}"; do
     --skip-upstream-intake-check)
       CHECK_UPSTREAM_INTAKE=0
       ;;
+    --skip-codex-handoff-check)
+      CHECK_CODEX_HANDOFF=0
+      ;;
     *)
       echo "[FAIL] unknown arg: ${arg}" >&2
-      echo "usage: scripts/check-adk-harden-readiness.sh <root> [--open-gate] [--require-pilot] [--skip-global-codex-check] [--skip-full-suite] [--check-skill-metadata] [--check-routing-conflicts] [--check-doc-sync] [--check-matrix-status] [--check-observe-intake-depth] [--check-delivery-adopt-depth] [--check-runtime-routing] [--check-pilot-coverage] [--check-upstream-intake] [--skip-skill-metadata-check] [--skip-routing-conflicts-check] [--skip-doc-sync-check] [--skip-matrix-status-check] [--skip-observe-intake-depth-check] [--skip-delivery-adopt-depth-check] [--skip-runtime-routing-check] [--skip-pilot-coverage-check] [--skip-upstream-intake-check]" >&2
+      echo "usage: scripts/check-adk-harden-readiness.sh <root> [--open-gate] [--require-pilot] [--skip-global-codex-check] [--skip-full-suite] [--check-skill-metadata] [--check-routing-conflicts] [--check-doc-sync] [--check-matrix-status] [--check-observe-intake-depth] [--check-delivery-adopt-depth] [--check-runtime-routing] [--check-pilot-coverage] [--check-upstream-intake] [--check-codex-handoff] [--skip-skill-metadata-check] [--skip-routing-conflicts-check] [--skip-doc-sync-check] [--skip-matrix-status-check] [--skip-observe-intake-depth-check] [--skip-delivery-adopt-depth-check] [--skip-runtime-routing-check] [--skip-pilot-coverage-check] [--skip-upstream-intake-check] [--skip-codex-handoff-check]" >&2
       exit 1
       ;;
   esac
@@ -108,7 +115,7 @@ echo "[INFO] check adk harden readiness"
 echo "[INFO] adk=${ADK_DIR}"
 echo "[INFO] gate=${GATE_FILE}"
 
-bash "${ADK_DIR}/scripts/validate_assets.sh" --strict
+bash "${ADK_DIR}/scripts/validate-assets.sh" --strict
 bash "${ADK_DIR}/tests/test_optional_skills.sh"
 bash "${ADK_DIR}/tests/test_no_external_repo_refs.sh"
 
@@ -144,6 +151,10 @@ fi
 
 if [[ "${CHECK_UPSTREAM_INTAKE}" -eq 1 ]]; then
   bash "${ROOT}/scripts/check-upstream-intake-readiness.sh" "${ROOT}"
+fi
+
+if [[ "${CHECK_CODEX_HANDOFF}" -eq 1 ]]; then
+  bash "${ADK_DIR}/scripts/check-codex-handoff.sh" --codex-root "$HOME/codex"
 fi
 
 if [[ "${CHECK_FULL_SUITE}" -eq 1 ]]; then

@@ -9,7 +9,7 @@ arthas,delivery,P2,fetch,master,yes,成熟开源工程规范,active,gdk-team,202
 artifact-gated-agents,workflow-core,P0,fetch,main,no,仅3次提交; OpenSpec已覆盖; grade=C; 建议放弃,disabled,gdk-team,2026-05-02,adopt-first,C
 auto-research,knowledge,P2,fetch,main,yes,调研闭环与留痕,active,gdk-team,2026-05-02,selective-adopt,C
 autonomous-vehicle-dev,delivery,P1,fetch,main,no,领域专用; 与adk关联低; grade=C; 建议放弃,disabled,gdk-team,2026-05-02,selective-adopt,C
-codex,runtime-target,P0,pull,main,no,改用全局 ~/.codex（不再使用当前仓库本地 codex 目录）,disabled,gdk-team,2026-05-02,pilot-first,X
+codex,runtime-target,P0,pull,main,no,改用 ~/codex 声明式资产仓库并由其 apply 到 ~/.codex（不再使用当前仓库本地 codex 目录）,disabled,gdk-team,2026-05-02,pilot-first,X
 codex-cookbook,knowledge,P1,fetch,main,yes,Codex Cookbook 实战模板,active,gdk-team,2026-05-02,observe-first,C
 codex-skill-spec,skill-pool,P1,fetch,main,no,停滞116天; 被agent-skills/mattpocock-skills覆盖; grade=D,disabled,gdk-team,2026-05-02,observe-first,D
 codex_doc_cn,knowledge,P1,fetch,main,no,远程仓库不可达; grade=D; 建议放弃,disabled,gdk-team,2026-05-02,blocked,D

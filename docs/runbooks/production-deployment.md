@@ -2,7 +2,7 @@
 
 ## 概述
 
-本手册指导如何将 agent-dev-kit 部署到生产环境。
+本手册指导如何将 agent-dev-kit 交接到 `~/codex`，再由 `~/codex` apply 到 `~/.codex` 生产运行目录。
 
 ## 前置条件
 
@@ -13,7 +13,8 @@
 - 网络访问权限
 
 ### 2. 权限要求
-- 读写目标目录
+- 读写 `~/codex` 声明式资产仓库
+- 由 `~/codex` 生成并写入 `~/.codex` 的权限
 - 执行脚本权限
 - 创建备份权限
 
@@ -40,8 +41,8 @@ bash scripts/health-check.sh check-all
 
 #### 1.2 创建备份
 ```bash
-# 备份当前版本
-bash scripts/backup-rollback.sh backup --target ~/.codex --version pre-deploy
+# 备份当前运行目录；常规回滚优先使用 ~/codex apply plan
+rtk bash ~/codex/scripts/backup.sh
 ```
 
 #### 1.3 锁定版本
@@ -52,19 +53,27 @@ bash scripts/version-manager.sh lock --version 1.0.0
 
 ### 2. 部署阶段
 
-#### 2.1 安装资产
+#### 2.1 导出并交接资产
 ```bash
-# 安装到目标目录
-bash scripts/install_assets.sh --tool codex --target ~/.codex --mode copy --profile personal-core
+# 在 agent-dev-kit 中导出符合 ~/codex 规范的 handoff，不直接写入 ~/.codex
+bash scripts/devkit.sh convert --target codex --profile personal-core --codex-profile team-collab --out ../reports/adk-codex-handoff --clean
+bash scripts/devkit.sh codex-handoff --codex-root ~/codex
+
+# 在 ~/codex 中合并 src/codex-home/vendor 与 manifest-fragments 后构建并预览 apply
+cd ~/codex
+rtk bash scripts/build.sh --profile team-collab
+rtk bash scripts/plan.sh --target ~/.codex --output build/apply-plan.json
+rtk bash scripts/apply.sh --profile team-collab --dry-run
 ```
 
-#### 2.2 验证安装
+#### 2.2 验证交接与运行目录
 ```bash
-# 验证安装结果
-bash scripts/validate_assets.sh --strict
+# 验证 adk 资产
+bash scripts/devkit.sh validate --strict
 
-# 检查目录结构
-bash scripts/health-check.sh check-structure
+# 验证 ~/codex 构建、治理和 live 状态
+cd ~/codex
+rtk bash scripts/doctor.sh --scope all
 ```
 
 #### 2.3 配置环境
@@ -196,14 +205,16 @@ bash scripts/version-manager.sh compare --version 1.0.0 --target 1.1.0
 
 ## 故障处理
 
-### 1. 安装失败
+### 1. 交接或 apply 失败
 ```bash
 # 检查错误日志
 bash scripts/health-check.sh check-all --verbose
 
-# 修复问题
-# 重新安装
-bash scripts/install_assets.sh --tool codex --target ~/.codex --mode copy --profile personal-core
+# 修复问题后重新导出，并在 ~/codex 侧重新 build / apply dry-run
+bash scripts/devkit.sh convert --target codex --profile personal-core --codex-profile team-collab --out ../reports/adk-codex-handoff --clean
+bash scripts/devkit.sh codex-handoff --codex-root ~/codex
+cd ~/codex && rtk bash scripts/build.sh --profile team-collab
+cd ~/codex && rtk bash scripts/apply.sh --profile team-collab --dry-run
 ```
 
 ### 2. 测试失败

@@ -21,7 +21,7 @@ if [[ ! -f "${ADOPTION_MATRIX}" ]]; then
   exit 1
 fi
 
-expected_header="repo,group,priority,sync_mode,branch,enabled,notes,status,owner,last_reviewed_on,intake_policy"
+expected_header="repo,group,priority,sync_mode,branch,enabled,notes,status,owner,last_reviewed_on,intake_policy,grade"
 actual_header="$(head -n 1 "${REGISTRY}")"
 if [[ "${actual_header}" != "${expected_header}" ]]; then
   echo "[FAIL] registry header out of sync" >&2

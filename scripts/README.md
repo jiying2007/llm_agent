@@ -27,7 +27,7 @@ repo,group,priority,sync_mode,branch,enabled,notes,status,owner,last_reviewed_on
 - 模板体系: 18 个模板全部填充（含使用说明）
 - Profile: 10 个，含选择指南
 - Scripts: 24 个，8 个运维命令接入 devkit.sh
-- 安装验证: ~/.codex 真实安装 10 agents + 22 skills
+- 安装验证: `agent-dev-kit -> ~/codex -> ~/.codex` 真实链路验证
 - shellcheck: 已修复关键警告  
 门禁文件：`subrepos/phase-gate.env`（默认 `allow_upstream_sync=no`）。
 
@@ -60,10 +60,11 @@ scripts/check-adk-harden-readiness.sh . --check-observe-intake-depth
 # 显式打开 delivery 采纳深度检查（默认已开启）
 scripts/check-adk-harden-readiness.sh . --check-delivery-adopt-depth
 
-# 显式打开生产级路由、pilot 覆盖、上游吸收检查（默认已开启）
+# 显式打开生产级路由、pilot 覆盖、上游吸收、Codex handoff 规范检查（默认已开启）
 scripts/check-adk-harden-readiness.sh . --check-runtime-routing
 scripts/check-adk-harden-readiness.sh . --check-pilot-coverage
 scripts/check-adk-harden-readiness.sh . --check-upstream-intake
+scripts/check-adk-harden-readiness.sh . --check-codex-handoff
 
 # 临时跳过某类新增检查（不建议）
 scripts/check-adk-harden-readiness.sh . --skip-skill-metadata-check
@@ -75,6 +76,7 @@ scripts/check-adk-harden-readiness.sh . --skip-delivery-adopt-depth-check
 scripts/check-adk-harden-readiness.sh . --skip-runtime-routing-check
 scripts/check-adk-harden-readiness.sh . --skip-pilot-coverage-check
 scripts/check-adk-harden-readiness.sh . --skip-upstream-intake-check
+scripts/check-adk-harden-readiness.sh . --skip-codex-handoff-check
 ```
 
 若未开门，`sync-subrepos.sh` / `diff-scan.sh` 会返回 `[BLOCK]`。  
@@ -100,7 +102,7 @@ scripts/check-codex-pilot.sh . full
 
 > **旧脚本兼容提示**：`check-codex-pilot-evidence.sh` 和 `check-codex-pilot-coverage.sh` 已标记为弃用，会自动转发到新脚本。
 
-全局 `~/.codex` 健康检查脚本：
+全局 `~/.codex` 健康检查脚本（运行目录由 `~/codex` apply 生成）：
 
 ```bash
 scripts/check-global-codex-health.sh ~/.codex minimal
@@ -231,8 +233,8 @@ scripts/backup-rollback.sh [ACTION] [OPTIONS]
 
 功能：
 - 提供安装资产的备份和回滚能力。
-- `backup`：创建当前 `~/.codex` 的完整备份快照。
-- `rollback`：从已有备份点恢复 `~/.codex`。
+- `backup`：创建当前 `~/.codex` 的完整备份快照；生产变更优先使用 `~/codex` apply plan / rollback。
+- `rollback`：从已有备份点恢复 `~/.codex`；常规资产回滚优先走 `~/codex/scripts/rollback.sh`。
 - `list`：列出所有可用备份点。
 - 支持自动清理过期备份。
 
@@ -244,7 +246,7 @@ scripts/check-global-codex-target-policy.sh [WORKSPACE_ROOT]
 
 功能：
 - 确保工作区未回退到使用本地 `codex/` 目录。
-- 校验 `registry.csv` 中 codex 行的策略指向全局 `~/.codex`。
+- 校验 `registry.csv` 中 codex 行的策略指向 `~/codex` 声明式资产仓库，并由其 apply 到全局 `~/.codex`。
 - 已接入 `check-adk-harden-readiness.sh` 主链路。
 
 详细排查参见：`docs/runbooks/quality-gate-checklist.md`

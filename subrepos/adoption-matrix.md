@@ -50,15 +50,15 @@
 | 2026-05-08 | workspace | workflow-core | Artifact 门禁协议模式（统一标签+状态+交接） | 高 | 低 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/skills/adk-artifact-gating/SKILL.md |
 | 2026-05-08 | workspace | workflow-core | Pilot 试跑框架模式（场景+证据+门禁） | 高 | 低 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/skills/adk-pilot-framework/SKILL.md |
 | 2026-05-08 | workspace | workflow-core | 子仓接入工作流模式（扫描+分析+决策） | 高 | 低 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/skills/adk-intake-workflow/SKILL.md |
-| 2026-05-12 | vibeflow | workflow-core | 8 阶段生命周期框架（Spark→Design→Tasks→Build→Review→Test→Ship→Reflect） | 高 | 中 | 低 | adopt | pending | agent-dev-kit | reports/vibeflow-absorption-report-20260512.md |
-| 2026-05-12 | vibeflow | workflow-core | 状态机与恢复点（.vibeflow/state.json 持久化） | 高 | 中 | 低 | adopt | pending | agent-dev-kit | reports/vibeflow-absorption-report-20260512.md |
-| 2026-05-12 | vibeflow | workflow-core | Gate 机制设计原则（4 问选择标准） | 高 | 低 | 低 | adopt | pending | agent-dev-kit | reports/vibeflow-absorption-report-20260512.md |
-| 2026-05-12 | vibeflow | workflow-core | 合同化 Tasks（输入/输出/验收标准） | 高 | 中 | 低 | adopt | pending | agent-dev-kit | reports/vibeflow-absorption-report-20260512.md |
-| 2026-05-12 | vibeflow | workflow-core | 三维评审机制（价值/工程/设计） | 高 | 中 | 中 | adopt | pending | agent-dev-kit | reports/vibeflow-absorption-report-20260512.md |
-| 2026-05-12 | vibeflow | workflow-core | TDD 集成（红-绿-重构流程） | 中 | 中 | 低 | adopt | pending | agent-dev-kit | reports/vibeflow-absorption-report-20260512.md |
-| 2026-05-12 | vibeflow | workflow-core | Rules 分层目录结构（避免全局污染） | 中 | 低 | 低 | adopt | pending | agent-dev-kit | reports/vibeflow-absorption-report-20260512.md |
-| 2026-05-12 | vibeflow | workflow-core | Router 自动阶段检测 | 中 | 高 | 中 | observe | pending | agent-dev-kit | reports/vibeflow-absorption-report-20260512.md |
-| 2026-05-12 | vibeflow | workflow-core | 复盘机制（Reflect skill） | 中 | 中 | 低 | adopt | pending | agent-dev-kit | reports/vibeflow-absorption-report-20260512.md |
+| 2026-05-12 | vibeflow | workflow-core | 8 阶段生命周期框架（Spark→Design→Tasks→Build→Review→Test→Ship→Reflect） | 高 | 中 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/docs/workflows/lifecycle.md |
+| 2026-05-12 | vibeflow | workflow-core | 状态机与恢复点（.vibeflow/state.json 持久化） | 高 | 中 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/docs/workflows/lifecycle.md#statejson-规范 |
+| 2026-05-12 | vibeflow | workflow-core | Gate 机制设计原则（4 问选择标准） | 高 | 低 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/AGENTS.md |
+| 2026-05-12 | vibeflow | workflow-core | 合同化 Tasks（输入/输出/验收标准） | 高 | 中 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/templates/artifacts/tasks-template.md |
+| 2026-05-12 | vibeflow | workflow-core | 三维评审机制（价值/工程/设计） | 高 | 中 | 中 | adopt | done | agent-dev-kit | agent-dev-kit/templates/artifacts/review-template.md |
+| 2026-05-12 | vibeflow | workflow-core | TDD 集成（红-绿-重构流程） | 中 | 中 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/docs/workflows/lifecycle.md |
+| 2026-05-12 | vibeflow | workflow-core | Rules 分层目录结构（避免全局污染） | 中 | 低 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/rules/README.md |
+| 2026-05-12 | vibeflow | workflow-core | Router 自动阶段检测（不采纳独立 Router persona，改用内置路由） | 中 | 高 | 中 | reject | done | agent-dev-kit | agent-dev-kit/references/orchestration-patterns.md; agent-dev-kit/scripts/skill-match.sh |
+| 2026-05-12 | vibeflow | workflow-core | 复盘机制（Reflect skill） | 中 | 中 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/templates/LESSONS.md |
 
 ## 模板
 

@@ -9,6 +9,11 @@ if [[ -d "${ROOT}/codex" ]]; then
   exit 1
 fi
 
+if [[ ! -d "$HOME/codex" ]]; then
+  echo "[FAIL] ~/codex declaration repo missing: $HOME/codex" >&2
+  exit 1
+fi
+
 if [[ ! -f "${REGISTRY}" ]]; then
   echo "[FAIL] registry missing: ${REGISTRY}" >&2
   exit 1
@@ -40,8 +45,13 @@ if [[ "${intake_policy}" != "pilot-first" ]]; then
   exit 2
 fi
 
+if ! printf "%s\n" "${notes}" | rg -q '~/codex'; then
+  echo "[FAIL] codex registry notes must mention ~/codex policy" >&2
+  exit 2
+fi
+
 if ! printf "%s\n" "${notes}" | rg -q '~/.codex'; then
-  echo "[FAIL] codex registry notes must mention ~/.codex policy" >&2
+  echo "[FAIL] codex registry notes must mention ~/.codex apply target" >&2
   exit 2
 fi
 

@@ -107,7 +107,7 @@ scripts/check-doc-sync.sh [WORKSPACE_ROOT]
 
 ## 5. check-global-codex-health.sh
 
-**用途**: 校验全局 `~/.codex` 目录的健康状态，依赖 codex control 层的 `doctor.sh`。
+**用途**: 校验全局 `~/.codex` 目录的健康状态。该运行目录应由 `~/codex` build/apply 生成，健康检查依赖运行目录中的 control 状态。
 
 **用法**:
 ```bash
@@ -122,15 +122,15 @@ scripts/check-global-codex-health.sh [CODEX_ROOT] [PROFILE]
 - `doctor.sh` 以指定 profile 运行返回 exit 0。
 
 **失败排查**:
-- `[FAIL] global codex dir missing` → 确认 `~/.codex` 已正确安装（运行 `agent-dev-kit/scripts/install_assets.sh`）。
-- `[FAIL] doctor script missing` → 确认 codex control 层已部署，`~/.codex/control/scripts/doctor.sh` 存在。
-- doctor 运行失败 → 查看 doctor 输出，按提示修复 `~/.codex` 目录结构。
+- `[FAIL] global codex dir missing` → 确认 `~/codex` 已执行 build/apply 到 `~/.codex`。
+- `[FAIL] doctor script missing` → 确认 `~/codex` v2 control 状态和 `~/.codex/control/state/managed-files.json` 存在；不要从 adk 直接补文件。
+- doctor 运行失败 → 先在 `~/codex` 运行 `scripts/doctor.sh --scope all` 和 apply dry-run，再修复 `~/.codex` 目录结构。
 
 ---
 
 ## 6. check-global-codex-target-policy.sh
 
-**用途**: 确保工作区未回退到使用本地 `codex/` 目录，强制使用全局 `~/.codex` 作为运行目标。
+**用途**: 确保工作区未回退到使用本地 `codex/` 目录，强制使用 `~/codex` 作为声明式资产仓库，并由它 apply 到全局 `~/.codex`。
 
 **用法**:
 ```bash
@@ -144,7 +144,7 @@ scripts/check-global-codex-target-policy.sh [WORKSPACE_ROOT]
 **失败排查**:
 - `[FAIL] local codex directory still exists: xxx/codex` → 删除或移走本地 `codex/` 目录。
 - `[FAIL] registry missing codex row` → 在 `registry.csv` 中确认 `codex` 条目存在。
-- `[FAIL] codex row has local target` → 修改 registry 中 codex 行的策略字段，确保指向 `~/.codex`。
+- `[FAIL] codex row has local target` → 修改 registry 中 codex 行的策略字段，确保指向 `~/codex -> ~/.codex`。
 
 ---
 
