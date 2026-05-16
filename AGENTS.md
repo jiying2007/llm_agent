@@ -55,7 +55,9 @@
 | `superpowers-zh` | 中文化流程体系 | 中文可读性高 | 与上游漂移风险 | 中文表达与触发词设计 |
 | `OpenSpec` | Spec 驱动工件体系 | 变更追溯清晰 | 与现有流程重叠 | 变更单元命名与状态映射 |
 | `flow-kit` | 纯 Markdown 流程包 | 跨工具引用简单、无运行时依赖 | 手工复制模式难治理 | 轻量流程入口与模板组织 |
-| `codex` | `.codex` 全局工程化管理 | 控制层结构化、profile 化 | 本地环境耦合 | `catalog + scripts + doctor` 结构借鉴 |
+| `~/codex` | Codex 声明式资产仓库（外部交付目标） | 控制层结构化、profile 化 | 本地环境耦合 | `catalog + scripts + doctor` 结构借鉴 |
+
+> `~/codex` 不再作为本仓 tracked 子仓维护；本仓保留对 `agent-dev-kit -> ~/codex -> ~/.codex` 交付链路的验证与回灌记录。
 
 ### 2.2 Agent / Skill 生态
 
