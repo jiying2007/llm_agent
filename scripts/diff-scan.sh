@@ -52,7 +52,7 @@ today="$(date +%F)"
 
 found=0
 
-while IFS=',' read -r repo group priority sync_mode branch enabled notes status owner last_reviewed_on intake_policy; do
+while IFS=',' read -r repo group priority sync_mode branch enabled notes status owner last_reviewed_on intake_policy grade; do
   if [[ "${repo}" == "repo" || -z "${repo}" || "${enabled}" != "yes" || "${status}" == "disabled" ]]; then
     continue
   fi

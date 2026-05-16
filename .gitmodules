@@ -1,0 +1,87 @@
+[submodule "AUBB-Server"]
+	path = AUBB-Server
+	url = https://github.com/BUAA-SEProject/AUBB-Server.git
+[submodule "Migrationed_skills"]
+	path = Migrationed_skills
+	url = https://github.com/pa4uslf/Migrationed_skills.git
+[submodule "OpenSpec"]
+	path = OpenSpec
+	url = https://github.com/Fission-AI/OpenSpec
+[submodule "Trellis"]
+	path = Trellis
+	url = https://github.com/mindfold-ai/Trellis.git
+[submodule "agency-agents-zh"]
+	path = agency-agents-zh
+	url = https://github.com/jnMetaCode/agency-agents-zh.git
+[submodule "agent-browser"]
+	path = agent-browser
+	url = https://github.com/vercel-labs/agent-browser.git
+[submodule "agent-dev-kit"]
+	path = agent-dev-kit
+	url = git@github.com:jiying2007/agent-dev-kit.git
+[submodule "agent-skills"]
+	path = agent-skills
+	url = https://github.com/addyosmani/agent-skills.git
+[submodule "ai-coding-guide"]
+	path = ai-coding-guide
+	url = https://github.com/jnMetaCode/ai-coding-guide.git
+[submodule "arthas"]
+	path = arthas
+	url = https://github.com/alibaba/arthas.git
+[submodule "artifact-gated-agents"]
+	path = artifact-gated-agents
+	url = https://github.com/blue68/artifact-gated-agents.git
+[submodule "auto-research"]
+	path = auto-research
+	url = https://github.com/AnXueHua/auto-research.git
+[submodule "autonomous-vehicle-dev"]
+	path = autonomous-vehicle-dev
+	url = https://github.com/Aiden885/autonomous-vehicle-dev.git
+[submodule "codex-cookbook"]
+	path = codex-cookbook
+	url = https://github.com/aruis/codex-cookbook.git
+[submodule "codex-skill-spec"]
+	path = codex-skill-spec
+	url = https://github.com/grid-oaa/codex-skill-spec.git
+[submodule "codex_doc_cn"]
+	path = codex_doc_cn
+	url = https://github.com/goo-yyh/codex_doc_cn.git
+[submodule "dotfiles"]
+	path = dotfiles
+	url = https://github.com/xbpk3t/dotfiles.git
+[submodule "flow-kit"]
+	path = flow-kit
+	url = https://github.com/rihebty/flow-kit.git
+[submodule "hermes-agent"]
+	path = hermes-agent
+	url = https://github.com/nousresearch/hermes-agent
+[submodule "hermes-collaboration-skill"]
+	path = hermes-collaboration-skill
+	url = https://github.com/bmyy76/hermes-collaboration-skill.git
+[submodule "hermes-team-skill"]
+	path = hermes-team-skill
+	url = https://github.com/bmyy76/hermes-team-skill.git
+[submodule "mattpocock-skills"]
+	path = mattpocock-skills
+	url = https://github.com/mattpocock/skills.git
+[submodule "prompts"]
+	path = prompts
+	url = https://github.com/DCjanus/prompts.git
+[submodule "skills"]
+	path = skills
+	url = https://github.com/tiangong-ai/skills.git
+[submodule "superpowers"]
+	path = superpowers
+	url = https://github.com/obra/superpowers
+[submodule "superpowers-openspec-team-skills"]
+	path = superpowers-openspec-team-skills
+	url = https://github.com/SYZ-Coder/superpowers-openspec-team-skills.git
+[submodule "superpowers-zh"]
+	path = superpowers-zh
+	url = https://github.com/jnMetaCode/superpowers-zh.git
+[submodule "vibeflow"]
+	path = vibeflow
+	url = https://github.com/ttttstc/vibeflow.git
+[submodule "vscode-codex-settings"]
+	path = vscode-codex-settings
+	url = https://github.com/FuradWho/vscode-codex-settings.git

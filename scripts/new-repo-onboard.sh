@@ -31,6 +31,7 @@ REPO_PATH="$(cd "${REPO_PATH}" 2>/dev/null && pwd)" || {
 }
 
 REPO_NAME="$(basename "${REPO_PATH}")"
+DEFAULT_BRANCH="$(git -C "${REPO_PATH}" symbolic-ref --quiet --short HEAD 2>/dev/null || echo "main")"
 
 # 转换 policy 参数
 case "${POLICY}" in
@@ -53,7 +54,7 @@ if grep -q "^${REPO_NAME}," "${REGISTRY}" 2>/dev/null; then
   echo "[WARN] ${REPO_NAME} 已在 registry.csv 中注册，跳过"
 else
   echo "[Step 1/5] 注册到 registry.csv"
-  echo "${REPO_NAME},reference,P2,pull,main,yes,新接入参考仓库,active,unassigned,${DATE},${INTAKE_POLICY}" >> "${REGISTRY}"
+  echo "${REPO_NAME},reference,P2,pull,${DEFAULT_BRANCH},yes,新接入参考仓库,active,unassigned,${DATE},${INTAKE_POLICY},C" >> "${REGISTRY}"
   echo "  -> 已添加到 registry.csv"
 fi
 
@@ -61,9 +62,11 @@ fi
 echo "[Step 2/5] 检查仓库 AGENTS.md"
 REPO_AGENTS="${REPO_PATH}/AGENTS.md"
 if [[ -f "${REPO_AGENTS}" ]]; then
-  echo "  -> AGENTS.md 已存在，追加接入标记"
-  # 追加接入信息
-  cat >> "${REPO_AGENTS}" << 'AGENTSEOF'
+  if rg -q "^## llm_agent 接入信息$" "${REPO_AGENTS}"; then
+    echo "  -> AGENTS.md 已存在接入标记，跳过"
+  else
+    echo "  -> AGENTS.md 已存在，追加接入标记"
+    cat >> "${REPO_AGENTS}" << 'AGENTSEOF'
 
 ---
 
@@ -72,6 +75,7 @@ if [[ -f "${REPO_AGENTS}" ]]; then
 > 此仓库已被 llm_agent 工作区纳入治理。
 
 AGENTSEOF
+  fi
 else
   echo "  -> 生成基础 AGENTS.md"
   cat > "${REPO_AGENTS}" << AGENTSEOF
@@ -98,7 +102,7 @@ echo "[Step 3/5] 更新 adoption-matrix"
 if grep -q "${REPO_NAME}" "${MATRIX}" 2>/dev/null; then
   echo "  -> 已在 adoption-matrix 中，跳过"
 else
-  echo "| ${DATE} | ${REPO_NAME} | pending | pending | pending | pending | pending | pending | pending | agent-dev-kit | pending |" >> "${MATRIX}"
+  echo "| ${DATE} | ${REPO_NAME} | reference | 待深度分析 | 待评估 | 待评估 | 待评估 | observe | pending | agent-dev-kit | intake-${REPO_NAME}-${DATE}.md |" >> "${MATRIX}"
   echo "  -> 已添加到 adoption-matrix"
 fi
 

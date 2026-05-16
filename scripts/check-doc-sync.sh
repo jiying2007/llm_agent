@@ -37,7 +37,9 @@ required_tokens=(
   "check-adoption-matrix-status.sh"
   "check-observe-intake-depth.sh"
   "check-runtime-routing.sh"
+  "check-codex-pilot-evidence.sh"
   "check-codex-pilot-coverage.sh"
+  "check-workspace-entrypoints.sh"
   "check-upstream-intake-readiness.sh"
   "generate-adoption-matrix-summary.sh"
   "run-post-freeze-cycle.sh"
@@ -53,6 +55,19 @@ required_tokens=(
 for token in "${required_tokens[@]}"; do
   if ! rg -q --fixed-strings -- "${token}" "${SCRIPTS_README}"; then
     echo "[FAIL] scripts/README.md missing token: ${token}" >&2
+    exit 2
+  fi
+done
+
+required_scripts=(
+  "scripts/check-codex-pilot-evidence.sh"
+  "scripts/check-codex-pilot-coverage.sh"
+  "scripts/check-workspace-entrypoints.sh"
+)
+
+for script in "${required_scripts[@]}"; do
+  if [[ ! -x "${ROOT}/${script}" ]]; then
+    echo "[FAIL] required script missing or not executable: ${script}" >&2
     exit 2
   fi
 done

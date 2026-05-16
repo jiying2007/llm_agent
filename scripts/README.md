@@ -164,7 +164,7 @@ scripts/check-delivery-adopt-depth.sh .
 scripts/check-runtime-routing.sh .
 ```
 
-该脚本会同时调用 `agent-dev-kit/scripts/check_profile_coherence.sh`，防止 profile 继承后重复声明 Agent/Skill 或引用漂移。
+该脚本会同时调用 `agent-dev-kit/scripts/check-profile-coherence.sh`，防止 profile 继承后重复声明 Agent/Skill 或引用漂移。
 
 上游吸收生产准入检查脚本：
 
@@ -174,6 +174,14 @@ scripts/check-upstream-intake-readiness.sh .
 
 当前默认不强制 `--require-pilot`。  
 如需“先试跑再开门”，请在开门命令追加 `--require-pilot`。
+
+工作区入口回归检查脚本：
+
+```bash
+scripts/check-workspace-entrypoints.sh .
+```
+
+该脚本覆盖 `scripts/devkit.sh health`、`scripts/devkit.sh sync status`、旧 pilot wrapper、weekly report 输出和 registry 评级列解析，防止统一入口与文档承诺再次漂移。
 
 ## 1. 同步子仓增量
 
@@ -303,6 +311,7 @@ scripts/devkit.sh onboard <repo-path> --observe
 
 # 子仓同步
 scripts/devkit.sh sync fetch
+scripts/devkit.sh sync pull
 scripts/devkit.sh sync status
 
 # 差异扫描（默认 7 天）
@@ -325,12 +334,13 @@ scripts/devkit.sh cleanup
 ## 9. 工作区健康检查
 
 ```bash
-scripts/health-check.sh [WORKSPACE_ROOT]
+scripts/health-check.sh check-all --root .
+scripts/health-check.sh .
 ```
 
 功能：
 - 对 `llm_agent` 工作区执行综合健康检查。
-- 检查项包括：目录结构完整性、关键文件存在性、registry 格式、subrepos 子仓可达性、脚本可执行性。
+- 检查项包括：目录结构完整性、关键文件存在性、registry 格式、依赖、门禁入口、脚本语法。
 - 输出通过/失败/警告三级状态报告。
 
 ## 10. 版本管理
@@ -362,7 +372,7 @@ scripts/generate-weekly-report.sh [WORKSPACE_ROOT]
 建议配合 cron 定时执行：
 ```bash
 # 每周五下午 6 点自动生成周报
-0 18 * * 5 cd /home/aiot03/aiot/llm_agent && bash scripts/generate-weekly-report.sh
+0 18 * * 5 cd /path/to/llm_agent && rtk scripts/generate-weekly-report.sh .
 ```
 
 ## 12. 清理归档旧报告

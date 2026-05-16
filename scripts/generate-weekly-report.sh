@@ -4,15 +4,35 @@ set -euo pipefail
 # =============================================================================
 # generate-weekly-report.sh
 # 自动生成周报，汇总本周变更
-# 用法: bash scripts/generate-weekly-report.sh [WORKSPACE_ROOT]
+# 用法: bash scripts/generate-weekly-report.sh [WORKSPACE_ROOT] [--output <path>]
 # =============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-WORKSPACE_ROOT="${1:-$(dirname "$SCRIPT_DIR")}"
+WORKSPACE_ROOT="$(dirname "$SCRIPT_DIR")"
+REPORT_PATH=""
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --output)
+            [[ $# -ge 2 ]] || { echo "[weekly-report] --output 需要路径" >&2; exit 1; }
+            REPORT_PATH="$2"
+            shift 2
+            ;;
+        -h|--help)
+            echo "用法: bash scripts/generate-weekly-report.sh [WORKSPACE_ROOT] [--output <path>]"
+            exit 0
+            ;;
+        *)
+            WORKSPACE_ROOT="$1"
+            shift
+            ;;
+    esac
+done
+
 cd "$WORKSPACE_ROOT"
 
 DATE_TODAY="$(date +%Y-%m-%d)"
-REPORT_PATH="reports/weekly-report-${DATE_TODAY}.md"
+REPORT_PATH="${REPORT_PATH:-reports/weekly-report-${DATE_TODAY}.md}"
 REGISTRY_CSV="subrepos/registry.csv"
 ADOPTION_MATRIX="subrepos/adoption-matrix.md"
 CHECK_SCRIPTS="scripts"
@@ -20,7 +40,7 @@ CHECK_SCRIPTS="scripts"
 # ── helper ──────────────────────────────────────────────────────────────────
 log() { echo "[weekly-report] $*"; }
 
-mkdir -p reports
+mkdir -p reports "$(dirname "${REPORT_PATH}")"
 
 # ── 1. 本周 git 提交摘要 ───────────────────────────────────────────────────
 log "收集最近 7 天 git 提交..."
@@ -37,7 +57,7 @@ TOTAL_REPOS=0
 ENABLED_REPOS=0
 DISABLED_REPOS=0
 if [[ -f "$REGISTRY_CSV" ]]; then
-    while IFS=',' read -r repo group priority sync_mode branch enabled notes status owner last_reviewed intake_policy; do
+    while IFS=',' read -r repo group priority sync_mode branch enabled notes status owner last_reviewed intake_policy grade; do
         [[ "$repo" == "repo" ]] && continue  # skip header
         TOTAL_REPOS=$((TOTAL_REPOS + 1))
         if [[ "$enabled" == "yes" ]]; then
@@ -47,7 +67,7 @@ if [[ -f "$REGISTRY_CSV" ]]; then
             if [[ ! -d "$repo" ]]; then
                 local_status="missing"
             fi
-            REGISTRY_TABLE+="| $repo | $group | $priority | $sync_mode | $enabled | $status | $local_status |
+            REGISTRY_TABLE+="| $repo | $group | $priority | $sync_mode | $enabled | $status | ${grade:-unknown} | $local_status |
 "
         else
             DISABLED_REPOS=$((DISABLED_REPOS + 1))
@@ -87,7 +107,7 @@ GATE_PASS=true
 if [[ -x "$CHECK_SCRIPTS/health-check.sh" ]]; then
     GATE_REPORT+="### health-check.sh
 "
-    if HC_OUTPUT="$($CHECK_SCRIPTS/health-check.sh . 2>&1)" ; then
+    if HC_OUTPUT="$($CHECK_SCRIPTS/health-check.sh check-all --root "$WORKSPACE_ROOT" 2>&1)" ; then
         GATE_REPORT+="PASS: 健康检查通过
 "
     else
@@ -180,8 +200,8 @@ cat >> "$REPORT_PATH" << REPORT_EOF
 - 启用 (enabled=yes): ${ENABLED_REPOS}
 - 禁用: ${DISABLED_REPOS}
 
-| 仓库 | 分组 | 优先级 | 同步模式 | 启用 | 状态 | 本地目录 |
-|---|---|---|---|---|---|---|
+| 仓库 | 分组 | 优先级 | 同步模式 | 启用 | 状态 | 评级 | 本地目录 |
+|---|---|---|---|---|---|---|---|
 REPORT_EOF
 
 echo "$REGISTRY_TABLE" >> "$REPORT_PATH"

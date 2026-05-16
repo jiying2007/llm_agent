@@ -170,7 +170,7 @@ scripts/check-observe-intake-depth.sh [WORKSPACE_ROOT]
 
 ## 8. check-runtime-routing.sh
 
-**用途**: 校验 `agent-dev-kit` 的 runtime routing 资产完整性，同时调用 `check_profile_coherence.sh` 防止 profile 继承后重复声明。
+**用途**: 校验 `agent-dev-kit` 的 runtime routing 资产完整性，同时调用 `check-profile-coherence.sh` 防止 profile 继承后重复声明。
 
 **用法**:
 ```bash
@@ -186,7 +186,7 @@ scripts/check-runtime-routing.sh [WORKSPACE_ROOT]
 **失败排查**:
 - `[FAIL] missing routing for skill: xxx` → 在 manifest 的 routing 部分为该 skill 添加路由条目。
 - `[FAIL] duplicate intent keyword` → 修正 routing 中冲突的 intent 关键词。
-- profile coherence 失败 → 运行 `agent-dev-kit/scripts/check_profile_coherence.sh` 查看详细输出，清理重复声明。
+- profile coherence 失败 → 运行 `agent-dev-kit/scripts/check-profile-coherence.sh` 查看详细输出，清理重复声明。
 
 ---
 

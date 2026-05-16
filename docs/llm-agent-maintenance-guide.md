@@ -9,8 +9,7 @@
 
 **安装 rtk（可选）：**
 ```bash
-# 如果 ~/.codex/control/scripts/ 存在，rtk 已可用
-# 否则直接使用 bash 调用脚本
+# 推荐通过本机 rtk 调用；没有 rtk 时可退回 bash scripts/xxx.sh
 ```
 
 # llm_agent 持续维护与生产验证指南
@@ -157,7 +156,7 @@ rtk scripts/check-adk-harden-readiness.sh . --require-pilot
 先从安装报告确认备份路径，例如：
 
 ```text
-/home/aiot03/.codex/.adk-backups/20260502T104514Z
+$HOME/.codex/.adk-backups/YYYYMMDDTHHMMSSZ
 ```
 
 回滚原则：

@@ -30,8 +30,9 @@ llm_agent devkit — 工作区统一入口
   onboard <repo-path> [--adopt|--observe]
                                  新仓库接入治理
 
-  sync [fetch|status]            子仓同步
+  sync [fetch|pull|status]       子仓同步
                                    fetch   拉取远端更新（默认）
+                                   pull    对 sync_mode=pull 的子仓执行 ff-only 拉取
                                    status  查看同步状态
 
   diff [days]                    扫描高价值变更（默认 7 天）
@@ -128,7 +129,7 @@ cmd_health() {
     exit 1
   fi
 
-  bash "${health_script}" "${WORKSPACE_ROOT}"
+  bash "${health_script}" check-all --root "${WORKSPACE_ROOT}"
 }
 
 # --- 子命令: weekly-report --------------------------------------------------

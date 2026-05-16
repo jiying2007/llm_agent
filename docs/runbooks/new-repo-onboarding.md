@@ -41,8 +41,8 @@ AI 会自动完成：克隆 → 注册 → 深度分析 → 生成报告 → 更
 ### Step 1: 克隆仓库
 
 ```bash
-cd /home/aiot03/aiot/llm_agent
-git clone <repo-url> <repo-name>
+cd /path/to/llm_agent
+rtk git clone <repo-url> <repo-name>
 ```
 
 ### Step 2: 注册到 registry.csv

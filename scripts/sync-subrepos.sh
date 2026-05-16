@@ -18,8 +18,8 @@ if [[ ! -f "${REGISTRY}" ]]; then
   exit 1
 fi
 
-if [[ "${MODE}" != "fetch" && "${MODE}" != "pull" ]]; then
-  echo "[ERROR] MODE must be fetch or pull" >&2
+if [[ "${MODE}" != "fetch" && "${MODE}" != "pull" && "${MODE}" != "status" ]]; then
+  echo "[ERROR] MODE must be fetch, pull or status" >&2
   exit 1
 fi
 
@@ -32,7 +32,7 @@ if [[ -f "${GATE_FILE}" ]]; then
   phase_name="${phase:-unknown}"
 fi
 
-if [[ "${allow_sync}" != "yes" && "${FORCE}" -ne 1 ]]; then
+if [[ "${MODE}" != "status" && "${allow_sync}" != "yes" && "${FORCE}" -ne 1 ]]; then
   echo "[BLOCK] upstream sync disabled by phase gate" >&2
   echo "[INFO] phase=${phase_name} allow_upstream_sync=${allow_sync}" >&2
   echo "[INFO] run scripts/check-adk-harden-readiness.sh first" >&2
@@ -50,7 +50,7 @@ echo "[INFO] registry=${REGISTRY}"
 echo "[INFO] phase=${phase_name}"
 echo "[INFO] force=${FORCE}"
 
-while IFS=',' read -r repo group priority sync_mode branch enabled notes status owner last_reviewed_on intake_policy; do
+while IFS=',' read -r repo group priority sync_mode branch enabled notes status owner last_reviewed_on intake_policy grade; do
   if [[ "${repo}" == "repo" || -z "${repo}" ]]; then
     continue
   fi
@@ -64,6 +64,16 @@ while IFS=',' read -r repo group priority sync_mode branch enabled notes status 
   if [[ ! -d "${repo_path}" || ! -d "${repo_path}/.git" ]]; then
     echo "[SKIP] ${repo}: not a git repo directory"
     ((skip+=1))
+    continue
+  fi
+
+  if [[ "${MODE}" == "status" ]]; then
+    current_branch="$(git -C "${repo_path}" symbolic-ref --quiet --short HEAD 2>/dev/null || echo "detached")"
+    head_short="$(git -C "${repo_path}" rev-parse --short HEAD 2>/dev/null || echo "unknown")"
+    dirty_count="$(git -C "${repo_path}" status --porcelain 2>/dev/null | wc -l | tr -d ' ')"
+    printf '[STAT] %-32s enabled=%-3s status=%-8s branch=%-16s head=%-10s dirty=%s grade=%s\n' \
+      "${repo}" "${enabled}" "${status}" "${current_branch}" "${head_short}" "${dirty_count}" "${grade:-unknown}"
+    ((ok+=1))
     continue
   fi
 
