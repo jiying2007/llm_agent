@@ -248,7 +248,6 @@ main() {
             ["codex-cookbook/codex-cookbook.md"]="docs/best-practices-cookbook.md"
             ["ai-coding-guide/cheatsheet.md"]="docs/reference/tool-cheatsheet.md"
             ["scripts/README.md"]="docs/runbooks/workspace-scripts-guide.md"
-            ["artifact-gated-agents/AGENTS.md"]="docs/runbooks/artifact-gated-protocol-full.md"
         )
 
         for src_rel in "${!WORKSPACE_DOCS[@]}"; do

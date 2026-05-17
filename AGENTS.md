@@ -54,7 +54,6 @@
 | `superpowers` | 工程流程体系 | 生命周期完整，质量门禁强 | 流程偏重 | 轻重分流 + 可降级执行 |
 | `superpowers-zh` | 中文化流程体系 | 中文可读性高 | 与上游漂移风险 | 中文表达与触发词设计 |
 | `OpenSpec` | Spec 驱动工件体系 | 变更追溯清晰 | 与现有流程重叠 | 变更单元命名与状态映射 |
-| `flow-kit` | 纯 Markdown 流程包 | 跨工具引用简单、无运行时依赖 | 手工复制模式难治理 | 轻量流程入口与模板组织 |
 | `~/codex` | Codex 声明式资产仓库（外部交付目标） | 控制层结构化、profile 化 | 本地环境耦合 | `catalog + scripts + doctor` 结构借鉴 |
 
 > `~/codex` 不再作为本仓 tracked 子仓维护；本仓保留对 `agent-dev-kit -> ~/codex -> ~/.codex` 交付链路的验证与回灌记录。
@@ -67,13 +66,10 @@
 | `agent-skills` | 全流程技能资产 | 生命周期映射清晰 | 平台差异较大 | 意图路由与技能分层 |
 | `skills` | skills CLI 生态样例 | 安装/更新路径规范 | 质量不均 | 兼容 `skills` CLI 的目录约定 |
 | `Migrationed_skills` | 迁移型技能资产池 | 历史沉淀丰富 | 模板化内容较多 | 候选池筛选机制 |
-| `codex-skill-spec` | 轻量任务模板体系 | 上手快 | 深度不足 | 低门槛模板与最小闭环 |
 | `mattpocock-skills` | 可组合工程技能 | 技能颗粒度细、组合性强 | 对特定协作方式有假设 | 小技能组合范式 |
 | `hermes-collaboration-skill` | 团队协作技能实现 | 多平台协作与记忆隔离 | 运维与接入复杂 | 协作场景 runbook |
-| `hermes-team-skill` | Hermes 升级包 | 部署路径直接 | 资产颗粒偏粗 | 快速接入模板与脚本交付 |
 | `codex-cookbook` | Codex 协作手册 | "道法术器"方法论框架，军师技能分层设计 | 仅 Codex 平台 | 分层触发与三段式写法 |
 | `Trellis` | 知识管理工具参考 | 结构化知识组织 | 领域专用 | 知识图谱与关联查询借鉴 |
-| `superpowers-openspec-team-skills` | Superpowers + OpenSpec 团队技能包 | explicit opt-in、记忆闭环、团队工作流分层清晰 | 直接安装易绕过 adk 压实链路 | 显式触发、记忆模板、OpenSpec 协同边界 |
 | `vibeflow` | SDD+Harness 交付编排层 | 36 skills 覆盖全流程（brainstorm→design→build→review→ship），中文文档完善 | 仅 Claude Code/Codex/OpenCode 平台 | 交付链路编排、阶段门禁、TDD 流程、复盘机制借鉴 |
 | `agent-browser` | 浏览器自动化 CLI | Rust 原生高性能，Accessibility-tree 快照 + @eN ref 交互，Chrome CDP，无需 Playwright/Puppeteer | 仅浏览器操作场景 | 浏览器自动化 skill 设计、快照压缩策略、ref 交互范式 |
 
@@ -84,17 +80,13 @@
 | `AUBB-Server` | 后端业务样本 | 业务闭环完整 | 领域专用 | 验证证据写法 |
 | `hermes-agent` | 大型 Agent 工程 | 模块边界清晰 | 复杂度高 | 目录职责与测试入口 |
 | `arthas` | 成熟开源工程实践 | 贡献规范严谨 | 目标域不同 | 贡献门槛与质量标准 |
-| `autonomous-vehicle-dev` | 重构与迁移样本 | 阶段验收明确 | 领域约束强 | 迁移路线图模板 |
-| `artifact-gated-agents` | Artifact/Gate 多角色协议 | 门禁与交接明确 | 过重时影响效率 | Artifact 标准与阻塞模板 |
 
 ### 2.4 文档、知识与配置治理
 
 | 仓库 | 作用 | 主要优点 | 主要风险 | adk 借鉴点 |
 |---|---|---|---|---|
-| `codex_doc_cn` | 文档镜像工程 | 结构一致性强 | 持续追更成本高 | 进度快照与一致性校验 |
 | `ai-coding-guide` | AI 编程实践指南 | 场景导向清晰 | 偏知识而非规范 | 场景化工作流导览 |
 | `prompts` | 提示词资产 | 实战性强 | 个体偏好强 | 轻量演进风格 |
-| `vscode-codex-settings` | 配置治理样本 | 配置透明 | 环境耦合 | 配置摘要 + 验证命令 |
 | `dotfiles` | 系统配置管理 | 模块化治理成熟 | 学习门槛高 | 最小变更与基线校验 |
 | `auto-research` | 研究闭环样本 | 负结果留痕 | 适配面不一 | 复盘与归档机制 |
 

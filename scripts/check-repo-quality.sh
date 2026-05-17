@@ -89,9 +89,6 @@ tail -n +2 "$REGISTRY" | while IFS=',' read -r repo group pri sync branch enable
 
     # 重叠扣分
     case "$repo" in
-        hermes-team-skill) score=$((score - 15)) ;;
-        codex_doc_cn) score=$((score - 30)) ;;
-        codex-skill-spec) score=$((score - 10)) ;;
         Migrationed_skills) score=$((score - 10)) ;;
     esac
 
