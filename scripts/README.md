@@ -138,6 +138,26 @@ scripts/check-file-modes.sh . --fix
 
 该检查已接入 `scripts/check-all.sh` 和 `scripts/check-adk-harden-readiness.sh`。文档、README、manifest、skill、template 默认不应带 executable bit；`scripts/*.sh`、可直接执行的测试脚本和稳定 CLI 包装层应保持 executable bit。
 
+adk 版本锁检查脚本：
+
+```bash
+scripts/check-adk-lock.sh .
+```
+
+该脚本校验 `adk.lock`、`agent-dev-kit/manifest.yaml` 和根仓 gitlink commit 是否一致，防止子模块指针、版本号和文档交付口径漂移。
+
+子仓状态检查脚本：
+
+```bash
+# 默认模式：只强约束 agent-dev-kit 干净，其余参考仓输出状态摘要
+scripts/check-subrepo-state.sh .
+
+# 严格模式：所有 active 子仓都必须 clean
+scripts/check-subrepo-state.sh . --strict
+```
+
+默认模式用于日常门禁，避免参考仓未初始化或本地状态噪音阻断主链路；严格模式用于发布前收敛。
+
 adoption-matrix 状态检查脚本（真实记录不得有 `pending`，`blocked` 必须写解除条件）：
 
 ```bash
@@ -217,6 +237,15 @@ adoption-matrix 汇总报告生成脚本（统计 done/pending/blocked 与类别
 scripts/generate-adoption-matrix-summary.sh .
 scripts/generate-adoption-matrix-summary.sh . reports/adoption-matrix-summary.md
 ```
+
+adoption-matrix 结构化导出与同步校验：
+
+```bash
+scripts/export-adoption-matrix-jsonl.sh .
+scripts/check-adoption-matrix-structured.sh .
+```
+
+`subrepos/adoption-matrix.jsonl` 由 Markdown 矩阵机械导出，供脚本低 token 读取；手工修改矩阵后必须重新导出并通过同步校验。
 
 ## 3. 检查 AGENTS 覆盖
 
@@ -320,6 +349,7 @@ scripts/devkit.sh diff 14
 
 # 健康检查
 scripts/devkit.sh health
+scripts/devkit.sh health --summary-json
 
 # 生成周报
 scripts/devkit.sh weekly-report
@@ -336,12 +366,14 @@ scripts/devkit.sh cleanup
 ```bash
 scripts/health-check.sh check-all --root .
 scripts/health-check.sh .
+scripts/health-check.sh --summary-json
 ```
 
 功能：
 - 对 `llm_agent` 工作区执行综合健康检查。
 - 检查项包括：目录结构完整性、关键文件存在性、registry 格式、依赖、门禁入口、脚本语法。
 - 输出通过/失败/警告三级状态报告。
+- `--summary-json` 输出低 token JSON 摘要，适合 Codex 在上下文紧张时读取。
 
 ## 10. 版本管理
 

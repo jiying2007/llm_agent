@@ -32,7 +32,9 @@
 | `AGENTS.md` | 工作区全局规则、参考子仓总览、维护记录 | 规则或流程变化时同步更新 |
 | `subrepos/registry.csv` | 参考子仓单一清单 | 新增/禁用子仓必须更新 |
 | `subrepos/adoption-matrix.md` | 候选采纳矩阵 | 每个候选必须有决策、状态、目标层和证据 |
+| `subrepos/adoption-matrix.jsonl` | 候选矩阵结构化导出 | 由 Markdown 矩阵机械生成，供脚本低 token 读取 |
 | `subrepos/phase-gate.env` | 是否允许追踪上游更新 | 默认先压实 adk，再开门同步 |
+| `adk.lock` | adk 版本和子模块指针锁 | adk 升级或子模块指针变化时同步更新 |
 | `scripts/` | 治理、同步、门禁脚本 | 新脚本必须写入 `scripts/README.md` |
 | `reports/` | pilot、安装、周报、wave 记录 | 生产结论必须有报告证据 |
 | `agent-dev-kit/` | adk 源资产与测试 | 所有候选能力先在这里压实并导出 |
@@ -44,6 +46,8 @@
 
 ```bash
 rtk scripts/check-doc-sync.sh .
+rtk scripts/check-adk-lock.sh .
+rtk scripts/check-subrepo-state.sh .
 rtk scripts/check-runtime-routing.sh .
 rtk scripts/check-upstream-intake-readiness.sh .
 rtk scripts/check-global-codex-health.sh ~/.codex minimal
@@ -112,6 +116,8 @@ rtk scripts/diff-scan.sh . 7 reports/weekly-change-report.md
 
 ```bash
 rtk scripts/check-adoption-matrix-status.sh .
+rtk scripts/export-adoption-matrix-jsonl.sh .
+rtk scripts/check-adoption-matrix-structured.sh .
 rtk scripts/check-upstream-intake-readiness.sh .
 rtk scripts/check-adk-harden-readiness.sh . --require-pilot
 ```

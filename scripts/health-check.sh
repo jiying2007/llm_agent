@@ -13,6 +13,7 @@ ROOT_DIR="${DEFAULT_ROOT}"
 COMMAND="check-all"
 VERBOSE=false
 FIX=false
+SUMMARY_JSON=false
 
 log_info() { echo "[INFO] $*"; }
 log_success() { echo "[PASS] $*"; }
@@ -38,6 +39,7 @@ Commands:
 Options:
   --root <path>          指定工作区根目录
   --verbose              输出更多细节
+  --summary-json         输出低 token JSON 摘要，不展开逐项日志
   --fix                  保留兼容参数；当前不做自动修复
   -h, --help             显示帮助
 USAGE
@@ -83,6 +85,10 @@ parse_args() {
         VERBOSE=true
         shift
         ;;
+      --summary-json)
+        SUMMARY_JSON=true
+        shift
+        ;;
       --fix)
         FIX=true
         shift
@@ -98,6 +104,46 @@ parse_args() {
         ;;
     esac
   done
+}
+
+json_string() {
+  local value="$1"
+  value="${value//\\/\\\\}"
+  value="${value//\"/\\\"}"
+  value="${value//$'\n'/\\n}"
+  value="${value//$'\t'/\\t}"
+  printf '"%s"' "${value}"
+}
+
+emit_summary_json() {
+  local registry="${ROOT_DIR}/subrepos/registry.csv"
+  local branch adk_version locked_commit gitlink_commit active_repos disabled_repos gitlinks check_scripts
+  branch="$(git -C "${ROOT_DIR}" branch --show-current 2>/dev/null || true)"
+  adk_version="$(awk -F': ' '$1=="version"{print $2; exit}' "${ROOT_DIR}/agent-dev-kit/manifest.yaml" 2>/dev/null || true)"
+  locked_commit="$(awk -F'=' '$1=="agent-dev-kit.commit"{print $2; exit}' "${ROOT_DIR}/adk.lock" 2>/dev/null || true)"
+  gitlink_commit="$(git -C "${ROOT_DIR}" ls-files -s agent-dev-kit 2>/dev/null | awk '$1=="160000"{print $2; exit}')"
+  active_repos="$(awk -F',' 'NR>1 && $6=="yes" && $8=="active"{count++} END{print count+0}' "${registry}" 2>/dev/null || echo 0)"
+  disabled_repos="$(awk -F',' 'NR>1 && ($6!="yes" || $8!="active"){count++} END{print count+0}' "${registry}" 2>/dev/null || echo 0)"
+  gitlinks="$(git -C "${ROOT_DIR}" ls-files -s 2>/dev/null | awk '$1=="160000"{count++} END{print count+0}')"
+  check_scripts="$(find "${ROOT_DIR}/scripts" -maxdepth 1 -type f -name 'check-*.sh' 2>/dev/null | wc -l | tr -d ' ')"
+
+  local strict_state="unknown"
+  if [[ -n "${locked_commit}" && -n "${gitlink_commit}" && "${locked_commit}" == "${gitlink_commit}" ]]; then
+    strict_state="ok"
+  elif [[ -n "${locked_commit}" || -n "${gitlink_commit}" ]]; then
+    strict_state="drift"
+  fi
+
+  printf '{'
+  printf '"root":%s,' "$(json_string "${ROOT_DIR}")"
+  printf '"branch":%s,' "$(json_string "${branch}")"
+  printf '"adk_version":%s,' "$(json_string "${adk_version}")"
+  printf '"adk_lock_state":%s,' "$(json_string "${strict_state}")"
+  printf '"active_repos":%s,' "${active_repos}"
+  printf '"disabled_repos":%s,' "${disabled_repos}"
+  printf '"tracked_subrepos":%s,' "${gitlinks}"
+  printf '"check_scripts":%s' "${check_scripts}"
+  printf '}\n'
 }
 
 require_file() {
@@ -128,6 +174,7 @@ check_structure() {
   local files=(
     "README.md"
     ".gitmodules"
+    "adk.lock"
     "AGENTS.md"
     "subrepos/registry.csv"
     "subrepos/adoption-matrix.md"
@@ -276,6 +323,11 @@ check_all() {
 }
 
 parse_args "$@"
+
+if "${SUMMARY_JSON}"; then
+  emit_summary_json
+  exit 0
+fi
 
 case "${COMMAND}" in
   check-all) check_all ;;

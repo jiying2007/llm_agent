@@ -37,7 +37,7 @@ llm_agent devkit — 工作区统一入口
 
   diff [days]                    扫描高价值变更（默认 7 天）
 
-  health                         工作区健康检查
+  health [--summary-json]        工作区健康检查
 
   weekly-report                  生成周报
 
@@ -129,7 +129,7 @@ cmd_health() {
     exit 1
   fi
 
-  bash "${health_script}" check-all --root "${WORKSPACE_ROOT}"
+  bash "${health_script}" check-all --root "${WORKSPACE_ROOT}" "$@"
 }
 
 # --- 子命令: weekly-report --------------------------------------------------

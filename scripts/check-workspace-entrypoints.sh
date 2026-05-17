@@ -30,6 +30,7 @@ run_check() {
 run_check "devkit_help" "${ROOT}/scripts/devkit.sh" help
 run_check "git_submodule_status" git -C "${ROOT}" submodule status
 run_check "devkit_health" "${ROOT}/scripts/devkit.sh" health
+run_check "devkit_health_summary_json" "${ROOT}/scripts/devkit.sh" health --summary-json
 run_check "devkit_sync_status" "${ROOT}/scripts/devkit.sh" sync status
 run_check "pilot_evidence_wrapper" "${ROOT}/scripts/check-codex-pilot-evidence.sh" "${ROOT}"
 run_check "pilot_coverage_wrapper" "${ROOT}/scripts/check-codex-pilot-coverage.sh" "${ROOT}"
@@ -45,6 +46,15 @@ if [[ -f "${weekly_report}" ]]; then
   fi
 else
   record_fail "weekly report output missing"
+fi
+
+if [[ -f "${TMP_DIR}/devkit_health_summary_json.out" ]]; then
+  if ! rg -q '"adk_lock_state":"ok"' "${TMP_DIR}/devkit_health_summary_json.out"; then
+    record_fail "health summary json missing ok adk lock state"
+  fi
+  if ! rg -q '"active_repos":' "${TMP_DIR}/devkit_health_summary_json.out"; then
+    record_fail "health summary json missing active repo count"
+  fi
 fi
 
 diff_report="${TMP_DIR}/diff.md"

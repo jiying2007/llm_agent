@@ -29,6 +29,7 @@
 | 清理报告 | 清理、归档、cleanup、prune | 归档过期报告 | `scripts/cleanup-reports.sh` |
 | 版本发布 | 发布、release、tag、版本 | 执行发布流程 | `scripts/version-manager.sh` |
 | 健康检查 | 健康、health、状态 | 检查工作区整体健康状态 | `scripts/health-check.sh` |
+| 健康摘要 | summary-json、低 token 健康、health json | 输出低 token JSON 健康摘要 | `scripts/health-check.sh --summary-json` |
 | 安装 hook | hook、pre-commit、提交检查 | 安装 git pre-commit hook | `scripts/install-pre-commit-hook.sh` |
 | 一键流水线 | 流水线、pipeline、一键更新、全量更新 | 执行 8 步闭环: 同步→差异→分级→分析→采纳→模式检测→AI吸收→报告 | `scripts/pipeline-subrepo-update.sh` |
 | 优化 adk | 优化、改进、升级 adk、enhance | 加载 `adk-release-versioning` 技能，执行优化→验证→发布 | `agent-dev-kit/scripts/devkit.sh` |
@@ -178,6 +179,8 @@
 
 - 子仓清单：`subrepos/registry.csv`
 - 候选评估：`subrepos/adoption-matrix.md`
+- 结构化候选评估：`subrepos/adoption-matrix.jsonl`（由 Markdown 矩阵机械导出）
+- adk 版本锁：`adk.lock`
 - 同步脚本：`scripts/sync-subrepos.sh`
 - 差异扫描：`scripts/diff-scan.sh`
 - 覆盖校验：`scripts/check-agents-coverage.sh`
@@ -194,6 +197,9 @@
 - 吸收治理规则：`docs/absorption-governance.md`（**必读**：禁止完全增量更新，要求全盘深入考量）
 - 备份回滚脚本：`agent-dev-kit/scripts/backup-rollback.sh`（`backup`/`restore`/`list`/`rollback`/`verify`）
 - 采纳矩阵摘要：`scripts/generate-adoption-matrix-summary.sh`（解析 `adoption-matrix.md` 生成状态汇总 + blocked 明细）
+- 采纳矩阵结构化导出：`scripts/export-adoption-matrix-jsonl.sh`
+- adk 版本锁校验：`scripts/check-adk-lock.sh`
+- 子仓状态治理：`scripts/check-subrepo-state.sh`
 - 冻结后周期脚本：`scripts/run-post-freeze-cycle.sh`（串联 `check-doc-sync` → `diff-scan` → `check-adoption-matrix-status` → `generate-adoption-matrix-summary`）
 
 ---
