@@ -1,7 +1,7 @@
 # codex 实战试跑报告
 
 - 试跑日期：2026-05-02
-- 目标仓库：`~/.codex`
+- 目标链路：`agent-dev-kit -> ~/codex -> ~/.codex`
 - 对应 adk 版本/分支：`agent-dev-kit`（本地当前工作分支）
 - 执行人：Codex（自动化落地）
 
@@ -36,11 +36,7 @@
 6. 本轮 `adoption-matrix` 已回填（adopt/observe/reject）。
 7. 六类 codex pilot 已完成 adk 自举试跑：新功能、缺陷修复、重构、发布收口、团队交接、上游吸收。
 8. 生产级 pilot coverage 字段已补齐；当前 `pilot_full_coverage_ready=yes`，表示六类场景均已有可复现命令证据与 artifact 记录。
-9. 已完成一次真实 `~/.codex` 生产安装：
-   - profile：`personal-core + release-hardening`
-   - optional skills：`planning-execution-loop`、`skill-composition-governance`、`security-supply-chain`、`cross-team-handoff`、`artifact-gated-lite`
-   - 安装报告：`reports/adk-install-report-2026-05-02.md`
-   - 回滚备份：`/home/aiot03/.codex/.adk-backups/20260502T104514Z`
+9. 历史直接安装试跑已降级为归档证据；当前有效生产链路以 `agent-dev-kit -> ~/codex -> ~/.codex` 的 handoff、build、plan、apply dry-run 与 health 证据为准。
 
 ## 2026-05-19 当前机器运行态刷新
 
@@ -93,18 +89,18 @@ known_issues:
 
 ## 试跑场景 B（已完成）
 
-场景：`~/.codex` 生产安装与回滚点校验
+场景：`~/codex -> ~/.codex` 生产交接与回滚点校验
 
 [artifact:ImplementationPlan]
 status: READY
 owner: Codex
 scope:
-- 使用 `copy` 模式安装 adk 到 `~/.codex`
-- 安装前备份 `agents/skills`
-- 生成安装报告并执行健康检查
+- 生成符合 `~/codex` 规范的 handoff
+- 由 `~/codex` 负责 build、plan、apply dry-run 和运行目录健康检查
+- 历史直接安装记录仅作归档参考，不作为当前生产验收依据
 inputs:
 - agent-dev-kit/manifest.yaml
-- agent-dev-kit/scripts/install_assets.sh
+- agent-dev-kit/scripts/check-codex-handoff.sh
 handoff_to:
 - 后续六类 pilot 场景
 
@@ -124,11 +120,11 @@ status: PASS
 owner: Codex
 tests_run:
 - `rtk bash -lc 'cd agent-dev-kit && bash scripts/devkit.sh validate --strict'` -> `Validation passed. strict=1 quick=0`
-- `rtk bash -lc 'cd agent-dev-kit && bash scripts/devkit.sh install --tool codex --target ~/.codex --mode copy --profile personal-core --extra-profile release-hardening --with-optional-skill planning-execution-loop --with-optional-skill skill-composition-governance --with-optional-skill security-supply-chain --with-optional-skill cross-team-handoff --with-optional-skill artifact-gated-lite --backup --install-report ../reports/adk-install-report-2026-05-02.md --lock-version 0.3.0'` -> `backup=/home/aiot03/.codex/.adk-backups/20260502T104514Z`
+- `rtk bash -lc 'cd agent-dev-kit && bash scripts/check-codex-handoff.sh --codex-root ~/codex'` -> `codex handoff conforms to ~/codex source and manifest contract`
 - `rtk scripts/check-global-codex-health.sh ~/.codex minimal` -> `errors=0 warnings=0`
 - `rtk scripts/check-adk-harden-readiness.sh . --require-pilot` -> `global codex health ready`
 known_issues:
-- 生产安装和六类 adk 自举 pilot 已完成；真实业务任务样例仍需后续补充
+- 当前机器仅保留 handoff/build/plan/apply dry-run 和 health 证据；真实 apply 与回滚备份按 `~/codex` 发布流程单独记录
 
 ## 试跑场景 C：新功能交付（已完成）
 
@@ -144,8 +140,8 @@ scope:
 - 用代表性功能交付输入触发 skill routing
 - 记录命令级证据，作为新功能 delivery pilot
 inputs:
-- agent-dev-kit/optional-skills/planning-execution-loop/SKILL.md
-- agent-dev-kit/scripts/skill_match.sh
+- agent-dev-kit/optional-skills/adk-planning-execution-loop/SKILL.md
+- agent-dev-kit/scripts/skill-match.sh
 handoff_to:
 - 后续真实功能开发任务默认采用计划审查与检查点闭环
 
@@ -229,7 +225,7 @@ scope:
 - 证明本轮新增 Agent/Skill/Workflow 资产仍满足 manifest 与结构约束
 inputs:
 - agent-dev-kit/manifest.yaml
-- agent-dev-kit/scripts/validate_assets.sh
+- agent-dev-kit/scripts/validate-assets.sh
 handoff_to:
 - 后续较大重构前后的资产一致性门禁
 
@@ -261,17 +257,17 @@ known_issues:
 
 scenario_key: pilot_release_hardening_done
 
-场景：发布前安装计划必须可 dry-run、可锁版本、可产出 install report，并覆盖 release-hardening profile。
+场景：发布前必须可生成 Codex handoff、可由 `~/codex` 构建和校验，并覆盖 release-hardening profile。
 
 [artifact:ImplementationPlan]
 status: READY
 owner: Codex
 scope:
-- 使用 release-hardening profile 执行 dry-run 安装
-- 带入 `security-supply-chain` optional skill 与 `--lock-version 0.3.0`
-- 验证安装计划不会直接写入生产目录
+- 使用 release-hardening profile 执行 Codex handoff 校验
+- 带入 `adk-security-supply-chain` optional skill
+- 验证 adk 不绕过 `~/codex` 直接写入生产运行目录
 inputs:
-- agent-dev-kit/scripts/install_assets.sh
+- agent-dev-kit/scripts/check-codex-handoff.sh
 - agent-dev-kit/manifest.yaml
 handoff_to:
 - 后续正式发布前的 dry-run 与回滚点审查
@@ -291,14 +287,14 @@ can_follow_up:
 status: PASS
 owner: Codex
 tests_run:
-- `rtk bash -lc 'cd agent-dev-kit && bash scripts/devkit.sh install --tool codex --target /tmp/adk-release-pilot-codex --mode copy --profile release-hardening --with-optional-skill security-supply-chain --install-report /tmp/adk-release-pilot-install.md --lock-version 0.3.0 --dry-run'` -> `Install completed`
+- `rtk bash -lc 'cd agent-dev-kit && bash scripts/check-codex-handoff.sh --codex-root ~/codex'` -> `codex handoff conforms to ~/codex source and manifest contract`
 known_issues:
 - None
 
 ## Evidence Index（命令级）
 | Command | Exit Code | Result Summary | Evidence Path | Layer | Related Artifact |
 |---|---:|---|---|---|---|
-| `rtk bash -lc 'cd agent-dev-kit && bash scripts/devkit.sh install --tool codex --target /tmp/adk-release-pilot-codex --mode copy --profile release-hardening --with-optional-skill security-supply-chain --install-report /tmp/adk-release-pilot-install.md --lock-version 0.3.0 --dry-run'` | 0 | release-hardening dry-run 安装计划通过 | reports/codex-pilot-report.md#试跑场景-f发布收口已完成 | Workflow | TestReport |
+| `rtk bash -lc 'cd agent-dev-kit && bash scripts/check-codex-handoff.sh --codex-root ~/codex'` | 0 | release-hardening Codex handoff 校验通过 | reports/codex-pilot-report.md#试跑场景-f发布收口已完成 | Workflow | TestReport |
 
 ## 试跑场景 G：团队交接（已完成）
 
@@ -313,8 +309,8 @@ scope:
 - 验证 `cross-team-handoff` 在已安装 optional skills 中具备可触发入口
 - 用代表性交接输入触发 skill routing
 inputs:
-- agent-dev-kit/optional-skills/cross-team-handoff/SKILL.md
-- agent-dev-kit/scripts/skill_match.sh
+- agent-dev-kit/optional-skills/adk-cross-team-handoff/SKILL.md
+- agent-dev-kit/scripts/skill-match.sh
 handoff_to:
 - 后续团队协作任务的交接清单模板
 

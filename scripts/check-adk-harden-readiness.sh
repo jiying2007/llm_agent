@@ -118,6 +118,7 @@ echo "[INFO] gate=${GATE_FILE}"
 bash "${ADK_DIR}/scripts/validate-assets.sh" --strict
 bash "${ADK_DIR}/tests/test_optional_skills.sh"
 bash "${ADK_DIR}/tests/test_no_external_repo_refs.sh"
+bash "${ROOT}/scripts/check-stale-references.sh" "${ROOT}"
 bash "${ROOT}/scripts/check-file-modes.sh" "${ROOT}"
 bash "${ADK_DIR}/scripts/check-file-modes.sh" "${ADK_DIR}"
 

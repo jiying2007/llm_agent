@@ -56,26 +56,26 @@
   - README.md
   - scripts/auto-ops.sh
   - scripts/backup-rollback.sh
-  - scripts/catalog_assets.sh
-  - scripts/check_change_governance.sh
-  - scripts/check_format.sh
-  - scripts/check_profile_coherence.sh
+  - scripts/catalog-assets.sh
+  - scripts/check-change-governance.sh
+  - scripts/check-format.sh
+  - scripts/check-profile-coherence.sh
   - scripts/check-terminology-consistency.sh
-  - scripts/convert_assets.sh
+  - scripts/convert-assets.sh
   - scripts/devkit.sh
   - scripts/enhanced-gate-check.sh
-  - scripts/evidence_index.sh
+  - scripts/evidence-index.sh
   - scripts/health-check.sh
-  - scripts/install_assets.sh
-  - scripts/lib_manifest.sh
+  - scripts/install-assets.sh
+  - scripts/lib-manifest.sh
   - scripts/monitoring.sh
   - scripts/openspec_bridge.sh
   - scripts/performance.sh
   - scripts/quality-gate-check.sh
   - scripts/release-manager.sh
   - scripts/security.sh
-  - scripts/skill_match.sh
-  - scripts/validate_assets.sh
+  - scripts/skill-match.sh
+  - scripts/validate-assets.sh
   - scripts/version-manager.sh
   - scripts/workflow.sh
   - skills/adk-adr-writer/SKILL.md
@@ -170,4 +170,3 @@
   - templates/workflows/emergency-workflow-template.md
   - templates/workflows/standard-workflow-template.md
 - 建议动作：进入 adoption-matrix 评估（adopt / observe / reject）
-

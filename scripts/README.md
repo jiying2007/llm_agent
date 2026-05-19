@@ -19,16 +19,14 @@ repo,group,priority,sync_mode,branch,enabled,notes,status,owner,last_reviewed_on
 
 默认策略：先压实 `agent-dev-kit`，再跟踪外部子仓更新。
 
-### adk v2.0.0 当前状态（2026-05-05）
+### adk 当前状态（2026-05-19）
 
-- 综合评分: 97/100
-- 全量测试: 97/97 通过
-- 意图路由: 22 条 routing 覆盖全部 28 个 core skill
-- 模板体系: 18 个模板全部填充（含使用说明）
-- Profile: 10 个，含选择指南
-- Scripts: 24 个，8 个运维命令接入 devkit.sh
-- 安装验证: `agent-dev-kit -> ~/codex -> ~/.codex` 真实链路验证
-- shellcheck: 已修复关键警告  
+- 版本锁: `agent-dev-kit.version=2.9.0`
+- Pilot readiness: 10/10 ready，planned=0
+- Fallback replacement score: 62/70，仍保留 explicit fallback 门禁
+- Codex 交接: `agent-dev-kit -> ~/codex -> ~/.codex` 只通过 handoff/build/plan/apply 链路进入运行目录
+- Runtime boundary: 禁止 adk 绕过 `~/codex` 直接写入 `~/.codex`
+- 证据刷新: 当前机器保留 build、doctor、plan、apply dry-run 与 global health 证据
 门禁文件：`subrepos/phase-gate.env`（默认 `allow_upstream_sync=no`）。
 
 阶段门禁已从单一开关扩展为阶段机，当前支持：
@@ -168,12 +166,12 @@ scripts/check-subrepo-state.sh .
 # 严格模式：所有 active 子仓都必须 clean
 scripts/check-subrepo-state.sh . --strict
 
-# 低 token 摘要：区分 known_dirty 和 unexpected_dirty
+# 低 token 摘要：区分 known_dirty、unexpected_dirty 和 stale_baseline
 scripts/check-subrepo-state.sh . --summary-json
 ```
 
 默认模式用于日常门禁，避免参考仓未初始化或本地状态噪音阻断主链路；严格模式用于发布前收敛。
-`subrepos/dirty-baseline.tsv` 记录 observe 子仓的预期 dirty 状态，避免把长期参考仓本地噪音误判为本轮风险。
+`subrepos/dirty-baseline.tsv` 记录 observe 子仓的预期 dirty 状态、status fingerprint、change count、owner 和 expires_on，避免把长期参考仓本地噪音误判为本轮风险，也避免 dirty baseline 变成永久豁免。
 
 证据包生成脚本：
 
@@ -181,9 +179,27 @@ scripts/check-subrepo-state.sh . --summary-json
 scripts/evidence-bundle.sh .
 scripts/evidence-bundle.sh . --format json
 scripts/evidence-bundle.sh . --out reports/evidence-bundle.md
+scripts/evidence-bundle.sh . --format json --fail-on-needs-fix
 ```
 
 该脚本汇总 `adk.lock`、phase gate、subrepo state、codex pilot、global codex health、pilot readiness 和 fallback sunset 结果，用于提交前或发布前附证。
+
+治理健康摘要脚本：
+
+```bash
+scripts/governance-health.sh .
+scripts/governance-health.sh . --format json
+```
+
+该脚本汇总目标漂移、证据包、子仓状态、pilot readiness、fallback sunset 和 runtime boundary，并输出 Top Actions。
+
+active 文档陈旧引用检查脚本：
+
+```bash
+scripts/check-stale-references.sh .
+```
+
+该脚本检查 active 文档中的旧版本状态、旧本机路径、旧脚本名和绕过 `~/codex` 的直接运行目录安装示例；历史 archive 不参与阻断。
 
 adoption-matrix 状态检查脚本（真实记录不得有 `pending`，`blocked` 必须写解除条件）：
 

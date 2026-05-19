@@ -33,6 +33,7 @@ run_check "devkit_health" "${ROOT}/scripts/devkit.sh" health
 run_check "devkit_health_summary_json" "${ROOT}/scripts/devkit.sh" health --summary-json
 run_check "devkit_sync_status" "${ROOT}/scripts/devkit.sh" sync status
 run_check "phase_gate_summary_json" "${ROOT}/scripts/check-phase-gate.sh" "${ROOT}" --summary-json
+run_check "stale_references" "${ROOT}/scripts/check-stale-references.sh" "${ROOT}"
 if "${ROOT}/scripts/check-subrepo-state.sh" "${ROOT}" --summary-json >"${TMP_DIR}/subrepo_state_summary_json.out" 2>"${TMP_DIR}/subrepo_state_summary_json.err"; then
   echo "[PASS] subrepo_state_summary_json"
 else
@@ -41,6 +42,7 @@ fi
 run_check "pilot_evidence_wrapper" "${ROOT}/scripts/check-codex-pilot-evidence.sh" "${ROOT}"
 run_check "pilot_coverage_wrapper" "${ROOT}/scripts/check-codex-pilot-coverage.sh" "${ROOT}"
 run_check "evidence_bundle_json" "${ROOT}/scripts/evidence-bundle.sh" "${ROOT}" --format json
+run_check "governance_health_json" "${ROOT}/scripts/governance-health.sh" "${ROOT}" --format json
 
 weekly_report="${TMP_DIR}/weekly.md"
 run_check "weekly_report" "${ROOT}/scripts/generate-weekly-report.sh" "${ROOT}" --output "${weekly_report}"
@@ -82,6 +84,12 @@ fi
 if [[ -f "${TMP_DIR}/evidence_bundle_json.out" ]]; then
   if ! rg -q '"checks":' "${TMP_DIR}/evidence_bundle_json.out"; then
     record_fail "evidence bundle json missing checks"
+  fi
+fi
+
+if [[ -f "${TMP_DIR}/governance_health_json.out" ]]; then
+  if ! rg -q '"top_actions":' "${TMP_DIR}/governance_health_json.out"; then
+    record_fail "governance health json missing top_actions"
   fi
 fi
 

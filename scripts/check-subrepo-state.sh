@@ -20,7 +20,8 @@ usage: scripts/check-subrepo-state.sh [root] [--strict] [--summary-json]
 Default mode enforces strict cleanliness only for agent-dev-kit. Other enabled
 reference repositories are reported as observe state. If
 subrepos/dirty-baseline.tsv marks an observe repository as expected dirty, the
-row is shown as known-dirty to reduce review noise.
+row is shown as known-dirty only when the stored status fingerprint still matches
+and the baseline has not expired.
 USAGE
       exit 0
       ;;
@@ -60,11 +61,24 @@ baseline_field() {
   ' "${BASELINE}"
 }
 
+date_ge_today() {
+  local value="$1"
+  local today
+  today="$(date +%F)"
+  [[ "${value}" > "${today}" || "${value}" == "${today}" ]]
+}
+
+status_fingerprint() {
+  local porcelain="$1"
+  printf '%s\n' "${porcelain}" | sha256sum | awk '{print $1}'
+}
+
 missing=0
 uninitialized=0
 dirty=0
 known_dirty=0
 unexpected_dirty=0
+stale_baseline=0
 clean=0
 failed=0
 
@@ -101,10 +115,32 @@ while IFS=',' read -r repo group priority sync_mode branch enabled notes status 
       expected_state="$(baseline_field "${repo}" "expected_state" || true)"
       reason="$(baseline_field "${repo}" "reason" || true)"
       baseline_ref="$(baseline_field "${repo}" "baseline_ref" || true)"
+      expected_fingerprint="$(baseline_field "${repo}" "status_fingerprint" || true)"
+      expected_count="$(baseline_field "${repo}" "change_count" || true)"
+      expires_on="$(baseline_field "${repo}" "expires_on" || true)"
+      owner="$(baseline_field "${repo}" "owner" || true)"
       if [[ "${policy}" == "observe" && "${expected_state}" == "dirty" ]]; then
-        state="known-dirty"
-        detail="${detail}; baseline=${baseline_ref:-unknown}; reason=${reason:-expected-observe-state}"
-        known_dirty=$((known_dirty + 1))
+        actual_fingerprint="$(status_fingerprint "${porcelain}")"
+        actual_count="$(printf '%s\n' "${porcelain}" | wc -l | tr -d ' ')"
+        if [[ -z "${expected_fingerprint}" || -z "${expected_count}" || -z "${expires_on}" || -z "${owner}" ]]; then
+          detail="${detail}; baseline=${baseline_ref:-unknown}; missing fingerprint/count/expiry/owner"
+          stale_baseline=$((stale_baseline + 1))
+          unexpected_dirty=$((unexpected_dirty + 1))
+          failed=1
+        elif ! date_ge_today "${expires_on}"; then
+          detail="${detail}; baseline=${baseline_ref:-unknown}; expired=${expires_on}; owner=${owner}"
+          stale_baseline=$((stale_baseline + 1))
+          unexpected_dirty=$((unexpected_dirty + 1))
+          failed=1
+        elif [[ "${actual_fingerprint}" != "${expected_fingerprint}" || "${actual_count}" != "${expected_count}" ]]; then
+          detail="${detail}; baseline=${baseline_ref:-unknown}; fingerprint-mismatch; expected=${expected_count}/${expected_fingerprint}; actual=${actual_count}/${actual_fingerprint}; owner=${owner}"
+          unexpected_dirty=$((unexpected_dirty + 1))
+          failed=1
+        else
+          state="known-dirty"
+          detail="${detail}; baseline=${baseline_ref:-unknown}; fingerprint=${actual_fingerprint}; expires=${expires_on}; owner=${owner}; reason=${reason:-expected-observe-state}"
+          known_dirty=$((known_dirty + 1))
+        fi
       else
         unexpected_dirty=$((unexpected_dirty + 1))
       fi
@@ -132,11 +168,11 @@ done < "${REGISTRY}"
 if [[ "${SUMMARY_JSON}" -eq 1 ]]; then
   status="pass"
   [[ "${failed}" -ne 0 ]] && status="fail"
-  printf '{"status":"%s","clean":%s,"dirty":%s,"known_dirty":%s,"unexpected_dirty":%s,"uninitialized":%s,"missing":%s,"strict":%s}\n' \
-    "${status}" "${clean}" "${dirty}" "${known_dirty}" "${unexpected_dirty}" "${uninitialized}" "${missing}" "${STRICT}"
+  printf '{"status":"%s","clean":%s,"dirty":%s,"known_dirty":%s,"unexpected_dirty":%s,"stale_baseline":%s,"uninitialized":%s,"missing":%s,"strict":%s}\n' \
+    "${status}" "${clean}" "${dirty}" "${known_dirty}" "${unexpected_dirty}" "${stale_baseline}" "${uninitialized}" "${missing}" "${STRICT}"
 else
   echo
-  echo "[SUMMARY] clean=${clean} dirty=${dirty} known_dirty=${known_dirty} unexpected_dirty=${unexpected_dirty} uninitialized=${uninitialized} missing=${missing} strict=${STRICT}"
+  echo "[SUMMARY] clean=${clean} dirty=${dirty} known_dirty=${known_dirty} unexpected_dirty=${unexpected_dirty} stale_baseline=${stale_baseline} uninitialized=${uninitialized} missing=${missing} strict=${STRICT}"
 fi
 
 if [[ "${failed}" -ne 0 ]]; then

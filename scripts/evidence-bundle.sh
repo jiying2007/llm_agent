@@ -4,10 +4,11 @@ set -euo pipefail
 ROOT="${1:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 FORMAT="markdown"
 OUT=""
+FAIL_ON_NEEDS_FIX=0
 
 usage() {
   cat <<USAGE
-usage: scripts/evidence-bundle.sh [root] [--format markdown|json] [--out <path>]
+usage: scripts/evidence-bundle.sh [root] [--format markdown|json] [--out <path>] [--fail-on-needs-fix]
 
 Collects a compact pre-commit / release evidence bundle for llm_agent and
 agent-dev-kit. The command is read-only except for --out.
@@ -32,6 +33,10 @@ while [[ $# -gt 0 ]]; do
     --out)
       OUT="${2:-}"
       shift 2
+      ;;
+    --fail-on-needs-fix)
+      FAIL_ON_NEEDS_FIX=1
+      shift
       ;;
     -h|--help)
       usage
@@ -152,4 +157,9 @@ else
   else
     write_markdown
   fi
+fi
+
+if [[ "${FAIL_ON_NEEDS_FIX}" -eq 1 && "${overall_status}" != "pass" ]]; then
+  echo "[FAIL] evidence bundle status=${overall_status}" >&2
+  exit 1
 fi

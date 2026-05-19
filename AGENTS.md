@@ -95,7 +95,7 @@
 
 | 仓库 | 当前定位 | 优势 | 短板 | 主迭代方向 |
 |---|---|---|---|---|
-| `agent-dev-kit` | 嵌入式系统开发 Agent/Skill/Workflow 工程底座 | 结构清晰，routing 覆盖全 skill，97 测试全通过，已具备向 `~/codex` 交接再进入 `~/.codex` 的生产链路 | 运维脚本可发现性待加强 | 持续迭代运维脚本与真实项目验证 |
+| `agent-dev-kit` | 嵌入式全栈开发 Agent/Skill/Workflow 工程底座 | 结构清晰，routing、pilot readiness、fallback sunset、Codex handoff 与运行态边界门禁已自动化 | active 文档、历史证据与真实设备 readiness 仍需持续防漂移 | 持续迭代治理门禁、真实项目验证与 fallback 下线 |
 
 ---
 
@@ -116,7 +116,7 @@
 3. 第三优先：仅在压实门禁通过后，才允许追踪参考子仓增量更新。
 4. 门禁控制文件：`subrepos/phase-gate.env`。
    - 默认值：`allow_upstream_sync=no`（门禁关闭）
-   - 当前状态：`allow_upstream_sync=yes`（门禁已打开，v2.0.0 发布后）
+   - 当前状态：`allow_upstream_sync=yes`（当前阶段为 `fallback-sunset`，按 `next_review_by` 周期复核）
    - 打开条件：见 phase-gate.env 注释（5 项全部满足）
 5. 门禁检查脚本：`scripts/check-adk-harden-readiness.sh`。
 
@@ -248,7 +248,8 @@
 
 | 版本 | 日期 | 主要变更 |
 |------|------|----------|
-| v2.0.0 | 2026-05-05 | adk 全面优化，97/100 分，97 测试全通过 |
+| v2.9.0 | 2026-05-17 | 扩展 fallback sunset、pilot readiness 与 Codex handoff 门禁 |
+| v2.0.0 | 2026-05-05 | adk 基线压实、资产结构与质量门禁成型 |
 | v1.0.0 | 2026-05-02 | 生产级落地，`~/codex -> ~/.codex` 安装验证 |
 | v0.3.0 | 2026-05-01 | 初始版本，26 子仓治理骨架 |
 
