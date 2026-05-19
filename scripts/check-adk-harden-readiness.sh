@@ -151,6 +151,8 @@ if [[ "${CHECK_RUNTIME_ROUTING}" -eq 1 ]]; then
   bash "${ROOT}/scripts/check-runtime-routing.sh" "${ROOT}"
 fi
 
+bash "${ADK_DIR}/scripts/check-fallback-sunset.sh"
+
 if [[ "${CHECK_UPSTREAM_INTAKE}" -eq 1 ]]; then
   bash "${ROOT}/scripts/check-upstream-intake-readiness.sh" "${ROOT}"
 fi
