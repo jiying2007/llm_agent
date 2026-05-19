@@ -31,6 +31,19 @@ repo,group,priority,sync_mode,branch,enabled,notes,status,owner,last_reviewed_on
 - shellcheck: 已修复关键警告  
 门禁文件：`subrepos/phase-gate.env`（默认 `allow_upstream_sync=no`）。
 
+阶段门禁已从单一开关扩展为阶段机，当前支持：
+
+- `harden-adk`：压实 adk 基线
+- `live-refresh`：刷新 `~/codex -> ~/.codex` 运行态证据
+- `fallback-sunset`：推进 Superpowers fallback 候选下线
+- `upstream-intake-cycle`：恢复参考子仓增量吸收周期
+- `post-harden`：压实完成后的常规维护
+
+```bash
+scripts/check-phase-gate.sh .
+scripts/check-phase-gate.sh . --summary-json
+```
+
 ```bash
 # 先做压实检查（严格校验 + 可选技能回归 + 外部引用门禁）
 scripts/check-adk-harden-readiness.sh .
@@ -154,9 +167,23 @@ scripts/check-subrepo-state.sh .
 
 # 严格模式：所有 active 子仓都必须 clean
 scripts/check-subrepo-state.sh . --strict
+
+# 低 token 摘要：区分 known_dirty 和 unexpected_dirty
+scripts/check-subrepo-state.sh . --summary-json
 ```
 
 默认模式用于日常门禁，避免参考仓未初始化或本地状态噪音阻断主链路；严格模式用于发布前收敛。
+`subrepos/dirty-baseline.tsv` 记录 observe 子仓的预期 dirty 状态，避免把长期参考仓本地噪音误判为本轮风险。
+
+证据包生成脚本：
+
+```bash
+scripts/evidence-bundle.sh .
+scripts/evidence-bundle.sh . --format json
+scripts/evidence-bundle.sh . --out reports/evidence-bundle.md
+```
+
+该脚本汇总 `adk.lock`、phase gate、subrepo state、codex pilot、global codex health、pilot readiness 和 fallback sunset 结果，用于提交前或发布前附证。
 
 adoption-matrix 状态检查脚本（真实记录不得有 `pending`，`blocked` 必须写解除条件）：
 

@@ -42,6 +42,20 @@
    - 安装报告：`reports/adk-install-report-2026-05-02.md`
    - 回滚备份：`/home/aiot03/.codex/.adk-backups/20260502T104514Z`
 
+## 2026-05-19 当前机器运行态刷新
+
+本节只刷新当前机器 `~/codex -> ~/.codex` 的只读 / dry-run 证据，不直接写入 `~/.codex`。
+
+| Command | Exit Code | Result Summary | Evidence Path | Layer | Related Artifact |
+|---|---:|---|---|---|---|
+| `rtk bash scripts/build.sh --profile team-collab --build /tmp/adk-codex-build` | 0 | `team-collab` build 成功，managed=584 | `/tmp/adk-codex-build` | Codex Home | Runtime Refresh |
+| `rtk bash scripts/doctor.sh --scope live --target /home/leiwenjun/.codex` | 0 | live doctor 通过，errors=0 warnings=0，PROFILE=team-collab | command output | Runtime | Runtime Refresh |
+| `rtk bash scripts/plan.sh --build /tmp/adk-codex-build --target /home/leiwenjun/.codex --output /tmp/adk-apply-plan.json` | 0 | apply plan 生成成功，copy=0 keep=394 overwrite=0 mkdir=192 skip=0 | `/tmp/adk-apply-plan.json` | Runtime | Runtime Refresh |
+| `rtk bash scripts/apply.sh --build /tmp/adk-codex-build --target /home/leiwenjun/.codex --profile team-collab --no-build --dry-run --plan-out /tmp/adk-apply-dry-run-plan.json` | 0 | apply dry-run 通过，未写入运行目录 | `/tmp/adk-apply-dry-run-plan.json` | Runtime | Runtime Refresh |
+| `rtk bash scripts/evidence-bundle.sh . --format json` | 0 | 生成 llm_agent/adk 门禁摘要；当前 `agent-dev-kit` 正在修改，因此 subrepo_state 显示 1 个 unexpected_dirty | command output | Governance | Evidence Bundle |
+
+结论：当前机器的 Codex Home 构建、运行态健康、apply plan 和 apply dry-run 均可复现；本轮未执行真实 apply，因此没有产生新的 `~/.codex` 备份。
+
 ## 试跑场景 A（已完成）
 
 场景：`~/.codex` 高风险配置门禁校验（RTK/skills 链接一致性与配置渲染状态）

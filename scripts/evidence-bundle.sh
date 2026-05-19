@@ -1,0 +1,155 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="${1:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+FORMAT="markdown"
+OUT=""
+
+usage() {
+  cat <<USAGE
+usage: scripts/evidence-bundle.sh [root] [--format markdown|json] [--out <path>]
+
+Collects a compact pre-commit / release evidence bundle for llm_agent and
+agent-dev-kit. The command is read-only except for --out.
+USAGE
+}
+
+shift_root=0
+if [[ $# -gt 0 && "$1" != --* ]]; then
+  ROOT="$1"
+  shift_root=1
+fi
+if [[ "${shift_root}" -eq 1 ]]; then
+  shift
+fi
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --format)
+      FORMAT="${2:-}"
+      shift 2
+      ;;
+    --out)
+      OUT="${2:-}"
+      shift 2
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "[FAIL] unknown arg: $1" >&2
+      usage >&2
+      exit 1
+      ;;
+  esac
+done
+
+case "${FORMAT}" in
+  markdown|json)
+    ;;
+  *)
+    echo "[FAIL] unsupported format: ${FORMAT}" >&2
+    exit 1
+    ;;
+esac
+
+ADK_DIR="${ROOT}/agent-dev-kit"
+TMP_DIR="$(mktemp -d)"
+trap 'rm -rf "${TMP_DIR}"' EXIT
+
+json_string() {
+  local value="$1"
+  value="${value//\\/\\\\}"
+  value="${value//\"/\\\"}"
+  value="${value//$'\n'/\\n}"
+  printf '"%s"' "${value}"
+}
+
+run_capture() {
+  local name="$1"
+  shift
+  local out_file="${TMP_DIR}/${name}.out"
+  local rc=0
+  set +e
+  "$@" >"${out_file}" 2>&1
+  rc=$?
+  set -e
+  printf '%s' "${rc}" >"${TMP_DIR}/${name}.rc"
+}
+
+run_capture adk_lock "${ROOT}/scripts/check-adk-lock.sh" "${ROOT}"
+run_capture phase_gate "${ROOT}/scripts/check-phase-gate.sh" "${ROOT}" --summary-json
+run_capture subrepo_state "${ROOT}/scripts/check-subrepo-state.sh" "${ROOT}" --summary-json
+run_capture codex_pilot "${ROOT}/scripts/check-codex-pilot.sh" "${ROOT}" evidence
+run_capture global_codex "${ROOT}/scripts/check-global-codex-health.sh" "$HOME/.codex" minimal
+run_capture pilot_readiness "${ADK_DIR}/scripts/pilot-readiness.sh" --summary-json
+run_capture fallback_sunset "${ADK_DIR}/scripts/check-fallback-sunset.sh" --summary-json
+
+root_head="$(git -C "${ROOT}" rev-parse --short HEAD)"
+adk_head="$(git -C "${ADK_DIR}" rev-parse --short HEAD)"
+generated_at="$(date -Iseconds)"
+overall_status="pass"
+for check_name in adk_lock phase_gate subrepo_state codex_pilot global_codex pilot_readiness fallback_sunset; do
+  if [[ "$(cat "${TMP_DIR}/${check_name}.rc")" -ne 0 ]]; then
+    overall_status="needs-fix"
+  fi
+done
+
+write_markdown() {
+  cat <<MD
+# llm_agent Evidence Bundle
+
+- generated_at: ${generated_at}
+- status: ${overall_status}
+- root_head: ${root_head}
+- agent_dev_kit_head: ${adk_head}
+
+| Check | Exit Code | Summary |
+|---|---:|---|
+| adk_lock | $(cat "${TMP_DIR}/adk_lock.rc") | $(tr '\n' ' ' < "${TMP_DIR}/adk_lock.out") |
+| phase_gate | $(cat "${TMP_DIR}/phase_gate.rc") | $(tr '\n' ' ' < "${TMP_DIR}/phase_gate.out") |
+| subrepo_state | $(cat "${TMP_DIR}/subrepo_state.rc") | $(tr '\n' ' ' < "${TMP_DIR}/subrepo_state.out") |
+| codex_pilot_evidence | $(cat "${TMP_DIR}/codex_pilot.rc") | $(tr '\n' ' ' < "${TMP_DIR}/codex_pilot.out") |
+| global_codex_health | $(cat "${TMP_DIR}/global_codex.rc") | $(tr '\n' ' ' < "${TMP_DIR}/global_codex.out") |
+| pilot_readiness | $(cat "${TMP_DIR}/pilot_readiness.rc") | $(tr '\n' ' ' < "${TMP_DIR}/pilot_readiness.out") |
+| fallback_sunset | $(cat "${TMP_DIR}/fallback_sunset.rc") | $(tr '\n' ' ' < "${TMP_DIR}/fallback_sunset.out") |
+MD
+}
+
+write_json() {
+  printf '{\n'
+  printf '  "generated_at": %s,\n' "$(json_string "${generated_at}")"
+  printf '  "status": %s,\n' "$(json_string "${overall_status}")"
+  printf '  "root_head": %s,\n' "$(json_string "${root_head}")"
+  printf '  "agent_dev_kit_head": %s,\n' "$(json_string "${adk_head}")"
+  printf '  "checks": [\n'
+  local first=1
+  local name
+  for name in adk_lock phase_gate subrepo_state codex_pilot global_codex pilot_readiness fallback_sunset; do
+    [[ "${first}" -eq 1 ]] || printf ',\n'
+    first=0
+    printf '    {"name": %s, "exit_code": %s, "summary": %s}' \
+      "$(json_string "${name}")" \
+      "$(cat "${TMP_DIR}/${name}.rc")" \
+      "$(json_string "$(cat "${TMP_DIR}/${name}.out")")"
+  done
+  printf '\n  ]\n'
+  printf '}\n'
+}
+
+if [[ -n "${OUT}" ]]; then
+  mkdir -p "$(dirname "${OUT}")"
+  if [[ "${FORMAT}" == "json" ]]; then
+    write_json >"${OUT}"
+  else
+    write_markdown >"${OUT}"
+  fi
+  echo "[PASS] evidence bundle written: ${OUT}"
+else
+  if [[ "${FORMAT}" == "json" ]]; then
+    write_json
+  else
+    write_markdown
+  fi
+fi

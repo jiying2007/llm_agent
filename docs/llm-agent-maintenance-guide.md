@@ -34,6 +34,7 @@
 | `subrepos/adoption-matrix.md` | 候选采纳矩阵 | 每个候选必须有决策、状态、目标层和证据 |
 | `subrepos/adoption-matrix.jsonl` | 候选矩阵结构化导出 | 由 Markdown 矩阵机械生成，供脚本低 token 读取 |
 | `subrepos/phase-gate.env` | 是否允许追踪上游更新 | 默认先压实 adk，再开门同步 |
+| `subrepos/dirty-baseline.tsv` | observe 子仓预期 dirty 状态 | 区分已知参考仓噪音与本轮风险 dirty |
 | `adk.lock` | adk 版本和子模块指针锁 | adk 升级或子模块指针变化时同步更新 |
 | `scripts/` | 治理、同步、门禁脚本 | 新脚本必须写入 `scripts/README.md` |
 | `reports/` | pilot、安装、周报、wave 记录 | 生产结论必须有报告证据 |
@@ -47,6 +48,7 @@
 ```bash
 rtk scripts/check-doc-sync.sh .
 rtk scripts/check-adk-lock.sh .
+rtk scripts/check-phase-gate.sh .
 rtk scripts/check-subrepo-state.sh .
 rtk scripts/check-runtime-routing.sh .
 rtk scripts/check-upstream-intake-readiness.sh .
@@ -223,6 +225,17 @@ $HOME/.codex/.adk-backups/YYYYMMDDTHHMMSSZ
 ```bash
 rtk scripts/check-adk-harden-readiness.sh . --require-pilot
 ```
+
+### 8.1.1 如何生成提交或发布证据包？
+
+使用统一 evidence bundle：
+
+```bash
+rtk scripts/evidence-bundle.sh . --out reports/evidence-bundle.md
+rtk scripts/evidence-bundle.sh . --format json
+```
+
+证据包会汇总 `adk.lock`、phase gate、subrepo state、codex pilot、global codex health、pilot readiness 和 fallback sunset 结果。它不替代完整回归，但适合提交说明、PR 描述和发布记录附证。
 
 ### 8.2 是否可以直接更新参考子仓？
 

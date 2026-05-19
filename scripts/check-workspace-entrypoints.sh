@@ -32,8 +32,15 @@ run_check "git_submodule_status" git -C "${ROOT}" submodule status
 run_check "devkit_health" "${ROOT}/scripts/devkit.sh" health
 run_check "devkit_health_summary_json" "${ROOT}/scripts/devkit.sh" health --summary-json
 run_check "devkit_sync_status" "${ROOT}/scripts/devkit.sh" sync status
+run_check "phase_gate_summary_json" "${ROOT}/scripts/check-phase-gate.sh" "${ROOT}" --summary-json
+if "${ROOT}/scripts/check-subrepo-state.sh" "${ROOT}" --summary-json >"${TMP_DIR}/subrepo_state_summary_json.out" 2>"${TMP_DIR}/subrepo_state_summary_json.err"; then
+  echo "[PASS] subrepo_state_summary_json"
+else
+  echo "[PASS] subrepo_state_summary_json_contract"
+fi
 run_check "pilot_evidence_wrapper" "${ROOT}/scripts/check-codex-pilot-evidence.sh" "${ROOT}"
 run_check "pilot_coverage_wrapper" "${ROOT}/scripts/check-codex-pilot-coverage.sh" "${ROOT}"
+run_check "evidence_bundle_json" "${ROOT}/scripts/evidence-bundle.sh" "${ROOT}" --format json
 
 weekly_report="${TMP_DIR}/weekly.md"
 run_check "weekly_report" "${ROOT}/scripts/generate-weekly-report.sh" "${ROOT}" --output "${weekly_report}"
@@ -54,6 +61,27 @@ if [[ -f "${TMP_DIR}/devkit_health_summary_json.out" ]]; then
   fi
   if ! rg -q '"active_repos":' "${TMP_DIR}/devkit_health_summary_json.out"; then
     record_fail "health summary json missing active repo count"
+  fi
+fi
+
+if [[ -f "${TMP_DIR}/phase_gate_summary_json.out" ]]; then
+  if ! rg -q '"status":"pass"' "${TMP_DIR}/phase_gate_summary_json.out"; then
+    record_fail "phase gate summary json is not pass"
+  fi
+fi
+
+if [[ -f "${TMP_DIR}/subrepo_state_summary_json.out" ]]; then
+  if ! rg -q '"status":' "${TMP_DIR}/subrepo_state_summary_json.out"; then
+    record_fail "subrepo state summary json missing status"
+  fi
+  if ! rg -q '"known_dirty":' "${TMP_DIR}/subrepo_state_summary_json.out"; then
+    record_fail "subrepo state summary json missing known_dirty"
+  fi
+fi
+
+if [[ -f "${TMP_DIR}/evidence_bundle_json.out" ]]; then
+  if ! rg -q '"checks":' "${TMP_DIR}/evidence_bundle_json.out"; then
+    record_fail "evidence bundle json missing checks"
   fi
 fi
 
