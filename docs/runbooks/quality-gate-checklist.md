@@ -118,13 +118,15 @@ scripts/check-global-codex-health.sh [CODEX_ROOT] [PROFILE]
 
 **通过标准**:
 - `CODEX_ROOT` 目录存在。
-- `$CODEX_ROOT/control/scripts/doctor.sh` 存在且可执行。
-- `doctor.sh` 以指定 profile 运行返回 exit 0。
+- `~/codex/scripts/doctor.sh` 存在。
+- `~/codex/scripts/doctor.sh --scope live --target CODEX_ROOT` 返回 exit 0 且输出 `errors=0`。
+- `PROFILE=security|strict` 时，未审查 provider/base URL 会阻断，MCP loaded-list 审计必须可执行或给出降级原因。
 
 **失败排查**:
 - `[FAIL] global codex dir missing` → 确认 `~/codex` 已执行 build/apply 到 `~/.codex`。
-- `[FAIL] doctor script missing` → 确认 `~/codex` v2 control 状态和 `~/.codex/control/state/managed-files.json` 存在；不要从 adk 直接补文件。
+- `[FAIL] ~/codex doctor script missing` → 确认 `~/codex` 声明式资产仓库存在；不要从 adk 直接补 `~/.codex` 文件。
 - doctor 运行失败 → 先在 `~/codex` 运行 `scripts/doctor.sh --scope all` 和 apply dry-run，再修复 `~/.codex` 目录结构。
+- security profile 失败 → 审查 base URL / relay / MCP / hooks，必要时设置 `CODEX_TRUSTED_BASE_URLS` 为已审查端点片段后复跑。
 
 ---
 

@@ -23,7 +23,7 @@ repo,group,priority,sync_mode,branch,enabled,notes,status,owner,last_reviewed_on
 
 - 版本锁: `agent-dev-kit.version=2.9.0`
 - Pilot readiness: 10/10 ready，planned=0
-- Fallback replacement score: 62/70，仍保留 explicit fallback 门禁
+- Fallback replacement score: 62/70，6 个能力已进入 candidate-sunset，剩余缺口主要是 Codex live skill 未实装
 - Codex 交接: `agent-dev-kit -> ~/codex -> ~/.codex` 只通过 handoff/build/plan/apply 链路进入运行目录
 - Runtime boundary: 禁止 adk 绕过 `~/codex` 直接写入 `~/.codex`
 - 证据刷新: 当前机器保留 build、doctor、plan、apply dry-run 与 global health 证据
@@ -117,7 +117,10 @@ scripts/check-codex-pilot.sh . full
 
 ```bash
 scripts/check-global-codex-health.sh ~/.codex minimal
+scripts/check-global-codex-health.sh ~/.codex security
 ```
+
+`minimal` 保持兼容，只校验 `~/codex doctor --scope live` 与 `errors=0`；`security`/`strict` 追加 provider/base URL、MCP loaded list 和 hooks 审计。非标准 base URL 必须通过 `CODEX_TRUSTED_BASE_URLS` 显式声明为已审查端点。
 
 技能元数据检查脚本：
 
@@ -180,9 +183,10 @@ scripts/evidence-bundle.sh .
 scripts/evidence-bundle.sh . --format json
 scripts/evidence-bundle.sh . --out reports/evidence-bundle.md
 scripts/evidence-bundle.sh . --format json --fail-on-needs-fix
+scripts/evidence-bundle.sh . --format json --max-summary-chars 240
 ```
 
-该脚本汇总 `adk.lock`、phase gate、subrepo state、codex pilot、global codex health、pilot readiness 和 fallback sunset 结果，用于提交前或发布前附证。
+该脚本汇总 `adk.lock`、phase gate、subrepo state、codex pilot、global codex health、Codex live 实装态、pilot readiness 和 fallback sunset 结果，用于提交前或发布前附证；默认会截断单项 summary，避免证据摘要本身消耗过多上下文。
 
 治理健康摘要脚本：
 
@@ -191,7 +195,7 @@ scripts/governance-health.sh .
 scripts/governance-health.sh . --format json
 ```
 
-该脚本汇总目标漂移、证据包、子仓状态、pilot readiness、fallback sunset 和 runtime boundary，并输出 Top Actions。
+该脚本汇总目标漂移、证据包、子仓状态、pilot readiness、fallback sunset、runtime boundary、Codex live 实装态和 session coach，并输出 Top Actions。
 
 active 文档陈旧引用检查脚本：
 
@@ -200,6 +204,26 @@ scripts/check-stale-references.sh .
 ```
 
 该脚本检查 active 文档中的旧版本状态、旧本机路径、旧脚本名和绕过 `~/codex` 的直接运行目录安装示例；历史 archive 不参与阻断。
+
+Codex live 实装态与长会话提醒：
+
+```bash
+scripts/check-codex-adk-live.sh . --summary-json  # 低 token 摘要
+scripts/check-codex-adk-live.sh . --strict        # core-live 缺失时失败
+scripts/session-coach.sh . --summary-json         # Top Action
+scripts/session-coach.sh . --deep --summary-json  # 追加 live/token 检查
+```
+
+`check-codex-adk-live.sh` 检查 fallback 矩阵中的 adk 等价 skill 是否已在 `~/.codex` direct/system/vendor 路径实装；`session-coach.sh` 根据 dirty worktree、资产变更和 `THREAD_LONG`/`CTX_PRESSURE` 输出 Top Action。
+
+Token budget 检查脚本：
+
+```bash
+scripts/check-token-budget.sh .
+scripts/check-token-budget.sh . --summary-json
+```
+
+该脚本检查 `agent-dev-kit` Skill/doc 入口体量、全量测试默认输出策略、根仓 active 文档体量、关键脚本低 token 摘要入口和 `governance-health` JSON 输出大小，防止治理能力扩展后默认上下文继续膨胀。
 
 adoption-matrix 状态检查脚本（真实记录不得有 `pending`，`blocked` 必须写解除条件）：
 
@@ -393,6 +417,10 @@ scripts/devkit.sh diff 14
 # 健康检查
 scripts/devkit.sh health
 scripts/devkit.sh health --summary-json
+
+# Codex live / 长会话提醒
+scripts/devkit.sh codex-live --summary-json
+scripts/devkit.sh coach --deep --summary-json
 
 # 生成周报
 scripts/devkit.sh weekly-report
