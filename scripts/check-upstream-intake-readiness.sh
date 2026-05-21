@@ -3,9 +3,29 @@ set -euo pipefail
 
 ROOT="${1:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 MATRIX="${ROOT}/subrepos/adoption-matrix.md"
+REGISTRY="${ROOT}/subrepos/registry.csv"
 
 if [[ ! -f "${MATRIX}" ]]; then
   echo "[FAIL] adoption matrix missing: ${MATRIX}" >&2
+  exit 1
+fi
+if [[ ! -f "${REGISTRY}" ]]; then
+  echo "[FAIL] registry missing: ${REGISTRY}" >&2
+  exit 1
+fi
+
+tmp_enabled="$(mktemp)"
+tmp_matrix="$(mktemp)"
+tmp_missing="$(mktemp)"
+trap 'rm -f "${tmp_enabled}" "${tmp_matrix}" "${tmp_missing}"' EXIT
+
+awk -F',' 'NR>1 && $6=="yes" {print $1}' "${REGISTRY}" | sort -u > "${tmp_enabled}"
+awk -F'|' '/^\| [0-9]{4}-[0-9]{2}-[0-9]{2} \|/ {repo=$3; gsub(/^ +| +$/, "", repo); print repo}' "${MATRIX}" | sort -u > "${tmp_matrix}"
+comm -23 "${tmp_enabled}" "${tmp_matrix}" > "${tmp_missing}" || true
+
+if [[ -s "${tmp_missing}" ]]; then
+  echo "[FAIL] enabled repos missing in adoption matrix:" >&2
+  cat "${tmp_missing}" >&2
   exit 1
 fi
 

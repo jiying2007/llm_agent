@@ -9,6 +9,9 @@ if [[ ! -f "${MATRIX}" ]]; then
   exit 1
 fi
 
+tmp_rows="$(mktemp)"
+trap 'rm -f "${tmp_rows}"' EXIT
+
 awk -F'|' '
 function trim(s) {
   gsub(/^[ \t]+|[ \t]+$/, "", s)
@@ -28,6 +31,8 @@ function trim(s) {
     if (evidence == "") {
       printf("[FAIL] delivery adopt row has empty evidence:\n%s\n", row) > "/dev/stderr"
       failed = 1
+    } else {
+      printf("%d|%s\n", NR, evidence)
     }
   }
 }
@@ -41,7 +46,21 @@ END {
   if (failed) {
     exit 3
   }
-
-  printf("[PASS] delivery adopt depth checks passed (%d rows)\n", checked)
 }
-' "${MATRIX}"
+' "${MATRIX}" > "${tmp_rows}"
+
+if [[ -s "${tmp_rows}" ]]; then
+  while IFS='|' read -r line_no evidence; do
+    while IFS= read -r item; do
+      path="$(printf '%s' "${item}" | sed 's/^ *//;s/ *$//' | sed 's/#.*$//')"
+      [[ -z "${path}" ]] && continue
+      if [[ ! -e "${ROOT}/${path}" && ! -e "${path}" ]]; then
+        echo "[FAIL] delivery adopt evidence path missing (line ${line_no}): ${path}" >&2
+        exit 3
+      fi
+    done < <(printf '%s\n' "${evidence}" | sed 's/;/\n/g')
+  done < "${tmp_rows}"
+fi
+
+checked="$(wc -l < "${tmp_rows}" | tr -d ' ')"
+echo "[PASS] delivery adopt depth checks passed (${checked} rows)"

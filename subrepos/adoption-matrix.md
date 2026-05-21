@@ -19,7 +19,7 @@
 | 2026-05-02 | agent-skills | agent-ecosystem | 技能触发路由与生命周期映射（流程完备，保留方法论参考） | 中 | 中 | 中 | adopt | done | agent-dev-kit | agent-dev-kit/docs/agent-skill-catalog.md |
 | 2026-05-02 | skills | agent-ecosystem | skills CLI 目录约定与安装入口（安装机制已吸收为兼容性约束） | 中 | 低 | 中 | adopt | done | agent-dev-kit | agent-dev-kit/docs/runbooks/feature-delivery.md |
 | 2026-05-02 | mattpocock-skills | agent-ecosystem | 小技能组合范式与 deprecated 分层治理 | 中 | 中 | 低 | adopt | done | agent-dev-kit | reports/weekly-change-report.md |
-| 2026-05-02 | hermes-collaboration-skill | agent-ecosystem | 多人协作文档模板与 runbook 化结构（文档范式已吸收，以 runbook 方式落地） | 中 | 低 | 中 | adopt | done | agent-dev-kit | agent-dev-kit/optional-skills/cross-team-handoff/SKILL.md |
+| 2026-05-02 | hermes-collaboration-skill | agent-ecosystem | 多人协作文档模板与 runbook 化结构（文档范式已吸收，以 runbook 方式落地） | 中 | 低 | 中 | adopt | done | agent-dev-kit | agent-dev-kit/optional-skills/adk-cross-team-handoff/SKILL.md |
 | 2026-05-02 | Migrationed_skills | skill-pool | 历史技能池候选筛选机制（资产池价值高，保留为按需提取来源） | 中 | 中 | 中 | adopt | done | agent-dev-kit | agent-dev-kit/docs/runbooks/skill-curation-delivery.md |
 | 2026-05-02 | hermes-agent | delivery | 大型 Agent 工程目录职责与发布脚本治理（已吸收为大仓交付触点模板与收口约束） | 中 | 中 | 中 | adopt | done | agent-dev-kit | agent-dev-kit/docs/runbooks/large-platform-delivery.md |
 | 2026-05-02 | AUBB-Server | delivery | 业务闭环中的验证证据写法（已吸收为命令级 Evidence Index 交付标准） | 中 | 中 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/docs/runbooks/evidence-index-delivery.md |
@@ -37,9 +37,9 @@
 | 2026-05-08 | workspace | knowledge | 27 条候选能力完整评估矩阵（含决策、验收状态、证据） | 高 | 低 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/docs/reference-adoption-matrix.md |
 | 2026-05-08 | workspace | knowledge | "道法术器"四层方法论框架（哲学→组织→战术→工具） | 高 | 低 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/docs/best-practices-cookbook.md |
 | 2026-05-08 | workspace | knowledge | 9 款工具速查表（30 秒决策矩阵 + 能力对比表） | 中 | 低 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/docs/reference/tool-cheatsheet.md |
-| 2026-05-08 | workspace | delivery | 子仓治理脚本完整使用手册（24+ 脚本用法） | 高 | 低 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/docs/runbooks/workspace-scripts-guide.md |
+| 2026-05-08 | workspace | delivery | 子仓治理脚本完整使用手册（24+ 脚本用法） | 高 | 低 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/docs/runbooks/workspace-maintenance-guide.md |
 | 2026-05-08 | workspace | adk-core | 意图路由表 + 子仓清单 + 优先级门禁治理全景 | 高 | 低 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/docs/workspace-governance.md |
-| 2026-05-08 | superpowers | workflow-core | 贡献规范（94% PR 拒绝率策略） | 中 | 低 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/docs/reference/superpowers-agents.md |
+| 2026-05-08 | superpowers | workflow-core | 贡献规范（94% PR 拒绝率策略） | 中 | 低 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/docs/reference/engineering-agents.md |
 | 2026-05-08 | workspace | workflow-core | Artifact 门禁协议模式（统一标签+状态+交接） | 高 | 低 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/skills/adk-artifact-gating/SKILL.md |
 | 2026-05-08 | workspace | workflow-core | Pilot 试跑框架模式（场景+证据+门禁） | 高 | 低 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/skills/adk-pilot-framework/SKILL.md |
 | 2026-05-08 | workspace | workflow-core | 子仓接入工作流模式（扫描+分析+决策） | 高 | 低 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/skills/adk-intake-workflow/SKILL.md |
@@ -52,6 +52,8 @@
 | 2026-05-12 | vibeflow | workflow-core | Rules 分层目录结构（避免全局污染） | 中 | 低 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/rules/README.md |
 | 2026-05-12 | vibeflow | workflow-core | Router 自动阶段检测（不采纳独立 Router persona，改用内置路由） | 中 | 高 | 中 | reject | done | agent-dev-kit | agent-dev-kit/references/orchestration-patterns.md; agent-dev-kit/scripts/skill-match.sh |
 | 2026-05-12 | vibeflow | workflow-core | 复盘机制（Reflect skill） | 中 | 中 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/templates/LESSONS.md |
+| 2026-05-20 | Trellis | reference | 多平台模板与任务状态上下文脚本体系（优先保留为参考，不直接纳入核心流程） | 中 | 中 | 中 | reject | done | agent-dev-kit | reports/weekly-change-report.md |
+| 2026-05-20 | agent-browser | tooling | 浏览器自动化 CLI 的快照压缩与 ref 交互模式（先验证可迁移性，再决定是否核心采纳） | 中 | 中 | 中 | reject | done | agent-dev-kit | subrepos/adoption-matrix.md |
 
 ## 模板
 
