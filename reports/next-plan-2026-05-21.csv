@@ -1,0 +1,6 @@
+id,wave,task,scope,status,owner,evidence,acceptance
+NP-001,WaveA,来源仓30天变更分拣,"hermes-agent;mattpocock-skills;Trellis;agent-browser;codex-cookbook;agent-skills;skills;superpowers;hermes-collaboration-skill",completed,adk-team,reports/waveA-source-intake-2026-05-21.md,来源仓条目完整且可追溯
+NP-002,WaveA,reject项optional试点定义,"Trellis;agent-browser",completed,adk-team,agent-dev-kit/docs/runbooks/optional-pilot-boundary.md,形成不入core的试点边界
+NP-003,WaveB,高收益候选落地到目标仓,agent-dev-kit,completed,adk-team,"agent-dev-kit/docs/runbooks/upstream-intake.md;agent-dev-kit/docs/runbooks/skill-curation-delivery.md",至少2项落地并有证据路径
+NP-004,WaveB,快速门禁回归,llm_agent,pending,adk-team,scripts/check-all.sh --quick,quick门禁全PASS
+NP-005,WaveC,完整压实与交接验证,"agent-dev-kit;~/codex;~/.codex",pending,adk-team,scripts/check-all.sh --verbose,full门禁全PASS

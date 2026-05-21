@@ -18,7 +18,7 @@
 | 2026-05-02 | agency-agents-zh | agent-ecosystem | 角色职责矩阵与术语体系（角色覆盖丰富，保留为术语与职责参考，不直接并入核心） | 中 | 中 | 中 | adopt | done | agent-dev-kit | agent-dev-kit/docs/runbooks/lead-agent-convergence-delivery.md |
 | 2026-05-02 | agent-skills | agent-ecosystem | 技能触发路由与生命周期映射（流程完备，保留方法论参考） | 中 | 中 | 中 | adopt | done | agent-dev-kit | agent-dev-kit/docs/agent-skill-catalog.md |
 | 2026-05-02 | skills | agent-ecosystem | skills CLI 目录约定与安装入口（安装机制已吸收为兼容性约束） | 中 | 低 | 中 | adopt | done | agent-dev-kit | agent-dev-kit/docs/runbooks/feature-delivery.md |
-| 2026-05-02 | mattpocock-skills | agent-ecosystem | 小技能组合范式与 deprecated 分层治理 | 中 | 中 | 低 | adopt | done | agent-dev-kit | reports/weekly-change-report.md |
+| 2026-05-02 | mattpocock-skills | agent-ecosystem | 小技能组合范式与 deprecated 分层治理 | 中 | 中 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/docs/runbooks/skill-curation-delivery.md |
 | 2026-05-02 | hermes-collaboration-skill | agent-ecosystem | 多人协作文档模板与 runbook 化结构（文档范式已吸收，以 runbook 方式落地） | 中 | 低 | 中 | adopt | done | agent-dev-kit | agent-dev-kit/optional-skills/adk-cross-team-handoff/SKILL.md |
 | 2026-05-02 | Migrationed_skills | skill-pool | 历史技能池候选筛选机制（资产池价值高，保留为按需提取来源） | 中 | 中 | 中 | adopt | done | agent-dev-kit | agent-dev-kit/docs/runbooks/skill-curation-delivery.md |
 | 2026-05-02 | hermes-agent | delivery | 大型 Agent 工程目录职责与发布脚本治理（已吸收为大仓交付触点模板与收口约束） | 中 | 中 | 中 | adopt | done | agent-dev-kit | agent-dev-kit/docs/runbooks/large-platform-delivery.md |
@@ -29,7 +29,6 @@
 | 2026-05-02 | auto-research | knowledge | 负结果留痕与复盘机制（研究/工程双场景留痕机制可复用） | 中 | 低 | 低 | adopt | done | agent-dev-kit | reports/weekly-change-report.md |
 | 2026-05-02 | dotfiles | config | 最小变更 + 基线校验策略（配置基线思想已吸收为治理约束） | 中 | 中 | 中 | adopt | done | agent-dev-kit | agent-dev-kit/docs/runbooks/config-baseline-governance.md |
 | 2026-05-02 | codex | runtime-target | control/scripts/catalog/doctor 真实运行闭环验证 | 高 | 中 | 中 | adopt | done | codex, agent-dev-kit | reports/codex-pilot-report.md |
-| 2026-05-02 | agent-dev-kit | adk-core | 压实总门禁编排（metadata/routing/doc-sync/full-suite/pilot）与发布级回归基线 | 高 | 中 | 低 | adopt | done | agent-dev-kit, codex | reports/adk-production-landing-implementation-2026-05-02.md |
 | 2026-05-02 | codex-cookbook | knowledge | Codex 实战模板与 cookbook 任务样例（经验模板已吸收，不并入 core 流程强约束） | 中 | 低 | 中 | adopt | done | agent-dev-kit | agent-dev-kit/docs/runbooks/lead-agent-convergence-delivery.md |
 | 2026-05-08 | workspace | knowledge | 维护指南（日常健康检查、adk 压实检查、生产级放行检查） | 高 | 低 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/docs/runbooks/workspace-maintenance-guide.md |
 | 2026-05-08 | workspace | delivery | GitLab Runner 安装配置（Debian/RHEL/Docker 三种方式） | 中 | 低 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/docs/runbooks/gitlab-runner-setup.md |
@@ -52,8 +51,8 @@
 | 2026-05-12 | vibeflow | workflow-core | Rules 分层目录结构（避免全局污染） | 中 | 低 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/rules/README.md |
 | 2026-05-12 | vibeflow | workflow-core | Router 自动阶段检测（不采纳独立 Router persona，改用内置路由） | 中 | 高 | 中 | reject | done | agent-dev-kit | agent-dev-kit/references/orchestration-patterns.md; agent-dev-kit/scripts/skill-match.sh |
 | 2026-05-12 | vibeflow | workflow-core | 复盘机制（Reflect skill） | 中 | 中 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/templates/LESSONS.md |
-| 2026-05-20 | Trellis | reference | 多平台模板与任务状态上下文脚本体系（优先保留为参考，不直接纳入核心流程） | 中 | 中 | 中 | reject | done | agent-dev-kit | reports/weekly-change-report.md |
-| 2026-05-20 | agent-browser | tooling | 浏览器自动化 CLI 的快照压缩与 ref 交互模式（先验证可迁移性，再决定是否核心采纳） | 中 | 中 | 中 | reject | done | agent-dev-kit | subrepos/adoption-matrix.md |
+| 2026-05-20 | Trellis | reference | 多平台模板与任务状态上下文脚本体系（优先保留为参考，不直接纳入核心流程） | 中 | 中 | 中 | reject | done | agent-dev-kit | agent-dev-kit/docs/runbooks/optional-pilot-boundary.md |
+| 2026-05-20 | agent-browser | tooling | 浏览器自动化 CLI 的快照压缩与 ref 交互模式（先验证可迁移性，再决定是否核心采纳） | 中 | 中 | 中 | reject | done | agent-dev-kit | agent-dev-kit/docs/runbooks/optional-pilot-boundary.md |
 
 ## 模板
 
