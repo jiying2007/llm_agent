@@ -74,7 +74,12 @@ add_signal() {
 }
 
 dirty_count="$(cd "${ROOT}" && git status --porcelain 2>/dev/null | wc -l | tr -d ' ')"
-asset_dirty_count="$(cd "${ROOT}" && git status --porcelain 2>/dev/null | rg -c '(^.. AGENTS\.md|/AGENTS\.md$|SKILL\.md$|manifest\.yaml$|^.. scripts/|^.. agent-dev-kit/scripts/|^.. docs/|^.. agent-dev-kit/docs/)' || true)"
+asset_dirty_count="$(
+  cd "${ROOT}" &&
+    git status --porcelain 2>/dev/null |
+      rg -c '(^.. AGENTS\.md|/AGENTS\.md$|SKILL\.md$|manifest\.yaml$|^.. scripts/|^.. agent-dev-kit/scripts/|^.. docs/|^.. agent-dev-kit/docs/)' ||
+    printf '0'
+)"
 
 [[ "${dirty_count}" -gt 0 ]] && add_signal "DIRTY_WORKTREE"
 [[ "${asset_dirty_count}" -gt 0 ]] && add_signal "ASSET_OR_DOC_CHANGE"
