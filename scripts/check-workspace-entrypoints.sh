@@ -34,6 +34,9 @@ run_check "devkit_health_summary_json" "${ROOT}/scripts/devkit.sh" health --summ
 run_check "devkit_sync_status" "${ROOT}/scripts/devkit.sh" sync status
 run_check "phase_gate_summary_json" "${ROOT}/scripts/check-phase-gate.sh" "${ROOT}" --summary-json
 run_check "stale_references" "${ROOT}/scripts/check-stale-references.sh" "${ROOT}"
+run_check "token_budget_summary_json" "${ROOT}/scripts/check-token-budget.sh" "${ROOT}" --summary-json
+run_check "codex_adk_live_summary_json" "${ROOT}/scripts/check-codex-adk-live.sh" "${ROOT}" --summary-json
+run_check "session_coach_summary_json" "${ROOT}/scripts/session-coach.sh" "${ROOT}" --summary-json
 if "${ROOT}/scripts/check-subrepo-state.sh" "${ROOT}" --summary-json >"${TMP_DIR}/subrepo_state_summary_json.out" 2>"${TMP_DIR}/subrepo_state_summary_json.err"; then
   echo "[PASS] subrepo_state_summary_json"
 else
@@ -90,6 +93,24 @@ fi
 if [[ -f "${TMP_DIR}/governance_health_json.out" ]]; then
   if ! rg -q '"top_actions":' "${TMP_DIR}/governance_health_json.out"; then
     record_fail "governance health json missing top_actions"
+  fi
+fi
+
+if [[ -f "${TMP_DIR}/token_budget_summary_json.out" ]]; then
+  if ! rg -q '"status":"pass"' "${TMP_DIR}/token_budget_summary_json.out"; then
+    record_fail "token budget summary json is not pass"
+  fi
+fi
+
+if [[ -f "${TMP_DIR}/codex_adk_live_summary_json.out" ]]; then
+  if ! rg -q '"missing_required":' "${TMP_DIR}/codex_adk_live_summary_json.out"; then
+    record_fail "codex adk live summary missing missing_required"
+  fi
+fi
+
+if [[ -f "${TMP_DIR}/session_coach_summary_json.out" ]]; then
+  if ! rg -q '"top_action":' "${TMP_DIR}/session_coach_summary_json.out"; then
+    record_fail "session coach summary missing top_action"
   fi
 fi
 

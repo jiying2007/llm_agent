@@ -201,12 +201,12 @@ $HOME/.codex/.adk-backups/YYYYMMDDTHHMMSSZ
 - adk 资产更新必须先在 `llm_agent/agent-dev-kit` 通过回归，再交给 `~/codex` 注册、build、doctor 和 apply。
 - 任务开始前如需判定技能、fallback 或跳过条件，优先使用 `adk-runtime-router`。
 - 测试策略、代码审查、并行 agent、worktree 和分支收尾分别优先使用 `adk-test-strategy`、`adk-code-review-loop`、`adk-parallel-agent-governance`、`adk-worktree-governance`、`adk-branch-closeout`。
-- 兼容 fallback 状态以 `agent-dev-kit/docs/reference/fallback-sunset-matrix.md` 为准，不做无证据下线。
+- 兼容 fallback 状态以 `agent-dev-kit/docs/reference/fallback-sunset-matrix.md` 为准，不做无证据下线；candidate-sunset 只能在 routing/profile/pilot/handoff/live 证据满足后进入观察。
 - 长任务优先使用 `adk-planning-execution-loop`。
 - 多技能冲突时以 `adk-runtime-router` 先做 primary/supporting/fallback 裁决；需要组合治理时再叠加 `adk-skill-composition-governance`。
 - 第三方技能、脚本或参考资产进入全局环境前必须使用 `adk-security-supply-chain`。
 - 完成前必须使用 `adk-verification-before-completion` 核对证据。
-- 涉及 `~/.codex` 生产可用性结论时，必须同时附 `~/codex` build/apply 证据和 `check-global-codex-health.sh ~/.codex minimal` 证据。
+- 涉及 `~/.codex` 生产可用性结论时，必须同时附 `~/codex` build/apply 证据、`check-global-codex-health.sh ~/.codex minimal` 和 `check-codex-adk-live.sh . --summary-json` 证据。
 ```
 
 当前不建议让 adk 覆盖 `~/.codex/AGENTS.md`，也不建议绕过 `~/codex` 直接写入 `~/.codex`。原因：
@@ -235,7 +235,21 @@ rtk scripts/evidence-bundle.sh . --out reports/evidence-bundle.md
 rtk scripts/evidence-bundle.sh . --format json
 ```
 
-证据包会汇总 `adk.lock`、phase gate、subrepo state、codex pilot、global codex health、pilot readiness 和 fallback sunset 结果。它不替代完整回归，但适合提交说明、PR 描述和发布记录附证。
+证据包会汇总 `adk.lock`、phase gate、subrepo state、codex pilot、global codex health、Codex live 实装态、pilot readiness 和 fallback sunset 结果。它不替代完整回归，但适合提交说明、PR 描述和发布记录附证。
+
+Codex live 实装态单独使用：
+
+```bash
+rtk scripts/check-codex-adk-live.sh . --summary-json
+rtk scripts/check-codex-adk-live.sh . --strict
+```
+
+长会话或上下文压力较高时，先运行：
+
+```bash
+rtk scripts/session-coach.sh . --summary-json
+rtk scripts/session-coach.sh . --deep --summary-json
+```
 
 ### 8.2 是否可以直接更新参考子仓？
 

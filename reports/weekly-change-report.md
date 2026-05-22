@@ -1,128 +1,151 @@
 # 子仓增量变更周报
 
-- 生成日期：2026-05-08
-- 扫描窗口：最近 7 天
+- 生成日期：2026-05-21
+- 扫描窗口：最近 14 天
 - 规则：仅保留 AGENTS/SKILL/README/workflow/scripts 相关变更
-- 阶段：harden-gdk
+- 阶段：fallback-sunset
 - 强制模式：0
 
 ## agent-dev-kit
 
-- 分组：gdk-core
+- 分组：adk-core
 - 优先级：P0
 - 状态：active
-- owner：gdk-team
-- intake_policy：adopt-first,S
+- owner：adk-team
+- intake_policy：adopt-first
 - 上次复审：2026-05-02
 - 关注说明：主落地仓库
 - 变更文件：
-  - AGENTS.md
-  - docs/explorations/README.md
-  - docs/runbooks/README.md
-  - docs/specs/README.md
   - .github/workflows/ci.yml
   - .github/workflows/release.yml
+  - .out-of-scope/README.md
+  - AGENTS.md
+  - README.md
+  - changes/README.md
+  - docs/pilots/README.md
+  - docs/runbooks/README.md
+  - docs/workflows/knowledge-layer.md
+  - docs/workflows/lifecycle.md
+  - examples/embedded-test-matrix/README.md
+  - knowledge/L2-domain/bsp-history/README.md
+  - knowledge/L2-domain/datasheets/README.md
+  - knowledge/L2-domain/errata/README.md
+  - knowledge/L2-domain/oops-patterns/README.md
+  - knowledge/README.md
   - optional-skills/adk-artifact-gated-lite/SKILL.md
   - optional-skills/adk-cross-team-handoff/SKILL.md
+  - optional-skills/adk-data-fetch/SKILL.md
   - optional-skills/adk-data-fetch/adk-email-imap-fetch/SKILL.md
   - optional-skills/adk-data-fetch/adk-fetch-url-content/SKILL.md
-  - optional-skills/adk-data-fetch/SKILL.md
   - optional-skills/adk-incident-rca-report/SKILL.md
   - optional-skills/adk-planning-execution-loop/SKILL.md
   - optional-skills/adk-security-supply-chain/SKILL.md
   - optional-skills/adk-skill-composition-governance/SKILL.md
   - optional-skills/adk-test-flakiness-triage/SKILL.md
-  - optional-skills/artifact-gated-lite/SKILL.md
-  - optional-skills/cross-team-handoff/SKILL.md
-  - optional-skills/data-fetch/email-imap-fetch/SKILL.md
-  - optional-skills/data-fetch/fetch-url-content/SKILL.md
-  - optional-skills/data-fetch/SKILL.md
   - optional-skills/gdk-artifact-gated-lite/SKILL.md
   - optional-skills/gdk-cross-team-handoff/SKILL.md
+  - optional-skills/gdk-data-fetch/SKILL.md
   - optional-skills/gdk-data-fetch/gdk-email-imap-fetch/SKILL.md
   - optional-skills/gdk-data-fetch/gdk-fetch-url-content/SKILL.md
-  - optional-skills/gdk-data-fetch/SKILL.md
   - optional-skills/gdk-incident-rca-report/SKILL.md
   - optional-skills/gdk-planning-execution-loop/SKILL.md
   - optional-skills/gdk-security-supply-chain/SKILL.md
   - optional-skills/gdk-skill-composition-governance/SKILL.md
   - optional-skills/gdk-test-flakiness-triage/SKILL.md
-  - optional-skills/incident-rca-report/SKILL.md
-  - optional-skills/planning-execution-loop/SKILL.md
-  - optional-skills/security-supply-chain/SKILL.md
-  - optional-skills/skill-composition-governance/SKILL.md
-  - optional-skills/test-flakiness-triage/SKILL.md
-  - .out-of-scope/README.md
-  - README.md
+  - rules/README.md
+  - scripts/SCRIPTS_AUDIT_REPORT.md
   - scripts/auto-ops.sh
   - scripts/backup-rollback.sh
   - scripts/catalog-assets.sh
+  - scripts/catalog_assets.sh
   - scripts/check-change-governance.sh
+  - scripts/check-codex-handoff.sh
+  - scripts/check-fallback-sunset.sh
+  - scripts/check-file-modes.sh
   - scripts/check-format.sh
   - scripts/check-profile-coherence.sh
+  - scripts/check-runtime-boundary.sh
   - scripts/check-terminology-consistency.sh
+  - scripts/check-token-budget.sh
+  - scripts/check-workflow-closure.sh
+  - scripts/check_format.sh
+  - scripts/check_profile_coherence.sh
   - scripts/convert-assets.sh
+  - scripts/convert_assets.sh
   - scripts/devkit.sh
-  - scripts/enhanced-gate-check.sh
   - scripts/evidence-index.sh
   - scripts/health-check.sh
   - scripts/install-assets.sh
+  - scripts/install_assets.sh
+  - scripts/knowledge-health-check.sh
+  - scripts/lib-logging.sh
   - scripts/lib-manifest.sh
+  - scripts/lib_manifest.sh
   - scripts/monitoring.sh
+  - scripts/openspec-bridge.sh
   - scripts/openspec_bridge.sh
   - scripts/performance.sh
+  - scripts/pilot-readiness.sh
   - scripts/quality-gate-check.sh
+  - scripts/quality-gates-embedded.sh
+  - scripts/quality-gates.sh
   - scripts/release-manager.sh
+  - scripts/run-embedded-production-field-pilot.sh
+  - scripts/run-embedded-workflow-pilots.sh
   - scripts/security.sh
   - scripts/skill-match.sh
+  - scripts/skill_match.sh
+  - scripts/sync-codex-assets.sh
   - scripts/validate-assets.sh
+  - scripts/validate_assets.sh
   - scripts/version-manager.sh
   - scripts/workflow.sh
   - skills/adk-adr-writer/SKILL.md
   - skills/adk-artifact-gating/SKILL.md
+  - skills/adk-branch-closeout/SKILL.md
+  - skills/adk-bsp-analyst/SKILL.md
   - skills/adk-bsp-porting-playbook/SKILL.md
   - skills/adk-chinese-code-review/SKILL.md
   - skills/adk-chinese-commit-conventions/SKILL.md
   - skills/adk-cmake-cross-build/SKILL.md
+  - skills/adk-code-review-loop/SKILL.md
   - skills/adk-code-simplification/SKILL.md
   - skills/adk-commit-pr-quality-gate/SKILL.md
   - skills/adk-component-api-stability/SKILL.md
   - skills/adk-context-engineering/SKILL.md
   - skills/adk-diagnose-loop/SKILL.md
   - skills/adk-driver-bringup-checklist/SKILL.md
+  - skills/adk-driver-developer/SKILL.md
+  - skills/adk-evaluator/SKILL.md
   - skills/adk-fault-injection-recovery/SKILL.md
+  - skills/adk-generator/SKILL.md
   - skills/adk-grill-with-docs/SKILL.md
+  - skills/adk-hardware-debugger/SKILL.md
   - skills/adk-intake-workflow/SKILL.md
   - skills/adk-integration-hil-sil/SKILL.md
   - skills/adk-interface-contract-design/SKILL.md
   - skills/adk-interrupt-dma-patterns/SKILL.md
+  - skills/adk-parallel-agent-governance/SKILL.md
   - skills/adk-performance-profiling-embedded/SKILL.md
   - skills/adk-pilot-framework/SKILL.md
+  - skills/adk-planner/SKILL.md
+  - skills/adk-production-field-readiness/SKILL.md
   - skills/adk-protocol-stack-integration/SKILL.md
   - skills/adk-register-map-design/SKILL.md
   - skills/adk-release-versioning/SKILL.md
   - skills/adk-repo-prompt-analyzer/SKILL.md
   - skills/adk-requirements-triage/SKILL.md
   - skills/adk-rtos-task-design/SKILL.md
+  - skills/adk-runtime-router/SKILL.md
   - skills/adk-skill-deep-analyzer/SKILL.md
   - skills/adk-static-analysis-c-cpp/SKILL.md
   - skills/adk-systematic-debugging/SKILL.md
   - skills/adk-task-breakdown/SKILL.md
+  - skills/adk-test-strategy/SKILL.md
   - skills/adk-toolchain-debug-openocd-gdb/SKILL.md
   - skills/adk-unit-test-embedded/SKILL.md
   - skills/adk-verification-before-completion/SKILL.md
-  - skills/adr-writer/SKILL.md
-  - skills/bsp-porting-playbook/SKILL.md
-  - skills/chinese-code-review/SKILL.md
-  - skills/chinese-commit-conventions/SKILL.md
-  - skills/cmake-cross-build/SKILL.md
-  - skills/code-simplification/SKILL.md
-  - skills/commit-pr-quality-gate/SKILL.md
-  - skills/component-api-stability/SKILL.md
-  - skills/context-engineering/SKILL.md
-  - skills/diagnose-loop/SKILL.md
-  - skills/driver-bringup-checklist/SKILL.md
-  - skills/fault-injection-recovery/SKILL.md
+  - skills/adk-worktree-governance/SKILL.md
   - skills/gdk-adr-writer/SKILL.md
   - skills/gdk-bsp-porting-playbook/SKILL.md
   - skills/gdk-chinese-code-review/SKILL.md
@@ -151,22 +174,45 @@
   - skills/gdk-toolchain-debug-openocd-gdb/SKILL.md
   - skills/gdk-unit-test-embedded/SKILL.md
   - skills/gdk-verification-before-completion/SKILL.md
-  - skills/grill-with-docs/SKILL.md
-  - skills/integration-hil-sil/SKILL.md
-  - skills/interface-contract-design/SKILL.md
-  - skills/interrupt-dma-patterns/SKILL.md
-  - skills/performance-profiling-embedded/SKILL.md
-  - skills/protocol-stack-integration/SKILL.md
-  - skills/register-map-design/SKILL.md
-  - skills/release-versioning/SKILL.md
-  - skills/requirements-triage/SKILL.md
-  - skills/rtos-task-design/SKILL.md
-  - skills/static-analysis-c-cpp/SKILL.md
-  - skills/systematic-debugging/SKILL.md
-  - skills/task-breakdown/SKILL.md
-  - skills/toolchain-debug-openocd-gdb/SKILL.md
-  - skills/unit-test-embedded/SKILL.md
-  - skills/verification-before-completion/SKILL.md
-  - templates/workflows/emergency-workflow-template.md
+  - templates/superpowers-memory/promotion-drafts/README.md
+  - templates/superpowers-memory/session-journal/README.md
   - templates/workflows/standard-workflow-template.md
+- 仓库角色：落地目标仓（非外部来源仓）
+- 建议动作：进入 adk 压实闭环（harden / verify / handoff），不进入 adoption-matrix 来源评估
+
+## agent-browser
+
+- 分组：tooling
+- 优先级：P1
+- 状态：active
+- owner：aiot03
+- intake_policy：observe-first
+- 上次复审：2026-05-15
+- 关注说明：Vercel浏览器自动化CLI; Rust; 33k stars; AI Agent浏览器操作
+- 变更文件：
+  - .github/workflows/ci.yml
+  - .github/workflows/release.yml
+  - AGENTS.md
+  - README.md
+  - benchmarks/README.md
+  - evals/README.md
+  - examples/environments/README.md
+  - examples/environments/scripts/create-snapshot.ts
+  - scripts/build-all-platforms.sh
+  - scripts/check-version-sync.js
+  - scripts/copy-native.js
+  - scripts/postinstall.js
+  - scripts/sync-version.js
+  - scripts/windows-debug/provision.sh
+  - scripts/windows-debug/run.sh
+  - scripts/windows-debug/start.sh
+  - scripts/windows-debug/stop.sh
+  - scripts/windows-debug/sync.sh
+  - skill-data/agentcore/SKILL.md
+  - skill-data/core/SKILL.md
+  - skill-data/dogfood/SKILL.md
+  - skill-data/electron/SKILL.md
+  - skill-data/slack/SKILL.md
+  - skill-data/vercel-sandbox/SKILL.md
+  - skills/agent-browser/SKILL.md
 - 建议动作：进入 adoption-matrix 评估（adopt / observe / reject）

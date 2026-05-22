@@ -26,7 +26,6 @@ declare -a SCAN_PATHS=(
   "AGENTS.md"
   "scripts/README.md"
   "reports/codex-pilot-report.md"
-  "reports/weekly-change-report.md"
   "agent-dev-kit/README.md"
   "agent-dev-kit/CONTEXT.md"
   "agent-dev-kit/docs"

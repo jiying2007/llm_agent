@@ -85,7 +85,12 @@ while IFS=',' read -r repo group priority sync_mode branch enabled notes status 
       [[ -z "${line}" ]] && continue
       echo "  - ${line}"
     done <<< "${changes}"
-    echo "- 建议动作：进入 adoption-matrix 评估（adopt / observe / reject）"
+    if [[ "${group}" == "adk-core" || "${repo}" == "agent-dev-kit" ]]; then
+      echo "- 仓库角色：落地目标仓（非外部来源仓）"
+      echo "- 建议动作：进入 adk 压实闭环（harden / verify / handoff），不进入 adoption-matrix 来源评估"
+    else
+      echo "- 建议动作：进入 adoption-matrix 评估（adopt / observe / reject）"
+    fi
     echo
   } >> "${OUT}"
 done < "${REGISTRY}"

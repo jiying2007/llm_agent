@@ -53,6 +53,12 @@
 | 2026-05-12 | vibeflow | workflow-core | 复盘机制（Reflect skill） | 中 | 中 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/templates/LESSONS.md |
 | 2026-05-20 | Trellis | reference | 多平台模板与任务状态上下文脚本体系（优先保留为参考，不直接纳入核心流程） | 中 | 中 | 中 | reject | done | agent-dev-kit | agent-dev-kit/docs/runbooks/optional-pilot-boundary.md |
 | 2026-05-20 | agent-browser | tooling | 浏览器自动化 CLI 的快照压缩与 ref 交互模式（先验证可迁移性，再决定是否核心采纳） | 中 | 中 | 中 | reject | done | agent-dev-kit | agent-dev-kit/docs/runbooks/optional-pilot-boundary.md |
+| 2026-05-21 | workspace | adk-core | Codex Skills 岗位 SOP 模型（Skill/Agent/Sub-agent/MCP 分层、description discovery、worker contract、入口长度门禁） | 高 | 低 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/docs/skill-agent-runtime-model.md; agent-dev-kit/templates/planning/worker-contract.md; agent-dev-kit/tests/test_skill_sop_quality.sh |
+| 2026-05-21 | workspace | adk-core | Agent 记忆与 AAR 自我进化治理（四层记忆、memory candidate、风险审批、过期复验、lint 门禁） | 高 | 中 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/skills/adk-after-action-review/SKILL.md; agent-dev-kit/templates/memory/memory-candidate.md; agent-dev-kit/scripts/check-memory-governance.sh |
+| 2026-05-21 | workspace | adk-core | 保真省 Token 与上下文读取治理（分层摘要、原文回退、高风险原文、raw evidence、token budget 门禁） | 高 | 中 | 中 | adopt | done | agent-dev-kit | agent-dev-kit/skills/adk-token-context-governance/SKILL.md; agent-dev-kit/templates/context/tool-output-summary.md; agent-dev-kit/scripts/check-token-budget.sh |
+| 2026-05-22 | workspace | adk-core | 上下文预算模式治理（极速/均衡/精确/审计、task_type/risk_level/read_tier、CTX_PRESSURE 交接约束） | 高 | 低 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/templates/context/context-budget-profile.md; agent-dev-kit/docs/runbooks/token-context-governance.md; agent-dev-kit/tests/test_token_context_governance.sh |
+| 2026-05-22 | codex-agent-mem | memory-context | Codex 项目连续性记忆与 compact context pack（先观察，不默认引入 SQLite/MCP 依赖） | 中 | 中 | 中 | observe | done | agent-dev-kit | agent-dev-kit/agents/adk-planner/AGENTS.md; agent-dev-kit/skills/adk-token-context-governance/SKILL.md; agent-dev-kit/docs/runbooks/token-context-governance.md; reports/observe-secondary-intake-packages-2026-05-22.md |
+| 2026-05-22 | code-session-memory | memory-search | 跨工具会话索引与语义检索（先观察，不默认接入 embedding/向量库链路） | 中 | 中 | 中 | observe | done | agent-dev-kit | agent-dev-kit/agents/adk-planner/AGENTS.md; agent-dev-kit/skills/adk-token-context-governance/SKILL.md; agent-dev-kit/docs/runbooks/token-context-governance.md; reports/observe-secondary-intake-packages-2026-05-22.md |
 
 ## 模板
 

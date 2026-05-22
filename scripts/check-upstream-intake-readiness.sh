@@ -19,12 +19,12 @@ tmp_matrix="$(mktemp)"
 tmp_missing="$(mktemp)"
 trap 'rm -f "${tmp_enabled}" "${tmp_matrix}" "${tmp_missing}"' EXIT
 
-awk -F',' 'NR>1 && $6=="yes" {print $1}' "${REGISTRY}" | sort -u > "${tmp_enabled}"
+awk -F',' 'NR>1 && $6=="yes" && $2!="adk-core" {print $1}' "${REGISTRY}" | sort -u > "${tmp_enabled}"
 awk -F'|' '/^\| [0-9]{4}-[0-9]{2}-[0-9]{2} \|/ {repo=$3; gsub(/^ +| +$/, "", repo); print repo}' "${MATRIX}" | sort -u > "${tmp_matrix}"
 comm -23 "${tmp_enabled}" "${tmp_matrix}" > "${tmp_missing}" || true
 
 if [[ -s "${tmp_missing}" ]]; then
-  echo "[FAIL] enabled repos missing in adoption matrix:" >&2
+  echo "[FAIL] enabled upstream repos missing in adoption matrix (adk-core excluded):" >&2
   cat "${tmp_missing}" >&2
   exit 1
 fi

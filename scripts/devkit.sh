@@ -38,6 +38,9 @@ llm_agent devkit — 工作区统一入口
   diff [days]                    扫描高价值变更（默认 7 天）
 
   health [--summary-json]        工作区健康检查
+  codex-live [--summary-json]    检查 adk 在 Codex 实装态中的 live footprint
+  coach [--summary-json] [--deep]
+                                 长会话、token 压力和资产变更收口提醒
 
   weekly-report                  生成周报
 
@@ -132,6 +135,16 @@ cmd_health() {
   bash "${health_script}" check-all --root "${WORKSPACE_ROOT}" "$@"
 }
 
+# --- 子命令: codex-live -----------------------------------------------------
+cmd_codex_live() {
+  bash "${SCRIPT_DIR}/check-codex-adk-live.sh" "${WORKSPACE_ROOT}" "$@"
+}
+
+# --- 子命令: coach ----------------------------------------------------------
+cmd_coach() {
+  bash "${SCRIPT_DIR}/session-coach.sh" "${WORKSPACE_ROOT}" "$@"
+}
+
 # --- 子命令: weekly-report --------------------------------------------------
 cmd_weekly_report() {
   local report_script="${SCRIPT_DIR}/generate-weekly-report.sh"
@@ -178,6 +191,8 @@ case "${SUBCMD}" in
   sync)         cmd_sync "$@" ;;
   diff)         cmd_diff "$@" ;;
   health)       cmd_health "$@" ;;
+  codex-live)   cmd_codex_live "$@" ;;
+  coach)        cmd_coach "$@" ;;
   weekly-report) cmd_weekly_report "$@" ;;
   cleanup)      cmd_cleanup "$@" ;;
   help|-h|--help) show_help ;;
