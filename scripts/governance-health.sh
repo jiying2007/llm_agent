@@ -109,6 +109,9 @@ fi
 if rg -q '"device_needs_fix":[1-9]' "${TMP_DIR}/pilot_readiness.out"; then
   top_actions+=("补齐 production-field 真实设备/HIL/OTA/现场证据")
 fi
+if rg -q '"device_simulated_pass":[1-9]' "${TMP_DIR}/pilot_readiness.out"; then
+  top_actions+=("production-field 已有模拟设备闭环；生产放行前仍需真实烧录、HIL、OTA 回滚和现场证据")
+fi
 if rg -q '"replacement_score":6[0-9]' "${TMP_DIR}/fallback_sunset.out"; then
   top_actions+=("补 Codex live gap，已满分能力先推进 candidate-sunset 观察")
 fi
