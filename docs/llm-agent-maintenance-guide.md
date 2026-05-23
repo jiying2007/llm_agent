@@ -1,15 +1,15 @@
 
 ## 关于 rtk 命令
 
-`rtk` 是工作区统一命令入口工具，用于简化脚本调用。如果没有安装 `rtk`，可以直接使用 `bash scripts/xxx.sh` 方式调用脚本。
+`rtk` 是工作区统一命令入口工具。位于 `llm_agent` 受治理工作区时，所有 shell 命令必须通过 `rtk` 执行；不要在本工作区文档、门禁或会话中使用裸 `bash`、`git`、`rg`、`sed`、`awk`、`python` 等命令作为执行入口。
 
 **rtk 与 bash 的对应关系：**
 - `rtk scripts/xxx.sh` 等价于 `bash scripts/xxx.sh`
 - `rtk bash -lc "..."` 等价于 `bash -lc "..."`
 
-**安装 rtk（可选）：**
+**安装 rtk：**
 ```bash
-# 推荐通过本机 rtk 调用；没有 rtk 时可退回 bash scripts/xxx.sh
+# 本工作区默认要求 rtk；缺失时先安装或修复 rtk，再执行维护命令。
 ```
 
 # llm_agent 持续维护与生产验证指南

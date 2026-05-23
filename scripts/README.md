@@ -19,14 +19,15 @@ repo,group,priority,sync_mode,branch,enabled,notes,status,owner,last_reviewed_on
 
 默认策略：先压实 `agent-dev-kit`，再跟踪外部子仓更新。
 
-### adk 当前状态（2026-05-19）
+### adk 当前状态（2026-05-23）
 
 - 版本锁: `agent-dev-kit.version=2.9.0`
-- Pilot readiness: 10/10 ready，planned=0
-- Fallback replacement score: 62/70，6 个能力已进入 candidate-sunset，剩余缺口主要是 Codex live skill 未实装
+- Pilot readiness: 10/10 ready，planned=0，`device_needs_fix=0`，`device_simulated_pass=1`
+- Fallback replacement score: 70/70
 - Codex 交接: `agent-dev-kit -> ~/codex -> ~/.codex` 只通过 handoff/build/plan/apply 链路进入运行目录
 - Runtime boundary: 禁止 adk 绕过 `~/codex` 直接写入 `~/.codex`
-- 证据刷新: 当前机器保留 build、doctor、plan、apply dry-run 与 global health 证据
+- Production-field: 已有模拟设备状态机闭环；真实 production-ready 仍需实机烧录/readback、boot log、HIL/产测、OTA 回滚和现场包证据
+- 证据刷新: 当前机器保留 build、doctor、plan、apply dry-run 与 global health 证据；当前状态索引见 `reports/current-status.md`
 门禁文件：`subrepos/phase-gate.env`（默认 `allow_upstream_sync=no`）。
 
 阶段门禁已从单一开关扩展为阶段机，当前支持：
@@ -372,24 +373,16 @@ scripts/check-global-codex-target-policy.sh [WORKSPACE_ROOT]
 ## 7. 一键门禁检查
 
 ```bash
-# 运行所有 check-* 脚本并汇总结果
-scripts/check-all.sh
-
-# 快速模式（跳过耗时的 check-adk-harden-readiness.sh）
+scripts/check-all.sh --smoke
 scripts/check-all.sh --quick
-
-# 详细模式（显示每个脚本的完整输出）
+scripts/check-all.sh --full
 scripts/check-all.sh --verbose
-
-# 组合使用
 scripts/check-all.sh --quick --verbose
 ```
 
 功能：
-- 自动发现 `scripts/check-*.sh` 并逐个运行
-- 记录每个脚本的 PASS/FAIL 状态
-- 最后输出汇总表（脚本名 + 状态标记）
-- `--quick` 模式跳过耗时的 `check-adk-harden-readiness.sh`
+- 自动发现 `scripts/check-*.sh` 并汇总 PASS/FAIL。
+- `--smoke` 只覆盖最小健康面；`--quick` 跳过 `check-adk-harden-readiness.sh` 和 `check-workspace-entrypoints.sh`；`--full` 或无参数运行全部脚本。
 - 退出码：全部通过返回 0，否则返回 1
 
 ## 8. 统一入口 devkit.sh

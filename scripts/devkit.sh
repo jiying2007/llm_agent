@@ -23,8 +23,9 @@ llm_agent devkit — 工作区统一入口
 用法: devkit.sh <子命令> [选项]
 
 子命令:
-  check [--quick|--full]         一键运行所有门禁检查
-                                   --quick  跳过耗时脚本（默认）
+  check [--smoke|--quick|--full] 一键运行所有门禁检查
+                                   --smoke  最小健康面
+                                   --quick  跳过耗时综合脚本（默认）
                                    --full   运行全部检查
 
   onboard <repo-path> [--adopt|--observe]
@@ -61,11 +62,12 @@ EOF
 
 # --- 子命令: check ----------------------------------------------------------
 cmd_check() {
-  local mode=""
+  local mode="--quick"
   for arg in "$@"; do
     case "${arg}" in
+      --smoke) mode="--smoke" ;;
       --quick) mode="--quick" ;;
-      --full)  mode="" ;;
+      --full)  mode="--full" ;;
       *)       echo "[WARN] check 未知参数: ${arg}" >&2 ;;
     esac
   done

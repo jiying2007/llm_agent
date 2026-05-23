@@ -9,18 +9,22 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORKSPACE_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 # --- 参数解析 ---------------------------------------------------------------
-QUICK_MODE=0
+CHECK_MODE="full"
 VERBOSE_MODE=0
 
 for arg in "$@"; do
   case "${arg}" in
-    --quick) QUICK_MODE=1 ;;
+    --smoke) CHECK_MODE="smoke" ;;
+    --quick) CHECK_MODE="quick" ;;
+    --full) CHECK_MODE="full" ;;
     --verbose) VERBOSE_MODE=1 ;;
     -h|--help)
-      echo "用法: $(basename "$0") [--quick] [--verbose]"
+      echo "用法: $(basename "$0") [--smoke|--quick|--full] [--verbose]"
       echo ""
       echo "选项:"
-      echo "  --quick     跳过耗时脚本（check-adk-harden-readiness.sh）"
+      echo "  --smoke     最小健康面：锁、阶段、子仓、doc、runtime、pilot/fallback 摘要"
+      echo "  --quick     跳过耗时脚本（check-adk-harden-readiness.sh、check-workspace-entrypoints.sh）"
+      echo "  --full      运行全部 check-* 脚本（默认）"
       echo "  --verbose   显示每个脚本的完整输出"
       echo "  --help      显示此帮助信息"
       exit 0
@@ -34,9 +38,34 @@ done
 
 # --- 自动发现 check-* 脚本 --------------------------------------------------
 SKIP_SCRIPTS=()
-if [[ ${QUICK_MODE} -eq 1 ]]; then
-  SKIP_SCRIPTS+=("check-adk-harden-readiness.sh")
-fi
+SMOKE_SCRIPTS=()
+case "${CHECK_MODE}" in
+  smoke)
+    SMOKE_SCRIPTS=(
+      "check-adk-lock.sh"
+      "check-phase-gate.sh"
+      "check-subrepo-state.sh"
+      "check-doc-sync.sh"
+      "check-runtime-routing.sh"
+      "check-codex-adk-live.sh"
+      "check-evidence-bundle.sh"
+    )
+    ;;
+  quick)
+    SKIP_SCRIPTS+=("check-adk-harden-readiness.sh" "check-workspace-entrypoints.sh")
+    ;;
+  full) ;;
+esac
+
+contains_item() {
+  local needle="$1"
+  shift
+  local item
+  for item in "$@"; do
+    [[ "${item}" == "${needle}" ]] && return 0
+  done
+  return 1
+}
 
 discover_check_scripts() {
   local scripts=()
@@ -46,13 +75,11 @@ discover_check_scripts() {
     base="$(basename "${f}")"
     # 跳过自身（check-all.sh 不会出现，因为名字符合 check-*.sh 但自身也叫 check-all.sh）
     [[ "${base}" == "check-all.sh" ]] && continue
+    if [[ "${CHECK_MODE}" == "smoke" ]] && ! contains_item "${base}" "${SMOKE_SCRIPTS[@]}"; then
+      continue
+    fi
     # 跳过 --quick 模式下需要排除的脚本
-    local skip=0
-    for s in "${SKIP_SCRIPTS[@]:-}"; do
-      [[ -z "${s}" ]] && continue
-      [[ "${base}" == "${s}" ]] && skip=1 && break
-    done
-    [[ ${skip} -eq 1 ]] && continue
+    contains_item "${base}" "${SKIP_SCRIPTS[@]:-}" && continue
     scripts+=("${f}")
   done
   printf '%s\n' "${scripts[@]}"
@@ -68,9 +95,11 @@ FAILED=0
 echo "=============================================="
 echo " llm_agent 一键门禁检查"
 echo " $(date '+%Y-%m-%d %H:%M:%S')"
-if [[ ${QUICK_MODE} -eq 1 ]]; then
-  echo " 模式: --quick（跳过耗时脚本）"
-fi
+case "${CHECK_MODE}" in
+  smoke) echo " 模式: --smoke（最小健康面）" ;;
+  quick) echo " 模式: --quick（跳过耗时综合脚本）" ;;
+  full)  echo " 模式: --full（全部脚本）" ;;
+esac
 echo "=============================================="
 echo ""
 
@@ -132,9 +161,10 @@ done
 echo "------------------------------------------"
 echo "总计: ${TOTAL}   通过: ${PASSED}   失败: ${FAILED}"
 
-if [[ ${QUICK_MODE} -eq 1 ]]; then
-  echo "提示: --quick 模式已跳过 check-adk-harden-readiness.sh"
-fi
+case "${CHECK_MODE}" in
+  smoke) echo "提示: --smoke 只覆盖最小健康面，不替代完整回归。" ;;
+  quick) echo "提示: --quick 模式已跳过 check-adk-harden-readiness.sh 和 check-workspace-entrypoints.sh。" ;;
+esac
 
 echo ""
 
