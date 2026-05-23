@@ -43,10 +43,13 @@ required_tokens=(
   "check-codex-pilot-evidence.sh"
   "check-codex-pilot-coverage.sh"
   "check-workspace-entrypoints.sh"
+  "generate-wechat-intake-ledger.sh"
+  "check-wechat-intake-ledger.sh"
   "check-upstream-intake-readiness.sh"
   "generate-adoption-matrix-summary.sh"
   "export-adoption-matrix-jsonl.sh"
   "run-post-freeze-cycle.sh"
+  "wechat-article-absorption.md"
   "--summary-json"
   "--check-skill-metadata"
   "--check-routing-conflicts"
@@ -68,6 +71,8 @@ required_scripts=(
   "scripts/check-codex-pilot-evidence.sh"
   "scripts/check-codex-pilot-coverage.sh"
   "scripts/check-workspace-entrypoints.sh"
+  "scripts/generate-wechat-intake-ledger.sh"
+  "scripts/check-wechat-intake-ledger.sh"
 )
 
 for script in "${required_scripts[@]}"; do

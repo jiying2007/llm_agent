@@ -217,13 +217,14 @@ scripts/session-coach.sh . --deep --summary-json  # 追加 live/token 检查
 `check-codex-adk-live.sh` 检查 fallback 矩阵中的 adk 等价 skill 是否已在 `~/.codex` direct/system/vendor 路径实装；`session-coach.sh` 根据 dirty worktree、资产变更和 `THREAD_LONG`/`CTX_PRESSURE` 输出 Top Action。
 
 Token budget 检查脚本：
-
 ```bash
 scripts/check-token-budget.sh .
 scripts/check-token-budget.sh . --summary-json
 ```
 
 该脚本检查 `agent-dev-kit` Skill/doc 入口体量、全量测试默认输出策略、根仓 active 文档体量、关键脚本低 token 摘要入口和 `governance-health` JSON 输出大小，防止治理能力扩展后默认上下文继续膨胀。
+
+WeChat 文章吸收账本脚本：`scripts/generate-wechat-intake-ledger.sh` / `scripts/check-wechat-intake-ledger.sh .`。只读扫描 `wechat-articles/` 并生成 `reports/wechat-article-intake.jsonl`、`reports/wechat-absorb-next-batch.md`；细则见 `docs/runbooks/wechat-article-absorption.md`。
 
 adoption-matrix 状态检查脚本（真实记录不得有 `pending`，`blocked` 必须写解除条件）：
 

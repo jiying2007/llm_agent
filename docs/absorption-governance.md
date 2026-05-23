@@ -32,6 +32,30 @@
 - 不保留来源专名到 core skill；应抽象成可复用规则、门禁或模板。
 - 后续移除临时素材后，正式资产仍必须能独立通过验证。
 
+### `wechat-articles/` 吸收专用规则
+
+`wechat-articles/` 是文章归档池，吸收前必须先生成文章级账本：
+
+```bash
+rtk scripts/generate-wechat-intake-ledger.sh
+rtk scripts/check-wechat-intake-ledger.sh .
+```
+
+固定产物：
+
+- `reports/wechat-article-intake.jsonl`：每篇文章的唯一 intake 状态源。
+- `reports/wechat-absorb-next-batch.md`：下一批 P0/P1 候选。
+- `reports/wechat-absorb-batch.template.md`：每批吸收决策报告模板。
+- `docs/runbooks/wechat-article-absorption.md`：文章吸收 runbook。
+
+约束：
+
+- 每篇文章必须先进入 ledger，再进入批次报告，不允许绕过账本直接改 adk 资产。
+- 外部 GitHub / 源码 / 安装命令默认 `report-only-until-security-review`，不得自动新增子仓或执行安装。
+- 已有等价能力时默认增强现有 skill/workflow/script，不新增平行资产。
+- 纯资讯、重复教程、过期模型动态默认 `REFERENCE_ONLY` 或 `REJECT`。
+- 每批吸收后至少运行 `rtk scripts/check-wechat-intake-ledger.sh .` 与 `rtk scripts/check-all.sh --quick`。
+
 ---
 
 ## 吸收前检查清单（必须全部通过）
