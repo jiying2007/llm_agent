@@ -13,7 +13,7 @@
 
 ## ASW Mapping
 
-- Agent layer: `agent-dev-kit/agents/adk-planner/AGENTS.md` 负责阶段计划、上下文边界和交接判断。
+- Agent layer: `agent-dev-kit/agents/architecture-planner/AGENTS.md` 负责阶段计划、上下文边界和交接判断。
 - Skill layer: `agent-dev-kit/skills/adk-token-context-governance/SKILL.md` 固化保真省 Token、上下文预算和原文回退。
 - Workflow layer: `agent-dev-kit/docs/runbooks/token-context-governance.md` 给出预算模式、证据保留和高风险原文路径。
 
