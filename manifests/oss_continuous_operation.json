@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "status": "report-only",
+  "last_updated": "2026-06-16",
+  "cadence": "manual-or-scheduled-report-only",
+  "default_mode": "report-only",
+  "inputs": [
+    "manifests/oss_discovery_sources.json",
+    "manifests/oss_candidate_scoring_policy.json",
+    "manifests/subrepo_lifecycle.json",
+    "manifests/oss_registration_policy.json",
+    "manifests/oss_removal_policy.json"
+  ],
+  "commands": [
+    "rtk scripts/check-oss-intake-ledger.sh .",
+    "rtk scripts/check-oss-registration-plan.sh .",
+    "rtk scripts/check-oss-removal-plan.sh .",
+    "rtk scripts/check-all.sh --quick"
+  ],
+  "report_outputs": [
+    "reports/oss-intake-cycle-YYYY-MM-DD.json",
+    "reports/oss-intake-cycle-YYYY-MM-DD.md"
+  ],
+  "approval_points": [
+    "network discovery",
+    "candidate registration apply",
+    "subrepo removal apply",
+    "ADK absorption",
+    "source-to-live apply"
+  ],
+  "stop_conditions": [
+    "any intake gate fails",
+    "candidate requires credentials or hosted private services",
+    "removal plan targets a protected or active-core repository",
+    "dirty baseline is stale or hides unrelated changes",
+    "check-all --quick fails"
+  ],
+  "rules": {
+    "cycle_must_be_report_only": true,
+    "cycle_must_not_fetch_network": true,
+    "cycle_must_not_modify_registry": true,
+    "cycle_must_not_modify_gitmodules": true,
+    "cycle_must_not_absorb_into_adk": true,
+    "cycle_must_leave_auditable_report": true
+  }
+}

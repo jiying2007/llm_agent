@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "status": "planned",
+  "mode": "dry-run",
+  "repository": {
+    "repo": "OpenSpec",
+    "lifecycle_state": "active-core",
+    "registry_status": "active",
+    "protected": false,
+    "active_core": true
+  },
+  "gates": {
+    "lifecycle_state_gate": false,
+    "protected_repo_gate": true,
+    "active_core_gate": false,
+    "adoption_decision_gate": true,
+    "evidence_dependency_gate": true,
+    "dirty_baseline_gate": true,
+    "rollback_plan_gate": true,
+    "precheck_gate": true,
+    "postcheck_gate": true
+  },
+  "required_artifacts": {
+    "adoption_decision": "subrepos/adoption-matrix.md",
+    "evidence_dependency_scan": "reports/subrepo-removal-plan-OpenSpec-2026-06-16.md",
+    "dirty_baseline_review": "subrepos/dirty-baseline.tsv",
+    "rollback_plan": "reports/subrepo-removal-plan-OpenSpec-2026-06-16.md"
+  },
+  "planned_changes": {
+    "gitmodules": {"action": "remove-entry", "path": ".gitmodules"},
+    "gitlink": {"action": "remove-gitlink", "path": "OpenSpec"},
+    "registry": {"action": "mark-removed", "path": "subrepos/registry.csv"},
+    "dirty_baseline": {"action": "drop-entry-if-present", "path": "subrepos/dirty-baseline.tsv"},
+    "lifecycle": {"action": "mark-removed", "path": "manifests/subrepo_lifecycle.json"},
+    "docs_reports": {"action": "write-removal-evidence", "path": "reports/subrepo-removal-plan-OpenSpec-2026-06-16.md"}
+  },
+  "precheck": {"command": "rtk scripts/check-all.sh --quick"},
+  "postcheck": {"command": "rtk scripts/check-all.sh --quick"},
+  "rollback": {
+    "files": [".gitmodules", "subrepos/registry.csv", "subrepos/dirty-baseline.tsv", "manifests/subrepo_lifecycle.json"],
+    "commands": ["rtk git revert <removal-commit>"]
+  }
+}

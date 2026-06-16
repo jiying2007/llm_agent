@@ -1,6 +1,6 @@
 # OSS Intake Lifecycle Runbook
 
-> Status: P1 report-only baseline and P2 gated registration baseline active; P3-P4 remain target-state design
+> Status: P1 report-only, P2 gated registration, P3 gated removal, and P4 report-only cycle baselines active
 > Last updated: 2026-06-16
 > Scope: external open source repository discovery, scoring, onboarding, absorption, and removal for `llm_agent`.
 
@@ -54,7 +54,7 @@ Current governed files remain authoritative until the future manifests exist.
 | `adk.lock` | Locked `agent-dev-kit` version and gitlink. |
 | `reports/` | Evidence, candidate analysis, closeout, and rollback records. |
 
-P1/P2 governed manifests are current inputs:
+P1-P4 governed manifests are current inputs:
 
 | Manifest | Purpose |
 |---|---|
@@ -62,8 +62,10 @@ P1/P2 governed manifests are current inputs:
 | `manifests/oss_candidate_scoring_policy.json` | Scoring weights and hard reject rules. |
 | `manifests/subrepo_lifecycle.json` | Lifecycle state, owner, review window, and automation eligibility. |
 | `manifests/oss_registration_policy.json` | P2 gated registration rules, allowed targets, and materialization modes. |
+| `manifests/oss_removal_policy.json` | P3 gated removal rules, protected repositories, allowed targets, and rollback gates. |
+| `manifests/oss_continuous_operation.json` | P4 report-only cycle commands, stop conditions, and approval points. |
 
-These manifests are validated by `scripts/check-oss-intake-ledger.sh` and `scripts/check-oss-registration-plan.sh`. P1 is report-only; P2 apply requires explicit `--apply` and stays separate from ADK absorption.
+These manifests are validated by `scripts/check-oss-intake-ledger.sh`, `scripts/check-oss-registration-plan.sh`, `scripts/check-oss-removal-plan.sh`, and `scripts/check-oss-continuous-operation.sh`. P1/P4 are report-only; P2 apply requires explicit `--apply`; P3 currently generates and validates dry-run removal plans only.
 
 ## 4. Discovery Sources
 
@@ -169,7 +171,7 @@ Automatic registration must not change `agent-dev-kit` core assets. Absorption i
 
 ## 8. Automatic Removal Policy
 
-Automatic removal is allowed only as a target-state capability after the required scripts and checks exist. Until then, removal remains manual.
+Automatic removal is available as a P3 gated plan baseline. Current scripts generate and validate dry-run removal plans; they do not delete subrepos, edit gitlinks, or rewrite `.gitmodules`.
 
 A subrepo may be automatically removed only when all conditions are true:
 
@@ -182,7 +184,7 @@ A subrepo may be automatically removed only when all conditions are true:
 7. Removal plan exists with rollback commands and expected post-removal checks.
 8. A pre-removal `scripts/check-all.sh --quick` run passes.
 
-Removal must update:
+Future removal apply must update:
 
 1. `.gitmodules`
 2. gitlink tracking
@@ -191,7 +193,7 @@ Removal must update:
 5. docs or reports that describe active subrepos
 6. `reports/subrepo-removal-plan-<repo>-YYYY-MM-DD.md`
 
-Removal must be rolled back if any post-removal gate fails and cannot be fixed within the same change.
+Removal apply remains blocked until a separate reviewed implementation exists. Any future apply must be rolled back if a post-removal gate fails and cannot be fixed within the same change.
 
 ## 9. Absorption Policy
 
@@ -273,7 +275,47 @@ Current P2 artifacts:
 
 `onboard-oss-candidate.sh` writes a dry-run plan by default. `--apply` is intentionally separate from scoring and analysis. Metadata-only apply updates governance files; local submodule materialization requires `--materialization local-submodule --submodule-source <local-path>`.
 
-## 13. Future Script Interfaces
+## 13. P3 Gated Removal Commands
+
+Current P3 commands are offline and gated:
+
+```bash
+rtk scripts/check-oss-removal-plan.sh .
+rtk scripts/plan-oss-subrepo-removal.sh . --repo codex
+rtk tests/test_oss_removal_plan.sh
+```
+
+Current P3 artifacts:
+
+| Artifact | Role |
+|---|---|
+| `fixtures/oss-intake/removal/pass/*.json` | Positive removal plan examples. |
+| `fixtures/oss-intake/removal/fail/*.json` | Negative removal plan examples. |
+| `reports/subrepo-removal-plan-codex-2026-06-16.{json,md}` | Example dry-run removal plan. |
+
+`plan-oss-subrepo-removal.sh` writes a dry-run plan for repositories already in `archive-only` or `disabled` lifecycle state. `--apply` is intentionally blocked in this baseline.
+
+## 14. P4 Continuous Operation Commands
+
+Current P4 commands are offline and report-only:
+
+```bash
+rtk scripts/check-oss-continuous-operation.sh .
+rtk scripts/run-oss-intake-cycle.sh .
+rtk tests/test_oss_continuous_operation.sh
+```
+
+Current P4 artifacts:
+
+| Artifact | Role |
+|---|---|
+| `fixtures/oss-intake/continuous/pass/*.json` | Positive cycle report examples. |
+| `fixtures/oss-intake/continuous/fail/*.json` | Negative cycle report examples. |
+| `reports/oss-intake-cycle-2026-06-16.{json,md}` | Example report-only cycle output. |
+
+`run-oss-intake-cycle.sh` only runs local ledger, registration, and removal gates, then writes cycle reports. It must not fetch network data, register candidates, remove subrepos, absorb into ADK, or apply to `~/codex`/`~/.codex`. Fixture tests stay in `check-oss-intake-fixtures.sh` to avoid recursive cycle execution.
+
+## 15. Future Script Interfaces
 
 These are target-state interfaces. Do not reference them as currently available commands until implemented.
 
@@ -293,13 +335,15 @@ Expected behavior:
 | `decide-oss-intake.sh` | Emit `WATCH`, `ARCHIVE_ONLY`, `MERGE`, `ADOPT`, `ONBOARD_SUBREPO`, or `REJECT`. |
 | `prune-subrepo-candidates.sh` | Generate removal candidates or removal plans. |
 
-## 14. Gates
+## 16. Gates
 
 Current commands for existing workflows:
 
 ```bash
 rtk scripts/check-oss-intake-ledger.sh .
 rtk scripts/check-oss-registration-plan.sh .
+rtk scripts/check-oss-removal-plan.sh .
+rtk scripts/check-oss-continuous-operation.sh .
 rtk scripts/check-oss-intake-fixtures.sh .
 rtk scripts/check-phase-gate.sh .
 rtk scripts/check-subrepo-state.sh .
@@ -309,6 +353,8 @@ rtk scripts/check-adoption-matrix-status.sh .
 rtk scripts/check-adoption-matrix-structured.sh .
 rtk tests/test_oss_intake_ledger.sh
 rtk tests/test_oss_registration_plan.sh
+rtk tests/test_oss_removal_plan.sh
+rtk tests/test_oss_continuous_operation.sh
 rtk scripts/check-all.sh --quick
 ```
 
@@ -330,7 +376,7 @@ rtk bash ~/codex/scripts/plan.sh --target ~/.codex --prune-stale --output ~/code
 rtk bash ~/codex/scripts/apply.sh --plan ~/codex/build/apply-plan.json --dry-run
 ```
 
-## 15. Phase Plan
+## 17. Phase Plan
 
 ### P0: Document and repair governance entrypoints
 
@@ -359,12 +405,16 @@ Status: implemented as an offline gated registration baseline on 2026-06-16.
 
 ### P3: Automatic removal
 
+Status: implemented as an offline gated removal plan baseline on 2026-06-16.
+
 1. Generate subrepo removal candidates from lifecycle state, grade, priority, and evidence usage.
 2. Require removal plan and rollback path.
-3. Automatically remove only when pre-checks pass.
-4. Roll back if post-removal checks fail.
+3. Keep apply blocked until a separately reviewed implementation exists.
+4. Require rollback if future post-removal checks fail.
 
 ### P4: Continuous operation
+
+Status: implemented as an offline report-only cycle baseline on 2026-06-16.
 
 1. Run discovery and pruning on a scheduled report-only cadence.
 2. Promote only high-confidence candidates.

@@ -36,7 +36,7 @@
 | `subrepos/phase-gate.env` | 是否允许追踪上游更新 | 默认先压实 adk，再开门同步 |
 | `subrepos/dirty-baseline.tsv` | observe 子仓预期 dirty 状态 | 区分已知参考仓噪音与本轮风险 dirty |
 | `adk.lock` | adk 版本和子模块指针锁 | adk 升级或子模块指针变化时同步更新 |
-| `manifests/` | OSS intake P1 发现源、评分策略和子仓生命周期声明 | 修改后必须运行 OSS intake ledger 检查 |
+| `manifests/` | OSS intake P1-P4 发现、评分、生命周期、注册、移除和周期运行声明 | 修改后必须运行 OSS intake 检查 |
 | `fixtures/oss-intake/` | OSS intake 正负样例 | 修改后必须运行 OSS intake fixture 测试 |
 | `tests/` | 根仓定向回归测试 | 新增脚本或 fixture 后补相应测试入口 |
 | `scripts/` | 治理、同步、门禁脚本 | 新脚本必须写入 `scripts/README.md` |
@@ -56,8 +56,12 @@ rtk scripts/check-subrepo-state.sh .
 rtk scripts/check-runtime-routing.sh .
 rtk scripts/check-oss-intake-ledger.sh .
 rtk scripts/check-oss-registration-plan.sh .
+rtk scripts/check-oss-removal-plan.sh .
+rtk scripts/check-oss-continuous-operation.sh .
 rtk scripts/check-upstream-intake-readiness.sh .
 rtk scripts/check-stale-references.sh .
+rtk scripts/check-token-budget.sh . --summary-json
+rtk scripts/check-file-modes.sh .
 rtk scripts/check-global-codex-health.sh ~/.codex minimal
 ```
 
@@ -119,14 +123,18 @@ rtk scripts/diff-scan.sh . 7 reports/weekly-change-report.md
 
 候选吸收默认先走 `docs/runbooks/oss-intake-lifecycle.md` 中的 candidate ledger、scoring、analysis 和 decision 流程。只有正式登记为治理来源后，才更新 `subrepos/adoption-matrix.md`。
 
-P1 report-only 基座使用 root manifests、candidate JSONL、fixtures 和 score report，不写 registry 或 `.gitmodules`：
+P1-P4 基座使用 root manifests、candidate JSONL、fixtures、plan report 和 cycle report；P1/P4 保持 report-only，P2 默认 dry-run，P3 只生成/校验 removal plan：
 
 ```bash
 rtk scripts/check-oss-intake-ledger.sh .
 rtk scripts/score-oss-candidates.sh . --ledger reports/oss-discovery-candidates-2026-06-16.jsonl --out reports/oss-score-report-2026-06-16.md
 rtk scripts/onboard-oss-candidate.sh . --ledger reports/oss-discovery-candidates-2026-06-16.jsonl --repo example/runtime-policy-gates --analysis reports/oss-analysis-example-runtime-policy-gates-2026-06-16.md --duplicate-check reports/oss-duplicate-check-example-runtime-policy-gates-2026-06-16.md --security-review reports/oss-security-review-example-runtime-policy-gates-2026-06-16.md
+rtk scripts/plan-oss-subrepo-removal.sh . --repo codex
+rtk scripts/run-oss-intake-cycle.sh .
 rtk tests/test_oss_intake_ledger.sh
 rtk tests/test_oss_registration_plan.sh
+rtk tests/test_oss_removal_plan.sh
+rtk tests/test_oss_continuous_operation.sh
 ```
 
 1. 在 `subrepos/adoption-matrix.md` 增加候选行。
@@ -153,10 +161,11 @@ rtk scripts/check-adk-harden-readiness.sh . --require-pilot
 | Agent/Skill 内容 | `rtk agent-dev-kit/tests/run_all.sh` | 会覆盖 frontmatter、内容质量、触发矩阵 |
 | profile / manifest | `rtk agent-dev-kit/tests/test_profile_coherence.sh` + `rtk agent-dev-kit/tests/run_all.sh` | 防止继承重复与未知引用 |
 | install / convert 脚本 | `rtk agent-dev-kit/tests/run_all.sh` | 必须覆盖安装、转换、dry-run |
-| root manifest | `rtk scripts/check-oss-intake-ledger.sh .` + `rtk scripts/check-doc-sync.sh .` | 防止发现源、评分策略和 lifecycle SSOT 漂移 |
-| fixture | `rtk tests/test_oss_intake_ledger.sh` + `rtk scripts/check-oss-intake-ledger.sh .` | 正负样例必须与 validator 语义一致 |
+| root manifest | `rtk scripts/check-oss-intake-ledger.sh .` + `rtk scripts/check-oss-registration-plan.sh .` + `rtk scripts/check-oss-removal-plan.sh .` + `rtk scripts/check-oss-continuous-operation.sh .` + `rtk scripts/check-doc-sync.sh .` | 防止发现、评分、lifecycle、注册、移除和周期运行 SSOT 漂移 |
+| fixture | `rtk scripts/check-oss-intake-fixtures.sh .` + `rtk scripts/check-oss-intake-ledger.sh .` | 正负样例必须与 validator 语义一致 |
 | OSS registration plan | `rtk scripts/check-oss-registration-plan.sh .` + `rtk tests/test_oss_registration_plan.sh` | P2 自动注册必须先通过 dry-run plan 与 rollback gate |
-| OSS intake check / score 脚本 | `rtk bash -n scripts/<name>.sh` + `rtk tests/test_oss_intake_ledger.sh` + `rtk scripts/check-all.sh --quick` | 必须保持离线、只读和 report-only 边界 |
+| OSS removal / cycle plan | `rtk scripts/check-oss-removal-plan.sh .` + `rtk scripts/check-oss-continuous-operation.sh .` + `rtk tests/test_oss_removal_plan.sh` + `rtk tests/test_oss_continuous_operation.sh` | P3/P4 必须保持 dry-run/report-only，禁止自动删除、吸收或 apply |
+| OSS intake check / score 脚本 | `rtk bash -n scripts/<name>.sh` + `rtk scripts/check-oss-intake-fixtures.sh .` + `rtk scripts/check-all.sh --quick` | 必须保持离线、只读和 report-only 边界 |
 | root 门禁脚本 | `rtk scripts/check-adk-harden-readiness.sh . --require-pilot` | 影响生产放行链路 |
 | `~/codex -> ~/.codex` 部署 | `rtk scripts/check-adk-harden-readiness.sh . --require-pilot` + `~/codex` apply plan / dry-run / health 证据 | 必须保留 backup |
 
