@@ -251,6 +251,7 @@ GitHub REST metadata discovery is available, but it is not the default path. It 
 ```bash
 rtk scripts/oss-intake.sh discover --dry-run --github-query "topic:agent archived:false" --github-max-results 30 --github-rate-limit-out /tmp/oss-discovery-rate-limit.json --out /tmp/oss-discovery-candidates.jsonl
 rtk scripts/run-oss-intake-cycle.sh . --discover-github --github-query "topic:agent archived:false"
+rtk scripts/generate-oss-intake-approval-queue.sh . --ledger reports/oss-discovery-candidates-2026-06-16.jsonl --rate-limit reports/oss-discovery-rate-limit-2026-06-16.json
 ```
 
 The optional GitHub token is read from `GITHUB_TOKEN` by default, or from the environment variable named by `--github-token-env`. Tokens are not written into discovery ledgers or rate-limit records.
@@ -267,7 +268,7 @@ Current P1 artifacts:
 | `reports/oss-discovery-rate-limit-YYYY-MM-DD.json` | GitHub REST metadata provider rate-limit audit record when explicit GitHub discovery runs. |
 | `reports/oss-score-report-2026-06-16.md` | Example generated score report. |
 
-`discover-oss-repos.sh --dry-run` generates discovered candidates from explicit `--repo` input, local source files with GitHub URLs, or explicit `--github-query` GitHub REST metadata search. It never clones repositories, registers subrepos, absorbs content, or executes third-party code. GitHub metadata candidates remain review-only: stale repositories, missing licenses, archived repositories, and historical duplicates are marked as hard rejects in the ledger. `score-oss-candidates.sh` generates a Markdown summary from local scored JSONL records. It does not promote candidates. `onboard-candidate` means eligible for a later gated onboarding review, not automatic registration.
+`discover-oss-repos.sh --dry-run` generates discovered candidates from explicit `--repo` input, local source files with GitHub URLs, or explicit `--github-query` GitHub REST metadata search. It never clones repositories, registers subrepos, absorbs content, or executes third-party code. GitHub metadata candidates remain review-only: stale repositories, missing licenses, archived repositories, and historical duplicates are marked as hard rejects in the ledger. `score-oss-candidates.sh` generates a Markdown summary from local scored JSONL records. It does not promote candidates. `generate-oss-intake-approval-queue.sh --ledger ... --rate-limit ...` adds L1 `candidate-review` items for explicit GitHub metadata candidates and carries hard-reject plus rate-limit evidence into the queue. `onboard-candidate` means eligible for a later gated onboarding review, not automatic registration.
 
 ## 12. P2 Gated Registration Commands
 
@@ -334,7 +335,7 @@ Current P4 artifacts:
 | `reports/oss-intake-approval-queue-2026-06-16.{json,md}` | Example gated approval queue. |
 | `reports/oss-intake-evidence-bundle-2026-06-16.md` | Example cycle evidence bundle. |
 
-`run-oss-intake-cycle.sh` only runs local ledger, registration, removal, and approval queue gates, then writes cycle reports, queue reports, and an evidence bundle. It must not register candidates, remove subrepos, absorb into ADK, or apply to `~/codex`/`~/.codex`. Network metadata discovery remains off by default; `--discover-github` requires at least one explicit `--github-query` and only writes discovery/rate-limit reports. Fixture tests stay in `check-oss-intake-fixtures.sh` to avoid recursive cycle execution.
+`run-oss-intake-cycle.sh` only runs local ledger, registration, removal, and approval queue gates, then writes cycle reports, queue reports, and an evidence bundle. It must not register candidates, remove subrepos, absorb into ADK, or apply to `~/codex`/`~/.codex`. Network metadata discovery remains off by default; `--discover-github` requires at least one explicit `--github-query`. When discovery is enabled, the cycle runs `discover -> score -> queue` in report-only mode and includes the discovery ledger, score report, and optional rate-limit report in the evidence outputs. Fixture tests stay in `check-oss-intake-fixtures.sh` to avoid recursive cycle execution.
 
 ## 15. Future Script Interfaces
 

@@ -56,11 +56,34 @@ PY
   --github-query "topic:agent archived:false" \
   --github-response-fixture "${ROOT}/fixtures/oss-intake/github-search-response.json" \
   --discovery-out "${TMP_DIR}/cycle-github.jsonl" \
+  --score-out "${TMP_DIR}/cycle-score.md" \
   --github-rate-limit-out "${TMP_DIR}/cycle-rate-limit.json" \
   --out-json "${TMP_DIR}/cycle.json" \
   --out-md "${TMP_DIR}/cycle.md" \
   --queue-json "${TMP_DIR}/queue.json" \
   --queue-md "${TMP_DIR}/queue.md" \
   --evidence-md "${TMP_DIR}/evidence.md" >/dev/null
+
+python3 - "${TMP_DIR}/cycle.json" "${TMP_DIR}/queue.json" "${TMP_DIR}/cycle-score.md" "${TMP_DIR}/cycle-rate-limit.json" <<'PY'
+import json
+import os
+import sys
+
+cycle_path, queue_path, score_path, rate_limit_path = sys.argv[1:5]
+with open(cycle_path, "r", encoding="utf-8") as handle:
+    cycle = json.load(handle)
+commands = {item["name"] for item in cycle["commands"]}
+assert "discover-oss-repos" in commands
+assert "score-oss-candidates" in commands
+assert os.path.isfile(score_path)
+assert os.path.isfile(rate_limit_path)
+
+with open(queue_path, "r", encoding="utf-8") as handle:
+    queue = json.load(handle)
+review_items = [item for item in queue["items"] if item["type"] == "candidate-review"]
+assert review_items
+assert any(item["status"] == "blocked" and "hard_rejects" in item["reason"] for item in review_items)
+assert any("cycle-rate-limit.json" in evidence for item in review_items for evidence in item["evidence"])
+PY
 
 echo "[PASS] oss discovery tests passed"

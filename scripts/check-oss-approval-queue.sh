@@ -63,7 +63,7 @@ summary_json = sys.argv[2] == "1"
 check_fixtures = sys.argv[3] == "1"
 explicit_queues = sys.argv[4:]
 
-allowed_types = {"candidate-registration-apply", "subrepo-removal-apply", "cycle-gate-review"}
+allowed_types = {"candidate-review", "candidate-registration-apply", "subrepo-removal-apply", "cycle-gate-review"}
 allowed_levels = {"L1-plan-review", "L2-metadata-apply", "L3-destructive-or-live-apply"}
 blocked_auto_actions = {
     "network discovery",
@@ -201,6 +201,8 @@ def validate_queue(path, expect_pass=True):
             fail(f"{context}: blocked_auto_actions must be non-empty for {item_id}")
         if item_type == "candidate-registration-apply" and "candidate registration apply" not in blocked:
             fail(f"{context}: candidate registration item must block apply for {item_id}")
+        if item_type == "candidate-review" and "candidate registration apply" not in blocked:
+            fail(f"{context}: candidate review item must block apply for {item_id}")
         if item_type == "subrepo-removal-apply" and "subrepo removal apply" not in blocked:
             fail(f"{context}: removal item must block apply for {item_id}")
         next_step = item.get("recommended_next_step", "")

@@ -50,6 +50,7 @@ required_tokens=(
   "--github-query"
   "--discover-github"
   "oss-discovery-rate-limit"
+  "candidate-review"
   "score-oss-candidates.sh"
   "check-oss-registration-plan.sh"
   "onboard-oss-candidate.sh"

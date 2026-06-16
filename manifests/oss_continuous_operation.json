@@ -22,6 +22,9 @@
   "report_outputs": [
     "reports/oss-intake-cycle-YYYY-MM-DD.json",
     "reports/oss-intake-cycle-YYYY-MM-DD.md",
+    "reports/oss-discovery-candidates-YYYY-MM-DD.jsonl",
+    "reports/oss-discovery-rate-limit-YYYY-MM-DD.json",
+    "reports/oss-score-report-YYYY-MM-DD.md",
     "reports/oss-intake-approval-queue-YYYY-MM-DD.json",
     "reports/oss-intake-approval-queue-YYYY-MM-DD.md",
     "reports/oss-intake-evidence-bundle-YYYY-MM-DD.md"
@@ -42,7 +45,8 @@
   ],
   "rules": {
     "cycle_must_be_report_only": true,
-    "cycle_must_not_fetch_network": true,
+    "cycle_must_not_fetch_network_by_default": true,
+    "cycle_network_discovery_requires_explicit_discover_github": true,
     "cycle_must_not_modify_registry": true,
     "cycle_must_not_modify_gitmodules": true,
     "cycle_must_not_absorb_into_adk": true,

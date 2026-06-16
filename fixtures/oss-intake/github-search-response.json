@@ -5,6 +5,8 @@
     {
       "full_name": "codex-candidates/fresh-agent-kit",
       "topics": ["agent", "tooling"],
+      "description": "Composable agent tooling for local workflow automation.",
+      "language": "Python",
       "stargazers_count": 2400,
       "forks_count": 120,
       "pushed_at": "2026-06-01T12:00:00Z",
@@ -16,6 +18,8 @@
     {
       "full_name": "codex-candidates/stale-no-license",
       "topics": ["workflow"],
+      "description": "Archived workflow orchestration prototype with unclear license.",
+      "language": "Shell",
       "stargazers_count": 810,
       "forks_count": 44,
       "pushed_at": "2024-01-01T08:00:00Z",
@@ -25,6 +29,8 @@
     {
       "full_name": "example/tooling-agent",
       "topics": ["agent", "tooling"],
+      "description": "Agent tooling example already present in historical ledgers.",
+      "language": "Python",
       "stargazers_count": 1200,
       "forks_count": 80,
       "pushed_at": "2026-05-20T09:00:00Z",

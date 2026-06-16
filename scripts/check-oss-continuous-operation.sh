@@ -130,7 +130,8 @@ def validate_manifest():
     rules = manifest.get("rules", {})
     for key in (
         "cycle_must_be_report_only",
-        "cycle_must_not_fetch_network",
+        "cycle_must_not_fetch_network_by_default",
+        "cycle_network_discovery_requires_explicit_discover_github",
         "cycle_must_not_modify_registry",
         "cycle_must_not_modify_gitmodules",
         "cycle_must_not_absorb_into_adk",

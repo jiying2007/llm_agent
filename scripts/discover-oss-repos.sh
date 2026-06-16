@@ -248,13 +248,13 @@ def iter_files(path):
 
 def infer_domain(text):
     lower = text.lower()
-    if "runtime" in lower or "policy" in lower or "security" in lower:
+    if "runtime" in lower or "policy" in lower or "security" in lower or "sandbox" in lower:
         return "runtime-policy"
-    if "skill" in lower or "agent" in lower or "mcp" in lower:
+    if "skill" in lower or "agent" in lower or "mcp" in lower or "multi-agent" in lower:
         return "agent-ecosystem"
-    if "workflow" in lower or "sdd" in lower or "spec" in lower:
+    if "workflow" in lower or "sdd" in lower or "spec" in lower or "orchestration" in lower:
         return "workflow-core"
-    if "guide" in lower or "knowledge" in lower or "docs" in lower:
+    if "guide" in lower or "knowledge" in lower or "docs" in lower or "documentation" in lower:
         return "knowledge"
     return domain_fit
 
@@ -336,17 +336,22 @@ def add_candidate(repo, source_id, evidence, text="", metadata=None):
     candidate = found[repo]
     if repo in historical:
         append_reject(candidate, "duplicate-without-advantage")
+    reject_reasons = []
     if metadata and candidate["license"] in {"unknown", "NOASSERTION"}:
         append_reject(candidate, "missing-license")
+        reject_reasons.append(f"license={candidate['license']}")
     if metadata and candidate["archived"] is True:
         append_reject(candidate, "archived")
+        reject_reasons.append("archived=true")
     if metadata and is_stale(candidate["pushed_at"]):
         append_reject(candidate, "stale-maintenance")
+        reject_reasons.append(f"pushed_at={candidate['pushed_at']}")
     if candidate["hard_rejects"]:
         candidate["score"] = 0
         candidate["score_breakdown"] = {key: 0 for key in score_weights}
         candidate["decision"] = "rejected"
-        candidate["reason"] = f"{candidate['reason']}; hard_rejects={','.join(candidate['hard_rejects'])}"
+        detail = f"; details={','.join(reject_reasons)}" if reject_reasons else ""
+        candidate["reason"] = f"{candidate['reason']}; hard_rejects={','.join(candidate['hard_rejects'])}{detail}"
 
 for repo in repos:
     add_candidate(repo, "user-provided-url", "manual --repo argument", repo)
@@ -436,8 +441,12 @@ for query in github_queries:
         if not isinstance(full_name, str):
             continue
         count += 1
+        topics = [topic for topic in item.get("topics", []) if isinstance(topic, str)]
+        description = item.get("description") if isinstance(item.get("description"), str) else ""
+        language = item.get("language") if isinstance(item.get("language"), str) else ""
+        search_text = " ".join([full_name, description, language, " ".join(topics)])
         metadata = {
-            "topics": [topic for topic in item.get("topics", []) if isinstance(topic, str)],
+            "topics": topics,
             "stars": int(item.get("stargazers_count") or 0),
             "forks": int(item.get("forks_count") or 0),
             "pushed_at": date_only(item.get("pushed_at", date)),
@@ -445,7 +454,7 @@ for query in github_queries:
             "archived": bool(item.get("archived", False)),
             "reason": "discovered from GitHub REST search metadata; human review required before scoring",
         }
-        add_candidate(full_name, "github-search", f"github-search query: {query}", full_name, metadata)
+        add_candidate(full_name, "github-search", f"github-search query: {query}", search_text, metadata)
     rate_limit_records.append({
         "query": query,
         "result_count": count,

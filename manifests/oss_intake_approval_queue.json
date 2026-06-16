@@ -9,6 +9,7 @@
     "L3-destructive-or-live-apply"
   ],
   "item_types": [
+    "candidate-review",
     "candidate-registration-apply",
     "subrepo-removal-apply",
     "cycle-gate-review"

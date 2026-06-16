@@ -6,10 +6,12 @@ ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 DATE="${OSS_INTAKE_DATE:-$(date '+%Y-%m-%d')}"
 OUT_JSON=""
 OUT_MD=""
+LEDGERS=()
+RATE_LIMITS=()
 
 usage() {
   cat <<USAGE
-usage: scripts/generate-oss-intake-approval-queue.sh [root] [--out-json FILE] [--out-md FILE]
+usage: scripts/generate-oss-intake-approval-queue.sh [root] [--ledger FILE] [--rate-limit FILE] [--out-json FILE] [--out-md FILE]
 
 Generates a report-only OSS intake approval queue from local ledgers and plans.
 It does not approve, apply, register, remove, absorb, commit, or push.
@@ -34,6 +36,22 @@ while [[ $# -gt 0 ]]; do
       OUT_MD="$2"
       shift 2
       ;;
+    --ledger)
+      [[ $# -ge 2 ]] || {
+        echo "[FAIL] --ledger requires a file" >&2
+        exit 1
+      }
+      LEDGERS+=("$2")
+      shift 2
+      ;;
+    --rate-limit)
+      [[ $# -ge 2 ]] || {
+        echo "[FAIL] --rate-limit requires a file" >&2
+        exit 1
+      }
+      RATE_LIMITS+=("$2")
+      shift 2
+      ;;
     -h|--help)
       usage
       exit 0
@@ -52,14 +70,19 @@ done
 OUT_JSON="${OUT_JSON:-${ROOT}/reports/oss-intake-approval-queue-${DATE}.json}"
 OUT_MD="${OUT_MD:-${ROOT}/reports/oss-intake-approval-queue-${DATE}.md}"
 
-python3 - "$ROOT" "$OUT_JSON" "$OUT_MD" "$DATE" <<'PY'
+python3 - "$ROOT" "$OUT_JSON" "$OUT_MD" "$DATE" "${#LEDGERS[@]}" "${LEDGERS[@]}" "${#RATE_LIMITS[@]}" "${RATE_LIMITS[@]}" <<'PY'
 import glob
 import json
 import os
 import sys
 from collections import Counter
 
-root, out_json, out_md, date = sys.argv[1:]
+root, out_json, out_md, date = sys.argv[1:5]
+ledger_count = int(sys.argv[5])
+explicit_ledgers = sys.argv[6:6 + ledger_count]
+rate_count_index = 6 + ledger_count
+rate_count = int(sys.argv[rate_count_index])
+rate_limits = sys.argv[rate_count_index + 1:rate_count_index + 1 + rate_count]
 
 
 def rel(path):
@@ -74,6 +97,12 @@ def safe_default(path, default):
     return rel(abs_path) if abs_path.startswith(os.path.abspath(root) + os.sep) else default
 
 
+def evidence_ref(path):
+    abs_path = os.path.abspath(path)
+    root_abs = os.path.abspath(root)
+    return rel(abs_path) if abs_path.startswith(root_abs + os.sep) else f"external/{os.path.basename(path)}"
+
+
 items = []
 seen = set()
 
@@ -85,18 +114,54 @@ def add_item(item):
     items.append(item)
 
 
-for ledger_path in sorted(glob.glob(os.path.join(root, "reports/oss-discovery-candidates-*.jsonl"))):
+def existing_rel_paths(paths):
+    rels = []
+    for path in paths:
+        abs_path = os.path.abspath(path)
+        if os.path.isfile(abs_path):
+            rels.append(evidence_ref(abs_path))
+    return rels
+
+
+ledger_paths = [os.path.abspath(path) for path in explicit_ledgers] if explicit_ledgers else sorted(glob.glob(os.path.join(root, "reports/oss-discovery-candidates-*.jsonl")))
+rate_limit_evidence = existing_rel_paths(rate_limits)
+
+
+for ledger_path in ledger_paths:
     with open(ledger_path, "r", encoding="utf-8") as handle:
         for line in handle:
             if not line.strip():
                 continue
             row = json.loads(line)
+            repo = row.get("repo", "")
+            if explicit_ledgers and (row.get("hard_rejects") or (row.get("source") == "github-search" and row.get("decision") == "discovered")):
+                slug = repo.replace("/", "-")
+                evidence = [evidence_ref(ledger_path)] + rate_limit_evidence + [item for item in row.get("evidence", []) if isinstance(item, str)]
+                hard_rejects = row.get("hard_rejects", [])
+                if hard_rejects:
+                    reason = f"candidate requires L1 review before scoring; hard_rejects={','.join(hard_rejects)}"
+                    next_step = "Review hard rejects and decide whether to reject, archive, or request corrected metadata."
+                    status = "blocked"
+                else:
+                    reason = "GitHub metadata candidate requires L1 scoring triage before any onboarding review"
+                    next_step = "Review metadata, then run scoring and security triage before any onboarding plan."
+                    status = "pending-approval"
+                add_item({
+                    "id": f"candidate-review-{slug}",
+                    "type": "candidate-review",
+                    "approval_level": "L1-plan-review",
+                    "repo": repo,
+                    "status": status,
+                    "reason": reason,
+                    "evidence": evidence,
+                    "recommended_next_step": next_step,
+                    "blocked_auto_actions": ["candidate registration apply", "ADK absorption"],
+                })
             if row.get("decision") != "onboard-candidate":
                 continue
-            repo = row.get("repo", "")
             slug = repo.replace("/", "-")
             plans = sorted(glob.glob(os.path.join(root, f"reports/oss-onboarding-plan-{slug}-*.json")))
-            evidence = [rel(ledger_path)]
+            evidence = [evidence_ref(ledger_path)] + rate_limit_evidence
             if plans:
                 evidence.append(rel(plans[-1]))
                 reason = "onboard-candidate has a dry-run onboarding plan"
