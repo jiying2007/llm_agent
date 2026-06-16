@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "status": "gated-approval",
+  "last_updated": "2026-06-16",
+  "default_mode": "report-only",
+  "approval_levels": [
+    "L1-plan-review",
+    "L2-metadata-apply",
+    "L3-destructive-or-live-apply"
+  ],
+  "item_types": [
+    "candidate-registration-apply",
+    "subrepo-removal-apply",
+    "cycle-gate-review"
+  ],
+  "blocked_auto_actions": [
+    "network discovery",
+    "candidate registration apply",
+    "subrepo removal apply",
+    "ADK absorption",
+    "source-to-live apply",
+    "commit",
+    "push"
+  ],
+  "rules": {
+    "queue_must_be_report_only": true,
+    "queue_items_require_evidence": true,
+    "queue_items_require_recommended_next_step": true,
+    "queue_must_not_execute_apply": true,
+    "queue_must_not_modify_registry": true,
+    "queue_must_not_modify_gitmodules": true,
+    "queue_must_not_modify_agent_dev_kit": true
+  }
+}

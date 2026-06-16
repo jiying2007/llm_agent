@@ -65,6 +65,8 @@ required_commands = {
     "rtk scripts/check-oss-intake-ledger.sh .",
     "rtk scripts/check-oss-registration-plan.sh .",
     "rtk scripts/check-oss-removal-plan.sh .",
+    "rtk scripts/generate-oss-intake-approval-queue.sh .",
+    "rtk scripts/check-oss-approval-queue.sh .",
 }
 required_approvals = {
     "network discovery",
@@ -118,6 +120,13 @@ def validate_manifest():
         fail(f"oss_continuous_operation.json missing approval points: {', '.join(missing_approvals)}")
     if not manifest.get("stop_conditions"):
         fail("oss_continuous_operation.json stop_conditions must be non-empty")
+    outputs = set(manifest.get("report_outputs", []))
+    for required_output in (
+        "reports/oss-intake-approval-queue-YYYY-MM-DD.json",
+        "reports/oss-intake-evidence-bundle-YYYY-MM-DD.md",
+    ):
+        if required_output not in outputs:
+            fail(f"oss_continuous_operation.json missing report output: {required_output}")
     rules = manifest.get("rules", {})
     for key in (
         "cycle_must_be_report_only",

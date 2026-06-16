@@ -7,7 +7,7 @@ REPO=""
 OUT_JSON=""
 OUT_MD=""
 APPLY=0
-DATE="${OSS_INTAKE_DATE:-2026-06-16}"
+DATE="${OSS_INTAKE_DATE:-$(date '+%Y-%m-%d')}"
 
 usage() {
   cat <<USAGE

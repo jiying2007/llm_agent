@@ -3,13 +3,16 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
-DATE="${OSS_INTAKE_DATE:-2026-06-16}"
+DATE="${OSS_INTAKE_DATE:-$(date '+%Y-%m-%d')}"
 OUT_JSON=""
 OUT_MD=""
+QUEUE_JSON=""
+QUEUE_MD=""
+EVIDENCE_MD=""
 
 usage() {
   cat <<USAGE
-usage: scripts/run-oss-intake-cycle.sh [root] [--out-json FILE] [--out-md FILE]
+usage: scripts/run-oss-intake-cycle.sh [root] [--out-json FILE] [--out-md FILE] [--queue-json FILE] [--queue-md FILE] [--evidence-md FILE]
 
 Runs the P4 OSS intake cycle in report-only mode.
 It runs local gates and writes an audit report; it does not fetch, register, remove, absorb, or apply assets.
@@ -34,6 +37,30 @@ while [[ $# -gt 0 ]]; do
       OUT_MD="$2"
       shift 2
       ;;
+    --queue-json)
+      [[ $# -ge 2 ]] || {
+        echo "[FAIL] --queue-json requires a file" >&2
+        exit 1
+      }
+      QUEUE_JSON="$2"
+      shift 2
+      ;;
+    --queue-md)
+      [[ $# -ge 2 ]] || {
+        echo "[FAIL] --queue-md requires a file" >&2
+        exit 1
+      }
+      QUEUE_MD="$2"
+      shift 2
+      ;;
+    --evidence-md)
+      [[ $# -ge 2 ]] || {
+        echo "[FAIL] --evidence-md requires a file" >&2
+        exit 1
+      }
+      EVIDENCE_MD="$2"
+      shift 2
+      ;;
     -h|--help)
       usage
       exit 0
@@ -51,6 +78,9 @@ done
 
 OUT_JSON="${OUT_JSON:-${ROOT}/reports/oss-intake-cycle-${DATE}.json}"
 OUT_MD="${OUT_MD:-${ROOT}/reports/oss-intake-cycle-${DATE}.md}"
+QUEUE_JSON="${QUEUE_JSON:-${ROOT}/reports/oss-intake-approval-queue-${DATE}.json}"
+QUEUE_MD="${QUEUE_MD:-${ROOT}/reports/oss-intake-approval-queue-${DATE}.md}"
+EVIDENCE_MD="${EVIDENCE_MD:-${ROOT}/reports/oss-intake-evidence-bundle-${DATE}.md}"
 
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "${TMP_DIR}"' EXIT
@@ -71,6 +101,8 @@ run_gate() {
 run_gate check-oss-intake-ledger "rtk scripts/check-oss-intake-ledger.sh ." "${ROOT}/scripts/check-oss-intake-ledger.sh" "${ROOT}"
 run_gate check-oss-registration-plan "rtk scripts/check-oss-registration-plan.sh ." "${ROOT}/scripts/check-oss-registration-plan.sh" "${ROOT}"
 run_gate check-oss-removal-plan "rtk scripts/check-oss-removal-plan.sh ." "${ROOT}/scripts/check-oss-removal-plan.sh" "${ROOT}"
+run_gate generate-oss-intake-approval-queue "rtk scripts/generate-oss-intake-approval-queue.sh ." "${ROOT}/scripts/generate-oss-intake-approval-queue.sh" "${ROOT}" --out-json "${QUEUE_JSON}" --out-md "${QUEUE_MD}"
+run_gate check-oss-approval-queue "rtk scripts/check-oss-approval-queue.sh ." "${ROOT}/scripts/check-oss-approval-queue.sh" "${ROOT}" --queue "${QUEUE_JSON}"
 
 overall="pass"
 for rc_file in "${TMP_DIR}"/*.rc; do
@@ -79,20 +111,28 @@ for rc_file in "${TMP_DIR}"/*.rc; do
   fi
 done
 
-python3 - "$ROOT" "$TMP_DIR" "$OUT_JSON" "$OUT_MD" "$DATE" "$overall" <<'PY'
+python3 - "$ROOT" "$TMP_DIR" "$OUT_JSON" "$OUT_MD" "$QUEUE_JSON" "$QUEUE_MD" "$EVIDENCE_MD" "$DATE" "$overall" <<'PY'
 import json
 import os
 import sys
 
-root, tmp_dir, out_json, out_md, date, overall = sys.argv[1:]
+root, tmp_dir, out_json, out_md, queue_json, queue_md, evidence_md, date, overall = sys.argv[1:]
 default_json_ref = f"reports/oss-intake-cycle-{date}.json"
 default_md_ref = f"reports/oss-intake-cycle-{date}.md"
+default_queue_json_ref = f"reports/oss-intake-approval-queue-{date}.json"
+default_queue_md_ref = f"reports/oss-intake-approval-queue-{date}.md"
+default_evidence_ref = f"reports/oss-intake-evidence-bundle-{date}.md"
 json_ref = os.path.relpath(out_json, root) if os.path.abspath(out_json).startswith(root + os.sep) else default_json_ref
 md_ref = os.path.relpath(out_md, root) if os.path.abspath(out_md).startswith(root + os.sep) else default_md_ref
+queue_json_ref = os.path.relpath(queue_json, root) if os.path.abspath(queue_json).startswith(root + os.sep) else default_queue_json_ref
+queue_md_ref = os.path.relpath(queue_md, root) if os.path.abspath(queue_md).startswith(root + os.sep) else default_queue_md_ref
+evidence_ref = os.path.relpath(evidence_md, root) if os.path.abspath(evidence_md).startswith(root + os.sep) else default_evidence_ref
 names = [
     "check-oss-intake-ledger",
     "check-oss-registration-plan",
     "check-oss-removal-plan",
+    "generate-oss-intake-approval-queue",
+    "check-oss-approval-queue",
 ]
 commands = []
 for name in names:
@@ -115,7 +155,7 @@ report = {
         "ADK absorption",
         "source-to-live apply",
     ],
-    "outputs": [json_ref, md_ref],
+    "outputs": [json_ref, md_ref, queue_json_ref, queue_md_ref, evidence_ref],
 }
 
 os.makedirs(os.path.dirname(out_json), exist_ok=True)
@@ -132,6 +172,22 @@ with open(out_md, "w", encoding="utf-8") as handle:
     handle.write("\n## Approval Boundaries\n\n")
     for item in report["approval_required_before"]:
         handle.write(f"- {item}\n")
+    handle.write("\n## Generated Artifacts\n\n")
+    for item in report["outputs"]:
+        handle.write(f"- `{item}`\n")
+
+os.makedirs(os.path.dirname(evidence_md), exist_ok=True)
+with open(evidence_md, "w", encoding="utf-8") as handle:
+    handle.write("# OSS Intake Evidence Bundle\n\n")
+    handle.write(f"Date: {date}\nMode: report-only\nStatus: {overall}\n\n")
+    handle.write("## Artifacts\n\n")
+    for item in report["outputs"]:
+        handle.write(f"- `{item}`\n")
+    handle.write("\n## Commands\n\n")
+    for item in commands:
+        handle.write(f"- `{item['command']}`: {item['status']}\n")
+    handle.write("\n## Boundary\n\n")
+    handle.write("This bundle records evidence only. It does not approve, apply, remove, absorb, commit, push, or modify live Codex assets.\n")
 
 print(f"[PASS] oss intake cycle report written: {os.path.relpath(out_json, root)}")
 if overall != "pass":

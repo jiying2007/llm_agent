@@ -15,11 +15,16 @@
     "rtk scripts/check-oss-intake-ledger.sh .",
     "rtk scripts/check-oss-registration-plan.sh .",
     "rtk scripts/check-oss-removal-plan.sh .",
+    "rtk scripts/generate-oss-intake-approval-queue.sh .",
+    "rtk scripts/check-oss-approval-queue.sh .",
     "rtk scripts/check-all.sh --quick"
   ],
   "report_outputs": [
     "reports/oss-intake-cycle-YYYY-MM-DD.json",
-    "reports/oss-intake-cycle-YYYY-MM-DD.md"
+    "reports/oss-intake-cycle-YYYY-MM-DD.md",
+    "reports/oss-intake-approval-queue-YYYY-MM-DD.json",
+    "reports/oss-intake-approval-queue-YYYY-MM-DD.md",
+    "reports/oss-intake-evidence-bundle-YYYY-MM-DD.md"
   ],
   "approval_points": [
     "network discovery",

@@ -9,6 +9,8 @@ Status: pass
 - `rtk scripts/check-oss-intake-ledger.sh .`
 - `rtk scripts/check-oss-registration-plan.sh .`
 - `rtk scripts/check-oss-removal-plan.sh .`
+- `rtk scripts/generate-oss-intake-approval-queue.sh .`
+- `rtk scripts/check-oss-approval-queue.sh .`
 
 ## Approval Boundaries
 

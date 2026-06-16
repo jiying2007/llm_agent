@@ -64,8 +64,9 @@ P1-P4 governed manifests are current inputs:
 | `manifests/oss_registration_policy.json` | P2 gated registration rules, allowed targets, and materialization modes. |
 | `manifests/oss_removal_policy.json` | P3 gated removal rules, protected repositories, allowed targets, and rollback gates. |
 | `manifests/oss_continuous_operation.json` | P4 report-only cycle commands, stop conditions, and approval points. |
+| `manifests/oss_intake_approval_queue.json` | Approval levels, queue item types, blocked auto actions, and report-only queue rules. |
 
-These manifests are validated by `scripts/check-oss-intake-ledger.sh`, `scripts/check-oss-registration-plan.sh`, `scripts/check-oss-removal-plan.sh`, and `scripts/check-oss-continuous-operation.sh`. P1/P4 are report-only; P2 apply requires explicit `--apply`; P3 currently generates and validates dry-run removal plans only.
+These manifests are validated by `scripts/check-oss-intake-ledger.sh`, `scripts/check-oss-registration-plan.sh`, `scripts/check-oss-removal-plan.sh`, `scripts/check-oss-continuous-operation.sh`, and `scripts/check-oss-approval-queue.sh`. P1/P4 are report-only; P2 apply requires explicit `--apply`; P3 currently generates and validates dry-run removal plans only.
 
 ## 4. Discovery Sources
 
@@ -300,9 +301,14 @@ Current P3 artifacts:
 Current P4 commands are offline and report-only:
 
 ```bash
+rtk scripts/oss-intake.sh cycle
+rtk scripts/oss-intake.sh queue
 rtk scripts/check-oss-continuous-operation.sh .
+rtk scripts/check-oss-approval-queue.sh .
 rtk scripts/run-oss-intake-cycle.sh .
+rtk scripts/generate-oss-intake-approval-queue.sh .
 rtk tests/test_oss_continuous_operation.sh
+rtk tests/test_oss_approval_queue.sh
 ```
 
 Current P4 artifacts:
@@ -312,8 +318,10 @@ Current P4 artifacts:
 | `fixtures/oss-intake/continuous/pass/*.json` | Positive cycle report examples. |
 | `fixtures/oss-intake/continuous/fail/*.json` | Negative cycle report examples. |
 | `reports/oss-intake-cycle-2026-06-16.{json,md}` | Example report-only cycle output. |
+| `reports/oss-intake-approval-queue-2026-06-16.{json,md}` | Example gated approval queue. |
+| `reports/oss-intake-evidence-bundle-2026-06-16.md` | Example cycle evidence bundle. |
 
-`run-oss-intake-cycle.sh` only runs local ledger, registration, and removal gates, then writes cycle reports. It must not fetch network data, register candidates, remove subrepos, absorb into ADK, or apply to `~/codex`/`~/.codex`. Fixture tests stay in `check-oss-intake-fixtures.sh` to avoid recursive cycle execution.
+`run-oss-intake-cycle.sh` only runs local ledger, registration, removal, and approval queue gates, then writes cycle reports, queue reports, and an evidence bundle. It must not fetch network data, register candidates, remove subrepos, absorb into ADK, or apply to `~/codex`/`~/.codex`. Fixture tests stay in `check-oss-intake-fixtures.sh` to avoid recursive cycle execution.
 
 ## 15. Future Script Interfaces
 
@@ -344,6 +352,7 @@ rtk scripts/check-oss-intake-ledger.sh .
 rtk scripts/check-oss-registration-plan.sh .
 rtk scripts/check-oss-removal-plan.sh .
 rtk scripts/check-oss-continuous-operation.sh .
+rtk scripts/check-oss-approval-queue.sh .
 rtk scripts/check-oss-intake-fixtures.sh .
 rtk scripts/check-phase-gate.sh .
 rtk scripts/check-subrepo-state.sh .
@@ -355,6 +364,7 @@ rtk tests/test_oss_intake_ledger.sh
 rtk tests/test_oss_registration_plan.sh
 rtk tests/test_oss_removal_plan.sh
 rtk tests/test_oss_continuous_operation.sh
+rtk tests/test_oss_approval_queue.sh
 rtk scripts/check-all.sh --quick
 ```
 
