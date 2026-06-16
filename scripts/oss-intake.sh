@@ -10,6 +10,7 @@ usage: scripts/oss-intake.sh <command> [args...]
 
 Commands:
   status [--summary-json]        Run local OSS intake health checks.
+  discover --dry-run [args...]   Generate report-only discovery candidate ledger.
   cycle [args...]                Run report-only P4 cycle.
   queue [args...]                Generate report-only approval queue.
   score --ledger FILE [--out F]  Generate score report from a local ledger.
@@ -119,6 +120,9 @@ case "${COMMAND}" in
     ;;
   cycle)
     "${ROOT}/scripts/run-oss-intake-cycle.sh" "${ROOT}" "$@"
+    ;;
+  discover)
+    "${ROOT}/scripts/discover-oss-repos.sh" "${ROOT}" "$@"
     ;;
   queue)
     "${ROOT}/scripts/generate-oss-intake-approval-queue.sh" "${ROOT}" "$@"

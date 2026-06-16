@@ -238,6 +238,7 @@ Each stage must leave an auditable artifact.
 Current P1 commands are offline and report-only:
 
 ```bash
+rtk scripts/oss-intake.sh discover --dry-run --repo example/manual-discovery --out /tmp/oss-discovery-candidates.jsonl
 rtk scripts/check-oss-intake-ledger.sh .
 rtk scripts/check-oss-intake-ledger.sh . --summary-json
 rtk scripts/check-oss-intake-ledger.sh . --no-fixtures --fixture reports/oss-discovery-candidates-2026-06-16.jsonl
@@ -251,10 +252,11 @@ Current P1 artifacts:
 |---|---|
 | `fixtures/oss-intake/pass/*.jsonl` | Positive candidate ledger examples. |
 | `fixtures/oss-intake/fail/*.jsonl` | Negative candidate ledger examples. |
+| `fixtures/oss-intake/discovery-source.md` | Local source fixture for dry-run discovery. |
 | `reports/oss-discovery-candidates-2026-06-16.jsonl` | Example report-only candidate ledger. |
 | `reports/oss-score-report-2026-06-16.md` | Example generated score report. |
 
-`score-oss-candidates.sh` generates a Markdown summary from local scored JSONL records. It does not calculate remote scores, fetch metadata, or promote candidates. `onboard-candidate` means eligible for a later gated onboarding review, not automatic registration.
+`discover-oss-repos.sh --dry-run` generates discovered candidates from explicit `--repo` input or local source files with GitHub URLs. It does not call GitHub APIs, clone repositories, register subrepos, or absorb content. `score-oss-candidates.sh` generates a Markdown summary from local scored JSONL records. It does not calculate remote scores, fetch metadata, or promote candidates. `onboard-candidate` means eligible for a later gated onboarding review, not automatic registration.
 
 ## 12. P2 Gated Registration Commands
 
