@@ -2,6 +2,7 @@
 
 ## llm_agent 专属文档
 - llm-agent-maintenance-guide.md — 工作区维护指南（权威文档）
+- runbooks/oss-intake-lifecycle.md — 开源仓库发现、评分、接入、吸收和移除的终态生命周期方案
 - runbooks/ — 运维 runbook
 
 ## 全局资产文档

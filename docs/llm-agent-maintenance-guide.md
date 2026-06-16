@@ -92,6 +92,8 @@ rtk scripts/check-adk-harden-readiness.sh . --require-pilot
 
 ### 3.4 参考子仓同步
 
+开源仓库发现、评分、自动注册和自动移除的终态设计见 `docs/runbooks/oss-intake-lifecycle.md`。现有 `sync-subrepos` / `diff-scan` 流程只处理已登记子仓，不替代候选发现和生命周期治理。
+
 同步前先跑：
 
 ```bash
@@ -108,6 +110,8 @@ rtk scripts/diff-scan.sh . 7 reports/weekly-change-report.md
 若门禁未开，脚本会阻止同步。不要用 `--force` 常态绕过，除非只是一次性紧急扫描并会在报告里说明原因。
 
 ### 3.5 候选吸收
+
+候选吸收默认先走 `docs/runbooks/oss-intake-lifecycle.md` 中的 candidate ledger、scoring、analysis 和 decision 流程。只有正式登记为治理来源后，才更新 `subrepos/adoption-matrix.md`。
 
 1. 在 `subrepos/adoption-matrix.md` 增加候选行。
 2. 给出 `adopt/observe/reject`。

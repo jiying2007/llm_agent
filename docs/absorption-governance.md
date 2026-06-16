@@ -7,6 +7,10 @@
 
 ## 核心原则
 
+### OSS intake 终态边界
+
+外部开源仓库的发现、评分、自动注册、自动吸收和自动移除以 `docs/runbooks/oss-intake-lifecycle.md` 为终态设计。`scripts/auto-absorb.sh` 属于历史自动吸收入口，只能作为 legacy/report-only 思路参考；新增自动化不得复用其直接复制文件、追加文档或生成核心资产的写入模式。
+
 ### 禁止：完全增量更新
 
 **❌ 不允许的做法：**
