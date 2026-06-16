@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "status": "planned",
+  "mode": "dry-run",
+  "candidate": {
+    "repo": "example/runtime-policy-gates",
+    "url": "https://github.com/example/runtime-policy-gates",
+    "score": 93,
+    "decision": "onboard-candidate",
+    "domain_fit": "runtime-policy",
+    "hard_rejects": []
+  },
+  "gates": {
+    "candidate_score_gate": true,
+    "hard_reject_gate": true,
+    "analysis_report_gate": true,
+    "duplicate_check_gate": true,
+    "security_review_gate": true,
+    "phase_gate": true,
+    "registry_conflict_gate": true,
+    "target_path_gate": true,
+    "materialization_gate": true,
+    "rollback_plan_gate": true
+  },
+  "required_artifacts": {
+    "ledger": "reports/oss-discovery-candidates-2026-06-16.jsonl",
+    "analysis_report": "reports/oss-analysis-example-runtime-policy-gates-2026-06-16.md",
+    "duplicate_check": "reports/oss-duplicate-check-example-runtime-policy-gates-2026-06-16.md",
+    "security_review": "reports/oss-security-review-example-runtime-policy-gates-2026-06-16.md"
+  },
+  "planned_changes": {
+    "registry": {
+      "repo": "runtime-policy-gates",
+      "group": "runtime-policy",
+      "priority": "P1",
+      "sync_mode": "fetch",
+      "branch": "main",
+      "enabled": "yes",
+      "notes": "OSS intake P2 onboard-candidate",
+      "status": "active",
+      "owner": "adk-team",
+      "last_reviewed_on": "2026-06-16",
+      "intake_policy": "observe-first",
+      "grade": "A"
+    },
+    "gitmodules": {
+      "name": "runtime-policy-gates",
+      "path": "runtime-policy-gates",
+      "url": "https://github.com/example/runtime-policy-gates",
+      "materialization": "metadata-only"
+    },
+    "adoption_matrix": {
+      "date": "2026-06-16",
+      "source_repo": "runtime-policy-gates",
+      "category": "runtime-policy",
+      "capability": "P2 gated onboarding candidate",
+      "value": "高",
+      "cost": "中",
+      "risk": "中",
+      "decision": "observe",
+      "state": "pending",
+      "target": "agent-dev-kit",
+      "evidence": "reports/oss-onboarding-plan-example-runtime-policy-gates-2026-06-16.md"
+    }
+  },
+  "rollback": {
+    "files": [
+      ".gitmodules",
+      "subrepos/registry.csv",
+      "subrepos/adoption-matrix.md",
+      "subrepos/adoption-matrix.jsonl",
+      "manifests/subrepo_lifecycle.json"
+    ],
+    "commands": [
+      "rtk git submodule deinit -f runtime-policy-gates",
+      "rtk git rm -f runtime-policy-gates"
+    ]
+  }
+}

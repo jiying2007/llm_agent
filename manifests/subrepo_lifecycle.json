@@ -1,0 +1,246 @@
+{
+  "schema_version": 1,
+  "status": "report-only",
+  "last_updated": "2026-06-16",
+  "states": [
+    "discovered",
+    "scored",
+    "quarantined",
+    "analyzed",
+    "watch",
+    "onboard-candidate",
+    "active-core",
+    "active-reference",
+    "archive-only",
+    "disabled",
+    "removed",
+    "rejected"
+  ],
+  "entries": [
+    {
+      "repo": "AUBB-Server",
+      "state": "active-reference",
+      "owner": "adk-team",
+      "review_window": "quarterly",
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv"
+      ]
+    },
+    {
+      "repo": "Migrationed_skills",
+      "state": "active-reference",
+      "owner": "adk-team",
+      "review_window": "quarterly",
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv"
+      ]
+    },
+    {
+      "repo": "OpenSpec",
+      "state": "active-core",
+      "owner": "adk-team",
+      "review_window": "monthly",
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md"
+      ]
+    },
+    {
+      "repo": "agency-agents-zh",
+      "state": "active-reference",
+      "owner": "adk-team",
+      "review_window": "quarterly",
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv"
+      ]
+    },
+    {
+      "repo": "agent-skills",
+      "state": "active-reference",
+      "owner": "adk-team",
+      "review_window": "quarterly",
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv"
+      ]
+    },
+    {
+      "repo": "ai-coding-guide",
+      "state": "active-reference",
+      "owner": "adk-team",
+      "review_window": "quarterly",
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv"
+      ]
+    },
+    {
+      "repo": "arthas",
+      "state": "active-reference",
+      "owner": "adk-team",
+      "review_window": "quarterly",
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv"
+      ]
+    },
+    {
+      "repo": "auto-research",
+      "state": "active-reference",
+      "owner": "adk-team",
+      "review_window": "quarterly",
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv"
+      ]
+    },
+    {
+      "repo": "codex-cookbook",
+      "state": "active-reference",
+      "owner": "adk-team",
+      "review_window": "quarterly",
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv"
+      ]
+    },
+    {
+      "repo": "codex",
+      "state": "disabled",
+      "owner": "adk-team",
+      "review_window": "manual",
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv"
+      ]
+    },
+    {
+      "repo": "dotfiles",
+      "state": "active-reference",
+      "owner": "adk-team",
+      "review_window": "quarterly",
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv"
+      ]
+    },
+    {
+      "repo": "agent-dev-kit",
+      "state": "active-core",
+      "owner": "adk-team",
+      "review_window": "continuous",
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv",
+        "adk.lock"
+      ]
+    },
+    {
+      "repo": "hermes-agent",
+      "state": "active-reference",
+      "owner": "adk-team",
+      "review_window": "quarterly",
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv"
+      ]
+    },
+    {
+      "repo": "hermes-collaboration-skill",
+      "state": "active-reference",
+      "owner": "adk-team",
+      "review_window": "quarterly",
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv"
+      ]
+    },
+    {
+      "repo": "mattpocock-skills",
+      "state": "active-reference",
+      "owner": "adk-team",
+      "review_window": "quarterly",
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv"
+      ]
+    },
+    {
+      "repo": "prompts",
+      "state": "active-reference",
+      "owner": "adk-team",
+      "review_window": "quarterly",
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv"
+      ]
+    },
+    {
+      "repo": "skills",
+      "state": "active-reference",
+      "owner": "adk-team",
+      "review_window": "quarterly",
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv"
+      ]
+    },
+    {
+      "repo": "superpowers",
+      "state": "active-core",
+      "owner": "adk-team",
+      "review_window": "monthly",
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md"
+      ]
+    },
+    {
+      "repo": "superpowers-zh",
+      "state": "active-reference",
+      "owner": "adk-team",
+      "review_window": "monthly",
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md"
+      ]
+    },
+    {
+      "repo": "Trellis",
+      "state": "active-reference",
+      "owner": "aiot03",
+      "review_window": "quarterly",
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv"
+      ]
+    },
+    {
+      "repo": "vibeflow",
+      "state": "active-core",
+      "owner": "aiot03",
+      "review_window": "monthly",
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md"
+      ]
+    },
+    {
+      "repo": "agent-browser",
+      "state": "active-reference",
+      "owner": "aiot03",
+      "review_window": "quarterly",
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv"
+      ]
+    }
+  ]
+}

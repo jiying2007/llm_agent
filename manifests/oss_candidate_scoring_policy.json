@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "status": "report-only",
+  "last_updated": "2026-06-16",
+  "score_max": 100,
+  "dimensions": [
+    {
+      "id": "relevance",
+      "weight": 30,
+      "description": "Fits workflow-core, agent-ecosystem, tooling, knowledge, or runtime-policy."
+    },
+    {
+      "id": "maintenance",
+      "weight": 20,
+      "description": "Recent commits, releases, issue or PR activity, and maintainer continuity."
+    },
+    {
+      "id": "engineering_quality",
+      "weight": 15,
+      "description": "Tests, CI, docs, examples, versioning, and stable interfaces."
+    },
+    {
+      "id": "security_supply_chain",
+      "weight": 15,
+      "description": "License, security policy, dependency posture, Scorecard, and safe install surface."
+    },
+    {
+      "id": "uniqueness",
+      "weight": 10,
+      "description": "Provides a mechanism not already covered by ADK assets."
+    },
+    {
+      "id": "adoption_cost_inverse",
+      "weight": 10,
+      "description": "Low dependency load and easy conversion into gates, fixtures, runbooks, templates, or tests."
+    }
+  ],
+  "thresholds": [
+    {
+      "min_score": 90,
+      "max_score": 100,
+      "default_decision": "onboard-candidate"
+    },
+    {
+      "min_score": 80,
+      "max_score": 89,
+      "default_decision": "watch"
+    },
+    {
+      "min_score": 65,
+      "max_score": 79,
+      "default_decision": "archive-only"
+    },
+    {
+      "min_score": 0,
+      "max_score": 64,
+      "default_decision": "rejected"
+    }
+  ],
+  "hard_reject_rules": [
+    {
+      "id": "archived",
+      "description": "Repository is archived."
+    },
+    {
+      "id": "missing-license",
+      "description": "No clear license exists."
+    },
+    {
+      "id": "stale-maintenance",
+      "description": "No meaningful maintenance activity for 12 months."
+    },
+    {
+      "id": "unsafe-install-surface",
+      "description": "Install instructions require unreviewed remote execution, privileged system writes, or long-lived tokens."
+    },
+    {
+      "id": "duplicate-without-advantage",
+      "description": "Candidate duplicates an existing ADK capability without a concrete advantage."
+    },
+    {
+      "id": "not-verifiable",
+      "description": "Source cannot become a verifiable gate, fixture, runbook, template, or test."
+    },
+    {
+      "id": "private-or-hosted-dependency",
+      "description": "Candidate requires credentials, private services, or hosted infrastructure that cannot be reviewed locally."
+    }
+  ]
+}

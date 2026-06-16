@@ -24,7 +24,13 @@ esac
 
 declare -a SCAN_PATHS=(
   "AGENTS.md"
+  "docs/README.md"
+  "docs/llm-agent-maintenance-guide.md"
+  "docs/runbooks/oss-intake-lifecycle.md"
   "scripts/README.md"
+  "manifests"
+  "fixtures"
+  "tests"
   "reports/codex-pilot-report.md"
   "agent-dev-kit/README.md"
   "agent-dev-kit/CONTEXT.md"

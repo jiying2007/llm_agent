@@ -1,6 +1,6 @@
 # OSS Intake Lifecycle Runbook
 
-> Status: target-state design
+> Status: P1 report-only baseline and P2 gated registration baseline active; P3-P4 remain target-state design
 > Last updated: 2026-06-16
 > Scope: external open source repository discovery, scoring, onboarding, absorption, and removal for `llm_agent`.
 
@@ -54,13 +54,16 @@ Current governed files remain authoritative until the future manifests exist.
 | `adk.lock` | Locked `agent-dev-kit` version and gitlink. |
 | `reports/` | Evidence, candidate analysis, closeout, and rollback records. |
 
-Target-state manifests may be added later:
+P1/P2 governed manifests are current inputs:
 
-| Future manifest | Purpose |
+| Manifest | Purpose |
 |---|---|
 | `manifests/oss_discovery_sources.json` | Search sources, query classes, and freshness windows. |
 | `manifests/oss_candidate_scoring_policy.json` | Scoring weights and hard reject rules. |
 | `manifests/subrepo_lifecycle.json` | Lifecycle state, owner, review window, and automation eligibility. |
+| `manifests/oss_registration_policy.json` | P2 gated registration rules, allowed targets, and materialization modes. |
+
+These manifests are validated by `scripts/check-oss-intake-ledger.sh` and `scripts/check-oss-registration-plan.sh`. P1 is report-only; P2 apply requires explicit `--apply` and stays separate from ADK absorption.
 
 ## 4. Discovery Sources
 
@@ -139,7 +142,7 @@ Rejected candidates stay in the candidate ledger with the reason. Do not delete 
 
 ## 7. Automatic Registration Policy
 
-Automatic registration is allowed only as a target-state capability after the required scripts and checks exist. Until then, registration remains manual.
+Automatic registration is available as a P2 gated baseline. Default mode is dry-run. Apply mode must be explicit and must pass the registration plan gate.
 
 A candidate may be automatically registered only when all conditions are true:
 
@@ -158,10 +161,11 @@ Automatic registration may update only:
 2. `.gitmodules`
 3. `subrepos/adoption-matrix.md`
 4. `subrepos/adoption-matrix.jsonl`
-5. `reports/oss-analysis-<repo>-YYYY-MM-DD.md`
-6. `reports/oss-absorption-plan-<repo>-YYYY-MM-DD.md`
+5. `manifests/subrepo_lifecycle.json`
+6. `reports/oss-analysis-<repo>-YYYY-MM-DD.md`
+7. `reports/oss-onboarding-plan-<repo>-YYYY-MM-DD.{json,md}`
 
-Automatic registration must not change `agent-dev-kit` core assets. Absorption into `agent-dev-kit` is a separate gated phase.
+Automatic registration must not change `agent-dev-kit` core assets. Absorption into `agent-dev-kit` is a separate gated phase. P2 `--apply` defaults to `metadata-only`; `local-submodule` materialization requires a local reviewed clone or mirror through `--submodule-source`.
 
 ## 8. Automatic Removal Policy
 
@@ -226,17 +230,58 @@ Each stage must leave an auditable artifact.
 | Removal | `reports/subrepo-removal-plan-<repo>-YYYY-MM-DD.md` |
 | Verification | command list with exit codes and result summaries |
 
-## 11. Future Script Interfaces
+## 11. P1 Report-Only Commands
+
+Current P1 commands are offline and report-only:
+
+```bash
+rtk scripts/check-oss-intake-ledger.sh .
+rtk scripts/check-oss-intake-ledger.sh . --summary-json
+rtk scripts/check-oss-intake-ledger.sh . --no-fixtures --fixture reports/oss-discovery-candidates-2026-06-16.jsonl
+rtk scripts/score-oss-candidates.sh . --ledger reports/oss-discovery-candidates-2026-06-16.jsonl --out reports/oss-score-report-2026-06-16.md
+rtk tests/test_oss_intake_ledger.sh
+```
+
+Current P1 artifacts:
+
+| Artifact | Role |
+|---|---|
+| `fixtures/oss-intake/pass/*.jsonl` | Positive candidate ledger examples. |
+| `fixtures/oss-intake/fail/*.jsonl` | Negative candidate ledger examples. |
+| `reports/oss-discovery-candidates-2026-06-16.jsonl` | Example report-only candidate ledger. |
+| `reports/oss-score-report-2026-06-16.md` | Example generated score report. |
+
+`score-oss-candidates.sh` generates a Markdown summary from local scored JSONL records. It does not calculate remote scores, fetch metadata, or promote candidates. `onboard-candidate` means eligible for a later gated onboarding review, not automatic registration.
+
+## 12. P2 Gated Registration Commands
+
+Current P2 commands are offline and gated:
+
+```bash
+rtk scripts/check-oss-registration-plan.sh .
+rtk scripts/onboard-oss-candidate.sh . --ledger reports/oss-discovery-candidates-2026-06-16.jsonl --repo example/runtime-policy-gates --analysis reports/oss-analysis-example-runtime-policy-gates-2026-06-16.md --duplicate-check reports/oss-duplicate-check-example-runtime-policy-gates-2026-06-16.md --security-review reports/oss-security-review-example-runtime-policy-gates-2026-06-16.md
+rtk tests/test_oss_registration_plan.sh
+```
+
+Current P2 artifacts:
+
+| Artifact | Role |
+|---|---|
+| `fixtures/oss-intake/registration/pass/*.json` | Positive registration plan examples. |
+| `fixtures/oss-intake/registration/fail/*.json` | Negative registration plan examples. |
+| `reports/oss-onboarding-plan-example-runtime-policy-gates-2026-06-16.{json,md}` | Example dry-run onboarding plan. |
+
+`onboard-oss-candidate.sh` writes a dry-run plan by default. `--apply` is intentionally separate from scoring and analysis. Metadata-only apply updates governance files; local submodule materialization requires `--materialization local-submodule --submodule-source <local-path>`.
+
+## 13. Future Script Interfaces
 
 These are target-state interfaces. Do not reference them as currently available commands until implemented.
 
 ```text
 scripts/discover-oss-repos.sh --dry-run
-scripts/score-oss-candidates.sh
 scripts/analyze-oss-repo.sh
 scripts/decide-oss-intake.sh
 scripts/prune-subrepo-candidates.sh
-scripts/check-oss-intake-ledger.sh
 ```
 
 Expected behavior:
@@ -244,23 +289,26 @@ Expected behavior:
 | Future command | Behavior |
 |---|---|
 | `discover-oss-repos.sh --dry-run` | Generate candidate JSONL only. |
-| `score-oss-candidates.sh` | Add scores and default decisions to candidate records. |
 | `analyze-oss-repo.sh` | Produce a local analysis report without modifying ADK assets. |
 | `decide-oss-intake.sh` | Emit `WATCH`, `ARCHIVE_ONLY`, `MERGE`, `ADOPT`, `ONBOARD_SUBREPO`, or `REJECT`. |
 | `prune-subrepo-candidates.sh` | Generate removal candidates or removal plans. |
-| `check-oss-intake-ledger.sh` | Validate candidate records, required fields, and state transitions. |
 
-## 12. Gates
+## 14. Gates
 
 Current commands for existing workflows:
 
 ```bash
+rtk scripts/check-oss-intake-ledger.sh .
+rtk scripts/check-oss-registration-plan.sh .
+rtk scripts/check-oss-intake-fixtures.sh .
 rtk scripts/check-phase-gate.sh .
 rtk scripts/check-subrepo-state.sh .
 rtk scripts/check-authorized-subrepos.sh .
 rtk scripts/check-upstream-intake-readiness.sh .
 rtk scripts/check-adoption-matrix-status.sh .
 rtk scripts/check-adoption-matrix-structured.sh .
+rtk tests/test_oss_intake_ledger.sh
+rtk tests/test_oss_registration_plan.sh
 rtk scripts/check-all.sh --quick
 ```
 
@@ -282,7 +330,7 @@ rtk bash ~/codex/scripts/plan.sh --target ~/.codex --prune-stale --output ~/code
 rtk bash ~/codex/scripts/apply.sh --plan ~/codex/build/apply-plan.json --dry-run
 ```
 
-## 13. Phase Plan
+## 15. Phase Plan
 
 ### P0: Document and repair governance entrypoints
 
@@ -293,12 +341,16 @@ rtk bash ~/codex/scripts/apply.sh --plan ~/codex/build/apply-plan.json --dry-run
 
 ### P1: Candidate ledger and scoring
 
+Status: implemented as an offline report-only baseline on 2026-06-16.
+
 1. Add discovery source policy.
 2. Add candidate JSONL validation.
 3. Implement score report generation.
 4. Keep all actions report-only.
 
 ### P2: Automatic registration
+
+Status: implemented as an offline gated registration baseline on 2026-06-16.
 
 1. Implement gated `onboard-candidate` promotion.
 2. Require analysis, duplicate check, security review, and rollback plan.

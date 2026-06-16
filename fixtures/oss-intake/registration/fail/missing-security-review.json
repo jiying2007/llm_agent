@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "status": "planned",
+  "mode": "dry-run",
+  "candidate": {
+    "repo": "example/runtime-policy-gates",
+    "url": "https://github.com/example/runtime-policy-gates",
+    "score": 93,
+    "decision": "onboard-candidate",
+    "domain_fit": "runtime-policy",
+    "hard_rejects": []
+  },
+  "gates": {
+    "candidate_score_gate": true,
+    "hard_reject_gate": true,
+    "analysis_report_gate": true,
+    "duplicate_check_gate": true,
+    "security_review_gate": false,
+    "phase_gate": true,
+    "registry_conflict_gate": true,
+    "target_path_gate": true,
+    "rollback_plan_gate": true
+  },
+  "required_artifacts": {
+    "ledger": "reports/oss-discovery-candidates-2026-06-16.jsonl",
+    "analysis_report": "reports/oss-analysis-example-runtime-policy-gates-2026-06-16.md",
+    "duplicate_check": "reports/oss-duplicate-check-example-runtime-policy-gates-2026-06-16.md",
+    "security_review": ""
+  },
+  "planned_changes": {},
+  "rollback": {
+    "files": [],
+    "commands": []
+  }
+}

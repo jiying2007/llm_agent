@@ -227,6 +227,10 @@ scripts/check-token-budget.sh . --summary-json
 
 WeChat 文章吸收账本脚本：`scripts/generate-wechat-intake-ledger.sh` / `scripts/check-wechat-intake-ledger.sh .`。只读扫描 `wechat-articles/` 并生成 `reports/wechat-article-intake.jsonl`、`reports/wechat-absorb-next-batch.md`；细则见 `docs/runbooks/wechat-article-absorption.md`。
 
+OSS intake P1/P2 脚本：`scripts/check-oss-intake-ledger.sh .`、`scripts/score-oss-candidates.sh . --ledger reports/oss-discovery-candidates-2026-06-16.jsonl --out reports/oss-score-report-2026-06-16.md`、`scripts/check-oss-registration-plan.sh .`、`scripts/onboard-oss-candidate.sh . --ledger reports/oss-discovery-candidates-2026-06-16.jsonl --repo example/runtime-policy-gates --analysis reports/oss-analysis-example-runtime-policy-gates-2026-06-16.md --duplicate-check reports/oss-duplicate-check-example-runtime-policy-gates-2026-06-16.md --security-review reports/oss-security-review-example-runtime-policy-gates-2026-06-16.md`。该链路只校验本地 JSON/JSONL、root manifests 和 fixtures，不联网、不 clone、不吸收、不移除子仓；P2 `--apply` 默认 metadata-only，local-submodule 必须显式给本地 source。
+
+常用验证：`rtk scripts/check-oss-intake-ledger.sh .`、`rtk scripts/check-oss-registration-plan.sh .`、`rtk scripts/check-oss-intake-fixtures.sh .`、`rtk tests/test_oss_intake_ledger.sh`、`rtk tests/test_oss_registration_plan.sh`。输入是 `manifests/oss_discovery_sources.json`、`manifests/oss_candidate_scoring_policy.json`、`manifests/subrepo_lifecycle.json`、`manifests/oss_registration_policy.json` 与 `fixtures/oss-intake/`。`reports/oss-discovery-candidates-*.jsonl` 是候选 ledger；`reports/oss-score-report-*.md` 是评分摘要；`reports/oss-onboarding-plan-*.json/md` 是 P2 注册计划。
+
 adoption-matrix 状态检查脚本（真实记录不得有 `pending`，`blocked` 必须写解除条件）：
 
 ```bash

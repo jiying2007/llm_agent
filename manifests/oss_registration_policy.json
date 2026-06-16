@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "status": "gated-registration",
+  "last_updated": "2026-06-16",
+  "default_mode": "dry-run",
+  "rules": {
+    "apply_requires_explicit_flag": true,
+    "apply_requires_materialization_mode": true,
+    "apply_must_not_modify_agent_dev_kit": true,
+    "apply_must_not_run_network_discovery": true,
+    "apply_must_generate_rollback_evidence": true
+  },
+  "required_gates": [
+    "candidate_score_gate",
+    "hard_reject_gate",
+    "analysis_report_gate",
+    "duplicate_check_gate",
+    "security_review_gate",
+    "phase_gate",
+    "registry_conflict_gate",
+    "target_path_gate",
+    "materialization_gate",
+    "rollback_plan_gate"
+  ],
+  "materialization_modes": [
+    "metadata-only",
+    "local-submodule"
+  ],
+  "allowed_apply_targets": [
+    ".gitmodules",
+    "subrepos/registry.csv",
+    "subrepos/adoption-matrix.md",
+    "subrepos/adoption-matrix.jsonl",
+    "manifests/subrepo_lifecycle.json",
+    "reports/oss-onboarding-plan-*.json",
+    "reports/oss-onboarding-plan-*.md"
+  ],
+  "blocked_apply_targets": [
+    "agent-dev-kit/",
+    "~/.codex",
+    "~/codex",
+    "subrepos/dirty-baseline.tsv"
+  ]
+}
