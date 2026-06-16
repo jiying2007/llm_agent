@@ -1,17 +1,17 @@
 # Adoption Matrix 状态汇总
 
-- 生成时间：2026-05-29 21:14:57 HKT
+- 生成时间：2026-06-15 21:51:07 HKT
 - 数据源：`subrepos/adoption-matrix.md`
 
 ## 总览
 
 | 指标 | 数量 |
 |---|---|
-| 总记录（真实） | 84 |
-| done | 84 |
+| 总记录（真实） | 88 |
+| done | 88 |
 | pending | 0 |
 | blocked | 0 |
-| adopt | 79 |
+| adopt | 83 |
 | observe | 2 |
 | reject | 3 |
 
@@ -20,8 +20,8 @@
 | 类别标签 | done | pending | blocked | 总计 |
 |---|---:|---:|---:|---:|
 | adk-core | 7 | 0 | 0 | 7 |
-| agent-ecosystem | 6 | 0 | 0 | 6 |
-| agent-orchestration | 1 | 0 | 0 | 1 |
+| agent-ecosystem | 7 | 0 | 0 | 7 |
+| agent-orchestration | 2 | 0 | 0 | 2 |
 | api-runner | 2 | 0 | 0 | 2 |
 | config | 1 | 0 | 0 | 1 |
 | context-token | 5 | 0 | 0 | 5 |
@@ -38,13 +38,13 @@
 | runtime-boundary | 1 | 0 | 0 | 1 |
 | runtime-hooks | 1 | 0 | 0 | 1 |
 | runtime-mcp | 1 | 0 | 0 | 1 |
-| runtime-policy | 4 | 0 | 0 | 4 |
+| runtime-policy | 5 | 0 | 0 | 5 |
 | runtime-target | 1 | 0 | 0 | 1 |
 | security-supply-chain | 1 | 0 | 0 | 1 |
 | skill-pool | 1 | 0 | 0 | 1 |
 | tooling | 1 | 0 | 0 | 1 |
 | workflow-core | 16 | 0 | 0 | 16 |
-| workflow-quality | 5 | 0 | 0 | 5 |
+| workflow-quality | 6 | 0 | 0 | 6 |
 
 ## Blocked 明细
 
