@@ -129,10 +129,12 @@ P1-P4 基座使用 root manifests、candidate JSONL、fixtures、plan report、a
 ```bash
 rtk scripts/check-oss-intake-ledger.sh .
 rtk scripts/discover-oss-repos.sh . --dry-run --repo example/manual-discovery --out /tmp/oss-discovery-candidates.jsonl
+rtk scripts/discover-oss-repos.sh . --dry-run --github-query "topic:agent archived:false" --github-max-results 30 --github-rate-limit-out /tmp/oss-discovery-rate-limit.json --out /tmp/oss-discovery-candidates.jsonl
 rtk scripts/score-oss-candidates.sh . --ledger reports/oss-discovery-candidates-2026-06-16.jsonl --out reports/oss-score-report-2026-06-16.md
 rtk scripts/onboard-oss-candidate.sh . --ledger reports/oss-discovery-candidates-2026-06-16.jsonl --repo example/runtime-policy-gates --analysis reports/oss-analysis-example-runtime-policy-gates-2026-06-16.md --duplicate-check reports/oss-duplicate-check-example-runtime-policy-gates-2026-06-16.md --security-review reports/oss-security-review-example-runtime-policy-gates-2026-06-16.md
 rtk scripts/plan-oss-subrepo-removal.sh . --repo codex
 rtk scripts/run-oss-intake-cycle.sh .
+rtk scripts/run-oss-intake-cycle.sh . --discover-github --github-query "topic:agent archived:false"
 rtk scripts/generate-oss-intake-approval-queue.sh .
 rtk tests/test_oss_discovery.sh
 rtk tests/test_oss_intake_ledger.sh
@@ -168,7 +170,7 @@ rtk scripts/check-adk-harden-readiness.sh . --require-pilot
 | install / convert 脚本 | `rtk agent-dev-kit/tests/run_all.sh` | 必须覆盖安装、转换、dry-run |
 | root manifest | `rtk scripts/check-oss-intake-ledger.sh .` + `rtk scripts/check-oss-registration-plan.sh .` + `rtk scripts/check-oss-removal-plan.sh .` + `rtk scripts/check-oss-continuous-operation.sh .` + `rtk scripts/check-oss-approval-queue.sh .` + `rtk scripts/check-doc-sync.sh .` | 防止发现、评分、lifecycle、注册、移除、周期运行和审批队列 SSOT 漂移 |
 | fixture | `rtk scripts/check-oss-intake-fixtures.sh .` + `rtk scripts/check-oss-intake-ledger.sh .` | 正负样例必须与 validator 语义一致 |
-| OSS discovery | `rtk scripts/discover-oss-repos.sh . --dry-run --repo example/manual-discovery --out /tmp/oss-discovery-candidates.jsonl` + `rtk tests/test_oss_discovery.sh` | 只能生成候选 ledger，不联网、不 clone、不注册、不吸收 |
+| OSS discovery | `rtk scripts/discover-oss-repos.sh . --dry-run --repo example/manual-discovery --out /tmp/oss-discovery-candidates.jsonl` + `rtk tests/test_oss_discovery.sh` | 默认本地发现；GitHub metadata provider 必须显式 `--github-query`，只写候选 ledger 和 rate-limit 记录，不 clone、不注册、不吸收 |
 | OSS registration plan | `rtk scripts/check-oss-registration-plan.sh .` + `rtk tests/test_oss_registration_plan.sh` | P2 自动注册必须先通过 dry-run plan 与 rollback gate |
 | OSS removal / cycle plan | `rtk scripts/check-oss-removal-plan.sh .` + `rtk scripts/check-oss-continuous-operation.sh .` + `rtk tests/test_oss_removal_plan.sh` + `rtk tests/test_oss_continuous_operation.sh` | P3/P4 必须保持 dry-run/report-only，禁止自动删除、吸收或 apply |
 | OSS approval queue | `rtk scripts/check-oss-approval-queue.sh .` + `rtk tests/test_oss_approval_queue.sh` | 人工只审 L2/L3 队列项，脚本不得执行审批动作 |

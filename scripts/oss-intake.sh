@@ -18,7 +18,8 @@ Commands:
   plan-remove [args...]          Generate P3 removal plan.
   check                         Run P1-P4 OSS intake fixture checks.
 
-This wrapper does not add network discovery, apply, removal, absorption, commit, or push behavior.
+This wrapper does not default to network discovery, apply, removal, absorption, commit, or push behavior.
+GitHub metadata discovery requires explicit discover --github-query or cycle --discover-github arguments.
 USAGE
 }
 

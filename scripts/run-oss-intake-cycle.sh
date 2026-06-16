@@ -9,22 +9,36 @@ OUT_MD=""
 QUEUE_JSON=""
 QUEUE_MD=""
 EVIDENCE_MD=""
-DISCOVER=0
+DISCOVER_LOCAL=0
+DISCOVER_GITHUB=0
 DISCOVERY_OUT=""
+GITHUB_QUERIES=()
+GITHUB_MAX_RESULTS=30
+GITHUB_RATE_LIMIT_OUT=""
+GITHUB_RESPONSE_FIXTURE=""
 
 usage() {
   cat <<USAGE
-usage: scripts/run-oss-intake-cycle.sh [root] [--discover] [--discovery-out FILE] [--out-json FILE] [--out-md FILE] [--queue-json FILE] [--queue-md FILE] [--evidence-md FILE]
+usage: scripts/run-oss-intake-cycle.sh [root] [--discover|--discover-local] [--discover-github --github-query QUERY] [--discovery-out FILE] [--out-json FILE] [--out-md FILE] [--queue-json FILE] [--queue-md FILE] [--evidence-md FILE]
 
 Runs the P4 OSS intake cycle in report-only mode.
-It runs local gates and writes an audit report; it does not fetch, register, remove, absorb, or apply assets.
+It runs local gates and writes an audit report. GitHub metadata discovery is off by default and only runs when explicitly requested.
+It does not clone, register, remove, absorb, or apply assets.
 USAGE
 }
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --discover)
-      DISCOVER=1
+      DISCOVER_LOCAL=1
+      shift
+      ;;
+    --discover-local)
+      DISCOVER_LOCAL=1
+      shift
+      ;;
+    --discover-github)
+      DISCOVER_GITHUB=1
       shift
       ;;
     --discovery-out)
@@ -75,6 +89,38 @@ while [[ $# -gt 0 ]]; do
       EVIDENCE_MD="$2"
       shift 2
       ;;
+    --github-query)
+      [[ $# -ge 2 ]] || {
+        echo "[FAIL] --github-query requires a query string" >&2
+        exit 1
+      }
+      GITHUB_QUERIES+=("$2")
+      shift 2
+      ;;
+    --github-max-results)
+      [[ $# -ge 2 ]] || {
+        echo "[FAIL] --github-max-results requires a number" >&2
+        exit 1
+      }
+      GITHUB_MAX_RESULTS="$2"
+      shift 2
+      ;;
+    --github-rate-limit-out)
+      [[ $# -ge 2 ]] || {
+        echo "[FAIL] --github-rate-limit-out requires a file" >&2
+        exit 1
+      }
+      GITHUB_RATE_LIMIT_OUT="$2"
+      shift 2
+      ;;
+    --github-response-fixture)
+      [[ $# -ge 2 ]] || {
+        echo "[FAIL] --github-response-fixture requires a file" >&2
+        exit 1
+      }
+      GITHUB_RESPONSE_FIXTURE="$2"
+      shift 2
+      ;;
     -h|--help)
       usage
       exit 0
@@ -96,6 +142,12 @@ QUEUE_JSON="${QUEUE_JSON:-${ROOT}/reports/oss-intake-approval-queue-${DATE}.json
 QUEUE_MD="${QUEUE_MD:-${ROOT}/reports/oss-intake-approval-queue-${DATE}.md}"
 EVIDENCE_MD="${EVIDENCE_MD:-${ROOT}/reports/oss-intake-evidence-bundle-${DATE}.md}"
 DISCOVERY_OUT="${DISCOVERY_OUT:-${ROOT}/reports/oss-discovery-candidates-${DATE}.jsonl}"
+GITHUB_RATE_LIMIT_OUT="${GITHUB_RATE_LIMIT_OUT:-${ROOT}/reports/oss-discovery-rate-limit-${DATE}.json}"
+
+if [[ "${DISCOVER_GITHUB}" -eq 1 && "${#GITHUB_QUERIES[@]}" -eq 0 ]]; then
+  echo "[FAIL] --discover-github requires at least one --github-query" >&2
+  exit 1
+fi
 
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "${TMP_DIR}"' EXIT
@@ -115,8 +167,21 @@ run_gate() {
   GATE_NAMES+=("${name}")
 }
 
-if [[ "${DISCOVER}" -eq 1 ]]; then
-  run_gate discover-oss-repos "rtk scripts/discover-oss-repos.sh . --dry-run" "${ROOT}/scripts/discover-oss-repos.sh" "${ROOT}" --dry-run --out "${DISCOVERY_OUT}"
+if [[ "${DISCOVER_LOCAL}" -eq 1 || "${DISCOVER_GITHUB}" -eq 1 ]]; then
+  github_args=("${ROOT}" --dry-run --out "${DISCOVERY_OUT}")
+  if [[ "${DISCOVER_LOCAL}" -eq 1 ]]; then
+    github_args+=(--source "${ROOT}/reports")
+  fi
+  if [[ "${DISCOVER_GITHUB}" -eq 1 ]]; then
+    github_args+=(--github-max-results "${GITHUB_MAX_RESULTS}" --github-rate-limit-out "${GITHUB_RATE_LIMIT_OUT}")
+  fi
+  if [[ -n "${GITHUB_RESPONSE_FIXTURE}" ]]; then
+    github_args+=(--github-response-fixture "${GITHUB_RESPONSE_FIXTURE}")
+  fi
+  for query in "${GITHUB_QUERIES[@]}"; do
+    github_args+=(--github-query "${query}")
+  done
+  run_gate discover-oss-repos "rtk scripts/discover-oss-repos.sh . --dry-run" "${ROOT}/scripts/discover-oss-repos.sh" "${github_args[@]}"
 fi
 run_gate check-oss-intake-ledger "rtk scripts/check-oss-intake-ledger.sh ." "${ROOT}/scripts/check-oss-intake-ledger.sh" "${ROOT}"
 run_gate check-oss-registration-plan "rtk scripts/check-oss-registration-plan.sh ." "${ROOT}/scripts/check-oss-registration-plan.sh" "${ROOT}"
