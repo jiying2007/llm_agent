@@ -1,0 +1,139 @@
+{
+  "schema_version": 1,
+  "status": "report-only",
+  "last_updated": "2026-06-25",
+  "default_mode": "report-only",
+  "purpose": "Adapt scale-engine progressive governance and resource lifecycle ideas as local evidence contracts without enabling upstream runtime.",
+  "source_mapping": {
+    "source_repo": "scale-engine",
+    "source_url": "https://gitee.com/hongmaple/scale-engine.git",
+    "source_commit": "60f38279b76030056738cc9eac7bc8b9cc6173c2",
+    "decision": "adapt",
+    "runtime_enabled": false,
+    "report": "reports/oss-governance-contracts-hongmaple-scale-engine-2026-06-25.md",
+    "source_files": [
+      "scale-engine/src/governance/ProgressiveGovernance.ts",
+      "scale-engine/docs/RESOURCE_GOVERNANCE.md",
+      "scale-engine/docs/CONTEXT_BUDGET.md",
+      "scale-engine/docs/TOOL_ORCHESTRATION.md",
+      "scale-engine/docs/UPGRADE_MANAGEMENT.md"
+    ]
+  },
+  "progressive_governance": {
+    "modes": [
+      "minimal",
+      "standard",
+      "expanded",
+      "critical"
+    ],
+    "signals": [
+      {
+        "id": "docs_only_low_risk",
+        "mode": "minimal"
+      },
+      {
+        "id": "normal_engineering_work",
+        "mode": "standard"
+      },
+      {
+        "id": "cross_module_scope",
+        "mode": "expanded"
+      },
+      {
+        "id": "interactive_or_visual_flow",
+        "mode": "expanded"
+      },
+      {
+        "id": "public_interface_change",
+        "mode": "expanded"
+      },
+      {
+        "id": "critical_risk_domain",
+        "mode": "critical"
+      },
+      {
+        "id": "critical_file_path",
+        "mode": "critical"
+      },
+      {
+        "id": "resource_lifecycle",
+        "mode": "standard"
+      }
+    ],
+    "required_behaviors": {
+      "minimal": [
+        "run_relevant_validation_only"
+      ],
+      "standard": [
+        "record_verification_evidence",
+        "summarize_context_budget"
+      ],
+      "expanded": [
+        "attempt_impact_analysis_or_explain_fallback",
+        "collect_browser_screenshot_or_visual_evidence_when_applicable"
+      ],
+      "critical": [
+        "run_security_review",
+        "record_rollback_or_disable_strategy",
+        "require_human_review_for_destructive_data_auth_or_production_changes"
+      ]
+    }
+  },
+  "resource_lifecycle": {
+    "types": [
+      {
+        "id": "canonical-doc",
+        "git_policy": "commit",
+        "lifecycle": "maintained"
+      },
+      {
+        "id": "decision-record",
+        "git_policy": "commit",
+        "lifecycle": "immutable"
+      },
+      {
+        "id": "contract",
+        "git_policy": "commit",
+        "lifecycle": "maintained"
+      },
+      {
+        "id": "reusable-script",
+        "git_policy": "commit",
+        "lifecycle": "maintained"
+      },
+      {
+        "id": "task-artifact",
+        "git_policy": "review",
+        "lifecycle": "task-scoped"
+      },
+      {
+        "id": "evidence-report",
+        "git_policy": "ignore-or-review",
+        "lifecycle": "generated"
+      },
+      {
+        "id": "generated-media",
+        "git_policy": "review-or-external",
+        "lifecycle": "generated"
+      },
+      {
+        "id": "temporary",
+        "git_policy": "ignore",
+        "lifecycle": "temporary"
+      }
+    ]
+  },
+  "rules": {
+    "contract_must_be_report_only": true,
+    "contract_must_not_execute_scale_runtime": true,
+    "contract_must_not_install_dependencies": true,
+    "contract_must_not_patch_hooks": true,
+    "contract_must_not_start_daemons": true,
+    "contract_must_not_create_scale_runtime_state": true,
+    "progressive_mode_must_not_lower_detected_risk": true,
+    "resource_runtime_outputs_must_not_be_promoted_without_review": true,
+    "source_mapping_requires_report": true,
+    "source_mapping_requires_adoption_matrix_evidence": true,
+    "source_mapping_requires_lifecycle_evidence": true
+  }
+}

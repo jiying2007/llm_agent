@@ -56,6 +56,7 @@
 | `superpowers-zh` | 中文化流程体系 | 中文可读性高 | 与上游漂移风险 | 中文表达与触发词设计 |
 | `OpenSpec` | Spec 驱动工件体系 | 变更追溯清晰 | 与现有流程重叠 | 变更单元命名与状态映射 |
 | `~/codex` | Codex 声明式资产仓库（外部交付目标） | 控制层结构化、profile 化 | 本地环境耦合 | `catalog + scripts + doctor` 结构借鉴 |
+| `scale-engine` | AI Agent 治理运行时参考 | gates/evidence/context/queue 机制完整 | CLI/hook/orchestrator 运行态风险 | 证据化治理、候选队列和上下文预算机制 |
 
 > `~/codex` 不再作为本仓 tracked 子仓维护；本仓保留对 `agent-dev-kit -> ~/codex -> ~/.codex` 交付链路的验证与回灌记录。
 

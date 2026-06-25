@@ -60,6 +60,7 @@ import glob
 import json
 import os
 import re
+import subprocess
 import sys
 
 root = os.path.abspath(sys.argv[1])
@@ -236,6 +237,53 @@ def validate_manifests():
                 evidence = entry.get("evidence")
                 if not isinstance(evidence, list) or not evidence:
                     fail(f"lifecycle entry must include evidence: {repo}")
+                materialization = entry.get("materialization")
+                if materialization is not None and materialization not in {"root-local-reference"}:
+                    fail(f"invalid lifecycle materialization for {repo}: {materialization}")
+                if materialization == "root-local-reference":
+                    source = entry.get("source")
+                    if not isinstance(source, dict):
+                        fail(f"root-local reference missing source object: {repo}")
+                    else:
+                        source_url = source.get("url")
+                        provider = source.get("provider")
+                        branch = source.get("branch")
+                        commit = source.get("commit")
+                        retrieved_at = source.get("retrieved_at")
+                        if not isinstance(source_url, str) or not re.fullmatch(r"https://(github\.com|gitee\.com)/[^/\s]+/[^/\s]+(?:\.git)?/?", source_url):
+                            fail(f"root-local reference has invalid source.url: {repo}")
+                        if provider not in {"github", "gitee"}:
+                            fail(f"root-local reference has invalid source.provider: {repo}")
+                        if not isinstance(branch, str) or not branch:
+                            fail(f"root-local reference missing source.branch: {repo}")
+                        if not isinstance(commit, str) or not re.fullmatch(r"[0-9a-f]{40}", commit):
+                            fail(f"root-local reference has invalid source.commit: {repo}")
+                        if not isinstance(retrieved_at, str) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", retrieved_at):
+                            fail(f"root-local reference has invalid source.retrieved_at: {repo}")
+                        repo_path = os.path.join(root, repo or "")
+                        if repo and os.path.isdir(repo_path):
+                            try:
+                                actual_commit = subprocess.check_output(
+                                    ["git", "-C", repo_path, "rev-parse", "HEAD"],
+                                    text=True,
+                                    stderr=subprocess.DEVNULL,
+                                ).strip()
+                            except Exception:
+                                actual_commit = ""
+                            if commit and actual_commit and actual_commit != commit:
+                                fail(f"root-local reference commit drift for {repo}: {actual_commit} != {commit}")
+                        else:
+                            fail(f"root-local reference directory missing: {repo}")
+                    boundaries = entry.get("runtime_boundaries")
+                    if not isinstance(boundaries, list) or not boundaries:
+                        fail(f"root-local reference must include runtime_boundaries: {repo}")
+                    elif not all(isinstance(item, str) and item for item in boundaries):
+                        fail(f"root-local reference runtime_boundaries must be non-empty strings: {repo}")
+                    evidence_text = "\n".join(evidence or [])
+                    for report_kind in ("oss-analysis", "oss-absorption-plan", "oss-security-review", "oss-deep-assessment"):
+                        pattern = rf"reports/{report_kind}-.*{re.escape(repo or '')}.*\.md"
+                        if repo and not re.search(pattern, evidence_text):
+                            fail(f"root-local reference missing {report_kind} evidence report: {repo}")
             registry_path = os.path.join(root, "subrepos/registry.csv")
             if os.path.isfile(registry_path):
                 with open(registry_path, "r", encoding="utf-8") as handle:
@@ -273,8 +321,12 @@ def validate_candidate(candidate, path, line_no, allowed_sources, seen_repos):
     url = candidate["url"]
     if not isinstance(repo, str) or not re.fullmatch(r"[^/\s]+/[^/\s]+", repo):
         fail(f"{context}: repo must be owner/name")
-    if not isinstance(url, str) or url.rstrip("/") != f"https://github.com/{repo}":
-        fail(f"{context}: url must match https://github.com/<repo>")
+    if not isinstance(url, str):
+        fail(f"{context}: url must be a string")
+    else:
+        url_match = re.fullmatch(r"https://(github\.com|gitee\.com)/([^/\s]+/[^/\s]+)(?:\.git)?/?", url)
+        if not url_match or url_match.group(2) != repo:
+            fail(f"{context}: url must match https://github.com/<repo> or https://gitee.com/<repo>")
     if repo in seen_repos:
         fail(f"{context}: duplicate repo in ledger: {repo}")
     seen_repos.add(repo)

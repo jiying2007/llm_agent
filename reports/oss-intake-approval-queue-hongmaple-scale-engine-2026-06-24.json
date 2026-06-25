@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "status": "needs-approval",
+  "mode": "report-only",
+  "date": "2026-06-24",
+  "summary": {
+    "items": 1,
+    "by_type": {
+      "candidate-review": 1
+    },
+    "by_level": {
+      "L1-plan-review": 1
+    }
+  },
+  "items": [
+    {
+      "id": "candidate-review-hongmaple-scale-engine",
+      "type": "candidate-review",
+      "approval_level": "L1-plan-review",
+      "repo": "hongmaple/scale-engine",
+      "status": "pending-approval",
+      "reason": "Manual URL candidate requires L1 metadata enrichment before scoring or onboarding review",
+      "evidence": [
+        "reports/oss-discovery-candidates-2026-06-24.jsonl",
+        "manual --repo argument"
+      ],
+      "recommended_next_step": "Record source metadata, duplicate check, and security review before any scoring or onboarding plan.",
+      "blocked_auto_actions": [
+        "candidate registration apply",
+        "ADK absorption"
+      ]
+    }
+  ]
+}

@@ -18,7 +18,7 @@ GITHUB_RATE_LIMIT_OUT=""
 
 usage() {
   cat <<USAGE
-usage: scripts/discover-oss-repos.sh [root] --dry-run [--out FILE] [--source FILE_OR_DIR] [--repo owner/name] [--domain-fit DOMAIN]
+usage: scripts/discover-oss-repos.sh [root] --dry-run [--out FILE] [--source FILE_OR_DIR] [--repo owner/name|URL] [--domain-fit DOMAIN]
        [--github-query QUERY] [--github-max-results N] [--github-token-env ENV] [--github-rate-limit-out FILE]
 
 Generates a report-only OSS discovery candidate JSONL ledger.
@@ -51,7 +51,7 @@ while [[ $# -gt 0 ]]; do
       ;;
     --repo)
       [[ $# -ge 2 ]] || {
-        echo "[FAIL] --repo requires owner/name" >&2
+        echo "[FAIL] --repo requires owner/name or a supported repository URL" >&2
         exit 1
       }
       REPOS+=("$2")
@@ -260,11 +260,22 @@ def infer_domain(text):
 
 found = {}
 
+def parse_repo_input(value):
+    value = value.strip()
+    url = None
+    url_match = re.fullmatch(r"https://(github\.com|gitee\.com)/([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)(?:\.git)?/?", value)
+    if url_match:
+        host = url_match.group(1)
+        repo = url_match.group(2)
+        url = f"https://{host}/{repo}"
+        return repo, url
+    return value, url
+
 def normalize_repo(repo):
     if not re.fullmatch(r"[^/\s]+/[^/\s]+", repo):
         return None
     owner, name = repo.split("/", 1)
-    if owner.lower() in {"github.com", "http:", "https:"}:
+    if owner.lower() in {"github.com", "gitee.com", "http:", "https:"}:
         return None
     if name.endswith(".git"):
         name = name[:-4]
@@ -293,6 +304,7 @@ def is_stale(pushed_at):
     return (current - pushed).days >= 365
 
 def add_candidate(repo, source_id, evidence, text="", metadata=None):
+    repo, url_override = parse_repo_input(repo)
     repo = normalize_repo(repo)
     if not repo:
         return
@@ -306,7 +318,7 @@ def add_candidate(repo, source_id, evidence, text="", metadata=None):
         pushed_at = date_only(metadata.get("pushed_at", date))
         found[repo] = {
             "repo": repo,
-            "url": f"https://github.com/{repo}",
+            "url": metadata.get("url") or url_override or f"https://github.com/{repo}",
             "source": source_id,
             "topics": metadata.get("topics", []),
             "stars": metadata.get("stars", 0),
@@ -359,7 +371,7 @@ for repo in repos:
 if not sources and not github_queries and not repos:
     sources = [os.path.join(root, "reports")]
 
-url_pattern = re.compile(r"https://github\.com/([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)(?:\.git)?")
+url_pattern = re.compile(r"https://(?:github\.com|gitee\.com)/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(?:\.git)?")
 shorthand_pattern = re.compile(r"\bgithub:([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)\b")
 for source in sources:
     for path in iter_files(source):
@@ -370,7 +382,7 @@ for source in sources:
             continue
         evidence = rel(path)
         for match in url_pattern.finditer(text):
-            add_candidate(match.group(1), "local-reports", evidence, text[max(0, match.start() - 120):match.end() + 120])
+            add_candidate(match.group(0), "local-reports", evidence, text[max(0, match.start() - 120):match.end() + 120])
         for match in shorthand_pattern.finditer(text):
             add_candidate(match.group(1), "local-reports", evidence, text[max(0, match.start() - 120):match.end() + 120])
 
@@ -478,7 +490,7 @@ if rate_limit_records:
         handle.write("\n")
 
 if not found:
-    raise SystemExit("[FAIL] no OSS candidates discovered; pass --repo owner/name or --source with GitHub URLs")
+    raise SystemExit("[FAIL] no OSS candidates discovered; pass --repo owner/name|URL or --source with GitHub/Gitee URLs")
 
 os.makedirs(os.path.dirname(out), exist_ok=True)
 with open(out, "w", encoding="utf-8") as handle:

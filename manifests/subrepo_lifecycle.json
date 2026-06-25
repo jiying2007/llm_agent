@@ -241,6 +241,37 @@
       "evidence": [
         "subrepos/registry.csv"
       ]
+    },
+    {
+      "repo": "scale-engine",
+      "state": "active-reference",
+      "materialization": "root-local-reference",
+      "source": {
+        "url": "https://gitee.com/hongmaple/scale-engine.git",
+        "provider": "gitee",
+        "branch": "master",
+        "commit": "60f38279b76030056738cc9eac7bc8b9cc6173c2",
+        "retrieved_at": "2026-06-24"
+      },
+      "runtime_boundaries": [
+        "do-not-run-npm-npx-scale",
+        "do-not-enable-hooks-mcp-orchestrator",
+        "do-not-copy-runtime-assets"
+      ],
+      "owner": "adk-team",
+      "review_window": "monthly",
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/oss-analysis-hongmaple-scale-engine-2026-06-24.md",
+        "reports/oss-absorption-plan-hongmaple-scale-engine-2026-06-24.md",
+        "reports/oss-deep-assessment-hongmaple-scale-engine-2026-06-25.md",
+        "reports/oss-governance-contracts-hongmaple-scale-engine-2026-06-25.md",
+        "reports/oss-loop-readiness-hongmaple-scale-engine-2026-06-25.md",
+        "reports/observe-secondary-intake-packages-2026-06-24.md",
+        "reports/oss-security-review-hongmaple-scale-engine-2026-06-24.md"
+      ]
     }
   ]
 }

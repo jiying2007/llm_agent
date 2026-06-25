@@ -4,6 +4,7 @@ set -euo pipefail
 ROOT="${1:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 REGISTRY="${ROOT}/subrepos/registry.csv"
 GITMODULES="${ROOT}/.gitmodules"
+LIFECYCLE="${ROOT}/manifests/subrepo_lifecycle.json"
 
 [[ -f "${REGISTRY}" ]] || {
   echo "[FAIL] registry missing: ${REGISTRY}" >&2
@@ -20,12 +21,37 @@ mapfile -t registered < <(
   fi
 )
 
+mapfile -t root_local < <(
+  if [[ -f "${LIFECYCLE}" ]]; then
+    python3 - "${LIFECYCLE}" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], "r", encoding="utf-8") as fh:
+    data = json.load(fh)
+
+for entry in data.get("entries", []):
+    if entry.get("materialization") == "root-local-reference":
+        repo = entry.get("repo")
+        if repo:
+            print(repo)
+PY
+  fi | sort
+)
+
 failed=0
 
 for repo in "${authorized[@]}"; do
   if ! printf '%s\n' "${registered[@]}" | grep -Fxq "${repo}"; then
-    echo "[FAIL] active registry repo missing from .gitmodules: ${repo}" >&2
-    failed=1
+    if printf '%s\n' "${root_local[@]}" | grep -Fxq "${repo}"; then
+      if [[ ! -d "${ROOT}/${repo}" ]] || ! git -C "${ROOT}/${repo}" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+        echo "[FAIL] root-local reference is not a git worktree: ${repo}" >&2
+        failed=1
+      fi
+    else
+      echo "[FAIL] active registry repo missing from .gitmodules: ${repo}" >&2
+      failed=1
+    fi
   fi
 done
 

@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "status": "report-only",
+  "last_updated": "2026-06-25",
+  "default_mode": "report-only",
+  "purpose": "Track whether an agent workflow has observable evidence for observe-decide-act-recover-stop loops without enabling external runtimes.",
+  "metrics": [
+    {
+      "id": "tool_execution_evidence",
+      "required": true,
+      "description": "Loop claims must be backed by concrete command, tool, script, or report evidence."
+    },
+    {
+      "id": "loop_recovery_evidence",
+      "required": true,
+      "description": "Failures, blockers, retries, and repairs must leave a visible recovery or escalation record."
+    },
+    {
+      "id": "guardrail_coverage",
+      "required": true,
+      "description": "Runtime, destructive-action, supply-chain, and completion gates must be explicit."
+    },
+    {
+      "id": "budget_control_evidence",
+      "required": true,
+      "description": "Context, token, runtime, and automation scope must be bounded before loop execution."
+    },
+    {
+      "id": "handoff_or_delegation_evidence",
+      "required": true,
+      "description": "Ownership, review, subagent, or cross-repo delegation must be auditable."
+    },
+    {
+      "id": "termination_evidence",
+      "required": true,
+      "description": "Done, blocked, rejected, or archive-only states must be tied to validation or stop conditions."
+    }
+  ],
+  "loop_shapes": [
+    {
+      "id": "diagnostic_loop",
+      "required_fields": [
+        "reproduction_command",
+        "expected_failure",
+        "falsifiable_hypotheses_min_3",
+        "instrumentation_plan",
+        "cleanup_checklist",
+        "verification_commands"
+      ]
+    },
+    {
+      "id": "tdd_slice_loop",
+      "required_fields": [
+        "behavior",
+        "failing_test",
+        "green_evidence",
+        "refactor_boundary"
+      ]
+    },
+    {
+      "id": "reconciliation_loop_vocabulary",
+      "allowed_stage_terms": [
+        "poll",
+        "filter",
+        "isolate",
+        "dispatch",
+        "reconcile",
+        "notify"
+      ],
+      "runtime_enabled": false
+    }
+  ],
+  "source_mappings": [
+    {
+      "source_repo": "scale-engine",
+      "source_url": "https://gitee.com/hongmaple/scale-engine.git",
+      "source_commit": "60f38279b76030056738cc9eac7bc8b9cc6173c2",
+      "decision": "adapt",
+      "runtime_enabled": false,
+      "report": "reports/oss-loop-readiness-hongmaple-scale-engine-2026-06-25.md",
+      "adopted_controls": [
+        "diagnostic_loop",
+        "agent_loop_readiness_metrics",
+        "session_preflight_inputs",
+        "workflow_eval_failure_replay_fields"
+      ],
+      "rejected_runtime_surfaces": [
+        "scale_cli_execution",
+        "shield_hook_compilation",
+        "orchestrator_daemon",
+        "cortex_session_injection",
+        "eval_runner_execution",
+        "runtime_asset_copy"
+      ]
+    }
+  ],
+  "rules": {
+    "contract_must_be_report_only": true,
+    "contract_must_not_execute_external_runtime": true,
+    "contract_must_not_install_dependencies": true,
+    "contract_must_not_patch_hooks": true,
+    "contract_must_not_start_daemons": true,
+    "source_mapping_requires_report": true,
+    "source_mapping_requires_adoption_matrix_evidence": true,
+    "source_mapping_requires_lifecycle_evidence": true
+  }
+}

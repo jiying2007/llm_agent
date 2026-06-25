@@ -134,7 +134,11 @@ for ledger_path in ledger_paths:
                 continue
             row = json.loads(line)
             repo = row.get("repo", "")
-            if explicit_ledgers and (row.get("hard_rejects") or (row.get("source") == "github-search" and row.get("decision") == "discovered")):
+            source = row.get("source")
+            decision = row.get("decision")
+            unscored_manual = source == "user-provided-url" and decision == "discovered" and row.get("score") is None
+            discovered_metadata = source == "github-search" and decision == "discovered"
+            if explicit_ledgers and (row.get("hard_rejects") or discovered_metadata or unscored_manual):
                 slug = repo.replace("/", "-")
                 evidence = [evidence_ref(ledger_path)] + rate_limit_evidence + [item for item in row.get("evidence", []) if isinstance(item, str)]
                 hard_rejects = row.get("hard_rejects", [])
@@ -142,6 +146,10 @@ for ledger_path in ledger_paths:
                     reason = f"candidate requires L1 review before scoring; hard_rejects={','.join(hard_rejects)}"
                     next_step = "Review hard rejects and decide whether to reject, archive, or request corrected metadata."
                     status = "blocked"
+                elif unscored_manual:
+                    reason = "Manual URL candidate requires L1 metadata enrichment before scoring or onboarding review"
+                    next_step = "Record source metadata, duplicate check, and security review before any scoring or onboarding plan."
+                    status = "pending-approval"
                 else:
                     reason = "GitHub metadata candidate requires L1 scoring triage before any onboarding review"
                     next_step = "Review metadata, then run scoring and security triage before any onboarding plan."
@@ -181,7 +189,8 @@ for ledger_path in ledger_paths:
                 "blocked_auto_actions": ["candidate registration apply", "ADK absorption"],
             })
 
-for plan_path in sorted(glob.glob(os.path.join(root, "reports/subrepo-removal-plan-*.json"))):
+if not explicit_ledgers:
+  for plan_path in sorted(glob.glob(os.path.join(root, "reports/subrepo-removal-plan-*.json"))):
     with open(plan_path, "r", encoding="utf-8") as handle:
         plan = json.load(handle)
     repo = plan.get("repository", {}).get("repo", "")
@@ -199,13 +208,14 @@ for plan_path in sorted(glob.glob(os.path.join(root, "reports/subrepo-removal-pl
         "blocked_auto_actions": ["subrepo removal apply", "source-to-live apply"],
     })
 
-for cycle_path in sorted(glob.glob(os.path.join(root, "reports/oss-intake-cycle-*.json"))):
+if not explicit_ledgers:
+  for cycle_path in sorted(glob.glob(os.path.join(root, "reports/oss-intake-cycle-*.json"))):
     with open(cycle_path, "r", encoding="utf-8") as handle:
         cycle = json.load(handle)
     if cycle.get("status") == "pass":
         continue
     add_item({
-        "id": f"cycle-gate-review-{os.path.basename(cycle_path).removesuffix('.json')}",
+        "id": f"cycle-gate-review-{os.path.basename(cycle_path)[:-5] if os.path.basename(cycle_path).endswith('.json') else os.path.basename(cycle_path)}",
         "type": "cycle-gate-review",
         "approval_level": "L1-plan-review",
         "repo": "llm_agent",

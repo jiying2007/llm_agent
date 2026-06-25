@@ -170,6 +170,14 @@ Automatic registration may update only:
 
 Automatic registration must not change `agent-dev-kit` core assets. Absorption into `agent-dev-kit` is a separate gated phase. P2 `--apply` defaults to `metadata-only`; `local-submodule` materialization requires a local reviewed clone or mirror through `--submodule-source`.
 
+Manual reference registration may also use `materialization: root-local-reference` in `manifests/subrepo_lifecycle.json` when a repository should live as a root-level local clone rather than a Git submodule. This exception must be explicit, must still have a registry row, and `scripts/check-authorized-subrepos.sh` must verify the directory is a valid Git worktree.
+
+`root-local-reference` entries must also carry runtime-evidence-style source metadata: `source.url`, `source.provider`, `source.branch`, `source.commit`, `source.retrieved_at`, and `runtime_boundaries`. `scripts/check-oss-intake-ledger.sh` verifies that the local clone exists, that its `HEAD` matches `source.commit`, and that analysis, absorption-plan, security-review, and deep-assessment reports are linked from `evidence`.
+
+When a root-local reference is used as a harness or loop design source, keep the first absorption as report-only. The current local contract is `manifests/loop_readiness_contracts.json`, validated by `scripts/check-loop-readiness.sh`. It may adopt evidence fields such as diagnostic reproduction, falsifiable hypotheses, guardrail coverage, budget control, handoff evidence, and termination evidence, but it must not execute the upstream runtime, install dependencies, patch hooks, start daemons, or copy runtime assets.
+
+When a root-local reference is used as a governance-mode or resource-lifecycle design source, keep the local shape in `manifests/scale_engine_governance_contracts.json`, validated by `scripts/check-scale-engine-governance.sh`. It may adopt report-only risk modes, resource classes, Git policy hints and fallback evidence rules, but it must not create upstream runtime state, run upstream upgrade/assets commands, install dependencies, patch hooks or change local permission policy.
+
 ## 8. Automatic Removal Policy
 
 Automatic removal is available as a P3 gated plan baseline. Current scripts generate and validate dry-run removal plans; they do not delete subrepos, edit gitlinks, or rewrite `.gitmodules`.
@@ -268,7 +276,7 @@ Current P1 artifacts:
 | `reports/oss-discovery-rate-limit-YYYY-MM-DD.json` | GitHub REST metadata provider rate-limit audit record when explicit GitHub discovery runs. |
 | `reports/oss-score-report-2026-06-16.md` | Example generated score report. |
 
-`discover-oss-repos.sh --dry-run` generates discovered candidates from explicit `--repo` input, local source files with GitHub URLs, or explicit `--github-query` GitHub REST metadata search. It never clones repositories, registers subrepos, absorbs content, or executes third-party code. GitHub metadata candidates remain review-only: stale repositories, missing licenses, archived repositories, and historical duplicates are marked as hard rejects in the ledger. `score-oss-candidates.sh` generates a Markdown summary from local scored JSONL records. It does not promote candidates. `generate-oss-intake-approval-queue.sh --ledger ... --rate-limit ...` adds L1 `candidate-review` items for explicit GitHub metadata candidates and carries hard-reject plus rate-limit evidence into the queue. `onboard-candidate` means eligible for a later gated onboarding review, not automatic registration.
+`discover-oss-repos.sh --dry-run` generates discovered candidates from explicit `--repo` input, local source files with GitHub/Gitee URLs, or explicit `--github-query` GitHub REST metadata search. Manual Gitee and generic URL candidates remain ledger-only unless a later analysis, duplicate check, and security review promote them. The command never clones repositories, registers subrepos, absorbs content, or executes third-party code. GitHub metadata candidates remain review-only: stale repositories, missing licenses, archived repositories, and historical duplicates are marked as hard rejects in the ledger. `score-oss-candidates.sh` generates a Markdown summary from local scored JSONL records. It does not promote candidates. `generate-oss-intake-approval-queue.sh --ledger ... --rate-limit ...` adds L1 `candidate-review` items for explicit GitHub/Gitee/manual ledgers and carries hard-reject plus rate-limit evidence into the queue. Explicit ledger mode stays scoped to that candidate batch; default queue mode summarizes existing global onboarding/removal/cycle plans. `onboard-candidate` means eligible for a later gated onboarding review, not automatic registration.
 
 ## 12. P2 Gated Registration Commands
 
