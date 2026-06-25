@@ -1,24 +1,24 @@
 repo,group,priority,sync_mode,branch,enabled,notes,status,owner,last_reviewed_on,intake_policy,grade
-AUBB-Server,delivery,P2,fetch,main,yes,后端业务样本,active,adk-team,2026-05-02,selective-adopt,A
-Migrationed_skills,skill-pool,P1,fetch,main,yes,迁移技能候选池,active,adk-team,2026-05-02,observe-first,C
+AUBB-Server,delivery,P2,fetch,main,no,业务闭环证据写法已吸收，移除本地参考仓,disabled,adk-team,2026-06-25,selective-adopt,A
+Migrationed_skills,skill-pool,P1,fetch,main,no,方法已吸收，模板化严重，移除本地参考仓,disabled,adk-team,2026-06-25,observe-first,C
 OpenSpec,workflow-core,P0,fetch,main,yes,Spec 工件体系,active,adk-team,2026-05-02,adopt-first,S
-agency-agents-zh,agent-ecosystem,P1,fetch,main,yes,中文角色资产库,active,adk-team,2026-05-02,observe-first,S
-agent-skills,agent-ecosystem,P1,fetch,main,yes,技能驱动开发流程,active,adk-team,2026-05-02,observe-first,S
-ai-coding-guide,knowledge,P1,fetch,main,yes,场景化实践指南,active,adk-team,2026-05-02,observe-first,A
-arthas,delivery,P2,fetch,master,yes,成熟开源工程规范,active,adk-team,2026-05-02,selective-adopt,A
-auto-research,knowledge,P2,fetch,main,yes,调研闭环与留痕,active,adk-team,2026-05-02,selective-adopt,C
-codex-cookbook,knowledge,P1,fetch,main,yes,Codex Cookbook 实战模板,active,adk-team,2026-05-02,observe-first,C
+agency-agents-zh,agent-ecosystem,P1,fetch,main,no,角色职责矩阵与术语体系已吸收，移除本地参考仓,disabled,adk-team,2026-06-25,observe-first,S
+agent-skills,agent-ecosystem,P1,fetch,main,no,技能触发路由与生命周期映射已吸收，移除本地参考仓,disabled,adk-team,2026-06-25,observe-first,S
+ai-coding-guide,knowledge,P1,fetch,main,no,场景化工作流导览与风险提示已吸收，移除本地参考仓,disabled,adk-team,2026-06-25,observe-first,A
+arthas,delivery,P2,fetch,master,no,贡献规范与发布质量门槛已吸收，移除本地参考仓,disabled,adk-team,2026-06-25,selective-adopt,A
+auto-research,knowledge,P2,fetch,main,no,方法已吸收，旧分级禁用，移除本地参考仓,disabled,adk-team,2026-06-25,selective-adopt,C
+codex-cookbook,knowledge,P1,fetch,main,no,Codex 协作模板已吸收，移除本地参考仓,disabled,adk-team,2026-06-25,observe-first,C
 codex,runtime-target,P0,manual,main,no,外部声明式资产仓库 ~/codex -> ~/.codex apply,disabled,adk-team,2026-05-17,pilot-first,S
-dotfiles,config,P2,fetch,master,yes,环境基线管理,active,adk-team,2026-05-02,selective-adopt,B
+dotfiles,config,P2,fetch,master,no,最小变更与基线校验策略已吸收，移除本地参考仓,disabled,adk-team,2026-06-25,selective-adopt,B
 agent-dev-kit,adk-core,P0,pull,main,yes,主落地仓库,active,adk-team,2026-05-02,adopt-first,S
-hermes-agent,delivery,P1,fetch,main,yes,大型 Agent 工程参考,active,adk-team,2026-05-02,observe-first,A
-hermes-collaboration-skill,agent-ecosystem,P1,fetch,main,yes,团队协作能力参考,active,adk-team,2026-05-02,observe-first,B
-mattpocock-skills,agent-ecosystem,P1,fetch,main,yes,可组合技能体系,active,adk-team,2026-05-02,adopt-first,A
-prompts,knowledge,P2,fetch,main,yes,提示词资产沉淀,active,adk-team,2026-05-02,selective-adopt,A
-skills,agent-ecosystem,P1,fetch,main,yes,skills CLI 生态,active,adk-team,2026-05-02,observe-first,A
+hermes-agent,delivery,P1,fetch,main,no,大型 Agent 工程目录职责与测试入口已吸收，移除本地参考仓,disabled,adk-team,2026-06-25,observe-first,A
+hermes-collaboration-skill,agent-ecosystem,P1,fetch,main,no,协作 runbook 范式已吸收，移除本地参考仓,disabled,adk-team,2026-06-25,observe-first,B
+mattpocock-skills,agent-ecosystem,P1,fetch,main,no,小技能组合与 deprecated 分层治理已吸收，移除本地参考仓,disabled,adk-team,2026-06-25,adopt-first,A
+prompts,knowledge,P2,fetch,main,no,提示词资产轻量演进机制已吸收，移除本地参考仓,disabled,adk-team,2026-06-25,selective-adopt,A
+skills,agent-ecosystem,P1,fetch,main,no,skills CLI 目录约定与安装入口已吸收，移除本地参考仓,disabled,adk-team,2026-06-25,observe-first,A
 superpowers,workflow-core,P0,fetch,main,yes,流程主干来源,active,adk-team,2026-05-02,adopt-first,S
-superpowers-zh,workflow-core,P0,fetch,main,yes,中文流程增强,active,adk-team,2026-05-02,adopt-first,A
-Trellis,reference,P2,pull,main,yes,知识管理工具参考仓,active,aiot03,2026-05-05,observe-first,B
+superpowers-zh,workflow-core,P0,fetch,main,no,中文触发词与流程表达已吸收，保留 superpowers 主仓即可,disabled,adk-team,2026-06-25,adopt-first,A
+Trellis,reference,P2,pull,main,no,知识图谱与状态上下文边界已吸收，移除本地参考仓,disabled,aiot03,2026-06-25,observe-first,B
 vibeflow,workflow-core,P0,fetch,main,yes,SDD+Harness交付编排层; 36 skills覆盖全流程; Claude Code/Codex/OpenCode,active,aiot03,2026-05-12,observe-first,S
-agent-browser,tooling,P1,fetch,main,yes,Vercel浏览器自动化CLI; Rust; 33k stars; AI Agent浏览器操作,active,aiot03,2026-05-15,observe-first,A
-scale-engine,workflow-core,P1,fetch,master,yes,AI Agent治理运行时参考; gates/evidence/context/queue; Gitee持续跟踪,active,adk-team,2026-06-24,observe-first,A
+agent-browser,tooling,P1,fetch,main,no,浏览器快照与 ref 交互模式已吸收，移除本地参考仓,disabled,aiot03,2026-06-25,observe-first,A
+scale-engine,workflow-core,P1,fetch,master,yes,AI Agent治理运行时参考; gates/evidence/context/queue; Gitee submodule持续跟踪,active,adk-team,2026-06-25,observe-first,A

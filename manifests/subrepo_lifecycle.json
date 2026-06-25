@@ -19,22 +19,30 @@
   "entries": [
     {
       "repo": "AUBB-Server",
-      "state": "active-reference",
+      "state": "removed",
       "owner": "adk-team",
-      "review_window": "quarterly",
+      "review_window": "manual",
       "automation_eligible": false,
+      "removed_at": "2026-06-25",
+      "removal_reason": "业务闭环验证证据写法已吸收，本地参考仓维护收益低",
       "evidence": [
-        "subrepos/registry.csv"
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/subrepo-removal-direct-2026-06-25.md"
       ]
     },
     {
       "repo": "Migrationed_skills",
-      "state": "active-reference",
+      "state": "removed",
       "owner": "adk-team",
-      "review_window": "quarterly",
+      "review_window": "manual",
       "automation_eligible": false,
+      "removed_at": "2026-06-25",
+      "removal_reason": "候选筛选方法已吸收，资产模板化严重，本地参考仓维护收益低",
       "evidence": [
-        "subrepos/registry.csv"
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/subrepo-removal-direct-2026-06-25.md"
       ]
     },
     {
@@ -50,62 +58,86 @@
     },
     {
       "repo": "agency-agents-zh",
-      "state": "active-reference",
+      "state": "removed",
       "owner": "adk-team",
-      "review_window": "quarterly",
+      "review_window": "manual",
       "automation_eligible": false,
+      "removed_at": "2026-06-25",
+      "removal_reason": "角色职责矩阵与术语体系已吸收，本地参考仓维护收益低",
       "evidence": [
-        "subrepos/registry.csv"
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/subrepo-removal-direct-2026-06-25.md"
       ]
     },
     {
       "repo": "agent-skills",
-      "state": "active-reference",
+      "state": "removed",
       "owner": "adk-team",
-      "review_window": "quarterly",
+      "review_window": "manual",
       "automation_eligible": false,
+      "removed_at": "2026-06-25",
+      "removal_reason": "技能触发路由与生命周期映射已吸收，本地参考仓维护收益低",
       "evidence": [
-        "subrepos/registry.csv"
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/subrepo-removal-direct-2026-06-25.md"
       ]
     },
     {
       "repo": "ai-coding-guide",
-      "state": "active-reference",
+      "state": "removed",
       "owner": "adk-team",
-      "review_window": "quarterly",
+      "review_window": "manual",
       "automation_eligible": false,
+      "removed_at": "2026-06-25",
+      "removal_reason": "场景化工作流导览与风险提示已吸收，本地参考仓维护收益低",
       "evidence": [
-        "subrepos/registry.csv"
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/subrepo-removal-direct-2026-06-25.md"
       ]
     },
     {
       "repo": "arthas",
-      "state": "active-reference",
+      "state": "removed",
       "owner": "adk-team",
-      "review_window": "quarterly",
+      "review_window": "manual",
       "automation_eligible": false,
+      "removed_at": "2026-06-25",
+      "removal_reason": "贡献规范与发布质量门槛已吸收，本地参考仓维护收益低",
       "evidence": [
-        "subrepos/registry.csv"
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/subrepo-removal-direct-2026-06-25.md"
       ]
     },
     {
       "repo": "auto-research",
-      "state": "active-reference",
+      "state": "removed",
       "owner": "adk-team",
-      "review_window": "quarterly",
+      "review_window": "manual",
       "automation_eligible": false,
+      "removed_at": "2026-06-25",
+      "removal_reason": "负结果留痕方法已吸收，旧分级报告已判禁用，本地参考仓维护收益低",
       "evidence": [
-        "subrepos/registry.csv"
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/subrepo-removal-direct-2026-06-25.md"
       ]
     },
     {
       "repo": "codex-cookbook",
-      "state": "active-reference",
+      "state": "removed",
       "owner": "adk-team",
-      "review_window": "quarterly",
+      "review_window": "manual",
       "automation_eligible": false,
+      "removed_at": "2026-06-25",
+      "removal_reason": "Codex 协作模板与分层触发写法已吸收，本地参考仓维护收益低",
       "evidence": [
-        "subrepos/registry.csv"
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/subrepo-removal-direct-2026-06-25.md"
       ]
     },
     {
@@ -120,12 +152,16 @@
     },
     {
       "repo": "dotfiles",
-      "state": "active-reference",
+      "state": "removed",
       "owner": "adk-team",
-      "review_window": "quarterly",
+      "review_window": "manual",
       "automation_eligible": false,
+      "removed_at": "2026-06-25",
+      "removal_reason": "最小变更与环境基线校验策略已吸收，本地参考仓维护收益低",
       "evidence": [
-        "subrepos/registry.csv"
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/subrepo-removal-direct-2026-06-25.md"
       ]
     },
     {
@@ -141,52 +177,72 @@
     },
     {
       "repo": "hermes-agent",
-      "state": "active-reference",
+      "state": "removed",
       "owner": "adk-team",
-      "review_window": "quarterly",
+      "review_window": "manual",
       "automation_eligible": false,
+      "removed_at": "2026-06-25",
+      "removal_reason": "大型 Agent 工程目录职责与测试入口已吸收，本地参考仓维护收益低",
       "evidence": [
-        "subrepos/registry.csv"
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/subrepo-removal-direct-2026-06-25.md"
       ]
     },
     {
       "repo": "hermes-collaboration-skill",
-      "state": "active-reference",
+      "state": "removed",
       "owner": "adk-team",
-      "review_window": "quarterly",
+      "review_window": "manual",
       "automation_eligible": false,
+      "removed_at": "2026-06-25",
+      "removal_reason": "多人协作文档模板与 runbook 化结构已吸收，本地参考仓维护收益低",
       "evidence": [
-        "subrepos/registry.csv"
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/subrepo-removal-direct-2026-06-25.md"
       ]
     },
     {
       "repo": "mattpocock-skills",
-      "state": "active-reference",
+      "state": "removed",
       "owner": "adk-team",
-      "review_window": "quarterly",
+      "review_window": "manual",
       "automation_eligible": false,
+      "removed_at": "2026-06-25",
+      "removal_reason": "小技能组合与 deprecated 分层治理已吸收，本地参考仓维护收益低",
       "evidence": [
-        "subrepos/registry.csv"
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/subrepo-removal-direct-2026-06-25.md"
       ]
     },
     {
       "repo": "prompts",
-      "state": "active-reference",
+      "state": "removed",
       "owner": "adk-team",
-      "review_window": "quarterly",
+      "review_window": "manual",
       "automation_eligible": false,
+      "removed_at": "2026-06-25",
+      "removal_reason": "提示词资产轻量演进机制已吸收，本地参考仓维护收益低",
       "evidence": [
-        "subrepos/registry.csv"
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/subrepo-removal-direct-2026-06-25.md"
       ]
     },
     {
       "repo": "skills",
-      "state": "active-reference",
+      "state": "removed",
       "owner": "adk-team",
-      "review_window": "quarterly",
+      "review_window": "manual",
       "automation_eligible": false,
+      "removed_at": "2026-06-25",
+      "removal_reason": "skills CLI 目录约定与安装入口已吸收，本地参考仓维护收益低",
       "evidence": [
-        "subrepos/registry.csv"
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/subrepo-removal-direct-2026-06-25.md"
       ]
     },
     {
@@ -202,23 +258,30 @@
     },
     {
       "repo": "superpowers-zh",
-      "state": "active-reference",
+      "state": "removed",
       "owner": "adk-team",
-      "review_window": "monthly",
+      "review_window": "manual",
       "automation_eligible": false,
+      "removed_at": "2026-06-25",
+      "removal_reason": "中文触发词与流程表达已吸收，保留 superpowers 主仓作为流程基线",
       "evidence": [
         "subrepos/registry.csv",
-        "subrepos/adoption-matrix.md"
+        "subrepos/adoption-matrix.md",
+        "reports/subrepo-removal-direct-2026-06-25.md"
       ]
     },
     {
       "repo": "Trellis",
-      "state": "active-reference",
+      "state": "removed",
       "owner": "aiot03",
-      "review_window": "quarterly",
+      "review_window": "manual",
       "automation_eligible": false,
+      "removed_at": "2026-06-25",
+      "removal_reason": "知识图谱与状态上下文边界已吸收为 optional-pilot，本地参考仓维护收益低",
       "evidence": [
-        "subrepos/registry.csv"
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/subrepo-removal-direct-2026-06-25.md"
       ]
     },
     {
@@ -234,18 +297,21 @@
     },
     {
       "repo": "agent-browser",
-      "state": "active-reference",
+      "state": "removed",
       "owner": "aiot03",
-      "review_window": "quarterly",
+      "review_window": "manual",
       "automation_eligible": false,
+      "removed_at": "2026-06-25",
+      "removal_reason": "浏览器快照压缩与 ref 交互模式已吸收为 optional-pilot，本地参考仓维护收益低",
       "evidence": [
-        "subrepos/registry.csv"
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/subrepo-removal-direct-2026-06-25.md"
       ]
     },
     {
       "repo": "scale-engine",
       "state": "active-reference",
-      "materialization": "root-local-reference",
       "source": {
         "url": "https://gitee.com/hongmaple/scale-engine.git",
         "provider": "gitee",
@@ -262,6 +328,7 @@
       "review_window": "monthly",
       "automation_eligible": false,
       "evidence": [
+        ".gitmodules",
         "subrepos/registry.csv",
         "subrepos/adoption-matrix.md",
         "reports/oss-analysis-hongmaple-scale-engine-2026-06-24.md",
