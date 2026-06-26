@@ -80,6 +80,20 @@ supplemental_source_ids = [
     "ragas",
     "crewai",
     "continue",
+    "inspect-evals",
+    "terminal-bench",
+    "mini-swe-agent",
+    "swe-rex",
+    "dagger",
+    "argo-workflows",
+    "tau-bench",
+    "agentbench",
+    "webarena",
+    "osworld",
+    "openai-evals",
+    "simple-evals",
+    "prefect",
+    "dagster",
 ]
 supplemental_source_aliases = {
     "crewai": ["crewai", "CrewAI"],
@@ -97,6 +111,9 @@ supplemental_contract_ids = [
     "typed-hitl-graph-contract-v1",
     "coding-repair-loop-v1",
     "trace-eval-evidence-bundle-v1",
+    "sandbox-terminal-harness-v1",
+    "reproducible-execution-pipeline-v1",
+    "artifact-lineage-evidence-contract-v1",
 ]
 
 
@@ -126,6 +143,7 @@ for token in source_ids:
 for token in (
     "reports/harness-loop-engineering-adoption-candidates-2026-06-25.md",
     "agent-dev-kit/manifests/harness_loop_engineering_contracts.json",
+    "agent-dev-kit/fixtures/harness-loop-engineering/pass/local-fixture-bundle.json",
     "agent-dev-kit/scripts/check-harness-loop-engineering-contracts.sh",
     "scripts/check-harness-loop-engineering.sh",
 ):
@@ -152,6 +170,26 @@ else:
         supplemental_text += "\n" + text
         if item == "../reports/harness-loop-engineering-adoption-candidates-2026-06-26.md":
             for token in supplemental_source_ids + supplemental_contract_ids:
+                if token in {
+                    "inspect-evals",
+                    "terminal-bench",
+                    "mini-swe-agent",
+                    "swe-rex",
+                    "dagger",
+                    "argo-workflows",
+                    "tau-bench",
+                    "agentbench",
+                    "webarena",
+                    "osworld",
+                    "openai-evals",
+                    "simple-evals",
+                    "prefect",
+                    "dagster",
+                    "sandbox-terminal-harness-v1",
+                    "reproducible-execution-pipeline-v1",
+                    "artifact-lineage-evidence-contract-v1",
+                }:
+                    continue
                 if not has_token(text, token):
                     fail(f"supplemental report missing token: {token}")
             for token in (
@@ -166,6 +204,44 @@ else:
             ):
                 if token not in text:
                     fail(f"supplemental report missing boundary token: {token}")
+        if item == "../reports/harness-loop-engineering-adoption-candidates-2026-06-26-batch2.md":
+            for token in (
+                "inspect-evals",
+                "terminal-bench",
+                "mini-swe-agent",
+                "swe-rex",
+                "dagger",
+                "argo-workflows",
+                "tau-bench",
+                "agentbench",
+                "webarena",
+                "osworld",
+                "openai-evals",
+                "simple-evals",
+                "prefect",
+                "dagster",
+                "sandbox-terminal-harness-v1",
+                "reproducible-execution-pipeline-v1",
+                "artifact-lineage-evidence-contract-v1",
+                "agent-dev-kit/fixtures/harness-loop-engineering/pass/local-fixture-bundle.json",
+                "agent-dev-kit/fixtures/harness-loop-engineering/fail/missing-oracle-solution.json",
+                "agent-dev-kit/fixtures/harness-loop-engineering/fail/missing-local-ci-parity.json",
+                "agent-dev-kit/fixtures/harness-loop-engineering/fail/missing-version-or-digest.json",
+            ):
+                if not has_token(text, token):
+                    fail(f"supplemental batch2 report missing token: {token}")
+            for token in (
+                "method-only",
+                "runtime_enabled=false",
+                "sandbox",
+                "oracle",
+                "artifact",
+                "local_ci_parity",
+                "lineage",
+                "redaction",
+            ):
+                if token not in text:
+                    fail(f"supplemental batch2 report missing boundary token: {token}")
 
     for token in supplemental_source_ids + supplemental_contract_ids:
         if token not in matrix_text:
