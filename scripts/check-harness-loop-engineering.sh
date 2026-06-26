@@ -144,6 +144,8 @@ for token in (
     "reports/harness-loop-engineering-adoption-candidates-2026-06-25.md",
     "agent-dev-kit/manifests/harness_loop_engineering_contracts.json",
     "agent-dev-kit/fixtures/harness-loop-engineering/pass/local-fixture-bundle.json",
+    "agent-dev-kit/templates/governance/contract-fixture.md",
+    "agent-dev-kit/docs/runbooks/contract-fixture-authoring.md",
     "agent-dev-kit/scripts/check-harness-loop-engineering-contracts.sh",
     "scripts/check-harness-loop-engineering.sh",
 ):
@@ -227,6 +229,8 @@ else:
                 "agent-dev-kit/fixtures/harness-loop-engineering/fail/missing-oracle-solution.json",
                 "agent-dev-kit/fixtures/harness-loop-engineering/fail/missing-local-ci-parity.json",
                 "agent-dev-kit/fixtures/harness-loop-engineering/fail/missing-version-or-digest.json",
+                "agent-dev-kit/templates/governance/contract-fixture.md",
+                "agent-dev-kit/docs/runbooks/contract-fixture-authoring.md",
             ):
                 if not has_token(text, token):
                     fail(f"supplemental batch2 report missing token: {token}")

@@ -58,6 +58,13 @@ The third landing pass adds three negative fixtures:
 
 The gate now reads `negative_fixtures` from the manifest and requires each fail fixture to be rejected with its expected failure reason. This proves the three contracts block missing `oracle_solution`, missing `local_ci_parity`, and missing `version_or_digest`.
 
+The fourth landing pass abstracts the same pattern into reusable fixture authoring assets:
+
+- `agent-dev-kit/templates/governance/contract-fixture.md`
+- `agent-dev-kit/docs/runbooks/contract-fixture-authoring.md`
+
+The manifest now records `fixture_authoring` metadata so future contract fixture work must include `source_mapping`, positive and negative examples, `expected_failure`, deterministic assertion or oracle, local CI parity when pipeline claims are made, artifact lineage when artifact claims are made, and rollback path before promotion.
+
 ## Guardrails
 
 - Every source remains `method-only` with `runtime_enabled=false`.
@@ -65,6 +72,7 @@ The gate now reads `negative_fixtures` from the manifest and requires each fail 
 - Pipeline adoption requires `local_ci_parity`, artifact input/output declaration, trace export, retry, archive and rollback fields before any promotion.
 - Artifact `lineage` requires digest or version, producer/consumer steps, metadata schema, quality check, retention and supersedes records.
 - Trace, dataset, artifact and terminal outputs require `redaction` before long-term storage.
+- Future contract fixtures must start from the clean-room template and prove at least one negative path through `expected_failure`.
 
 ## Validation Targets
 
