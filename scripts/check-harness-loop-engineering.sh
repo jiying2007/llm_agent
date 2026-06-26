@@ -69,6 +69,21 @@ source_ids = [
     "phoenix",
     "lm-evaluation-harness",
 ]
+supplemental_source_ids = [
+    "temporal",
+    "pydantic-ai",
+    "langfuse",
+    "aider",
+    "mastra",
+    "semantic-kernel",
+    "haystack",
+    "ragas",
+    "crewai",
+    "continue",
+]
+supplemental_source_aliases = {
+    "crewai": ["crewai", "CrewAI"],
+}
 contract_ids = [
     "repo-task-evaluation-harness-v1",
     "agent-eval-ci-gate-v1",
@@ -77,6 +92,16 @@ contract_ids = [
     "trace-observability-contract-v1",
     "guardrail-handoff-contract-v1",
 ]
+supplemental_contract_ids = [
+    "durable-execution-contract-v1",
+    "typed-hitl-graph-contract-v1",
+    "coding-repair-loop-v1",
+    "trace-eval-evidence-bundle-v1",
+]
+
+
+def has_token(text, token):
+    return any(alias in text for alias in supplemental_source_aliases.get(token, [token]))
 
 for token in source_ids + contract_ids:
     if token not in report_text:
@@ -109,6 +134,44 @@ for token in (
 
 if manifest.get("report") != "../reports/harness-loop-engineering-adoption-candidates-2026-06-25.md":
     fail("manifest report path mismatch")
+
+supplemental_reports = manifest.get("supplemental_reports")
+if not isinstance(supplemental_reports, list) or not supplemental_reports:
+    fail("manifest missing supplemental_reports")
+else:
+    supplemental_text = ""
+    for item in supplemental_reports:
+        if not isinstance(item, str) or not item:
+            fail("manifest supplemental_reports item must be a non-empty string")
+            continue
+        path = (manifest_path.parent.parent / item).resolve()
+        if not path.is_file():
+            fail(f"missing supplemental report: {rel(path)}")
+            continue
+        text = path.read_text(encoding="utf-8")
+        supplemental_text += "\n" + text
+        if item == "../reports/harness-loop-engineering-adoption-candidates-2026-06-26.md":
+            for token in supplemental_source_ids + supplemental_contract_ids:
+                if not has_token(text, token):
+                    fail(f"supplemental report missing token: {token}")
+            for token in (
+                "method-only",
+                "runtime_enabled=false",
+                "replay",
+                "idempotency",
+                "redaction",
+                "repair",
+                "dataset",
+                "regression",
+            ):
+                if token not in text:
+                    fail(f"supplemental report missing boundary token: {token}")
+
+    for token in supplemental_source_ids + supplemental_contract_ids:
+        if token not in matrix_text:
+            fail(f"adoption matrix missing supplemental token: {token}")
+        if not has_token(supplemental_text, token):
+            fail(f"supplemental reports missing token: {token}")
 
 if failures:
     for failure in failures:
