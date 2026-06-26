@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "status": "needs-approval",
+  "mode": "report-only",
+  "date": "2026-06-26",
+  "summary": {
+    "items": 2,
+    "by_type": {
+      "candidate-review": 2
+    },
+    "by_level": {
+      "L1-plan-review": 2
+    }
+  },
+  "items": [
+    {
+      "id": "candidate-review-gymaira1990-jpg-Mnemosyne-OS",
+      "type": "candidate-review",
+      "approval_level": "L1-plan-review",
+      "repo": "gymaira1990-jpg/Mnemosyne-OS",
+      "status": "pending-approval",
+      "reason": "Manual URL candidate requires L1 metadata enrichment before scoring or onboarding review",
+      "evidence": [
+        "reports/oss-discovery-candidates-2026-06-26-noah-mnemosyne.jsonl",
+        "manual --repo argument"
+      ],
+      "recommended_next_step": "Record source metadata, duplicate check, and security review before any scoring or onboarding plan.",
+      "blocked_auto_actions": [
+        "candidate registration apply",
+        "ADK absorption"
+      ]
+    },
+    {
+      "id": "candidate-review-gymaira1990-jpg-noah-gen3-type2",
+      "type": "candidate-review",
+      "approval_level": "L1-plan-review",
+      "repo": "gymaira1990-jpg/noah-gen3-type2",
+      "status": "pending-approval",
+      "reason": "Manual URL candidate requires L1 metadata enrichment before scoring or onboarding review",
+      "evidence": [
+        "reports/oss-discovery-candidates-2026-06-26-noah-mnemosyne.jsonl",
+        "manual --repo argument"
+      ],
+      "recommended_next_step": "Record source metadata, duplicate check, and security review before any scoring or onboarding plan.",
+      "blocked_auto_actions": [
+        "candidate registration apply",
+        "ADK absorption"
+      ]
+    }
+  ]
+}
