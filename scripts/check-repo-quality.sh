@@ -84,7 +84,7 @@ tail -n +2 "$REGISTRY" | while IFS=',' read -r repo group pri sync branch enable
 
     # 独特性加分
     case "$repo" in
-        superpowers|superpowers-zh|OpenSpec|agent-skills|mattpocock-skills) score=$((score + 10)) ;;
+        agent-dev-kit|OpenSpec|superpowers|vibeflow|scale-engine) score=$((score + 10)) ;;
     esac
 
     # 重叠扣分

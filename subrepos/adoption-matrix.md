@@ -147,7 +147,7 @@
 **语言**: Rust
 **Stars**: 33k+
 **评估日期**: 2026-05-15
-**策略**: observe-first
+**策略**: removed-after-absorption
 
 ### 优点
 
@@ -167,6 +167,6 @@
 
 ### 当前状态
 
-- 已安装全局命令 `agent-browser`
-- 已下载 Chrome 148.0.7778.167
-- 测试通过：open/snapshot/screenshot/close
+- 本地参考仓已于 2026-06-25 吸收后移除，不再承担持续跟踪成本。
+- 浏览器快照压缩、ref 交互和 CLI-first 工具设计只保留为 optional-pilot 方法边界。
+- 当前治理证据以表格中的 `reports/subrepo-removal-direct-2026-06-25.md` 与 `agent-dev-kit/docs/runbooks/optional-pilot-boundary.md` 为准，不再把本机历史安装状态视为有效证据。
