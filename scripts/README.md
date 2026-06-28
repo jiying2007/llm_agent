@@ -46,17 +46,13 @@ scripts/check-phase-gate.sh . --summary-json
 ```bash
 # 先做压实检查（严格校验 + 可选技能回归 + 外部引用门禁）
 scripts/check-adk-harden-readiness.sh .
-
 # 通过后自动开门（可选）
 scripts/check-adk-harden-readiness.sh . --open-gate
-
 # 要求 codex 试跑证据也必须就绪（更严格）
 scripts/check-adk-harden-readiness.sh . --require-pilot
 scripts/check-adk-harden-readiness.sh . --require-pilot --open-gate
-
 # 若临时不检查全局 ~/.codex 健康（不建议）
 scripts/check-adk-harden-readiness.sh . --skip-global-codex-check
-
 # 若临时跳过 adk 全量回归（不建议）
 scripts/check-adk-harden-readiness.sh . --skip-full-suite
 
@@ -189,14 +185,17 @@ scripts/evidence-bundle.sh . --format json --max-summary-chars 240
 
 该脚本汇总 `adk.lock`、phase gate、subrepo state、codex pilot、global codex health、Codex live 实装态、pilot readiness 和 fallback sunset 结果，用于提交前或发布前附证；默认会截断单项 summary，避免证据摘要本身消耗过多上下文。
 
-治理健康摘要脚本：
+治理健康与复核报告脚本：
 
 ```bash
 scripts/governance-health.sh .
 scripts/governance-health.sh . --format json
+scripts/governance-review.sh .
+scripts/governance-review.sh . --format json
+scripts/governance-review.sh . --out reports/governance-review-YYYY-MM-DD.md
 ```
 
-该脚本汇总目标漂移、证据包、子仓状态、pilot readiness、fallback sunset、runtime boundary、Codex live 实装态和 session coach，并输出 Top Actions。
+`governance-health` 输出 Top Actions；`governance-review` 是 report-only 复核报告入口，只调用现有 gate，不同步参考子仓、不修改 phase gate、不 apply、不提交；只有显式 `--out` 才写报告。
 
 active 文档陈旧引用检查脚本：
 

@@ -101,6 +101,41 @@ rtk scripts/check-adk-harden-readiness.sh . --require-pilot
 - codex pilot coverage
 - `~/codex` build/apply 证据与 global `~/.codex` health
 
+### 3.3.1 治理产品化复核规则
+
+每次复核 `fallback-sunset`、upstream intake 或 `~/codex -> ~/.codex` live 状态时，必须产出可审查报告，不只更新 `subrepos/phase-gate.env`。报告默认写入 `reports/`，至少包含：
+
+- Summary：本轮目标、非目标和结论。
+- Baseline：父仓状态、`agent-dev-kit` 状态、`known_dirty/unexpected_dirty/stale_baseline`、phase gate 原状态。
+- Evidence Index：关键命令、退出码、摘要和所属层级。
+- Decisions：是否更新 `last_live_refresh`、`next_review_by`、`allow_upstream_sync`，以及原因。
+- Residual Risk：真实设备、HIL、OTA 回滚、现场包、reference dirty 等未闭环项。
+
+推荐先用 report-only 入口生成复核报告：
+
+```bash
+rtk scripts/governance-review.sh . --out reports/governance-review-YYYY-MM-DD.md
+```
+
+该入口只编排现有检查并生成建议，不会同步参考子仓、不会修改 phase gate、不会 apply 到 `~/.codex`。
+
+`last_live_refresh` 只有在 `~/codex` source-to-live 链路完成并有证据时才能更新。最小证据链为：
+
+```bash
+rtk bash ~/codex/scripts/build.sh
+rtk bash ~/codex/scripts/doctor.sh --scope all
+rtk bash ~/codex/scripts/plan.sh --target ~/.codex --prune-stale --output ~/codex/build/apply-plan.json
+rtk bash ~/codex/scripts/apply.sh --plan ~/codex/build/apply-plan.json --dry-run
+rtk bash ~/codex/scripts/apply.sh --plan ~/codex/build/apply-plan.json
+rtk bash ~/codex/scripts/check-routing-precedence.sh
+rtk bash ~/codex/scripts/check.sh
+rtk scripts/check-global-codex-health.sh ~/.codex minimal
+```
+
+若 dry-run 显示会 `copy`、`overwrite` 或 `delete` live 资产，必须在报告中解释变更来源和风险；没有明确审查结论时，不更新 `last_live_refresh`，也不把 live 状态声明为已刷新。
+
+参考子仓 dirty 只按 `check-subrepo-state.sh . --summary-json` 的分类处理：`known_dirty` 不阻断治理复核，`unexpected_dirty>0` 或 `stale_baseline>0` 必须先形成单独修复项，不能混入 ADK 或 phase gate 改动。
+
 ### 3.4 参考子仓同步
 
 开源仓库发现、评分、自动注册和自动移除的终态设计见 `docs/runbooks/oss-intake-lifecycle.md`。现有 `sync-subrepos` / `diff-scan` 流程只处理已登记子仓，不替代候选发现和生命周期治理。

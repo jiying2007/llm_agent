@@ -88,6 +88,7 @@ done
 
 for script in \
   "${ROOT}/scripts/governance-health.sh" \
+  "${ROOT}/scripts/governance-review.sh" \
   "${ROOT}/scripts/evidence-bundle.sh" \
   "${ROOT}/scripts/check-token-budget.sh" \
   "${ROOT}/scripts/check-codex-adk-live.sh" \

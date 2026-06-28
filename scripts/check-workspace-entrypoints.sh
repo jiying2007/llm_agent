@@ -46,6 +46,7 @@ run_check "pilot_evidence_wrapper" "${ROOT}/scripts/check-codex-pilot-evidence.s
 run_check "pilot_coverage_wrapper" "${ROOT}/scripts/check-codex-pilot-coverage.sh" "${ROOT}"
 run_check "evidence_bundle_json" "${ROOT}/scripts/evidence-bundle.sh" "${ROOT}" --format json
 run_check "governance_health_json" "${ROOT}/scripts/governance-health.sh" "${ROOT}" --format json
+run_check "governance_review_json" "${ROOT}/scripts/governance-review.sh" "${ROOT}" --format json
 
 weekly_report="${TMP_DIR}/weekly.md"
 run_check "weekly_report" "${ROOT}/scripts/generate-weekly-report.sh" "${ROOT}" --output "${weekly_report}"
@@ -93,6 +94,15 @@ fi
 if [[ -f "${TMP_DIR}/governance_health_json.out" ]]; then
   if ! rg -q '"top_actions":' "${TMP_DIR}/governance_health_json.out"; then
     record_fail "governance health json missing top_actions"
+  fi
+fi
+
+if [[ -f "${TMP_DIR}/governance_review_json.out" ]]; then
+  if ! rg -q '"decisions":' "${TMP_DIR}/governance_review_json.out"; then
+    record_fail "governance review json missing decisions"
+  fi
+  if ! rg -q '"checks":' "${TMP_DIR}/governance_review_json.out"; then
+    record_fail "governance review json missing checks"
   fi
 fi
 
