@@ -53,17 +53,18 @@ bash scripts/version-manager.sh lock --version 1.0.0
 
 ### 2. 部署阶段
 
-#### 2.1 导出并交接资产
+#### 2.1 构建并应用 Codex 源资产
 ```bash
-# 在 agent-dev-kit 中导出符合 ~/codex 规范的 handoff，不直接写入 ~/.codex
-bash scripts/devkit.sh convert --target codex --profile personal-core --codex-profile team-collab --out ../reports/adk-codex-handoff --clean
-bash scripts/devkit.sh codex-handoff --codex-root ~/codex
+# agent-dev-kit 保持平台中立，不直接写入 ~/.codex，也不提供 Codex 专属 handoff 命令
+bash scripts/devkit.sh validate --strict
 
-# 在 ~/codex 中合并 src/codex-home/vendor 与 manifest-fragments 后构建并预览 apply
-cd ~/codex
-rtk bash scripts/build.sh --profile team-collab
-rtk bash scripts/plan.sh --target ~/.codex --output build/apply-plan.json
-rtk bash scripts/apply.sh --profile team-collab --dry-run
+# 在 ~/codex 中构建、预览并应用声明式 Codex Home 资产
+rtk bash ~/codex/scripts/build.sh
+rtk bash ~/codex/scripts/doctor.sh --scope all
+rtk bash ~/codex/scripts/plan.sh --target ~/.codex --prune-stale --output ~/codex/build/apply-plan.json
+rtk bash ~/codex/scripts/apply.sh --plan ~/codex/build/apply-plan.json --dry-run
+rtk bash ~/codex/scripts/apply.sh --plan ~/codex/build/apply-plan.json
+rtk bash ~/codex/scripts/check.sh
 ```
 
 #### 2.2 验证交接与运行目录
@@ -210,11 +211,11 @@ bash scripts/version-manager.sh compare --version 1.0.0 --target 1.1.0
 # 检查错误日志
 bash scripts/health-check.sh check-all --verbose
 
-# 修复问题后重新导出，并在 ~/codex 侧重新 build / apply dry-run
-bash scripts/devkit.sh convert --target codex --profile personal-core --codex-profile team-collab --out ../reports/adk-codex-handoff --clean
-bash scripts/devkit.sh codex-handoff --codex-root ~/codex
-cd ~/codex && rtk bash scripts/build.sh --profile team-collab
-cd ~/codex && rtk bash scripts/apply.sh --profile team-collab --dry-run
+# 修复问题后重新验证 ADK，并在 ~/codex 侧重新 build / apply dry-run
+bash scripts/devkit.sh validate --strict
+rtk bash ~/codex/scripts/build.sh
+rtk bash ~/codex/scripts/plan.sh --target ~/.codex --prune-stale --output ~/codex/build/apply-plan.json
+rtk bash ~/codex/scripts/apply.sh --plan ~/codex/build/apply-plan.json --dry-run
 ```
 
 ### 2. 测试失败

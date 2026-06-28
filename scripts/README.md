@@ -72,7 +72,7 @@ scripts/check-adk-harden-readiness.sh . --check-observe-intake-depth
 # 显式打开 delivery 采纳深度检查（默认已开启）
 scripts/check-adk-harden-readiness.sh . --check-delivery-adopt-depth
 
-# 显式打开生产级路由、pilot 覆盖、上游吸收、Codex handoff 规范检查（默认已开启）
+# 显式打开生产级路由、pilot 覆盖、上游吸收、Codex live 证据检查（默认已开启）
 scripts/check-adk-harden-readiness.sh . --check-runtime-routing
 scripts/check-adk-harden-readiness.sh . --check-pilot-coverage
 scripts/check-adk-harden-readiness.sh . --check-upstream-intake

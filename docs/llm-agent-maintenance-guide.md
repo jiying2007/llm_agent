@@ -181,23 +181,25 @@ rtk scripts/check-adk-harden-readiness.sh . --require-pilot
 
 ## 5. 生产部署流程
 
-生产部署不从 `agent-dev-kit` 直接写入 `~/.codex`。adk 只负责校验并导出 Codex 格式资产；`~/codex` 负责注册源资产、构建产物、生成 apply plan，并最终注入 `~/.codex`。
+生产部署不从 `agent-dev-kit` 直接写入 `~/.codex`。adk 负责校验平台中立资产；`~/codex` 负责注册源资产、构建产物、生成 apply plan，并最终注入 `~/.codex`。当前 `agent-dev-kit` core 不再提供平台专属 `codex-handoff` 命令；Codex 运行态应用以 `~/codex` source-to-live 链路为准。
 
 ```bash
-rtk bash -lc "cd agent-dev-kit && bash scripts/devkit.sh validate --strict"
-rtk bash -lc "cd agent-dev-kit && bash scripts/devkit.sh convert --target codex --profile personal-core --extra-profile release-hardening --with-optional-skill adk-planning-execution-loop --with-optional-skill adk-skill-composition-governance --with-optional-skill adk-security-supply-chain --with-optional-skill adk-cross-team-handoff --codex-profile team-collab --out ../reports/adk-codex-handoff --clean"
-rtk bash -lc "cd agent-dev-kit && bash scripts/devkit.sh codex-handoff --codex-root ~/codex"
-rtk bash -lc "cd ~/codex && rtk bash scripts/build.sh --profile team-collab"
-rtk bash -lc "cd ~/codex && rtk bash scripts/plan.sh --target ~/.codex --output build/apply-plan.json"
-rtk bash -lc "cd ~/codex && rtk bash scripts/apply.sh --profile team-collab --dry-run"
+rtk bash agent-dev-kit/scripts/devkit.sh validate --strict
+rtk bash ~/codex/scripts/build.sh
+rtk bash ~/codex/scripts/doctor.sh --scope all
+rtk bash ~/codex/scripts/plan.sh --target ~/.codex --prune-stale --output ~/codex/build/apply-plan.json
+rtk bash ~/codex/scripts/apply.sh --plan ~/codex/build/apply-plan.json --dry-run
+rtk bash ~/codex/scripts/apply.sh --plan ~/codex/build/apply-plan.json
+rtk bash ~/codex/scripts/check-routing-precedence.sh
+rtk bash ~/codex/scripts/check.sh
 rtk scripts/check-global-codex-health.sh ~/.codex minimal
 rtk scripts/check-adk-harden-readiness.sh . --require-pilot
 ```
 
 生产安装纪律：
 
-- adk 导出目录只作为交接输入，不直接作为 `~/.codex` 来源。
-- `~/codex` 侧必须更新源资产与 manifest，并运行 build / doctor / apply dry-run。
+- 不把 `agent-dev-kit` 导出物直接作为 `~/.codex` 来源。
+- `~/codex` 侧必须维护源资产与 manifest，并运行 build / doctor / apply dry-run。
 - 真正写入 `~/.codex` 时由 `~/codex/scripts/apply.sh` 负责备份、覆盖策略和回滚计划。
 - 使用 adk `manifest.yaml` 版本和 `~/codex` apply plan 双重记录，防止误装不匹配版本。
 - 安装后必须跑 `check-global-codex-health.sh`。
