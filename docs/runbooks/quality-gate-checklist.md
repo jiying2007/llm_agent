@@ -150,7 +150,23 @@ scripts/check-global-codex-target-policy.sh [WORKSPACE_ROOT]
 
 ---
 
-## 7. check-observe-intake-depth.sh
+## 7. check-adk-target-evidence.sh
+
+**用途**: 防止 `adoption-matrix` 只更新 `llm_agent` 报告却声明已经落地到 `agent-dev-kit`。
+
+**用法**:
+```bash
+scripts/check-adk-target-evidence.sh [WORKSPACE_ROOT]
+```
+
+**通过标准**:
+- `subrepos/adoption-matrix.md` 存在。
+- 2026-06-29 起，`target` 包含 `agent-dev-kit` 且 `decision=adopt|observe`、`state=done` 的行，`证据` 列必须包含至少一个实际存在的 `agent-dev-kit/...` 路径。
+
+**失败排查**:
+- `[FAIL] adk target evidence checks failed` → 要么把实践真正回灌到 `agent-dev-kit` 资产并补 evidence，要么把 `target` 降为 `llm_agent` / `reference-only`。
+
+## 8. check-observe-intake-depth.sh
 
 **用途**: 校验 `observe + done` 行具备 Agent/Skill/Workflow 三层证据及 intake 任务包报告。当无 `observe+done` 行时自动通过。
 
@@ -170,7 +186,7 @@ scripts/check-observe-intake-depth.sh [WORKSPACE_ROOT]
 
 ---
 
-## 8. check-runtime-routing.sh
+## 9. check-runtime-routing.sh
 
 **用途**: 校验 `agent-dev-kit` 的 runtime routing 资产完整性，同时调用 `check-profile-coherence.sh` 防止 profile 继承后重复声明。
 
@@ -192,7 +208,7 @@ scripts/check-runtime-routing.sh [WORKSPACE_ROOT]
 
 ---
 
-## 9. check-skill-metadata.sh
+## 10. check-skill-metadata.sh
 
 **用途**: 校验 `agent-dev-kit` 中所有 skill 的 `SKILL.md` 元数据完整性。
 
@@ -213,7 +229,7 @@ scripts/check-skill-metadata.sh [WORKSPACE_ROOT]
 
 ---
 
-## 10. check-skill-routing-conflicts.sh
+## 11. check-skill-routing-conflicts.sh
 
 **用途**: 检测 `agent-dev-kit` 中 skill 路由的 intent 关键词冲突，防止多个 skill 匹配同一意图导致歧义。
 

@@ -138,6 +138,7 @@ fi
 
 if [[ "${CHECK_MATRIX_STATUS}" -eq 1 ]]; then
   bash "${ROOT}/scripts/check-adoption-matrix-status.sh" "${ROOT}"
+  bash "${ROOT}/scripts/check-adk-target-evidence.sh" "${ROOT}"
 fi
 
 if [[ "${CHECK_OBSERVE_INTAKE_DEPTH}" -eq 1 ]]; then

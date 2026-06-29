@@ -50,6 +50,7 @@
 
 ```bash
 rtk scripts/check-doc-sync.sh .
+rtk scripts/check-adk-target-evidence.sh .
 rtk scripts/check-adk-lock.sh .
 rtk scripts/check-phase-gate.sh .
 rtk scripts/check-subrepo-state.sh .
