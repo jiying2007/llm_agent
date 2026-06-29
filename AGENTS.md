@@ -34,6 +34,7 @@
 | 一键流水线 | 流水线、pipeline、一键更新、全量更新 | 执行 8 步闭环: 同步→差异→分级→分析→采纳→模式检测→AI吸收→报告 | `scripts/pipeline-subrepo-update.sh` |
 | 优化 adk | 优化、改进、升级 adk、enhance | 加载 `adk-release-versioning` 技能，执行优化→验证→发布 | `agent-dev-kit/scripts/devkit.sh` |
 | 自动吸收 | 吸收、absorb、自动吸收、提取模式 | **禁止完全增量更新！** 必须先加载 `ai-auto-absorb` 技能，执行全盘比对→重复检查→冲突检查→冗余检查→架构评估→决策论证→质量补充→验证 | `scripts/auto-absorb.sh` + `docs/absorption-governance.md` |
+| 需求探索增强 | brainstorm、grill-me、需求拷问、先发散、拷问需求 | 先发散 2-4 个方向，再追问目标/非目标/术语/边界/验收，最后压缩成可验证条目；吸收 Matt Pocock `grill-me` 与 Superpowers brainstorming 的方法，不默认安装外部 skill | `adk-structured-requirements-questioning` + `adk-requirements-triage` |
 | 备份回滚 | 备份、回滚、backup、rollback、恢复 | 创建安装备份、列出备份、恢复或回滚到指定版本 | `scripts/backup-rollback.sh` / `agent-dev-kit/scripts/backup-rollback.sh` |
 | 冻结后周期 | 冻结后、post-freeze、冻结后检查、周期执行 | 冻结后执行周期性检查：文档同步→差异扫描→采纳矩阵状态→摘要生成 | `scripts/run-post-freeze-cycle.sh` |
 
@@ -66,13 +67,18 @@
 |---|---|---|---|---|
 | `agency-agents-zh` | 已移除的中文角色型 agent 资产 | 角色覆盖广 | 角色过细导致维护重 | 角色矩阵与职责术语已吸收，保留治理记录不保留本地仓 |
 | `agent-skills` | 已移除的全流程技能资产 | 生命周期映射清晰 | 平台差异较大 | 意图路由与技能分层已吸收，保留治理记录不保留本地仓 |
+| `andrej-karpathy-skills` | archive-only 的编码行为规范 | 简单、外科式修改、验收驱动表达清晰 | 与全局 AGENTS / ADK 规则高度重叠 | 仅作措辞参考，不长期跟进 |
+| `awesome-agent-skills` | skill 索引与候选发现入口 | 跨平台 skill 清单广 | 索引型仓库本身不提供稳定流程实现 | 仅作 discovery feed，不作为参考子仓 |
 | `skills` | 已移除的 skills CLI 生态样例 | 安装/更新路径规范 | 质量不均 | 兼容 `skills` CLI 的目录约定已吸收，保留治理记录不保留本地仓 |
 | `Migrationed_skills` | 已移除的迁移型技能资产池 | 历史沉淀丰富 | 模板化内容较多 | 候选池筛选机制已吸收，保留治理记录不保留本地仓 |
 | `mattpocock-skills` | 已移除的可组合工程技能 | 技能颗粒度细、组合性强 | 对特定协作方式有假设 | 小技能组合范式已吸收，保留治理记录不保留本地仓 |
+| `claude-skills` | 大型 skill 池候选源 | 覆盖广、跨工具转换面全 | 体量大、供应链和上下文成本高 | 按域抽样，不完整长期跟进 |
 | `hermes-collaboration-skill` | 已移除的团队协作技能实现 | 多平台协作与记忆隔离 | 运维与接入复杂 | 协作场景 runbook 已吸收，保留治理记录不保留本地仓 |
 | `codex-cookbook` | 已移除的 Codex 协作手册 | "道法术器"方法论框架，军师技能分层设计 | 仅 Codex 平台 | 分层触发与三段式写法已吸收，保留治理记录不保留本地仓 |
 | `Trellis` | 已移除的知识管理工具参考 | 结构化知识组织 | 领域专用 | 知识图谱与关联查询边界已吸收，保留治理记录不保留本地仓 |
 | `vibeflow` | SDD+Harness 交付编排层 | 36 skills 覆盖全流程（brainstorm→design→build→review→ship），中文文档完善 | 仅 Claude Code/Codex/OpenCode 平台 | 交付链路编排、阶段门禁、TDD 流程、复盘机制借鉴 |
+| `planning-with-files` | 文件化长任务计划与恢复技能 | task_plan/findings/progress、active plan、attestation、PreCompact/Stop gate 设计完整 | hooks 与文件写入噪音高，不适合小任务默认启用 | method-only 跟进长任务连续性与上下文恢复模式 |
+| `oh-my-codex` | Codex 工作流运行层参考 | goal/worktree/doctor/plugin bundle/release evidence/state scope 实现活跃 | 运行时权限、tmux/Node 依赖和全局安装风险高 | submodule 观察，不启用 runtime，仅吸收治理方法 |
 | `agent-browser` | 已移除的浏览器自动化 CLI | Rust 原生高性能，Accessibility-tree 快照 + @eN ref 交互，Chrome CDP，无需 Playwright/Puppeteer | 仅浏览器操作场景 | 浏览器自动化 skill 设计、快照压缩策略、ref 交互范式已吸收，保留治理记录不保留本地仓 |
 
 ### 2.3 质量、交付与工程实践

@@ -14,6 +14,11 @@ agent-dev-kit,adk-core,P0,pull,main,yes,主落地仓库,active,adk-team,2026-05-
 hermes-agent,delivery,P1,fetch,main,no,大型 Agent 工程目录职责与测试入口已吸收，移除本地参考仓,disabled,adk-team,2026-06-25,observe-first,A
 hermes-collaboration-skill,agent-ecosystem,P1,fetch,main,no,协作 runbook 范式已吸收，移除本地参考仓,disabled,adk-team,2026-06-25,observe-first,B
 mattpocock-skills,agent-ecosystem,P1,fetch,main,no,小技能组合与 deprecated 分层治理已吸收，移除本地参考仓,disabled,adk-team,2026-06-25,adopt-first,A
+andrej-karpathy-skills,agent-ecosystem,P2,fetch,main,no,Karpathy四原则已被全局规则覆盖，仅保留archive-only参考,disabled,adk-team,2026-06-29,observe-first,B
+awesome-agent-skills,skill-index,P2,fetch,main,no,跨平台skill索引仅作discovery feed，不作为长期参考仓,disabled,adk-team,2026-06-29,observe-first,B
+claude-skills,skill-pool,P2,fetch,main,no,大型skill池按域候选抽样，不完整长期跟进,disabled,adk-team,2026-06-29,selective-adopt,B
+oh-my-codex,codex-runtime,P1,fetch,main,yes,Codex工作流运行层submodule观察，不启用runtime,active,adk-team,2026-06-29,observe-first,A
+planning-with-files,workflow-quality,P1,fetch,master,yes,文件化长任务计划与恢复submodule观察，不启用hooks,active,adk-team,2026-06-29,observe-first,A
 prompts,knowledge,P2,fetch,main,no,提示词资产轻量演进机制已吸收，移除本地参考仓,disabled,adk-team,2026-06-25,selective-adopt,A
 skills,agent-ecosystem,P1,fetch,main,no,skills CLI 目录约定与安装入口已吸收，移除本地参考仓,disabled,adk-team,2026-06-25,observe-first,A
 superpowers,workflow-core,P0,fetch,main,yes,流程主干来源,active,adk-team,2026-05-02,adopt-first,S

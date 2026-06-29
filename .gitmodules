@@ -13,3 +13,9 @@
 [submodule "vibeflow"]
 	path = vibeflow
 	url = https://github.com/ttttstc/vibeflow.git
+[submodule "oh-my-codex"]
+	path = oh-my-codex
+	url = https://github.com/Yeachan-Heo/oh-my-codex.git
+[submodule "planning-with-files"]
+	path = planning-with-files
+	url = https://github.com/OthmanAdi/planning-with-files.git

@@ -218,6 +218,105 @@
       ]
     },
     {
+      "repo": "andrej-karpathy-skills",
+      "state": "archive-only",
+      "owner": "adk-team",
+      "review_window": "manual",
+      "automation_eligible": false,
+      "archive_reason": "Karpathy 四原则已被全局 AGENTS 与 ADK 规则覆盖，仅保留措辞和反模式参考",
+      "evidence": [
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/external-skill-repos-assessment-2026-06-29.md"
+      ]
+    },
+    {
+      "repo": "awesome-agent-skills",
+      "state": "watch",
+      "owner": "adk-team",
+      "review_window": "manual",
+      "automation_eligible": false,
+      "watch_reason": "索引型 skill 清单仅作 discovery feed，不作为本地参考仓或运行时依赖",
+      "evidence": [
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/external-skill-repos-assessment-2026-06-29.md"
+      ]
+    },
+    {
+      "repo": "claude-skills",
+      "state": "watch",
+      "owner": "adk-team",
+      "review_window": "manual",
+      "automation_eligible": false,
+      "watch_reason": "大型 skill 池按域抽样和供应链审查，不完整长期跟进，不全量安装",
+      "evidence": [
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/external-skill-repos-assessment-2026-06-29.md"
+      ]
+    },
+    {
+      "repo": "oh-my-codex",
+      "state": "active-reference",
+      "source": {
+        "url": "https://github.com/Yeachan-Heo/oh-my-codex.git",
+        "provider": "github",
+        "branch": "main",
+        "commit": "d96b698c5f2fabc85c890f7b8fcdc6e02f253ec7",
+        "retrieved_at": "2026-06-29"
+      },
+      "runtime_boundaries": [
+        "do-not-install-global-omx",
+        "do-not-run-omx-runtime",
+        "do-not-enable-tmux-hooks-mcp-or-plugin",
+        "method-only-goal-worktree-doctor-release-evidence"
+      ],
+      "owner": "adk-team",
+      "review_window": "monthly",
+      "automation_eligible": false,
+      "evidence": [
+        ".gitmodules",
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/external-skill-repos-assessment-2026-06-29.md",
+        "reports/oss-analysis-oh-my-codex-2026-06-29.md",
+        "reports/oss-absorption-plan-oh-my-codex-2026-06-29.md",
+        "reports/oss-security-review-oh-my-codex-2026-06-29.md",
+        "reports/oss-deep-assessment-oh-my-codex-2026-06-29.md"
+      ]
+    },
+    {
+      "repo": "planning-with-files",
+      "state": "active-reference",
+      "source": {
+        "url": "https://github.com/OthmanAdi/planning-with-files.git",
+        "provider": "github",
+        "branch": "master",
+        "commit": "8f5a3c2e1c347635cf94debde033b3c1ac97e4ab",
+        "retrieved_at": "2026-06-29"
+      },
+      "runtime_boundaries": [
+        "do-not-install-planning-hooks",
+        "do-not-enable-stop-gate",
+        "do-not-write-task-plan-by-default",
+        "method-only-plan-files-attestation-context-restore"
+      ],
+      "owner": "adk-team",
+      "review_window": "monthly",
+      "automation_eligible": false,
+      "evidence": [
+        ".gitmodules",
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/external-skill-repos-assessment-2026-06-29.md",
+        "reports/oss-analysis-planning-with-files-2026-06-29.md",
+        "reports/oss-absorption-plan-planning-with-files-2026-06-29.md",
+        "reports/oss-security-review-planning-with-files-2026-06-29.md",
+        "reports/oss-deep-assessment-planning-with-files-2026-06-29.md"
+      ]
+    },
+    {
       "repo": "prompts",
       "state": "removed",
       "owner": "adk-team",
