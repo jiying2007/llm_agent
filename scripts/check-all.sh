@@ -46,6 +46,7 @@ case "${CHECK_MODE}" in
       "check-phase-gate.sh"
       "check-subrepo-state.sh"
       "check-doc-sync.sh"
+      "check-adoption-real-assets.sh"
       "check-adk-target-evidence.sh"
       "check-runtime-routing.sh"
       "check-codex-adk-live.sh"
