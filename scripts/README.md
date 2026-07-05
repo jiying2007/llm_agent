@@ -329,10 +329,10 @@ scripts/check-adoption-matrix-structured.sh .
 scripts/check-agents-coverage.sh .
 ```
 
-- 检查项：
-  - 子仓是否存在本地 `AGENTS.md`
-  - 若上游参考子仓不适合直接写入治理文件，可使用根仓托管覆盖文件 `subrepos/agents/<repo>.md`
-  - 根 `AGENTS.md` 是否包含子仓名称
+- 检查项：active 子仓是否在 `subrepos/registry.csv` 注册且本地路径存在
+  - 子仓是否存在本地 `AGENTS.md`，或使用根仓托管覆盖文件 `subrepos/agents/<repo>.md`
+  - 根 `AGENTS.md` 是否保持 slim-entry 预算，并指向 registry、adoption matrix 和维护指南
+  - 根 `AGENTS.md` 不再逐个列出参考子仓；完整清单以 `subrepos/registry.csv` 为准。
 
 ## 4. 新仓库接入
 

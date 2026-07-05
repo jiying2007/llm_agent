@@ -5,6 +5,8 @@ ROOT="${1:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 REGISTRY="${ROOT}/subrepos/registry.csv"
 SCRIPTS_README="${ROOT}/scripts/README.md"
 ADOPTION_MATRIX="${ROOT}/subrepos/adoption-matrix.md"
+ROOT_AGENTS="${ROOT}/AGENTS.md"
+MAX_ROOT_AGENTS_LINES=180
 
 if [[ ! -f "${REGISTRY}" ]]; then
   echo "[FAIL] registry missing: ${REGISTRY}" >&2
@@ -20,6 +22,32 @@ if [[ ! -f "${ADOPTION_MATRIX}" ]]; then
   echo "[FAIL] adoption matrix missing: ${ADOPTION_MATRIX}" >&2
   exit 1
 fi
+
+if [[ ! -f "${ROOT_AGENTS}" ]]; then
+  echo "[FAIL] root AGENTS.md missing: ${ROOT_AGENTS}" >&2
+  exit 1
+fi
+
+root_agents_lines="$(wc -l <"${ROOT_AGENTS}" | tr -d ' ')"
+if [[ "${root_agents_lines}" -gt "${MAX_ROOT_AGENTS_LINES}" ]]; then
+  echo "[FAIL] root AGENTS.md exceeds slim-entry budget: lines=${root_agents_lines} limit=${MAX_ROOT_AGENTS_LINES}" >&2
+  exit 2
+fi
+
+root_agents_tokens=(
+  "subrepos/registry.csv"
+  "subrepos/adoption-matrix.md"
+  "docs/llm-agent-maintenance-guide.md"
+  "docs/absorption-governance.md"
+  "agent-dev-kit/"
+)
+
+for token in "${root_agents_tokens[@]}"; do
+  if ! rg -q --fixed-strings -- "${token}" "${ROOT_AGENTS}"; then
+    echo "[FAIL] root AGENTS.md missing slim-entry token: ${token}" >&2
+    exit 2
+  fi
+done
 
 expected_header="repo,group,priority,sync_mode,branch,enabled,notes,status,owner,last_reviewed_on,intake_policy,grade"
 actual_header="$(head -n 1 "${REGISTRY}")"

@@ -84,7 +84,7 @@ scripts/check-delivery-adopt-depth.sh [WORKSPACE_ROOT]
 
 ## 4. check-doc-sync.sh
 
-**用途**: 校验治理文档之间的同步一致性，确保 `registry.csv`、`scripts/README.md`、`adoption-matrix.md` 之间无遗漏引用。
+**用途**: 校验治理文档之间的同步一致性，确保 `registry.csv`、`scripts/README.md`、`adoption-matrix.md` 与根 `AGENTS.md` 入口边界无漂移。
 
 **用法**:
 ```bash
@@ -95,13 +95,14 @@ scripts/check-doc-sync.sh [WORKSPACE_ROOT]
 - `subrepos/registry.csv` 存在。
 - `scripts/README.md` 存在。
 - `subrepos/adoption-matrix.md` 存在。
-- registry 中每个 active 子仓名称均出现在 `AGENTS.md` 中。
+- 根 `AGENTS.md` 不超过 slim-entry 行数预算，并指向 registry、adoption matrix、维护指南和吸收治理文档。
 - adoption-matrix 中引用的仓库名均在 registry 中注册。
 
 **失败排查**:
 - `[FAIL] registry missing` → 确认 `subrepos/registry.csv` 文件存在。
 - `[FAIL] repo in matrix but not in registry` → 在 `registry.csv` 中补充缺失的子仓条目。
-- `[FAIL] repo in registry but not in AGENTS.md` → 在 `AGENTS.md` 中补充子仓描述。
+- `[FAIL] root AGENTS.md exceeds slim-entry budget` → 将子仓清单、历史计划或长说明迁移到 registry、adoption matrix、维护指南或 reports。
+- `[FAIL] root AGENTS.md missing slim-entry token` → 补回对应 SSOT 链接，避免入口文档失去可追溯来源。
 
 ---
 

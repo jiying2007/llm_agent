@@ -29,7 +29,7 @@
 
 | 路径 | 职责 | 维护要求 |
 |---|---|---|
-| `AGENTS.md` | 工作区全局规则、参考子仓总览、维护记录 | 规则或流程变化时同步更新 |
+| `AGENTS.md` | 工作区入口、意图路由、硬边界和高频验证入口 | 只在路由、硬边界或高频入口变化时同步更新；不得承载完整子仓清单 |
 | `subrepos/registry.csv` | 参考子仓单一清单 | 新增/禁用子仓必须更新 |
 | `subrepos/adoption-matrix.md` | 候选采纳矩阵 | 每个候选必须有决策、状态、目标层和证据 |
 | `subrepos/adoption-matrix.jsonl` | 候选矩阵结构化导出 | 由 Markdown 矩阵机械生成，供脚本低 token 读取 |
@@ -46,10 +46,23 @@
 
 ## 3. 维护流程
 
+### 3.0 AGENTS 瘦身边界
+
+根 `AGENTS.md` 是 AI 进入本仓时的低 token 入口，不是治理资料库。维护时遵循以下分流：
+
+- 子仓是否纳入治理、owner、状态、复审日期：写入 `subrepos/registry.csv`。
+- 候选实践的采纳/观察/拒绝、目标层和证据：写入 `subrepos/adoption-matrix.md`。
+- 可复现维护流程、门禁解释、source-to-live 证据链：写入本指南或对应 runbook。
+- 一次性试跑、复核、周报、证据包：写入 `reports/`。
+- 根 `AGENTS.md` 只保留意图路由、命令硬约束、吸收边界、常用验证入口和文档分流。
+
+`scripts/check-doc-sync.sh` 与 `scripts/check-agents-coverage.sh` 会强制根 `AGENTS.md` 不超过 180 行，并要求它指向 `subrepos/registry.csv`、`subrepos/adoption-matrix.md`、`docs/llm-agent-maintenance-guide.md` 和 `docs/absorption-governance.md`。新增参考仓时不要在根 `AGENTS.md` 追加仓库条目，除非新增了新的顶层路由或硬边界。
+
 ### 3.1 日常健康检查
 
 ```bash
 rtk scripts/check-doc-sync.sh .
+rtk scripts/check-agents-coverage.sh .
 rtk scripts/check-adk-target-evidence.sh .
 rtk scripts/check-adk-lock.sh .
 rtk scripts/check-phase-gate.sh .

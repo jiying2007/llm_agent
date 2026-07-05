@@ -77,19 +77,21 @@ rtk git clone <repo-url> <repo-name>
 decision: adopt / observe / reject
 status: done / pending / blocked
 
-### Step 5: 更新 AGENTS.md
+### Step 5: 更新入口文档
 
-在 `llm_agent/AGENTS.md` 对应章节添加仓库条目：
+不要在 `llm_agent/AGENTS.md` 追加完整仓库条目。根 `AGENTS.md` 只保留入口路由、硬边界和高频验证入口。
 
-- 2.1 方法论与流程内核
-- 2.2 Agent/Skill 生态
-- 2.3 质量、交付与工程实践
-- 2.4 文档、知识与配置治理
+按实际变化更新：
+
+- 子仓清单与状态：`subrepos/registry.csv`
+- 采纳/观察/拒绝决策：`subrepos/adoption-matrix.md`
+- 新增流程或门禁说明：`docs/llm-agent-maintenance-guide.md` 或对应 runbook
+- 仅当新增了顶层意图路由、硬边界或高频入口时，才更新根 `AGENTS.md`
 
 ### Step 6: 验证接入
 
 ```bash
-# 检查注册完整性
+# 检查注册完整性与 AGENTS slim coverage
 scripts/check-agents-coverage.sh .
 
 # 检查上游接入就绪
