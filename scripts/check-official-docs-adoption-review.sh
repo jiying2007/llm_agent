@@ -6,9 +6,9 @@ ROOT="${1:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 usage() {
   cat <<USAGE
 Usage:
-  scripts/check-openai-adoption-review.sh [ROOT]
+  scripts/check-official-docs-adoption-review.sh [ROOT]
 
-Checks the OpenAI official-docs freshness and adoption review chain:
+Checks the official-docs freshness and adoption review chain:
   official source freshness -> adoption needs-review -> target evidence -> review queue
 
 Environment:
@@ -157,7 +157,7 @@ for idx, source in enumerate(sources, 1):
     if url:
         domain = urlparse(url).netloc
         if allowed_domains and domain not in allowed_domains:
-            add("source", sid, f"non-official-domain:{domain}", "fail", "replace with an allowed OpenAI official docs URL")
+            add("source", sid, f"non-official-domain:{domain}", "fail", "replace with an allowed official docs URL")
     status = source.get("review_status")
     if status not in review_status_values:
         add("source", sid, f"invalid-review-status:{status}", missing_review_status_action, "set review_status to an allowed value")
@@ -208,7 +208,7 @@ else:
             ref_checked += 1
 
 if queue:
-    print(f"[FAIL] openai adoption review queue has {len(queue)} item(s)", file=sys.stderr)
+    print(f"[FAIL] official docs adoption review queue has {len(queue)} item(s)", file=sys.stderr)
     for item in queue:
         print(
             "  - "
@@ -219,7 +219,7 @@ if queue:
     sys.exit(1)
 
 print(
-    "[PASS] openai adoption review ready "
+    "[PASS] official docs adoption review ready "
     f"sources={len(sources)} root_rows={jsonl_checked} reference_rows={ref_checked} today={today.isoformat()}"
 )
 PY

@@ -149,11 +149,11 @@ scripts/check-file-modes.sh . --fix
 
 该检查已接入 `scripts/check-all.sh` 和 `scripts/check-adk-harden-readiness.sh`。文档、README、manifest、skill、template 默认不应带 executable bit；`scripts/*.sh`、可直接执行的测试脚本和稳定 CLI 包装层应保持 executable bit。
 
-adk 版本锁与 OpenAI 官方文档复审联动检查脚本：
+adk 版本锁与官方文档来源复审联动检查脚本：
 
 ```bash
 scripts/check-adk-lock.sh .
-scripts/check-openai-adoption-review.sh .
+scripts/check-official-docs-adoption-review.sh .
 ```
 
 该脚本校验 `adk.lock`、`agent-dev-kit/manifest.yaml` 和根仓 gitlink commit 是否一致，防止子模块指针、版本号和文档交付口径漂移。

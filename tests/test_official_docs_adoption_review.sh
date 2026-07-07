@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-CHECK="${ROOT}/scripts/check-openai-adoption-review.sh"
+CHECK="${ROOT}/scripts/check-official-docs-adoption-review.sh"
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "${TMP_DIR}"' EXIT
 
@@ -73,26 +73,26 @@ write_matrices "agent-dev-kit/skills/example-skill/SKILL.md"
 OPENAI_ADOPTION_REVIEW_TODAY=2026-07-07 "${CHECK}" "${TMP_DIR}" >/dev/null
 
 write_manifest "2026-01-01" '"review_status": "adopted",'
-if OPENAI_ADOPTION_REVIEW_TODAY=2026-07-07 "${CHECK}" "${TMP_DIR}" >/tmp/openai-adoption-review-expired.out 2>&1; then
+if OPENAI_ADOPTION_REVIEW_TODAY=2026-07-07 "${CHECK}" "${TMP_DIR}" >/tmp/official-docs-adoption-review-expired.out 2>&1; then
   echo "[FAIL] expired official source unexpectedly passed" >&2
   exit 1
 fi
-rg -q "source-expired" /tmp/openai-adoption-review-expired.out
-rg -q "needs-review" /tmp/openai-adoption-review-expired.out
+rg -q "source-expired" /tmp/official-docs-adoption-review-expired.out
+rg -q "needs-review" /tmp/official-docs-adoption-review-expired.out
 
 write_manifest "2026-08-01" ''
-if OPENAI_ADOPTION_REVIEW_TODAY=2026-07-07 "${CHECK}" "${TMP_DIR}" >/tmp/openai-adoption-review-status.out 2>&1; then
+if OPENAI_ADOPTION_REVIEW_TODAY=2026-07-07 "${CHECK}" "${TMP_DIR}" >/tmp/official-docs-adoption-review-status.out 2>&1; then
   echo "[FAIL] missing review_status unexpectedly passed" >&2
   exit 1
 fi
-rg -q "missing-source-field:review_status" /tmp/openai-adoption-review-status.out
+rg -q "missing-source-field:review_status" /tmp/official-docs-adoption-review-status.out
 
 write_manifest "2026-08-01" '"review_status": "adopted",'
 write_matrices "agent-dev-kit/skills/missing-skill/SKILL.md"
-if OPENAI_ADOPTION_REVIEW_TODAY=2026-07-07 "${CHECK}" "${TMP_DIR}" >/tmp/openai-adoption-review-evidence.out 2>&1; then
+if OPENAI_ADOPTION_REVIEW_TODAY=2026-07-07 "${CHECK}" "${TMP_DIR}" >/tmp/official-docs-adoption-review-evidence.out 2>&1; then
   echo "[FAIL] missing target evidence unexpectedly passed" >&2
   exit 1
 fi
-rg -q "missing-target-evidence" /tmp/openai-adoption-review-evidence.out
+rg -q "missing-target-evidence" /tmp/official-docs-adoption-review-evidence.out
 
-echo "[PASS] openai adoption review fixtures behave as expected"
+echo "[PASS] official docs adoption review fixtures behave as expected"

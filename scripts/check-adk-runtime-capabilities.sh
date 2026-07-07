@@ -9,4 +9,4 @@ if [[ ! -d "${ADK_ROOT}" ]]; then
   exit 1
 fi
 
-rtk bash "${ADK_ROOT}/scripts/check-openai-developers-governance.sh"
+rtk bash "${ADK_ROOT}/scripts/check-runtime-capabilities.sh"
