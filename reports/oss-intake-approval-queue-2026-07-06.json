@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "status": "needs-approval",
+  "mode": "report-only",
+  "date": "2026-07-06",
+  "summary": {
+    "items": 2,
+    "by_type": {
+      "candidate-registration-apply": 1,
+      "subrepo-removal-apply": 1
+    },
+    "by_level": {
+      "L2-metadata-apply": 1,
+      "L3-destructive-or-live-apply": 1
+    }
+  },
+  "items": [
+    {
+      "id": "candidate-registration-apply-example-runtime-policy-gates",
+      "type": "candidate-registration-apply",
+      "approval_level": "L2-metadata-apply",
+      "repo": "example/runtime-policy-gates",
+      "status": "pending-approval",
+      "reason": "onboard-candidate has a dry-run onboarding plan",
+      "evidence": [
+        "reports/oss-discovery-candidates-2026-06-16.jsonl",
+        "reports/oss-onboarding-plan-example-runtime-policy-gates-2026-06-16.json"
+      ],
+      "recommended_next_step": "Review the dry-run onboarding plan before any metadata write.",
+      "blocked_auto_actions": [
+        "candidate registration apply",
+        "ADK absorption"
+      ]
+    },
+    {
+      "id": "subrepo-removal-apply-codex",
+      "type": "subrepo-removal-apply",
+      "approval_level": "L3-destructive-or-live-apply",
+      "repo": "codex",
+      "status": "pending-approval",
+      "reason": "subrepo has a dry-run removal plan",
+      "evidence": [
+        "reports/subrepo-removal-plan-codex-2026-06-16.json"
+      ],
+      "recommended_next_step": "Review the dry-run removal plan; P3 apply mode remains blocked in this baseline.",
+      "blocked_auto_actions": [
+        "subrepo removal apply",
+        "source-to-live apply"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,217 @@
+# 子仓增量变更周报
+
+- 生成日期：2026-07-06
+- 扫描窗口：最近 30 天
+- 规则：仅保留 AGENTS/SKILL/README/workflow/scripts 相关变更
+- 阶段：fallback-sunset
+- 强制模式：0
+
+## agent-dev-kit
+
+- 分组：adk-core
+- 优先级：P0
+- 状态：active
+- owner：adk-team
+- intake_policy：adopt-first
+- 上次复审：2026-05-02
+- 关注说明：主落地仓库
+- 变更文件：
+  - .github/workflows/ci.yml
+  - .github/workflows/release.yml
+  - docs/runbooks/README.md
+  - optional-skills/adk-planning-execution-loop/SKILL.md
+  - optional-skills/adk-security-supply-chain/SKILL.md
+  - scripts/auto-ops.sh
+  - scripts/catalog-assets.sh
+  - scripts/check-asset-taxonomy.sh
+  - scripts/check-capability-health.sh
+  - scripts/check-codify-governance.sh
+  - scripts/check-context-experience-patterns.sh
+  - scripts/check-external-agent-patterns.sh
+  - scripts/check-goal-contracts.sh
+  - scripts/check-harness-loop-engineering-contracts.sh
+  - scripts/check-knowledge-compile-model.sh
+  - scripts/check-memory-governance.sh
+  - scripts/check-openai-developers-governance.sh
+  - scripts/check-openai-runtime-capabilities.sh
+  - scripts/check-performance-budgets.sh
+  - scripts/check-reuse-before-rebuild.sh
+  - scripts/check-token-budget.sh
+  - scripts/check-tool-skill-evidence-contracts.sh
+  - scripts/devkit.sh
+  - scripts/performance.sh
+  - skills/adk-after-action-review/SKILL.md
+  - skills/adk-context-compress-handoff/SKILL.md
+  - skills/adk-driver-bringup-checklist/SKILL.md
+  - skills/adk-embedded-debug-transport/README.md
+  - skills/adk-embedded-debug-transport/SKILL.md
+  - skills/adk-embedded-remote-debug-log-triage/README.md
+  - skills/adk-embedded-remote-debug-log-triage/SKILL.md
+  - skills/adk-embedded-storage-layout-migration/SKILL.md
+  - skills/adk-fault-injection-recovery/SKILL.md
+  - skills/adk-hardware-debugging/SKILL.md
+  - skills/adk-integration-hil-sil/SKILL.md
+  - skills/adk-memory-curator/SKILL.md
+  - skills/adk-offline-core-dump-triage/SKILL.md
+  - skills/adk-requirements-triage/SKILL.md
+  - skills/adk-runtime-router/SKILL.md
+  - skills/adk-structured-requirements-questioning/SKILL.md
+  - skills/adk-systematic-debugging/SKILL.md
+  - skills/adk-token-context-governance/SKILL.md
+  - skills/adk-toolchain-debug-openocd-gdb/SKILL.md
+  - skills/adk-verification-before-completion/SKILL.md
+  - workflows/adk-delivery-gate/WORKFLOW.md
+  - workflows/release-hardening/WORKFLOW.md
+- 仓库角色：落地目标仓（非外部来源仓）
+- 建议动作：进入 adk 压实闭环（harden / verify / handoff），不进入 adoption-matrix 来源评估
+
+## oh-my-codex
+
+- 分组：codex-runtime
+- 优先级：P1
+- 状态：active
+- owner：adk-team
+- intake_policy：observe-first
+- 上次复审：2026-06-29
+- 关注说明：Codex工作流运行层submodule观察，不启用runtime
+- 变更文件：
+  - .github/scripts/dev-merge-issue-close.cjs
+  - .github/workflows/ci.yml
+  - .github/workflows/dev-merge-issue-close.yml
+  - .github/workflows/npm-fallback-publish.yml
+  - .github/workflows/pr-check.yml
+  - .github/workflows/publish-npm-manual.yml
+  - .github/workflows/release.yml
+  - README.md
+  - docs/readme/README.md
+  - packages/vscode-extension/README.md
+  - plugins/oh-my-codex/skills/autopilot/SKILL.md
+  - plugins/oh-my-codex/skills/autoresearch-goal/SKILL.md
+  - plugins/oh-my-codex/skills/best-practice-research/SKILL.md
+  - plugins/oh-my-codex/skills/performance-goal/SKILL.md
+  - plugins/oh-my-codex/skills/ralplan/SKILL.md
+  - plugins/oh-my-codex/skills/ultragoal/SKILL.md
+  - plugins/oh-my-codex/skills/ultrawork/SKILL.md
+  - skills/autopilot/SKILL.md
+  - skills/autoresearch-goal/SKILL.md
+  - skills/best-practice-research/SKILL.md
+  - skills/ecomode/SKILL.md
+  - skills/performance-goal/SKILL.md
+  - skills/ralplan/SKILL.md
+  - skills/ultragoal/SKILL.md
+  - skills/ultrawork/SKILL.md
+  - src/scripts/__tests__/codex-native-hook.test.ts
+  - src/scripts/codex-native-hook.ts
+  - src/scripts/codex-native-pre-post.ts
+  - src/scripts/notify-hook/team-leader-nudge.ts
+  - src/scripts/notify-hook/team-tmux-guard.ts
+  - src/scripts/notify-hook/tmux-injection.ts
+  - src/scripts/run-compiled-ci.ts
+  - src/scripts/sync-plugin-mirror.ts
+- 建议动作：进入 adoption-matrix 评估（adopt / observe / reject）
+## planning-with-files
+
+- 分组：workflow-quality
+- 优先级：P1
+- 状态：active
+- owner：adk-team
+- intake_policy：observe-first
+- 上次复审：2026-06-29
+- 关注说明：文件化长任务计划与恢复submodule观察，不启用hooks
+- 变更文件：
+  - .codebuddy/skills/planning-with-files/SKILL.md
+  - .codebuddy/skills/planning-with-files/scripts/attest-plan.ps1
+  - .codebuddy/skills/planning-with-files/scripts/attest-plan.sh
+  - .codebuddy/skills/planning-with-files/scripts/check-complete.ps1
+  - .codebuddy/skills/planning-with-files/scripts/check-complete.sh
+  - .codebuddy/skills/planning-with-files/scripts/init-session.ps1
+  - .codebuddy/skills/planning-with-files/scripts/init-session.sh
+  - .codebuddy/skills/planning-with-files/scripts/resolve-plan-dir.ps1
+  - .codebuddy/skills/planning-with-files/scripts/resolve-plan-dir.sh
+  - .codex/skills/planning-with-files/SKILL.md
+  - .codex/skills/planning-with-files/scripts/attest-plan.ps1
+  - .codex/skills/planning-with-files/scripts/attest-plan.sh
+  - .codex/skills/planning-with-files/scripts/check-complete.ps1
+  - .codex/skills/planning-with-files/scripts/check-complete.sh
+  - .codex/skills/planning-with-files/scripts/init-session.ps1
+  - .codex/skills/planning-with-files/scripts/init-session.sh
+  - .codex/skills/planning-with-files/scripts/resolve-plan-dir.ps1
+  - .codex/skills/planning-with-files/scripts/resolve-plan-dir.sh
+  - .continue/skills/planning-with-files/scripts/attest-plan.ps1
+  - .continue/skills/planning-with-files/scripts/attest-plan.sh
+  - .continue/skills/planning-with-files/scripts/check-complete.ps1
+  - .continue/skills/planning-with-files/scripts/check-complete.sh
+  - .continue/skills/planning-with-files/scripts/init-session.ps1
+  - .continue/skills/planning-with-files/scripts/init-session.sh
+  - .continue/skills/planning-with-files/scripts/resolve-plan-dir.ps1
+  - .continue/skills/planning-with-files/scripts/resolve-plan-dir.sh
+  - .cursor/skills/planning-with-files/SKILL.md
+  - .factory/skills/planning-with-files/SKILL.md
+  - .factory/skills/planning-with-files/scripts/attest-plan.ps1
+  - .factory/skills/planning-with-files/scripts/attest-plan.sh
+  - .factory/skills/planning-with-files/scripts/check-complete.ps1
+  - .factory/skills/planning-with-files/scripts/check-complete.sh
+  - .factory/skills/planning-with-files/scripts/init-session.ps1
+  - .factory/skills/planning-with-files/scripts/init-session.sh
+  - .factory/skills/planning-with-files/scripts/resolve-plan-dir.ps1
+  - .factory/skills/planning-with-files/scripts/resolve-plan-dir.sh
+  - .gemini/skills/planning-with-files/scripts/attest-plan.ps1
+  - .gemini/skills/planning-with-files/scripts/attest-plan.sh
+  - .gemini/skills/planning-with-files/scripts/check-complete.ps1
+  - .gemini/skills/planning-with-files/scripts/check-complete.sh
+  - .gemini/skills/planning-with-files/scripts/init-session.ps1
+  - .gemini/skills/planning-with-files/scripts/init-session.sh
+  - .gemini/skills/planning-with-files/scripts/resolve-plan-dir.ps1
+  - .gemini/skills/planning-with-files/scripts/resolve-plan-dir.sh
+  - .hermes/skills/planning-with-files/SKILL.md
+  - .kiro/skills/planning-with-files/SKILL.md
+  - .mastracode/skills/planning-with-files/SKILL.md
+  - .opencode/skills/planning-with-files/SKILL.md
+  - .pi/skills/planning-with-files/scripts/attest-plan.ps1
+  - .pi/skills/planning-with-files/scripts/attest-plan.sh
+  - .pi/skills/planning-with-files/scripts/check-complete.ps1
+  - .pi/skills/planning-with-files/scripts/check-complete.sh
+  - .pi/skills/planning-with-files/scripts/init-session.ps1
+  - .pi/skills/planning-with-files/scripts/init-session.sh
+  - .pi/skills/planning-with-files/scripts/resolve-plan-dir.ps1
+  - .pi/skills/planning-with-files/scripts/resolve-plan-dir.sh
+  - README.md
+  - scripts/attest-plan.ps1
+  - scripts/attest-plan.sh
+  - scripts/check-complete.ps1
+  - scripts/check-complete.sh
+  - scripts/gate-stop.sh
+  - scripts/init-session.ps1
+  - scripts/init-session.sh
+  - scripts/inject-plan.sh
+  - scripts/ledger-append.ps1
+  - scripts/ledger-append.sh
+  - scripts/ledger-summary.ps1
+  - scripts/ledger-summary.sh
+  - scripts/phase-status.ps1
+  - scripts/phase-status.sh
+  - scripts/resolve-plan-dir.ps1
+  - scripts/resolve-plan-dir.sh
+  - skills/planning-with-files-ar/SKILL.md
+  - skills/planning-with-files-de/SKILL.md
+  - skills/planning-with-files-es/SKILL.md
+  - skills/planning-with-files-zh/SKILL.md
+  - skills/planning-with-files-zht/SKILL.md
+  - skills/planning-with-files/SKILL.md
+  - skills/planning-with-files/scripts/attest-plan.ps1
+  - skills/planning-with-files/scripts/attest-plan.sh
+  - skills/planning-with-files/scripts/check-complete.ps1
+  - skills/planning-with-files/scripts/check-complete.sh
+  - skills/planning-with-files/scripts/gate-stop.sh
+  - skills/planning-with-files/scripts/init-session.ps1
+  - skills/planning-with-files/scripts/init-session.sh
+  - skills/planning-with-files/scripts/inject-plan.sh
+  - skills/planning-with-files/scripts/ledger-append.ps1
+  - skills/planning-with-files/scripts/ledger-append.sh
+  - skills/planning-with-files/scripts/ledger-summary.ps1
+  - skills/planning-with-files/scripts/ledger-summary.sh
+  - skills/planning-with-files/scripts/phase-status.ps1
+  - skills/planning-with-files/scripts/phase-status.sh
+  - skills/planning-with-files/scripts/resolve-plan-dir.ps1
+  - skills/planning-with-files/scripts/resolve-plan-dir.sh
+- 建议动作：进入 adoption-matrix 评估（adopt / observe / reject）

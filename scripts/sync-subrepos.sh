@@ -8,6 +8,7 @@ REGISTRY="${ROOT}/subrepos/registry.csv"
 GATE_FILE="${ROOT}/subrepos/phase-gate.env"
 FORCE_FLAG="${3:-}"
 FORCE=0
+INCLUDE_ADK_CORE="${SYNC_INCLUDE_ADK_CORE:-0}"
 
 if [[ "${FORCE_FLAG}" == "--force" ]]; then
   FORCE=1
@@ -49,6 +50,7 @@ echo "[INFO] mode=${MODE}"
 echo "[INFO] registry=${REGISTRY}"
 echo "[INFO] phase=${phase_name}"
 echo "[INFO] force=${FORCE}"
+echo "[INFO] include_adk_core=${INCLUDE_ADK_CORE}"
 
 while IFS=',' read -r repo group priority sync_mode branch enabled notes status owner last_reviewed_on intake_policy grade; do
   if [[ "${repo}" == "repo" || -z "${repo}" ]]; then
@@ -60,8 +62,14 @@ while IFS=',' read -r repo group priority sync_mode branch enabled notes status 
     continue
   fi
 
+  if [[ "${group}" == "adk-core" && "${INCLUDE_ADK_CORE}" != "1" ]]; then
+    echo "[SKIP] ${repo}: adk-core landing repository (set SYNC_INCLUDE_ADK_CORE=1 to include)"
+    ((skip+=1))
+    continue
+  fi
+
   repo_path="${ROOT}/${repo}"
-  if [[ ! -d "${repo_path}" || ! -d "${repo_path}/.git" ]]; then
+  if [[ ! -d "${repo_path}" ]] || ! git -C "${repo_path}" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     echo "[SKIP] ${repo}: not a git repo directory"
     ((skip+=1))
     continue
