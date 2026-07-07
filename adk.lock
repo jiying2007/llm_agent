@@ -1,5 +1,5 @@
 agent-dev-kit.version=2.9.0
-agent-dev-kit.commit=85d78ece708e551a51216f9ad5ecafa47aba0a2a
+agent-dev-kit.commit=33960ddf0f161b3a21090397036c677fed913dd0
 codex.source=~/codex
 codex.target=~/.codex
 updated_at=2026-07-07
