@@ -110,14 +110,7 @@ scripts/check-runtime-pilot.sh . full
 
 `check-runtime-pilot-evidence.sh` 和 `check-runtime-pilot-coverage.sh` 是固定模式便捷入口，分别执行 evidence / coverage 检查。
 
-Codex 目标运行态 `~/.codex` 健康检查脚本（运行目录由 `~/codex` apply 生成）：
-
-```bash
-scripts/check-global-codex-health.sh ~/.codex minimal
-scripts/check-global-codex-health.sh ~/.codex security
-```
-
-`minimal` 保持兼容，只校验 `~/codex doctor --scope live` 与 `errors=0`；`security`/`strict` 追加 provider/base URL、MCP loaded list 和 hooks 审计。非标准 base URL 必须通过 `CODEX_TRUSTED_BASE_URLS` 显式声明为已审查端点。
+Codex 目标运行态 `~/.codex` 健康检查脚本（运行目录由 `~/codex` apply 生成）：`scripts/check-runtime-targets.sh . --summary-json` 校验 `manifests/runtime_targets.json`、`adk.lock`、`subrepos/registry.csv` 和 target 检查脚本一致性；`scripts/check-global-codex-health.sh ~/.codex minimal|security` 校验 live doctor 与安全审计，非标准 base URL 必须通过 `CODEX_TRUSTED_BASE_URLS` 显式声明为已审查端点。
 
 技能元数据检查脚本：
 
@@ -183,7 +176,7 @@ scripts/evidence-bundle.sh . --format json --fail-on-needs-fix
 scripts/evidence-bundle.sh . --format json --max-summary-chars 240
 ```
 
-该脚本汇总 `adk.lock`、phase gate、subrepo state、runtime pilot、global codex health、runtime live 实装态、pilot readiness 和 fallback sunset 结果，用于提交前或发布前附证；默认会截断单项 summary，避免证据摘要本身消耗过多上下文。
+该脚本汇总 `adk.lock`、runtime target registry、phase gate、subrepo state、runtime pilot、global codex health、runtime live 实装态、pilot readiness 和 fallback sunset 结果，用于提交前或发布前附证；默认会截断单项 summary，避免证据摘要本身消耗过多上下文。
 
 治理健康与复核报告脚本：
 
@@ -214,7 +207,7 @@ scripts/session-coach.sh . --summary-json         # Top Action
 scripts/session-coach.sh . --deep --summary-json  # 追加 live/token 检查
 ```
 
-`check-runtime-live-footprint.sh` 检查 fallback 矩阵中的 adk 等价 skill 是否已在 `~/.codex` direct/system/vendor 路径实装；`session-coach.sh` 根据 dirty worktree、资产变更和 `THREAD_LONG`/`CTX_PRESSURE` 输出 Top Action。
+未传 `--runtime-root` 时，`check-runtime-live-footprint.sh` 从 `manifests/runtime_targets.json` 读取默认 target 的 `live_root`，并检查 fallback 矩阵中的 adk 等价 skill 是否已在目标 direct/system/vendor 路径实装；`session-coach.sh` 根据 dirty worktree、资产变更和 `THREAD_LONG`/`CTX_PRESSURE` 输出 Top Action。
 
 Token budget 检查脚本：
 ```bash

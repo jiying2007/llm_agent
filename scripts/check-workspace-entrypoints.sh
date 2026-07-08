@@ -33,6 +33,7 @@ run_check "devkit_health" "${ROOT}/scripts/devkit.sh" health
 run_check "devkit_health_summary_json" "${ROOT}/scripts/devkit.sh" health --summary-json
 run_check "devkit_sync_status" "${ROOT}/scripts/devkit.sh" sync status
 run_check "phase_gate_summary_json" "${ROOT}/scripts/check-phase-gate.sh" "${ROOT}" --summary-json
+run_check "runtime_targets_summary_json" "${ROOT}/scripts/check-runtime-targets.sh" "${ROOT}" --summary-json
 run_check "stale_references" "${ROOT}/scripts/check-stale-references.sh" "${ROOT}"
 run_check "token_budget_summary_json" "${ROOT}/scripts/check-token-budget.sh" "${ROOT}" --summary-json
 run_check "runtime_live_footprint_summary_json" "${ROOT}/scripts/check-runtime-live-footprint.sh" "${ROOT}" --summary-json
@@ -73,6 +74,15 @@ fi
 if [[ -f "${TMP_DIR}/phase_gate_summary_json.out" ]]; then
   if ! rg -q '"status":"pass"' "${TMP_DIR}/phase_gate_summary_json.out"; then
     record_fail "phase gate summary json is not pass"
+  fi
+fi
+
+if [[ -f "${TMP_DIR}/runtime_targets_summary_json.out" ]]; then
+  if ! rg -q '"default_runtime":"codex"' "${TMP_DIR}/runtime_targets_summary_json.out"; then
+    record_fail "runtime targets summary missing default_runtime=codex"
+  fi
+  if ! rg -q '"default_live_root":"~/.codex"' "${TMP_DIR}/runtime_targets_summary_json.out"; then
+    record_fail "runtime targets summary missing default_live_root=~/.codex"
   fi
 fi
 

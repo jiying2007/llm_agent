@@ -4,6 +4,7 @@ set -euo pipefail
 ROOT="${1:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 LOCK="${ROOT}/adk.lock"
 MANIFEST="${ROOT}/agent-dev-kit/manifest.yaml"
+RUNTIME_TARGETS="${ROOT}/manifests/runtime_targets.json"
 
 fail() {
   echo "[FAIL] $*" >&2
@@ -27,6 +28,24 @@ codex_target="$(lock_value "codex.target")"
 [[ -n "${locked_commit}" ]] || fail "adk.lock missing agent-dev-kit.commit"
 [[ "${codex_source}" == "~/codex" ]] || fail "adk.lock codex.source must be ~/codex"
 [[ "${codex_target}" == "~/.codex" ]] || fail "adk.lock codex.target must be ~/.codex"
+
+if [[ -f "${RUNTIME_TARGETS}" ]]; then
+  python3 - "${RUNTIME_TARGETS}" "${codex_source}" "${codex_target}" <<'PY'
+import json
+import sys
+
+manifest_path, expected_source, expected_target = sys.argv[1:4]
+with open(manifest_path, "r", encoding="utf-8") as handle:
+    manifest = json.load(handle)
+target = next((item for item in manifest.get("targets", []) if item.get("id") == manifest.get("default_target")), None)
+if not target:
+    raise SystemExit("[FAIL] runtime_targets default target missing")
+if target.get("source_repo") != expected_source:
+    raise SystemExit("[FAIL] runtime_targets default source_repo != adk.lock codex.source")
+if target.get("live_root") != expected_target:
+    raise SystemExit("[FAIL] runtime_targets default live_root != adk.lock codex.target")
+PY
+fi
 
 manifest_version="$(awk -F': ' '$1=="version"{print $2; exit}' "${MANIFEST}")"
 [[ "${manifest_version}" == "${locked_version}" ]] || {

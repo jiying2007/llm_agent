@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT="${1:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 REGISTRY="${ROOT}/subrepos/registry.csv"
+RUNTIME_TARGETS_CHECK="${ROOT}/scripts/check-runtime-targets.sh"
 
 if [[ -d "${ROOT}/codex" ]]; then
   echo "[FAIL] local codex directory still exists: ${ROOT}/codex" >&2
@@ -53,6 +54,10 @@ fi
 if ! printf "%s\n" "${notes}" | rg -q '~/.codex'; then
   echo "[FAIL] codex registry notes must mention ~/.codex apply target" >&2
   exit 2
+fi
+
+if [[ -x "${RUNTIME_TARGETS_CHECK}" ]]; then
+  bash "${RUNTIME_TARGETS_CHECK}" "${ROOT}" --summary-json >/dev/null
 fi
 
 echo "[PASS] global codex target policy ready"

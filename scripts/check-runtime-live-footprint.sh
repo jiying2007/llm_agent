@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT="${1:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 RUNTIME_ROOT="${HOME}/.codex"
+RUNTIME_ROOT_EXPLICIT=0
 SUMMARY_JSON=0
 STRICT=0
 
@@ -15,6 +16,7 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --runtime-root)
       RUNTIME_ROOT="${2:-}"
+      RUNTIME_ROOT_EXPLICIT=1
       shift 2
       ;;
     --summary-json)
@@ -44,10 +46,32 @@ done
 
 ADK_DIR="${ROOT}/agent-dev-kit"
 MATRIX="${ADK_DIR}/docs/reference/fallback-sunset-matrix.tsv"
+TARGETS="${ROOT}/manifests/runtime_targets.json"
 [[ -f "${MATRIX}" ]] || {
   echo "[FAIL] fallback matrix missing: ${MATRIX}" >&2
   exit 1
 }
+
+if [[ "${RUNTIME_ROOT_EXPLICIT}" -eq 0 && -f "${TARGETS}" ]]; then
+  RUNTIME_ROOT="$(python3 - "${TARGETS}" <<'PY'
+import json
+import os
+import sys
+
+with open(sys.argv[1], "r", encoding="utf-8") as handle:
+    manifest = json.load(handle)
+
+default_id = manifest.get("default_target")
+target = next((item for item in manifest.get("targets", []) if item.get("id") == default_id), None)
+if not target:
+    raise SystemExit("runtime default target missing")
+live_root = target.get("live_root")
+if not live_root:
+    raise SystemExit("runtime default live_root missing")
+print(os.path.expanduser(live_root))
+PY
+)"
+fi
 
 json_string() {
   local value="$1"

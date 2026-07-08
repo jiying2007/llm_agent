@@ -106,7 +106,32 @@ scripts/check-doc-sync.sh [WORKSPACE_ROOT]
 
 ---
 
-## 5. check-global-codex-health.sh
+## 5. check-runtime-targets.sh
+
+**用途**: 校验 `manifests/runtime_targets.json` 与 `adk.lock`、`subrepos/registry.csv`、运行态检查脚本一致，避免 `~/.codex` 这类目标路径散落在脚本中成为隐式事实。
+
+**用法**:
+```bash
+scripts/check-runtime-targets.sh [WORKSPACE_ROOT]
+scripts/check-runtime-targets.sh [WORKSPACE_ROOT] --summary-json
+```
+
+**通过标准**:
+- `schema_version=1` 且 `status=active`。
+- `default_target` 指向已声明 target。
+- 默认 target 当前为 `codex`，`source_repo=~/codex`，`live_root=~/.codex`。
+- 默认 target 与 `adk.lock` 的 `codex.source` / `codex.target` 一致。
+- `subrepos/registry.csv` 的 `codex` 行保持 `runtime-target`、`enabled=no`、`status=disabled`、`intake_policy=pilot-first`。
+- 支持的 runtime kind 至少包含 `codex`、`claude-code`、`hermes-agent`、`opencode`。
+
+**失败排查**:
+- manifest 与 `adk.lock` 不一致 → 先确认真实 source/live 链路，再同步两处事实。
+- registry 缺少 `codex` 行或状态不符 → 恢复 runtime-target 禁用参考仓语义，避免把 `~/codex` 当参考子仓同步。
+- target check 脚本缺失或不可执行 → 修复脚本入口和文件权限后复跑。
+
+---
+
+## 6. check-global-codex-health.sh
 
 **用途**: 校验全局 `~/.codex` 目录的健康状态。该运行目录应由 `~/codex` build/apply 生成，健康检查依赖运行目录中的 control 状态。
 
@@ -131,9 +156,9 @@ scripts/check-global-codex-health.sh [CODEX_ROOT] [PROFILE]
 
 ---
 
-## 6. check-global-codex-target-policy.sh
+## 7. check-global-codex-target-policy.sh
 
-**用途**: 确保工作区未回退到使用本地 `codex/` 目录，强制使用 `~/codex` 作为声明式资产仓库，并由它 apply 到全局 `~/.codex`。
+**用途**: 确保工作区未回退到使用本地 `codex/` 目录，强制使用 `~/codex` 作为声明式资产仓库，并由它 apply 到全局 `~/.codex`。该检查也会联动 `check-runtime-targets.sh`，确保 target registry 没有漂移。
 
 **用法**:
 ```bash

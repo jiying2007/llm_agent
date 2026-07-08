@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "status": "active",
+  "last_updated": "2026-07-08",
+  "default_target": "codex-home",
+  "supported_runtime_kinds": [
+    "codex",
+    "claude-code",
+    "hermes-agent",
+    "opencode"
+  ],
+  "rules": {
+    "targets_must_be_declared": true,
+    "live_writes_must_use_declared_apply_chain": true,
+    "llm_agent_must_not_write_live_root": true,
+    "reference_subrepos_must_not_be_runtime_targets": true,
+    "future_targets_require_source_and_live_chain": true
+  },
+  "targets": [
+    {
+      "id": "codex-home",
+      "runtime": "codex",
+      "role": "external-handoff-target",
+      "enabled": true,
+      "source_repo": "~/codex",
+      "live_root": "~/.codex",
+      "registry_repo": "codex",
+      "source_to_live_chain": [
+        "agent-dev-kit",
+        "~/codex",
+        "~/.codex"
+      ],
+      "health_check": "scripts/check-global-codex-health.sh",
+      "footprint_check": "scripts/check-runtime-live-footprint.sh",
+      "target_policy_check": "scripts/check-global-codex-target-policy.sh",
+      "required_evidence": [
+        "~/codex build",
+        "~/codex doctor",
+        "~/codex apply plan",
+        "~/codex apply dry-run",
+        "global runtime health",
+        "runtime live footprint"
+      ],
+      "write_policy": "report-only-from-llm_agent",
+      "notes": "Codex is the currently declared external runtime target. Claude Code, Hermes Agent and OpenCode remain supported runtime kinds but require their own source/live chains before becoming active targets."
+    }
+  ]
+}
