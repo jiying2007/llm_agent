@@ -139,6 +139,7 @@ scripts/check-runtime-targets.sh [WORKSPACE_ROOT] --summary-json
 ```bash
 scripts/generate-reference-dirty-triage.sh . --out reports/reference-dirty-triage-YYYY-MM-DD.md --json-out reports/reference-dirty-triage-YYYY-MM-DD.json
 scripts/check-reference-dirty-triage.sh . --summary-json
+scripts/check-reference-dirty-triage.sh . --date YYYY-MM-DD --summary-json
 ```
 
 **通过标准**:
@@ -148,7 +149,24 @@ scripts/check-reference-dirty-triage.sh . --summary-json
 
 ---
 
-## 7. check-global-codex-health.sh
+## 7. check-runtime-health.sh
+
+**用途**: 读取 `manifests/runtime_targets.json` 的默认或指定 target，并分发到该 target 声明的健康检查 adapter。当前 active target 是 `codex-home`，因此会调用 `check-global-codex-health.sh`。
+
+**用法**:
+```bash
+scripts/check-runtime-health.sh [WORKSPACE_ROOT] [--target codex-home] [--profile minimal|security|strict]
+scripts/check-runtime-health.sh [WORKSPACE_ROOT] --summary-json
+```
+
+**通过标准**:
+- target 已声明且 `enabled=true`。
+- target 拥有 `health_check` 和 `live_root`。
+- adapter 可执行，且返回 exit 0。
+
+---
+
+## 8. check-global-codex-health.sh
 
 **用途**: 校验全局 `~/.codex` 目录的健康状态。该运行目录应由 `~/codex` build/apply 生成，健康检查依赖运行目录中的 control 状态。
 
@@ -173,7 +191,7 @@ scripts/check-global-codex-health.sh [CODEX_ROOT] [PROFILE]
 
 ---
 
-## 8. check-global-codex-target-policy.sh
+## 9. check-global-codex-target-policy.sh
 
 **用途**: 确保工作区未回退到使用本地 `codex/` 目录，强制使用 `~/codex` 作为声明式资产仓库，并由它 apply 到全局 `~/.codex`。该检查也会联动 `check-runtime-targets.sh`，确保 target registry 没有漂移。
 

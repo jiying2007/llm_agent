@@ -91,6 +91,7 @@ for script in \
   "${ROOT}/scripts/governance-review.sh" \
   "${ROOT}/scripts/evidence-bundle.sh" \
   "${ROOT}/scripts/check-token-budget.sh" \
+  "${ROOT}/scripts/check-runtime-health.sh" \
   "${ROOT}/scripts/check-runtime-live-footprint.sh" \
   "${ROOT}/scripts/session-coach.sh"; do
   summary_scripts=$((summary_scripts + 1))

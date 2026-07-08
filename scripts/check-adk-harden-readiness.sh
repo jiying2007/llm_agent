@@ -184,7 +184,7 @@ if [[ "${REQUIRE_PILOT}" -eq 1 ]]; then
 fi
 
 if [[ "${CHECK_GLOBAL_CODEX}" -eq 1 ]]; then
-  bash "${ROOT}/scripts/check-global-codex-health.sh" "$HOME/.codex" "minimal"
+  bash "${ROOT}/scripts/check-runtime-health.sh" "${ROOT}" --profile minimal
 fi
 
 if [[ "${AUTO_OPEN}" -eq 1 ]]; then

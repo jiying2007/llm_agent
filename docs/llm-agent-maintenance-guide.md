@@ -27,7 +27,7 @@
 
 运行态 target registry 位于 `manifests/runtime_targets.json`。当前默认 target 是 `codex-home`；`check-runtime-targets.sh` 会验证它与 `adk.lock`、`subrepos/registry.csv` 和 runtime 检查脚本一致。新增 `claude-code`、`hermes-agent`、`opencode` 等运行态时，必须先补 source/live chain、健康检查和写入策略，再允许成为 active target。
 
-参考子仓 dirty 只允许通过 `subrepos/dirty-baseline.tsv` 和 `reports/reference-dirty-triage-YYYY-MM-DD.*` 解释，不允许在治理提交中静默清理或混入参考仓文件。`generate-reference-dirty-triage.sh` 只读采集 status sample，`check-reference-dirty-triage.sh` 校验当天报告与 baseline 指纹一致。
+参考子仓 dirty 只允许通过 `subrepos/dirty-baseline.tsv` 和 `reports/reference-dirty-triage-YYYY-MM-DD.*` 解释，不允许在治理提交中静默清理或混入参考仓文件。`generate-reference-dirty-triage.sh` 只读采集 status sample，`check-reference-dirty-triage.sh` 默认选择 latest valid 报告，并按当天日期重新判断 baseline 是否过期。
 
 ## 2. 目录职责
 
@@ -81,7 +81,7 @@ rtk scripts/check-upstream-intake-readiness.sh .
 rtk scripts/check-stale-references.sh .
 rtk scripts/check-token-budget.sh . --summary-json
 rtk scripts/check-file-modes.sh .
-rtk scripts/check-global-codex-health.sh ~/.codex minimal
+rtk scripts/check-runtime-health.sh . --profile minimal
 ```
 
 适用场景：只确认当前状态是否健康，不同步参考仓，不部署。
@@ -147,7 +147,7 @@ rtk bash ~/codex/scripts/apply.sh --plan ~/codex/build/apply-plan.json --dry-run
 rtk bash ~/codex/scripts/apply.sh --plan ~/codex/build/apply-plan.json
 rtk bash ~/codex/scripts/check-routing-precedence.sh
 rtk bash ~/codex/scripts/check.sh
-rtk scripts/check-global-codex-health.sh ~/.codex minimal
+rtk scripts/check-runtime-health.sh . --profile minimal
 ```
 
 若 dry-run 显示会 `copy`、`overwrite` 或 `delete` live 资产，必须在报告中解释变更来源和风险；没有明确审查结论时，不更新 `last_live_refresh`，也不把 live 状态声明为已刷新。
@@ -245,7 +245,7 @@ rtk bash ~/codex/scripts/apply.sh --plan ~/codex/build/apply-plan.json --dry-run
 rtk bash ~/codex/scripts/apply.sh --plan ~/codex/build/apply-plan.json
 rtk bash ~/codex/scripts/check-routing-precedence.sh
 rtk bash ~/codex/scripts/check.sh
-rtk scripts/check-global-codex-health.sh ~/.codex minimal
+rtk scripts/check-runtime-health.sh . --profile minimal
 rtk scripts/check-adk-harden-readiness.sh . --require-pilot
 ```
 
@@ -255,7 +255,7 @@ rtk scripts/check-adk-harden-readiness.sh . --require-pilot
 - `~/codex` 侧必须维护源资产与 manifest，并运行 build / doctor / apply dry-run。
 - 真正写入 `~/.codex` 时由 `~/codex/scripts/apply.sh` 负责备份、覆盖策略和回滚计划。
 - 使用 adk `manifest.yaml` 版本和 `~/codex` apply plan 双重记录，防止误装不匹配版本。
-- 安装后必须跑 `check-global-codex-health.sh`。
+- 安装后必须跑 `check-runtime-health.sh`；Codex adapter 为 `check-global-codex-health.sh`。
 
 ## 6. 回滚流程
 
@@ -304,7 +304,7 @@ $HOME/.codex/.adk-backups/YYYYMMDDTHHMMSSZ
 - 多技能冲突时以 `adk-runtime-router` 先做 primary/supporting/fallback 裁决；需要组合治理时再叠加 `adk-skill-composition-governance`。
 - 第三方技能、脚本或参考资产进入全局环境前必须使用 `adk-security-supply-chain`。
 - 完成前必须使用 `adk-verification-before-completion` 核对证据。
-- 涉及 `~/.codex` 生产可用性结论时，必须同时附 `~/codex` build/apply 证据、`check-global-codex-health.sh ~/.codex minimal` 和 `check-runtime-live-footprint.sh . --summary-json` 证据。
+- 涉及 `~/.codex` 生产可用性结论时，必须同时附 `~/codex` build/apply 证据、`check-runtime-health.sh . --profile minimal` 和 `check-runtime-live-footprint.sh . --summary-json` 证据。
 ```
 
 当前不建议让 adk 覆盖 `~/.codex/AGENTS.md`，也不建议绕过 `~/codex` 直接写入 `~/.codex`。原因：
@@ -333,7 +333,7 @@ rtk scripts/evidence-bundle.sh . --out reports/evidence-bundle.md
 rtk scripts/evidence-bundle.sh . --format json
 ```
 
-证据包会汇总 `adk.lock`、runtime target registry、phase gate、subrepo state、reference dirty triage、runtime pilot、global codex health、runtime live 实装态、pilot readiness 和 fallback sunset 结果。它不替代完整回归，但适合提交说明、PR 描述和发布记录附证。
+证据包会汇总 `adk.lock`、runtime target registry、phase gate、subrepo state、reference dirty triage、runtime pilot、runtime health、runtime live 实装态、pilot readiness 和 fallback sunset 结果。它不替代完整回归，但适合提交说明、PR 描述和发布记录附证。
 
 runtime live 实装态单独使用：
 

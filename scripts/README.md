@@ -110,7 +110,7 @@ scripts/check-runtime-pilot.sh . full
 
 `check-runtime-pilot-evidence.sh` 和 `check-runtime-pilot-coverage.sh` 是固定模式便捷入口，分别执行 evidence / coverage 检查。
 
-Codex 目标运行态 `~/.codex` 健康检查脚本（运行目录由 `~/codex` apply 生成）：`scripts/check-runtime-targets.sh . --summary-json` 校验 `manifests/runtime_targets.json`、`adk.lock`、`subrepos/registry.csv` 和 target 检查脚本一致性；`scripts/check-global-codex-health.sh ~/.codex minimal|security` 校验 live doctor 与安全审计，非标准 base URL 必须通过 `CODEX_TRUSTED_BASE_URLS` 显式声明为已审查端点。
+Codex 目标运行态 `~/.codex` 健康检查脚本（运行目录由 `~/codex` apply 生成）：`scripts/check-runtime-targets.sh . --summary-json` 校验 `manifests/runtime_targets.json`、`adk.lock`、`subrepos/registry.csv` 和 target 检查脚本一致性；`scripts/check-runtime-health.sh . --profile minimal|security --summary-json` 读取默认 target 并分发到 adapter；`scripts/check-global-codex-health.sh ~/.codex minimal|security` 保留为 Codex adapter。非标准 base URL 必须通过 `CODEX_TRUSTED_BASE_URLS` 显式声明为已审查端点。
 
 技能元数据检查脚本：
 
@@ -165,7 +165,7 @@ scripts/check-subrepo-state.sh . --summary-json
 
 默认模式用于日常门禁，避免参考仓未初始化或本地状态噪音阻断主链路；严格模式用于发布前收敛。
 `subrepos/dirty-baseline.tsv` 记录 observe 子仓的预期 dirty 状态、status fingerprint、change count、owner 和 expires_on，避免把长期参考仓本地噪音误判为本轮风险，也避免 dirty baseline 变成永久豁免。
-`scripts/generate-reference-dirty-triage.sh . --out reports/reference-dirty-triage-YYYY-MM-DD.md --json-out reports/reference-dirty-triage-YYYY-MM-DD.json` 生成只读分流报告；`scripts/check-reference-dirty-triage.sh . --summary-json` 校验当天报告与 dirty baseline 一致。
+`scripts/generate-reference-dirty-triage.sh . --out reports/reference-dirty-triage-YYYY-MM-DD.md --json-out reports/reference-dirty-triage-YYYY-MM-DD.json` 生成只读分流报告；`scripts/check-reference-dirty-triage.sh . --summary-json` 默认选 latest valid 报告并校验 dirty baseline，`--date YYYY-MM-DD` 可强制指定。
 
 证据包生成脚本：
 
@@ -177,7 +177,7 @@ scripts/evidence-bundle.sh . --format json --fail-on-needs-fix
 scripts/evidence-bundle.sh . --format json --max-summary-chars 240
 ```
 
-该脚本汇总 `adk.lock`、runtime target registry、phase gate、subrepo state、reference dirty triage、runtime pilot、global codex health、runtime live 实装态、pilot readiness 和 fallback sunset 结果，用于提交前或发布前附证；默认会截断单项 summary，避免证据摘要本身消耗过多上下文。
+该脚本汇总 `adk.lock`、runtime target registry、phase gate、subrepo state、reference dirty triage、runtime pilot、runtime health、runtime live 实装态、pilot readiness 和 fallback sunset 结果，用于提交前或发布前附证；默认会截断单项 summary，避免证据摘要本身消耗过多上下文。
 
 治理健康与复核报告脚本：
 

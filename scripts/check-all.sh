@@ -51,6 +51,7 @@ case "${CHECK_MODE}" in
       "check-adk-target-evidence.sh"
       "check-runtime-targets.sh"
       "check-runtime-routing.sh"
+      "check-runtime-health.sh"
       "check-runtime-live-footprint.sh"
       "check-evidence-bundle.sh"
     )

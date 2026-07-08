@@ -37,6 +37,7 @@ run_check "runtime_targets_summary_json" "${ROOT}/scripts/check-runtime-targets.
 run_check "stale_references" "${ROOT}/scripts/check-stale-references.sh" "${ROOT}"
 run_check "token_budget_summary_json" "${ROOT}/scripts/check-token-budget.sh" "${ROOT}" --summary-json
 run_check "reference_dirty_triage_summary_json" "${ROOT}/scripts/check-reference-dirty-triage.sh" "${ROOT}" --summary-json
+run_check "runtime_health_summary_json" "${ROOT}/scripts/check-runtime-health.sh" "${ROOT}" --summary-json
 run_check "runtime_live_footprint_summary_json" "${ROOT}/scripts/check-runtime-live-footprint.sh" "${ROOT}" --summary-json
 run_check "session_coach_summary_json" "${ROOT}/scripts/session-coach.sh" "${ROOT}" --summary-json
 if "${ROOT}/scripts/check-subrepo-state.sh" "${ROOT}" --summary-json >"${TMP_DIR}/subrepo_state_summary_json.out" 2>"${TMP_DIR}/subrepo_state_summary_json.err"; then
@@ -126,6 +127,15 @@ fi
 if [[ -f "${TMP_DIR}/reference_dirty_triage_summary_json.out" ]]; then
   if ! rg -q '"items":3' "${TMP_DIR}/reference_dirty_triage_summary_json.out"; then
     record_fail "reference dirty triage summary missing 3 items"
+  fi
+fi
+
+if [[ -f "${TMP_DIR}/runtime_health_summary_json.out" ]]; then
+  if ! rg -q '"runtime":"codex"' "${TMP_DIR}/runtime_health_summary_json.out"; then
+    record_fail "runtime health summary missing runtime=codex"
+  fi
+  if ! rg -q '"adapter_exit":0' "${TMP_DIR}/runtime_health_summary_json.out"; then
+    record_fail "runtime health adapter did not pass"
   fi
 fi
 

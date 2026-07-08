@@ -19,9 +19,9 @@
 # 本工作区所有命令必须通过 rtk 执行
 rtk scripts/check-adk-harden-readiness.sh . --require-pilot
 rtk scripts/check-runtime-targets.sh .
+rtk scripts/check-runtime-health.sh .
 rtk scripts/check-runtime-routing.sh .
 rtk scripts/check-upstream-intake-readiness.sh .
-rtk scripts/check-global-codex-health.sh ~/.codex minimal
 ```
 
 ## 常用文档
