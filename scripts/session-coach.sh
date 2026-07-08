@@ -35,7 +35,7 @@ while [[ $# -gt 0 ]]; do
 usage: scripts/session-coach.sh [root] [--summary-json] [--deep] [--thread-long] [--ctx-pressure]
 
 Prints a compact next-action reminder for long sessions, token pressure and
-asset changes. Use --deep to include token-budget and Codex live checks.
+asset changes. Use --deep to include token-budget and runtime live checks.
 USAGE
       exit 0
       ;;
@@ -96,12 +96,12 @@ esac
 
 if [[ "${DEEP}" -eq 1 ]]; then
   capture token_budget "${ROOT}/scripts/check-token-budget.sh" "${ROOT}" --summary-json
-  capture codex_live "${ROOT}/scripts/check-codex-adk-live.sh" "${ROOT}" --summary-json
+  capture runtime_live "${ROOT}/scripts/check-runtime-live-footprint.sh" "${ROOT}" --summary-json
   if [[ "$(cat "${TMP_DIR}/token_budget.rc")" -ne 0 ]]; then
     add_signal "TOKEN_BUDGET_FAIL"
   fi
-  if rg -q '"missing_required":[1-9]' "${TMP_DIR}/codex_live.out"; then
-    add_signal "CODEX_LIVE_GAP"
+  if rg -q '"missing_required":[1-9]' "${TMP_DIR}/runtime_live.out"; then
+    add_signal "RUNTIME_LIVE_GAP"
   fi
 fi
 

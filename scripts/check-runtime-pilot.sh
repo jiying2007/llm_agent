@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# ── Unified codex pilot check script ────────────────────────────────
-# Merges check-codex-pilot-evidence.sh (4 evidence fields)
-#       + check-codex-pilot-coverage.sh (7 coverage fields + scenario verification)
+# ── Unified runtime pilot check script ───────────────────────────────
+# Merges runtime pilot evidence checks (4 evidence fields)
+#       + runtime pilot coverage checks (7 coverage fields + scenario verification)
 #
 # Usage:
-#   check-codex-pilot.sh <root> evidence   — check 4 basic evidence fields
-#   check-codex-pilot.sh <root> coverage   — check 7 coverage fields
-#   check-codex-pilot.sh <root> full       — check all (evidence + coverage + scenario verification)
-#   check-codex-pilot.sh <root>            — defaults to full mode
+#   check-runtime-pilot.sh <root> evidence   — check 4 basic evidence fields
+#   check-runtime-pilot.sh <root> coverage   — check 7 coverage fields
+#   check-runtime-pilot.sh <root> full       — check all (evidence + coverage + scenario verification)
+#   check-runtime-pilot.sh <root>            — defaults to full mode
 
 ROOT="${1:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 MODE="${2:-full}"
@@ -18,7 +18,7 @@ REPORT="${ROOT}/reports/codex-pilot-report.md"
 # ── Common helpers ──────────────────────────────────────────────────
 
 if [[ ! -f "${REPORT}" ]]; then
-  echo "[FAIL] codex pilot report missing: ${REPORT}" >&2
+  echo "[FAIL] runtime pilot report missing: ${REPORT}" >&2
   exit 1
 fi
 
@@ -108,7 +108,7 @@ check_evidence() {
   require_key_yes "review_test_consistent"
   require_key_yes "command_evidence_recorded"
 
-  echo "[PASS] codex pilot evidence ready"
+  echo "[PASS] runtime pilot evidence ready"
 }
 
 # ── Mode: coverage (7 coverage fields + optional scenario verification) ─
@@ -140,9 +140,9 @@ pilot_release_hardening_done|试跑场景 F：发布收口
 pilot_team_handoff_done|试跑场景 G：团队交接
 pilot_upstream_intake_done|试跑场景 H：上游吸收
 PILOTS
-    echo "[PASS] codex pilot full coverage ready"
+    echo "[PASS] runtime pilot full coverage ready"
   else
-    echo "[PASS] codex pilot coverage fields ready (full coverage not enforced)"
+    echo "[PASS] runtime pilot coverage fields ready (full coverage not enforced)"
   fi
 }
 

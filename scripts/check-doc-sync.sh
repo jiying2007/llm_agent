@@ -70,8 +70,10 @@ required_tokens=(
   "check-adk-target-evidence.sh"
   "check-observe-intake-depth.sh"
   "check-runtime-routing.sh"
-  "check-codex-pilot-evidence.sh"
-  "check-codex-pilot-coverage.sh"
+  "check-runtime-pilot.sh"
+  "check-runtime-pilot-evidence.sh"
+  "check-runtime-pilot-coverage.sh"
+  "check-runtime-live-footprint.sh"
   "check-workspace-entrypoints.sh"
   "generate-wechat-intake-ledger.sh"
   "check-wechat-intake-ledger.sh"
@@ -138,6 +140,7 @@ required_tokens=(
   "--check-runtime-routing"
   "--check-pilot-coverage"
   "--check-upstream-intake"
+  "runtime-live"
 )
 
 for token in "${required_tokens[@]}"; do
@@ -148,8 +151,10 @@ for token in "${required_tokens[@]}"; do
 done
 
 required_scripts=(
-  "scripts/check-codex-pilot-evidence.sh"
-  "scripts/check-codex-pilot-coverage.sh"
+  "scripts/check-runtime-pilot.sh"
+  "scripts/check-runtime-pilot-evidence.sh"
+  "scripts/check-runtime-pilot-coverage.sh"
+  "scripts/check-runtime-live-footprint.sh"
   "scripts/check-workspace-entrypoints.sh"
   "scripts/check-adoption-real-assets.sh"
   "scripts/check-adk-target-evidence.sh"

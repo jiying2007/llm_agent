@@ -79,7 +79,7 @@ run_capture evidence_bundle "${ROOT}/scripts/evidence-bundle.sh" "${ROOT}" --for
 run_capture pilot_readiness "${ADK_DIR}/scripts/pilot-readiness.sh" --summary-json
 run_capture fallback_sunset "${ADK_DIR}/scripts/check-fallback-sunset.sh" --summary-json
 run_capture runtime_boundary "${ADK_DIR}/scripts/check-runtime-boundary.sh" --summary-json
-run_capture codex_live "${ROOT}/scripts/check-codex-adk-live.sh" "${ROOT}" --summary-json
+run_capture runtime_live "${ROOT}/scripts/check-runtime-live-footprint.sh" "${ROOT}" --summary-json
 run_capture session_coach "${ROOT}/scripts/session-coach.sh" "${ROOT}" --summary-json
 
 compact_summary() {
@@ -93,7 +93,7 @@ compact_summary() {
 }
 
 overall="pass"
-for name in stale_refs subrepo_state evidence_bundle pilot_readiness fallback_sunset runtime_boundary codex_live session_coach; do
+for name in stale_refs subrepo_state evidence_bundle pilot_readiness fallback_sunset runtime_boundary runtime_live session_coach; do
   if [[ "$(cat "${TMP_DIR}/${name}.rc")" -ne 0 ]]; then
     overall="needs-fix"
   fi
@@ -113,9 +113,9 @@ if rg -q '"device_simulated_pass":[1-9]' "${TMP_DIR}/pilot_readiness.out"; then
   top_actions+=("production-field 已有模拟设备闭环；生产放行前仍需真实烧录、HIL、OTA 回滚和现场证据")
 fi
 if rg -q '"replacement_score":6[0-9]' "${TMP_DIR}/fallback_sunset.out"; then
-  top_actions+=("补 Codex live gap，已满分能力先推进 candidate-sunset 观察")
+  top_actions+=("补 runtime live gap，已满分能力先推进 candidate-sunset 观察")
 fi
-if rg -q '"missing_required":[1-9]' "${TMP_DIR}/codex_live.out"; then
+if rg -q '"missing_required":[1-9]' "${TMP_DIR}/runtime_live.out"; then
   top_actions+=("将缺失的 adk 等价 skill 经 ~/codex apply 到 ~/.codex")
 fi
 if rg -q '"priority":"high"' "${TMP_DIR}/session_coach.out"; then
@@ -130,7 +130,7 @@ if [[ "${FORMAT}" == "json" ]]; then
   printf '  "status": %s,\n' "$(json_string "${overall}")"
   printf '  "checks": [\n'
   first=1
-  for name in stale_refs subrepo_state evidence_bundle pilot_readiness fallback_sunset runtime_boundary codex_live session_coach; do
+  for name in stale_refs subrepo_state evidence_bundle pilot_readiness fallback_sunset runtime_boundary runtime_live session_coach; do
     [[ "${first}" -eq 1 ]] || printf ',\n'
     first=0
     printf '    {"name": %s, "exit_code": %s, "summary": %s}' \
@@ -155,7 +155,7 @@ else
   echo
   echo "| Check | Exit Code | Summary |"
   echo "|---|---:|---|"
-  for name in stale_refs subrepo_state evidence_bundle pilot_readiness fallback_sunset runtime_boundary codex_live session_coach; do
+  for name in stale_refs subrepo_state evidence_bundle pilot_readiness fallback_sunset runtime_boundary runtime_live session_coach; do
     summary="$(compact_summary "${TMP_DIR}/${name}.out")"
     printf '| %s | %s | %s |\n' "${name}" "$(cat "${TMP_DIR}/${name}.rc")" "${summary}"
   done

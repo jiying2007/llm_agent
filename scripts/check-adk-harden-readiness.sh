@@ -164,8 +164,8 @@ if [[ "${CHECK_CODEX_HANDOFF}" -eq 1 ]]; then
   if [[ -x "${ADK_DIR}/scripts/check-codex-handoff.sh" ]]; then
     bash "${ADK_DIR}/scripts/check-codex-handoff.sh" --codex-root "$HOME/codex"
   else
-    bash "${ROOT}/scripts/check-codex-adk-live.sh" "${ROOT}" --summary-json
-    echo "[PASS] codex live handoff evidence ready"
+    bash "${ROOT}/scripts/check-runtime-live-footprint.sh" "${ROOT}" --summary-json
+    echo "[PASS] runtime live handoff evidence ready"
   fi
 fi
 
@@ -175,9 +175,9 @@ if [[ "${CHECK_FULL_SUITE}" -eq 1 ]]; then
 fi
 
 if [[ "${REQUIRE_PILOT}" -eq 1 ]]; then
-  bash "${ROOT}/scripts/check-codex-pilot.sh" "${ROOT}" evidence
+  bash "${ROOT}/scripts/check-runtime-pilot.sh" "${ROOT}" evidence
   if [[ "${CHECK_PILOT_COVERAGE}" -eq 1 ]]; then
-    bash "${ROOT}/scripts/check-codex-pilot.sh" "${ROOT}" coverage
+    bash "${ROOT}/scripts/check-runtime-pilot.sh" "${ROOT}" coverage
   fi
 fi
 

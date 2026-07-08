@@ -35,15 +35,15 @@ run_check "devkit_sync_status" "${ROOT}/scripts/devkit.sh" sync status
 run_check "phase_gate_summary_json" "${ROOT}/scripts/check-phase-gate.sh" "${ROOT}" --summary-json
 run_check "stale_references" "${ROOT}/scripts/check-stale-references.sh" "${ROOT}"
 run_check "token_budget_summary_json" "${ROOT}/scripts/check-token-budget.sh" "${ROOT}" --summary-json
-run_check "codex_adk_live_summary_json" "${ROOT}/scripts/check-codex-adk-live.sh" "${ROOT}" --summary-json
+run_check "runtime_live_footprint_summary_json" "${ROOT}/scripts/check-runtime-live-footprint.sh" "${ROOT}" --summary-json
 run_check "session_coach_summary_json" "${ROOT}/scripts/session-coach.sh" "${ROOT}" --summary-json
 if "${ROOT}/scripts/check-subrepo-state.sh" "${ROOT}" --summary-json >"${TMP_DIR}/subrepo_state_summary_json.out" 2>"${TMP_DIR}/subrepo_state_summary_json.err"; then
   echo "[PASS] subrepo_state_summary_json"
 else
   echo "[PASS] subrepo_state_summary_json_contract"
 fi
-run_check "pilot_evidence_wrapper" "${ROOT}/scripts/check-codex-pilot-evidence.sh" "${ROOT}"
-run_check "pilot_coverage_wrapper" "${ROOT}/scripts/check-codex-pilot-coverage.sh" "${ROOT}"
+run_check "pilot_evidence_wrapper" "${ROOT}/scripts/check-runtime-pilot-evidence.sh" "${ROOT}"
+run_check "pilot_coverage_wrapper" "${ROOT}/scripts/check-runtime-pilot-coverage.sh" "${ROOT}"
 run_check "evidence_bundle_json" "${ROOT}/scripts/evidence-bundle.sh" "${ROOT}" --format json
 run_check "governance_health_json" "${ROOT}/scripts/governance-health.sh" "${ROOT}" --format json
 run_check "governance_review_json" "${ROOT}/scripts/governance-review.sh" "${ROOT}" --format json
@@ -112,9 +112,9 @@ if [[ -f "${TMP_DIR}/token_budget_summary_json.out" ]]; then
   fi
 fi
 
-if [[ -f "${TMP_DIR}/codex_adk_live_summary_json.out" ]]; then
-  if ! rg -q '"missing_required":' "${TMP_DIR}/codex_adk_live_summary_json.out"; then
-    record_fail "codex adk live summary missing missing_required"
+if [[ -f "${TMP_DIR}/runtime_live_footprint_summary_json.out" ]]; then
+  if ! rg -q '"missing_required":' "${TMP_DIR}/runtime_live_footprint_summary_json.out"; then
+    record_fail "runtime live footprint summary missing missing_required"
   fi
 fi
 

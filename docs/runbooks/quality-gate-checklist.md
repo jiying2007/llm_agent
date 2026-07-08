@@ -24,13 +24,13 @@ scripts/check-adoption-matrix-status.sh [WORKSPACE_ROOT]
 
 ---
 
-## 2. check-codex-pilot.sh
+## 2. check-runtime-pilot.sh
 
-**用途**: 统一校验 codex pilot 报告的完整性。支持三种模式：`evidence`（4 个基础证据字段）、`coverage`（7 个覆盖字段 + 场景验证）、`full`（全部检查，默认）。
+**用途**: 统一校验 runtime pilot 报告的完整性。支持三种模式：`evidence`（4 个基础证据字段）、`coverage`（7 个覆盖字段 + 场景验证）、`full`（全部检查，默认）。
 
 **用法**:
 ```bash
-scripts/check-codex-pilot.sh [WORKSPACE_ROOT] [MODE]
+scripts/check-runtime-pilot.sh [WORKSPACE_ROOT] [MODE]
 ```
 - `MODE` 可选：`evidence` | `coverage` | `full`（默认 `full`）
 
@@ -53,9 +53,9 @@ scripts/check-codex-pilot.sh [WORKSPACE_ROOT] [MODE]
 - `[FAIL] scenario field not yes` → 在 pilot 报告中补齐对应场景的试跑证据。
 - `[FAIL] missing artifact tag` → 在场景章节中补充 `ImplementationPlan` / `ReviewReport` / `TestReport` 标签。
 - `[FAIL] missing command-level evidence` → 在 Evidence Index 中添加可复现命令。
-- 报告不存在 → 先执行 codex 试跑并生成 `reports/codex-pilot-report.md`。
+- 报告不存在 → 先执行目标运行态试跑并生成 `reports/codex-pilot-report.md`。
 
-> **旧脚本兼容**: `check-codex-pilot-evidence.sh` 和 `check-codex-pilot-coverage.sh` 已标记弃用，自动转发到本脚本。
+> **便捷入口**: `check-runtime-pilot-evidence.sh` 和 `check-runtime-pilot-coverage.sh` 分别固定执行 evidence / coverage 模式。
 
 ---
 

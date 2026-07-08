@@ -62,8 +62,8 @@ rtk scripts/check-adk-harden-readiness.sh . --require-pilot
 - runtime routing
 - upstream intake
 - adk 全量测试
-- codex pilot evidence
-- codex pilot coverage
+- runtime pilot evidence
+- runtime pilot coverage
 - `~/codex` build/apply 链路与全局 `~/.codex` health
 
 ## 下一步维护

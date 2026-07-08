@@ -104,7 +104,7 @@ run_capture phase_gate "${ROOT}/scripts/check-phase-gate.sh" "${ROOT}" --summary
 run_capture subrepo_state "${ROOT}/scripts/check-subrepo-state.sh" "${ROOT}" --summary-json
 run_capture governance_health "${ROOT}/scripts/governance-health.sh" "${ROOT}" --format json --max-summary-chars 180
 run_capture evidence_bundle "${ROOT}/scripts/evidence-bundle.sh" "${ROOT}" --format json --max-summary-chars 240
-run_capture codex_live "${ROOT}/scripts/check-codex-adk-live.sh" "${ROOT}" --summary-json
+run_capture runtime_live "${ROOT}/scripts/check-runtime-live-footprint.sh" "${ROOT}" --summary-json
 
 generated_at="$(date -Iseconds)"
 root_head="$(git -C "${ROOT}" rev-parse --short HEAD 2>/dev/null || printf '-')"
@@ -116,7 +116,7 @@ next_review_by="$(value_for next_review_by || true)"
 
 status="pass"
 reasons=()
-for name in adk_lock phase_gate subrepo_state governance_health evidence_bundle codex_live; do
+for name in adk_lock phase_gate subrepo_state governance_health evidence_bundle runtime_live; do
   if [[ "$(cat "${TMP_DIR}/${name}.rc")" -ne 0 ]]; then
     status="needs-fix"
     reasons+=("${name} failed")
@@ -131,9 +131,9 @@ if rg -q '"stale_baseline":[1-9]' "${TMP_DIR}/subrepo_state.out"; then
   status="needs-fix"
   reasons+=("dirty baseline is stale")
 fi
-if rg -q '"missing_required":[1-9]' "${TMP_DIR}/codex_live.out"; then
+if rg -q '"missing_required":[1-9]' "${TMP_DIR}/runtime_live.out"; then
   status="needs-fix"
-  reasons+=("required Codex live ADK asset missing")
+  reasons+=("required runtime live ADK asset missing")
 fi
 if rg -q '"status":"needs-fix"|"status": "needs-fix"|"status":"fail"|"status": "fail"' "${TMP_DIR}/evidence_bundle.out"; then
   status="needs-fix"
@@ -151,7 +151,7 @@ if [[ "${#reasons[@]}" -eq 0 ]]; then
 fi
 
 last_live_refresh_decision="not-recommended"
-if [[ "$(cat "${TMP_DIR}/codex_live.rc")" -eq 0 ]] && rg -q '"missing_required":0' "${TMP_DIR}/codex_live.out"; then
+if [[ "$(cat "${TMP_DIR}/runtime_live.rc")" -eq 0 ]] && rg -q '"missing_required":0' "${TMP_DIR}/runtime_live.out"; then
   last_live_refresh_decision="manual-review-required"
 fi
 next_review_decision="recommended"
@@ -184,7 +184,7 @@ write_json() {
   printf '  "checks": [\n'
   first=1
   local name
-  for name in adk_lock phase_gate subrepo_state governance_health evidence_bundle codex_live; do
+  for name in adk_lock phase_gate subrepo_state governance_health evidence_bundle runtime_live; do
     [[ "${first}" -eq 1 ]] || printf ',\n'
     first=0
     printf '    {"name": %s, "exit_code": %s, "summary": %s}' \
@@ -226,7 +226,7 @@ write_markdown() {
 | subrepo_state | $(cat "${TMP_DIR}/subrepo_state.rc") | $(compact_file "${TMP_DIR}/subrepo_state.out") |
 | governance_health | $(cat "${TMP_DIR}/governance_health.rc") | $(compact_file "${TMP_DIR}/governance_health.out") |
 | evidence_bundle | $(cat "${TMP_DIR}/evidence_bundle.rc") | $(compact_file "${TMP_DIR}/evidence_bundle.out") |
-| codex_live | $(cat "${TMP_DIR}/codex_live.rc") | $(compact_file "${TMP_DIR}/codex_live.out") |
+| runtime_live | $(cat "${TMP_DIR}/runtime_live.rc") | $(compact_file "${TMP_DIR}/runtime_live.out") |
 
 ## Decisions
 

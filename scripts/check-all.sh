@@ -49,7 +49,7 @@ case "${CHECK_MODE}" in
       "check-adoption-real-assets.sh"
       "check-adk-target-evidence.sh"
       "check-runtime-routing.sh"
-      "check-codex-adk-live.sh"
+      "check-runtime-live-footprint.sh"
       "check-evidence-bundle.sh"
     )
     ;;

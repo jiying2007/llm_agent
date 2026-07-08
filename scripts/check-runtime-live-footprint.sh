@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT="${1:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
-CODEX_ROOT="${HOME}/.codex"
+RUNTIME_ROOT="${HOME}/.codex"
 SUMMARY_JSON=0
 STRICT=0
 
@@ -13,8 +13,8 @@ fi
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --codex-root)
-      CODEX_ROOT="${2:-}"
+    --runtime-root)
+      RUNTIME_ROOT="${2:-}"
       shift 2
       ;;
     --summary-json)
@@ -27,10 +27,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     -h|--help)
       cat <<USAGE
-usage: scripts/check-codex-adk-live.sh [root] [--codex-root <path>] [--summary-json] [--strict]
+usage: scripts/check-runtime-live-footprint.sh [root] [--runtime-root <path>] [--summary-json] [--strict]
 
 Checks whether adk equivalents from the fallback sunset matrix are present in
-the live Codex runtime. Direct skills, system skills and versioned vendor skills
+the configured live runtime. Direct skills, system skills and versioned vendor skills
 are all treated as live.
 USAGE
       exit 0
@@ -61,23 +61,23 @@ skill_live_path() {
   local skill="$1"
   local found=""
 
-  if [[ -f "${CODEX_ROOT}/skills/${skill}/SKILL.md" ]]; then
-    printf "%s" "${CODEX_ROOT}/skills/${skill}/SKILL.md"
+  if [[ -f "${RUNTIME_ROOT}/skills/${skill}/SKILL.md" ]]; then
+    printf "%s" "${RUNTIME_ROOT}/skills/${skill}/SKILL.md"
     return 0
   fi
-  if [[ -f "${CODEX_ROOT}/skills/.system/${skill}/SKILL.md" ]]; then
-    printf "%s" "${CODEX_ROOT}/skills/.system/${skill}/SKILL.md"
+  if [[ -f "${RUNTIME_ROOT}/skills/.system/${skill}/SKILL.md" ]]; then
+    printf "%s" "${RUNTIME_ROOT}/skills/.system/${skill}/SKILL.md"
     return 0
   fi
-  if [[ -d "${CODEX_ROOT}/vendor/skills/${skill}" ]]; then
-    found="$(find "${CODEX_ROOT}/vendor/skills/${skill}" -mindepth 2 -maxdepth 2 -name SKILL.md -type f -print -quit 2>/dev/null || true)"
+  if [[ -d "${RUNTIME_ROOT}/vendor/skills/${skill}" ]]; then
+    found="$(find "${RUNTIME_ROOT}/vendor/skills/${skill}" -mindepth 2 -maxdepth 2 -name SKILL.md -type f -print -quit 2>/dev/null || true)"
     if [[ -n "${found}" ]]; then
       printf "%s" "${found}"
       return 0
     fi
   fi
-  if [[ -d "${CODEX_ROOT}/vendor/plugins" ]]; then
-    found="$(find "${CODEX_ROOT}/vendor/plugins" -path "*/skills/${skill}/SKILL.md" -type f -print -quit 2>/dev/null || true)"
+  if [[ -d "${RUNTIME_ROOT}/vendor/plugins" ]]; then
+    found="$(find "${RUNTIME_ROOT}/vendor/plugins" -path "*/skills/${skill}/SKILL.md" -type f -print -quit 2>/dev/null || true)"
     if [[ -n "${found}" ]]; then
       printf "%s" "${found}"
       return 0
@@ -141,21 +141,21 @@ if [[ "${missing_required}" -gt 0 ]]; then
 fi
 
 if [[ "${SUMMARY_JSON}" -eq 1 ]]; then
-  printf '{"status":"%s","codex_root":%s,"rows":%s,"live":%s,"missing_required":%s,"missing_optional":%s,"first_missing":%s}\n' \
+  printf '{"status":"%s","runtime_root":%s,"rows":%s,"live":%s,"missing_required":%s,"missing_optional":%s,"first_missing":%s}\n' \
     "${status}" \
-    "$(json_string "${CODEX_ROOT}")" \
+    "$(json_string "${RUNTIME_ROOT}")" \
     "${rows}" \
     "${live}" \
     "${missing_required}" \
     "${missing_optional}" \
     "$(json_string "${first_missing}")"
 else
-  echo "[INFO] codex_root=${CODEX_ROOT}"
+  echo "[INFO] runtime_root=${RUNTIME_ROOT}"
   echo "[INFO] fallback_rows=${rows} live_matched=${live} missing_required=${missing_required} missing_optional=${missing_optional}"
   if [[ "${missing_required}" -gt 0 ]]; then
     echo "[WARN] first_missing_required=${first_missing}"
   fi
-  echo "[${status}] codex adk live footprint checked"
+  echo "[${status}] runtime live footprint checked"
 fi
 
 if [[ "${STRICT}" -eq 1 && "${missing_required}" -gt 0 ]]; then

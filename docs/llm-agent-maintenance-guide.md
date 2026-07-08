@@ -111,8 +111,8 @@ rtk scripts/check-adk-harden-readiness.sh . --require-pilot
 - runtime routing
 - upstream intake readiness
 - adk full regression suite
-- codex pilot evidence
-- codex pilot coverage
+- runtime pilot evidence
+- runtime pilot coverage
 - `~/codex` build/apply 证据与 global `~/.codex` health
 
 ### 3.3.1 治理产品化复核规则
@@ -300,7 +300,7 @@ $HOME/.codex/.adk-backups/YYYYMMDDTHHMMSSZ
 - 多技能冲突时以 `adk-runtime-router` 先做 primary/supporting/fallback 裁决；需要组合治理时再叠加 `adk-skill-composition-governance`。
 - 第三方技能、脚本或参考资产进入全局环境前必须使用 `adk-security-supply-chain`。
 - 完成前必须使用 `adk-verification-before-completion` 核对证据。
-- 涉及 `~/.codex` 生产可用性结论时，必须同时附 `~/codex` build/apply 证据、`check-global-codex-health.sh ~/.codex minimal` 和 `check-codex-adk-live.sh . --summary-json` 证据。
+- 涉及 `~/.codex` 生产可用性结论时，必须同时附 `~/codex` build/apply 证据、`check-global-codex-health.sh ~/.codex minimal` 和 `check-runtime-live-footprint.sh . --summary-json` 证据。
 ```
 
 当前不建议让 adk 覆盖 `~/.codex/AGENTS.md`，也不建议绕过 `~/codex` 直接写入 `~/.codex`。原因：
@@ -329,13 +329,13 @@ rtk scripts/evidence-bundle.sh . --out reports/evidence-bundle.md
 rtk scripts/evidence-bundle.sh . --format json
 ```
 
-证据包会汇总 `adk.lock`、phase gate、subrepo state、codex pilot、global codex health、Codex live 实装态、pilot readiness 和 fallback sunset 结果。它不替代完整回归，但适合提交说明、PR 描述和发布记录附证。
+证据包会汇总 `adk.lock`、phase gate、subrepo state、runtime pilot、global codex health、runtime live 实装态、pilot readiness 和 fallback sunset 结果。它不替代完整回归，但适合提交说明、PR 描述和发布记录附证。
 
-Codex live 实装态单独使用：
+runtime live 实装态单独使用：
 
 ```bash
-rtk scripts/check-codex-adk-live.sh . --summary-json
-rtk scripts/check-codex-adk-live.sh . --strict
+rtk scripts/check-runtime-live-footprint.sh . --summary-json
+rtk scripts/check-runtime-live-footprint.sh . --strict
 ```
 
 长会话或上下文压力较高时，先运行：

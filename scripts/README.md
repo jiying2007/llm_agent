@@ -68,7 +68,7 @@ scripts/check-adk-harden-readiness.sh . --check-observe-intake-depth
 # 显式打开 delivery 采纳深度检查（默认已开启）
 scripts/check-adk-harden-readiness.sh . --check-delivery-adopt-depth
 
-# 显式打开生产级路由、pilot 覆盖、上游吸收、Codex live 证据检查（默认已开启）
+# 显式打开生产级路由、pilot 覆盖、上游吸收、runtime live 证据检查（默认已开启）
 scripts/check-adk-harden-readiness.sh . --check-runtime-routing
 scripts/check-adk-harden-readiness.sh . --check-pilot-coverage
 scripts/check-adk-harden-readiness.sh . --check-upstream-intake
@@ -90,27 +90,27 @@ scripts/check-adk-harden-readiness.sh . --skip-codex-handoff-check
 若未开门，`sync-subrepos.sh` / `diff-scan.sh` 会返回 `[BLOCK]`。  
 紧急一次性绕过：追加 `--force`（建议仅临时使用并留痕）。
 
-codex pilot 统一检查脚本（合并 evidence + coverage + 场景验证）：
+runtime pilot 统一检查脚本（合并 evidence + coverage + 场景验证）：
 
 ```bash
 # 完整检查（默认模式：evidence + coverage + 场景验证）
-scripts/check-codex-pilot.sh .
+scripts/check-runtime-pilot.sh .
 
 # 只检查 4 个基础证据字段
-scripts/check-codex-pilot.sh . evidence
+scripts/check-runtime-pilot.sh . evidence
 
 # 只检查 7 个覆盖字段
-scripts/check-codex-pilot.sh . coverage
+scripts/check-runtime-pilot.sh . coverage
 
 # 完整检查（等价于默认模式）
-scripts/check-codex-pilot.sh . full
+scripts/check-runtime-pilot.sh . full
 ```
 
 当 `pilot_full_coverage_ready=yes` 时，`coverage` 和 `full` 模式会强制校验六类场景字段、场景章节、`ImplementationPlan/ReviewReport/TestReport` artifact 标签与命令级 Evidence Index。
 
-> **旧脚本兼容提示**：`check-codex-pilot-evidence.sh` 和 `check-codex-pilot-coverage.sh` 已标记为弃用，会自动转发到新脚本。
+`check-runtime-pilot-evidence.sh` 和 `check-runtime-pilot-coverage.sh` 是固定模式便捷入口，分别执行 evidence / coverage 检查。
 
-全局 `~/.codex` 健康检查脚本（运行目录由 `~/codex` apply 生成）：
+Codex 目标运行态 `~/.codex` 健康检查脚本（运行目录由 `~/codex` apply 生成）：
 
 ```bash
 scripts/check-global-codex-health.sh ~/.codex minimal
@@ -183,7 +183,7 @@ scripts/evidence-bundle.sh . --format json --fail-on-needs-fix
 scripts/evidence-bundle.sh . --format json --max-summary-chars 240
 ```
 
-该脚本汇总 `adk.lock`、phase gate、subrepo state、codex pilot、global codex health、Codex live 实装态、pilot readiness 和 fallback sunset 结果，用于提交前或发布前附证；默认会截断单项 summary，避免证据摘要本身消耗过多上下文。
+该脚本汇总 `adk.lock`、phase gate、subrepo state、runtime pilot、global codex health、runtime live 实装态、pilot readiness 和 fallback sunset 结果，用于提交前或发布前附证；默认会截断单项 summary，避免证据摘要本身消耗过多上下文。
 
 治理健康与复核报告脚本：
 
@@ -205,16 +205,16 @@ scripts/check-stale-references.sh .
 
 该脚本检查 active 文档中的旧版本状态、旧本机路径、旧脚本名和绕过 `~/codex` 的直接运行目录安装示例；历史 archive 不参与阻断。
 
-Codex live 实装态与长会话提醒：
+runtime live 实装态与长会话提醒：
 
 ```bash
-scripts/check-codex-adk-live.sh . --summary-json  # 低 token 摘要
-scripts/check-codex-adk-live.sh . --strict        # core-live 缺失时失败
+scripts/check-runtime-live-footprint.sh . --summary-json  # 低 token 摘要
+scripts/check-runtime-live-footprint.sh . --strict        # core-live 缺失时失败
 scripts/session-coach.sh . --summary-json         # Top Action
 scripts/session-coach.sh . --deep --summary-json  # 追加 live/token 检查
 ```
 
-`check-codex-adk-live.sh` 检查 fallback 矩阵中的 adk 等价 skill 是否已在 `~/.codex` direct/system/vendor 路径实装；`session-coach.sh` 根据 dirty worktree、资产变更和 `THREAD_LONG`/`CTX_PRESSURE` 输出 Top Action。
+`check-runtime-live-footprint.sh` 检查 fallback 矩阵中的 adk 等价 skill 是否已在 `~/.codex` direct/system/vendor 路径实装；`session-coach.sh` 根据 dirty worktree、资产变更和 `THREAD_LONG`/`CTX_PRESSURE` 输出 Top Action。
 
 Token budget 检查脚本：
 ```bash
@@ -419,8 +419,8 @@ scripts/devkit.sh diff 14
 scripts/devkit.sh health
 scripts/devkit.sh health --summary-json
 
-# Codex live / 长会话提醒
-scripts/devkit.sh codex-live --summary-json
+# runtime live / 长会话提醒
+scripts/devkit.sh runtime-live --summary-json
 scripts/devkit.sh coach --deep --summary-json
 
 # 生成周报

@@ -95,9 +95,9 @@ run_capture() {
 run_capture adk_lock "${ROOT}/scripts/check-adk-lock.sh" "${ROOT}"
 run_capture phase_gate "${ROOT}/scripts/check-phase-gate.sh" "${ROOT}" --summary-json
 run_capture subrepo_state "${ROOT}/scripts/check-subrepo-state.sh" "${ROOT}" --summary-json
-run_capture codex_pilot "${ROOT}/scripts/check-codex-pilot.sh" "${ROOT}" evidence
+run_capture runtime_pilot "${ROOT}/scripts/check-runtime-pilot.sh" "${ROOT}" evidence
 run_capture global_codex "${ROOT}/scripts/check-global-codex-health.sh" "$HOME/.codex" minimal
-run_capture codex_live "${ROOT}/scripts/check-codex-adk-live.sh" "${ROOT}" --summary-json
+run_capture runtime_live "${ROOT}/scripts/check-runtime-live-footprint.sh" "${ROOT}" --summary-json
 run_capture pilot_readiness "${ADK_DIR}/scripts/pilot-readiness.sh" --summary-json
 run_capture fallback_sunset "${ADK_DIR}/scripts/check-fallback-sunset.sh" --summary-json
 
@@ -105,7 +105,7 @@ root_head="$(git -C "${ROOT}" rev-parse --short HEAD)"
 adk_head="$(git -C "${ADK_DIR}" rev-parse --short HEAD)"
 generated_at="$(date -Iseconds)"
 overall_status="pass"
-for check_name in adk_lock phase_gate subrepo_state codex_pilot global_codex codex_live pilot_readiness fallback_sunset; do
+for check_name in adk_lock phase_gate subrepo_state runtime_pilot global_codex runtime_live pilot_readiness fallback_sunset; do
   if [[ "$(cat "${TMP_DIR}/${check_name}.rc")" -ne 0 ]]; then
     overall_status="needs-fix"
   fi
@@ -135,9 +135,9 @@ write_markdown() {
 | adk_lock | $(cat "${TMP_DIR}/adk_lock.rc") | $(compact_file "${TMP_DIR}/adk_lock.out") |
 | phase_gate | $(cat "${TMP_DIR}/phase_gate.rc") | $(compact_file "${TMP_DIR}/phase_gate.out") |
 | subrepo_state | $(cat "${TMP_DIR}/subrepo_state.rc") | $(compact_file "${TMP_DIR}/subrepo_state.out") |
-| codex_pilot_evidence | $(cat "${TMP_DIR}/codex_pilot.rc") | $(compact_file "${TMP_DIR}/codex_pilot.out") |
+| runtime_pilot_evidence | $(cat "${TMP_DIR}/runtime_pilot.rc") | $(compact_file "${TMP_DIR}/runtime_pilot.out") |
 | global_codex_health | $(cat "${TMP_DIR}/global_codex.rc") | $(compact_file "${TMP_DIR}/global_codex.out") |
-| codex_adk_live | $(cat "${TMP_DIR}/codex_live.rc") | $(compact_file "${TMP_DIR}/codex_live.out") |
+| runtime_live_footprint | $(cat "${TMP_DIR}/runtime_live.rc") | $(compact_file "${TMP_DIR}/runtime_live.out") |
 | pilot_readiness | $(cat "${TMP_DIR}/pilot_readiness.rc") | $(compact_file "${TMP_DIR}/pilot_readiness.out") |
 | fallback_sunset | $(cat "${TMP_DIR}/fallback_sunset.rc") | $(compact_file "${TMP_DIR}/fallback_sunset.out") |
 MD
@@ -152,7 +152,7 @@ write_json() {
   printf '  "checks": [\n'
   local first=1
   local name
-  for name in adk_lock phase_gate subrepo_state codex_pilot global_codex codex_live pilot_readiness fallback_sunset; do
+  for name in adk_lock phase_gate subrepo_state runtime_pilot global_codex runtime_live pilot_readiness fallback_sunset; do
     [[ "${first}" -eq 1 ]] || printf ',\n'
     first=0
     printf '    {"name": %s, "exit_code": %s, "summary": %s}' \
