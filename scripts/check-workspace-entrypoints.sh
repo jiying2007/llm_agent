@@ -36,6 +36,7 @@ run_check "phase_gate_summary_json" "${ROOT}/scripts/check-phase-gate.sh" "${ROO
 run_check "runtime_targets_summary_json" "${ROOT}/scripts/check-runtime-targets.sh" "${ROOT}" --summary-json
 run_check "stale_references" "${ROOT}/scripts/check-stale-references.sh" "${ROOT}"
 run_check "token_budget_summary_json" "${ROOT}/scripts/check-token-budget.sh" "${ROOT}" --summary-json
+run_check "reference_dirty_triage_summary_json" "${ROOT}/scripts/check-reference-dirty-triage.sh" "${ROOT}" --summary-json
 run_check "runtime_live_footprint_summary_json" "${ROOT}/scripts/check-runtime-live-footprint.sh" "${ROOT}" --summary-json
 run_check "session_coach_summary_json" "${ROOT}/scripts/session-coach.sh" "${ROOT}" --summary-json
 if "${ROOT}/scripts/check-subrepo-state.sh" "${ROOT}" --summary-json >"${TMP_DIR}/subrepo_state_summary_json.out" 2>"${TMP_DIR}/subrepo_state_summary_json.err"; then
@@ -119,6 +120,12 @@ fi
 if [[ -f "${TMP_DIR}/token_budget_summary_json.out" ]]; then
   if ! rg -q '"status":"pass"' "${TMP_DIR}/token_budget_summary_json.out"; then
     record_fail "token budget summary json is not pass"
+  fi
+fi
+
+if [[ -f "${TMP_DIR}/reference_dirty_triage_summary_json.out" ]]; then
+  if ! rg -q '"items":3' "${TMP_DIR}/reference_dirty_triage_summary_json.out"; then
+    record_fail "reference dirty triage summary missing 3 items"
   fi
 fi
 

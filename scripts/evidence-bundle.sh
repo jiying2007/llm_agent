@@ -96,6 +96,7 @@ run_capture adk_lock "${ROOT}/scripts/check-adk-lock.sh" "${ROOT}"
 run_capture runtime_targets "${ROOT}/scripts/check-runtime-targets.sh" "${ROOT}" --summary-json
 run_capture phase_gate "${ROOT}/scripts/check-phase-gate.sh" "${ROOT}" --summary-json
 run_capture subrepo_state "${ROOT}/scripts/check-subrepo-state.sh" "${ROOT}" --summary-json
+run_capture reference_dirty_triage "${ROOT}/scripts/check-reference-dirty-triage.sh" "${ROOT}" --summary-json
 run_capture runtime_pilot "${ROOT}/scripts/check-runtime-pilot.sh" "${ROOT}" evidence
 run_capture global_codex "${ROOT}/scripts/check-global-codex-health.sh" "$HOME/.codex" minimal
 run_capture runtime_live "${ROOT}/scripts/check-runtime-live-footprint.sh" "${ROOT}" --summary-json
@@ -106,7 +107,7 @@ root_head="$(git -C "${ROOT}" rev-parse --short HEAD)"
 adk_head="$(git -C "${ADK_DIR}" rev-parse --short HEAD)"
 generated_at="$(date -Iseconds)"
 overall_status="pass"
-for check_name in adk_lock runtime_targets phase_gate subrepo_state runtime_pilot global_codex runtime_live pilot_readiness fallback_sunset; do
+for check_name in adk_lock runtime_targets phase_gate subrepo_state reference_dirty_triage runtime_pilot global_codex runtime_live pilot_readiness fallback_sunset; do
   if [[ "$(cat "${TMP_DIR}/${check_name}.rc")" -ne 0 ]]; then
     overall_status="needs-fix"
   fi
@@ -137,6 +138,7 @@ write_markdown() {
 | runtime_targets | $(cat "${TMP_DIR}/runtime_targets.rc") | $(compact_file "${TMP_DIR}/runtime_targets.out") |
 | phase_gate | $(cat "${TMP_DIR}/phase_gate.rc") | $(compact_file "${TMP_DIR}/phase_gate.out") |
 | subrepo_state | $(cat "${TMP_DIR}/subrepo_state.rc") | $(compact_file "${TMP_DIR}/subrepo_state.out") |
+| reference_dirty_triage | $(cat "${TMP_DIR}/reference_dirty_triage.rc") | $(compact_file "${TMP_DIR}/reference_dirty_triage.out") |
 | runtime_pilot_evidence | $(cat "${TMP_DIR}/runtime_pilot.rc") | $(compact_file "${TMP_DIR}/runtime_pilot.out") |
 | global_codex_health | $(cat "${TMP_DIR}/global_codex.rc") | $(compact_file "${TMP_DIR}/global_codex.out") |
 | runtime_live_footprint | $(cat "${TMP_DIR}/runtime_live.rc") | $(compact_file "${TMP_DIR}/runtime_live.out") |
@@ -154,7 +156,7 @@ write_json() {
   printf '  "checks": [\n'
   local first=1
   local name
-  for name in adk_lock runtime_targets phase_gate subrepo_state runtime_pilot global_codex runtime_live pilot_readiness fallback_sunset; do
+  for name in adk_lock runtime_targets phase_gate subrepo_state reference_dirty_triage runtime_pilot global_codex runtime_live pilot_readiness fallback_sunset; do
     [[ "${first}" -eq 1 ]] || printf ',\n'
     first=0
     printf '    {"name": %s, "exit_code": %s, "summary": %s}' \

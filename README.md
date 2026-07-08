@@ -32,6 +32,7 @@ rtk scripts/check-global-codex-health.sh ~/.codex minimal
 - `subrepos/registry.csv`：参考子仓单一清单。
 - `subrepos/adoption-matrix.md`：参考仓吸收决策矩阵。
 - `manifests/runtime_targets.json`：运行态 target registry。
+- `reports/reference-dirty-triage-YYYY-MM-DD.md`：参考子仓 dirty 分流报告。
 - `reports/codex-pilot-report.md`：`~/codex -> ~/.codex` pilot 证据。
 - `reports/adk-production-landing-implementation-2026-05-02.md`：adk 生产级落地记录。
 - `agent-dev-kit/README.md`：adk 使用指南。

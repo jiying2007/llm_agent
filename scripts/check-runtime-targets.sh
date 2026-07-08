@@ -106,6 +106,8 @@ target_count = 0
 default_target = None
 default_runtime = "-"
 default_live_root = "-"
+enabled_count = 0
+candidate_count = 0
 supported = set()
 
 required_kinds = {"codex", "claude-code", "hermes-agent", "opencode"}
@@ -144,6 +146,38 @@ if manifest:
     target_ids = [item.get("id") for item in targets if isinstance(item, dict)]
     if len(target_ids) != len(set(target_ids)):
         fail("runtime target ids must be unique")
+    by_runtime = {item.get("runtime"): item for item in targets if isinstance(item, dict)}
+    for runtime in required_kinds:
+        if runtime not in by_runtime:
+            fail(f"runtime_targets.json missing target or candidate for runtime: {runtime}")
+
+    for item in targets:
+        if not isinstance(item, dict):
+            fail("runtime target entries must be objects")
+            continue
+        runtime = item.get("runtime")
+        if runtime not in supported:
+            fail(f"runtime target uses unsupported runtime kind: {runtime}")
+        enabled = item.get("enabled")
+        if enabled is True:
+            enabled_count += 1
+        elif enabled is False:
+            candidate_count += 1
+            if item.get("role") != "target-candidate":
+                fail(f"disabled runtime target must use role=target-candidate: {item.get('id')}")
+            if item.get("write_policy") != "not-enabled":
+                fail(f"disabled runtime target must use write_policy=not-enabled: {item.get('id')}")
+            for field in ("source_repo", "live_root", "registry_repo", "health_check", "footprint_check", "target_policy_check"):
+                if item.get(field) is not None:
+                    fail(f"disabled runtime target must not declare active {field}: {item.get('id')}")
+            if item.get("source_to_live_chain") != []:
+                fail(f"disabled runtime target source_to_live_chain must be empty: {item.get('id')}")
+            requirements = item.get("activation_requirements") or []
+            for required in ("declare source_repo and live_root", "add target-specific health check", "add source-to-live apply and rollback evidence", "pass runtime target gate with enabled=true"):
+                if required not in requirements:
+                    fail(f"disabled runtime target missing activation requirement: {item.get('id')} -> {required}")
+        else:
+            fail(f"runtime target enabled must be boolean: {item.get('id')}")
 
     default_id = manifest.get("default_target")
     default_target = next((item for item in targets if isinstance(item, dict) and item.get("id") == default_id), None)
@@ -206,6 +240,8 @@ if failures:
         print(json.dumps({
             "status": "fail",
             "targets": target_count,
+            "enabled_targets": enabled_count,
+            "candidate_targets": candidate_count,
             "default_target": manifest.get("default_target") if manifest else None,
             "default_runtime": default_runtime,
             "default_live_root": default_live_root,
@@ -221,6 +257,8 @@ if summary_json:
     print(json.dumps({
         "status": "pass",
         "targets": target_count,
+        "enabled_targets": enabled_count,
+        "candidate_targets": candidate_count,
         "default_target": manifest.get("default_target"),
         "default_runtime": default_runtime,
         "default_live_root": default_live_root,
@@ -228,5 +266,5 @@ if summary_json:
         "failures": [],
     }, ensure_ascii=False, separators=(",", ":")))
 else:
-    print(f"[PASS] runtime targets ready: targets={target_count} default={manifest.get('default_target')} runtime={default_runtime} live_root={default_live_root}")
+    print(f"[PASS] runtime targets ready: targets={target_count} enabled={enabled_count} candidates={candidate_count} default={manifest.get('default_target')} runtime={default_runtime} live_root={default_live_root}")
 PY

@@ -45,6 +45,7 @@ case "${CHECK_MODE}" in
       "check-adk-lock.sh"
       "check-phase-gate.sh"
       "check-subrepo-state.sh"
+      "check-reference-dirty-triage.sh"
       "check-doc-sync.sh"
       "check-adoption-real-assets.sh"
       "check-adk-target-evidence.sh"

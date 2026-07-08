@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-08T20:40:01+08:00",
+  "date": "2026-07-08",
+  "mode": "report-only",
+  "status": "pass",
+  "items": [
+    {
+      "repo": "OpenSpec",
+      "head": "3c7a05c",
+      "branch": "main",
+      "expected_state": "dirty",
+      "baseline_ref": "observe-baseline",
+      "expected_count": 655,
+      "actual_count": 655,
+      "fingerprint_matches": true,
+      "expires_on": "2026-07-10",
+      "expired": false,
+      "owner": "adk-maintainer",
+      "reason": "reference-repo-local-state",
+      "decision": "known-dirty-review",
+      "sample_status": [
+        " M .actrc",
+        " M .changeset/README.md",
+        " M .changeset/config.json",
+        " M .coderabbit.yaml",
+        " M .devcontainer/README.md",
+        " M .devcontainer/devcontainer.json",
+        " M .github/CODEOWNERS",
+        " M .github/workflows/README.md"
+      ],
+      "error": ""
+    },
+    {
+      "repo": "superpowers",
+      "head": "6efe32c",
+      "branch": "main",
+      "expected_state": "dirty",
+      "baseline_ref": "observe-baseline",
+      "expected_count": 115,
+      "actual_count": 115,
+      "fingerprint_matches": true,
+      "expires_on": "2026-07-10",
+      "expired": false,
+      "owner": "adk-maintainer",
+      "reason": "reference-repo-local-state",
+      "decision": "known-dirty-review",
+      "sample_status": [
+        " M .claude-plugin/marketplace.json",
+        " M .claude-plugin/plugin.json",
+        " M .codex-plugin/plugin.json",
+        " M .codex/INSTALL.md",
+        " M .cursor-plugin/plugin.json",
+        " M .gitattributes",
+        " M .github/FUNDING.yml",
+        " M .github/ISSUE_TEMPLATE/bug_report.md"
+      ],
+      "error": ""
+    },
+    {
+      "repo": "vibeflow",
+      "head": "0df764e",
+      "branch": "main",
+      "expected_state": "dirty",
+      "baseline_ref": "observe-baseline",
+      "expected_count": 216,
+      "actual_count": 216,
+      "fingerprint_matches": true,
+      "expires_on": "2026-07-10",
+      "expired": false,
+      "owner": "adk-maintainer",
+      "reason": "reference-repo-local-state",
+      "decision": "known-dirty-review",
+      "sample_status": [
+        " M .claude-plugin/marketplace.json",
+        " M .claude-plugin/plugin.json",
+        " M .claude/commands/vibeflow-dashboard.md",
+        " M .claude/commands/vibeflow-design.md",
+        " M .claude/commands/vibeflow-increment.md",
+        " M .claude/commands/vibeflow-init.md",
+        " M .claude/commands/vibeflow-learn.md",
+        " M .claude/commands/vibeflow-plan.md"
+      ],
+      "error": ""
+    }
+  ],
+  "boundary": "This report reads reference subrepo status only. It does not clean, reset, commit, push, sync, absorb, or modify live runtime assets."
+}

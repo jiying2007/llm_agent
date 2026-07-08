@@ -27,6 +27,8 @@
 
 运行态 target registry 位于 `manifests/runtime_targets.json`。当前默认 target 是 `codex-home`；`check-runtime-targets.sh` 会验证它与 `adk.lock`、`subrepos/registry.csv` 和 runtime 检查脚本一致。新增 `claude-code`、`hermes-agent`、`opencode` 等运行态时，必须先补 source/live chain、健康检查和写入策略，再允许成为 active target。
 
+参考子仓 dirty 只允许通过 `subrepos/dirty-baseline.tsv` 和 `reports/reference-dirty-triage-YYYY-MM-DD.*` 解释，不允许在治理提交中静默清理或混入参考仓文件。`generate-reference-dirty-triage.sh` 只读采集 status sample，`check-reference-dirty-triage.sh` 校验当天报告与 baseline 指纹一致。
+
 ## 2. 目录职责
 
 | 路径 | 职责 | 维护要求 |
@@ -331,7 +333,7 @@ rtk scripts/evidence-bundle.sh . --out reports/evidence-bundle.md
 rtk scripts/evidence-bundle.sh . --format json
 ```
 
-证据包会汇总 `adk.lock`、runtime target registry、phase gate、subrepo state、runtime pilot、global codex health、runtime live 实装态、pilot readiness 和 fallback sunset 结果。它不替代完整回归，但适合提交说明、PR 描述和发布记录附证。
+证据包会汇总 `adk.lock`、runtime target registry、phase gate、subrepo state、reference dirty triage、runtime pilot、global codex health、runtime live 实装态、pilot readiness 和 fallback sunset 结果。它不替代完整回归，但适合提交说明、PR 描述和发布记录附证。
 
 runtime live 实装态单独使用：
 

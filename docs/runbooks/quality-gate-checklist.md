@@ -131,7 +131,24 @@ scripts/check-runtime-targets.sh [WORKSPACE_ROOT] --summary-json
 
 ---
 
-## 6. check-global-codex-health.sh
+## 6. check-reference-dirty-triage.sh
+
+**用途**: 校验当天 `reports/reference-dirty-triage-YYYY-MM-DD.json` 与 `subrepos/dirty-baseline.tsv` 一致，确保参考子仓 dirty 状态有报告解释，而不是混入治理提交。
+
+**用法**:
+```bash
+scripts/generate-reference-dirty-triage.sh . --out reports/reference-dirty-triage-YYYY-MM-DD.md --json-out reports/reference-dirty-triage-YYYY-MM-DD.json
+scripts/check-reference-dirty-triage.sh . --summary-json
+```
+
+**通过标准**:
+- 报告为 `report-only`。
+- `OpenSpec`、`superpowers`、`vibeflow` 均存在 triage item。
+- 每项 `decision=known-dirty-review`、baseline 未过期、fingerprint 匹配。
+
+---
+
+## 7. check-global-codex-health.sh
 
 **用途**: 校验全局 `~/.codex` 目录的健康状态。该运行目录应由 `~/codex` build/apply 生成，健康检查依赖运行目录中的 control 状态。
 
@@ -156,7 +173,7 @@ scripts/check-global-codex-health.sh [CODEX_ROOT] [PROFILE]
 
 ---
 
-## 7. check-global-codex-target-policy.sh
+## 8. check-global-codex-target-policy.sh
 
 **用途**: 确保工作区未回退到使用本地 `codex/` 目录，强制使用 `~/codex` 作为声明式资产仓库，并由它 apply 到全局 `~/.codex`。该检查也会联动 `check-runtime-targets.sh`，确保 target registry 没有漂移。
 

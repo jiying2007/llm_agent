@@ -43,6 +43,90 @@
       ],
       "write_policy": "report-only-from-llm_agent",
       "notes": "Codex is the currently declared external runtime target. Claude Code, Hermes Agent and OpenCode remain supported runtime kinds but require their own source/live chains before becoming active targets."
+    },
+    {
+      "id": "claude-code-home",
+      "runtime": "claude-code",
+      "role": "target-candidate",
+      "enabled": false,
+      "source_repo": null,
+      "live_root": null,
+      "registry_repo": null,
+      "source_to_live_chain": [],
+      "health_check": null,
+      "footprint_check": null,
+      "target_policy_check": null,
+      "required_evidence": [
+        "declared source repo",
+        "declared live root",
+        "health check adapter",
+        "dry-run apply evidence",
+        "rollback evidence"
+      ],
+      "write_policy": "not-enabled",
+      "activation_requirements": [
+        "declare source_repo and live_root",
+        "add target-specific health check",
+        "add source-to-live apply and rollback evidence",
+        "pass runtime target gate with enabled=true"
+      ],
+      "notes": "Candidate template only. It must not be treated as an active target until source/live governance exists."
+    },
+    {
+      "id": "hermes-agent-home",
+      "runtime": "hermes-agent",
+      "role": "target-candidate",
+      "enabled": false,
+      "source_repo": null,
+      "live_root": null,
+      "registry_repo": null,
+      "source_to_live_chain": [],
+      "health_check": null,
+      "footprint_check": null,
+      "target_policy_check": null,
+      "required_evidence": [
+        "declared source repo",
+        "declared live root",
+        "health check adapter",
+        "dry-run apply evidence",
+        "rollback evidence"
+      ],
+      "write_policy": "not-enabled",
+      "activation_requirements": [
+        "declare source_repo and live_root",
+        "add target-specific health check",
+        "add source-to-live apply and rollback evidence",
+        "pass runtime target gate with enabled=true"
+      ],
+      "notes": "Candidate template only. It must not be treated as an active target until source/live governance exists."
+    },
+    {
+      "id": "opencode-home",
+      "runtime": "opencode",
+      "role": "target-candidate",
+      "enabled": false,
+      "source_repo": null,
+      "live_root": null,
+      "registry_repo": null,
+      "source_to_live_chain": [],
+      "health_check": null,
+      "footprint_check": null,
+      "target_policy_check": null,
+      "required_evidence": [
+        "declared source repo",
+        "declared live root",
+        "health check adapter",
+        "dry-run apply evidence",
+        "rollback evidence"
+      ],
+      "write_policy": "not-enabled",
+      "activation_requirements": [
+        "declare source_repo and live_root",
+        "add target-specific health check",
+        "add source-to-live apply and rollback evidence",
+        "pass runtime target gate with enabled=true"
+      ],
+      "notes": "Candidate template only. It must not be treated as an active target until source/live governance exists."
     }
   ]
 }

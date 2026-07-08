@@ -121,6 +121,7 @@ bash "${ADK_DIR}/tests/test_no_external_repo_refs.sh"
 bash "${ROOT}/scripts/check-stale-references.sh" "${ROOT}"
 bash "${ROOT}/scripts/check-file-modes.sh" "${ROOT}"
 bash "${ROOT}/scripts/check-runtime-targets.sh" "${ROOT}"
+bash "${ROOT}/scripts/check-reference-dirty-triage.sh" "${ROOT}"
 bash "${ADK_DIR}/scripts/check-file-modes.sh" "${ADK_DIR}"
 
 echo "[PASS] adk harden baseline checks passed"
