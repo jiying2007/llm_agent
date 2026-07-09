@@ -11,7 +11,7 @@ write_fixture() {
   mkdir -p "${TMP_DIR}/manifests" "${TMP_DIR}/scripts" "${TMP_DIR}/subrepos"
   printf 'codex.source=~/codex\ncodex.target=~/.codex\n' >"${TMP_DIR}/adk.lock"
   printf 'repo,group,priority,sync_mode,branch,enabled,notes,status,owner,last_reviewed_on,intake_policy,grade\ncodex,runtime-target,0,manual,main,no,"~/codex to ~/.codex",disabled,adk-team,2026-07-09,pilot-first,A\n' >"${TMP_DIR}/subrepos/registry.csv"
-  for script in check-global-codex-health.sh check-runtime-live-footprint.sh check-global-codex-target-policy.sh; do
+  for script in check-global-codex-health.sh check-claude-code-health.sh check-runtime-live-footprint.sh check-global-codex-target-policy.sh; do
     printf '#!/usr/bin/env bash\nexit 0\n' >"${TMP_DIR}/scripts/${script}"
     chmod +x "${TMP_DIR}/scripts/${script}"
   done
@@ -52,6 +52,7 @@ targets = {
                 "~/codex doctor",
                 "~/codex apply plan",
                 "~/codex apply dry-run",
+                "rollback evidence",
                 "global runtime health",
                 "runtime live footprint",
             ],
@@ -69,7 +70,7 @@ targets = {
             "health_adapter": None,
             "footprint_check": None,
             "target_policy_check": None,
-            "required_evidence": ["declared source repo", "declared live root", "health check adapter", "dry-run apply evidence", "rollback evidence"],
+            "required_evidence": ["declared source repo", "declared live root", "read-only health adapter", "dry-run apply evidence", "rollback evidence"],
             "write_policy": "not-enabled",
             "activation_requirements": [
                 "declare source_repo and live_root",
@@ -90,7 +91,7 @@ targets = {
             "health_adapter": None,
             "footprint_check": None,
             "target_policy_check": None,
-            "required_evidence": ["declared source repo", "declared live root", "health check adapter", "dry-run apply evidence", "rollback evidence"],
+            "required_evidence": ["declared source repo", "declared live root", "read-only health adapter", "dry-run apply evidence", "rollback evidence"],
             "write_policy": "not-enabled",
             "activation_requirements": [
                 "declare source_repo and live_root",
@@ -111,7 +112,7 @@ targets = {
             "health_adapter": None,
             "footprint_check": None,
             "target_policy_check": None,
-            "required_evidence": ["declared source repo", "declared live root", "health check adapter", "dry-run apply evidence", "rollback evidence"],
+            "required_evidence": ["declared source repo", "declared live root", "read-only health adapter", "dry-run apply evidence", "rollback evidence"],
             "write_policy": "not-enabled",
             "activation_requirements": [
                 "declare source_repo and live_root",
@@ -176,6 +177,40 @@ with open(adapters_path, "r", encoding="utf-8") as handle:
 
 adapter = adapters["adapters"][0]
 target = targets["targets"][0]
+
+def enable_second_target():
+    second_target = targets["targets"][1]
+    second_adapter = adapters["adapters"][1]
+    second_target.update({
+        "role": "external-handoff-target",
+        "enabled": True,
+        "source_repo": "~/claude-code",
+        "live_root": "~/.claude",
+        "registry_repo": "claude-code",
+        "source_to_live_chain": ["agent-dev-kit", "~/claude-code", "~/.claude"],
+        "health_adapter": "claude-code-health",
+        "footprint_check": "scripts/check-runtime-live-footprint.sh",
+        "target_policy_check": "scripts/check-global-codex-target-policy.sh",
+        "required_evidence": [
+            "declared source repo",
+            "declared live root",
+            "dry-run apply evidence",
+            "rollback evidence",
+            "runtime health",
+            "runtime live footprint",
+        ],
+        "write_policy": "report-only-from-llm_agent",
+    })
+    second_adapter.update({
+        "status": "active",
+        "enabled": True,
+        "script": "scripts/check-claude-code-health.sh",
+        "target_ids": ["claude-code-home"],
+        "profiles": ["minimal", "security", "strict"],
+    })
+    second_adapter.pop("activation_requirements", None)
+    return second_target, second_adapter
+
 if case == "runtime_mismatch":
     adapter["runtime"] = "opencode"
 elif case == "disabled_adapter":
@@ -189,6 +224,20 @@ elif case == "legacy_target_health_check":
 elif case == "script_not_executable":
     script_path = os.path.join(root, "scripts", "check-global-codex-health.sh")
     os.chmod(script_path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH)
+elif case == "second_enabled_valid":
+    enable_second_target()
+elif case == "second_enabled_runtime_mismatch":
+    _second_target, second_adapter = enable_second_target()
+    second_adapter["runtime"] = "opencode"
+elif case == "second_enabled_missing_binding":
+    _second_target, second_adapter = enable_second_target()
+    second_adapter["target_ids"] = []
+elif case == "second_enabled_missing_adapter":
+    second_target, _second_adapter = enable_second_target()
+    second_target["health_adapter"] = "missing-claude-health"
+elif case == "second_enabled_empty_chain":
+    second_target, _second_adapter = enable_second_target()
+    second_target["source_to_live_chain"] = []
 else:
     raise SystemExit(f"unknown case: {case}")
 
@@ -203,6 +252,9 @@ PY
 
 expect_pass() {
   write_fixture
+  if [[ "${1:-}" != "" ]]; then
+    mutate_json "$1"
+  fi
   out="${TMP_DIR}/pass.out"
   if ! "${CHECK}" "${TMP_DIR}" --summary-json >"${out}" 2>&1; then
     echo "[FAIL] runtime adapter pass fixture failed" >&2
@@ -246,18 +298,42 @@ expect_health_fail() {
   fi
 }
 
+expect_health_fail_for_target() {
+  local case_name="$1"
+  local target_id="$2"
+  local expected="$3"
+  write_fixture
+  mutate_json "${case_name}"
+  out="${TMP_DIR}/${case_name}-${target_id}-health.out"
+  if "${ROOT}/scripts/check-runtime-health.sh" "${TMP_DIR}" --target "${target_id}" --summary-json >"${out}" 2>&1; then
+    echo "[FAIL] runtime health target fixture unexpectedly passed: ${case_name} -> ${target_id}" >&2
+    exit 1
+  fi
+  if ! rg -q --fixed-strings -- "${expected}" "${out}"; then
+    echo "[FAIL] runtime health target fixture missing expected failure: ${case_name} -> ${expected}" >&2
+    sed -n '1,80p' "${out}" >&2 || true
+    exit 1
+  fi
+}
+
 expect_pass
-expect_fail "runtime_mismatch" "default runtime health_adapter runtime mismatch"
-expect_fail "disabled_adapter" "default runtime health_adapter must be enabled"
+expect_pass "second_enabled_valid"
+expect_fail "runtime_mismatch" "enabled runtime target health_adapter runtime mismatch: codex-home -> codex-global-health"
+expect_fail "disabled_adapter" "enabled runtime target health_adapter must be enabled: codex-home -> codex-global-health"
 expect_fail "missing_profile" "enabled runtime health adapter missing profile: codex-global-health -> strict"
 expect_fail "script_not_executable" "runtime target script not executable: scripts/check-global-codex-health.sh"
-expect_fail "missing_binding" "default runtime health_adapter missing target binding"
+expect_fail "missing_binding" "enabled runtime target health_adapter missing target binding: codex-home -> codex-global-health"
 expect_fail "legacy_target_health_check" "runtime target must not declare health_check; use health_adapter"
+expect_fail "second_enabled_runtime_mismatch" "enabled runtime target health_adapter runtime mismatch: claude-code-home -> claude-code-health"
+expect_fail "second_enabled_missing_binding" "enabled runtime target health_adapter missing target binding: claude-code-home -> claude-code-health"
+expect_fail "second_enabled_missing_adapter" "enabled runtime target health_adapter not declared: claude-code-home -> missing-claude-health"
+expect_fail "second_enabled_empty_chain" "enabled runtime target source_to_live_chain must be non-empty: claude-code-home"
 expect_health_fail "runtime_mismatch" "runtime health adapter runtime mismatch"
 expect_health_fail "disabled_adapter" "runtime health adapter is not enabled"
 expect_health_fail "missing_profile" "runtime health adapter does not support profile=strict" "strict"
 expect_health_fail "script_not_executable" "runtime health adapter missing or not executable"
 expect_health_fail "missing_binding" "runtime health adapter is not bound to target"
 expect_health_fail "legacy_target_health_check" "runtime target must not declare health_check; use health_adapter"
+expect_health_fail_for_target "second_enabled_missing_binding" "claude-code-home" "runtime health adapter is not bound to target: claude-code-health -> claude-code-home"
 
 echo "[PASS] runtime health adapter fixtures behave as expected"

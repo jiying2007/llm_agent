@@ -99,6 +99,11 @@ def script_must_exist(script):
         fail(f"runtime target script not executable: {script}")
 
 
+def evidence_has(evidence, *tokens):
+    text = " | ".join(str(item).lower() for item in evidence)
+    return all(token.lower() in text for token in tokens)
+
+
 manifest = read_json(manifest_path)
 adapters_manifest = read_json(adapters_path)
 lock = read_lock(lock_path)
@@ -115,6 +120,8 @@ enabled_adapter_count = 0
 candidate_adapter_count = 0
 supported = set()
 adapter_by_id = {}
+target_by_id = {}
+enabled_target_ids = set()
 
 required_kinds = {"codex", "claude-code", "hermes-agent", "opencode"}
 required_rules = {
@@ -231,6 +238,7 @@ if manifest:
     target_ids = [item.get("id") for item in targets if isinstance(item, dict)]
     if len(target_ids) != len(set(target_ids)):
         fail("runtime target ids must be unique")
+    target_by_id = {item.get("id"): item for item in targets if isinstance(item, dict)}
     by_runtime = {item.get("runtime"): item for item in targets if isinstance(item, dict)}
     for runtime in required_kinds:
         if runtime not in by_runtime:
@@ -248,6 +256,45 @@ if manifest:
         enabled = item.get("enabled")
         if enabled is True:
             enabled_count += 1
+            target_id = item.get("id")
+            enabled_target_ids.add(target_id)
+            if item.get("role") == "target-candidate":
+                fail(f"enabled runtime target must not use role=target-candidate: {target_id}")
+            for field in ("source_repo", "live_root", "registry_repo", "health_adapter"):
+                if not item.get(field):
+                    fail(f"enabled runtime target missing {field}: {target_id}")
+            if item.get("write_policy") == "not-enabled":
+                fail(f"enabled runtime target must not use write_policy=not-enabled: {target_id}")
+            source_chain = item.get("source_to_live_chain")
+            if not isinstance(source_chain, list) or not source_chain:
+                fail(f"enabled runtime target source_to_live_chain must be non-empty: {target_id}")
+            health_adapter_id = item.get("health_adapter")
+            adapter = adapter_by_id.get(health_adapter_id)
+            if health_adapter_id and not adapter:
+                fail(f"enabled runtime target health_adapter not declared: {target_id} -> {health_adapter_id}")
+            elif adapter:
+                if adapter.get("enabled") is not True:
+                    fail(f"enabled runtime target health_adapter must be enabled: {target_id} -> {health_adapter_id}")
+                if adapter.get("runtime") != runtime:
+                    fail(f"enabled runtime target health_adapter runtime mismatch: {target_id} -> {health_adapter_id}")
+                if target_id not in (adapter.get("target_ids") or []):
+                    fail(f"enabled runtime target health_adapter missing target binding: {target_id} -> {health_adapter_id}")
+            for field in ("footprint_check", "target_policy_check"):
+                script = item.get(field)
+                if not script:
+                    fail(f"enabled runtime target missing {field}: {target_id}")
+                else:
+                    script_must_exist(script)
+            evidence = set(item.get("required_evidence") or [])
+            required_evidence_classes = {
+                "dry-run apply evidence": ("dry-run",),
+                "rollback evidence": ("rollback",),
+                "runtime health": ("runtime", "health"),
+                "runtime live footprint": ("runtime", "live", "footprint"),
+            }
+            for required, tokens in required_evidence_classes.items():
+                if not evidence_has(evidence, *tokens):
+                    fail(f"enabled runtime target required_evidence missing: {target_id} -> {required}")
         elif enabled is False:
             candidate_count += 1
             if item.get("role") != "target-candidate":
@@ -271,6 +318,19 @@ if manifest:
     if not default_target:
         fail("runtime_targets.json default_target must reference a declared target")
 
+for adapter_id, adapter in adapter_by_id.items():
+    if adapter.get("enabled") is not True:
+        continue
+    for target_id in adapter.get("target_ids") or []:
+        target = target_by_id.get(target_id)
+        if not target:
+            fail(f"enabled runtime health adapter target_id not declared: {adapter_id} -> {target_id}")
+            continue
+        if target.get("enabled") is not True:
+            fail(f"enabled runtime health adapter target_id is not enabled: {adapter_id} -> {target_id}")
+        if target.get("runtime") != adapter.get("runtime"):
+            fail(f"enabled runtime health adapter target runtime mismatch: {adapter_id} -> {target_id}")
+
 if default_target:
     default_runtime = default_target.get("runtime") or "-"
     default_live_root = default_target.get("live_root") or "-"
@@ -293,27 +353,9 @@ if default_target:
     health_adapter_id = default_target.get("health_adapter")
     if not health_adapter_id:
         fail("default runtime missing health_adapter")
-    else:
-        adapter = adapter_by_id.get(health_adapter_id)
-        if not adapter:
-            fail(f"default runtime health_adapter not declared: {health_adapter_id}")
-        else:
-            if adapter.get("enabled") is not True:
-                fail(f"default runtime health_adapter must be enabled: {health_adapter_id}")
-            if adapter.get("runtime") != default_target.get("runtime"):
-                fail(f"default runtime health_adapter runtime mismatch: {health_adapter_id}")
-            if default_target.get("id") not in (adapter.get("target_ids") or []):
-                fail(f"default runtime health_adapter missing target binding: {health_adapter_id}")
-
-    for field in ("footprint_check", "target_policy_check"):
-        script = default_target.get(field)
-        if not script:
-            fail(f"default runtime missing {field}")
-        else:
-            script_must_exist(script)
 
     evidence = set(default_target.get("required_evidence") or [])
-    for item in ("~/codex build", "~/codex doctor", "~/codex apply plan", "~/codex apply dry-run", "global runtime health", "runtime live footprint"):
+    for item in ("~/codex build", "~/codex doctor", "~/codex apply plan", "~/codex apply dry-run", "rollback evidence", "global runtime health", "runtime live footprint"):
         if item not in evidence:
             fail(f"default runtime required_evidence missing: {item}")
 

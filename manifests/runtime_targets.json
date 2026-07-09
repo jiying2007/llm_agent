@@ -38,6 +38,7 @@
         "~/codex doctor",
         "~/codex apply plan",
         "~/codex apply dry-run",
+        "rollback evidence",
         "global runtime health",
         "runtime live footprint"
       ],
