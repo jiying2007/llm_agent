@@ -316,6 +316,39 @@ expect_health_fail_for_target() {
   fi
 }
 
+expect_explain() {
+  local target_id="$1"
+  local expected="$2"
+  write_fixture
+  out="${TMP_DIR}/explain-${target_id}.out"
+  if ! "${CHECK}" "${TMP_DIR}" --explain-target "${target_id}" >"${out}" 2>&1; then
+    echo "[FAIL] explain target unexpectedly failed: ${target_id}" >&2
+    sed -n '1,80p' "${out}" >&2 || true
+    exit 1
+  fi
+  if ! rg -q --fixed-strings -- "${expected}" "${out}"; then
+    echo "[FAIL] explain target missing expected output: ${target_id} -> ${expected}" >&2
+    sed -n '1,80p' "${out}" >&2 || true
+    exit 1
+  fi
+}
+
+expect_explain_fail() {
+  local target_id="$1"
+  local expected="$2"
+  write_fixture
+  out="${TMP_DIR}/explain-${target_id}.out"
+  if "${CHECK}" "${TMP_DIR}" --explain-target "${target_id}" >"${out}" 2>&1; then
+    echo "[FAIL] explain target unexpectedly passed: ${target_id}" >&2
+    exit 1
+  fi
+  if ! rg -q --fixed-strings -- "${expected}" "${out}"; then
+    echo "[FAIL] explain target failure missing expected output: ${target_id} -> ${expected}" >&2
+    sed -n '1,80p' "${out}" >&2 || true
+    exit 1
+  fi
+}
+
 expect_pass
 expect_pass "second_enabled_valid"
 expect_fail "runtime_mismatch" "enabled runtime target health_adapter runtime mismatch: codex-home -> codex-global-health"
@@ -335,5 +368,8 @@ expect_health_fail "script_not_executable" "runtime health adapter missing or no
 expect_health_fail "missing_binding" "runtime health adapter is not bound to target"
 expect_health_fail "legacy_target_health_check" "runtime target must not declare health_check; use health_adapter"
 expect_health_fail_for_target "second_enabled_missing_binding" "claude-code-home" "runtime health adapter is not bound to target: claude-code-health -> claude-code-home"
+expect_explain "codex-home" '"activation_ready":true'
+expect_explain "claude-code-home" '"next_action":"declare source_repo and live_root"'
+expect_explain_fail "missing-runtime-home" "runtime target not declared: missing-runtime-home"
 
 echo "[PASS] runtime health adapter fixtures behave as expected"

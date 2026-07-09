@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT="${1:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 SUMMARY_JSON=0
+EXPLAIN_TARGET=""
 
 if [[ $# -gt 0 && "$1" != --* ]]; then
   ROOT="$1"
@@ -15,13 +16,20 @@ while [[ $# -gt 0 ]]; do
       SUMMARY_JSON=1
       shift
       ;;
+    --explain-target)
+      EXPLAIN_TARGET="${2:-}"
+      shift 2
+      ;;
     -h|--help)
       cat <<USAGE
-usage: scripts/check-runtime-targets.sh [root] [--summary-json]
+usage: scripts/check-runtime-targets.sh [root] [--summary-json] [--explain-target <id>]
 
 Validates manifests/runtime_targets.json and runtime_health_adapters.json
 against adk.lock, registry.csv and runtime target check scripts. This is a
 declaration gate only; it does not apply assets or modify live directories.
+
+--explain-target emits a read-only JSON explanation for one target and exits
+without applying assets.
 USAGE
       exit 0
       ;;
@@ -32,7 +40,7 @@ USAGE
   esac
 done
 
-python3 - "$ROOT" "$SUMMARY_JSON" <<'PY'
+python3 - "$ROOT" "$SUMMARY_JSON" "$EXPLAIN_TARGET" <<'PY'
 import csv
 import json
 import os
@@ -40,6 +48,7 @@ import sys
 
 root = sys.argv[1]
 summary_json = sys.argv[2] == "1"
+explain_target = sys.argv[3]
 manifest_path = os.path.join(root, "manifests", "runtime_targets.json")
 adapters_path = os.path.join(root, "manifests", "runtime_health_adapters.json")
 lock_path = os.path.join(root, "adk.lock")
@@ -104,10 +113,121 @@ def evidence_has(evidence, *tokens):
     return all(token.lower() in text for token in tokens)
 
 
+def grouped_evidence(evidence):
+    groups = {
+        "apply_chain": [],
+        "rollback": [],
+        "health": [],
+        "footprint": [],
+        "governance": [],
+        "activation": [],
+    }
+    for item in evidence:
+        text = str(item).lower()
+        if "rollback" in text:
+            groups["rollback"].append(item)
+        elif "health" in text:
+            groups["health"].append(item)
+        elif "footprint" in text:
+            groups["footprint"].append(item)
+        elif "policy" in text or "governance" in text or "target" in text:
+            groups["governance"].append(item)
+        elif any(token in text for token in ("apply", "dry-run", "source", "live", "build", "doctor", "plan", "chain")):
+            groups["apply_chain"].append(item)
+        else:
+            groups["activation"].append(item)
+    return groups
+
+
 manifest = read_json(manifest_path)
 adapters_manifest = read_json(adapters_path)
 lock = read_lock(lock_path)
 registry = read_registry(registry_path)
+
+if explain_target:
+    if not manifest:
+        print(json.dumps({
+            "status": "fail",
+            "target_id": explain_target,
+            "next_action": "fix runtime_targets.json before explaining targets",
+            "failures": failures,
+        }, ensure_ascii=False, separators=(",", ":")))
+        sys.exit(1)
+    targets = manifest.get("targets") or []
+    target = next((item for item in targets if isinstance(item, dict) and item.get("id") == explain_target), None)
+    if not target:
+        print(json.dumps({
+            "status": "fail",
+            "target_id": explain_target,
+            "next_action": "declare target in manifests/runtime_targets.json",
+            "failures": [f"runtime target not declared: {explain_target}"],
+        }, ensure_ascii=False, separators=(",", ":")))
+        sys.exit(1)
+
+    adapters = adapters_manifest.get("adapters") if adapters_manifest else []
+    adapter_by_id_for_explain = {item.get("id"): item for item in adapters if isinstance(item, dict)}
+    adapter_id = target.get("health_adapter")
+    adapter = adapter_by_id_for_explain.get(adapter_id)
+    evidence = target.get("required_evidence") or []
+    evidence_status = {
+        "dry_run": evidence_has(evidence, "dry-run"),
+        "rollback": evidence_has(evidence, "rollback"),
+        "runtime_health": evidence_has(evidence, "runtime", "health"),
+        "runtime_live_footprint": evidence_has(evidence, "runtime", "live", "footprint"),
+    }
+    activation_ready = (
+        target.get("enabled") is True
+        and bool(target.get("source_repo"))
+        and bool(target.get("live_root"))
+        and bool(target.get("source_to_live_chain"))
+        and bool(adapter)
+        and adapter.get("enabled") is True
+        and adapter.get("status") == "active"
+        and adapter.get("read_only") is True
+        and adapter.get("runtime") == target.get("runtime")
+        and target.get("id") in (adapter.get("target_ids") or [])
+        and all(evidence_status.values())
+    )
+    if target.get("enabled") is not True:
+        if not target.get("source_repo") or not target.get("live_root"):
+            next_action = "declare source_repo and live_root"
+        elif not adapter:
+            next_action = "declare and bind health_adapter in runtime_health_adapters.json"
+        else:
+            next_action = "complete activation_requirements before setting enabled=true"
+    elif not adapter:
+        next_action = "declare and bind health_adapter in runtime_health_adapters.json"
+    elif not activation_ready:
+        next_action = "fix target or adapter contract, then run check-runtime-targets.sh"
+    else:
+        next_action = "monitor via scripts/check-runtime-health.sh . --profile minimal --summary-json"
+
+    print(json.dumps({
+        "status": "pass",
+        "target_id": target.get("id"),
+        "runtime": target.get("runtime"),
+        "role": target.get("role"),
+        "enabled": target.get("enabled"),
+        "source_repo": target.get("source_repo"),
+        "live_root": target.get("live_root"),
+        "source_to_live_chain": target.get("source_to_live_chain"),
+        "write_policy": target.get("write_policy"),
+        "health_adapter": adapter_id,
+        "adapter_declared": bool(adapter),
+        "adapter_status": adapter.get("status") if adapter else None,
+        "adapter_enabled": adapter.get("enabled") if adapter else None,
+        "adapter_read_only": adapter.get("read_only") if adapter else None,
+        "adapter_script": adapter.get("script") if adapter else None,
+        "adapter_runtime": adapter.get("runtime") if adapter else None,
+        "adapter_bound": target.get("id") in (adapter.get("target_ids") or []) if adapter else False,
+        "footprint_check": target.get("footprint_check"),
+        "target_policy_check": target.get("target_policy_check"),
+        "required_evidence": grouped_evidence(evidence),
+        "evidence_status": evidence_status,
+        "activation_ready": activation_ready,
+        "next_action": next_action,
+    }, ensure_ascii=False, separators=(",", ":")))
+    sys.exit(0)
 
 target_count = 0
 adapter_count = 0

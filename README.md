@@ -33,6 +33,7 @@ rtk scripts/check-upstream-intake-readiness.sh .
 - `subrepos/adoption-matrix.md`：参考仓吸收决策矩阵。
 - `manifests/runtime_targets.json`：运行态 target registry。
 - `manifests/runtime_health_adapters.json`：运行态健康检查 adapter contract。
+- `docs/runbooks/runtime-target-activation.md`：新增或启用 runtime target 的 checklist。
 - `reports/reference-dirty-triage-YYYY-MM-DD.md`：参考子仓 dirty 分流报告。
 - `reports/codex-pilot-report.md`：`~/codex -> ~/.codex` pilot 证据。
 - `reports/adk-production-landing-implementation-2026-05-02.md`：adk 生产级落地记录。
