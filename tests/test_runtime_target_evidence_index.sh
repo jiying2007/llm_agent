@@ -67,5 +67,107 @@ if ! rg -q --fixed-strings -- "runtime target not declared: missing-runtime-home
 fi
 
 "${CHECKER}" "${ROOT}" >/dev/null
+"${CHECKER}" "${ROOT}" --target hermes-agent-home --target opencode-home >/dev/null
+
+summary_out="${TMP_DIR}/summary.json"
+"${CHECKER}" "${ROOT}" --summary-json >"${summary_out}"
+if ! rg -q --fixed-strings -- '"status":"pass"' "${summary_out}"; then
+  echo "[FAIL] checker summary json did not pass" >&2
+  sed -n '1,80p' "${summary_out}" >&2 || true
+  exit 1
+fi
+
+strict_without_index="${TMP_DIR}/strict-without-index.out"
+if "${CHECKER}" "${ROOT}" --strict-artifacts >"${strict_without_index}" 2>&1; then
+  echo "[FAIL] strict-artifacts without index unexpectedly passed" >&2
+  exit 1
+fi
+if ! rg -q --fixed-strings -- "--strict-artifacts requires --index or --require-index" "${strict_without_index}"; then
+  echo "[FAIL] strict-artifacts failure did not explain required index" >&2
+  sed -n '1,80p' "${strict_without_index}" >&2 || true
+  exit 1
+fi
+
+require_missing="${TMP_DIR}/require-missing.out"
+if "${CHECKER}" "${ROOT}" --target codex-home --require-index >"${require_missing}" 2>&1; then
+  echo "[FAIL] require-index without persisted index unexpectedly passed" >&2
+  exit 1
+fi
+if ! rg -q --fixed-strings -- "index missing:" "${require_missing}"; then
+  echo "[FAIL] require-index failure did not report missing index" >&2
+  sed -n '1,80p' "${require_missing}" >&2 || true
+  exit 1
+fi
+
+fixture_root="${TMP_DIR}/fixture-root"
+fixture_dir="${fixture_root}/reports/runtime-target-activation/codex-home"
+mkdir -p "${fixture_dir}"
+printf 'explain target artifact\n' >"${fixture_dir}/explain-target.json"
+"${GENERATOR}" "${ROOT}" --target codex-home --format jsonl >"${fixture_dir}/evidence-index.jsonl"
+
+python3 - "${fixture_dir}/evidence-index.jsonl" <<'PY'
+import hashlib
+import json
+import pathlib
+import sys
+
+path = pathlib.Path(sys.argv[1])
+artifact = path.parent / "explain-target.json"
+lines = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+for item in lines:
+    if item["evidence_id"] == "CODEX-HOME-DECL-001":
+        item["artifact_exists"] = True
+        item["artifact_sha256"] = hashlib.sha256(artifact.read_bytes()).hexdigest()
+        item["exit_code"] = 0
+        item["execution_status"] = "passed"
+path.write_text("\n".join(json.dumps(item, ensure_ascii=False, separators=(",", ":")) for item in lines) + "\n", encoding="utf-8")
+PY
+
+"${CHECKER}" "${fixture_root}" --target codex-home --index "${fixture_dir}/evidence-index.jsonl" --strict-artifacts >/dev/null
+
+make_bad_index() {
+  local case_name="$1"
+  local out_file="${TMP_DIR}/${case_name}.jsonl"
+  python3 - "${fixture_dir}/evidence-index.jsonl" "${out_file}" "${case_name}" <<'PY'
+import json
+import pathlib
+import sys
+
+src = pathlib.Path(sys.argv[1])
+dst = pathlib.Path(sys.argv[2])
+case = sys.argv[3]
+lines = [json.loads(line) for line in src.read_text(encoding="utf-8").splitlines() if line.strip()]
+if case == "bad-gate":
+    lines[0]["gate"] = "bad-gate"
+elif case == "live-no-approval":
+    for item in lines:
+        if item["gate"] == "apply":
+            item["approval_required"] = "no"
+            break
+elif case == "completed-placeholder":
+    for item in lines:
+        if item["gate"] == "apply":
+            item["execution_status"] = "passed"
+            item["exit_code"] = 0
+            break
+elif case == "hash-mismatch":
+    lines[0]["artifact_sha256"] = "0" * 64
+elif case == "duplicate-id":
+    lines.append(dict(lines[0]))
+else:
+    raise SystemExit(f"unknown case: {case}")
+dst.write_text("\n".join(json.dumps(item, ensure_ascii=False, separators=(",", ":")) for item in lines) + "\n", encoding="utf-8")
+PY
+  printf '%s' "${out_file}"
+}
+
+for case_name in bad-gate live-no-approval completed-placeholder hash-mismatch duplicate-id; do
+  bad_index="$(make_bad_index "${case_name}")"
+  bad_out="${TMP_DIR}/${case_name}.out"
+  if "${CHECKER}" "${fixture_root}" --target codex-home --index "${bad_index}" --strict-artifacts >"${bad_out}" 2>&1; then
+    echo "[FAIL] bad fixture unexpectedly passed: ${case_name}" >&2
+    exit 1
+  fi
+done
 
 echo "[PASS] runtime target evidence index generator behaves as expected"

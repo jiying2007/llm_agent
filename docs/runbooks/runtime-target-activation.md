@@ -102,6 +102,7 @@ rtk scripts/check-runtime-targets.sh . --explain-target claude-code-home
 ```bash
 rtk scripts/generate-runtime-target-evidence-index.sh . --target <target-id> --out reports/runtime-target-activation/<target-id>/evidence-index.md
 rtk scripts/check-runtime-target-evidence-index.sh . --target <target-id>
+rtk scripts/check-runtime-target-evidence-index.sh . --target <target-id> --require-index --strict-artifacts --summary-json
 ```
 
 Evidence Index 只记录真实执行或明确计划的证据，不得只复制 `required_evidence` 关键词来满足门禁。`check-runtime-targets.sh` 是声明校验，只能证明 manifest 中声明了对应证据类别，不能证明 artifact/report 已存在。
@@ -115,8 +116,12 @@ Evidence Index 只记录真实执行或明确计划的证据，不得只复制 `
 - `Write Scope`: 固定为 `read-only`、`source-repo-only`、`workspace-local`、`live-root`、`rollback-live-root` 之一。
 - `Approval Required`: 纯只读命令和 `--dry-run` 可为 `no`；任何会修改目标 `live_root`、`~/.codex` 或执行等价恢复/回滚动作的命令必须为 `yes`，并记录审批人、审批时间和审批范围。
 - `Approval Status`: 固定为 `not-required`、`required`、`approved`、`denied`、`expired` 之一。
+- `approved_by`、`approved_at`、`approval_scope`: `approval_required=yes` 且执行状态进入 `passed` / `approved` 时必须非空。
 - `Status`: 固定为 `planned`、`passed`、`failed`、`blocked`、`approved` 之一。
-- `artifact_sha256`: JSONL 证据中保留该字段；关键 artifact 进入 `passed` / `approved` 前应记录 hash。
+- `artifact_exists` / `artifact_sha256`: JSONL 证据中保留这两个字段；`--strict-artifacts` 下 `passed` / `failed` / `approved` 行必须有真实 artifact，`passed` / `approved` 行必须有匹配的 64 位 sha256 hash。
+- `--index`: 校验一个已落盘 `evidence-index.jsonl` 或配套 Markdown 索引；严格门禁以 JSONL 为真源。
+- `--require-index`: 要求每个选中 target 都存在 `reports/runtime-target-activation/<target-id>/evidence-index.jsonl`。
+- `--strict-artifacts`: 只读校验 artifact 存在性、hash、exit code、审批身份和路径边界；它必须与 `--index` 或 `--require-index` 组合使用，不执行 evidence command。
 
 可直接复制下表：
 
