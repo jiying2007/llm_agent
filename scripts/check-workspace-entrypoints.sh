@@ -79,6 +79,7 @@ run_check "runtime_targets_summary_json" "${ROOT}/scripts/check-runtime-targets.
 run_check "runtime_target_explain_codex" "${ROOT}/scripts/check-runtime-targets.sh" "${ROOT}" --explain-target codex-home
 run_check "runtime_target_explain_claude_code_candidate" "${ROOT}/scripts/check-runtime-targets.sh" "${ROOT}" --explain-target claude-code-home
 run_check "runtime_target_evidence_index" "${ROOT}/scripts/check-runtime-target-evidence-index.sh" "${ROOT}"
+run_check "runtime_target_evidence_package" "${ROOT}/tests/test_runtime_target_evidence_package.sh"
 run_check "stale_references" "${ROOT}/scripts/check-stale-references.sh" "${ROOT}"
 run_check "token_budget_summary_json" "${ROOT}/scripts/check-token-budget.sh" "${ROOT}" --summary-json
 run_check "reference_dirty_triage_summary_json" "${ROOT}/scripts/check-reference-dirty-triage.sh" "${ROOT}" --summary-json

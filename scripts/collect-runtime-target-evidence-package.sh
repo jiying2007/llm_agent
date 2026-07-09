@@ -1,0 +1,383 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="${1:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+TARGET_ID=""
+PROFILE="minimal"
+OUT_DIR=""
+TIMESTAMP=""
+SUMMARY_JSON=0
+
+if [[ $# -gt 0 && "$1" != --* ]]; then
+  ROOT="$1"
+  shift
+fi
+
+usage() {
+  cat <<USAGE
+usage: scripts/collect-runtime-target-evidence-package.sh [root] --target <id> [--profile minimal|security|strict] [--out-dir <dir>] [--timestamp <stamp>] [--summary-json]
+
+Collects a report-only runtime target activation evidence package. The command
+runs only read-only gates, writes artifacts under reports/runtime-target-activation
+or the explicit --out-dir, and never runs source-to-live apply, rollback or live
+root writes.
+USAGE
+}
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --target)
+      TARGET_ID="${2:-}"
+      shift 2
+      ;;
+    --profile)
+      PROFILE="${2:-}"
+      shift 2
+      ;;
+    --out-dir)
+      OUT_DIR="${2:-}"
+      shift 2
+      ;;
+    --timestamp)
+      TIMESTAMP="${2:-}"
+      shift 2
+      ;;
+    --summary-json)
+      SUMMARY_JSON=1
+      shift
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "[FAIL] unknown arg: $1" >&2
+      usage >&2
+      exit 1
+      ;;
+  esac
+done
+
+if [[ -z "${TARGET_ID}" ]]; then
+  echo "[FAIL] --target is required" >&2
+  usage >&2
+  exit 1
+fi
+
+if [[ -z "${TIMESTAMP}" ]]; then
+  TIMESTAMP="$(date -u '+%Y%m%dT%H%M%SZ')"
+fi
+
+if [[ -z "${OUT_DIR}" ]]; then
+  OUT_DIR="${ROOT}/reports/runtime-target-activation/${TARGET_ID}/${TIMESTAMP}"
+fi
+
+python3 - "$ROOT" "$TARGET_ID" "$PROFILE" "$OUT_DIR" "$TIMESTAMP" "$SUMMARY_JSON" <<'PY'
+import hashlib
+import json
+import os
+import re
+import subprocess
+import sys
+from datetime import datetime, timezone
+
+root, target_id, profile, out_dir, timestamp, summary_json_text = sys.argv[1:7]
+summary_json = summary_json_text == "1"
+manifest_path = os.path.join(root, "manifests", "runtime_targets.json")
+adapters_path = os.path.join(root, "manifests", "runtime_health_adapters.json")
+os.makedirs(out_dir, exist_ok=True)
+
+
+def read_json(path):
+    with open(path, "r", encoding="utf-8") as handle:
+        return json.load(handle)
+
+
+def target_prefix(value):
+    return re.sub(r"[^A-Z0-9]+", "-", value.upper()).strip("-")
+
+
+def compact(text, limit=220):
+    value = " ".join((text or "").split())
+    return value[:limit] + ("..." if len(value) > limit else "")
+
+
+def sha256(path):
+    digest = hashlib.sha256()
+    with open(path, "rb") as handle:
+        for chunk in iter(lambda: handle.read(65536), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def rel_artifact(path):
+    absolute = os.path.abspath(path)
+    marker = os.sep + os.path.join("reports", "runtime-target-activation") + os.sep
+    if marker in absolute:
+        return absolute.split(marker, 1)[0].rstrip(os.sep), os.path.join("reports", "runtime-target-activation", absolute.split(marker, 1)[1])
+    return root, os.path.relpath(absolute, root)
+
+
+def run_capture(name, command_label, argv):
+    artifact = os.path.join(out_dir, name)
+    proc = subprocess.run(argv, cwd=root, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, check=False)
+    with open(artifact, "w", encoding="utf-8") as handle:
+        handle.write(proc.stdout)
+    _artifact_root, rel = rel_artifact(artifact)
+    return {
+        "artifact": artifact,
+        "artifact_path": rel,
+        "artifact_sha256": sha256(artifact),
+        "exit_code": proc.returncode,
+        "summary": compact(proc.stdout),
+        "command": command_label,
+    }
+
+
+def entry(evidence_id, gate, command, expected, scope, artifact_path, approval_required,
+          approval_status, status, result_summary, exit_code=None, artifact_hash=None,
+          artifact_exists=False, related="-", notes=""):
+    return {
+        "schema_version": "runtime-target-evidence-index/v1",
+        "evidence_id": evidence_id,
+        "target_id": target_id,
+        "runtime": target.get("runtime"),
+        "gate": gate,
+        "command": command,
+        "exit_code": exit_code,
+        "expected_result": expected,
+        "result_summary": result_summary,
+        "write_scope": scope,
+        "artifact_path": artifact_path,
+        "artifact_exists": artifact_exists,
+        "artifact_sha256": artifact_hash,
+        "layer": "RuntimeTarget",
+        "related_artifact": related,
+        "approval_required": approval_required,
+        "approval_status": approval_status,
+        "approved_by": None,
+        "approved_at": None,
+        "approval_scope": None,
+        "execution_status": status,
+        "created_at": generated_at,
+        "notes": notes,
+    }
+
+
+manifest = read_json(manifest_path)
+adapters_manifest = read_json(adapters_path)
+targets = manifest.get("targets") or []
+target = next((item for item in targets if item.get("id") == target_id), None)
+if not target:
+    print(f"[FAIL] runtime target not declared: {target_id}", file=sys.stderr)
+    sys.exit(1)
+
+adapter_id = target.get("health_adapter")
+adapters = adapters_manifest.get("adapters") or []
+adapter = next((item for item in adapters if item.get("id") == adapter_id), None)
+prefix = target_prefix(target_id)
+generated_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+entries = []
+
+explain = run_capture(
+    "explain-target.json",
+    f"rtk scripts/check-runtime-targets.sh . --explain-target {target_id}",
+    [os.path.join(root, "scripts", "check-runtime-targets.sh"), root, "--explain-target", target_id],
+)
+activation_ready = False
+try:
+    activation_ready = json.loads(open(explain["artifact"], encoding="utf-8").read()).get("activation_ready") is True
+except Exception:
+    activation_ready = False
+entries.append(entry(
+    f"{prefix}-DECL-001",
+    "declare",
+    explain["command"],
+    "activation_ready=true for active targets; clear next_action for candidates",
+    "read-only",
+    explain["artifact_path"],
+    "no",
+    "not-required",
+    "passed" if explain["exit_code"] == 0 and activation_ready else "blocked",
+    explain["summary"],
+    exit_code=explain["exit_code"],
+    artifact_hash=explain["artifact_sha256"],
+    artifact_exists=True,
+))
+
+targets_summary = run_capture(
+    "runtime-targets.json",
+    "rtk scripts/check-runtime-targets.sh . --summary-json",
+    [os.path.join(root, "scripts", "check-runtime-targets.sh"), root, "--summary-json"],
+)
+entries.append(entry(
+    f"{prefix}-TARGETS-001",
+    "declare",
+    targets_summary["command"],
+    "status=pass",
+    "read-only",
+    targets_summary["artifact_path"],
+    "no",
+    "not-required",
+    "passed" if targets_summary["exit_code"] == 0 else "failed",
+    targets_summary["summary"],
+    exit_code=targets_summary["exit_code"],
+    artifact_hash=targets_summary["artifact_sha256"],
+    artifact_exists=True,
+))
+
+adapters_fixture = run_capture(
+    "adapter-fixtures.md",
+    "rtk scripts/check-runtime-health-adapters-fixtures.sh .",
+    [os.path.join(root, "scripts", "check-runtime-health-adapters-fixtures.sh"), root],
+)
+entries.append(entry(
+    f"{prefix}-ADAPTERS-001",
+    "health",
+    adapters_fixture["command"],
+    "fixture pass and adapter contract remains read-only",
+    "workspace-local",
+    adapters_fixture["artifact_path"],
+    "no",
+    "not-required",
+    "passed" if adapters_fixture["exit_code"] == 0 else "failed",
+    adapters_fixture["summary"],
+    exit_code=adapters_fixture["exit_code"],
+    artifact_hash=adapters_fixture["artifact_sha256"],
+    artifact_exists=True,
+    related="adapter contract",
+))
+
+enabled = target.get("enabled") is True
+adapter_ready = bool(adapter and adapter.get("enabled") is True and adapter.get("status") == "active")
+if enabled and adapter_ready:
+    health = run_capture(
+        "runtime-health.json",
+        f"rtk scripts/check-runtime-health.sh . --target {target_id} --profile {profile} --summary-json",
+        [os.path.join(root, "scripts", "check-runtime-health.sh"), root, "--target", target_id, "--profile", profile, "--summary-json"],
+    )
+    entries.append(entry(
+        f"{prefix}-HEALTH-001",
+        "health",
+        health["command"],
+        "status=pass",
+        "read-only",
+        health["artifact_path"],
+        "no",
+        "not-required",
+        "passed" if health["exit_code"] == 0 else "failed",
+        health["summary"],
+        exit_code=health["exit_code"],
+        artifact_hash=health["artifact_sha256"],
+        artifact_exists=True,
+        related="runtime health",
+    ))
+else:
+    entries.append(entry(
+        f"{prefix}-HEALTH-001",
+        "health",
+        f"rtk scripts/check-runtime-health.sh . --target {target_id} --profile {profile} --summary-json",
+        "status=pass",
+        "read-only",
+        f"reports/runtime-target-activation/{target_id}/{timestamp}/runtime-health.json",
+        "no",
+        "not-required",
+        "blocked",
+        "not executed: target or adapter is not active",
+        related="runtime health",
+    ))
+
+default_target = manifest.get("default_target")
+footprint_script = target.get("footprint_check")
+if enabled and footprint_script and target_id == default_target:
+    footprint = run_capture(
+        "footprint-policy.json",
+        "rtk scripts/check-runtime-live-footprint.sh . --summary-json",
+        [os.path.join(root, "scripts", "check-runtime-live-footprint.sh"), root, "--summary-json"],
+    )
+    entries.append(entry(
+        f"{prefix}-FOOTPRINT-001",
+        "footprint",
+        footprint["command"],
+        "no missing required assets and no unexplained overwrite/delete",
+        "read-only",
+        footprint["artifact_path"],
+        "no",
+        "not-required",
+        "passed" if footprint["exit_code"] == 0 else "failed",
+        footprint["summary"],
+        exit_code=footprint["exit_code"],
+        artifact_hash=footprint["artifact_sha256"],
+        artifact_exists=True,
+        related="footprint policy",
+    ))
+else:
+    entries.append(entry(
+        f"{prefix}-FOOTPRINT-001",
+        "footprint",
+        footprint_script or "<target footprint command>",
+        "no missing required assets and no unexplained overwrite/delete",
+        "read-only",
+        f"reports/runtime-target-activation/{target_id}/{timestamp}/footprint-policy.json",
+        "no",
+        "not-required",
+        "blocked",
+        "not executed: target is not default active runtime or footprint command is missing",
+        related="footprint policy",
+    ))
+
+for suffix, gate, command, expected, scope, artifact, approval, approval_status, status, related, summary in (
+    ("PLAN", "dry-run", "<source repo plan command>", "plan generated and reviewed", "source-repo-only", "apply-plan.md", "no", "not-required", "blocked", "source-to-live plan", "not executed by collector"),
+    ("DRYRUN", "dry-run", "<source repo apply dry-run>", "dry-run only; no live root write", "source-repo-only", "apply-dry-run.md", "no", "not-required", "blocked", "source-to-live dry-run", "not executed by collector"),
+    ("ROLLBACK", "rollback", "<rollback dry-run or documented procedure>", "rollback path reviewed; real rollback requires approval", "read-only", "rollback.md", "yes", "required", "blocked", "rollback plan", "not executed by collector"),
+    ("APPLY", "apply", "<source repo apply command>", "live root updated only within approved scope", "live-root", "apply-report.md", "yes", "required", "blocked", "apply report", "not executed by collector"),
+):
+    entries.append(entry(
+        f"{prefix}-{suffix}-001",
+        gate,
+        command,
+        expected,
+        scope,
+        f"reports/runtime-target-activation/{target_id}/{timestamp}/{artifact}",
+        approval,
+        approval_status,
+        status,
+        summary,
+        related=related,
+    ))
+
+jsonl_path = os.path.join(out_dir, "evidence-index.jsonl")
+with open(jsonl_path, "w", encoding="utf-8") as handle:
+    for item in entries:
+        handle.write(json.dumps(item, ensure_ascii=False, separators=(",", ":")) + "\n")
+
+md_path = os.path.join(out_dir, "evidence-index.md")
+with open(md_path, "w", encoding="utf-8") as handle:
+    handle.write(f"# Runtime Target Evidence Package: {target_id}\n\n")
+    handle.write(f"- generated_at: {generated_at}\n")
+    handle.write(f"- target_id: {target_id}\n")
+    handle.write(f"- timestamp: {timestamp}\n")
+    handle.write(f"- evidence_index_jsonl: {os.path.relpath(jsonl_path, root) if os.path.commonpath([os.path.abspath(root), os.path.abspath(jsonl_path)]) == os.path.abspath(root) else jsonl_path}\n\n")
+    handle.write("| Evidence ID | Gate | Command | Exit Code | Artifact | Status |\n")
+    handle.write("|---|---|---|---:|---|---|\n")
+    for item in entries:
+        exit_code = "-" if item["exit_code"] is None else str(item["exit_code"])
+        handle.write(f"| {item['evidence_id']} | {item['gate']} | `{item['command']}` | {exit_code} | `{item['artifact_path']}` | {item['execution_status']} |\n")
+
+status = "pass" if all(item["execution_status"] != "failed" for item in entries) else "needs-fix"
+if summary_json:
+    print(json.dumps({
+        "status": status,
+        "target_id": target_id,
+        "timestamp": timestamp,
+        "out_dir": out_dir,
+        "evidence_index": jsonl_path,
+        "entries": len(entries),
+        "completed": sum(1 for item in entries if item["execution_status"] in {"passed", "failed", "approved"}),
+        "blocked": sum(1 for item in entries if item["execution_status"] == "blocked"),
+    }, ensure_ascii=False, separators=(",", ":")))
+else:
+    print(f"[PASS] runtime target evidence package written: {out_dir}")
+
+sys.exit(0 if status == "pass" else 1)
+PY

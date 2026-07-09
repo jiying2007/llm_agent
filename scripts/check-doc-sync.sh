@@ -74,6 +74,7 @@ required_tokens=(
   "--explain-target"
   "generate-runtime-target-evidence-index.sh"
   "check-runtime-target-evidence-index.sh"
+  "collect-runtime-target-evidence-package.sh"
   "--index"
   "--require-index"
   "--strict-artifacts"
@@ -130,6 +131,9 @@ required_tokens=(
   "runtime_health_adapters.json"
   "runtime-target-activation.md"
   "runtime-target-activation/<target-id>/evidence-index.md"
+  "reports/runtime-target-activation/<target-id>/"
+  "canonical evidence-index.jsonl"
+  "evidence package"
   "evidence-index.jsonl"
   "Evidence Index"
   "Approval Status"
@@ -187,6 +191,7 @@ required_scripts=(
   "scripts/check-runtime-targets.sh"
   "scripts/generate-runtime-target-evidence-index.sh"
   "scripts/check-runtime-target-evidence-index.sh"
+  "scripts/collect-runtime-target-evidence-package.sh"
   "scripts/check-reference-dirty-triage.sh"
   "scripts/generate-reference-dirty-triage.sh"
   "scripts/check-workspace-entrypoints.sh"
@@ -221,6 +226,7 @@ required_scripts=(
   "tests/test_oss_approval_queue.sh"
   "tests/test_runtime_health_adapters.sh"
   "tests/test_runtime_target_evidence_index.sh"
+  "tests/test_runtime_target_evidence_package.sh"
 )
 
 for script in "${required_scripts[@]}"; do

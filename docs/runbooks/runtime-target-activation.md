@@ -100,12 +100,14 @@ rtk scripts/check-runtime-targets.sh . --explain-target claude-code-home
 启用 runtime target 前，在 `reports/runtime-target-activation/<target-id>/` 中记录最小 Evidence Index。建议把主索引命名为 `evidence-index.md`，命令输出按 gate 分别保存为 `explain-target.json`、`runtime-health.json`、`apply-dry-run.md`、`footprint-policy.json`、`rollback.md` 等稳定文件，避免证据散落。可用下列入口生成草稿并校验 schema：
 
 ```bash
+rtk scripts/collect-runtime-target-evidence-package.sh . --target <target-id> --summary-json
 rtk scripts/generate-runtime-target-evidence-index.sh . --target <target-id> --out reports/runtime-target-activation/<target-id>/evidence-index.md
 rtk scripts/check-runtime-target-evidence-index.sh . --target <target-id>
 rtk scripts/check-runtime-target-evidence-index.sh . --target <target-id> --require-index --strict-artifacts --summary-json
 ```
 
 Evidence Index 只记录真实执行或明确计划的证据，不得只复制 `required_evidence` 关键词来满足门禁。`check-runtime-targets.sh` 是声明校验，只能证明 manifest 中声明了对应证据类别，不能证明 artifact/report 已存在。
+`collect-runtime-target-evidence-package.sh` 是 report-only 采集器，只运行 `explain-target`、runtime target summary、adapter fixture、runtime health 和 footprint 等只读门禁；source-to-live plan、dry-run、rollback 和 apply 行只记录为 `blocked` / `planned`，不会执行真实 apply、rollback 或 live root 写入。
 
 字段约束：
 
@@ -122,6 +124,7 @@ Evidence Index 只记录真实执行或明确计划的证据，不得只复制 `
 - `--index`: 校验一个已落盘 `evidence-index.jsonl` 或配套 Markdown 索引；严格门禁以 JSONL 为真源。
 - `--require-index`: 要求每个选中 target 都存在 `reports/runtime-target-activation/<target-id>/evidence-index.jsonl`。
 - `--strict-artifacts`: 只读校验 artifact 存在性、hash、exit code、审批身份和路径边界；它必须与 `--index` 或 `--require-index` 组合使用，不执行 evidence command。
+- Evidence package: canonical `evidence-index.jsonl` 可以位于 `reports/runtime-target-activation/<target-id>/evidence-index.jsonl`；带时间戳的采集包可放在 `reports/runtime-target-activation/<target-id>/<timestamp>/`，其 artifact 仍必须保持在同一 target evidence 目录树下。
 
 可直接复制下表：
 
