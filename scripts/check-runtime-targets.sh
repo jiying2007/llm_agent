@@ -243,6 +243,8 @@ if manifest:
         runtime = item.get("runtime")
         if runtime not in supported:
             fail(f"runtime target uses unsupported runtime kind: {runtime}")
+        if "health_check" in item:
+            fail(f"runtime target must not declare health_check; use health_adapter: {item.get('id')}")
         enabled = item.get("enabled")
         if enabled is True:
             enabled_count += 1
@@ -252,13 +254,13 @@ if manifest:
                 fail(f"disabled runtime target must use role=target-candidate: {item.get('id')}")
             if item.get("write_policy") != "not-enabled":
                 fail(f"disabled runtime target must use write_policy=not-enabled: {item.get('id')}")
-            for field in ("source_repo", "live_root", "registry_repo", "health_adapter", "health_check", "footprint_check", "target_policy_check"):
+            for field in ("source_repo", "live_root", "registry_repo", "health_adapter", "footprint_check", "target_policy_check"):
                 if item.get(field) is not None:
                     fail(f"disabled runtime target must not declare active {field}: {item.get('id')}")
             if item.get("source_to_live_chain") != []:
                 fail(f"disabled runtime target source_to_live_chain must be empty: {item.get('id')}")
             requirements = item.get("activation_requirements") or []
-            for required in ("declare source_repo and live_root", "add target-specific health check", "add source-to-live apply and rollback evidence", "pass runtime target gate with enabled=true"):
+            for required in ("declare source_repo and live_root", "add read-only health adapter", "add source-to-live apply and rollback evidence", "pass runtime target gate with enabled=true"):
                 if required not in requirements:
                     fail(f"disabled runtime target missing activation requirement: {item.get('id')} -> {required}")
         else:
@@ -302,10 +304,8 @@ if default_target:
                 fail(f"default runtime health_adapter runtime mismatch: {health_adapter_id}")
             if default_target.get("id") not in (adapter.get("target_ids") or []):
                 fail(f"default runtime health_adapter missing target binding: {health_adapter_id}")
-            if default_target.get("health_check") and default_target.get("health_check") != adapter.get("script"):
-                fail(f"default runtime health_check differs from adapter script: {health_adapter_id}")
 
-    for field in ("health_check", "footprint_check", "target_policy_check"):
+    for field in ("footprint_check", "target_policy_check"):
         script = default_target.get(field)
         if not script:
             fail(f"default runtime missing {field}")

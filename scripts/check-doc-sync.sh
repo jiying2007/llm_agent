@@ -72,6 +72,7 @@ required_tokens=(
   "check-observe-intake-depth.sh"
   "check-runtime-targets.sh"
   "check-runtime-health.sh"
+  "check-runtime-health-adapters-fixtures.sh"
   "check-runtime-routing.sh"
   "check-runtime-pilot.sh"
   "check-runtime-pilot-evidence.sh"
@@ -109,6 +110,7 @@ required_tokens=(
   "tests/test_oss_removal_plan.sh"
   "tests/test_oss_continuous_operation.sh"
   "tests/test_oss_approval_queue.sh"
+  "tests/test_runtime_health_adapters.sh"
   "oss_discovery_sources.json"
   "oss_candidate_scoring_policy.json"
   "subrepo_lifecycle.json"
@@ -162,6 +164,7 @@ required_scripts=(
   "scripts/check-runtime-pilot-coverage.sh"
   "scripts/check-runtime-live-footprint.sh"
   "scripts/check-runtime-health.sh"
+  "scripts/check-runtime-health-adapters-fixtures.sh"
   "scripts/check-runtime-targets.sh"
   "scripts/check-reference-dirty-triage.sh"
   "scripts/generate-reference-dirty-triage.sh"
@@ -195,6 +198,7 @@ required_scripts=(
   "tests/test_oss_removal_plan.sh"
   "tests/test_oss_continuous_operation.sh"
   "tests/test_oss_approval_queue.sh"
+  "tests/test_runtime_health_adapters.sh"
 )
 
 for script in "${required_scripts[@]}"; do

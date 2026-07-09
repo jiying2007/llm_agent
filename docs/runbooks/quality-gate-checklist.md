@@ -167,7 +167,22 @@ scripts/check-runtime-health.sh [WORKSPACE_ROOT] --summary-json
 
 ---
 
-## 8. check-global-codex-health.sh
+## 8. check-runtime-health-adapters-fixtures.sh
+
+**用途**: 用临时 fixture 校验 runtime health adapter contract 的负例行为，防止 `runtime_targets.json` 重新双写 `health_check`，或 adapter runtime/profile/script/binding 漂移后仍被误放行。
+
+**用法**:
+```bash
+scripts/check-runtime-health-adapters-fixtures.sh [WORKSPACE_ROOT]
+```
+
+**通过标准**:
+- pass fixture 能通过 `check-runtime-targets.sh`。
+- runtime mismatch、disabled adapter、profile 缺失、script 不可执行、binding 缺失和 legacy `health_check` 残留均必须失败。
+
+---
+
+## 9. check-global-codex-health.sh
 
 **用途**: 校验全局 `~/.codex` 目录的健康状态。该运行目录应由 `~/codex` build/apply 生成，健康检查依赖运行目录中的 control 状态。
 

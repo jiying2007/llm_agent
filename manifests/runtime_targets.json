@@ -31,7 +31,6 @@
         "~/.codex"
       ],
       "health_adapter": "codex-global-health",
-      "health_check": "scripts/check-global-codex-health.sh",
       "footprint_check": "scripts/check-runtime-live-footprint.sh",
       "target_policy_check": "scripts/check-global-codex-target-policy.sh",
       "required_evidence": [
@@ -55,20 +54,19 @@
       "registry_repo": null,
       "source_to_live_chain": [],
       "health_adapter": null,
-      "health_check": null,
       "footprint_check": null,
       "target_policy_check": null,
       "required_evidence": [
         "declared source repo",
         "declared live root",
-        "health check adapter",
+        "read-only health adapter",
         "dry-run apply evidence",
         "rollback evidence"
       ],
       "write_policy": "not-enabled",
       "activation_requirements": [
         "declare source_repo and live_root",
-        "add target-specific health check",
+        "add read-only health adapter",
         "add source-to-live apply and rollback evidence",
         "pass runtime target gate with enabled=true"
       ],
@@ -84,20 +82,19 @@
       "registry_repo": null,
       "source_to_live_chain": [],
       "health_adapter": null,
-      "health_check": null,
       "footprint_check": null,
       "target_policy_check": null,
       "required_evidence": [
         "declared source repo",
         "declared live root",
-        "health check adapter",
+        "read-only health adapter",
         "dry-run apply evidence",
         "rollback evidence"
       ],
       "write_policy": "not-enabled",
       "activation_requirements": [
         "declare source_repo and live_root",
-        "add target-specific health check",
+        "add read-only health adapter",
         "add source-to-live apply and rollback evidence",
         "pass runtime target gate with enabled=true"
       ],
@@ -113,20 +110,19 @@
       "registry_repo": null,
       "source_to_live_chain": [],
       "health_adapter": null,
-      "health_check": null,
       "footprint_check": null,
       "target_policy_check": null,
       "required_evidence": [
         "declared source repo",
         "declared live root",
-        "health check adapter",
+        "read-only health adapter",
         "dry-run apply evidence",
         "rollback evidence"
       ],
       "write_policy": "not-enabled",
       "activation_requirements": [
         "declare source_repo and live_root",
-        "add target-specific health check",
+        "add read-only health adapter",
         "add source-to-live apply and rollback evidence",
         "pass runtime target gate with enabled=true"
       ],

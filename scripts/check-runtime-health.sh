@@ -92,9 +92,8 @@ if profile not in profiles:
 health_check = adapter.get("script") or ""
 if not health_check:
     raise SystemExit(f"[FAIL] runtime health adapter missing script: {adapter_id}")
-legacy_health_check = target.get("health_check")
-if legacy_health_check and legacy_health_check != health_check:
-    raise SystemExit(f"[FAIL] target health_check differs from adapter script: {target_id}")
+if "health_check" in target:
+    raise SystemExit(f"[FAIL] runtime target must not declare health_check; use health_adapter: {target_id}")
 
 print("\t".join([
     target_id,
