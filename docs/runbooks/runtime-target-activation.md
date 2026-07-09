@@ -97,7 +97,12 @@ rtk scripts/check-runtime-targets.sh . --explain-target claude-code-home
 
 ## 5. Evidence Index 模板
 
-启用 runtime target 前，在 `reports/runtime-target-activation/<target-id>/` 中记录最小 Evidence Index。建议把主索引命名为 `evidence-index.md`，命令输出按 gate 分别保存为 `explain-target.json`、`runtime-health.json`、`apply-dry-run.md`、`footprint-policy.json`、`rollback.md` 等稳定文件，避免证据散落。
+启用 runtime target 前，在 `reports/runtime-target-activation/<target-id>/` 中记录最小 Evidence Index。建议把主索引命名为 `evidence-index.md`，命令输出按 gate 分别保存为 `explain-target.json`、`runtime-health.json`、`apply-dry-run.md`、`footprint-policy.json`、`rollback.md` 等稳定文件，避免证据散落。可用下列入口生成草稿并校验 schema：
+
+```bash
+rtk scripts/generate-runtime-target-evidence-index.sh . --target <target-id> --out reports/runtime-target-activation/<target-id>/evidence-index.md
+rtk scripts/check-runtime-target-evidence-index.sh . --target <target-id>
+```
 
 Evidence Index 只记录真实执行或明确计划的证据，不得只复制 `required_evidence` 关键词来满足门禁。`check-runtime-targets.sh` 是声明校验，只能证明 manifest 中声明了对应证据类别，不能证明 artifact/report 已存在。
 
@@ -105,25 +110,30 @@ Evidence Index 只记录真实执行或明确计划的证据，不得只复制 `
 
 - `Evidence ID`: 使用 `TARGET-GATE-SEQ`，例如 `CLAUDE-CODE-HOME-DRYRUN-001`。
 - `Gate`: 固定为 `declare`、`dry-run`、`health`、`footprint`、`apply`、`rollback`、`activation` 之一。
+- `Exit Code`: 真实执行命令后必须记录；`planned` / `blocked` 行可为 `-` 或 `null`。
+- `Result Summary`: 只写实际结果；不得把 `Expected Result` 或 `required_evidence` 复制成结果。
 - `Write Scope`: 固定为 `read-only`、`source-repo-only`、`workspace-local`、`live-root`、`rollback-live-root` 之一。
 - `Approval Required`: 纯只读命令和 `--dry-run` 可为 `no`；任何会修改目标 `live_root`、`~/.codex` 或执行等价恢复/回滚动作的命令必须为 `yes`，并记录审批人、审批时间和审批范围。
+- `Approval Status`: 固定为 `not-required`、`required`、`approved`、`denied`、`expired` 之一。
 - `Status`: 固定为 `planned`、`passed`、`failed`、`blocked`、`approved` 之一。
+- `artifact_sha256`: JSONL 证据中保留该字段；关键 artifact 进入 `passed` / `approved` 前应记录 hash。
 
 可直接复制下表：
 
-| Evidence ID | Target ID | Gate | Command | Expected Result | Write Scope | Artifact / Report | Approval Required | Status |
-|---|---|---|---|---|---|---|---|---|
-| `<TARGET>-DECL-001` | `<target-id>` | declare | `rtk scripts/check-runtime-targets.sh . --explain-target <target-id>` | `activation_ready=true` or clear `next_action` | read-only | `reports/runtime-target-activation/<target-id>/explain-target.json` | no | planned |
-| `<TARGET>-TARGETS-001` | `<target-id>` | declare | `rtk scripts/check-runtime-targets.sh . --summary-json` | `status=pass` | read-only | `reports/runtime-target-activation/<target-id>/runtime-targets.json` | no | planned |
-| `<TARGET>-ADAPTERS-001` | `<target-id>` | health | `rtk scripts/check-runtime-health-adapters-fixtures.sh .` | fixture pass | workspace-local | `reports/runtime-target-activation/<target-id>/adapter-fixtures.md` | no | planned |
-| `<TARGET>-HEALTH-001` | `<target-id>` | health | `rtk scripts/check-runtime-health.sh . --target <target-id> --profile minimal --summary-json` | `status=pass` | read-only | `reports/runtime-target-activation/<target-id>/runtime-health.json` | no | planned |
-| `<TARGET>-FOOTPRINT-001` | `<target-id>` | footprint | `<target footprint command>` | no missing required assets | read-only | `reports/runtime-target-activation/<target-id>/footprint-policy.json` | no | planned |
-| `<TARGET>-PLAN-001` | `<target-id>` | dry-run | `<source repo plan command>` | plan generated and reviewed | source-repo-only | `reports/runtime-target-activation/<target-id>/apply-plan.md` | no | planned |
-| `<TARGET>-DRYRUN-001` | `<target-id>` | dry-run | `<source repo apply dry-run>` | no unexplained overwrite/delete | source-repo-only | `reports/runtime-target-activation/<target-id>/apply-dry-run.md` | no | planned |
-| `<TARGET>-ROLLBACK-001` | `<target-id>` | rollback | `<rollback dry-run or documented procedure>` | rollback path reviewed | read-only or rollback-live-root | `reports/runtime-target-activation/<target-id>/rollback.md` | yes for real rollback | planned |
-| `<TARGET>-APPLY-001` | `<target-id>` | apply | `<source repo apply command>` | live root updated as approved | live-root | `reports/runtime-target-activation/<target-id>/apply-report.md` | yes | blocked |
+| Evidence ID | Target ID | Gate | Command | Exit Code | Expected Result | Result Summary | Write Scope | Artifact / Report | Layer | Related Artifact | Approval Required | Approval Status | Status |
+|---|---|---|---|---:|---|---|---|---|---|---|---|---|---|
+| `<TARGET>-DECL-001` | `<target-id>` | declare | `rtk scripts/check-runtime-targets.sh . --explain-target <target-id>` | `0` | `activation_ready=true` or clear `next_action` | explain-target result | read-only | `reports/runtime-target-activation/<target-id>/explain-target.json` | RuntimeTarget | - | no | not-required | planned |
+| `<TARGET>-TARGETS-001` | `<target-id>` | declare | `rtk scripts/check-runtime-targets.sh . --summary-json` | `-` | `status=pass` | not executed yet | read-only | `reports/runtime-target-activation/<target-id>/runtime-targets.json` | RuntimeTarget | - | no | not-required | planned |
+| `<TARGET>-ADAPTERS-001` | `<target-id>` | health | `rtk scripts/check-runtime-health-adapters-fixtures.sh .` | `-` | fixture pass | not executed yet | workspace-local | `reports/runtime-target-activation/<target-id>/adapter-fixtures.md` | RuntimeTarget | adapter contract | no | not-required | planned |
+| `<TARGET>-HEALTH-001` | `<target-id>` | health | `rtk scripts/check-runtime-health.sh . --target <target-id> --profile minimal --summary-json` | `-` | `status=pass` | not executed yet | read-only | `reports/runtime-target-activation/<target-id>/runtime-health.json` | RuntimeTarget | runtime health | no | not-required | planned |
+| `<TARGET>-FOOTPRINT-001` | `<target-id>` | footprint | `<target footprint command>` | `-` | no missing required assets | not executed yet | read-only | `reports/runtime-target-activation/<target-id>/footprint-policy.json` | RuntimeTarget | footprint policy | no | not-required | planned |
+| `<TARGET>-PLAN-001` | `<target-id>` | dry-run | `<source repo plan command>` | `-` | plan generated and reviewed | not executed yet | source-repo-only | `reports/runtime-target-activation/<target-id>/apply-plan.md` | RuntimeTarget | source-to-live plan | no | not-required | planned |
+| `<TARGET>-DRYRUN-001` | `<target-id>` | dry-run | `<source repo apply dry-run>` | `-` | no unexplained overwrite/delete | not executed yet | source-repo-only | `reports/runtime-target-activation/<target-id>/apply-dry-run.md` | RuntimeTarget | source-to-live dry-run | no | not-required | planned |
+| `<TARGET>-ROLLBACK-001` | `<target-id>` | rollback | `<rollback dry-run or documented procedure>` | `-` | rollback path reviewed | not executed yet | read-only or rollback-live-root | `reports/runtime-target-activation/<target-id>/rollback.md` | RuntimeTarget | rollback plan | yes | required | planned |
+| `<TARGET>-APPLY-001` | `<target-id>` | apply | `<source repo apply command>` | `-` | live root updated as approved | blocked until approval | live-root | `reports/runtime-target-activation/<target-id>/apply-report.md` | RuntimeTarget | apply report | yes | required | blocked |
 
 `<TARGET>-APPLY-001` 和真实 `<TARGET>-ROLLBACK-001` 默认不执行；只有用户明确授权写 live root 时才执行。
+`required_evidence is not artifact evidence`：manifest 中的 `required_evidence` 只表示声明类别，不能替代 `evidence-index.jsonl`、命令 exit code、artifact path、hash 或审批记录。
 
 ## 6. Required Gates
 
