@@ -27,6 +27,24 @@ run_check() {
   fi
 }
 
+run_expected_fail() {
+  local name="$1"
+  local expected="$2"
+  shift 2
+  if "$@" >"${TMP_DIR}/${name}.out" 2>"${TMP_DIR}/${name}.err"; then
+    record_fail "${name} unexpectedly passed"
+    sed -n '1,40p' "${TMP_DIR}/${name}.out" >&2 || true
+  else
+    if rg -q --fixed-strings -- "${expected}" "${TMP_DIR}/${name}.err" "${TMP_DIR}/${name}.out"; then
+      echo "[PASS] ${name}"
+    else
+      record_fail "${name} failed without expected message: ${expected}"
+      sed -n '1,40p' "${TMP_DIR}/${name}.err" >&2 || true
+      sed -n '1,40p' "${TMP_DIR}/${name}.out" >&2 || true
+    fi
+  fi
+}
+
 run_check "devkit_help" "${ROOT}/scripts/devkit.sh" help
 run_check "git_submodule_status" git -C "${ROOT}" submodule status
 run_check "devkit_health" "${ROOT}/scripts/devkit.sh" health
@@ -38,6 +56,9 @@ run_check "stale_references" "${ROOT}/scripts/check-stale-references.sh" "${ROOT
 run_check "token_budget_summary_json" "${ROOT}/scripts/check-token-budget.sh" "${ROOT}" --summary-json
 run_check "reference_dirty_triage_summary_json" "${ROOT}/scripts/check-reference-dirty-triage.sh" "${ROOT}" --summary-json
 run_check "runtime_health_summary_json" "${ROOT}/scripts/check-runtime-health.sh" "${ROOT}" --summary-json
+run_expected_fail "runtime_health_claude_code_candidate_blocked" "runtime target is not enabled" "${ROOT}/scripts/check-runtime-health.sh" "${ROOT}" --target claude-code-home --summary-json
+run_expected_fail "runtime_health_hermes_agent_candidate_blocked" "runtime target is not enabled" "${ROOT}/scripts/check-runtime-health.sh" "${ROOT}" --target hermes-agent-home --summary-json
+run_expected_fail "runtime_health_opencode_candidate_blocked" "runtime target is not enabled" "${ROOT}/scripts/check-runtime-health.sh" "${ROOT}" --target opencode-home --summary-json
 run_check "runtime_live_footprint_summary_json" "${ROOT}/scripts/check-runtime-live-footprint.sh" "${ROOT}" --summary-json
 run_check "session_coach_summary_json" "${ROOT}/scripts/session-coach.sh" "${ROOT}" --summary-json
 if "${ROOT}/scripts/check-subrepo-state.sh" "${ROOT}" --summary-json >"${TMP_DIR}/subrepo_state_summary_json.out" 2>"${TMP_DIR}/subrepo_state_summary_json.err"; then
@@ -85,6 +106,12 @@ if [[ -f "${TMP_DIR}/runtime_targets_summary_json.out" ]]; then
   fi
   if ! rg -q '"default_live_root":"~/.codex"' "${TMP_DIR}/runtime_targets_summary_json.out"; then
     record_fail "runtime targets summary missing default_live_root=~/.codex"
+  fi
+  if ! rg -q '"health_adapters":4' "${TMP_DIR}/runtime_targets_summary_json.out"; then
+    record_fail "runtime targets summary missing health adapter count"
+  fi
+  if ! rg -q '"enabled_health_adapters":1' "${TMP_DIR}/runtime_targets_summary_json.out"; then
+    record_fail "runtime targets summary missing enabled health adapter count"
   fi
 fi
 
@@ -136,6 +163,9 @@ if [[ -f "${TMP_DIR}/runtime_health_summary_json.out" ]]; then
   fi
   if ! rg -q '"adapter_exit":0' "${TMP_DIR}/runtime_health_summary_json.out"; then
     record_fail "runtime health adapter did not pass"
+  fi
+  if ! rg -q '"adapter_id":"codex-global-health"' "${TMP_DIR}/runtime_health_summary_json.out"; then
+    record_fail "runtime health summary missing adapter_id=codex-global-health"
   fi
 fi
 

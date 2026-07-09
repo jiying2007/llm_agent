@@ -151,7 +151,7 @@ scripts/check-reference-dirty-triage.sh . --date YYYY-MM-DD --summary-json
 
 ## 7. check-runtime-health.sh
 
-**用途**: 读取 `manifests/runtime_targets.json` 的默认或指定 target，并分发到该 target 声明的健康检查 adapter。当前 active target 是 `codex-home`，因此会调用 `check-global-codex-health.sh`。
+**用途**: 读取 `manifests/runtime_targets.json` 的默认或指定 target，再通过 `manifests/runtime_health_adapters.json` 中的 `target.health_adapter` 绑定分发到只读健康检查 adapter。当前 active target 是 `codex-home`，因此会调用 `check-global-codex-health.sh`。
 
 **用法**:
 ```bash
@@ -161,8 +161,9 @@ scripts/check-runtime-health.sh [WORKSPACE_ROOT] --summary-json
 
 **通过标准**:
 - target 已声明且 `enabled=true`。
-- target 拥有 `health_check` 和 `live_root`。
-- adapter 可执行，且返回 exit 0。
+- target 拥有 `health_adapter` 和 `live_root`。
+- adapter 已声明、`enabled=true`、`read_only=true`，runtime 与 target 匹配。
+- adapter 可执行、支持指定 profile，且返回 exit 0。
 
 ---
 

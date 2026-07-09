@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "active",
-  "last_updated": "2026-07-08",
+  "last_updated": "2026-07-09",
   "default_target": "codex-home",
   "supported_runtime_kinds": [
     "codex",
@@ -30,6 +30,7 @@
         "~/codex",
         "~/.codex"
       ],
+      "health_adapter": "codex-global-health",
       "health_check": "scripts/check-global-codex-health.sh",
       "footprint_check": "scripts/check-runtime-live-footprint.sh",
       "target_policy_check": "scripts/check-global-codex-target-policy.sh",
@@ -53,6 +54,7 @@
       "live_root": null,
       "registry_repo": null,
       "source_to_live_chain": [],
+      "health_adapter": null,
       "health_check": null,
       "footprint_check": null,
       "target_policy_check": null,
@@ -81,6 +83,7 @@
       "live_root": null,
       "registry_repo": null,
       "source_to_live_chain": [],
+      "health_adapter": null,
       "health_check": null,
       "footprint_check": null,
       "target_policy_check": null,
@@ -109,6 +112,7 @@
       "live_root": null,
       "registry_repo": null,
       "source_to_live_chain": [],
+      "health_adapter": null,
       "health_check": null,
       "footprint_check": null,
       "target_policy_check": null,

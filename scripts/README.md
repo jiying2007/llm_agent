@@ -110,7 +110,7 @@ scripts/check-runtime-pilot.sh . full
 
 `check-runtime-pilot-evidence.sh` 和 `check-runtime-pilot-coverage.sh` 是固定模式便捷入口，分别执行 evidence / coverage 检查。
 
-Codex 目标运行态 `~/.codex` 健康检查脚本（运行目录由 `~/codex` apply 生成）：`scripts/check-runtime-targets.sh . --summary-json` 校验 `manifests/runtime_targets.json`、`adk.lock`、`subrepos/registry.csv` 和 target 检查脚本一致性；`scripts/check-runtime-health.sh . --profile minimal|security --summary-json` 读取默认 target 并分发到 adapter；`scripts/check-global-codex-health.sh ~/.codex minimal|security` 保留为 Codex adapter。非标准 base URL 必须通过 `CODEX_TRUSTED_BASE_URLS` 显式声明为已审查端点。
+Codex 目标运行态 `~/.codex` 健康检查脚本（运行目录由 `~/codex` apply 生成）：`scripts/check-runtime-targets.sh . --summary-json` 校验 `manifests/runtime_targets.json`、`manifests/runtime_health_adapters.json`、`adk.lock`、`subrepos/registry.csv` 和 target 检查脚本一致性；`scripts/check-runtime-health.sh . --profile minimal|security --summary-json` 读取默认 target，并通过 `target.health_adapter` 分发到 adapter；`scripts/check-global-codex-health.sh ~/.codex minimal|security` 保留为 Codex adapter。非标准 base URL 必须通过 `CODEX_TRUSTED_BASE_URLS` 显式声明为已审查端点。
 
 技能元数据检查脚本：
 
@@ -177,7 +177,7 @@ scripts/evidence-bundle.sh . --format json --fail-on-needs-fix
 scripts/evidence-bundle.sh . --format json --max-summary-chars 240
 ```
 
-该脚本汇总 `adk.lock`、runtime target registry、phase gate、subrepo state、reference dirty triage、runtime pilot、runtime health、runtime live 实装态、pilot readiness 和 fallback sunset 结果，用于提交前或发布前附证；默认会截断单项 summary，避免证据摘要本身消耗过多上下文。
+该脚本汇总 `adk.lock`、runtime target registry、runtime health adapter contract、phase gate、subrepo state、reference dirty triage、runtime pilot、runtime health、runtime live 实装态、pilot readiness 和 fallback sunset 结果，用于提交前或发布前附证；默认会截断单项 summary，避免证据摘要本身消耗过多上下文。
 
 治理健康与复核报告脚本：
 

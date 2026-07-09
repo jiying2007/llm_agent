@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "status": "active",
+  "last_updated": "2026-07-09",
+  "rules": {
+    "targets_must_reference_adapter_id": true,
+    "enabled_adapters_must_be_read_only": true,
+    "enabled_adapters_must_have_executable_script": true,
+    "disabled_adapters_must_not_dispatch": true,
+    "adapter_runtime_must_match_target_runtime": true
+  },
+  "adapters": [
+    {
+      "id": "codex-global-health",
+      "runtime": "codex",
+      "status": "active",
+      "enabled": true,
+      "script": "scripts/check-global-codex-health.sh",
+      "target_ids": [
+        "codex-home"
+      ],
+      "profiles": [
+        "minimal",
+        "security",
+        "strict"
+      ],
+      "read_only": true,
+      "input_contract": {
+        "argv": [
+          "live_root",
+          "profile"
+        ],
+        "live_root_source": "runtime_targets.json target.live_root",
+        "profile_source": "check-runtime-health.sh --profile"
+      },
+      "output_contract": {
+        "exit_0": "health pass",
+        "nonzero": "health fail",
+        "summary_json_wrapped_by": "scripts/check-runtime-health.sh"
+      },
+      "notes": "Codex is the only active runtime health adapter. The adapter is read-only and must not apply assets."
+    },
+    {
+      "id": "claude-code-health",
+      "runtime": "claude-code",
+      "status": "candidate",
+      "enabled": false,
+      "script": null,
+      "target_ids": [],
+      "profiles": [],
+      "read_only": true,
+      "activation_requirements": [
+        "declare active runtime target",
+        "add executable read-only health script",
+        "bind target.health_adapter to this adapter id",
+        "add source-to-live apply and rollback evidence",
+        "pass disabled target negative gate before activation"
+      ],
+      "notes": "Candidate placeholder only. It must not dispatch until a governed source/live chain exists."
+    },
+    {
+      "id": "hermes-agent-health",
+      "runtime": "hermes-agent",
+      "status": "candidate",
+      "enabled": false,
+      "script": null,
+      "target_ids": [],
+      "profiles": [],
+      "read_only": true,
+      "activation_requirements": [
+        "declare active runtime target",
+        "add executable read-only health script",
+        "bind target.health_adapter to this adapter id",
+        "add source-to-live apply and rollback evidence",
+        "pass disabled target negative gate before activation"
+      ],
+      "notes": "Candidate placeholder only. It must not dispatch until a governed source/live chain exists."
+    },
+    {
+      "id": "opencode-health",
+      "runtime": "opencode",
+      "status": "candidate",
+      "enabled": false,
+      "script": null,
+      "target_ids": [],
+      "profiles": [],
+      "read_only": true,
+      "activation_requirements": [
+        "declare active runtime target",
+        "add executable read-only health script",
+        "bind target.health_adapter to this adapter id",
+        "add source-to-live apply and rollback evidence",
+        "pass disabled target negative gate before activation"
+      ],
+      "notes": "Candidate placeholder only. It must not dispatch until a governed source/live chain exists."
+    }
+  ]
+}

@@ -119,6 +119,7 @@ required_tokens=(
   "loop_readiness_contracts.json"
   "scale_engine_governance_contracts.json"
   "runtime_targets.json"
+  "runtime_health_adapters.json"
   "reference-dirty-triage"
   "fixtures/oss-intake"
   "discovery-source.md"

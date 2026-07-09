@@ -19,9 +19,9 @@ while [[ $# -gt 0 ]]; do
       cat <<USAGE
 usage: scripts/check-runtime-targets.sh [root] [--summary-json]
 
-Validates manifests/runtime_targets.json against adk.lock, registry.csv and
-runtime target check scripts. This is a declaration gate only; it does not
-apply assets or modify live runtime directories.
+Validates manifests/runtime_targets.json and runtime_health_adapters.json
+against adk.lock, registry.csv and runtime target check scripts. This is a
+declaration gate only; it does not apply assets or modify live directories.
 USAGE
       exit 0
       ;;
@@ -41,6 +41,7 @@ import sys
 root = sys.argv[1]
 summary_json = sys.argv[2] == "1"
 manifest_path = os.path.join(root, "manifests", "runtime_targets.json")
+adapters_path = os.path.join(root, "manifests", "runtime_health_adapters.json")
 lock_path = os.path.join(root, "adk.lock")
 registry_path = os.path.join(root, "subrepos", "registry.csv")
 failures = []
@@ -99,16 +100,21 @@ def script_must_exist(script):
 
 
 manifest = read_json(manifest_path)
+adapters_manifest = read_json(adapters_path)
 lock = read_lock(lock_path)
 registry = read_registry(registry_path)
 
 target_count = 0
+adapter_count = 0
 default_target = None
 default_runtime = "-"
 default_live_root = "-"
 enabled_count = 0
 candidate_count = 0
+enabled_adapter_count = 0
+candidate_adapter_count = 0
 supported = set()
+adapter_by_id = {}
 
 required_kinds = {"codex", "claude-code", "hermes-agent", "opencode"}
 required_rules = {
@@ -118,6 +124,85 @@ required_rules = {
     "reference_subrepos_must_not_be_runtime_targets",
     "future_targets_require_source_and_live_chain",
 }
+required_adapter_rules = {
+    "targets_must_reference_adapter_id",
+    "enabled_adapters_must_be_read_only",
+    "enabled_adapters_must_have_executable_script",
+    "disabled_adapters_must_not_dispatch",
+    "adapter_runtime_must_match_target_runtime",
+}
+
+if adapters_manifest:
+    if adapters_manifest.get("schema_version") != 1:
+        fail("runtime_health_adapters.json schema_version must be 1")
+    if adapters_manifest.get("status") != "active":
+        fail("runtime_health_adapters.json status must be active")
+
+    adapter_rules = adapters_manifest.get("rules")
+    if not isinstance(adapter_rules, dict):
+        fail("runtime_health_adapters.json rules must be an object")
+    else:
+        for rule in required_adapter_rules:
+            if adapter_rules.get(rule) is not True:
+                fail(f"runtime_health_adapters.json rules.{rule} must be true")
+
+    adapters = adapters_manifest.get("adapters")
+    if not isinstance(adapters, list) or not adapters:
+        fail("runtime_health_adapters.json adapters must be a non-empty array")
+        adapters = []
+    adapter_count = len(adapters)
+    adapter_ids = [item.get("id") for item in adapters if isinstance(item, dict)]
+    if len(adapter_ids) != len(set(adapter_ids)):
+        fail("runtime health adapter ids must be unique")
+    adapter_by_id = {item.get("id"): item for item in adapters if isinstance(item, dict)}
+    adapter_runtimes = {item.get("runtime") for item in adapters if isinstance(item, dict)}
+    missing_adapter_kinds = required_kinds - adapter_runtimes
+    if missing_adapter_kinds:
+        fail(f"runtime_health_adapters.json missing adapter for runtime kinds: {', '.join(sorted(missing_adapter_kinds))}")
+
+    for item in adapters:
+        if not isinstance(item, dict):
+            fail("runtime health adapter entries must be objects")
+            continue
+        adapter_id = item.get("id")
+        runtime = item.get("runtime")
+        if runtime not in required_kinds:
+            fail(f"runtime health adapter uses unsupported runtime kind: {runtime}")
+        if item.get("read_only") is not True:
+            fail(f"runtime health adapter must be read_only=true: {adapter_id}")
+        enabled = item.get("enabled")
+        if enabled is True:
+            enabled_adapter_count += 1
+            if item.get("status") != "active":
+                fail(f"enabled runtime health adapter must use status=active: {adapter_id}")
+            script = item.get("script")
+            if not script:
+                fail(f"enabled runtime health adapter missing script: {adapter_id}")
+            else:
+                script_must_exist(script)
+            target_ids = item.get("target_ids")
+            if not isinstance(target_ids, list) or not target_ids:
+                fail(f"enabled runtime health adapter must bind at least one target: {adapter_id}")
+            profiles = set(item.get("profiles") or [])
+            for profile in ("minimal", "security", "strict"):
+                if profile not in profiles:
+                    fail(f"enabled runtime health adapter missing profile: {adapter_id} -> {profile}")
+        elif enabled is False:
+            candidate_adapter_count += 1
+            if item.get("status") != "candidate":
+                fail(f"disabled runtime health adapter must use status=candidate: {adapter_id}")
+            if item.get("script") is not None:
+                fail(f"disabled runtime health adapter must not declare script: {adapter_id}")
+            if item.get("target_ids") != []:
+                fail(f"disabled runtime health adapter target_ids must be empty: {adapter_id}")
+            if item.get("profiles") != []:
+                fail(f"disabled runtime health adapter profiles must be empty: {adapter_id}")
+            requirements = item.get("activation_requirements") or []
+            for required in ("declare active runtime target", "add executable read-only health script", "bind target.health_adapter to this adapter id", "pass disabled target negative gate before activation"):
+                if required not in requirements:
+                    fail(f"disabled runtime health adapter missing activation requirement: {adapter_id} -> {required}")
+        else:
+            fail(f"runtime health adapter enabled must be boolean: {adapter_id}")
 
 if manifest:
     if manifest.get("schema_version") != 1:
@@ -167,7 +252,7 @@ if manifest:
                 fail(f"disabled runtime target must use role=target-candidate: {item.get('id')}")
             if item.get("write_policy") != "not-enabled":
                 fail(f"disabled runtime target must use write_policy=not-enabled: {item.get('id')}")
-            for field in ("source_repo", "live_root", "registry_repo", "health_check", "footprint_check", "target_policy_check"):
+            for field in ("source_repo", "live_root", "registry_repo", "health_adapter", "health_check", "footprint_check", "target_policy_check"):
                 if item.get(field) is not None:
                     fail(f"disabled runtime target must not declare active {field}: {item.get('id')}")
             if item.get("source_to_live_chain") != []:
@@ -202,6 +287,23 @@ if default_target:
         fail("default runtime write_policy must be report-only-from-llm_agent")
     if default_target.get("source_to_live_chain") != ["agent-dev-kit", "~/codex", "~/.codex"]:
         fail("default runtime source_to_live_chain drift")
+
+    health_adapter_id = default_target.get("health_adapter")
+    if not health_adapter_id:
+        fail("default runtime missing health_adapter")
+    else:
+        adapter = adapter_by_id.get(health_adapter_id)
+        if not adapter:
+            fail(f"default runtime health_adapter not declared: {health_adapter_id}")
+        else:
+            if adapter.get("enabled") is not True:
+                fail(f"default runtime health_adapter must be enabled: {health_adapter_id}")
+            if adapter.get("runtime") != default_target.get("runtime"):
+                fail(f"default runtime health_adapter runtime mismatch: {health_adapter_id}")
+            if default_target.get("id") not in (adapter.get("target_ids") or []):
+                fail(f"default runtime health_adapter missing target binding: {health_adapter_id}")
+            if default_target.get("health_check") and default_target.get("health_check") != adapter.get("script"):
+                fail(f"default runtime health_check differs from adapter script: {health_adapter_id}")
 
     for field in ("health_check", "footprint_check", "target_policy_check"):
         script = default_target.get(field)
@@ -240,8 +342,11 @@ if failures:
         print(json.dumps({
             "status": "fail",
             "targets": target_count,
+            "health_adapters": adapter_count,
             "enabled_targets": enabled_count,
             "candidate_targets": candidate_count,
+            "enabled_health_adapters": enabled_adapter_count,
+            "candidate_health_adapters": candidate_adapter_count,
             "default_target": manifest.get("default_target") if manifest else None,
             "default_runtime": default_runtime,
             "default_live_root": default_live_root,
@@ -257,8 +362,11 @@ if summary_json:
     print(json.dumps({
         "status": "pass",
         "targets": target_count,
+        "health_adapters": adapter_count,
         "enabled_targets": enabled_count,
         "candidate_targets": candidate_count,
+        "enabled_health_adapters": enabled_adapter_count,
+        "candidate_health_adapters": candidate_adapter_count,
         "default_target": manifest.get("default_target"),
         "default_runtime": default_runtime,
         "default_live_root": default_live_root,
@@ -266,5 +374,5 @@ if summary_json:
         "failures": [],
     }, ensure_ascii=False, separators=(",", ":")))
 else:
-    print(f"[PASS] runtime targets ready: targets={target_count} enabled={enabled_count} candidates={candidate_count} default={manifest.get('default_target')} runtime={default_runtime} live_root={default_live_root}")
+    print(f"[PASS] runtime targets ready: targets={target_count} enabled={enabled_count} candidates={candidate_count} adapters={adapter_count} enabled_adapters={enabled_adapter_count} default={manifest.get('default_target')} runtime={default_runtime} live_root={default_live_root}")
 PY
