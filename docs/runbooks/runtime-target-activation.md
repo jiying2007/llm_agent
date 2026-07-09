@@ -93,8 +93,39 @@ rtk scripts/check-runtime-targets.sh . --explain-target claude-code-home
 - `next_action`
 
 `--explain-target` 是只读诊断入口；target 不存在时返回 exit 1，target 存在时返回 exit 0。它不替代正式门禁。
+`--explain-target` 输出单个 JSON object，不与 `--summary-json` 组合使用。
 
-## 5. Required Gates
+## 5. Evidence Index 模板
+
+启用 runtime target 前，在 `reports/runtime-target-activation/<target-id>/` 中记录最小 Evidence Index。建议把主索引命名为 `evidence-index.md`，命令输出按 gate 分别保存为 `explain-target.json`、`runtime-health.json`、`apply-dry-run.md`、`footprint-policy.json`、`rollback.md` 等稳定文件，避免证据散落。
+
+Evidence Index 只记录真实执行或明确计划的证据，不得只复制 `required_evidence` 关键词来满足门禁。`check-runtime-targets.sh` 是声明校验，只能证明 manifest 中声明了对应证据类别，不能证明 artifact/report 已存在。
+
+字段约束：
+
+- `Evidence ID`: 使用 `TARGET-GATE-SEQ`，例如 `CLAUDE-CODE-HOME-DRYRUN-001`。
+- `Gate`: 固定为 `declare`、`dry-run`、`health`、`footprint`、`apply`、`rollback`、`activation` 之一。
+- `Write Scope`: 固定为 `read-only`、`source-repo-only`、`workspace-local`、`live-root`、`rollback-live-root` 之一。
+- `Approval Required`: 纯只读命令和 `--dry-run` 可为 `no`；任何会修改目标 `live_root`、`~/.codex` 或执行等价恢复/回滚动作的命令必须为 `yes`，并记录审批人、审批时间和审批范围。
+- `Status`: 固定为 `planned`、`passed`、`failed`、`blocked`、`approved` 之一。
+
+可直接复制下表：
+
+| Evidence ID | Target ID | Gate | Command | Expected Result | Write Scope | Artifact / Report | Approval Required | Status |
+|---|---|---|---|---|---|---|---|---|
+| `<TARGET>-DECL-001` | `<target-id>` | declare | `rtk scripts/check-runtime-targets.sh . --explain-target <target-id>` | `activation_ready=true` or clear `next_action` | read-only | `reports/runtime-target-activation/<target-id>/explain-target.json` | no | planned |
+| `<TARGET>-TARGETS-001` | `<target-id>` | declare | `rtk scripts/check-runtime-targets.sh . --summary-json` | `status=pass` | read-only | `reports/runtime-target-activation/<target-id>/runtime-targets.json` | no | planned |
+| `<TARGET>-ADAPTERS-001` | `<target-id>` | health | `rtk scripts/check-runtime-health-adapters-fixtures.sh .` | fixture pass | workspace-local | `reports/runtime-target-activation/<target-id>/adapter-fixtures.md` | no | planned |
+| `<TARGET>-HEALTH-001` | `<target-id>` | health | `rtk scripts/check-runtime-health.sh . --target <target-id> --profile minimal --summary-json` | `status=pass` | read-only | `reports/runtime-target-activation/<target-id>/runtime-health.json` | no | planned |
+| `<TARGET>-FOOTPRINT-001` | `<target-id>` | footprint | `<target footprint command>` | no missing required assets | read-only | `reports/runtime-target-activation/<target-id>/footprint-policy.json` | no | planned |
+| `<TARGET>-PLAN-001` | `<target-id>` | dry-run | `<source repo plan command>` | plan generated and reviewed | source-repo-only | `reports/runtime-target-activation/<target-id>/apply-plan.md` | no | planned |
+| `<TARGET>-DRYRUN-001` | `<target-id>` | dry-run | `<source repo apply dry-run>` | no unexplained overwrite/delete | source-repo-only | `reports/runtime-target-activation/<target-id>/apply-dry-run.md` | no | planned |
+| `<TARGET>-ROLLBACK-001` | `<target-id>` | rollback | `<rollback dry-run or documented procedure>` | rollback path reviewed | read-only or rollback-live-root | `reports/runtime-target-activation/<target-id>/rollback.md` | yes for real rollback | planned |
+| `<TARGET>-APPLY-001` | `<target-id>` | apply | `<source repo apply command>` | live root updated as approved | live-root | `reports/runtime-target-activation/<target-id>/apply-report.md` | yes | blocked |
+
+`<TARGET>-APPLY-001` 和真实 `<TARGET>-ROLLBACK-001` 默认不执行；只有用户明确授权写 live root 时才执行。
+
+## 6. Required Gates
 
 ```bash
 rtk scripts/check-runtime-targets.sh . --summary-json
@@ -115,7 +146,7 @@ rtk bash ~/codex/scripts/apply.sh --plan ~/codex/build/apply-plan.json --dry-run
 
 真正 apply 或 rollback 需要人工授权，并在 `reports/` 留记录。回滚后必须重新运行 runtime health 和 footprint 检查。
 
-## 6. 不允许的捷径
+## 7. 不允许的捷径
 
 - 不允许只把 target 改成 `enabled=true`。
 - 不允许在 `runtime_targets.json` 中重新加入 `health_check`。

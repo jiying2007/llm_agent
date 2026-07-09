@@ -349,6 +349,21 @@ expect_explain_fail() {
   fi
 }
 
+expect_explain_arg_fail() {
+  local expected="$1"
+  write_fixture
+  out="${TMP_DIR}/explain-arg-fail.out"
+  if "${CHECK}" "${TMP_DIR}" --summary-json --explain-target codex-home >"${out}" 2>&1; then
+    echo "[FAIL] explain arg fixture unexpectedly passed" >&2
+    exit 1
+  fi
+  if ! rg -q --fixed-strings -- "${expected}" "${out}"; then
+    echo "[FAIL] explain arg fixture missing expected output: ${expected}" >&2
+    sed -n '1,80p' "${out}" >&2 || true
+    exit 1
+  fi
+}
+
 expect_pass
 expect_pass "second_enabled_valid"
 expect_fail "runtime_mismatch" "enabled runtime target health_adapter runtime mismatch: codex-home -> codex-global-health"
@@ -371,5 +386,6 @@ expect_health_fail_for_target "second_enabled_missing_binding" "claude-code-home
 expect_explain "codex-home" '"activation_ready":true'
 expect_explain "claude-code-home" '"next_action":"declare source_repo and live_root"'
 expect_explain_fail "missing-runtime-home" "runtime target not declared: missing-runtime-home"
+expect_explain_arg_fail "--summary-json cannot be combined with --explain-target"
 
 echo "[PASS] runtime health adapter fixtures behave as expected"

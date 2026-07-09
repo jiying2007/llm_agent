@@ -29,7 +29,7 @@ against adk.lock, registry.csv and runtime target check scripts. This is a
 declaration gate only; it does not apply assets or modify live directories.
 
 --explain-target emits a read-only JSON explanation for one target and exits
-without applying assets.
+without applying assets. Do not combine --summary-json and --explain-target.
 USAGE
       exit 0
       ;;
@@ -39,6 +39,11 @@ USAGE
       ;;
   esac
 done
+
+if [[ "${SUMMARY_JSON}" -eq 1 && -n "${EXPLAIN_TARGET}" ]]; then
+  echo "[FAIL] --summary-json cannot be combined with --explain-target" >&2
+  exit 1
+fi
 
 python3 - "$ROOT" "$SUMMARY_JSON" "$EXPLAIN_TARGET" <<'PY'
 import csv

@@ -124,6 +124,7 @@ required_tokens=(
   "runtime_targets.json"
   "runtime_health_adapters.json"
   "runtime-target-activation.md"
+  "Evidence Index"
   "reference-dirty-triage"
   "fixtures/oss-intake"
   "discovery-source.md"
