@@ -7,6 +7,7 @@ PROFILE="minimal"
 OUT_DIR=""
 TIMESTAMP=""
 SUMMARY_JSON=0
+PROMOTE_CURRENT=0
 
 if [[ $# -gt 0 && "$1" != --* ]]; then
   ROOT="$1"
@@ -15,12 +16,16 @@ fi
 
 usage() {
   cat <<USAGE
-usage: scripts/collect-runtime-target-evidence-package.sh [root] --target <id> [--profile minimal|security|strict] [--out-dir <dir>] [--timestamp <stamp>] [--summary-json]
+usage: scripts/collect-runtime-target-evidence-package.sh [root] --target <id> [--profile minimal|security|strict] [--out-dir <dir>] [--timestamp <stamp>] [--promote-current] [--summary-json]
 
 Collects a report-only runtime target activation evidence package. The command
 runs only read-only gates, writes artifacts under reports/runtime-target-activation
 or the explicit --out-dir, and never runs source-to-live apply, rollback or live
-root writes.
+root writes. By default it writes only a timestamped package. With
+--promote-current, it first validates the generated package with
+check-runtime-target-evidence-index.sh --strict-artifacts, then refreshes the
+canonical evidence-index.jsonl, evidence-index.md and current-status.md for the
+target.
 USAGE
 }
 
@@ -44,6 +49,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --summary-json)
       SUMMARY_JSON=1
+      shift
+      ;;
+    --promote-current)
+      PROMOTE_CURRENT=1
       shift
       ;;
     -h|--help)
@@ -72,17 +81,19 @@ if [[ -z "${OUT_DIR}" ]]; then
   OUT_DIR="${ROOT}/reports/runtime-target-activation/${TARGET_ID}/${TIMESTAMP}"
 fi
 
-python3 - "$ROOT" "$TARGET_ID" "$PROFILE" "$OUT_DIR" "$TIMESTAMP" "$SUMMARY_JSON" <<'PY'
+python3 - "$ROOT" "$TARGET_ID" "$PROFILE" "$OUT_DIR" "$TIMESTAMP" "$SUMMARY_JSON" "$PROMOTE_CURRENT" <<'PY'
 import hashlib
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 from datetime import datetime, timezone
 
-root, target_id, profile, out_dir, timestamp, summary_json_text = sys.argv[1:7]
+root, target_id, profile, out_dir, timestamp, summary_json_text, promote_current_text = sys.argv[1:8]
 summary_json = summary_json_text == "1"
+promote_current = promote_current_text == "1"
 manifest_path = os.path.join(root, "manifests", "runtime_targets.json")
 adapters_path = os.path.join(root, "manifests", "runtime_health_adapters.json")
 os.makedirs(out_dir, exist_ok=True)
@@ -108,6 +119,19 @@ def sha256(path):
         for chunk in iter(lambda: handle.read(65536), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def atomic_copy(src, dst):
+    tmp = f"{dst}.tmp-{os.getpid()}"
+    shutil.copyfile(src, tmp)
+    os.replace(tmp, dst)
+
+
+def atomic_write_text(path, text):
+    tmp = f"{path}.tmp-{os.getpid()}"
+    with open(tmp, "w", encoding="utf-8") as handle:
+        handle.write(text)
+    os.replace(tmp, path)
 
 
 def rel_artifact(path):
@@ -365,6 +389,75 @@ with open(md_path, "w", encoding="utf-8") as handle:
         handle.write(f"| {item['evidence_id']} | {item['gate']} | `{item['command']}` | {exit_code} | `{item['artifact_path']}` | {item['execution_status']} |\n")
 
 status = "pass" if all(item["execution_status"] != "failed" for item in entries) else "needs-fix"
+completed_count = sum(1 for item in entries if item["execution_status"] in {"passed", "failed", "approved"})
+blocked_count = sum(1 for item in entries if item["execution_status"] == "blocked")
+promoted = False
+canonical_index = None
+canonical_markdown = None
+current_status = None
+strict_command_label = None
+
+if promote_current:
+    artifact_root, _rel = rel_artifact(jsonl_path)
+    canonical_dir = os.path.join(artifact_root, "reports", "runtime-target-activation", target_id)
+    canonical_index = os.path.join(canonical_dir, "evidence-index.jsonl")
+    canonical_markdown = os.path.join(canonical_dir, "evidence-index.md")
+    current_status = os.path.join(canonical_dir, "current-status.md")
+    checker = os.path.join(root, "scripts", "check-runtime-target-evidence-index.sh")
+    strict_command = [
+        checker,
+        artifact_root,
+        "--target",
+        target_id,
+        "--index",
+        jsonl_path,
+        "--strict-artifacts",
+    ]
+    strict_command_label = (
+        "rtk scripts/check-runtime-target-evidence-index.sh "
+        f"{artifact_root} --target {target_id} --index {jsonl_path} --strict-artifacts"
+    )
+    proc = subprocess.run(
+        strict_command,
+        cwd=root,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        check=False,
+    )
+    if proc.returncode != 0:
+        print("[FAIL] strict artifact validation failed; current evidence was not promoted", file=sys.stderr)
+        if proc.stdout:
+            print(proc.stdout.rstrip(), file=sys.stderr)
+        sys.exit(proc.returncode)
+    os.makedirs(canonical_dir, exist_ok=True)
+    for src, dst in ((jsonl_path, canonical_index), (md_path, canonical_markdown)):
+        if os.path.abspath(src) != os.path.abspath(dst):
+            atomic_copy(src, dst)
+    source_display = os.path.relpath(out_dir, artifact_root) if os.path.commonpath([os.path.abspath(artifact_root), os.path.abspath(out_dir)]) == os.path.abspath(artifact_root) else out_dir
+    index_display = os.path.relpath(canonical_index, artifact_root)
+    markdown_display = os.path.relpath(canonical_markdown, artifact_root)
+    current_display = os.path.relpath(current_status, artifact_root)
+    current_status_text = "\n".join([
+        f"# Runtime Target Current Evidence: {target_id}",
+        "",
+        f"- promoted_at: {generated_at}",
+        f"- target_id: {target_id}",
+        f"- source_package: {source_display}",
+        f"- evidence_index_jsonl: {index_display}",
+        f"- evidence_index_md: {markdown_display}",
+        f"- current_status: {current_display}",
+        f"- strict_check: `{strict_command_label}`",
+        f"- entries: {len(entries)}",
+        f"- completed: {completed_count}",
+        f"- blocked: {blocked_count}",
+        "- write_scope: report-only; no source-to-live apply, rollback or live-root write was executed by this collector.",
+        "- promotion_rule: canonical files are refreshed only after strict artifact validation passes.",
+        "",
+    ])
+    atomic_write_text(current_status, current_status_text)
+    promoted = True
+
 if summary_json:
     print(json.dumps({
         "status": status,
@@ -373,11 +466,19 @@ if summary_json:
         "out_dir": out_dir,
         "evidence_index": jsonl_path,
         "entries": len(entries),
-        "completed": sum(1 for item in entries if item["execution_status"] in {"passed", "failed", "approved"}),
-        "blocked": sum(1 for item in entries if item["execution_status"] == "blocked"),
+        "completed": completed_count,
+        "blocked": blocked_count,
+        "promoted": promoted,
+        "canonical_index": canonical_index,
+        "canonical_markdown": canonical_markdown,
+        "current_status": current_status,
+        "strict_check": strict_command_label,
     }, ensure_ascii=False, separators=(",", ":")))
 else:
-    print(f"[PASS] runtime target evidence package written: {out_dir}")
+    if promoted:
+        print(f"[PASS] runtime target evidence package written and promoted: {out_dir}")
+    else:
+        print(f"[PASS] runtime target evidence package written: {out_dir}")
 
 sys.exit(0 if status == "pass" else 1)
 PY
