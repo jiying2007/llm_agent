@@ -101,8 +101,11 @@ fi
 
 fixture_root="${TMP_DIR}/fixture-root"
 fixture_dir="${fixture_root}/reports/runtime-target-activation/codex-home"
+cross_target_fixture_dir="${fixture_root}/reports/runtime-target-activation/claude-code-home"
 mkdir -p "${fixture_dir}"
+mkdir -p "${cross_target_fixture_dir}"
 printf 'explain target artifact\n' >"${fixture_dir}/explain-target.json"
+printf 'cross target artifact\n' >"${cross_target_fixture_dir}/explain-target.json"
 "${GENERATOR}" "${ROOT}" --target codex-home --format jsonl >"${fixture_dir}/evidence-index.jsonl"
 
 python3 - "${fixture_dir}/evidence-index.jsonl" <<'PY'
@@ -154,6 +157,10 @@ elif case == "hash-mismatch":
     lines[0]["artifact_sha256"] = "0" * 64
 elif case == "duplicate-id":
     lines.append(dict(lines[0]))
+elif case == "bad-target-id":
+    lines[0]["target_id"] = "claude-code-home"
+elif case == "artifact-cross-target-path":
+    lines[0]["artifact_path"] = "reports/runtime-target-activation/claude-code-home/explain-target.json"
 else:
     raise SystemExit(f"unknown case: {case}")
 dst.write_text("\n".join(json.dumps(item, ensure_ascii=False, separators=(",", ":")) for item in lines) + "\n", encoding="utf-8")
@@ -161,7 +168,7 @@ PY
   printf '%s' "${out_file}"
 }
 
-for case_name in bad-gate live-no-approval completed-placeholder hash-mismatch duplicate-id; do
+for case_name in bad-gate live-no-approval completed-placeholder hash-mismatch duplicate-id bad-target-id artifact-cross-target-path; do
   bad_index="$(make_bad_index "${case_name}")"
   bad_out="${TMP_DIR}/${case_name}.out"
   if "${CHECKER}" "${fixture_root}" --target codex-home --index "${bad_index}" --strict-artifacts >"${bad_out}" 2>&1; then

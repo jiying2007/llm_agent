@@ -25,7 +25,9 @@ root writes. By default it writes only a timestamped package. With
 --promote-current, it first validates the generated package with
 check-runtime-target-evidence-index.sh --strict-artifacts, then refreshes the
 canonical evidence-index.jsonl, evidence-index.md and current-status.md for the
-target.
+target. Promotion requires --out-dir to stay under
+reports/runtime-target-activation/<target-id>/ and never changes target enabled
+state.
 USAGE
 }
 
@@ -92,11 +94,12 @@ import sys
 from datetime import datetime, timezone
 
 root, target_id, profile, out_dir, timestamp, summary_json_text, promote_current_text = sys.argv[1:8]
+root = os.path.abspath(root)
+out_dir = os.path.abspath(out_dir)
 summary_json = summary_json_text == "1"
 promote_current = promote_current_text == "1"
 manifest_path = os.path.join(root, "manifests", "runtime_targets.json")
 adapters_path = os.path.join(root, "manifests", "runtime_health_adapters.json")
-os.makedirs(out_dir, exist_ok=True)
 
 
 def read_json(path):
@@ -121,6 +124,11 @@ def sha256(path):
     return digest.hexdigest()
 
 
+def fail(message, code=1):
+    print(f"[FAIL] {message}", file=sys.stderr)
+    sys.exit(code)
+
+
 def atomic_copy(src, dst):
     tmp = f"{dst}.tmp-{os.getpid()}"
     shutil.copyfile(src, tmp)
@@ -134,12 +142,38 @@ def atomic_write_text(path, text):
     os.replace(tmp, path)
 
 
-def rel_artifact(path):
+def split_runtime_activation_path(path):
     absolute = os.path.abspath(path)
     marker = os.sep + os.path.join("reports", "runtime-target-activation") + os.sep
     if marker in absolute:
-        return absolute.split(marker, 1)[0].rstrip(os.sep), os.path.join("reports", "runtime-target-activation", absolute.split(marker, 1)[1])
+        artifact_root, suffix = absolute.split(marker, 1)
+        return artifact_root.rstrip(os.sep) or os.sep, os.path.normpath(os.path.join("reports", "runtime-target-activation", suffix))
+    return None, None
+
+
+def rel_artifact(path):
+    artifact_root, rel = split_runtime_activation_path(path)
+    if artifact_root is not None:
+        return artifact_root, rel
+    absolute = os.path.abspath(path)
     return root, os.path.relpath(absolute, root)
+
+
+def validate_promotion_out_dir(path, target):
+    artifact_root, rel = split_runtime_activation_path(path)
+    expected_base = os.path.join("reports", "runtime-target-activation", target)
+    if artifact_root is None:
+        fail(f"--promote-current requires --out-dir under reports/runtime-target-activation/{target}/")
+    if rel == expected_base:
+        fail(f"--promote-current --out-dir must be a package subdirectory under {expected_base}/")
+    if not rel.startswith(expected_base + os.sep):
+        fail(f"--promote-current --out-dir must stay under {expected_base}/")
+    expected_abs_base = os.path.join(artifact_root, expected_base)
+    real_expected_base = os.path.realpath(expected_abs_base)
+    real_path = os.path.realpath(os.path.abspath(path))
+    if real_path == real_expected_base or not real_path.startswith(real_expected_base + os.sep):
+        fail(f"--promote-current --out-dir realpath must stay under {expected_base}/")
+    return artifact_root
 
 
 def run_capture(name, command_label, argv):
@@ -193,8 +227,13 @@ adapters_manifest = read_json(adapters_path)
 targets = manifest.get("targets") or []
 target = next((item for item in targets if item.get("id") == target_id), None)
 if not target:
-    print(f"[FAIL] runtime target not declared: {target_id}", file=sys.stderr)
-    sys.exit(1)
+    fail(f"runtime target not declared: {target_id}")
+
+promotion_artifact_root = None
+if promote_current:
+    promotion_artifact_root = validate_promotion_out_dir(out_dir, target_id)
+
+os.makedirs(out_dir, exist_ok=True)
 
 adapter_id = target.get("health_adapter")
 adapters = adapters_manifest.get("adapters") or []
@@ -397,8 +436,11 @@ canonical_markdown = None
 current_status = None
 strict_command_label = None
 
+if promote_current and status != "pass":
+    fail(f"evidence package status is {status}; current evidence was not promoted")
+
 if promote_current:
-    artifact_root, _rel = rel_artifact(jsonl_path)
+    artifact_root = promotion_artifact_root
     canonical_dir = os.path.join(artifact_root, "reports", "runtime-target-activation", target_id)
     canonical_index = os.path.join(canonical_dir, "evidence-index.jsonl")
     canonical_markdown = os.path.join(canonical_dir, "evidence-index.md")
@@ -443,6 +485,9 @@ if promote_current:
         "",
         f"- promoted_at: {generated_at}",
         f"- target_id: {target_id}",
+        f"- target_enabled: {str(enabled).lower()}",
+        f"- target_role: {target.get('role')}",
+        f"- activation_ready: {str(activation_ready).lower()}",
         f"- source_package: {source_display}",
         f"- evidence_index_jsonl: {index_display}",
         f"- evidence_index_md: {markdown_display}",
@@ -452,6 +497,7 @@ if promote_current:
         f"- completed: {completed_count}",
         f"- blocked: {blocked_count}",
         "- write_scope: report-only; no source-to-live apply, rollback or live-root write was executed by this collector.",
+        "- target_state: active and candidate targets may be promoted only as evidence pointers; promotion never changes enabled state.",
         "- promotion_rule: canonical files are refreshed only after strict artifact validation passes.",
         "",
     ])
@@ -473,6 +519,8 @@ if summary_json:
         "canonical_markdown": canonical_markdown,
         "current_status": current_status,
         "strict_check": strict_command_label,
+        "target_enabled": enabled,
+        "activation_ready": activation_ready,
     }, ensure_ascii=False, separators=(",", ":")))
 else:
     if promoted:

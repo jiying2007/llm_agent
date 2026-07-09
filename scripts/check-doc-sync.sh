@@ -151,6 +151,8 @@ required_tokens=(
   "does not run apply"
   "does not run rollback"
   "live root writes"
+  "promotion never changes enabled state"
+  "realpath"
   "reference-dirty-triage"
   "fixtures/oss-intake"
   "discovery-source.md"

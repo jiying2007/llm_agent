@@ -109,7 +109,7 @@ rtk scripts/check-runtime-target-evidence-index.sh . --target <target-id> --requ
 
 Evidence Index 只记录真实执行或明确计划的证据，不得只复制 `required_evidence` 关键词来满足门禁。`check-runtime-targets.sh` 是声明校验，只能证明 manifest 中声明了对应证据类别，不能证明 artifact/report 已存在。
 `collect-runtime-target-evidence-package.sh` 是 report-only 采集器，只运行 `explain-target`、runtime target summary、adapter fixture、runtime health 和 footprint 等只读门禁；source-to-live plan、dry-run、rollback 和 apply 行只记录为 `blocked` / `planned`，不会执行真实 apply、rollback 或 live root 写入。
-默认采集只写入带时间戳的 evidence package，不刷新 canonical 当前指针。显式传入 `--promote-current` 时，采集器会先对刚生成的 `evidence-index.jsonl` 执行 `check-runtime-target-evidence-index.sh --strict-artifacts`；校验通过后才复制刷新 `reports/runtime-target-activation/<target-id>/evidence-index.jsonl`、`evidence-index.md`，并写入 `current-status.md` 记录 source package、strict check、entries/completed/blocked 计数和 report-only 边界。strict 校验失败时不会提升 canonical 文件。
+默认采集只写入带时间戳的 evidence package，不刷新 canonical 当前指针。显式传入 `--promote-current` 时，采集器会先要求 `--out-dir` 的语法路径和 realpath 都位于同一 target 的 `reports/runtime-target-activation/<target-id>/...` 子目录，再对刚生成的 `evidence-index.jsonl` 执行 `check-runtime-target-evidence-index.sh --strict-artifacts`；校验通过且 package status 为 `pass` 后才复制刷新 `reports/runtime-target-activation/<target-id>/evidence-index.jsonl`、`evidence-index.md`，并写入 `current-status.md` 记录 source package、strict check、entries/completed/blocked 计数和 report-only 边界。strict 校验失败、package status 非 `pass`、外部 `--out-dir`、跨 target `--out-dir`、`..` 归一化逃逸或 symlink realpath 逃逸都不会提升 canonical 文件；已有 canonical 文件不得被失败路径覆盖。
 
 字段约束：
 
@@ -126,7 +126,7 @@ Evidence Index 只记录真实执行或明确计划的证据，不得只复制 `
 - `--index`: 校验一个已落盘 `evidence-index.jsonl` 或配套 Markdown 索引；严格门禁以 JSONL 为真源。
 - `--require-index`: 要求每个选中 target 都存在 `reports/runtime-target-activation/<target-id>/evidence-index.jsonl`。
 - `--strict-artifacts`: 只读校验 artifact 存在性、hash、exit code、审批身份和路径边界；它必须与 `--index` 或 `--require-index` 组合使用，不执行 evidence command。
-- Evidence package: canonical `evidence-index.jsonl` 可以位于 `reports/runtime-target-activation/<target-id>/evidence-index.jsonl`；带时间戳的采集包可放在 `reports/runtime-target-activation/<target-id>/<timestamp>/`，其 artifact 仍必须保持在同一 target evidence 目录树下。`current-status.md` 只表示最近一次通过 strict artifact 校验后提升的当前 evidence pointer，不代表已执行 live apply 或 rollback。
+- Evidence package: canonical `evidence-index.jsonl` 可以位于 `reports/runtime-target-activation/<target-id>/evidence-index.jsonl`；带时间戳的采集包可放在 `reports/runtime-target-activation/<target-id>/<timestamp>/`，其 artifact 仍必须保持在同一 target evidence 目录树下。`current-status.md` 只表示最近一次通过 strict artifact 校验后提升的当前 evidence pointer，不代表已执行 live apply 或 rollback；candidate target 也可以提升当前 evidence pointer，但 promotion never changes enabled state。
 
 可直接复制下表：
 
