@@ -124,11 +124,6 @@ manifest_path = os.path.join(root, "manifests", "runtime_targets.json")
 adapters_path = os.path.join(root, "manifests", "runtime_health_adapters.json")
 
 
-def read_json(path):
-    with open(path, "r", encoding="utf-8") as handle:
-        return json.load(handle)
-
-
 def target_prefix(value):
     return re.sub(r"[^A-Z0-9]+", "-", value.upper()).strip("-")
 
@@ -163,6 +158,56 @@ def fail(message, code=1, error_code="RUNTIME_TARGET_EVIDENCE_ERROR", details=No
             payload["details"] = compact(str(details), 500)
         print(json.dumps(payload, ensure_ascii=False, separators=(",", ":")))
     sys.exit(code)
+
+
+def rel_to_root(path):
+    try:
+        return os.path.relpath(path, root)
+    except ValueError:
+        return path
+
+
+def read_json(path, label, missing_code, invalid_json_code, read_failed_code):
+    display_path = rel_to_root(path)
+    try:
+        with open(path, "r", encoding="utf-8") as handle:
+            return json.load(handle)
+    except FileNotFoundError:
+        fail(
+            f"{label} not found: {display_path}",
+            error_code=missing_code,
+        )
+    except json.JSONDecodeError as exc:
+        fail(
+            f"{label} is invalid JSON: {display_path}",
+            error_code=invalid_json_code,
+            details=str(exc),
+        )
+    except OSError as exc:
+        fail(
+            f"{label} could not be read: {display_path}",
+            error_code=read_failed_code,
+            details=str(exc),
+        )
+
+
+def require_object(value, label):
+    if not isinstance(value, dict):
+        fail(
+            f"{label} schema invalid: top-level JSON must be an object",
+            error_code="RUNTIME_TARGET_EVIDENCE_MANIFEST_SCHEMA_INVALID",
+        )
+    return value
+
+
+def require_list_field(value, field, label):
+    items = value.get(field)
+    if not isinstance(items, list):
+        fail(
+            f"{label} schema invalid: {field} must be an array",
+            error_code="RUNTIME_TARGET_EVIDENCE_MANIFEST_SCHEMA_INVALID",
+        )
+    return items
 
 
 def atomic_copy(src, dst):
@@ -270,9 +315,21 @@ def entry(evidence_id, gate, command, expected, scope, artifact_path, approval_r
     }
 
 
-manifest = read_json(manifest_path)
-adapters_manifest = read_json(adapters_path)
-targets = manifest.get("targets") or []
+manifest = require_object(read_json(
+    manifest_path,
+    "runtime targets manifest",
+    "RUNTIME_TARGET_EVIDENCE_RUNTIME_TARGETS_MANIFEST_MISSING",
+    "RUNTIME_TARGET_EVIDENCE_RUNTIME_TARGETS_MANIFEST_INVALID_JSON",
+    "RUNTIME_TARGET_EVIDENCE_RUNTIME_TARGETS_MANIFEST_READ_FAILED",
+), "runtime targets manifest")
+adapters_manifest = require_object(read_json(
+    adapters_path,
+    "runtime health adapters manifest",
+    "RUNTIME_TARGET_EVIDENCE_HEALTH_ADAPTERS_MANIFEST_MISSING",
+    "RUNTIME_TARGET_EVIDENCE_HEALTH_ADAPTERS_MANIFEST_INVALID_JSON",
+    "RUNTIME_TARGET_EVIDENCE_HEALTH_ADAPTERS_MANIFEST_READ_FAILED",
+), "runtime health adapters manifest")
+targets = require_list_field(manifest, "targets", "runtime targets manifest")
 target = next((item for item in targets if item.get("id") == target_id), None)
 if not target:
     fail(f"runtime target not declared: {target_id}", error_code="RUNTIME_TARGET_EVIDENCE_TARGET_NOT_DECLARED")
@@ -284,7 +341,7 @@ if promote_current:
 os.makedirs(out_dir, exist_ok=True)
 
 adapter_id = target.get("health_adapter")
-adapters = adapters_manifest.get("adapters") or []
+adapters = require_list_field(adapters_manifest, "adapters", "runtime health adapters manifest")
 adapter = next((item for item in adapters if item.get("id") == adapter_id), None)
 prefix = target_prefix(target_id)
 generated_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
