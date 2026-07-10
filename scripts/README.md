@@ -115,6 +115,8 @@ Codex 目标运行态 `~/.codex` 健康检查脚本（运行目录由 `~/codex` 
 
 Runtime target Evidence Index 支持 `evidence-index.md` 和 `evidence-index.jsonl`；字段包括 `Evidence ID`、`Target ID`、`Gate`、`Write Scope`、`Approval Required`、`Approval Status`、`artifact_exists`、`artifact_sha256`、`approved_by`、`approved_at`、`approval_scope`、`activation_ready`。`Gate` 枚举为 `declare`、`dry-run`、`health`、`footprint`、`apply`、`rollback`、`activation`；`Write Scope` 枚举为 `read-only`、`workspace-local`、`source-repo-only`、`live-root`、`rollback-live-root`；状态枚举为 `planned`、`passed`、`failed`、`blocked`、`approved`。`--strict-artifacts` 下 `passed/approved artifact hash` 必须匹配，live 写入和 rollback-live-root 必须有审批身份字段；evidence package 不执行真实 apply/rollback，`required_evidence is not artifact evidence`，`check-runtime-targets.sh` 是 `declaration gate only`，不能证明 dry-run、rollback、health、footprint 或 live apply artifact 已存在。
 
+Runtime target evidence 相关脚本在 `--summary-json` 模式下的失败输出固定包含 `status:"fail"`、`error_code` 和 `message`，成功输出固定包含 `error_code:null` 与 `message:null`；stderr 仍保留 `[FAIL] ...` 人读诊断，自动化只解析 stdout JSON。
+
 技能元数据检查脚本：
 
 ```bash

@@ -76,6 +76,22 @@ if ! rg -q --fixed-strings -- '"status":"pass"' "${summary_out}"; then
   sed -n '1,80p' "${summary_out}" >&2 || true
   exit 1
 fi
+if ! rg -q --fixed-strings -- '"error_code":null' "${summary_out}"; then
+  echo "[FAIL] checker pass summary did not include null error_code" >&2
+  sed -n '1,80p' "${summary_out}" >&2 || true
+  exit 1
+fi
+
+unknown_arg_summary="${TMP_DIR}/unknown-arg-summary.json"
+if "${CHECKER}" "${ROOT}" --summary-json --bad-arg >"${unknown_arg_summary}" 2>"${TMP_DIR}/unknown-arg-summary.err"; then
+  echo "[FAIL] checker unknown arg summary unexpectedly passed" >&2
+  exit 1
+fi
+if ! rg -q --fixed-strings -- '"error_code":"RUNTIME_TARGET_EVIDENCE_INDEX_UNKNOWN_ARG"' "${unknown_arg_summary}"; then
+  echo "[FAIL] checker unknown arg summary did not include stable error code" >&2
+  sed -n '1,80p' "${unknown_arg_summary}" >&2 || true
+  exit 1
+fi
 
 strict_without_index="${TMP_DIR}/strict-without-index.out"
 if "${CHECKER}" "${ROOT}" --strict-artifacts >"${strict_without_index}" 2>&1; then
@@ -85,6 +101,22 @@ fi
 if ! rg -q --fixed-strings -- "--strict-artifacts requires --index or --require-index" "${strict_without_index}"; then
   echo "[FAIL] strict-artifacts failure did not explain required index" >&2
   sed -n '1,80p' "${strict_without_index}" >&2 || true
+  exit 1
+fi
+
+strict_without_index_summary="${TMP_DIR}/strict-without-index-summary.json"
+if "${CHECKER}" "${ROOT}" --strict-artifacts --summary-json >"${strict_without_index_summary}" 2>"${TMP_DIR}/strict-without-index-summary.err"; then
+  echo "[FAIL] strict-artifacts without index summary unexpectedly passed" >&2
+  exit 1
+fi
+if ! rg -q --fixed-strings -- '"error_code":"RUNTIME_TARGET_EVIDENCE_INDEX_STRICT_REQUIRES_INDEX"' "${strict_without_index_summary}"; then
+  echo "[FAIL] strict-artifacts summary did not include stable error code" >&2
+  sed -n '1,80p' "${strict_without_index_summary}" >&2 || true
+  exit 1
+fi
+if ! rg -q --fixed-strings -- '"message":"--strict-artifacts requires --index or --require-index"' "${strict_without_index_summary}"; then
+  echo "[FAIL] strict-artifacts summary did not include stable message" >&2
+  sed -n '1,80p' "${strict_without_index_summary}" >&2 || true
   exit 1
 fi
 

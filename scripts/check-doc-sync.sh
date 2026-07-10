@@ -149,6 +149,8 @@ required_tokens=(
   "passed/approved artifact hash"
   "required_evidence is not artifact evidence"
   "declaration gate only"
+  "error_code"
+  "message:null"
   "does not run apply"
   "does not run rollback"
   "live root writes"

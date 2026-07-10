@@ -24,6 +24,14 @@ evidence-index.jsonl packages. The command is read-only for the repository.
 USAGE
 }
 
+json_string() {
+  local value="$1"
+  value="${value//\\/\\\\}"
+  value="${value//\"/\\\"}"
+  value="${value//$'\n'/\\n}"
+  printf '"%s"' "${value}"
+}
+
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --target)
@@ -51,7 +59,11 @@ while [[ $# -gt 0 ]]; do
       exit 0
       ;;
     *)
-      echo "[FAIL] unknown arg: $1" >&2
+      unknown_arg="$1"
+      echo "[FAIL] unknown arg: ${unknown_arg}" >&2
+      if [[ "${SUMMARY_JSON}" -eq 1 ]]; then
+        printf '{"status":"fail","mode":"argument-parse","targets":0,"checked":0,"strict_artifacts":false,"require_index":false,"failures":1,"error_code":"RUNTIME_TARGET_EVIDENCE_INDEX_UNKNOWN_ARG","message":%s}\n' "$(json_string "unknown arg: ${unknown_arg}")"
+      fi
       usage >&2
       exit 1
       ;;
@@ -62,40 +74,28 @@ if [[ "${#TARGETS[@]}" -eq 0 ]]; then
   TARGETS=(codex-home claude-code-home)
 fi
 
-if [[ "${STRICT_ARTIFACTS}" -eq 1 && -z "${INDEX_PATH}" && "${REQUIRE_INDEX}" -eq 0 ]]; then
-  if [[ "${SUMMARY_JSON}" -eq 1 ]]; then
-    printf '{"status":"fail","mode":"generated","targets":%s,"checked":0,"strict_artifacts":true,"require_index":false,"failures":1}\n' "${#TARGETS[@]}"
-  else
-    echo "[FAIL] --strict-artifacts requires --index or --require-index" >&2
-  fi
-  exit 1
-fi
-
-TMP_DIR="$(mktemp -d)"
-trap 'rm -rf "${TMP_DIR}"' EXIT
-
 FAILURES=0
 CHECKED=0
 MODE="generated"
+FIRST_FAILURE=""
+ERROR_CODE=""
 
 record_fail() {
+  local message="$1"
+  local code="${2:-RUNTIME_TARGET_EVIDENCE_INDEX_VALIDATION_FAILED}"
   if [[ "${SUMMARY_JSON}" -eq 0 ]]; then
-    echo "[FAIL] $*" >&2
+    echo "[FAIL] ${message}" >&2
+  fi
+  if [[ -z "${FIRST_FAILURE}" ]]; then
+    FIRST_FAILURE="${message}"
+    ERROR_CODE="${code}"
   fi
   FAILURES=$((FAILURES + 1))
 }
 
-json_string() {
-  local value="$1"
-  value="${value//\\/\\\\}"
-  value="${value//\"/\\\"}"
-  value="${value//$'\n'/\\n}"
-  printf '"%s"' "${value}"
-}
-
 json_summary() {
   local status="$1"
-  printf '{"status":%s,"mode":%s,"targets":%s,"checked":%s,"strict_artifacts":%s,"require_index":%s,"failures":%s}\n' \
+  printf '{"status":%s,"mode":%s,"targets":%s,"checked":%s,"strict_artifacts":%s,"require_index":%s,"failures":%s' \
     "$(json_string "${status}")" \
     "$(json_string "${MODE}")" \
     "${#TARGETS[@]}" \
@@ -103,7 +103,28 @@ json_summary() {
     "$([[ "${STRICT_ARTIFACTS}" -eq 1 ]] && echo true || echo false)" \
     "$([[ "${REQUIRE_INDEX}" -eq 1 ]] && echo true || echo false)" \
     "${FAILURES}"
+  if [[ "${status}" == "fail" ]]; then
+    printf ',"error_code":%s,"message":%s' \
+      "$(json_string "${ERROR_CODE:-RUNTIME_TARGET_EVIDENCE_INDEX_VALIDATION_FAILED}")" \
+      "$(json_string "${FIRST_FAILURE}")"
+  else
+    printf ',"error_code":null,"message":null'
+  fi
+  printf '}\n'
 }
+
+if [[ "${STRICT_ARTIFACTS}" -eq 1 && -z "${INDEX_PATH}" && "${REQUIRE_INDEX}" -eq 0 ]]; then
+  record_fail "--strict-artifacts requires --index or --require-index" "RUNTIME_TARGET_EVIDENCE_INDEX_STRICT_REQUIRES_INDEX"
+  if [[ "${SUMMARY_JSON}" -eq 1 ]]; then
+    json_summary "fail"
+  else
+    :
+  fi
+  exit 1
+fi
+
+TMP_DIR="$(mktemp -d)"
+trap 'rm -rf "${TMP_DIR}"' EXIT
 
 assert_contains() {
   local file="$1"
@@ -331,7 +352,7 @@ validate_index_file() {
 if [[ -n "${INDEX_PATH}" ]]; then
   MODE="index"
   if [[ "${#TARGETS[@]}" -ne 1 ]]; then
-    record_fail "--index requires exactly one --target"
+    record_fail "--index requires exactly one --target" "RUNTIME_TARGET_EVIDENCE_INDEX_REQUIRES_SINGLE_TARGET"
   else
     validate_index_file "${INDEX_PATH}" "${TARGETS[0]}"
   fi

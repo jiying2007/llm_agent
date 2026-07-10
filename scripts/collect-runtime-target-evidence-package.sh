@@ -31,6 +31,32 @@ state.
 USAGE
 }
 
+json_string() {
+  local value="$1"
+  value="${value//\\/\\\\}"
+  value="${value//\"/\\\"}"
+  value="${value//$'\n'/\\n}"
+  printf '"%s"' "${value}"
+}
+
+fail_with_summary() {
+  local error_code="$1"
+  local message="$2"
+  local exit_code="${3:-1}"
+  local print_usage="${4:-0}"
+  echo "[FAIL] ${message}" >&2
+  if [[ "${SUMMARY_JSON}" -eq 1 ]]; then
+    printf '{"status":"fail","target_id":%s,"error_code":%s,"message":%s}\n' \
+      "$(json_string "${TARGET_ID}")" \
+      "$(json_string "${error_code}")" \
+      "$(json_string "${message}")"
+  fi
+  if [[ "${print_usage}" -eq 1 ]]; then
+    usage >&2
+  fi
+  exit "${exit_code}"
+}
+
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --target)
@@ -62,17 +88,13 @@ while [[ $# -gt 0 ]]; do
       exit 0
       ;;
     *)
-      echo "[FAIL] unknown arg: $1" >&2
-      usage >&2
-      exit 1
+      fail_with_summary "RUNTIME_TARGET_EVIDENCE_UNKNOWN_ARG" "unknown arg: $1" 1 1
       ;;
   esac
 done
 
 if [[ -z "${TARGET_ID}" ]]; then
-  echo "[FAIL] --target is required" >&2
-  usage >&2
-  exit 1
+  fail_with_summary "RUNTIME_TARGET_EVIDENCE_TARGET_REQUIRED" "--target is required" 1 1
 fi
 
 if [[ -z "${TIMESTAMP}" ]]; then
@@ -124,8 +146,22 @@ def sha256(path):
     return digest.hexdigest()
 
 
-def fail(message, code=1):
+def fail(message, code=1, error_code="RUNTIME_TARGET_EVIDENCE_ERROR", details=None):
     print(f"[FAIL] {message}", file=sys.stderr)
+    if details:
+        print(str(details).rstrip(), file=sys.stderr)
+    if summary_json:
+        payload = {
+            "status": "fail",
+            "target_id": target_id,
+            "timestamp": timestamp,
+            "out_dir": out_dir,
+            "error_code": error_code,
+            "message": message,
+        }
+        if details:
+            payload["details"] = compact(str(details), 500)
+        print(json.dumps(payload, ensure_ascii=False, separators=(",", ":")))
     sys.exit(code)
 
 
@@ -163,16 +199,16 @@ def validate_promotion_out_dir(path, target):
     artifact_root, rel = split_runtime_activation_path(path)
     expected_base = os.path.join("reports", "runtime-target-activation", target)
     if artifact_root is None:
-        fail(f"--promote-current requires --out-dir under reports/runtime-target-activation/{target}/")
+        fail(f"--promote-current requires --out-dir under reports/runtime-target-activation/{target}/", error_code="RUNTIME_TARGET_EVIDENCE_PROMOTE_OUT_DIR_REQUIRED")
     if rel == expected_base:
-        fail(f"--promote-current --out-dir must be a package subdirectory under {expected_base}/")
+        fail(f"--promote-current --out-dir must be a package subdirectory under {expected_base}/", error_code="RUNTIME_TARGET_EVIDENCE_PROMOTE_PACKAGE_DIR_REQUIRED")
     if not rel.startswith(expected_base + os.sep):
-        fail(f"--promote-current --out-dir must stay under {expected_base}/")
+        fail(f"--promote-current --out-dir must stay under {expected_base}/", error_code="RUNTIME_TARGET_EVIDENCE_PROMOTE_OUT_DIR_SCOPE")
     expected_abs_base = os.path.join(artifact_root, expected_base)
     real_expected_base = os.path.realpath(expected_abs_base)
     real_path = os.path.realpath(os.path.abspath(path))
     if real_path == real_expected_base or not real_path.startswith(real_expected_base + os.sep):
-        fail(f"--promote-current --out-dir realpath must stay under {expected_base}/")
+        fail(f"--promote-current --out-dir realpath must stay under {expected_base}/", error_code="RUNTIME_TARGET_EVIDENCE_PROMOTE_REALPATH_SCOPE")
     return artifact_root
 
 
@@ -181,10 +217,10 @@ def forced_strict_failure_code():
     if not value:
         return None
     if not re.fullmatch(r"[0-9]+", value):
-        fail("ADK_TEST_RUNTIME_TARGET_EVIDENCE_FORCE_STRICT_FAIL must be a non-zero integer")
+        fail("ADK_TEST_RUNTIME_TARGET_EVIDENCE_FORCE_STRICT_FAIL must be a non-zero integer", error_code="RUNTIME_TARGET_EVIDENCE_FORCE_STRICT_FAIL_CONFIG")
     code = int(value)
     if code <= 0 or code > 255:
-        fail("ADK_TEST_RUNTIME_TARGET_EVIDENCE_FORCE_STRICT_FAIL must be between 1 and 255")
+        fail("ADK_TEST_RUNTIME_TARGET_EVIDENCE_FORCE_STRICT_FAIL must be between 1 and 255", error_code="RUNTIME_TARGET_EVIDENCE_FORCE_STRICT_FAIL_CONFIG")
     return code
 
 
@@ -239,7 +275,7 @@ adapters_manifest = read_json(adapters_path)
 targets = manifest.get("targets") or []
 target = next((item for item in targets if item.get("id") == target_id), None)
 if not target:
-    fail(f"runtime target not declared: {target_id}")
+    fail(f"runtime target not declared: {target_id}", error_code="RUNTIME_TARGET_EVIDENCE_TARGET_NOT_DECLARED")
 
 promotion_artifact_root = None
 if promote_current:
@@ -449,7 +485,7 @@ current_status = None
 strict_command_label = None
 
 if promote_current and status != "pass":
-    fail(f"evidence package status is {status}; current evidence was not promoted")
+    fail(f"evidence package status is {status}; current evidence was not promoted", error_code="RUNTIME_TARGET_EVIDENCE_PACKAGE_NOT_PASS")
 
 if promote_current:
     artifact_root = promotion_artifact_root
@@ -487,10 +523,12 @@ if promote_current:
         injected = "[FAIL] injected strict artifact failure"
         strict_output = (strict_output.rstrip() + "\n" + injected + "\n") if strict_output else injected + "\n"
     if strict_returncode != 0:
-        print("[FAIL] strict artifact validation failed; current evidence was not promoted", file=sys.stderr)
-        if strict_output:
-            print(strict_output.rstrip(), file=sys.stderr)
-        sys.exit(strict_returncode)
+        fail(
+            "strict artifact validation failed; current evidence was not promoted",
+            code=strict_returncode,
+            error_code="RUNTIME_TARGET_EVIDENCE_STRICT_VALIDATION_FAILED",
+            details=strict_output,
+        )
     os.makedirs(canonical_dir, exist_ok=True)
     for src, dst in ((jsonl_path, canonical_index), (md_path, canonical_markdown)):
         if os.path.abspath(src) != os.path.abspath(dst):
@@ -540,6 +578,8 @@ if summary_json:
         "strict_check": strict_command_label,
         "target_enabled": enabled,
         "activation_ready": activation_ready,
+        "error_code": None,
+        "message": None,
     }, ensure_ascii=False, separators=(",", ":")))
 else:
     if promoted:

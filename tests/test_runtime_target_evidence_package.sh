@@ -10,9 +10,23 @@ codex_dir="${TMP_DIR}/reports/runtime-target-activation/codex-home/20260709T0000
 canonical_dir="${TMP_DIR}/reports/runtime-target-activation/codex-home"
 candidate_dir="${TMP_DIR}/reports/runtime-target-activation/claude-code-home/20260709T000001Z"
 
+target_required_summary="${TMP_DIR}/target-required-summary.json"
+if "${COLLECTOR}" "${ROOT}" --summary-json >"${target_required_summary}" 2>"${TMP_DIR}/target-required-summary.err"; then
+  fail "target-required collector summary unexpectedly passed"
+fi
+assert_contains "${target_required_summary}" '"error_code":"RUNTIME_TARGET_EVIDENCE_TARGET_REQUIRED"' "target-required collector summary did not include stable error code"
+
+unknown_arg_summary="${TMP_DIR}/unknown-arg-summary.json"
+if "${COLLECTOR}" "${ROOT}" --summary-json --bad-arg >"${unknown_arg_summary}" 2>"${TMP_DIR}/unknown-arg-summary.err"; then
+  fail "unknown-arg collector summary unexpectedly passed"
+fi
+assert_contains "${unknown_arg_summary}" '"error_code":"RUNTIME_TARGET_EVIDENCE_UNKNOWN_ARG"' "unknown-arg collector summary did not include stable error code"
+
 "${COLLECTOR}" "${ROOT}" --target codex-home --timestamp 20260709T000000Z --out-dir "${codex_dir}" --summary-json >"${TMP_DIR}/codex-summary.json"
 
 assert_contains "${TMP_DIR}/codex-summary.json" '"status":"pass"' "codex evidence package summary did not pass"
+assert_contains "${TMP_DIR}/codex-summary.json" '"error_code":null' "codex evidence package pass summary did not include null error_code"
+assert_contains "${TMP_DIR}/codex-summary.json" '"message":null' "codex evidence package pass summary did not include null message"
 
 for artifact in evidence-index.jsonl evidence-index.md explain-target.json runtime-targets.json adapter-fixtures.md runtime-health.json footprint-policy.json; do
   assert_file "${codex_dir}/${artifact}" "codex evidence package missing artifact: ${artifact}"
@@ -43,5 +57,13 @@ if "${COLLECTOR}" "${ROOT}" --target missing-runtime-home --out-dir "${TMP_DIR}/
   fail "missing target evidence package unexpectedly passed"
 fi
 assert_contains "${missing_out}" "runtime target not declared: missing-runtime-home" "missing target collector did not explain failure"
+
+missing_summary="${TMP_DIR}/missing-summary.json"
+if "${COLLECTOR}" "${ROOT}" --target missing-runtime-home --out-dir "${TMP_DIR}/missing-summary" --summary-json >"${missing_summary}" 2>"${TMP_DIR}/missing-summary.err"; then
+  fail "missing target evidence package summary unexpectedly passed"
+fi
+assert_contains "${missing_summary}" '"status":"fail"' "missing target collector summary did not report failure"
+assert_contains "${missing_summary}" '"error_code":"RUNTIME_TARGET_EVIDENCE_TARGET_NOT_DECLARED"' "missing target collector summary did not include stable error code"
+assert_contains "${missing_summary}" '"message":"runtime target not declared: missing-runtime-home"' "missing target collector summary did not include stable message"
 
 echo "[PASS] runtime target evidence package collector behaves as expected"
