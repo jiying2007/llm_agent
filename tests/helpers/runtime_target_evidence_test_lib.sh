@@ -45,6 +45,23 @@ assert_not_contains() {
   fi
 }
 
+assert_collector_summary_failure() {
+  local summary_file="$1"
+  local error_code="$2"
+  local label="$3"
+  assert_json_value "${summary_file}" "status" '"fail"' "${label} collector summary did not report failure"
+  assert_json_value "${summary_file}" "error_code" "\"${error_code}\"" "${label} collector summary did not include stable error code"
+}
+
+assert_collector_summary_failure_no_traceback() {
+  local summary_file="$1"
+  local stderr_file="$2"
+  local error_code="$3"
+  local label="$4"
+  assert_collector_summary_failure "${summary_file}" "${error_code}" "${label}"
+  assert_not_contains "${stderr_file}" "Traceback" "${label} collector emitted a traceback"
+}
+
 assert_json_value() {
   local file="$1"
   local field="$2"
