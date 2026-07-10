@@ -185,6 +185,32 @@ if ! cmp -s "${canonical_md_before}" "${canonical_dir}/evidence-index.md" || ! c
   exit 1
 fi
 
+strict_fail_dir="${TMP_DIR}/reports/runtime-target-activation/codex-home/strict-fail"
+strict_fail_out="${TMP_DIR}/strict-fail.out"
+if ADK_TEST_RUNTIME_TARGET_EVIDENCE_FORCE_STRICT_FAIL=17 "${COLLECTOR}" "${ROOT}" --target codex-home --timestamp 20260709T000010Z --out-dir "${strict_fail_dir}" --promote-current >"${strict_fail_out}" 2>&1; then
+  echo "[FAIL] promote-current unexpectedly allowed injected strict checker failure" >&2
+  exit 1
+fi
+if ! rg -q --fixed-strings -- "strict artifact validation failed; current evidence was not promoted" "${strict_fail_out}"; then
+  echo "[FAIL] injected strict checker failure did not explain skipped promotion" >&2
+  sed -n '1,80p' "${strict_fail_out}" >&2 || true
+  exit 1
+fi
+if ! rg -q --fixed-strings -- "injected strict artifact failure" "${strict_fail_out}"; then
+  echo "[FAIL] injected strict checker output was not surfaced" >&2
+  sed -n '1,80p' "${strict_fail_out}" >&2 || true
+  exit 1
+fi
+if [[ ! -f "${strict_fail_dir}/evidence-index.jsonl" ]]; then
+  echo "[FAIL] injected strict failure did not leave generated package for inspection" >&2
+  exit 1
+fi
+"${CHECKER}" "${TMP_DIR}" --target codex-home --index "${strict_fail_dir}/evidence-index.jsonl" --strict-artifacts >/dev/null
+if ! cmp -s "${canonical_before}" "${canonical_dir}/evidence-index.jsonl" || ! cmp -s "${canonical_md_before}" "${canonical_dir}/evidence-index.md" || ! cmp -s "${current_status_before}" "${canonical_dir}/current-status.md"; then
+  echo "[FAIL] injected strict checker failure changed canonical artifacts" >&2
+  exit 1
+fi
+
 "${COLLECTOR}" "${ROOT}" --target claude-code-home --timestamp 20260709T000001Z --out-dir "${candidate_dir}" --summary-json >"${TMP_DIR}/candidate-summary.json"
 
 if ! rg -q --fixed-strings -- '"status":"pass"' "${TMP_DIR}/candidate-summary.json"; then

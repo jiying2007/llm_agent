@@ -176,6 +176,18 @@ def validate_promotion_out_dir(path, target):
     return artifact_root
 
 
+def forced_strict_failure_code():
+    value = os.environ.get("ADK_TEST_RUNTIME_TARGET_EVIDENCE_FORCE_STRICT_FAIL", "")
+    if not value:
+        return None
+    if not re.fullmatch(r"[0-9]+", value):
+        fail("ADK_TEST_RUNTIME_TARGET_EVIDENCE_FORCE_STRICT_FAIL must be a non-zero integer")
+    code = int(value)
+    if code <= 0 or code > 255:
+        fail("ADK_TEST_RUNTIME_TARGET_EVIDENCE_FORCE_STRICT_FAIL must be between 1 and 255")
+    return code
+
+
 def run_capture(name, command_label, argv):
     artifact = os.path.join(out_dir, name)
     proc = subprocess.run(argv, cwd=root, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, check=False)
@@ -467,11 +479,18 @@ if promote_current:
         stderr=subprocess.STDOUT,
         check=False,
     )
-    if proc.returncode != 0:
+    strict_returncode = proc.returncode
+    strict_output = proc.stdout
+    forced_code = forced_strict_failure_code()
+    if forced_code is not None:
+        strict_returncode = forced_code
+        injected = "[FAIL] injected strict artifact failure"
+        strict_output = (strict_output.rstrip() + "\n" + injected + "\n") if strict_output else injected + "\n"
+    if strict_returncode != 0:
         print("[FAIL] strict artifact validation failed; current evidence was not promoted", file=sys.stderr)
-        if proc.stdout:
-            print(proc.stdout.rstrip(), file=sys.stderr)
-        sys.exit(proc.returncode)
+        if strict_output:
+            print(strict_output.rstrip(), file=sys.stderr)
+        sys.exit(strict_returncode)
     os.makedirs(canonical_dir, exist_ok=True)
     for src, dst in ((jsonl_path, canonical_index), (md_path, canonical_markdown)):
         if os.path.abspath(src) != os.path.abspath(dst):
