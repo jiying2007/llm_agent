@@ -40,8 +40,8 @@ if [[ -f "${canonical_dir}/evidence-index.jsonl" ]]; then
   fail "collector promoted canonical index without --promote-current"
 fi
 
-assert_contains "${codex_dir}/evidence-index.jsonl" '"evidence_id":"CODEX-HOME-APPLY-001"' "codex evidence package missing apply gate"
-assert_contains "${codex_dir}/evidence-index.jsonl" '"execution_status":"blocked"' "codex evidence package missing blocked path"
+assert_jsonl_entry_value "${codex_dir}/evidence-index.jsonl" "CODEX-HOME-APPLY-001" "gate" '"apply"' "codex evidence package missing apply gate"
+assert_jsonl_entry_value "${codex_dir}/evidence-index.jsonl" "CODEX-HOME-APPLY-001" "execution_status" '"blocked"' "codex evidence package missing blocked apply path"
 
 "${COLLECTOR}" "${ROOT}" --target claude-code-home --timestamp 20260709T000001Z --out-dir "${candidate_dir}" --summary-json >"${TMP_DIR}/candidate-summary.json"
 
@@ -49,8 +49,8 @@ assert_json_value "${TMP_DIR}/candidate-summary.json" "status" '"pass"' "candida
 
 assert_no_file "${candidate_dir}/runtime-health.json" "candidate evidence package should not run runtime health"
 
-assert_contains "${candidate_dir}/evidence-index.jsonl" '"evidence_id":"CLAUDE-CODE-HOME-HEALTH-001"' "candidate evidence package missing health gate"
-assert_contains "${candidate_dir}/evidence-index.jsonl" '"result_summary":"not executed: target or adapter is not active"' "candidate health gate did not record blocked reason"
+assert_jsonl_entry_value "${candidate_dir}/evidence-index.jsonl" "CLAUDE-CODE-HOME-HEALTH-001" "gate" '"health"' "candidate evidence package missing health gate"
+assert_jsonl_entry_value "${candidate_dir}/evidence-index.jsonl" "CLAUDE-CODE-HOME-HEALTH-001" "result_summary" '"not executed: target or adapter is not active"' "candidate health gate did not record blocked reason"
 
 "${CHECKER}" "${TMP_DIR}" --target claude-code-home --index "${candidate_dir}/evidence-index.jsonl" --strict-artifacts >/dev/null
 

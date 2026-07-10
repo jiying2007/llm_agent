@@ -45,11 +45,7 @@ import sys
 
 path, field, expected_text = sys.argv[1:4]
 with open(path, "r", encoding="utf-8") as handle:
-    text = handle.read()
-try:
-    payload = json.loads(text)
-except json.JSONDecodeError as exc:
-    raise SystemExit(f"invalid JSON: {exc}") from exc
+    payload = json.load(handle)
 if not isinstance(payload, dict):
     raise SystemExit("JSON payload is not an object")
 if field not in payload:
@@ -58,6 +54,48 @@ expected = json.loads(expected_text)
 actual = payload[field]
 if actual != expected:
     raise SystemExit(f"{field}: expected {expected!r}, got {actual!r}")
+PY
+  then
+    echo "[FAIL] ${message}" >&2
+    show_file_head "${file}"
+    exit 1
+  fi
+}
+
+assert_jsonl_entry_value() {
+  local file="$1"
+  local evidence_id="$2"
+  local field="$3"
+  local expected_json="$4"
+  local message="$5"
+  if ! python3 - "${file}" "${evidence_id}" "${field}" "${expected_json}" <<'PY'
+import json
+import sys
+
+path, evidence_id, field, expected_text = sys.argv[1:5]
+matched = None
+with open(path, "r", encoding="utf-8") as handle:
+    for line_number, line in enumerate(handle, start=1):
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            entry = json.loads(line)
+        except json.JSONDecodeError as exc:
+            raise SystemExit(f"line {line_number}: invalid JSON: {exc}") from exc
+        if not isinstance(entry, dict):
+            raise SystemExit(f"line {line_number}: JSONL entry is not an object")
+        if entry.get("evidence_id") == evidence_id:
+            matched = entry
+            break
+if matched is None:
+    raise SystemExit(f"missing evidence_id: {evidence_id}")
+if field not in matched:
+    raise SystemExit(f"{evidence_id}: missing field: {field}")
+expected = json.loads(expected_text)
+actual = matched[field]
+if actual != expected:
+    raise SystemExit(f"{evidence_id}.{field}: expected {expected!r}, got {actual!r}")
 PY
   then
     echo "[FAIL] ${message}" >&2

@@ -26,20 +26,9 @@ if ! rg -q --fixed-strings -- "- activation_ready: true" "${codex_out}"; then
   exit 1
 fi
 
-if ! rg -q --fixed-strings -- '"schema_version":"runtime-target-evidence-index/v1"' "${codex_jsonl}"; then
-  echo "[FAIL] codex evidence jsonl missing schema_version" >&2
-  exit 1
-fi
-
-if ! rg -q --fixed-strings -- '"approval_status":"required"' "${codex_jsonl}"; then
-  echo "[FAIL] codex evidence jsonl missing approval_status=required" >&2
-  exit 1
-fi
-
-if ! rg -q --fixed-strings -- '"artifact_sha256":null' "${codex_jsonl}"; then
-  echo "[FAIL] codex evidence jsonl missing artifact_sha256 placeholder" >&2
-  exit 1
-fi
+assert_jsonl_entry_value "${codex_jsonl}" "CODEX-HOME-DECL-001" "schema_version" '"runtime-target-evidence-index/v1"' "codex evidence jsonl missing schema_version"
+assert_jsonl_entry_value "${codex_jsonl}" "CODEX-HOME-APPLY-001" "approval_status" '"required"' "codex evidence jsonl missing approval_status=required"
+assert_jsonl_entry_value "${codex_jsonl}" "CODEX-HOME-APPLY-001" "artifact_sha256" 'null' "codex evidence jsonl missing artifact_sha256 placeholder"
 
 if ! rg -q --fixed-strings -- "CLAUDE-CODE-HOME-DECL-001" "${candidate_out}"; then
   echo "[FAIL] candidate evidence index missing stable evidence id" >&2
