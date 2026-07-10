@@ -65,6 +65,30 @@ fi
 assert_json_value "${adapters_invalid_summary}" "status" '"fail"' "invalid adapters manifest collector summary did not report failure"
 assert_json_value "${adapters_invalid_summary}" "error_code" '"RUNTIME_TARGET_EVIDENCE_HEALTH_ADAPTERS_MANIFEST_INVALID_JSON"' "invalid adapters manifest collector summary did not include stable error code"
 
+targets_top_invalid_root="${TMP_DIR}/targets-top-invalid-root"
+mkdir -p "${targets_top_invalid_root}/manifests"
+printf '[]\n' >"${targets_top_invalid_root}/manifests/runtime_targets.json"
+printf '{"adapters":[]}\n' >"${targets_top_invalid_root}/manifests/runtime_health_adapters.json"
+targets_top_invalid_summary="${TMP_DIR}/targets-top-invalid-summary.json"
+if "${COLLECTOR}" "${targets_top_invalid_root}" --target codex-home --summary-json --out-dir "${TMP_DIR}/targets-top-invalid-out" >"${targets_top_invalid_summary}" 2>"${TMP_DIR}/targets-top-invalid-summary.err"; then
+  fail "targets-top-invalid manifest collector summary unexpectedly passed"
+fi
+assert_json_value "${targets_top_invalid_summary}" "status" '"fail"' "targets-top-invalid manifest collector summary did not report failure"
+assert_json_value "${targets_top_invalid_summary}" "error_code" '"RUNTIME_TARGET_EVIDENCE_MANIFEST_SCHEMA_INVALID"' "targets-top-invalid manifest collector summary did not include stable error code"
+assert_not_contains "${TMP_DIR}/targets-top-invalid-summary.err" "Traceback" "targets-top-invalid manifest collector emitted a traceback"
+
+adapters_top_invalid_root="${TMP_DIR}/adapters-top-invalid-root"
+mkdir -p "${adapters_top_invalid_root}/manifests"
+printf '{"targets":[]}\n' >"${adapters_top_invalid_root}/manifests/runtime_targets.json"
+printf '[]\n' >"${adapters_top_invalid_root}/manifests/runtime_health_adapters.json"
+adapters_top_invalid_summary="${TMP_DIR}/adapters-top-invalid-summary.json"
+if "${COLLECTOR}" "${adapters_top_invalid_root}" --target codex-home --summary-json --out-dir "${TMP_DIR}/adapters-top-invalid-out" >"${adapters_top_invalid_summary}" 2>"${TMP_DIR}/adapters-top-invalid-summary.err"; then
+  fail "adapters-top-invalid manifest collector summary unexpectedly passed"
+fi
+assert_json_value "${adapters_top_invalid_summary}" "status" '"fail"' "adapters-top-invalid manifest collector summary did not report failure"
+assert_json_value "${adapters_top_invalid_summary}" "error_code" '"RUNTIME_TARGET_EVIDENCE_MANIFEST_SCHEMA_INVALID"' "adapters-top-invalid manifest collector summary did not include stable error code"
+assert_not_contains "${TMP_DIR}/adapters-top-invalid-summary.err" "Traceback" "adapters-top-invalid manifest collector emitted a traceback"
+
 schema_invalid_root="${TMP_DIR}/schema-invalid-root"
 mkdir -p "${schema_invalid_root}/manifests"
 printf '{"targets":{}}\n' >"${schema_invalid_root}/manifests/runtime_targets.json"
@@ -75,6 +99,7 @@ if "${COLLECTOR}" "${schema_invalid_root}" --target codex-home --summary-json --
 fi
 assert_json_value "${schema_invalid_summary}" "status" '"fail"' "schema-invalid manifest collector summary did not report failure"
 assert_json_value "${schema_invalid_summary}" "error_code" '"RUNTIME_TARGET_EVIDENCE_MANIFEST_SCHEMA_INVALID"' "schema-invalid manifest collector summary did not include stable error code"
+assert_not_contains "${TMP_DIR}/schema-invalid-summary.err" "Traceback" "schema-invalid manifest collector emitted a traceback"
 
 targets_entry_invalid_root="${TMP_DIR}/targets-entry-invalid-root"
 mkdir -p "${targets_entry_invalid_root}/manifests"
@@ -86,6 +111,7 @@ if "${COLLECTOR}" "${targets_entry_invalid_root}" --target codex-home --summary-
 fi
 assert_json_value "${targets_entry_invalid_summary}" "status" '"fail"' "targets-entry-invalid manifest collector summary did not report failure"
 assert_json_value "${targets_entry_invalid_summary}" "error_code" '"RUNTIME_TARGET_EVIDENCE_MANIFEST_SCHEMA_INVALID"' "targets-entry-invalid manifest collector summary did not include stable error code"
+assert_not_contains "${TMP_DIR}/targets-entry-invalid-summary.err" "Traceback" "targets-entry-invalid manifest collector emitted a traceback"
 
 adapters_schema_invalid_root="${TMP_DIR}/adapters-schema-invalid-root"
 mkdir -p "${adapters_schema_invalid_root}/manifests"
@@ -97,6 +123,7 @@ if "${COLLECTOR}" "${adapters_schema_invalid_root}" --target codex-home --summar
 fi
 assert_json_value "${adapters_schema_invalid_summary}" "status" '"fail"' "adapters-schema-invalid manifest collector summary did not report failure"
 assert_json_value "${adapters_schema_invalid_summary}" "error_code" '"RUNTIME_TARGET_EVIDENCE_MANIFEST_SCHEMA_INVALID"' "adapters-schema-invalid manifest collector summary did not include stable error code"
+assert_not_contains "${TMP_DIR}/adapters-schema-invalid-summary.err" "Traceback" "adapters-schema-invalid manifest collector emitted a traceback"
 
 adapters_entry_invalid_root="${TMP_DIR}/adapters-entry-invalid-root"
 mkdir -p "${adapters_entry_invalid_root}/manifests"
@@ -108,6 +135,7 @@ if "${COLLECTOR}" "${adapters_entry_invalid_root}" --target codex-home --summary
 fi
 assert_json_value "${adapters_entry_invalid_summary}" "status" '"fail"' "adapters-entry-invalid manifest collector summary did not report failure"
 assert_json_value "${adapters_entry_invalid_summary}" "error_code" '"RUNTIME_TARGET_EVIDENCE_MANIFEST_SCHEMA_INVALID"' "adapters-entry-invalid manifest collector summary did not include stable error code"
+assert_not_contains "${TMP_DIR}/adapters-entry-invalid-summary.err" "Traceback" "adapters-entry-invalid manifest collector emitted a traceback"
 
 "${COLLECTOR}" "${ROOT}" --target codex-home --timestamp 20260709T000000Z --out-dir "${codex_dir}" --summary-json >"${TMP_DIR}/codex-summary.json"
 

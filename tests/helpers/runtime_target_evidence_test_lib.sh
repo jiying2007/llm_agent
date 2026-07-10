@@ -34,6 +34,17 @@ assert_contains() {
   fi
 }
 
+assert_not_contains() {
+  local file="$1"
+  local token="$2"
+  local message="$3"
+  if rg -q --fixed-strings -- "${token}" "${file}"; then
+    echo "[FAIL] ${message}" >&2
+    show_file_head "${file}"
+    exit 1
+  fi
+}
+
 assert_json_value() {
   local file="$1"
   local field="$2"
