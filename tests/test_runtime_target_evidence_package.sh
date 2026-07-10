@@ -76,6 +76,39 @@ fi
 assert_json_value "${schema_invalid_summary}" "status" '"fail"' "schema-invalid manifest collector summary did not report failure"
 assert_json_value "${schema_invalid_summary}" "error_code" '"RUNTIME_TARGET_EVIDENCE_MANIFEST_SCHEMA_INVALID"' "schema-invalid manifest collector summary did not include stable error code"
 
+targets_entry_invalid_root="${TMP_DIR}/targets-entry-invalid-root"
+mkdir -p "${targets_entry_invalid_root}/manifests"
+printf '{"targets":["not-object"]}\n' >"${targets_entry_invalid_root}/manifests/runtime_targets.json"
+printf '{"adapters":[]}\n' >"${targets_entry_invalid_root}/manifests/runtime_health_adapters.json"
+targets_entry_invalid_summary="${TMP_DIR}/targets-entry-invalid-summary.json"
+if "${COLLECTOR}" "${targets_entry_invalid_root}" --target codex-home --summary-json --out-dir "${TMP_DIR}/targets-entry-invalid-out" >"${targets_entry_invalid_summary}" 2>"${TMP_DIR}/targets-entry-invalid-summary.err"; then
+  fail "targets-entry-invalid manifest collector summary unexpectedly passed"
+fi
+assert_json_value "${targets_entry_invalid_summary}" "status" '"fail"' "targets-entry-invalid manifest collector summary did not report failure"
+assert_json_value "${targets_entry_invalid_summary}" "error_code" '"RUNTIME_TARGET_EVIDENCE_MANIFEST_SCHEMA_INVALID"' "targets-entry-invalid manifest collector summary did not include stable error code"
+
+adapters_schema_invalid_root="${TMP_DIR}/adapters-schema-invalid-root"
+mkdir -p "${adapters_schema_invalid_root}/manifests"
+printf '{"targets":[{"id":"codex-home","health_adapter":"codex-global-health"}]}\n' >"${adapters_schema_invalid_root}/manifests/runtime_targets.json"
+printf '{"adapters":{}}\n' >"${adapters_schema_invalid_root}/manifests/runtime_health_adapters.json"
+adapters_schema_invalid_summary="${TMP_DIR}/adapters-schema-invalid-summary.json"
+if "${COLLECTOR}" "${adapters_schema_invalid_root}" --target codex-home --summary-json --out-dir "${TMP_DIR}/adapters-schema-invalid-out" >"${adapters_schema_invalid_summary}" 2>"${TMP_DIR}/adapters-schema-invalid-summary.err"; then
+  fail "adapters-schema-invalid manifest collector summary unexpectedly passed"
+fi
+assert_json_value "${adapters_schema_invalid_summary}" "status" '"fail"' "adapters-schema-invalid manifest collector summary did not report failure"
+assert_json_value "${adapters_schema_invalid_summary}" "error_code" '"RUNTIME_TARGET_EVIDENCE_MANIFEST_SCHEMA_INVALID"' "adapters-schema-invalid manifest collector summary did not include stable error code"
+
+adapters_entry_invalid_root="${TMP_DIR}/adapters-entry-invalid-root"
+mkdir -p "${adapters_entry_invalid_root}/manifests"
+printf '{"targets":[{"id":"codex-home","health_adapter":"codex-global-health"}]}\n' >"${adapters_entry_invalid_root}/manifests/runtime_targets.json"
+printf '{"adapters":["not-object"]}\n' >"${adapters_entry_invalid_root}/manifests/runtime_health_adapters.json"
+adapters_entry_invalid_summary="${TMP_DIR}/adapters-entry-invalid-summary.json"
+if "${COLLECTOR}" "${adapters_entry_invalid_root}" --target codex-home --summary-json --out-dir "${TMP_DIR}/adapters-entry-invalid-out" >"${adapters_entry_invalid_summary}" 2>"${TMP_DIR}/adapters-entry-invalid-summary.err"; then
+  fail "adapters-entry-invalid manifest collector summary unexpectedly passed"
+fi
+assert_json_value "${adapters_entry_invalid_summary}" "status" '"fail"' "adapters-entry-invalid manifest collector summary did not report failure"
+assert_json_value "${adapters_entry_invalid_summary}" "error_code" '"RUNTIME_TARGET_EVIDENCE_MANIFEST_SCHEMA_INVALID"' "adapters-entry-invalid manifest collector summary did not include stable error code"
+
 "${COLLECTOR}" "${ROOT}" --target codex-home --timestamp 20260709T000000Z --out-dir "${codex_dir}" --summary-json >"${TMP_DIR}/codex-summary.json"
 
 assert_json_value "${TMP_DIR}/codex-summary.json" "status" '"pass"' "codex evidence package summary did not pass"

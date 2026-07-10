@@ -210,6 +210,16 @@ def require_list_field(value, field, label):
     return items
 
 
+def require_object_items(items, field, label):
+    for index, item in enumerate(items):
+        if not isinstance(item, dict):
+            fail(
+                f"{label} schema invalid: {field}[{index}] must be an object",
+                error_code="RUNTIME_TARGET_EVIDENCE_MANIFEST_SCHEMA_INVALID",
+            )
+    return items
+
+
 def atomic_copy(src, dst):
     tmp = f"{dst}.tmp-{os.getpid()}"
     shutil.copyfile(src, tmp)
@@ -329,7 +339,11 @@ adapters_manifest = require_object(read_json(
     "RUNTIME_TARGET_EVIDENCE_HEALTH_ADAPTERS_MANIFEST_INVALID_JSON",
     "RUNTIME_TARGET_EVIDENCE_HEALTH_ADAPTERS_MANIFEST_READ_FAILED",
 ), "runtime health adapters manifest")
-targets = require_list_field(manifest, "targets", "runtime targets manifest")
+targets = require_object_items(
+    require_list_field(manifest, "targets", "runtime targets manifest"),
+    "targets",
+    "runtime targets manifest",
+)
 target = next((item for item in targets if item.get("id") == target_id), None)
 if not target:
     fail(f"runtime target not declared: {target_id}", error_code="RUNTIME_TARGET_EVIDENCE_TARGET_NOT_DECLARED")
@@ -341,7 +355,11 @@ if promote_current:
 os.makedirs(out_dir, exist_ok=True)
 
 adapter_id = target.get("health_adapter")
-adapters = require_list_field(adapters_manifest, "adapters", "runtime health adapters manifest")
+adapters = require_object_items(
+    require_list_field(adapters_manifest, "adapters", "runtime health adapters manifest"),
+    "adapters",
+    "runtime health adapters manifest",
+)
 adapter = next((item for item in adapters if item.get("id") == adapter_id), None)
 prefix = target_prefix(target_id)
 generated_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
