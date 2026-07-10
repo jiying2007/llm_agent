@@ -2,53 +2,14 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-TMP_DIR="$(mktemp -d)"
-trap 'rm -rf "${TMP_DIR}"' EXIT
-
-COLLECTOR="${ROOT}/scripts/collect-runtime-target-evidence-package.sh"
-CHECKER="${ROOT}/scripts/check-runtime-target-evidence-index.sh"
+source "${ROOT}/tests/helpers/runtime_target_evidence_test_lib.sh"
+runtime_evidence_test_init "${ROOT}"
+trap runtime_evidence_test_cleanup EXIT
 
 promote_dir="${TMP_DIR}/reports/runtime-target-activation/codex-home/runs/20260709T000002Z"
 canonical_dir="${TMP_DIR}/reports/runtime-target-activation/codex-home"
 candidate_promote_dir="${TMP_DIR}/reports/runtime-target-activation/claude-code-home/runs/20260709T000003Z"
 candidate_canonical_dir="${TMP_DIR}/reports/runtime-target-activation/claude-code-home"
-
-fail() {
-  echo "[FAIL] $*" >&2
-  exit 1
-}
-
-show_file_head() {
-  local file="$1"
-  sed -n '1,80p' "${file}" >&2 || true
-}
-
-assert_contains() {
-  local file="$1"
-  local token="$2"
-  local message="$3"
-  if ! rg -q --fixed-strings -- "${token}" "${file}"; then
-    echo "[FAIL] ${message}" >&2
-    show_file_head "${file}"
-    exit 1
-  fi
-}
-
-assert_file() {
-  local file="$1"
-  local message="$2"
-  if [[ ! -f "${file}" ]]; then
-    fail "${message}"
-  fi
-}
-
-assert_canonical_artifacts() {
-  local dir="$1"
-  local label="$2"
-  for artifact in evidence-index.jsonl evidence-index.md current-status.md; do
-    assert_file "${dir}/${artifact}" "${label} missing canonical artifact: ${artifact}"
-  done
-}
 
 snapshot_canonical() {
   cp "${canonical_dir}/evidence-index.jsonl" "${canonical_before}"
@@ -140,9 +101,7 @@ assert_canonical_unchanged "injected strict checker failure"
 
 assert_contains "${TMP_DIR}/candidate-promote-summary.json" '"promoted":true' "candidate promote-current summary did not report promoted=true"
 
-if [[ -f "${candidate_promote_dir}/runtime-health.json" ]]; then
-  fail "candidate promote-current should not run runtime health"
-fi
+assert_no_file "${candidate_promote_dir}/runtime-health.json" "candidate promote-current should not run runtime health"
 
 assert_canonical_artifacts "${candidate_canonical_dir}" "candidate promote-current"
 assert_contains "${candidate_canonical_dir}/current-status.md" "target_enabled: false" "candidate current status did not record target_enabled=false"

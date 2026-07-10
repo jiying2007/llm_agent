@@ -2,44 +2,13 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-TMP_DIR="$(mktemp -d)"
-trap 'rm -rf "${TMP_DIR}"' EXIT
-
-COLLECTOR="${ROOT}/scripts/collect-runtime-target-evidence-package.sh"
-CHECKER="${ROOT}/scripts/check-runtime-target-evidence-index.sh"
+source "${ROOT}/tests/helpers/runtime_target_evidence_test_lib.sh"
+runtime_evidence_test_init "${ROOT}"
+trap runtime_evidence_test_cleanup EXIT
 
 codex_dir="${TMP_DIR}/reports/runtime-target-activation/codex-home/20260709T000000Z"
 canonical_dir="${TMP_DIR}/reports/runtime-target-activation/codex-home"
 candidate_dir="${TMP_DIR}/reports/runtime-target-activation/claude-code-home/20260709T000001Z"
-
-fail() {
-  echo "[FAIL] $*" >&2
-  exit 1
-}
-
-show_file_head() {
-  local file="$1"
-  sed -n '1,80p' "${file}" >&2 || true
-}
-
-assert_contains() {
-  local file="$1"
-  local token="$2"
-  local message="$3"
-  if ! rg -q --fixed-strings -- "${token}" "${file}"; then
-    echo "[FAIL] ${message}" >&2
-    show_file_head "${file}"
-    exit 1
-  fi
-}
-
-assert_file() {
-  local file="$1"
-  local message="$2"
-  if [[ ! -f "${file}" ]]; then
-    fail "${message}"
-  fi
-}
 
 "${COLLECTOR}" "${ROOT}" --target codex-home --timestamp 20260709T000000Z --out-dir "${codex_dir}" --summary-json >"${TMP_DIR}/codex-summary.json"
 
@@ -62,9 +31,7 @@ assert_contains "${codex_dir}/evidence-index.jsonl" '"execution_status":"blocked
 
 assert_contains "${TMP_DIR}/candidate-summary.json" '"status":"pass"' "candidate evidence package summary did not pass"
 
-if [[ -f "${candidate_dir}/runtime-health.json" ]]; then
-  fail "candidate evidence package should not run runtime health"
-fi
+assert_no_file "${candidate_dir}/runtime-health.json" "candidate evidence package should not run runtime health"
 
 assert_contains "${candidate_dir}/evidence-index.jsonl" '"evidence_id":"CLAUDE-CODE-HOME-HEALTH-001"' "candidate evidence package missing health gate"
 assert_contains "${candidate_dir}/evidence-index.jsonl" '"result_summary":"not executed: target or adapter is not active"' "candidate health gate did not record blocked reason"
