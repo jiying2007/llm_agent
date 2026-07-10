@@ -34,6 +34,38 @@ assert_contains() {
   fi
 }
 
+assert_json_value() {
+  local file="$1"
+  local field="$2"
+  local expected_json="$3"
+  local message="$4"
+  if ! python3 - "${file}" "${field}" "${expected_json}" <<'PY'
+import json
+import sys
+
+path, field, expected_text = sys.argv[1:4]
+with open(path, "r", encoding="utf-8") as handle:
+    text = handle.read()
+try:
+    payload = json.loads(text)
+except json.JSONDecodeError as exc:
+    raise SystemExit(f"invalid JSON: {exc}") from exc
+if not isinstance(payload, dict):
+    raise SystemExit("JSON payload is not an object")
+if field not in payload:
+    raise SystemExit(f"missing field: {field}")
+expected = json.loads(expected_text)
+actual = payload[field]
+if actual != expected:
+    raise SystemExit(f"{field}: expected {expected!r}, got {actual!r}")
+PY
+  then
+    echo "[FAIL] ${message}" >&2
+    show_file_head "${file}"
+    exit 1
+  fi
+}
+
 assert_file() {
   local file="$1"
   local message="$2"

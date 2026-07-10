@@ -26,7 +26,7 @@ assert_canonical_unchanged() {
 
 "${COLLECTOR}" "${ROOT}" --target codex-home --timestamp 20260709T000002Z --out-dir "${promote_dir}" --promote-current --summary-json >"${TMP_DIR}/promote-summary.json"
 
-assert_contains "${TMP_DIR}/promote-summary.json" '"promoted":true' "promote-current summary did not report promoted=true"
+assert_json_value "${TMP_DIR}/promote-summary.json" "promoted" 'true' "promote-current summary did not report promoted=true"
 assert_canonical_artifacts "${canonical_dir}" "promote-current"
 assert_contains "${canonical_dir}/current-status.md" "promotion_rule: canonical files are refreshed only after strict artifact validation passes." "current status does not record strict promotion rule"
 assert_contains "${canonical_dir}/current-status.md" "no source-to-live apply, rollback or live-root write" "current status does not preserve report-only boundary"
@@ -99,7 +99,7 @@ assert_canonical_unchanged "injected strict checker failure"
 
 "${COLLECTOR}" "${ROOT}" --target claude-code-home --timestamp 20260709T000003Z --out-dir "${candidate_promote_dir}" --promote-current --summary-json >"${TMP_DIR}/candidate-promote-summary.json"
 
-assert_contains "${TMP_DIR}/candidate-promote-summary.json" '"promoted":true' "candidate promote-current summary did not report promoted=true"
+assert_json_value "${TMP_DIR}/candidate-promote-summary.json" "promoted" 'true' "candidate promote-current summary did not report promoted=true"
 
 assert_no_file "${candidate_promote_dir}/runtime-health.json" "candidate promote-current should not run runtime health"
 

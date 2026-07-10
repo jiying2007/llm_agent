@@ -2,6 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "${ROOT}/tests/helpers/runtime_target_evidence_test_lib.sh"
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "${TMP_DIR}"' EXIT
 
@@ -71,27 +72,16 @@ fi
 
 summary_out="${TMP_DIR}/summary.json"
 "${CHECKER}" "${ROOT}" --summary-json >"${summary_out}"
-if ! rg -q --fixed-strings -- '"status":"pass"' "${summary_out}"; then
-  echo "[FAIL] checker summary json did not pass" >&2
-  sed -n '1,80p' "${summary_out}" >&2 || true
-  exit 1
-fi
-if ! rg -q --fixed-strings -- '"error_code":null' "${summary_out}"; then
-  echo "[FAIL] checker pass summary did not include null error_code" >&2
-  sed -n '1,80p' "${summary_out}" >&2 || true
-  exit 1
-fi
+assert_json_value "${summary_out}" "status" '"pass"' "checker summary json did not pass"
+assert_json_value "${summary_out}" "error_code" 'null' "checker pass summary did not include null error_code"
 
 unknown_arg_summary="${TMP_DIR}/unknown-arg-summary.json"
 if "${CHECKER}" "${ROOT}" --summary-json --bad-arg >"${unknown_arg_summary}" 2>"${TMP_DIR}/unknown-arg-summary.err"; then
   echo "[FAIL] checker unknown arg summary unexpectedly passed" >&2
   exit 1
 fi
-if ! rg -q --fixed-strings -- '"error_code":"RUNTIME_TARGET_EVIDENCE_INDEX_UNKNOWN_ARG"' "${unknown_arg_summary}"; then
-  echo "[FAIL] checker unknown arg summary did not include stable error code" >&2
-  sed -n '1,80p' "${unknown_arg_summary}" >&2 || true
-  exit 1
-fi
+assert_json_value "${unknown_arg_summary}" "status" '"fail"' "checker unknown arg summary did not report failure"
+assert_json_value "${unknown_arg_summary}" "error_code" '"RUNTIME_TARGET_EVIDENCE_INDEX_UNKNOWN_ARG"' "checker unknown arg summary did not include stable error code"
 
 strict_without_index="${TMP_DIR}/strict-without-index.out"
 if "${CHECKER}" "${ROOT}" --strict-artifacts >"${strict_without_index}" 2>&1; then
@@ -109,16 +99,9 @@ if "${CHECKER}" "${ROOT}" --strict-artifacts --summary-json >"${strict_without_i
   echo "[FAIL] strict-artifacts without index summary unexpectedly passed" >&2
   exit 1
 fi
-if ! rg -q --fixed-strings -- '"error_code":"RUNTIME_TARGET_EVIDENCE_INDEX_STRICT_REQUIRES_INDEX"' "${strict_without_index_summary}"; then
-  echo "[FAIL] strict-artifacts summary did not include stable error code" >&2
-  sed -n '1,80p' "${strict_without_index_summary}" >&2 || true
-  exit 1
-fi
-if ! rg -q --fixed-strings -- '"message":"--strict-artifacts requires --index or --require-index"' "${strict_without_index_summary}"; then
-  echo "[FAIL] strict-artifacts summary did not include stable message" >&2
-  sed -n '1,80p' "${strict_without_index_summary}" >&2 || true
-  exit 1
-fi
+assert_json_value "${strict_without_index_summary}" "status" '"fail"' "strict-artifacts summary did not report failure"
+assert_json_value "${strict_without_index_summary}" "error_code" '"RUNTIME_TARGET_EVIDENCE_INDEX_STRICT_REQUIRES_INDEX"' "strict-artifacts summary did not include stable error code"
+assert_json_value "${strict_without_index_summary}" "message" '"--strict-artifacts requires --index or --require-index"' "strict-artifacts summary did not include stable message"
 
 require_missing="${TMP_DIR}/require-missing.out"
 if "${CHECKER}" "${ROOT}" --target codex-home --require-index >"${require_missing}" 2>&1; then
