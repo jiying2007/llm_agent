@@ -119,6 +119,7 @@ required_tokens=(
   "tests/test_oss_continuous_operation.sh"
   "tests/test_oss_approval_queue.sh"
   "tests/test_runtime_health_adapters.sh"
+  "tests/test_runtime_target_evidence_promotion.sh"
   "oss_discovery_sources.json"
   "oss_candidate_scoring_policy.json"
   "subrepo_lifecycle.json"
@@ -235,6 +236,7 @@ required_scripts=(
   "tests/test_runtime_health_adapters.sh"
   "tests/test_runtime_target_evidence_index.sh"
   "tests/test_runtime_target_evidence_package.sh"
+  "tests/test_runtime_target_evidence_promotion.sh"
 )
 
 for script in "${required_scripts[@]}"; do
