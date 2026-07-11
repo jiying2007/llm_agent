@@ -24,7 +24,14 @@ import sys
 source, target = sys.argv[1:3]
 with open(source, "r", encoding="utf-8") as handle:
     content = handle.read()
-for heading in ("Architecture Operating Model", "SSOT Matrix", "Landing Protocol"):
+for heading in (
+    "Architecture Operating Model",
+    "SSOT Matrix",
+    "Landing Protocol",
+    "Runtime Delivery Contract",
+    "Knowledge Promotion Contract",
+    "State Reconciliation Contract",
+):
     content = re.sub(rf"\n## {re.escape(heading)}\n.*?(?=\n## |\Z)", "\n", content, flags=re.S)
 with open(target, "w", encoding="utf-8") as handle:
     handle.write(content)
@@ -38,7 +45,10 @@ fi
 for expected in \
   "missing heading: ## Architecture Operating Model" \
   "missing heading: ## SSOT Matrix" \
-  "missing heading: ## Landing Protocol"
+  "missing heading: ## Landing Protocol" \
+  "missing heading: ## Runtime Delivery Contract" \
+  "missing heading: ## Knowledge Promotion Contract" \
+  "missing heading: ## State Reconciliation Contract"
 do
   if ! rg -q --fixed-strings -- "${expected}" "${legacy_out}"; then
     echo "[FAIL] legacy architecture report failure did not include: ${expected}" >&2

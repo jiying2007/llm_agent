@@ -36,14 +36,21 @@
 - 增加 SSOT 矩阵，固定 current-status、架构报告、ADK 源资产、gitlink/adk.lock、source-to-live 证据和 Hub candidate 的权威边界。
 - 增加落地成熟度协议，区分 report-only、source-staged、source-committed、dry-run-verified、live-applied 和 knowledge-promoted，避免把设计、提交、运行态应用或知识提升混为同一完成态。
 
+本轮 V4 闭环控制架构继续补充：
+
+- 将 L3/L4/L5 从抽象成熟度拆成三个可审查契约：Runtime Delivery Contract、Knowledge Promotion Contract 和 State Reconciliation Contract。
+- 将 ADK 目标架构报告模板同步升级到 V4，使后续目标架构设计天然包含运行态交付、知识提升和状态对账，而不是只停留在报告结构。
+- 将 root 架构报告门禁升级为 V4 必填检查；报告缺失运行态、知识或对账契约时不能通过。
+- 本轮目标从 L2 source-committed 继续推进到“最大安全 L5”：live apply 只经 `~/codex -> ~/.codex` 链路执行，Knowledge Hub active promotion 不绕过 owner review 和工具限制。
+
 ## Scope
 
 | Area | In Scope | Out of Scope |
 |---|---|---|
 | `llm_agent` | 根仓职责、报告治理、子仓治理、吸收治理、runtime target、source-to-live 边界 | 直接清理参考子仓 dirty、同步外部上游、改 `~/.codex` |
 | `agent-dev-kit` | ADK 目标契约、能力闭环、workflow closure、性能预算、平台中立边界 | 把 `llm_agent` 私有路径写入 ADK core、引入 Codex 专属 direct target |
-| Runtime | 只读健康检查、external handoff、证据链定义 | live apply、rollback、外部 runtime 启用 |
-| Knowledge | Hub preflight、候选归档要求 | 静默写入长期 memory 或直接改 Hub active 条目 |
+| Runtime | external handoff、source-to-live dry-run/apply/check 证据链、no-op live refresh 证据 | 直接写 `~/.codex`、未复核 overwrite/delete、未授权 rollback、外部 runtime 启用 |
+| Knowledge | Hub preflight、候选归档要求、archive/decision 级沉淀和 promotion dry-run 证据 | 静默写入长期 memory、绕过 owner review 直接改 Hub active 条目 |
 
 ## Current Architecture Map
 
@@ -208,7 +215,29 @@ reference subrepos
 | L4 | live-applied | source-to-live apply、routing precedence、final check | live runtime 已更新 | Hub active 已提升 |
 | L5 | knowledge-promoted | Hub owner review、脱敏、archive/active 写入证据 | 长期知识已生效 | 未审查 candidate 已生效 |
 
-本轮目标落地级别为 L2：将架构治理 source 变更作为 root commit 收口。L3-L5 保留为后续独立授权目标。
+上一轮已达到 L2：架构治理 source 变更完成 root commit 收口。本轮追加执行目标为最大安全 L5：先完成 source 侧 V4 设计与 ADK 模板产品化，再通过 `~/codex` source-to-live 链路验证或应用运行态，最后把长期结论沉淀为 Hub archive/decision 级候选与 dry-run promotion 证据。若 live dry-run 出现未解释 overwrite/delete，停止在 L3；若 Hub 工具阻断 active apply，则以 archive/decision candidate 与 promotion dry-run 作为本轮 L5 证据边界。
+
+## Runtime Delivery Contract
+
+| Target | Source Chain | Approval Boundary | Dry-run Evidence | Apply Evidence | Health Gate | Rollback / Stop Condition |
+|---|---|---|---|---|---|---|
+| `codex-home` | `agent-dev-kit` source assets -> `~/codex` source tree -> `~/.codex` live root | live root write requires explicit elevated approval; no direct write from `llm_agent` | `rtk bash ~/codex/scripts/build.sh --profile team-collab`; `rtk bash ~/codex/scripts/doctor.sh --scope all`; `rtk bash ~/codex/scripts/plan.sh --target ~/.codex --prune-stale --output ~/codex/build/apply-plan.json`; `rtk bash ~/codex/scripts/apply.sh --plan ~/codex/build/apply-plan.json --dry-run` | `rtk bash ~/codex/scripts/apply.sh --plan ~/codex/build/apply-plan.json` only after dry-run review; no-op live refresh is allowed only when the plan proves no live-impact asset changed | `rtk bash ~/codex/scripts/check-routing-precedence.sh`; `rtk bash ~/codex/scripts/check.sh`; `rtk scripts/check-runtime-health.sh . --profile minimal` | Stop before apply on unexplained overwrite/delete, stale source mapping, failed build/doctor/plan, or missing approval; rollback requires separate owner-approved live-root procedure |
+
+## Knowledge Promotion Contract
+
+| Candidate | Target Domain | Sanitization | Review Owner | Promotion Mode | Evidence | Forbidden Action |
+|---|---|---|---|---|---|---|
+| `llm-agent-adk-target-architecture` | `projects/llm-agent` | Summary-only decision/runbook content; no secrets, credentials, raw session transcript, cache, or runtime state | Hub owner / project owner | Default `archive/decision` candidate plus dry-run promotion; `active` requires separate owner review because current Hub promote apply path is intentionally blocked | `rtk bash ~/knowledge-hub/tools/knowledge-promote.sh --id llm-agent-adk-target-architecture --target projects/llm-agent --dry-run --json`; `rtk bash ~/knowledge-hub/tools/knowledge-check.sh --dry-run --json`; `rtk bash ~/knowledge-hub/tools/knowledge-status.sh --json --review-queue-limit 5` | Do not write `~/.codex/memories`; do not force active promotion; do not copy full conversation or private runtime paths beyond necessary provenance |
+
+## State Reconciliation Contract
+
+| State Claim | Source of Truth | Verification Command | Update Trigger | Stale Condition | Repair Action |
+|---|---|---|---|---|---|
+| Target architecture is V4-complete | `reports/architecture/llm-agent-adk-target-architecture-2026-07-11.md` | `rtk scripts/check-architecture-reports.sh . --summary-json`; `rtk tests/test_architecture_reports.sh` | Any architecture report or checker edit | Required V4 heading/token missing, test fixture no longer rejects legacy reports | Update report/checker/test together, then rerun root quick gate |
+| ADK template carries the V4 pattern | `agent-dev-kit/templates/artifacts/target-architecture-report-template.md` | `rtk bash agent-dev-kit/tests/test_templates.sh`; `rtk bash agent-dev-kit/scripts/quality-gate-check.sh check-artifacts --verbose` | Any ADK template or artifact gate edit | Template lacks runtime delivery, knowledge promotion, state reconciliation, landing levels, artifact/status/owner | Fix template and ADK gates, then commit ADK before parent gitlink update |
+| Parent points at committed ADK source | `agent-dev-kit` gitlink + `adk.lock` + `agent-dev-kit/manifest.yaml` | `rtk scripts/check-adk-lock.sh .`; `rtk scripts/check-subrepo-state.sh . --summary-json` | Any ADK commit | `agent-dev-kit` unexpected dirty, gitlink/lock mismatch, or stale baseline | Commit ADK, sync gitlink/adk.lock, rerun subrepo and evidence bundle gates |
+| Codex live status is current | `~/codex` source-to-live evidence and `reports/current-status.md` | `rtk bash ~/codex/scripts/check.sh`; `rtk scripts/check-runtime-health.sh . --profile minimal` | Any source-to-live dry-run/apply | No apply evidence for a live-applied claim, or dry-run shows unreviewed live writes | Downgrade claim to dry-run-verified/no-op, or rerun approved source-to-live chain |
+| Knowledge state is promoted or explicitly candidate-only | Hub archive/decision record or local candidate | `rtk bash ~/knowledge-hub/tools/knowledge-check.sh --dry-run --json`; `rtk bash ~/knowledge-hub/tools/knowledge-status.sh --json --review-queue-limit 5` | Any Hub candidate/archive/promotion change | Candidate is treated as active, owner review missing, or promote apply path blocked | Keep status as candidate/archive-pending and record owner review requirement |
 
 ## Phase Roadmap
 
@@ -221,6 +250,7 @@ reference subrepos
 | Phase 5 | 长期知识沉淀 | Hub candidate 或 archive item 记录目标架构和阶段结论 | Hub candidate review |
 | Phase 6 | 周期化架构漂移复核 | dirty baseline、official docs freshness、skill/workflow conflict 和 current-status 均有周期复核记录 | targeted gates + architecture report delta |
 | Phase 7 | 架构再设计落地收口 | 操作模型、SSOT 矩阵、落地协议进入报告和机器门禁；root commit 完成 | `check-architecture-reports`, `test_architecture_reports`, `commit-ready`, post-commit state checks |
+| Phase 8 | V4 全闭环控制落地 | runtime delivery、knowledge promotion、state reconciliation 进入报告、ADK 模板和门禁；source-to-live 与 Hub 边界有证据 | ADK template gates, root architecture gates, source-to-live gates, Hub dry-run/status gates |
 
 ## Implementation Tasks
 
@@ -245,6 +275,10 @@ reference subrepos
 | D4 | P1 | official docs freshness delta 审查 | `official_docs_freshness_gates.json` only if promoted | 官方来源超出 allowed domains 或缺 expires_at | `check-official-docs-governance` |
 | D5 | P2 | Hub candidate owner review | `reports/architecture/knowledge-candidates/...` | 未完成脱敏或 owner review | Hub candidate validation |
 | D6 | P0 | 将操作模型和落地协议纳入架构报告门禁 | `scripts/check-architecture-reports.sh`, `tests/test_architecture_reports.sh`, `reports/architecture/README.md` | 新门禁无法区分旧式报告缺章节 | `check-architecture-reports`; `test_architecture_reports` |
+| E1 | P0 | 将 V4 闭环契约产品化到 ADK 目标架构模板 | `agent-dev-kit/templates/artifacts/target-architecture-report-template.md`, `agent-dev-kit/tests/test_templates.sh`, `agent-dev-kit/scripts/quality-gate-check.sh` | 模板把本仓私有路径写入 ADK core 或缺少 V4 章节 | `test_templates`; `quality-gate-check`; `devkit validate` |
+| E2 | P0 | 将 V4 章节纳入 root 架构报告门禁 | `scripts/check-architecture-reports.sh`, `tests/test_architecture_reports.sh`, `reports/architecture/README.md` | legacy fixture 不能稳定失败或 README 与检查器不一致 | `check-architecture-reports`; `test_architecture_reports`; `check-doc-sync` |
+| E3 | P0 | 执行 Codex source-to-live 安全闭环 | `~/codex` evidence, `reports/current-status.md` | dry-run 出现未解释 overwrite/delete、构建失败、缺少 live write approval | `build`; `doctor`; `plan`; `apply --dry-run`; optional `apply`; routing/check/runtime health |
+| E4 | P1 | 执行 Knowledge Hub 归档/提升证据闭环 | Hub candidate/archive evidence, `reports/current-status.md` | Hub apply path blocked or owner review missing | `knowledge-promote --dry-run`; `knowledge-check --dry-run`; `knowledge-status` |
 
 ## Verification Gates
 
@@ -336,6 +370,15 @@ reference subrepos
 | `rtk scripts/check-subrepo-state.sh . --summary-json` | 0 | after V3 redesign: `known_dirty=3`, `unexpected_dirty=0`, `stale_baseline=0` | V3 root closeout |
 | `rtk scripts/check-evidence-bundle.sh .` | 0 | after V3 redesign: evidence bundle gate ready | V3 root closeout |
 | `rtk scripts/check-all.sh --quick` | 0 | after V3 redesign: root quick gate passed, `55/55` | V3 root closeout |
+| `rtk bash agent-dev-kit/tests/test_templates.sh` | 0 | V4 template tests passed, `18/18`, including runtime delivery, knowledge promotion and state reconciliation fields | V4 ADK template |
+| `rtk bash agent-dev-kit/scripts/quality-gate-check.sh check-artifacts --verbose` | 0 | target architecture template includes V4 closed-loop tokens | V4 ADK template |
+| `rtk bash agent-dev-kit/scripts/devkit.sh validate --strict` | 0 | strict validation passed after V4 template update | V4 ADK validation |
+| `rtk bash agent-dev-kit/tests/run_all.sh` | 0 | ADK full regression passed, `47/47`, including updated `test_templates` | V4 ADK validation |
+| `rtk git commit -m "feat(templates): 完善目标架构闭环模板"` in `agent-dev-kit` | 0 | committed V4 ADK template landing as `3e87b90` | V4 ADK closeout |
+| `rtk scripts/check-adk-lock.sh .` | 0 | after staging parent gitlink/adk.lock: lock, gitlink and manifest match `3e87b90` | V4 root closeout |
+| `rtk scripts/check-subrepo-state.sh . --summary-json` | 0 | after V4 ADK commit: `known_dirty=3`, `unexpected_dirty=0`, `stale_baseline=0` | V4 root closeout |
+| `rtk scripts/evidence-bundle.sh . --format json --fail-on-needs-fix` | 0 | status=pass, `agent_dev_kit_head=3e87b90` | V4 root closeout |
+| `rtk scripts/check-all.sh --quick` | 0 | V4 root quick gate passed, `55/55` | V4 root closeout |
 
 ## Completion Audit
 
@@ -347,6 +390,7 @@ reference subrepos
 | 长期维护能力增强 | Phase 2 架构报告门禁和 Phase 3 ADK 中立模板已落地；`check-architecture-reports`, `test_architecture_reports`, ADK template/artifact/validate/run_all 均有通过证据 | proven |
 | V2 全维度终态设计完善 | `V2 Review Matrix`、`External Evidence Refresh`、`Target Architecture Delta` 与 `Next Implementation Backlog` 已补齐目标、功能、性能、可维护性、可扩展性、安全、验证、知识沉淀和运行态交付审查 | proven |
 | V3 架构再设计落地 | `Architecture Operating Model`、`SSOT Matrix` 和 `Landing Protocol` 已进入本报告，并由 `check-architecture-reports` 与 `test_architecture_reports` 强制检查 | proven |
+| V4 闭环控制架构落地 | `Runtime Delivery Contract`、`Knowledge Promotion Contract` 和 `State Reconciliation Contract` 已进入本报告、ADK 模板和机器门禁；ADK V4 模板提交为 `3e87b90` | proven |
 | 所有修改都有命令级验证证据 | 本报告 Evidence Index 与 `reports/current-status.md` 记录通过和负结果；子仓提交、父仓 gitlink/adk.lock 同步、evidence bundle 和 root quick gate 均已通过 | proven |
 | `llm_agent` 与 `agent-dev-kit` 职责边界更清晰 | `Target Architecture` 与 `Responsibility Boundary` 明确治理仓、中立 ADK 资产、runtime handoff 和 Knowledge Feedback 分层 | proven |
 | 后续 agent 可恢复推进 | `Goal Closure State`、`reports/current-status.md`、`reports/architecture/README.md` 和仓内 Knowledge Hub candidate 提供恢复入口 | proven |
@@ -354,7 +398,7 @@ reference subrepos
 ## Goal Closure State
 
 - goal_statement: 长期资产级架构优化设计，并分阶段落地 `llm_agent` 与 `agent-dev-kit`。
-- completion_claim: Phase 1 architecture design/baseline remediation, Phase 2 architecture-report gate, Phase 3 ADK neutral target-architecture template, V2 full-dimensional design review, V3 operating-model/SSOT/landing-protocol redesign, external official-practice evidence refresh, and subrepo/gitlink/adk.lock closeout are implemented and directly verified; root aggregate quick gate is PASS. This changeset targets L2 source-committed landing only.
+- completion_claim: Phase 1 architecture design/baseline remediation, Phase 2 architecture-report gate, Phase 3 ADK neutral target-architecture template, V2 full-dimensional design review, V3 operating-model/SSOT/landing-protocol redesign, V4 runtime-delivery/knowledge-promotion/state-reconciliation contracts, external official-practice evidence refresh, and ADK V4 template closeout are implemented and directly verified. This changeset targets maximum-safe L5 landing, with live apply and Hub active promotion bounded by their explicit gates.
 - required_evidence: architecture report, implementation task table, V2 review matrix, V3 operating model, SSOT matrix, landing protocol, external evidence refresh, target architecture delta, next implementation backlog, dirty baseline gate, architecture report gate/test, root doc/token gates, ADK template/artifact/strict validation, ADK full regression, subrepo commit, adk.lock/gitlink consistency, evidence bundle pass, root aggregate closeout evidence.
 - claimant: Codex
 - verifier: completion gate in a later turn, using current command evidence.

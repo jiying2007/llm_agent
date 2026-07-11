@@ -20,8 +20,9 @@ while [[ $# -gt 0 ]]; do
 usage: scripts/check-architecture-reports.sh [root] [--summary-json]
 
 Checks reports/architecture target architecture reports for required sections,
-operating model, landing protocol, implementation tasks, evidence, rejection
-records, and source-to-live boundary language.
+operating model, landing protocol, runtime delivery, knowledge promotion,
+state reconciliation, implementation tasks, evidence, rejection records, and
+source-to-live boundary language.
 USAGE
       exit 0
       ;;
@@ -80,7 +81,7 @@ if not os.path.isfile(readme):
     fail("reports/architecture/README.md missing")
 else:
     readme_text = read(readme)
-    for token in ("必填内容", "Evidence Index", "source-to-live", "~/.codex"):
+    for token in ("必填内容", "Evidence Index", "source-to-live", "~/.codex", "运行态交付", "知识提升", "状态对账"):
         if token not in readme_text:
             fail(f"{rel(readme)} missing required token: {token}")
 
@@ -103,6 +104,9 @@ required_headings = [
     "## SSOT Matrix",
     "## Issue Map",
     "## Landing Protocol",
+    "## Runtime Delivery Contract",
+    "## Knowledge Promotion Contract",
+    "## State Reconciliation Contract",
     "## Phase Roadmap",
     "## Implementation Tasks",
     "## Verification Gates",
@@ -140,6 +144,18 @@ for report in reports:
     for token in ("source-staged", "source-committed", "dry-run-verified", "live-applied", "knowledge-promoted"):
         if token not in content:
             fail(f"{label} missing landing protocol token: {token}")
+
+    for token in ("Approval Boundary", "Dry-run Evidence", "Apply Evidence", "Health Gate"):
+        if token not in content:
+            fail(f"{label} missing runtime delivery token: {token}")
+
+    for token in ("Sanitization", "Review Owner", "Promotion Mode", "Forbidden Action"):
+        if token not in content:
+            fail(f"{label} missing knowledge promotion token: {token}")
+
+    for token in ("State Claim", "Source of Truth", "Stale Condition", "Repair Action"):
+        if token not in content:
+            fail(f"{label} missing state reconciliation token: {token}")
 
     for priority in ("P0", "P1", "P2"):
         if priority not in content:
