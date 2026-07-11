@@ -35,11 +35,20 @@
 - `rtk scripts/check-adk-harden-readiness.sh .` -> ADK full regression 47/47 pass
 - `rtk bash agent-dev-kit/tests/test_templates.sh` -> 18/18 pass
 - `rtk bash agent-dev-kit/scripts/devkit.sh validate --strict` -> pass
+- `rtk git commit -m "feat(templates): 完善目标架构闭环模板"` in `agent-dev-kit` -> `3e87b90`
+- `rtk git commit -m "feat(architecture): 完成终态设计全闭环落地"` in root -> `f995048`
+- `rtk bash ~/codex/scripts/build.sh --profile team-collab` -> pass, managed=749
+- `rtk bash ~/codex/scripts/plan.sh --target ~/.codex --prune-stale --output ~/codex/build/apply-plan.json` -> copy=0, overwrite=0, delete=0
+- `rtk bash ~/codex/scripts/apply.sh --plan ~/codex/build/apply-plan.json` -> pass, no file copy/overwrite/delete
+- `rtk bash ~/codex/scripts/check.sh` and `rtk scripts/check-runtime-health.sh . --profile minimal` -> pass
+- `rtk bash ~/knowledge-hub/tools/knowledge-promote.sh --id llm-agent-adk-target-architecture --target projects/llm-agent --dry-run --json` -> planned, required_review=true, apply_supported=false
+- `rtk bash ~/knowledge-hub/tools/knowledge-final-gate.sh --json` -> ok
 
 ## Residual Risk
 
 - 该文件只是仓内候选，不是 Knowledge Hub active 条目；提升前需要 owner review。
-- 真实 source-to-live apply、rollback 和 live runtime refresh 必须以 `~/codex` 链路证据为准；无 apply 证据时只能声明 dry-run-verified 或 no-op。
+- 真实 source-to-live apply 已完成，但本次 ADK 目标架构模板没有 `~/codex` live asset 映射；运行态结论是 no-op file-content refresh，不是新增 live 功能。
+- Knowledge Hub active promotion 未执行；工具明确返回 `apply_supported=false`，后续 active 提升仍需 human review 和受支持 apply 链路。
 - `OpenSpec`、`superpowers`、`vibeflow` 仍是 observe-mode dirty reference subrepos；本轮仅刷新 baseline 到 2026-07-18。
 
 ## Promotion Candidate

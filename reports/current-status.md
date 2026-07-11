@@ -2,17 +2,18 @@
 
 - updated_at: 2026-07-11
 - source_design_commit: a5a22f9
-- root_v4_source_status: verified closeout candidate; authoritative commit is `git log -1` after commit
+- root_v4_source_commit: f995048
+- root_v4_source_status: committed and post-commit gates passed
 - agent_dev_kit_base_commit: 14a5739
 - agent_dev_kit_v4_commit: 3e87b90
 - adk_version: 2.9.0
-- live_refresh_status: pending source-to-live dry-run/apply evidence after root source commit
-- knowledge_promotion_status: candidate-only; Hub dry-run promotion pending
-- working_tree_state: V4 closed-loop source changes verified for commit; reference dirty state remains baseline-governed
+- live_refresh_status: live-applied no file content changes; source-to-live apply summary copy=0 keep=481 overwrite=0 delete=0 mkdir=270 skip=0
+- knowledge_promotion_status: dry-run promotion planned; apply_supported=false and active promotion not applied
+- working_tree_state: V4 closed-loop source committed; L4/L5 evidence recorded; reference dirty state remains baseline-governed
 
 ## Summary
 
-最近已提交基线的 root 与 `agent-dev-kit` 主链路健康。本轮继续推进 `llm_agent` 与 `agent-dev-kit` 长期资产级终态架构设计，从 V3 操作模型升级到 V4 闭环控制架构：Runtime Delivery Contract、Knowledge Promotion Contract 和 State Reconciliation Contract 必须同时进入报告、ADK 模板和 root 门禁。上一轮 L2 source-committed 基线为 root `a5a22f9` 与 ADK `14a5739`；本轮 ADK V4 模板升级已提交为 `3e87b90 feat(templates): 完善目标架构闭环模板`。本轮目标是最大安全 L5，即先完成 source 侧 V4 产品化，再按 `~/codex -> ~/.codex` 链路执行 dry-run/apply 证据，并以 Hub archive/decision candidate 与 promotion dry-run 记录知识沉淀边界。
+最近已提交基线的 root 与 `agent-dev-kit` 主链路健康。本轮继续推进 `llm_agent` 与 `agent-dev-kit` 长期资产级终态架构设计，从 V3 操作模型升级到 V4 闭环控制架构：Runtime Delivery Contract、Knowledge Promotion Contract 和 State Reconciliation Contract 必须同时进入报告、ADK 模板和 root 门禁。上一轮 L2 source-committed 基线为 root `a5a22f9` 与 ADK `14a5739`；本轮 ADK V4 模板升级已提交为 `3e87b90 feat(templates): 完善目标架构闭环模板`，父仓 V4 source commit 为 `f995048 feat(architecture): 完成终态设计全闭环落地`。source-to-live 已经通过 `~/codex -> ~/.codex` 链路完成真实 apply，且没有 copy/overwrite/delete 文件内容变更；Knowledge Hub 侧完成 promotion dry-run、knowledge-check/status/final-gate，active promotion 因 bootstrap 工具要求 human review 而未执行。
 
 `OpenSpec`、`superpowers`、`vibeflow` 保留已登记的 observe-mode dirty baseline。2026-07-11 只读 triage 显示 fingerprint 均匹配，baseline 复核窗口刷新到 2026-07-18。
 
@@ -44,6 +45,14 @@
 | subrepo state baseline | PASS | `rtk scripts/check-subrepo-state.sh . --summary-json` -> known_dirty=3, unexpected_dirty=0, stale_baseline=0 |
 | reference dirty triage | PASS | `rtk scripts/check-reference-dirty-triage.sh . --summary-json` -> `reports/reference-dirty-triage-2026-07-11.json` |
 | V4 root quick gate | PASS | `rtk scripts/check-all.sh --quick` -> 55/55 |
+| source-to-live mapping | PASS | `rtk rg ... /home/leiwenjun/codex` -> no target architecture template live asset mapping found; this run is no-op live refresh evidence |
+| source-to-live build | PASS | `rtk bash ~/codex/scripts/build.sh --profile team-collab` -> managed=749 |
+| source-to-live doctor | PASS | `rtk bash ~/codex/scripts/doctor.sh --scope all` -> errors=0, warnings=0 |
+| source-to-live plan | PASS | `rtk bash ~/codex/scripts/plan.sh --target ~/.codex --prune-stale --output ~/codex/build/apply-plan.json` -> copy=0, overwrite=0, delete=0 |
+| source-to-live dry-run/apply | PASS | dry-run and apply both reported copy=0, keep=481, overwrite=0, delete=0, mkdir=270, skip=0 |
+| source-to-live post-check | PASS | `rtk bash ~/codex/scripts/check-routing-precedence.sh`; `rtk bash ~/codex/scripts/check.sh`; `rtk scripts/check-runtime-health.sh . --profile minimal` |
+| Knowledge Hub promotion dry-run | PASS_WITH_BOUNDARY | `knowledge-promote --dry-run` -> status=planned, required_review=true, apply_supported=false |
+| Knowledge Hub final gate | PASS | `knowledge-check --dry-run --json`, `knowledge-status --json`, `knowledge-final-gate --json` all returned pass/ok |
 
 ## Open Boundaries
 
@@ -51,7 +60,7 @@
 - 真实生产放行前仍需实机烧录/readback、boot log、HIL/产测、OTA rollback 和现场维护包证据。
 - 3 个参考子仓 dirty 为 `subrepos/dirty-baseline.tsv` 登记的 observe baseline，本轮只刷新治理 baseline，不清理、不 reset、不同步参考子仓。
 - `agent-dev-kit` 子仓模板改动已提交到上一轮基线；本轮 V4 模板升级需再次提交子仓并同步父仓 gitlink 与 `adk.lock`。
-- source-to-live 只允许通过 `~/codex -> ~/.codex` 链路执行；若 dry-run 出现未解释 overwrite/delete，必须暂停在 dry-run 并记录风险。
-- Knowledge Hub active promotion 当前不作为默认完成声明；本轮默认落为 archive/decision candidate 与 promotion dry-run 证据，除非 owner review 和工具链显式允许 active apply。
+- source-to-live 本轮已完成真实 apply，但由于本次 ADK 目标架构模板没有 `~/codex` live asset 映射，运行态结果是 no-op file-content refresh：没有 copy、overwrite 或 delete。
+- Knowledge Hub active promotion 当前不作为完成声明；本轮落为 archive/decision candidate 与 promotion dry-run 证据，后续 active apply 仍需 owner review 和工具链支持。
 - `reports/architecture/llm-agent-adk-target-architecture-2026-07-11.md` 是本轮目标架构和任务表的当前审查产物，后续落地应按其中 P0/P1/P2 顺序推进。
 - 官方 OpenAI/Codex 外部来源仅作为本轮 report-level evidence；没有提升新的 ADK manifest 规则，也没有启用 automation 或 live runtime 写入。

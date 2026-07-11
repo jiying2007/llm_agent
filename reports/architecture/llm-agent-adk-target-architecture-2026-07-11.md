@@ -379,6 +379,20 @@ reference subrepos
 | `rtk scripts/check-subrepo-state.sh . --summary-json` | 0 | after V4 ADK commit: `known_dirty=3`, `unexpected_dirty=0`, `stale_baseline=0` | V4 root closeout |
 | `rtk scripts/evidence-bundle.sh . --format json --fail-on-needs-fix` | 0 | status=pass, `agent_dev_kit_head=3e87b90` | V4 root closeout |
 | `rtk scripts/check-all.sh --quick` | 0 | V4 root quick gate passed, `55/55` | V4 root closeout |
+| `rtk git commit -m "feat(architecture): 完成终态设计全闭环落地"` | 0 | committed root V4 source landing as `f995048` | V4 root closeout |
+| `rtk rg -n "target-architecture-report-template\|Runtime Delivery Contract\|Knowledge Promotion Contract\|State Reconciliation Contract\|3e87b90\|14a5739" /home/leiwenjun/codex` | 1 | no direct `~/codex` live asset mapping found for the ADK target architecture template; live run is no-op file-content refresh evidence | V4 runtime delivery |
+| `rtk bash ~/codex/scripts/build.sh --profile team-collab` | 0 | source-to-live build succeeded, `managed=749` | V4 runtime delivery |
+| `rtk bash ~/codex/scripts/doctor.sh --scope all` | 0 | repo/build/live doctor succeeded, `errors=0`, `warnings=0` | V4 runtime delivery |
+| `rtk bash ~/codex/scripts/plan.sh --target ~/.codex --prune-stale --output ~/codex/build/apply-plan.json` | 0 | apply plan generated with `copy=0`, `overwrite=0`, `delete=0`, `keep=481`, `mkdir=270` | V4 runtime delivery |
+| `rtk bash ~/codex/scripts/apply.sh --plan ~/codex/build/apply-plan.json --dry-run` | 0 | dry-run had `copy=0`, `overwrite=0`, `delete=0` | V4 runtime delivery |
+| `rtk bash ~/codex/scripts/apply.sh --plan ~/codex/build/apply-plan.json` | 0 | live apply completed with no file copy/overwrite/delete; only missing directories were created | V4 runtime delivery |
+| `rtk bash ~/codex/scripts/check-routing-precedence.sh` | 0 | default profile remains `team-collab`, Superpowers remains inactive in default profile | V4 runtime delivery |
+| `rtk bash ~/codex/scripts/check.sh` | 0 | `~/codex` full check passed after source-to-live apply | V4 runtime delivery |
+| `rtk scripts/check-runtime-health.sh . --profile minimal` | 0 | root runtime health adapter confirmed `~/.codex` minimal profile healthy | V4 runtime delivery |
+| `rtk bash ~/knowledge-hub/tools/knowledge-promote.sh --id llm-agent-adk-target-architecture --target projects/llm-agent --dry-run --json` | 0 | promotion planned; `required_review=true`, `apply_supported=false`, active apply intentionally blocked | V4 knowledge feedback |
+| `rtk bash ~/knowledge-hub/tools/knowledge-check.sh --dry-run --json` | 0 | Knowledge Hub check passed | V4 knowledge feedback |
+| `rtk bash ~/knowledge-hub/tools/knowledge-status.sh --json --review-queue-limit 5` | 0 | Knowledge Hub status ok; no final-gate blocking review queue | V4 knowledge feedback |
+| `rtk bash ~/knowledge-hub/tools/knowledge-final-gate.sh --json` | 0 | Knowledge Hub final gate ok | V4 knowledge feedback |
 
 ## Completion Audit
 
@@ -391,6 +405,8 @@ reference subrepos
 | V2 全维度终态设计完善 | `V2 Review Matrix`、`External Evidence Refresh`、`Target Architecture Delta` 与 `Next Implementation Backlog` 已补齐目标、功能、性能、可维护性、可扩展性、安全、验证、知识沉淀和运行态交付审查 | proven |
 | V3 架构再设计落地 | `Architecture Operating Model`、`SSOT Matrix` 和 `Landing Protocol` 已进入本报告，并由 `check-architecture-reports` 与 `test_architecture_reports` 强制检查 | proven |
 | V4 闭环控制架构落地 | `Runtime Delivery Contract`、`Knowledge Promotion Contract` 和 `State Reconciliation Contract` 已进入本报告、ADK 模板和机器门禁；ADK V4 模板提交为 `3e87b90` | proven |
+| L4 runtime delivery evidence | `~/codex` build/doctor/plan/dry-run/apply/check 和 root runtime health 均通过；apply 没有 copy/overwrite/delete 文件内容变更 | proven |
+| L5 knowledge feedback evidence | Hub promotion dry-run、knowledge-check、knowledge-status 和 final-gate 均通过；active promotion 因 `apply_supported=false` 保持未执行并要求 human review | proven-with-boundary |
 | 所有修改都有命令级验证证据 | 本报告 Evidence Index 与 `reports/current-status.md` 记录通过和负结果；子仓提交、父仓 gitlink/adk.lock 同步、evidence bundle 和 root quick gate 均已通过 | proven |
 | `llm_agent` 与 `agent-dev-kit` 职责边界更清晰 | `Target Architecture` 与 `Responsibility Boundary` 明确治理仓、中立 ADK 资产、runtime handoff 和 Knowledge Feedback 分层 | proven |
 | 后续 agent 可恢复推进 | `Goal Closure State`、`reports/current-status.md`、`reports/architecture/README.md` 和仓内 Knowledge Hub candidate 提供恢复入口 | proven |
@@ -398,12 +414,12 @@ reference subrepos
 ## Goal Closure State
 
 - goal_statement: 长期资产级架构优化设计，并分阶段落地 `llm_agent` 与 `agent-dev-kit`。
-- completion_claim: Phase 1 architecture design/baseline remediation, Phase 2 architecture-report gate, Phase 3 ADK neutral target-architecture template, V2 full-dimensional design review, V3 operating-model/SSOT/landing-protocol redesign, V4 runtime-delivery/knowledge-promotion/state-reconciliation contracts, external official-practice evidence refresh, and ADK V4 template closeout are implemented and directly verified. This changeset targets maximum-safe L5 landing, with live apply and Hub active promotion bounded by their explicit gates.
+- completion_claim: Phase 1 architecture design/baseline remediation, Phase 2 architecture-report gate, Phase 3 ADK neutral target-architecture template, V2 full-dimensional design review, V3 operating-model/SSOT/landing-protocol redesign, V4 runtime-delivery/knowledge-promotion/state-reconciliation contracts, external official-practice evidence refresh, ADK V4 template closeout, root V4 source commit, source-to-live no-op file-content apply, and Knowledge Hub dry-run/final-gate evidence are implemented and directly verified. This changeset reaches maximum-safe L5 evidence: live apply completed without file content changes, while Hub active promotion remains intentionally blocked pending human review.
 - required_evidence: architecture report, implementation task table, V2 review matrix, V3 operating model, SSOT matrix, landing protocol, external evidence refresh, target architecture delta, next implementation backlog, dirty baseline gate, architecture report gate/test, root doc/token gates, ADK template/artifact/strict validation, ADK full regression, subrepo commit, adk.lock/gitlink consistency, evidence bundle pass, root aggregate closeout evidence.
 - claimant: Codex
 - verifier: completion gate in a later turn, using current command evidence.
 - open_items: no required open items for the design-and-source-commit goal; owner review for Hub candidate, future ADK neutral asset improvements, source-to-live dry-run/apply, and Hub promotion remain follow-up actions requiring explicit owner decision.
 - retry_budget: 3 verification repair loops per gate.
 - staleness_threshold: dirty baseline review expires on 2026-07-18.
-- heartbeat: Phase 1, Phase 2, Phase 3, V2 design review, V3 architecture redesign and subrepo closeout are implemented and re-verified.
-- stop_condition: pass; root aggregate quick gate restored to 55/55 after subrepo closeout.
+- heartbeat: Phase 1, Phase 2, Phase 3, V2 design review, V3 architecture redesign, V4 closed-loop contracts, subrepo/root closeout, source-to-live and Hub dry-run/final gates are implemented and re-verified.
+- stop_condition: pass; root aggregate quick gate passed 55/55, source-to-live apply passed with no file copy/overwrite/delete, and Hub active promotion boundary is explicitly recorded.
