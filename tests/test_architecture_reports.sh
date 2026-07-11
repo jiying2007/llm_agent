@@ -31,6 +31,7 @@ for heading in (
     "Runtime Delivery Contract",
     "Knowledge Promotion Contract",
     "State Reconciliation Contract",
+    "Status Consistency Gate",
 ):
     content = re.sub(rf"\n## {re.escape(heading)}\n.*?(?=\n## |\Z)", "\n", content, flags=re.S)
 with open(target, "w", encoding="utf-8") as handle:
@@ -48,7 +49,8 @@ for expected in \
   "missing heading: ## Landing Protocol" \
   "missing heading: ## Runtime Delivery Contract" \
   "missing heading: ## Knowledge Promotion Contract" \
-  "missing heading: ## State Reconciliation Contract"
+  "missing heading: ## State Reconciliation Contract" \
+  "missing heading: ## Status Consistency Gate"
 do
   if ! rg -q --fixed-strings -- "${expected}" "${legacy_out}"; then
     echo "[FAIL] legacy architecture report failure did not include: ${expected}" >&2

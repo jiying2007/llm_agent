@@ -198,7 +198,9 @@ scripts/governance-review.sh . --out reports/governance-review-YYYY-MM-DD.md
 
 active 文档陈旧引用检查：`scripts/check-stale-references.sh .` 检查 active 文档中的旧版本状态、旧本机路径、旧脚本名和绕过 `~/codex` 的直接运行目录安装示例；历史 archive 不参与阻断。
 
-架构终态报告门禁：`scripts/check-architecture-reports.sh . --summary-json` 校验 `reports/architecture/` 的章节、操作模型、SSOT 矩阵、落地协议、P0/P1/P2、Evidence Index、before-fix/拒绝证据和 source-to-live 边界；回归入口为 `tests/test_architecture_reports.sh`。
+架构终态报告门禁：`scripts/check-architecture-reports.sh . --summary-json` 校验 `reports/architecture/` 的章节、操作模型、SSOT 矩阵、落地协议、P0/P1/P2、Evidence Index、before-fix/拒绝证据、source-to-live 边界和状态一致性；回归入口为 `tests/test_architecture_reports.sh`。
+
+当前状态一致性门禁：`scripts/check-current-status-consistency.sh . --summary-json` 校验 `reports/current-status.md` 与 `adk.lock`、`agent-dev-kit` gitlink、ADK worktree HEAD、runtime live evidence、Knowledge Hub promotion boundary 和架构报告状态一致；阻断陈旧 `IN PROGRESS`、子仓提交待办、ADK commit mismatch、无证据 live-applied 声明和 active promotion claims；回归入口为 `tests/test_current_status_consistency.sh`。
 
 runtime live 实装态与长会话提醒：
 
