@@ -3,7 +3,7 @@ AUBB-Server,delivery,P2,fetch,main,no,业务闭环证据写法已吸收，移除
 Migrationed_skills,skill-pool,P1,fetch,main,no,方法已吸收，模板化严重，移除本地参考仓,disabled,adk-team,2026-06-25,observe-first,C
 OpenSpec,workflow-core,P0,fetch,main,yes,Spec 工件体系,active,adk-team,2026-05-02,adopt-first,S
 agency-agents-zh,agent-ecosystem,P1,fetch,main,no,角色职责矩阵与术语体系已吸收，移除本地参考仓,disabled,adk-team,2026-06-25,observe-first,S
-agent-skills,agent-ecosystem,P1,fetch,main,no,技能触发路由与生命周期映射已吸收，移除本地参考仓,disabled,adk-team,2026-06-25,observe-first,S
+agent-skills,agent-ecosystem,P1,fetch,main,no,技能触发路由与生命周期映射已吸收；2026-07-11 继续 observe-light watch 新增质量门禁,disabled,adk-team,2026-07-11,observe-first,S
 ai-coding-guide,knowledge,P1,fetch,main,no,场景化工作流导览与风险提示已吸收，移除本地参考仓,disabled,adk-team,2026-06-25,observe-first,A
 arthas,delivery,P2,fetch,master,no,贡献规范与发布质量门槛已吸收，移除本地参考仓,disabled,adk-team,2026-06-25,selective-adopt,A
 auto-research,knowledge,P2,fetch,main,no,方法已吸收，旧分级禁用，移除本地参考仓,disabled,adk-team,2026-06-25,selective-adopt,C
@@ -13,10 +13,16 @@ dotfiles,config,P2,fetch,master,no,最小变更与基线校验策略已吸收，
 agent-dev-kit,adk-core,P0,pull,main,yes,主落地仓库,active,adk-team,2026-05-02,adopt-first,S
 hermes-agent,delivery,P1,fetch,main,no,大型 Agent 工程目录职责与测试入口已吸收，移除本地参考仓,disabled,adk-team,2026-06-25,observe-first,A
 hermes-collaboration-skill,agent-ecosystem,P1,fetch,main,no,协作 runbook 范式已吸收，移除本地参考仓,disabled,adk-team,2026-06-25,observe-first,B
-mattpocock-skills,agent-ecosystem,P1,fetch,main,no,小技能组合与 deprecated 分层治理已吸收，移除本地参考仓,disabled,adk-team,2026-06-25,adopt-first,A
-andrej-karpathy-skills,agent-ecosystem,P2,fetch,main,no,Karpathy四原则已被全局规则覆盖，仅保留archive-only参考,disabled,adk-team,2026-06-29,observe-first,B
-awesome-agent-skills,skill-index,P2,fetch,main,no,跨平台skill索引仅作discovery feed，不作为长期参考仓,disabled,adk-team,2026-06-29,observe-first,B
-claude-skills,skill-pool,P2,fetch,main,no,大型skill池按域候选抽样，不完整长期跟进,disabled,adk-team,2026-06-29,selective-adopt,B
+mattpocock-skills,agent-ecosystem,P1,fetch,main,no,小技能组合已吸收；2026-07-11 对 v1.1.0 后续变化做 sampled watch,disabled,adk-team,2026-07-11,adopt-first,A
+andrej-karpathy-skills,agent-ecosystem,P2,fetch,main,no,Karpathy四原则已被全局规则覆盖；2026-07-11 复核仍保持archive-only,disabled,adk-team,2026-07-11,observe-first,B
+awesome-agent-skills,skill-index,P2,fetch,main,no,跨平台skill索引仅作discovery feed；2026-07-11 继续 watch 元数据,disabled,adk-team,2026-07-11,observe-first,B
+claude-skills,skill-pool,P2,fetch,main,no,大型skill池按域候选抽样；2026-07-11 继续 selective-only watch,disabled,adk-team,2026-07-11,selective-adopt,B
+ECC,workflow-core,P1,fetch,main,no,Everything Claude Code 重定向仓；高风险 harness 仅 watch 不安装,disabled,adk-team,2026-07-11,observe-first,A
+composio,tooling,P2,fetch,main,no,外部工具链连接平台；需凭证和hosted service，具体集成前安全审查,disabled,adk-team,2026-07-11,security-review-only,B
+claude-code-plugins-plus-skills,knowledge,P2,fetch,main,no,Claude Code plugin/skill marketplace catalog；仅 discovery feed 不装CLI,disabled,adk-team,2026-07-11,observe-first,B
+awesome-claude-code,knowledge,P2,fetch,main,no,Claude Code 资源导航；owner-requested watch，license需复核,disabled,adk-team,2026-07-11,observe-first,B
+awesome-claude-skills,knowledge,P2,fetch,master,no,Claude Skills curated list；discovery feed，单项skill需另审,disabled,adk-team,2026-07-11,observe-first,B
+awesome-claude-code-toolkit,knowledge,P2,fetch,main,no,综合toolkit含hooks/MCP/apps；owner-requested watch，不启用runtime,disabled,adk-team,2026-07-11,observe-first,C
 oh-my-codex,codex-runtime,P1,fetch,main,yes,Codex工作流运行层submodule观察，不启用runtime,active,adk-team,2026-06-29,observe-first,A
 planning-with-files,workflow-quality,P1,fetch,master,yes,文件化长任务计划与恢复submodule观察，不启用hooks,active,adk-team,2026-06-29,observe-first,A
 prompts,knowledge,P2,fetch,main,no,提示词资产轻量演进机制已吸收，移除本地参考仓,disabled,adk-team,2026-06-25,selective-adopt,A

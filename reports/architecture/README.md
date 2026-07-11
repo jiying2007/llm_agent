@@ -19,6 +19,7 @@
 - 架构操作模型
 - SSOT 矩阵
 - 问题地图和风险分级
+- 结构化需求审查
 - 落地成熟度协议
 - 运行态交付契约
 - 知识提升契约
@@ -26,6 +27,9 @@
 - 状态一致性门禁
 - 分阶段路线图
 - 可执行任务表
+- 全面优化 backlog
+- `manifests/comprehensive_optimization_backlog.json` 机器可读设计 SSOT
+- `agent-dev-kit/templates/artifacts/target-architecture-report-template.md` 可复用模板回灌
 - 验证门禁
 - 不采纳项与理由
 - Evidence Index

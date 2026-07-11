@@ -1,0 +1,192 @@
+{
+  "schema_version": 1,
+  "status": "landed-design",
+  "last_updated": "2026-07-11",
+  "purpose": "Machine-readable terminal optimization backlog for llm_agent and agent-dev-kit architecture governance. This manifest is the SSOT for the Comprehensive Optimization Backlog section in reports/architecture/llm-agent-adk-target-architecture-2026-07-11.md.",
+  "source_report": "reports/architecture/llm-agent-adk-target-architecture-2026-07-11.md",
+  "rules": {
+    "report_must_reference_manifest": true,
+    "report_must_list_every_item_id": true,
+    "items_must_have_verification": true,
+    "items_must_keep_design_and_implementation_status_separate": true,
+    "adk_template_must_carry_pattern": true,
+    "implementation_requires_owner_approval": true,
+    "no_live_apply_without_source_to_live_evidence": true
+  },
+  "adk_template": "agent-dev-kit/templates/artifacts/target-architecture-report-template.md",
+  "items": [
+    {
+      "id": "G1",
+      "priority": "P0",
+      "optimization_area": "Goal and scope control",
+      "terminal_outcome": "Every cross-repo goal has a goal statement, non-goal boundary, maturity level, stop condition, and completion evidence.",
+      "design_status": "landed",
+      "implementation_status": "planned",
+      "implementation_targets": [
+        "architecture report template",
+        "current-status update rules",
+        "goal closure fields"
+      ],
+      "verification": [
+        "rtk scripts/check-architecture-reports.sh . --summary-json",
+        "rtk scripts/check-current-status-consistency.sh . --summary-json"
+      ]
+    },
+    {
+      "id": "G2",
+      "priority": "P0",
+      "optimization_area": "Governance correctness",
+      "terminal_outcome": "Registry, adoption, lifecycle, dirty baseline, and Hub candidate state claims do not contradict each other.",
+      "design_status": "landed",
+      "implementation_status": "planned",
+      "implementation_targets": [
+        "root reports",
+        "lifecycle gates",
+        "adoption gates"
+      ],
+      "verification": [
+        "rtk scripts/check-oss-intake-ledger.sh .",
+        "rtk scripts/check-adoption-matrix-structured.sh .",
+        "rtk scripts/check-subrepo-state.sh . --summary-json"
+      ]
+    },
+    {
+      "id": "G3",
+      "priority": "P0",
+      "optimization_area": "Evidence integrity",
+      "terminal_outcome": "Every complete, applied, archived, or promoted claim is tied to command-level evidence and at least one negative or before-fix record.",
+      "design_status": "landed",
+      "implementation_status": "planned",
+      "implementation_targets": [
+        "Evidence Index",
+        "evidence bundle",
+        "completion audit"
+      ],
+      "verification": [
+        "rtk scripts/check-evidence-bundle.sh .",
+        "rtk scripts/check-all.sh --quick"
+      ]
+    },
+    {
+      "id": "G4",
+      "priority": "P1",
+      "optimization_area": "Functional coverage",
+      "terminal_outcome": "ADK capability gaps are closed by enhancing existing agents, skills, or workflows instead of creating parallel skills by default.",
+      "design_status": "landed",
+      "implementation_status": "planned",
+      "implementation_targets": [
+        "agent-dev-kit/manifest.yaml",
+        "routing matrix",
+        "capability health report"
+      ],
+      "verification": [
+        "rtk bash agent-dev-kit/scripts/devkit.sh capability health --summary-json",
+        "rtk scripts/check-skill-routing-conflicts.sh .",
+        "rtk bash agent-dev-kit/scripts/devkit.sh workflow-closure --profile core --summary-json"
+      ]
+    },
+    {
+      "id": "G5",
+      "priority": "P1",
+      "optimization_area": "Performance and token cost",
+      "terminal_outcome": "Default entrypoints stay short, deep evidence is read on demand, and new reports prefer summary-json gates.",
+      "design_status": "landed",
+      "implementation_status": "planned",
+      "implementation_targets": [
+        "reports/current-status.md",
+        "scripts/README.md",
+        "token budget gate"
+      ],
+      "verification": [
+        "rtk scripts/check-token-budget.sh . --summary-json",
+        "rtk rg -n \"summary-json|current-status\" reports scripts"
+      ]
+    },
+    {
+      "id": "G6",
+      "priority": "P1",
+      "optimization_area": "Maintainability",
+      "terminal_outcome": "Long-term design, current state, execution plan, and knowledge candidates each have one canonical entrypoint.",
+      "design_status": "landed",
+      "implementation_status": "planned",
+      "implementation_targets": [
+        "reports/architecture/README.md",
+        "reports/current-status.md",
+        "Hub candidate policy"
+      ],
+      "verification": [
+        "rtk scripts/check-doc-sync.sh .",
+        "rtk scripts/check-current-status-consistency.sh . --summary-json"
+      ]
+    },
+    {
+      "id": "G7",
+      "priority": "P1",
+      "optimization_area": "Extensibility",
+      "terminal_outcome": "New runtimes, reference sources, and profiles enter candidate or dry-run state before becoming active.",
+      "design_status": "landed",
+      "implementation_status": "planned",
+      "implementation_targets": [
+        "runtime target registry",
+        "OSS intake lifecycle",
+        "approval queue"
+      ],
+      "verification": [
+        "rtk scripts/check-runtime-targets.sh . --summary-json",
+        "rtk scripts/check-oss-registration-plan.sh .",
+        "rtk scripts/check-oss-approval-queue.sh ."
+      ]
+    },
+    {
+      "id": "G8",
+      "priority": "P1",
+      "optimization_area": "Asset experience",
+      "terminal_outcome": "Operators can reach the correct runbook, skill, and verification command from low-token entrypoints.",
+      "design_status": "landed",
+      "implementation_status": "planned",
+      "implementation_targets": [
+        "root README/AGENTS",
+        "ADK docs/workflows",
+        "agent-skill catalog"
+      ],
+      "verification": [
+        "rtk scripts/check-agents-coverage.sh .",
+        "rtk bash agent-dev-kit/tests/test_templates.sh"
+      ]
+    },
+    {
+      "id": "G9",
+      "priority": "P2",
+      "optimization_area": "Knowledge retention",
+      "terminal_outcome": "High-value conclusions generate sanitized candidates, and active or archive promotion requires owner review.",
+      "design_status": "landed",
+      "implementation_status": "planned",
+      "implementation_targets": [
+        "architecture knowledge candidate",
+        "Hub dry-run evidence",
+        "Hub status evidence"
+      ],
+      "verification": [
+        "rtk bash ~/knowledge-hub/tools/knowledge-promote.sh --id llm-agent-adk-target-architecture --target projects/llm-agent --dry-run --json",
+        "rtk bash ~/knowledge-hub/tools/knowledge-status.sh --json --review-queue-limit 5"
+      ]
+    },
+    {
+      "id": "G10",
+      "priority": "P2",
+      "optimization_area": "Release and rollback clarity",
+      "terminal_outcome": "Source-to-live, Hub promotion, and reference cleanup have separate approval points and rollback or stop conditions.",
+      "design_status": "landed",
+      "implementation_status": "planned",
+      "implementation_targets": [
+        "runtime delivery contract",
+        "knowledge promotion contract",
+        "removal plan"
+      ],
+      "verification": [
+        "rtk scripts/check-runtime-target-evidence-index.sh .",
+        "rtk scripts/check-oss-removal-plan.sh ."
+      ]
+    }
+  ]
+}

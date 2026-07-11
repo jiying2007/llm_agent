@@ -167,6 +167,25 @@ reference subrepos
 | P1-3 | major | ADK core 能力强但规模已大，继续新增平行 skill 会增加触发冲突风险 | 56 core skills, 7 optional skills, 6 workflows, 30 manifests | 后续优先合并、增强现有 skill，新增前跑 routing 和 capability health |
 | P2-1 | minor | Knowledge Hub 无直接命中本次终态设计旧结论，但要求结束时有 candidate 或明确不归档 | Hub preflight selected `llm-agent` route and recommended candidate | 完成或阶段收口时生成 Hub candidate 或说明本次报告即为仓内证据 |
 
+## Structured Requirements Review
+
+本节把 2026-07-11 用户新增要求固化为可审查需求，而不是让后续实现者从对话历史推断意图。
+
+| Dimension | Confirmed Requirement | Success Criteria | Non-Goal / Boundary |
+|---|---|---|---|
+| Goal | 全面审查 `llm_agent`、`agent-dev-kit` 和已登记参考子仓，完善终态设计 | 报告明确当前状态、目标状态、差距、任务优先级和验证门禁 | 不把审查直接等同于代码重构或 live runtime apply |
+| Deliverable | 输出“报告 + 实现计划” | 现有架构报告新增结构化需求审查和全面优化 backlog，任务可直接交给后续 agent 执行 | 不新建平行终态报告，不复制长内容到根 `AGENTS.md` |
+| Scope | 包含 `llm_agent`、`agent-dev-kit`、active/watch/reference 子仓和 source-to-live 链路 | 覆盖 registry、adoption matrix、dirty baseline、ADK manifest、runtime target、Hub candidate 边界 | 不同步上游、不 clone 新仓、不 reset reference dirty |
+| Quality Dimensions | 目标、功能、性能、可维护性、可扩展性、安全、验证、知识沉淀和资产体验都必须评估 | 每个维度至少落到一个 finding、目标设计或 backlog 项 | 不用单一“治理正确性”替代其他维度 |
+| Long-term Asset | 结论必须能长期复用、可验证、可恢复 | 架构报告、current-status、ADK 中立模板、门禁脚本和 Knowledge candidate 形成闭环 | 不静默写 memory，不把仓内 candidate 声明为 Hub active |
+| Execution Constraint | 本轮实现必须尊重当前 dirty 工作区 | 只改报告/门禁/状态索引等相关治理资产，不回退既有未提交变更 | 不自动 commit/push/apply，除非用户单独授权 |
+
+对齐后的核心判断：
+
+- 当前 V4 报告已有良好基础，但缺少显式“结构化需求审查”章节，导致用户新增目标不容易从报告中追溯。
+- 现有 `Next Implementation Backlog` 偏阶段任务，缺少跨目标/功能/性能/维护/扩展/资产体验的统一优化队列。
+- 终态设计应把“审查发现”和“实施任务”分开：发现进入 review matrix，实施进入 backlog，完成声明进入 completion audit。
+
 ## V2 Review Matrix
 
 | Dimension | Current State | Gap | Terminal Design | Priority |
@@ -286,6 +305,24 @@ reference subrepos
 | E3 | P0 | 执行 Codex source-to-live 安全闭环 | `~/codex` evidence, `reports/current-status.md` | dry-run 出现未解释 overwrite/delete、构建失败、缺少 live write approval | `build`; `doctor`; `plan`; `apply --dry-run`; optional `apply`; routing/check/runtime health |
 | E4 | P1 | 执行 Knowledge Hub 归档/提升证据闭环 | Hub candidate/archive evidence, `reports/current-status.md` | Hub apply path blocked or owner review missing | `knowledge-promote --dry-run`; `knowledge-check --dry-run`; `knowledge-status` |
 | F1 | P0 | 将 current-status 状态一致性转为机器门禁 | `scripts/check-current-status-consistency.sh`, `tests/test_current_status_consistency.sh`, `reports/current-status.md`, ADK target architecture template | fixture 无法稳定捕获陈旧状态、ADK mismatch 或越级 promotion 声明 | `check-current-status-consistency`; `test_current_status_consistency`; `check-adk-lock`; `check-all --quick` |
+
+## Comprehensive Optimization Backlog
+
+本 backlog 是下一轮实施入口。它按优化目标组织，而不是按文件组织；每项只有在对应 gate 可验证时才允许进入实现。机器可读 SSOT 是 `manifests/comprehensive_optimization_backlog.json`；本节必须与该 manifest 的 G1-G10、优先级、优化领域和验证入口保持一致。
+同一设计模式已回灌到 `agent-dev-kit/templates/artifacts/target-architecture-report-template.md`，后续项目生成目标架构报告时必须同时包含结构化需求审查、综合优化 backlog、机器可读 SSOT 和设计/实现状态分离。
+
+| ID | Priority | Optimization Area | Terminal Outcome | Implementation Target | Verification |
+|---|---|---|---|---|---|
+| G1 | P0 | Goal and scope control | 每个跨仓目标都有 goal statement、non-goal、maturity level 和 stop condition | 架构报告模板、current-status 更新规则、goal closure 字段 | `check-architecture-reports`; `check-current-status-consistency` |
+| G2 | P0 | Governance correctness | registry、adoption、lifecycle、dirty baseline 和 Hub candidate 不再出现互相矛盾的状态声明 | root reports + lifecycle/adoption gates；必要时补一致性检查 | `check-oss-intake-ledger`; `check-adoption-matrix-structured`; `check-subrepo-state` |
+| G3 | P0 | Evidence integrity | 所有“完成/应用/归档/提升”声明必须绑定命令级证据和负结果记录 | Evidence Index、evidence bundle、completion audit | `check-evidence-bundle`; `check-all --quick` |
+| G4 | P1 | Functional coverage | ADK 能力缺口通过增强现有 agent/skill/workflow 解决，避免平行 skill 膨胀 | `agent-dev-kit/manifest.yaml`、routing matrix、capability health report | `devkit capability health`; `check-skill-routing-conflicts`; `workflow-closure` |
+| G5 | P1 | Performance and token cost | 默认入口保持短索引，深证据按需读取，所有新增报告优先有 summary-json gate | `reports/current-status.md`, `scripts/README.md`, token budget gate | `check-token-budget --summary-json`; targeted `rg` checks |
+| G6 | P1 | Maintainability | 长期设计、当前状态、执行计划和知识候选各有唯一入口，历史报告只作 provenance | `reports/architecture/README.md`, `reports/current-status.md`, Hub candidate policy | `check-doc-sync`; `check-current-status-consistency` |
+| G7 | P1 | Extensibility | 新 runtime、新参考源、新 profile 必须先进入候选状态和 dry-run 证据，不能直接变 active | runtime target registry、OSS intake lifecycle、approval queue | `check-runtime-targets`; `check-oss-registration-plan`; `check-oss-approval-queue` |
+| G8 | P1 | Asset experience | 使用者能从低 token 入口找到正确 runbook、skill 和验证命令 | root README/AGENTS、ADK docs/workflows、agent-skill catalog | `check-agents-coverage`; ADK docs/catalog gates |
+| G9 | P2 | Knowledge retention | 高价值结论生成脱敏 candidate，active/archive promotion 必须 owner review | architecture knowledge candidate、Hub dry-run/status evidence | Hub dry-run/status/final-gate |
+| G10 | P2 | Release and rollback clarity | source-to-live、Hub promotion 和 reference cleanup 都有独立审批点和 rollback/stop condition | runtime delivery contract、knowledge promotion contract、removal plan | source-to-live dry-run gates; `check-oss-removal-plan` |
 
 ## Verification Gates
 
@@ -409,6 +446,14 @@ reference subrepos
 | `rtk git commit -m "feat(templates): 增加状态一致性门禁"` in `agent-dev-kit` | 0 | committed status consistency ADK template landing as `d59047e` | status consistency |
 | `rtk scripts/check-token-budget.sh . --summary-json` | 0 | after status consistency gate registration: `status=pass`, `max_root_lines=517` | status consistency |
 | `rtk scripts/check-all.sh --quick` | 0 | root quick gate passed, `56/56`, including `check-current-status-consistency.sh` | status consistency |
+| `rtk scripts/check-architecture-reports.sh . --summary-json` | 0 | after structured requirements/backlog update: architecture report still passes | structured requirements |
+| `rtk tests/test_architecture_reports.sh` | 0 | checker rejects reports missing Structured Requirements Review and Comprehensive Optimization Backlog | structured requirements |
+| `rtk scripts/check-architecture-reports.sh . --summary-json` | 0 | checker validates `manifests/comprehensive_optimization_backlog.json` and report/manifest G1-G10 alignment | architecture optimization |
+| `rtk tests/test_architecture_reports.sh` | 0 | fixture covers missing architecture manifest and report section failures | architecture optimization |
+| `rtk bash agent-dev-kit/tests/test_templates.sh` | 0 | target architecture template includes structured requirements and comprehensive optimization fields | ADK template |
+| `rtk bash agent-dev-kit/scripts/quality-gate-check.sh check-artifacts --verbose` | 0 | artifact gate enforces target architecture optimization tokens | ADK template |
+| `rtk bash agent-dev-kit/scripts/devkit.sh validate --strict` | 0 | ADK strict validation passes after template productization | ADK template |
+| `rtk git commit -m "feat(adk): 完善终态设计与吸收门禁"` in `agent-dev-kit` | 0 | committed terminal-design template and observed-repo absorption gate as `f8c3370` | ADK template |
 
 ## Completion Audit
 
@@ -420,8 +465,12 @@ reference subrepos
 | 长期维护能力增强 | Phase 2 架构报告门禁和 Phase 3 ADK 中立模板已落地；`check-architecture-reports`, `test_architecture_reports`, ADK template/artifact/validate/run_all 均有通过证据 | proven |
 | V2 全维度终态设计完善 | `V2 Review Matrix`、`External Evidence Refresh`、`Target Architecture Delta` 与 `Next Implementation Backlog` 已补齐目标、功能、性能、可维护性、可扩展性、安全、验证、知识沉淀和运行态交付审查 | proven |
 | V3 架构再设计落地 | `Architecture Operating Model`、`SSOT Matrix` 和 `Landing Protocol` 已进入本报告，并由 `check-architecture-reports` 与 `test_architecture_reports` 强制检查 | proven |
-| V4 闭环控制架构落地 | `Runtime Delivery Contract`、`Knowledge Promotion Contract` 和 `State Reconciliation Contract` 已进入本报告、ADK 模板和机器门禁；ADK V4 模板提交为 `3e87b90`，当前状态一致性模板增量提交为 `d59047e` | proven |
+| V4 闭环控制架构落地 | `Runtime Delivery Contract`、`Knowledge Promotion Contract` 和 `State Reconciliation Contract` 已进入本报告、ADK 模板和机器门禁；ADK V4 模板提交为 `3e87b90`，状态一致性模板增量提交为 `d59047e`，本轮终态设计模板与观察仓吸收门禁增量提交为 `f8c3370` | proven |
 | 状态一致性门禁落地 | `scripts/check-current-status-consistency.sh`、`tests/test_current_status_consistency.sh`、ADK `Status Consistency Gate` 模板字段和 root 文档同步门禁已落地，能阻断陈旧状态、ADK mismatch、缺证据 live apply 和越级 knowledge promotion 声明 | proven |
+| 结构化需求审查已落地 | `Structured Requirements Review` 明确目标、交付物、范围、质量维度、长期资产要求和执行约束 | proven |
+| 全面优化实现计划已落地 | `Comprehensive Optimization Backlog` 按治理、效率、功能覆盖、可维护性、可扩展性、资产体验、知识沉淀和回滚边界给出 P0/P1/P2 后续任务 | proven |
+| 全面优化设计已资产化 | `manifests/comprehensive_optimization_backlog.json` 作为机器可读 SSOT，架构报告门禁校验 report/manifest 一致性 | proven |
+| 终态设计模式已回灌 ADK | `agent-dev-kit/templates/artifacts/target-architecture-report-template.md`、模板测试和 artifact gate 已包含结构化需求、综合优化 backlog、机器可读 SSOT 和设计/实现状态分离 | proven |
 | L4 runtime delivery evidence | `~/codex` build/doctor/plan/dry-run/apply/check 和 root runtime health 均通过；apply 没有 copy/overwrite/delete 文件内容变更 | proven |
 | L5 knowledge feedback evidence | Hub promotion dry-run、knowledge-check、knowledge-status 和 final-gate 均通过；active promotion 因 `apply_supported=false` 保持未执行并要求 human review | proven-with-boundary |
 | 所有修改都有命令级验证证据 | 本报告 Evidence Index 与 `reports/current-status.md` 记录通过和负结果；子仓提交、父仓 gitlink/adk.lock 同步、evidence bundle 和 root quick gate 均已通过 | proven |
@@ -431,7 +480,7 @@ reference subrepos
 ## Goal Closure State
 
 - goal_statement: 长期资产级架构优化设计，并分阶段落地 `llm_agent` 与 `agent-dev-kit`。
-- completion_claim: Phase 1 architecture design/baseline remediation, Phase 2 architecture-report gate, Phase 3 ADK neutral target-architecture template, V2 full-dimensional design review, V3 operating-model/SSOT/landing-protocol redesign, V4 runtime-delivery/knowledge-promotion/state-reconciliation contracts, current-status consistency gate, external official-practice evidence refresh, ADK V4/status-consistency template closeout, root V4 source commit, source-to-live no-op file-content apply, and Knowledge Hub dry-run/final-gate evidence are implemented and directly verified. This changeset reaches maximum-safe L5 evidence: live apply completed without file content changes, while Hub active promotion remains intentionally blocked pending human review.
+- completion_claim: Phase 1 architecture design/baseline remediation, Phase 2 architecture-report gate, Phase 3 ADK neutral target-architecture template, V2 full-dimensional design review, V3 operating-model/SSOT/landing-protocol redesign, V4 runtime-delivery/knowledge-promotion/state-reconciliation contracts, structured requirements review, comprehensive optimization backlog, current-status consistency gate, external official-practice evidence refresh, ADK V4/status-consistency template closeout, root V4 source commit, source-to-live no-op file-content apply, and Knowledge Hub dry-run/final-gate evidence are implemented and directly verified. This changeset reaches maximum-safe L5 evidence: live apply completed without file content changes, while Hub active promotion remains intentionally blocked pending human review.
 - required_evidence: architecture report, implementation task table, V2 review matrix, V3 operating model, SSOT matrix, landing protocol, status consistency checker/test, external evidence refresh, target architecture delta, next implementation backlog, dirty baseline gate, architecture report gate/test, root doc/token gates, ADK template/artifact/strict validation, ADK full regression, subrepo commit, adk.lock/gitlink consistency, evidence bundle pass, root aggregate closeout evidence.
 - claimant: Codex
 - verifier: completion gate in a later turn, using current command evidence.

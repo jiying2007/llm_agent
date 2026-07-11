@@ -21,8 +21,9 @@ usage: scripts/check-architecture-reports.sh [root] [--summary-json]
 
 Checks reports/architecture target architecture reports for required sections,
 operating model, landing protocol, runtime delivery, knowledge promotion,
-state reconciliation, status consistency, implementation tasks, evidence,
-rejection records, and source-to-live boundary language.
+state reconciliation, status consistency, structured requirements,
+optimization backlog, implementation tasks, evidence, rejection records,
+and source-to-live boundary language.
 USAGE
       exit 0
       ;;
@@ -44,6 +45,8 @@ root, summary_json = sys.argv[1:3]
 summary_json = summary_json == "1"
 arch_dir = os.path.join(root, "reports", "architecture")
 readme = os.path.join(arch_dir, "README.md")
+optimization_manifest_path = os.path.join(root, "manifests", "comprehensive_optimization_backlog.json")
+adk_template_path = os.path.join(root, "agent-dev-kit", "templates", "artifacts", "target-architecture-report-template.md")
 failures = []
 
 
@@ -58,6 +61,18 @@ def fail(message):
 def read(path):
     with open(path, "r", encoding="utf-8") as handle:
         return handle.read()
+
+
+def read_json(path):
+    if not os.path.isfile(path):
+        fail(f"missing file: {rel(path)}")
+        return None
+    try:
+        with open(path, "r", encoding="utf-8") as handle:
+            return json.load(handle)
+    except Exception as exc:
+        fail(f"invalid JSON in {rel(path)}: {exc}")
+        return None
 
 
 def has_heading(content, heading):
@@ -81,9 +96,97 @@ if not os.path.isfile(readme):
     fail("reports/architecture/README.md missing")
 else:
     readme_text = read(readme)
-    for token in ("必填内容", "Evidence Index", "source-to-live", "~/.codex", "运行态交付", "知识提升", "状态对账", "状态一致性"):
+    for token in ("必填内容", "Evidence Index", "source-to-live", "~/.codex", "运行态交付", "知识提升", "状态对账", "状态一致性", "结构化需求审查", "全面优化 backlog", "manifests/comprehensive_optimization_backlog.json"):
         if token not in readme_text:
             fail(f"{rel(readme)} missing required token: {token}")
+
+optimization_manifest = read_json(optimization_manifest_path)
+optimization_items = []
+if optimization_manifest:
+    if optimization_manifest.get("schema_version") != 1:
+        fail("comprehensive_optimization_backlog.json schema_version must be 1")
+    if optimization_manifest.get("status") != "landed-design":
+        fail("comprehensive_optimization_backlog.json status must be landed-design")
+    if optimization_manifest.get("source_report") != "reports/architecture/llm-agent-adk-target-architecture-2026-07-11.md":
+        fail("comprehensive_optimization_backlog.json source_report mismatch")
+    rules = optimization_manifest.get("rules")
+    if not isinstance(rules, dict):
+        fail("comprehensive_optimization_backlog.json rules must be an object")
+    else:
+        for rule in (
+            "report_must_reference_manifest",
+            "report_must_list_every_item_id",
+            "items_must_have_verification",
+            "items_must_keep_design_and_implementation_status_separate",
+            "adk_template_must_carry_pattern",
+            "implementation_requires_owner_approval",
+            "no_live_apply_without_source_to_live_evidence",
+        ):
+            if rules.get(rule) is not True:
+                fail(f"comprehensive_optimization_backlog.json rules.{rule} must be true")
+    if optimization_manifest.get("adk_template") != "agent-dev-kit/templates/artifacts/target-architecture-report-template.md":
+        fail("comprehensive_optimization_backlog.json adk_template mismatch")
+    raw_items = optimization_manifest.get("items")
+    if not isinstance(raw_items, list):
+        fail("comprehensive_optimization_backlog.json items must be an array")
+    else:
+        optimization_items = [item for item in raw_items if isinstance(item, dict)]
+        expected_ids = [f"G{i}" for i in range(1, 11)]
+        actual_ids = [item.get("id") for item in optimization_items]
+        if actual_ids != expected_ids:
+            fail(f"comprehensive_optimization_backlog.json item ids must be {expected_ids}")
+        required_areas = {
+            "Goal and scope control",
+            "Governance correctness",
+            "Evidence integrity",
+            "Functional coverage",
+            "Performance and token cost",
+            "Maintainability",
+            "Extensibility",
+            "Asset experience",
+            "Knowledge retention",
+            "Release and rollback clarity",
+        }
+        actual_areas = {item.get("optimization_area") for item in optimization_items}
+        missing_areas = required_areas - actual_areas
+        if missing_areas:
+            fail(f"comprehensive_optimization_backlog.json missing optimization areas: {', '.join(sorted(missing_areas))}")
+        for item in optimization_items:
+            item_id = item.get("id") or "<missing>"
+            if item.get("priority") not in {"P0", "P1", "P2"}:
+                fail(f"comprehensive_optimization_backlog.json {item_id} priority must be P0/P1/P2")
+            if item.get("design_status") != "landed":
+                fail(f"comprehensive_optimization_backlog.json {item_id} design_status must be landed")
+            if item.get("implementation_status") not in {"planned", "in_progress", "done", "blocked"}:
+                fail(f"comprehensive_optimization_backlog.json {item_id} implementation_status is invalid")
+            if not item.get("terminal_outcome"):
+                fail(f"comprehensive_optimization_backlog.json {item_id} terminal_outcome is required")
+            if not isinstance(item.get("implementation_targets"), list) or not item.get("implementation_targets"):
+                fail(f"comprehensive_optimization_backlog.json {item_id} implementation_targets must be non-empty")
+            verification = item.get("verification")
+            if not isinstance(verification, list) or not verification:
+                fail(f"comprehensive_optimization_backlog.json {item_id} verification must be non-empty")
+            elif not all(isinstance(cmd, str) and cmd.startswith("rtk ") for cmd in verification):
+                fail(f"comprehensive_optimization_backlog.json {item_id} verification commands must start with rtk")
+
+if os.path.isfile(adk_template_path):
+    adk_template_text = read(adk_template_path)
+    for token in (
+        "## Structured Requirements Review",
+        "Confirmed Requirement",
+        "Quality Dimensions",
+        "## Comprehensive Optimization Backlog",
+        "Machine-readable SSOT",
+        "Goal and scope control",
+        "Governance correctness",
+        "Performance and token cost",
+        "Release and rollback clarity",
+        "设计状态和实现状态",
+    ):
+        if token not in adk_template_text:
+            fail(f"{rel(adk_template_path)} missing target-architecture optimization token: {token}")
+else:
+    fail(f"missing file: {rel(adk_template_path)}")
 
 reports = []
 if os.path.isdir(arch_dir):
@@ -103,6 +206,7 @@ required_headings = [
     "## Architecture Operating Model",
     "## SSOT Matrix",
     "## Issue Map",
+    "## Structured Requirements Review",
     "## Landing Protocol",
     "## Runtime Delivery Contract",
     "## Knowledge Promotion Contract",
@@ -110,6 +214,7 @@ required_headings = [
     "## Status Consistency Gate",
     "## Phase Roadmap",
     "## Implementation Tasks",
+    "## Comprehensive Optimization Backlog",
     "## Verification Gates",
     "## Rejected Options",
     "## Evidence Index",
@@ -170,9 +275,30 @@ for report in reports:
     if "| ID | Severity | Finding | Evidence | Action |" not in issue_map:
         fail(f"{label} Issue Map table header is missing or malformed")
 
+    structured_requirements = section(content, "## Structured Requirements Review")
+    if "| Dimension | Confirmed Requirement | Success Criteria | Non-Goal / Boundary |" not in structured_requirements:
+        fail(f"{label} Structured Requirements Review table header is missing or malformed")
+    for token in ("Goal", "Deliverable", "Scope", "Quality Dimensions", "Long-term Asset"):
+        if token not in structured_requirements:
+            fail(f"{label} Structured Requirements Review missing token: {token}")
+
     tasks = section(content, "## Implementation Tasks")
     if "| ID | Priority | Task | Files | Stop Condition | Verification |" not in tasks:
         fail(f"{label} Implementation Tasks table header is missing or malformed")
+
+    optimization = section(content, "## Comprehensive Optimization Backlog")
+    if "| ID | Priority | Optimization Area | Terminal Outcome | Implementation Target | Verification |" not in optimization:
+        fail(f"{label} Comprehensive Optimization Backlog table header is missing or malformed")
+    for token in ("Governance correctness", "Performance and token cost", "Maintainability", "Extensibility", "Asset experience"):
+        if token not in optimization:
+            fail(f"{label} Comprehensive Optimization Backlog missing token: {token}")
+    if "manifests/comprehensive_optimization_backlog.json" not in optimization:
+        fail(f"{label} Comprehensive Optimization Backlog must reference manifests/comprehensive_optimization_backlog.json")
+    for item in optimization_items:
+        for key in ("id", "priority", "optimization_area"):
+            value = str(item.get(key) or "")
+            if value and value not in optimization:
+                fail(f"{label} Comprehensive Optimization Backlog missing manifest {key}: {value}")
 
     rejected = section(content, "## Rejected Options")
     if "| Option | Decision | Reason |" not in rejected:
