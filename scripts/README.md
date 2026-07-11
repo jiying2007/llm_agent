@@ -196,13 +196,9 @@ scripts/governance-review.sh . --out reports/governance-review-YYYY-MM-DD.md
 
 `governance-health` 输出 Top Actions；`governance-review` 是 report-only 复核报告入口，只调用现有 gate，不同步参考子仓、不修改 phase gate、不 apply、不提交；只有显式 `--out` 才写报告。
 
-active 文档陈旧引用检查脚本：
+active 文档陈旧引用检查：`scripts/check-stale-references.sh .` 检查 active 文档中的旧版本状态、旧本机路径、旧脚本名和绕过 `~/codex` 的直接运行目录安装示例；历史 archive 不参与阻断。
 
-```bash
-scripts/check-stale-references.sh .
-```
-
-该脚本检查 active 文档中的旧版本状态、旧本机路径、旧脚本名和绕过 `~/codex` 的直接运行目录安装示例；历史 archive 不参与阻断。
+架构终态报告门禁：`scripts/check-architecture-reports.sh . --summary-json` 校验 `reports/architecture/` 的章节、操作模型、SSOT 矩阵、落地协议、P0/P1/P2、Evidence Index、before-fix/拒绝证据和 source-to-live 边界；回归入口为 `tests/test_architecture_reports.sh`。
 
 runtime live 实装态与长会话提醒：
 

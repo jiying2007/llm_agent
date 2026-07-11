@@ -59,6 +59,7 @@ if [[ "${actual_header}" != "${expected_header}" ]]; then
 fi
 
 required_tokens=(
+  "check-architecture-reports.sh"
   "check-skill-metadata.sh"
   "check-skill-routing-conflicts.sh"
   "check-adk-lock.sh"
@@ -112,6 +113,7 @@ required_tokens=(
   "check-token-budget.sh"
   "check-file-modes.sh"
   "tests/test_adoption_real_assets.sh"
+  "tests/test_architecture_reports.sh"
   "tests/test_oss_intake_ledger.sh"
   "tests/test_oss_discovery.sh"
   "tests/test_oss_registration_plan.sh"
@@ -183,6 +185,7 @@ required_tokens=(
   "--check-pilot-coverage"
   "--check-upstream-intake"
   "runtime-live"
+  "reports/architecture/"
 )
 
 for token in "${required_tokens[@]}"; do
@@ -193,6 +196,7 @@ for token in "${required_tokens[@]}"; do
 done
 
 required_scripts=(
+  "scripts/check-architecture-reports.sh"
   "scripts/check-runtime-pilot.sh"
   "scripts/check-runtime-pilot-evidence.sh"
   "scripts/check-runtime-pilot-coverage.sh"
@@ -229,6 +233,7 @@ required_scripts=(
   "scripts/check-token-budget.sh"
   "scripts/check-file-modes.sh"
   "tests/test_adoption_real_assets.sh"
+  "tests/test_architecture_reports.sh"
   "tests/test_oss_intake_ledger.sh"
   "tests/test_oss_discovery.sh"
   "tests/test_oss_registration_plan.sh"
