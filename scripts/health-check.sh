@@ -118,6 +118,7 @@ json_string() {
 emit_summary_json() {
   local registry="${ROOT_DIR}/subrepos/registry.csv"
   local branch adk_version locked_commit gitlink_commit active_repos disabled_repos gitlinks check_scripts
+  local root_script_files root_manifest_files root_report_files adk_agents adk_core_skills adk_optional_skills adk_profiles adk_workflows adk_test_files adk_manifest_files
   branch="$(git -C "${ROOT_DIR}" branch --show-current 2>/dev/null || true)"
   adk_version="$(awk -F': ' '$1=="version"{print $2; exit}' "${ROOT_DIR}/agent-dev-kit/manifest.yaml" 2>/dev/null || true)"
   locked_commit="$(awk -F'=' '$1=="agent-dev-kit.commit"{print $2; exit}' "${ROOT_DIR}/adk.lock" 2>/dev/null || true)"
@@ -126,6 +127,16 @@ emit_summary_json() {
   disabled_repos="$(awk -F',' 'NR>1 && ($6!="yes" || $8!="active"){count++} END{print count+0}' "${registry}" 2>/dev/null || echo 0)"
   gitlinks="$(git -C "${ROOT_DIR}" ls-files -s 2>/dev/null | awk '$1=="160000"{count++} END{print count+0}')"
   check_scripts="$(find "${ROOT_DIR}/scripts" -maxdepth 1 -type f -name 'check-*.sh' 2>/dev/null | wc -l | tr -d ' ')"
+  root_script_files="$(find "${ROOT_DIR}/scripts" -maxdepth 1 -type f 2>/dev/null | wc -l | tr -d ' ')"
+  root_manifest_files="$(find "${ROOT_DIR}/manifests" -maxdepth 1 -type f 2>/dev/null | wc -l | tr -d ' ')"
+  root_report_files="$(find "${ROOT_DIR}/reports" -type f 2>/dev/null | wc -l | tr -d ' ')"
+  adk_agents="$(find "${ROOT_DIR}/agent-dev-kit/agents" -name AGENTS.md -type f 2>/dev/null | wc -l | tr -d ' ')"
+  adk_core_skills="$(find "${ROOT_DIR}/agent-dev-kit/skills" -name SKILL.md -type f 2>/dev/null | wc -l | tr -d ' ')"
+  adk_optional_skills="$(find "${ROOT_DIR}/agent-dev-kit/optional-skills" -name SKILL.md -type f 2>/dev/null | wc -l | tr -d ' ')"
+  adk_profiles="$(awk '/^profiles:/{inside=1; next} /^workflows:/{inside=0} inside && /^  [a-z0-9][a-z0-9-]*:/{count++} END{print count+0}' "${ROOT_DIR}/agent-dev-kit/manifest.yaml")"
+  adk_workflows="$(awk '/^workflows:/{inside=1; next} /^mcp_servers:/{inside=0} inside && /^  - name:/{count++} END{print count+0}' "${ROOT_DIR}/agent-dev-kit/manifest.yaml")"
+  adk_test_files="$(find "${ROOT_DIR}/agent-dev-kit/tests" -type f 2>/dev/null | wc -l | tr -d ' ')"
+  adk_manifest_files="$(find "${ROOT_DIR}/agent-dev-kit/manifests" -maxdepth 1 -type f 2>/dev/null | wc -l | tr -d ' ')"
 
   local strict_state="unknown"
   if [[ -n "${locked_commit}" && -n "${gitlink_commit}" && "${locked_commit}" == "${gitlink_commit}" ]]; then
@@ -134,7 +145,18 @@ emit_summary_json() {
     strict_state="drift"
   fi
 
+  local subrepo_state="fail"
+  local subrepo_summary=""
+  if subrepo_summary="$("${ROOT_DIR}/scripts/check-subrepo-state.sh" "${ROOT_DIR}" --summary-json 2>/dev/null)"; then
+    subrepo_state="pass"
+  fi
+  local overall_status="needs-fix"
+  if [[ "${strict_state}" == "ok" && "${subrepo_state}" == "pass" ]]; then
+    overall_status="pass"
+  fi
+
   printf '{'
+  printf '"status":%s,' "$(json_string "${overall_status}")"
   printf '"root":%s,' "$(json_string "${ROOT_DIR}")"
   printf '"branch":%s,' "$(json_string "${branch}")"
   printf '"adk_version":%s,' "$(json_string "${adk_version}")"
@@ -142,7 +164,18 @@ emit_summary_json() {
   printf '"active_repos":%s,' "${active_repos}"
   printf '"disabled_repos":%s,' "${disabled_repos}"
   printf '"tracked_subrepos":%s,' "${gitlinks}"
-  printf '"check_scripts":%s' "${check_scripts}"
+  printf '"subrepo_state":%s,' "$(json_string "${subrepo_state}")"
+  printf '"check_scripts":%s,' "${check_scripts}"
+  printf '"root_script_files":%s,' "${root_script_files}"
+  printf '"root_manifest_files":%s,' "${root_manifest_files}"
+  printf '"root_report_files":%s,' "${root_report_files}"
+  printf '"adk_agents":%s,' "${adk_agents}"
+  printf '"adk_core_skills":%s,' "${adk_core_skills}"
+  printf '"adk_optional_skills":%s,' "${adk_optional_skills}"
+  printf '"adk_profiles":%s,' "${adk_profiles}"
+  printf '"adk_workflows":%s,' "${adk_workflows}"
+  printf '"adk_test_files":%s,' "${adk_test_files}"
+  printf '"adk_manifest_files":%s' "${adk_manifest_files}"
   printf '}\n'
 }
 
@@ -205,7 +238,7 @@ check_dependencies() {
     "${VERBOSE}" && log_info "Bash: ${BASH_VERSION}"
   fi
 
-  local tools=(git rg awk sed sort find wc mktemp)
+  local tools=(git rg awk sed sort find wc mktemp tar python3)
   for tool in "${tools[@]}"; do
     if ! command -v "${tool}" >/dev/null 2>&1; then
       log_error "缺失依赖: ${tool}"

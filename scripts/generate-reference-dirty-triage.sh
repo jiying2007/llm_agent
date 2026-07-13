@@ -40,7 +40,6 @@ done
 python3 - "$ROOT" "$OUT" "$JSON_OUT" <<'PY'
 import csv
 import datetime as dt
-import hashlib
 import json
 import os
 import subprocess
@@ -48,20 +47,18 @@ import sys
 
 root, out_path, json_out_path = sys.argv[1:4]
 baseline_path = os.path.join(root, "subrepos", "dirty-baseline.tsv")
+classifier_path = os.path.join(root, "scripts", "classify-repo-worktree.sh")
 today = dt.date.today().isoformat()
 
 if not os.path.isfile(baseline_path):
     raise SystemExit(f"[FAIL] missing dirty baseline: {baseline_path}")
+if not os.path.isfile(classifier_path) or not os.access(classifier_path, os.X_OK):
+    raise SystemExit(f"[FAIL] missing worktree classifier: {classifier_path}")
 
 
 def git_lines(repo, args):
     proc = subprocess.run(["git", "-C", os.path.join(root, repo), *args], check=False, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     return proc.returncode, proc.stdout.splitlines(), proc.stderr.strip()
-
-
-def fingerprint(lines):
-    payload = "\n".join(lines) + ("\n" if lines else "")
-    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
 with open(baseline_path, "r", encoding="utf-8", newline="") as handle:
@@ -71,15 +68,40 @@ items = []
 for row in rows:
     repo = row["repo"]
     rc, status_lines, err = git_lines(repo, ["status", "--porcelain"])
-    actual_count = len(status_lines) if rc == 0 else None
-    actual_fingerprint = fingerprint(status_lines) if rc == 0 else None
+    classifier = subprocess.run(
+        [classifier_path, root, repo],
+        check=False,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    classification_record = None
+    if classifier.returncode == 0:
+        try:
+            classification_record = json.loads(classifier.stdout)
+        except json.JSONDecodeError:
+            err = f"invalid classifier output: {classifier.stdout[:160]}"
+    elif not err:
+        err = classifier.stderr.strip()
+    actual_count = classification_record["dirty_count"] if classification_record else None
+    actual_fingerprint = classification_record["status_fingerprint"] if classification_record else None
+    actual_classification = classification_record["classification"] if classification_record else "unknown"
     expected_count = int(row["change_count"])
     expected_fingerprint = row["status_fingerprint"]
+    expected_classification = row["expected_classification"]
+    analysis_policy = row["analysis_policy"]
     expires_on = row["expires_on"]
-    matches = rc == 0 and actual_count == expected_count and actual_fingerprint == expected_fingerprint
+    matches = (
+        rc == 0
+        and classification_record is not None
+        and actual_count == expected_count
+        and actual_fingerprint == expected_fingerprint
+        and actual_classification == expected_classification
+        and analysis_policy == "commit-snapshot-only"
+    )
     expired = expires_on < today
     decision = "known-dirty-review"
-    if rc != 0:
+    if rc != 0 or classification_record is None:
         decision = "needs-investigation"
     elif expired:
         decision = "baseline-expired"
@@ -98,6 +120,15 @@ for row in rows:
         "expected_count": expected_count,
         "actual_count": actual_count,
         "fingerprint_matches": matches,
+        "expected_classification": expected_classification,
+        "actual_classification": actual_classification,
+        "classification_matches": actual_classification == expected_classification,
+        "analysis_policy": analysis_policy,
+        "mode_changes": classification_record["mode_changes"] if classification_record else None,
+        "content_changes": classification_record["content_changes"] if classification_record else None,
+        "type_changes": classification_record["type_changes"] if classification_record else None,
+        "untracked_changes": classification_record["untracked_changes"] if classification_record else None,
+        "staged_changes": classification_record["staged_changes"] if classification_record else None,
         "expires_on": expires_on,
         "expired": expired,
         "owner": row["owner"],
@@ -109,7 +140,7 @@ for row in rows:
 
 overall = "pass" if all(item["decision"] == "known-dirty-review" for item in items) else "needs-review"
 record = {
-    "schema_version": 1,
+    "schema_version": 2,
     "generated_at": dt.datetime.now().astimezone().isoformat(timespec="seconds"),
     "date": today,
     "mode": "report-only",
@@ -141,17 +172,21 @@ def write_markdown(path):
         "",
         "## Summary",
         "",
-        "| Repo | Branch | Head | Decision | Count | Expires | Owner |",
-        "|---|---|---|---|---:|---|---|",
+        "| Repo | Branch | Head | Decision | Classification | Analysis Policy | Count | Expires | Owner |",
+        "|---|---|---|---|---|---|---:|---|---|",
     ]
     for item in items:
-        lines.append(f"| {item['repo']} | {item['branch']} | {item['head']} | {item['decision']} | {item['actual_count']} | {item['expires_on']} | {item['owner']} |")
+        lines.append(f"| {item['repo']} | {item['branch']} | {item['head']} | {item['decision']} | {item['actual_classification']} | {item['analysis_policy']} | {item['actual_count']} | {item['expires_on']} | {item['owner']} |")
     lines.extend(["", "## Samples", ""])
     for item in items:
         lines.append(f"### {item['repo']}")
         lines.append("")
         lines.append(f"- baseline_ref: {item['baseline_ref']}")
         lines.append(f"- fingerprint_matches: {str(item['fingerprint_matches']).lower()}")
+        lines.append(f"- classification_matches: {str(item['classification_matches']).lower()}")
+        lines.append(f"- classification: {item['actual_classification']}")
+        lines.append(f"- analysis_policy: {item['analysis_policy']}")
+        lines.append(f"- mode/content/type/untracked/staged: {item['mode_changes']}/{item['content_changes']}/{item['type_changes']}/{item['untracked_changes']}/{item['staged_changes']}")
         lines.append(f"- reason: {item['reason']}")
         lines.append("- sample_status:")
         if item["sample_status"]:

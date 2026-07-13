@@ -10,10 +10,17 @@ trap 'rm -rf "${TMP_DIR}"' EXIT
 
 make_fixture() {
   local dest="$1"
-  mkdir -p "${dest}/reports/architecture" "${dest}/agent-dev-kit"
+  mkdir -p "${dest}/reports/architecture" "${dest}/agent-dev-kit" "${dest}/scripts" "${dest}/subrepos"
   cp "${ROOT}/reports/current-status.md" "${dest}/reports/current-status.md"
   cp "${ROOT}/reports/architecture/llm-agent-adk-target-architecture-2026-07-11.md" "${dest}/reports/architecture/llm-agent-adk-target-architecture-2026-07-11.md"
   cp "${ROOT}/adk.lock" "${dest}/adk.lock"
+  cp "${ROOT}/scripts/check-subrepo-state.sh" "${dest}/scripts/check-subrepo-state.sh"
+  cp "${ROOT}/scripts/classify-repo-worktree.sh" "${dest}/scripts/classify-repo-worktree.sh"
+  chmod +x "${dest}/scripts/check-subrepo-state.sh" "${dest}/scripts/classify-repo-worktree.sh"
+  cat >"${dest}/subrepos/registry.csv" <<'CSV'
+repo,group,priority,sync_mode,branch,enabled,notes,status,owner,last_reviewed_on,intake_policy,grade
+agent-dev-kit,adk-core,P0,pull,main,yes,fixture,active,tester,2026-07-13,adopt-first,S
+CSV
 
   git -C "${dest}/agent-dev-kit" init -q
   git -C "${dest}/agent-dev-kit" config user.email "fixture@example.invalid"
@@ -128,5 +135,23 @@ text = re.sub(
 path.write_text(text, encoding="utf-8")
 PY
 expect_fail_contains "${active_root}" "knowledge_promotion_status must record apply_supported=false"
+
+stale_date_root="${TMP_DIR}/stale-date-root"
+make_fixture "${stale_date_root}"
+python3 - "${stale_date_root}/reports/current-status.md" <<'PY'
+import pathlib
+import re
+import sys
+path = pathlib.Path(sys.argv[1])
+text = path.read_text(encoding="utf-8")
+text = re.sub(r"- last_verified_at: .*", "- last_verified_at: 2000-01-01", text)
+path.write_text(text, encoding="utf-8")
+PY
+expect_fail_contains "${stale_date_root}" "current-status verification is stale"
+
+dirty_root="${TMP_DIR}/dirty-root"
+make_fixture "${dirty_root}"
+printf '\n# unexpected dirty\n' >>"${dirty_root}/agent-dev-kit/manifest.yaml"
+expect_fail_contains "${dirty_root}" "current subrepo state is not pass"
 
 echo "[PASS] current status consistency checks behave as expected"

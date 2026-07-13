@@ -169,9 +169,9 @@ scripts/check-subrepo-state.sh . --summary-json
 ```
 
 默认模式用于日常门禁，避免参考仓未初始化或本地状态噪音阻断主链路；严格模式用于发布前收敛。
-`subrepos/dirty-baseline.tsv` 记录 observe 子仓的预期 dirty 状态、status fingerprint、change count、owner 和 expires_on，避免把长期参考仓本地噪音误判为本轮风险，也避免 dirty baseline 变成永久豁免。
-`scripts/generate-reference-dirty-triage.sh . --out reports/reference-dirty-triage-YYYY-MM-DD.md --json-out reports/reference-dirty-triage-YYYY-MM-DD.json` 生成只读分流报告；`scripts/check-reference-dirty-triage.sh . --summary-json` 默认选 latest valid 报告并校验 dirty baseline，`--date YYYY-MM-DD` 可强制指定。
-
+`subrepos/dirty-baseline.tsv` 记录 observe 子仓的预期 dirty 状态、status fingerprint、change count、`expected_classification`、`analysis_policy`、owner 和 expires_on。`scripts/classify-repo-worktree.sh . <repo>` 将 dirty 分为 `mode/content/type/untracked/staged`；known-dirty 只有在分类与 `commit-snapshot-only` 策略同时匹配时才成立，不能用泛化 fingerprint 掩盖内容或 symlink 类型变化。
+`scripts/generate-reference-dirty-triage.sh . --out reports/reference-dirty-triage-YYYY-MM-DD.md --json-out reports/reference-dirty-triage-YYYY-MM-DD.json` 生成只读分流报告；`scripts/check-reference-dirty-triage.sh . --summary-json` 默认选择 latest valid schema v2 报告并校验 fingerprint、分类、分析策略和到期日，`--date YYYY-MM-DD` 可强制指定。
+参考源分析使用 `scripts/analyze-repo.sh <repo> --ref HEAD --all`；完整性门禁与回归为 `scripts/check-reference-source-integrity.sh .`、`tests/test_reference_source_integrity.sh`。脚本只分析 `git archive <commit>` 临时快照，输出到 `reports/repo-analysis/<repo>/<commit>/`，不读取 uncommitted 文件、不写来源仓，并记录 source commit、snapshot mode、analysis policy 和 dirty classification。
 证据包生成脚本：
 
 ```bash
@@ -197,11 +197,9 @@ scripts/governance-review.sh . --out reports/governance-review-YYYY-MM-DD.md
 `governance-health` 输出 Top Actions；`governance-review` 是 report-only 复核报告入口，只调用现有 gate，不同步参考子仓、不修改 phase gate、不 apply、不提交；只有显式 `--out` 才写报告。
 
 active 文档陈旧引用检查：`scripts/check-stale-references.sh .` 检查 active 文档中的旧版本状态、旧本机路径、旧脚本名和绕过 `~/codex` 的直接运行目录安装示例；历史 archive 不参与阻断。
-
 架构终态报告门禁：`scripts/check-architecture-reports.sh . --summary-json` 校验 `reports/architecture/` 的章节、操作模型、SSOT 矩阵、落地协议、P0/P1/P2、Evidence Index、before-fix/拒绝证据、source-to-live 边界和状态一致性；回归入口为 `tests/test_architecture_reports.sh`。
-
-当前状态一致性门禁：`scripts/check-current-status-consistency.sh . --summary-json` 校验 `reports/current-status.md` 与 `adk.lock`、`agent-dev-kit` gitlink、ADK worktree HEAD、runtime live evidence、Knowledge Hub promotion boundary 和架构报告状态一致；阻断陈旧 `IN PROGRESS`、子仓提交待办、ADK commit mismatch、无证据 live-applied 声明和 active promotion claims；回归入口为 `tests/test_current_status_consistency.sh`。
-
+当前状态一致性门禁：`scripts/check-current-status-consistency.sh . --summary-json` 将 `reports/current-status.md` 视为最近一次已验证提交基线，并校验 7 天 freshness、实时 subrepo state、`adk.lock`、`agent-dev-kit` gitlink、ADK worktree HEAD、runtime live evidence、Knowledge Hub promotion boundary 和架构报告状态；阻断陈旧 `IN PROGRESS`、unexpected dirty、过期 baseline、ADK commit mismatch、无证据 live-applied 声明和 active promotion claims；回归入口为 `tests/test_current_status_consistency.sh`。
+动态资产清单：`scripts/health-check.sh . --summary-json` 输出实时 governance status、root/ADK 资产数量和 subrepo state；`scripts/check-asset-inventory.sh .` 独立复算文件系统与 manifest 数量，并阻断 active 文档重新硬编码可变统计。
 runtime live 实装态与长会话提醒：
 
 ```bash
@@ -283,6 +281,8 @@ scripts/sync-subrepos.sh . fetch
 scripts/sync-subrepos.sh . pull
 scripts/sync-subrepos.sh . fetch --force
 ```
+
+`fetch` 只更新远端引用；`pull` 仅处理 registry 中 `sync_mode=pull` 的仓库，并在任何网络操作前拒绝 dirty 工作树。`agent-dev-kit` 默认仍被排除，只有显式 `SYNC_INCLUDE_ADK_CORE=1` 才进入同步候选。
 
 - `fetch`：对启用子仓执行 `git fetch --all --prune`
 - `pull`：仅对 `registry.csv` 中 `sync_mode=pull` 的子仓执行 `git pull --ff-only`
@@ -386,7 +386,8 @@ scripts/check-all.sh --quick --verbose
 
 功能：
 - 自动发现 `scripts/check-*.sh` 并汇总 PASS/FAIL。
-- `--smoke` 只覆盖最小健康面；`--quick` 跳过 `check-adk-harden-readiness.sh` 和 `check-workspace-entrypoints.sh`；`--full` 或无参数运行全部脚本。
+- `--smoke` 只覆盖最小健康面；`--quick` 跳过 ADK quick suite、evidence/token/WeChat、harden readiness 和 workspace aggregate；`--full` 或无参数运行全部脚本。
+- quick 汇总记录每项耗时；提交或发布前必须单独执行被跳过的 release gate，或直接运行 `--full`。
 - 退出码：全部通过返回 0，否则返回 1
 
 ## 8. 统一入口 devkit.sh
@@ -442,7 +443,7 @@ scripts/health-check.sh --summary-json
 - 对 `llm_agent` 工作区执行综合健康检查。
 - 检查项包括：目录结构完整性、关键文件存在性、registry 格式、依赖、门禁入口、脚本语法。
 - 输出通过/失败/警告三级状态报告。
-- `--summary-json` 输出低 token JSON 摘要，适合 Codex 在上下文紧张时读取。
+- `--summary-json` 输出低 token JSON 摘要，包含实时 `status`、`subrepo_state`、root scripts/manifests/reports 与 ADK agents/skills/profiles/workflows/tests/manifests 数量；这是当前资产数量 SSOT，active 文档不得硬编码这些可变统计。
 
 ## 10. 版本管理
 

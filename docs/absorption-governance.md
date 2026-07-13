@@ -154,11 +154,14 @@ find agent-dev-kit -name "*.backup" -o -name "*old*"
 
 ```bash
 # 1.1 分析候选内容
-bash scripts/analyze-repo.sh <repo_name>
+rtk scripts/analyze-repo.sh <repo_name> --ref HEAD --all
 
 # 1.2 生成分析报告
-# 必须包含：功能定位、与现有资产关系、潜在冲突、质量评估
+# 输出到 reports/repo-analysis/<repo>/<commit>/
+# 必须包含：source_commit、snapshot_mode、dirty classification、功能定位、与现有资产关系、潜在冲突、质量评估
 ```
+
+来源分析只能读取不可变 commit snapshot。禁止直接扫描 dirty 工作树，禁止把报告写回参考仓；内容或文件类型漂移必须显式记录，但不得进入 snapshot 分析输入。
 
 ### Step 2: 全盘比对 (MUST)
 

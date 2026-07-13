@@ -4,6 +4,8 @@ set -euo pipefail
 ROOT="${1:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 TMP_DIR="$(mktemp -d)"
 FAILURES=0
+INITIAL_STATUS="${TMP_DIR}/initial-status.txt"
+git -C "${ROOT}" status --porcelain=v1 >"${INITIAL_STATUS}"
 
 cleanup() {
   rm -rf "${TMP_DIR}"
@@ -115,12 +117,20 @@ else
 fi
 
 if [[ -f "${TMP_DIR}/devkit_health_summary_json.out" ]]; then
+  if ! rg -q '"status":"pass"' "${TMP_DIR}/devkit_health_summary_json.out"; then
+    record_fail "health summary json is not pass"
+  fi
   if ! rg -q '"adk_lock_state":"ok"' "${TMP_DIR}/devkit_health_summary_json.out"; then
     record_fail "health summary json missing ok adk lock state"
   fi
   if ! rg -q '"active_repos":' "${TMP_DIR}/devkit_health_summary_json.out"; then
     record_fail "health summary json missing active repo count"
   fi
+  for field in root_script_files root_manifest_files root_report_files adk_agents adk_core_skills adk_optional_skills adk_profiles adk_workflows adk_test_files adk_manifest_files; do
+    if ! rg -q "\"${field}\":" "${TMP_DIR}/devkit_health_summary_json.out"; then
+      record_fail "health summary json missing dynamic inventory field: ${field}"
+    fi
+  done
 fi
 
 if [[ -f "${TMP_DIR}/phase_gate_summary_json.out" ]]; then
@@ -258,6 +268,12 @@ diff_report="${TMP_DIR}/diff.md"
 run_check "diff_scan" "${ROOT}/scripts/diff-scan.sh" "${ROOT}" 7 "${diff_report}"
 if [[ -f "${diff_report}" ]] && rg -q 'intake_policy：.*,[SABCDX]' "${diff_report}"; then
   record_fail "diff scan leaked grade into intake_policy"
+fi
+
+git -C "${ROOT}" status --porcelain=v1 >"${TMP_DIR}/final-status.txt"
+if ! cmp -s "${INITIAL_STATUS}" "${TMP_DIR}/final-status.txt"; then
+  record_fail "workspace entrypoints changed repository status"
+  diff -u "${INITIAL_STATUS}" "${TMP_DIR}/final-status.txt" >&2 || true
 fi
 
 if (( FAILURES > 0 )); then

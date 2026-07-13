@@ -25,7 +25,7 @@ llm_agent devkit — 工作区统一入口
 子命令:
   check [--smoke|--quick|--full] 一键运行所有门禁检查
                                    --smoke  最小健康面
-                                   --quick  跳过耗时综合脚本（默认）
+                                   --quick  跳过重复的耗时综合/release gate（默认）
                                    --full   运行全部检查
 
   onboard <repo-path> [--adopt|--observe]

@@ -32,7 +32,7 @@
 | 全面检查 | 检查、check、验证、门禁、健康检查 | 运行一键检查并汇总门禁结果 | `scripts/check-all.sh`、`scripts/devkit.sh check` |
 | 同步子仓 | 同步、sync、拉取更新、fetch | 在 phase gate 允许后拉取 enabled active 参考仓；`agent-dev-kit` 为应用/落地仓，默认排除 | `scripts/sync-subrepos.sh` |
 | 差异扫描 | 差异、diff、变更、最近变化 | 扫描子仓近 N 天变更 | `scripts/diff-scan.sh` |
-| 深度分析 | 深度分析、拆解、analyze、prompt分析、skill拆解 | 对参考实现做结构化分析，输出可采纳/观察/拒绝依据 | `scripts/analyze-repo.sh` |
+| 深度分析 | 深度分析、拆解、analyze、prompt分析、skill拆解 | 从不可变 commit snapshot 分析参考实现，报告写入根仓 `reports/` | `scripts/analyze-repo.sh` |
 | 生成周报 | 周报、weekly report、本周汇总 | 生成本周变更周报 | `scripts/generate-weekly-report.sh` |
 | 清理报告 | 清理、归档、cleanup、prune | 归档过期报告 | `scripts/cleanup-reports.sh` |
 | 版本发布 | 发布、release、tag、版本 | 执行发布流程 | `scripts/version-manager.sh` |

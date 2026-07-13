@@ -102,6 +102,14 @@ while IFS=',' read -r repo group priority sync_mode branch enabled notes status 
     continue
   fi
 
+  pull_dirty="$(git -C "${repo_path}" status --porcelain 2>/dev/null || true)"
+  if [[ -n "${pull_dirty}" ]]; then
+    dirty_count="$(printf '%s\n' "${pull_dirty}" | wc -l | tr -d ' ')"
+    echo "[FAIL] ${repo}: pull refused for dirty worktree (${dirty_count} changes)"
+    ((fail+=1))
+    continue
+  fi
+
   current_branch="$(git -C "${repo_path}" symbolic-ref --quiet --short HEAD 2>/dev/null || true)"
   if [[ -z "${current_branch}" ]]; then
     echo "[SKIP] ${repo}: detached HEAD"

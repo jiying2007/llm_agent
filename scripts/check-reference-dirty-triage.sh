@@ -69,8 +69,8 @@ def load_report(path):
 def validate(path, data):
     local_failures = []
     items = data.get("items") or []
-    if data.get("schema_version") != 1:
-        local_failures.append("schema_version must be 1")
+    if data.get("schema_version") != 2:
+        local_failures.append("schema_version must be 2")
     if data.get("mode") != "report-only":
         local_failures.append("mode must be report-only")
     if data.get("status") != "pass":
@@ -85,6 +85,15 @@ def validate(path, data):
             local_failures.append(f"{repo} decision must be known-dirty-review")
         if item.get("fingerprint_matches") is not True:
             local_failures.append(f"{repo} fingerprint must match baseline")
+        if item.get("classification_matches") is not True:
+            local_failures.append(f"{repo} classification must match baseline")
+        if item.get("analysis_policy") != "commit-snapshot-only":
+            local_failures.append(f"{repo} analysis policy must be commit-snapshot-only")
+        if not item.get("actual_classification"):
+            local_failures.append(f"{repo} actual classification is required")
+        for count_field in ("mode_changes", "content_changes", "type_changes", "untracked_changes", "staged_changes"):
+            if not isinstance(item.get(count_field), int):
+                local_failures.append(f"{repo} {count_field} must be an integer")
         if item.get("expired") is not False:
             local_failures.append(f"{repo} baseline must not be expired")
         expires_on = item.get("expires_on") or ""

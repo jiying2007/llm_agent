@@ -33,6 +33,7 @@ done
 
 python3 - "$ROOT" "$SUMMARY_JSON" <<'PY'
 import json
+import datetime as dt
 import os
 import re
 import subprocess
@@ -98,6 +99,29 @@ for line in index_proc.stdout.splitlines():
 adk_proc = git("rev-parse", "HEAD", cwd=os.path.join(root, "agent-dev-kit"), check=False)
 adk_worktree_commit = adk_proc.stdout.strip() if adk_proc.returncode == 0 else ""
 
+subrepo_checker = os.path.join(root, "scripts", "check-subrepo-state.sh")
+if not os.path.isfile(subrepo_checker):
+    failures.append("missing current subrepo state checker")
+    subrepo_state = {}
+else:
+    subrepo_proc = subprocess.run(
+        [subrepo_checker, root, "--summary-json"],
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    try:
+        subrepo_state = json.loads(subrepo_proc.stdout)
+    except json.JSONDecodeError:
+        subrepo_state = {}
+        failures.append("current subrepo state output is not valid JSON")
+    if subrepo_proc.returncode != 0 or subrepo_state.get("status") != "pass":
+        failures.append(
+            "current subrepo state is not pass: "
+            f"unexpected_dirty={subrepo_state.get('unexpected_dirty', 'unknown')} "
+            f"stale_baseline={subrepo_state.get('stale_baseline', 'unknown')}"
+        )
+
 if not adk_lock_commit:
     failures.append("adk.lock missing agent-dev-kit.commit")
 if not gitlink_commit:
@@ -106,6 +130,22 @@ if adk_lock_commit and gitlink_commit and adk_lock_commit != gitlink_commit:
     failures.append(f"agent-dev-kit gitlink {gitlink_commit} != adk.lock {adk_lock_commit}")
 if adk_lock_commit and adk_worktree_commit and adk_lock_commit != adk_worktree_commit:
     failures.append(f"agent-dev-kit worktree {adk_worktree_commit} != adk.lock {adk_lock_commit}")
+
+status_semantics = field(status_text, "status_semantics")
+if status_semantics != "last-verified-committed-baseline":
+    failures.append("current-status status_semantics must be last-verified-committed-baseline")
+
+last_verified_at = field(status_text, "last_verified_at")
+try:
+    verified_date = dt.date.fromisoformat(last_verified_at)
+except ValueError:
+    failures.append("current-status last_verified_at must be an ISO date")
+else:
+    age_days = (dt.date.today() - verified_date).days
+    if age_days < 0:
+        failures.append("current-status last_verified_at must not be in the future")
+    elif age_days > 7:
+        failures.append(f"current-status verification is stale: age_days={age_days}")
 
 stale_tokens = [
     "V4 closed-loop architecture | IN PROGRESS",
@@ -168,6 +208,9 @@ payload = {
     "adk_lock_commit": adk_lock_short,
     "live_refresh_status": live_status,
     "knowledge_promotion_status": knowledge_status,
+    "status_semantics": status_semantics,
+    "last_verified_at": last_verified_at,
+    "subrepo_state": subrepo_state,
 }
 
 if summary_json:

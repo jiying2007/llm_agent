@@ -57,7 +57,14 @@ case "${CHECK_MODE}" in
     )
     ;;
   quick)
-    SKIP_SCRIPTS+=("check-adk-harden-readiness.sh" "check-workspace-entrypoints.sh")
+    SKIP_SCRIPTS+=(
+      "check-adk-harden-readiness.sh"
+      "check-adk-performance-ops.sh"
+      "check-evidence-bundle.sh"
+      "check-token-budget.sh"
+      "check-wechat-intake-ledger.sh"
+      "check-workspace-entrypoints.sh"
+    )
     ;;
   full) ;;
 esac
@@ -93,6 +100,7 @@ discover_check_scripts() {
 # --- 执行 -------------------------------------------------------------------
 declare -a RESULT_NAMES=()
 declare -a RESULT_STATUS=()
+declare -a RESULT_DURATION=()
 TOTAL=0
 PASSED=0
 FAILED=0
@@ -118,6 +126,7 @@ while IFS= read -r script_path; do
   # 执行脚本，捕获输出和退出码
   tmpfile="$(mktemp)"
   exit_code=0
+  started_at="$(date +%s)"
   if [[ ${VERBOSE_MODE} -eq 1 ]]; then
     echo ""
     echo "--- ${script_name} 输出开始 ---"
@@ -136,8 +145,11 @@ while IFS= read -r script_path; do
   fi
 
   rm -f "${tmpfile}"
+  finished_at="$(date +%s)"
+  duration_seconds=$((finished_at - started_at))
 
   RESULT_NAMES+=("${script_name}")
+  RESULT_DURATION+=("${duration_seconds}")
   if [[ ${exit_code} -eq 0 ]]; then
     RESULT_STATUS+=("PASS")
     PASSED=$((PASSED + 1))
@@ -154,13 +166,13 @@ echo ""
 echo "=============================================="
 echo " 检查汇总"
 echo "=============================================="
-printf '%-42s %s\n' "脚本" "状态"
-printf '%-42s %s\n' "------------------------------------------" "--------"
+printf '%-42s %-8s %s\n' "脚本" "状态" "耗时(s)"
+printf '%-42s %-8s %s\n' "------------------------------------------" "--------" "-------"
 for i in "${!RESULT_NAMES[@]}"; do
   local_status="${RESULT_STATUS[$i]}"
   marker="✅"
   [[ "${local_status}" == "FAIL" ]] && marker="❌"
-  printf '%-42s %s %s\n' "${RESULT_NAMES[$i]}" "${local_status}" "${marker}"
+  printf '%-42s %-8s %-3s %s\n' "${RESULT_NAMES[$i]}" "${local_status}" "${RESULT_DURATION[$i]}" "${marker}"
 done
 
 echo "------------------------------------------"
@@ -168,7 +180,7 @@ echo "总计: ${TOTAL}   通过: ${PASSED}   失败: ${FAILED}"
 
 case "${CHECK_MODE}" in
   smoke) echo "提示: --smoke 只覆盖最小健康面，不替代完整回归。" ;;
-  quick) echo "提示: --quick 模式已跳过 check-adk-harden-readiness.sh 和 check-workspace-entrypoints.sh。" ;;
+  quick) echo "提示: --quick 已跳过 ADK quick suite、evidence/token/WeChat、harden readiness 和 workspace aggregate；提交/发布前需单独执行对应门禁或 --full。" ;;
 esac
 
 echo ""

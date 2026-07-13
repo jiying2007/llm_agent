@@ -27,7 +27,7 @@
 
 运行态 target registry 位于 `manifests/runtime_targets.json`，健康检查 adapter contract 位于 `manifests/runtime_health_adapters.json`。当前默认 target 是 `codex-home`；`check-runtime-targets.sh` 会验证它与 `adk.lock`、`subrepos/registry.csv`、adapter contract 和 runtime 检查脚本一致。新增 `claude-code`、`hermes-agent`、`opencode` 等运行态时，先按 `docs/runbooks/runtime-target-activation.md` 补 source/live chain、只读 health adapter、写入策略和候选阻断证据，再允许成为 active target。
 
-参考子仓 dirty 只允许通过 `subrepos/dirty-baseline.tsv` 和 `reports/reference-dirty-triage-YYYY-MM-DD.*` 解释，不允许在治理提交中静默清理或混入参考仓文件。`generate-reference-dirty-triage.sh` 只读采集 status sample，`check-reference-dirty-triage.sh` 默认选择 latest valid 报告，并按当天日期重新判断 baseline 是否过期。
+参考子仓 dirty 只允许通过 `subrepos/dirty-baseline.tsv` 和 `reports/reference-dirty-triage-YYYY-MM-DD.*` 解释，不允许在治理提交中静默清理或混入参考仓文件。baseline 必须区分 `mode/content/type/untracked/staged` 并声明 `commit-snapshot-only`；`generate-reference-dirty-triage.sh` 只读采集分类与 status sample，`check-reference-dirty-triage.sh` 默认选择 latest valid schema v2 报告，并按当天日期重新判断 baseline 是否过期。深度分析必须通过 `analyze-repo.sh` 的 `git archive` 快照读取，报告只写根仓 `reports/repo-analysis/`。
 
 ## 2. 目录职责
 

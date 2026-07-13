@@ -157,7 +157,7 @@ if [[ "$SKIP_ANALYZE" == "false" ]]; then
         
         if [[ $days_since -le 30 ]]; then
             log "  分析 $repo (最后提交 ${days_since}天前)..."
-            bash scripts/analyze-repo.sh "$repo" --all 2>&1 | tail -5
+            bash "$SCRIPT_DIR/analyze-repo.sh" "$repo" --all 2>&1 | tail -5
             ANALYZED_REPOS="$ANALYZED_REPOS $repo"
         fi
     done
@@ -254,9 +254,9 @@ log "环节 8/8: 生成综合报告..."
     echo "### 待处理项"
     echo ""
     # 列出有分析报告但 adoption-matrix 未记录的仓库
-    for analysis_dir in "$ROOT_DIR"/*/analysis/; do
+    for analysis_dir in "$ROOT_DIR"/reports/repo-analysis/*/*/; do
         [[ ! -d "$analysis_dir" ]] && continue
-        repo=$(basename "$(dirname "$analysis_dir")")
+        repo=$(basename "$(dirname "$(dirname "$analysis_dir")")")
         [[ "$repo" == "agent-dev-kit" ]] && continue
         if [[ -f "$analysis_dir/skill-deep-analysis.md" ]]; then
             echo "- [ ] $repo: 已有分析报告，需评估是否更新 adoption-matrix"

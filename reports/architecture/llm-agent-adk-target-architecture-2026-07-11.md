@@ -78,7 +78,7 @@ reference subrepos
        governance review reports
 ```
 
-当前资产规模：
+2026-07-11 设计时资产快照如下，仅用于解释当时的架构判断，不作为当前数量 SSOT。当前资产数量必须读取 `rtk scripts/health-check.sh . --summary-json`，不得手工从本表推断：
 
 | Asset | Count |
 |---|---:|

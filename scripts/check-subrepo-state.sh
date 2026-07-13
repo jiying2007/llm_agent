@@ -4,6 +4,7 @@ set -euo pipefail
 ROOT="${1:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 STRICT=0
 SUMMARY_JSON=0
+CLASSIFIER="${ROOT}/scripts/classify-repo-worktree.sh"
 
 for arg in "${@:2}"; do
   case "${arg}" in
@@ -20,8 +21,9 @@ usage: scripts/check-subrepo-state.sh [root] [--strict] [--summary-json]
 Default mode enforces strict cleanliness only for agent-dev-kit. Other enabled
 reference repositories are reported as observe state. If
 subrepos/dirty-baseline.tsv marks an observe repository as expected dirty, the
-row is shown as known-dirty only when the stored status fingerprint still matches
-and the baseline has not expired.
+row is shown as known-dirty only when the stored status fingerprint, change
+classification, and commit-snapshot-only analysis policy match and the baseline
+has not expired.
 USAGE
       exit 0
       ;;
@@ -36,6 +38,10 @@ REGISTRY="${ROOT}/subrepos/registry.csv"
 BASELINE="${ROOT}/subrepos/dirty-baseline.tsv"
 [[ -f "${REGISTRY}" ]] || {
   echo "[FAIL] registry missing: ${REGISTRY}" >&2
+  exit 1
+}
+[[ -x "${CLASSIFIER}" ]] || {
+  echo "[FAIL] worktree classifier missing or not executable: ${CLASSIFIER}" >&2
   exit 1
 }
 
@@ -68,17 +74,13 @@ date_ge_today() {
   [[ "${value}" > "${today}" || "${value}" == "${today}" ]]
 }
 
-status_fingerprint() {
-  local porcelain="$1"
-  printf '%s\n' "${porcelain}" | sha256sum | awk '{print $1}'
-}
-
 missing=0
 uninitialized=0
 dirty=0
 known_dirty=0
 unexpected_dirty=0
 stale_baseline=0
+classification_mismatch=0
 clean=0
 failed=0
 
@@ -117,13 +119,22 @@ while IFS=',' read -r repo group priority sync_mode branch enabled notes status 
       baseline_ref="$(baseline_field "${repo}" "baseline_ref" || true)"
       expected_fingerprint="$(baseline_field "${repo}" "status_fingerprint" || true)"
       expected_count="$(baseline_field "${repo}" "change_count" || true)"
+      expected_classification="$(baseline_field "${repo}" "expected_classification" || true)"
+      analysis_policy="$(baseline_field "${repo}" "analysis_policy" || true)"
       expires_on="$(baseline_field "${repo}" "expires_on" || true)"
       owner="$(baseline_field "${repo}" "owner" || true)"
       if [[ "${policy}" == "observe" && "${expected_state}" == "dirty" ]]; then
-        actual_fingerprint="$(status_fingerprint "${porcelain}")"
-        actual_count="$(printf '%s\n' "${porcelain}" | wc -l | tr -d ' ')"
-        if [[ -z "${expected_fingerprint}" || -z "${expected_count}" || -z "${expires_on}" || -z "${owner}" ]]; then
-          detail="${detail}; baseline=${baseline_ref:-unknown}; missing fingerprint/count/expiry/owner"
+        classifier_output=""
+        if ! classifier_output="$("${CLASSIFIER}" "${ROOT}" "${repo}" --format tsv)"; then
+          detail="${detail}; baseline=${baseline_ref:-unknown}; classification-failed"
+          classification_mismatch=$((classification_mismatch + 1))
+          unexpected_dirty=$((unexpected_dirty + 1))
+          failed=1
+          classifier_output=$'unknown\t0\t0\t0\t0\t0\t0\t-'
+        fi
+        IFS=$'\t' read -r actual_classification actual_count mode_changes content_changes type_changes untracked_changes staged_changes actual_fingerprint <<<"${classifier_output}"
+        if [[ -z "${expected_fingerprint}" || -z "${expected_count}" || -z "${expected_classification}" || -z "${analysis_policy}" || -z "${expires_on}" || -z "${owner}" ]]; then
+          detail="${detail}; baseline=${baseline_ref:-unknown}; missing fingerprint/count/classification/policy/expiry/owner"
           stale_baseline=$((stale_baseline + 1))
           unexpected_dirty=$((unexpected_dirty + 1))
           failed=1
@@ -136,9 +147,18 @@ while IFS=',' read -r repo group priority sync_mode branch enabled notes status 
           detail="${detail}; baseline=${baseline_ref:-unknown}; fingerprint-mismatch; expected=${expected_count}/${expected_fingerprint}; actual=${actual_count}/${actual_fingerprint}; owner=${owner}"
           unexpected_dirty=$((unexpected_dirty + 1))
           failed=1
+        elif [[ "${actual_classification}" != "${expected_classification}" ]]; then
+          detail="${detail}; baseline=${baseline_ref:-unknown}; classification-mismatch; expected=${expected_classification}; actual=${actual_classification}; owner=${owner}"
+          classification_mismatch=$((classification_mismatch + 1))
+          unexpected_dirty=$((unexpected_dirty + 1))
+          failed=1
+        elif [[ "${analysis_policy}" != "commit-snapshot-only" ]]; then
+          detail="${detail}; baseline=${baseline_ref:-unknown}; unsafe-analysis-policy=${analysis_policy}; owner=${owner}"
+          unexpected_dirty=$((unexpected_dirty + 1))
+          failed=1
         else
           state="known-dirty"
-          detail="${detail}; baseline=${baseline_ref:-unknown}; fingerprint=${actual_fingerprint}; expires=${expires_on}; owner=${owner}; reason=${reason:-expected-observe-state}"
+          detail="${detail}; baseline=${baseline_ref:-unknown}; classification=${actual_classification}; mode=${mode_changes}; content=${content_changes}; type=${type_changes}; untracked=${untracked_changes}; staged=${staged_changes}; analysis=${analysis_policy}; fingerprint=${actual_fingerprint}; expires=${expires_on}; owner=${owner}; reason=${reason:-expected-observe-state}"
           known_dirty=$((known_dirty + 1))
         fi
       else
@@ -168,11 +188,11 @@ done < "${REGISTRY}"
 if [[ "${SUMMARY_JSON}" -eq 1 ]]; then
   status="pass"
   [[ "${failed}" -ne 0 ]] && status="fail"
-  printf '{"status":"%s","clean":%s,"dirty":%s,"known_dirty":%s,"unexpected_dirty":%s,"stale_baseline":%s,"uninitialized":%s,"missing":%s,"strict":%s}\n' \
-    "${status}" "${clean}" "${dirty}" "${known_dirty}" "${unexpected_dirty}" "${stale_baseline}" "${uninitialized}" "${missing}" "${STRICT}"
+  printf '{"status":"%s","clean":%s,"dirty":%s,"known_dirty":%s,"unexpected_dirty":%s,"classification_mismatch":%s,"stale_baseline":%s,"uninitialized":%s,"missing":%s,"strict":%s}\n' \
+    "${status}" "${clean}" "${dirty}" "${known_dirty}" "${unexpected_dirty}" "${classification_mismatch}" "${stale_baseline}" "${uninitialized}" "${missing}" "${STRICT}"
 else
   echo
-  echo "[SUMMARY] clean=${clean} dirty=${dirty} known_dirty=${known_dirty} unexpected_dirty=${unexpected_dirty} stale_baseline=${stale_baseline} uninitialized=${uninitialized} missing=${missing} strict=${STRICT}"
+  echo "[SUMMARY] clean=${clean} dirty=${dirty} known_dirty=${known_dirty} unexpected_dirty=${unexpected_dirty} classification_mismatch=${classification_mismatch} stale_baseline=${stale_baseline} uninitialized=${uninitialized} missing=${missing} strict=${STRICT}"
 fi
 
 if [[ "${failed}" -ne 0 ]]; then

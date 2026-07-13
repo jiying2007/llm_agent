@@ -2,14 +2,15 @@
 set -euo pipefail
 
 # 子仓库深度分析脚本
-# 用法: bash scripts/analyze-repo.sh <repo-name> [--prompt] [--skill] [--all]
+# 用法: bash scripts/analyze-repo.sh <repo-name> [--ref <commit-ish>] [--prompt|--skill|--all]
 #
 # 功能:
 #   --prompt  仅执行 Prompt 逆向分析
 #   --skill   仅执行 Skill 深度拆解
 #   --all     执行全部分析（默认）
 #
-# 输出: subrepos/<repo-name>/analysis/ 目录下
+# 输入: 指定 commit 的只读 git archive 快照
+# 输出: reports/repo-analysis/<repo-name>/<commit>/
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -22,12 +23,13 @@ CYAN='\033[0;36m'
 NC='\033[0m'
 
 usage() {
-    echo "用法: bash scripts/analyze-repo.sh <repo-name> [--prompt] [--skill] [--all]"
+    echo "用法: bash scripts/analyze-repo.sh <repo-name> [--ref <commit-ish>] [--prompt] [--skill] [--all]"
     echo ""
     echo "选项:"
     echo "  --prompt   仅执行 Prompt 逆向分析 (adk-repo-prompt-analyzer)"
     echo "  --skill    仅执行 Skill 深度拆解 (adk-skill-deep-analyzer)"
     echo "  --all      执行全部分析（默认）"
+    echo "  --ref      分析指定 commit-ish（默认 HEAD）"
     echo ""
     echo "示例:"
     echo "  bash scripts/analyze-repo.sh superpowers"
@@ -41,23 +43,60 @@ usage() {
 REPO="$1"
 shift
 MODE="all"
-for arg in "$@"; do
-    case "$arg" in
+REF="HEAD"
+while [[ $# -gt 0 ]]; do
+    case "$1" in
         --prompt) MODE="prompt" ;;
         --skill)  MODE="skill" ;;
         --all)    MODE="all" ;;
+        --ref)
+            [[ $# -ge 2 ]] || { echo -e "${RED}[ERROR]${NC} --ref 缺少值" >&2; exit 1; }
+            REF="$2"
+            shift
+            ;;
         --help|-h) usage ;;
+        *) echo -e "${RED}[ERROR]${NC} 未知参数: $1" >&2; exit 1 ;;
     esac
+    shift
 done
+
+[[ "$REPO" =~ ^[A-Za-z0-9._-]+$ ]] || {
+    echo -e "${RED}[ERROR]${NC} 非法仓库名: $REPO" >&2
+    exit 1
+}
 
 REPO_PATH="$ROOT_DIR/$REPO"
 [[ ! -d "$REPO_PATH" ]] && echo -e "${RED}[ERROR]${NC} 仓库不存在: $REPO_PATH" && exit 1
+git -C "$REPO_PATH" rev-parse --is-inside-work-tree >/dev/null 2>&1 || {
+    echo -e "${RED}[ERROR]${NC} 不是 Git 仓库: $REPO_PATH" >&2
+    exit 1
+}
 
-ANALYSIS_DIR="$REPO_PATH/analysis"
+SOURCE_COMMIT="$(git -C "$REPO_PATH" rev-parse "${REF}^{commit}")" || {
+    echo -e "${RED}[ERROR]${NC} 无法解析 ref: $REF" >&2
+    exit 1
+}
+SOURCE_SHORT="${SOURCE_COMMIT:0:12}"
+SOURCE_BRANCH="$(git -C "$REPO_PATH" branch --show-current 2>/dev/null || true)"
+DIRTY_JSON="$("$ROOT_DIR/scripts/classify-repo-worktree.sh" "$ROOT_DIR" "$REPO")"
+DIRTY_CLASSIFICATION="$(printf '%s' "$DIRTY_JSON" | python3 -c 'import json,sys; print(json.load(sys.stdin)["classification"])')"
+DIRTY_COUNT="$(printf '%s' "$DIRTY_JSON" | python3 -c 'import json,sys; print(json.load(sys.stdin)["dirty_count"])')"
+
+TMP_DIR="$(mktemp -d)"
+SNAPSHOT_DIR="$TMP_DIR/source"
+cleanup() {
+    rm -rf "$TMP_DIR"
+}
+trap cleanup EXIT
+mkdir -p "$SNAPSHOT_DIR"
+git -C "$REPO_PATH" archive --format=tar "$SOURCE_COMMIT" | tar -xf - -C "$SNAPSHOT_DIR"
+
+ANALYSIS_DIR="$ROOT_DIR/reports/repo-analysis/$REPO/$SOURCE_SHORT"
 mkdir -p "$ANALYSIS_DIR"
 
 echo -e "${CYAN}=== 子仓库深度分析: $REPO ===${NC}"
 echo "模式: $MODE"
+echo "来源: commit=$SOURCE_COMMIT ref=$REF dirty=$DIRTY_CLASSIFICATION"
 echo "输出: $ANALYSIS_DIR/"
 echo ""
 
@@ -67,20 +106,20 @@ if [[ "$MODE" == "all" || "$MODE" == "prompt" ]]; then
     echo "  阶段 1: 项目结构探索..."
     
     # 基础结构统计
-    total_files=$(find "$REPO_PATH" -not -path '*/.git/*' -type f | wc -l)
-    md_files=$(find "$REPO_PATH" -name '*.md' -not -path '*/.git/*' | wc -l)
-    skill_files=$(find "$REPO_PATH" -name 'SKILL.md' -not -path '*/.git/*' | wc -l)
-    agent_files=$(find "$REPO_PATH" -name 'AGENTS.md' -not -path '*/.git/*' | wc -l)
-    script_files=$(find "$REPO_PATH" -name '*.sh' -o -name '*.py' -o -name '*.js' | grep -v '.git/' | wc -l)
+    total_files=$(find "$SNAPSHOT_DIR" -type f | wc -l)
+    md_files=$(find "$SNAPSHOT_DIR" -name '*.md' -type f | wc -l)
+    skill_files=$(find "$SNAPSHOT_DIR" -name 'SKILL.md' -type f | wc -l)
+    agent_files=$(find "$SNAPSHOT_DIR" -name 'AGENTS.md' -type f | wc -l)
+    script_files=$(find "$SNAPSHOT_DIR" -type f \( -name '*.sh' -o -name '*.py' -o -name '*.js' \) | wc -l)
     
     echo "  文件: total=$total_files, md=$md_files, skill=$skill_files, agent=$agent_files, scripts=$script_files"
     
     echo "  阶段 2: 提示词识别..."
     # 搜索 prompt 相关文件
-    prompt_files=$(find "$REPO_PATH" -not -path '*/.git/*' -type f \( -name '*prompt*' -o -name '*system*' -o -name '*instruction*' -o -name 'SKILL.md' -o -name 'AGENTS.md' \) | head -20)
+    prompt_files=$(find "$SNAPSHOT_DIR" -type f \( -name '*prompt*' -o -name '*system*' -o -name '*instruction*' -o -name 'SKILL.md' -o -name 'AGENTS.md' \) | sed "s#^$SNAPSHOT_DIR/##" | head -20 || true)
     
     # 搜索代码中的 prompt 变量
-    prompt_vars=$(grep -rn 'system_prompt\|user_prompt\|messages\|content=' "$REPO_PATH" --include='*.py' --include='*.js' --include='*.ts' 2>/dev/null | grep -v '.git/' | head -10)
+    prompt_vars=$(grep -rn 'system_prompt\|user_prompt\|messages\|content=' "$SNAPSHOT_DIR" --include='*.py' --include='*.js' --include='*.ts' 2>/dev/null | sed "s#^$SNAPSHOT_DIR/##" | head -10 || true)
     
     echo "  阶段 3: 生成报告..."
     {
@@ -88,6 +127,13 @@ if [[ "$MODE" == "all" || "$MODE" == "prompt" ]]; then
         echo ""
         echo "- 生成日期: $(date +%Y-%m-%d)"
         echo "- 分析工具: adk-repo-prompt-analyzer"
+        echo "- source_commit: $SOURCE_COMMIT"
+        echo "- source_ref: $REF"
+        echo "- source_branch: ${SOURCE_BRANCH:--}"
+        echo "- snapshot_mode: git-archive"
+        echo "- analysis_policy: commit-snapshot-only"
+        echo "- worktree_dirty_classification: $DIRTY_CLASSIFICATION"
+        echo "- worktree_dirty_count: $DIRTY_COUNT"
         echo ""
         echo "## 项目结构"
         echo ""
@@ -143,7 +189,7 @@ if [[ "$MODE" == "all" || "$MODE" == "skill" ]]; then
         has_refs=$(test -d "$skill_dir/references" && echo "Y" || echo "N")
         has_assets=$(test -d "$skill_dir/assets" && echo "Y" || echo "N")
         skill_list="$skill_list|$skill_name|$skill_lines|scripts=$has_scripts|refs=$has_refs|assets=$has_assets"
-    done < <(find "$REPO_PATH" -name 'SKILL.md' -not -path '*/.git/*' 2>/dev/null)
+    done < <(find "$SNAPSHOT_DIR" -name 'SKILL.md' -type f 2>/dev/null)
     
     echo "  阶段 2: 生成报告..."
     {
@@ -151,6 +197,13 @@ if [[ "$MODE" == "all" || "$MODE" == "skill" ]]; then
         echo ""
         echo "- 生成日期: $(date +%Y-%m-%d)"
         echo "- 分析工具: adk-skill-deep-analyzer"
+        echo "- source_commit: $SOURCE_COMMIT"
+        echo "- source_ref: $REF"
+        echo "- source_branch: ${SOURCE_BRANCH:--}"
+        echo "- snapshot_mode: git-archive"
+        echo "- analysis_policy: commit-snapshot-only"
+        echo "- worktree_dirty_classification: $DIRTY_CLASSIFICATION"
+        echo "- worktree_dirty_count: $DIRTY_COUNT"
         echo ""
         echo "## Skill 清单"
         echo ""
@@ -197,6 +250,10 @@ fi
     echo ""
     echo "- 生成日期: $(date +%Y-%m-%d)"
     echo "- 分析模式: $MODE"
+    echo "- source_commit: $SOURCE_COMMIT"
+    echo "- snapshot_mode: git-archive"
+    echo "- analysis_policy: commit-snapshot-only"
+    echo "- worktree_dirty_classification: $DIRTY_CLASSIFICATION"
     echo ""
     echo "## 分析报告"
     echo ""
@@ -209,11 +266,11 @@ fi
     echo ""
     echo "## 后续步骤"
     echo ""
-    echo "1. AI Agent 读取上述报告，补充"待分析"部分"
+    echo "1. AI Agent 读取上述报告，补充待分析部分"
     echo "2. 提取可借鉴点，更新 adoption-matrix.md"
     echo "3. 有价值内容吸纳到 agent-dev-kit"
 } > "$ANALYSIS_DIR/README.md"
 
-echo -e "${GREEN}=== 分析完成 ===${NC}"
+echo -e "${GREEN}=== commit snapshot 分析清单已生成 ===${NC}"
 echo "报告目录: $ANALYSIS_DIR/"
 echo "后续: 让 AI Agent 读取报告并补充分析结论"
