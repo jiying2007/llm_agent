@@ -46,6 +46,8 @@ summary_json = summary_json == "1"
 arch_dir = os.path.join(root, "reports", "architecture")
 readme = os.path.join(arch_dir, "README.md")
 optimization_manifest_path = os.path.join(root, "manifests", "comprehensive_optimization_backlog.json")
+product_scorecard_path = os.path.join(root, "manifests", "product_maturity_scorecard.json")
+report_registry_path = os.path.join(root, "manifests", "report_registry.json")
 adk_template_path = os.path.join(root, "agent-dev-kit", "templates", "artifacts", "target-architecture-report-template.md")
 failures = []
 
@@ -192,10 +194,10 @@ reports = []
 if os.path.isdir(arch_dir):
     reports = [
         path for path in sorted(glob.glob(os.path.join(arch_dir, "*.md")))
-        if os.path.basename(path) != "README.md"
+        if "target-architecture" in os.path.basename(path)
     ]
 if not reports:
-    fail("reports/architecture must contain at least one architecture report")
+    fail("reports/architecture must contain at least one target architecture report")
 
 required_headings = [
     "## Summary",
@@ -321,11 +323,86 @@ for report in reports:
         if field not in closure:
             fail(f"{label} Goal Closure State missing field: {field}")
 
+product_reports = sorted(glob.glob(os.path.join(arch_dir, "*product-maturity-audit*.md")))
+if not product_reports:
+    fail("reports/architecture must contain a product maturity audit")
+else:
+    maturity_headings = (
+        "## 执行结论",
+        "## 产品目标与边界",
+        "## 架构对账",
+        "## 功能成熟度",
+        "## 性能与成本",
+        "## 安全与供应链",
+        "## 发布与兼容",
+        "## 可维护性与长期资产",
+        "## 外部实践对标",
+        "## 风险与未完成项",
+        "## 终态判断",
+        "## Evidence Index",
+    )
+    for report in product_reports:
+        content = read(report)
+        label = rel(report)
+        for heading in maturity_headings:
+            if not has_heading(content, heading):
+                fail(f"{label} missing product maturity heading: {heading}")
+        for token in (
+            "manifests/product_maturity_scorecard.json",
+            "manifests/product_maturity_task_pack.json",
+            "field_not_verified",
+            "terminal_mature",
+            "source-to-live",
+            "baseline/adk",
+        ):
+            if token not in content:
+                fail(f"{label} missing maturity token: {token}")
+
+product_scorecard = read_json(product_scorecard_path)
+if product_scorecard:
+    dimensions = product_scorecard.get("dimensions")
+    if not isinstance(dimensions, list) or len(dimensions) != 12:
+        fail("product_maturity_scorecard.json must contain exactly 12 dimensions")
+    else:
+        expected_ids = [f"D{i:02d}" for i in range(1, 13)]
+        actual_ids = [item.get("id") for item in dimensions if isinstance(item, dict)]
+        if actual_ids != expected_ids:
+            fail(f"product_maturity_scorecard.json dimension ids must be {expected_ids}")
+        for item in dimensions:
+            if item.get("level") not in {"M0", "M1", "M2", "M3", "M4", "M5"}:
+                fail(f"product maturity dimension {item.get('id')} has invalid level")
+            if not isinstance(item.get("evidence"), list) or not item.get("evidence"):
+                fail(f"product maturity dimension {item.get('id')} must have evidence")
+    overall = product_scorecard.get("overall")
+    if not isinstance(overall, dict):
+        fail("product_maturity_scorecard.json overall must be an object")
+    else:
+        if overall.get("terminal_mature") is not False:
+            fail("current product scorecard must not claim terminal maturity without field evidence")
+        if overall.get("field_status") != "field_not_verified":
+            fail("current product scorecard must preserve field_not_verified")
+
+report_registry = read_json(report_registry_path)
+if report_registry:
+    entries = report_registry.get("reports")
+    if not isinstance(entries, list):
+        fail("report_registry.json reports must be an array")
+    else:
+        current = [item for item in entries if isinstance(item, dict) and item.get("status") == "current"]
+        if len(current) != 1:
+            fail("report_registry.json must declare exactly one current architecture report")
+        for item in entries:
+            if not isinstance(item, dict):
+                continue
+            report_path = os.path.join(root, str(item.get("path", "")))
+            if not os.path.isfile(report_path):
+                fail(f"report registry path missing: {item.get('path')}")
+
 status = "pass" if not failures else "fail"
 if summary_json:
     print(json.dumps({
         "status": status,
-        "reports": len(reports),
+        "reports": len(reports) + len(product_reports),
         "failures": failures,
     }, ensure_ascii=False, separators=(",", ":")))
 else:
@@ -333,7 +410,7 @@ else:
         for item in failures:
             print(f"[FAIL] {item}", file=sys.stderr)
     else:
-        print(f"[PASS] architecture reports ready: reports={len(reports)}")
+        print(f"[PASS] architecture reports ready: reports={len(reports) + len(product_reports)}")
 
 if failures:
     sys.exit(1)

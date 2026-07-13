@@ -1,0 +1,592 @@
+{
+  "schema": "llm-agent-intake-analysis/v1",
+  "status": "static-complete",
+  "repository": "scale-engine",
+  "mode": "all",
+  "generated_at": "2026-07-13T06:46:08Z",
+  "source": {
+    "commit": "ace49169c4191db656989b738f31edb19a380a63",
+    "ref": "HEAD",
+    "worktree_branch": "master",
+    "snapshot_mode": "git-archive",
+    "skipped_archive_links": 0,
+    "worktree": {
+      "schema_version": 1,
+      "repo": "scale-engine",
+      "head": "ace49169c4191db656989b738f31edb19a380a63",
+      "branch": "master",
+      "dirty_count": 0,
+      "classification": "clean",
+      "categories": [],
+      "mode_changes": 0,
+      "content_changes": 0,
+      "type_changes": 0,
+      "untracked_changes": 0,
+      "staged_changes": 0,
+      "status_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "inventory": {
+    "total_files": 966,
+    "markdown_files": 193,
+    "skill_files": 19,
+    "agent_files": 1,
+    "script_files": 647,
+    "test_or_eval_files": 205
+  },
+  "prompt_evidence": {
+    "named_files": [
+      ".cursor/skills/kc-autopilot/SKILL.md",
+      ".deepseek/instructions.md",
+      ".harness/SKILL.md",
+      ".scale/skills/api-design/SKILL.md",
+      ".scale/skills/code-review/SKILL.md",
+      ".scale/skills/debugging/SKILL.md",
+      ".scale/skills/documentation/SKILL.md",
+      ".scale/skills/fix/SKILL.md",
+      ".scale/skills/frontend-design/SKILL.md",
+      ".scale/skills/git-workflow/SKILL.md",
+      ".scale/skills/performance/SKILL.md",
+      ".scale/skills/planning/SKILL.md",
+      ".scale/skills/pr-creator/SKILL.md",
+      ".scale/skills/refactoring/SKILL.md",
+      ".scale/skills/release/SKILL.md",
+      ".scale/skills/security-audit/SKILL.md",
+      ".scale/skills/storage-analyzer/SKILL.md",
+      ".scale/skills/tdd/SKILL.md",
+      ".scale/skills/update-docs/SKILL.md",
+      "AGENTS.md",
+      "docs/AGENT_ECOSYSTEM.md",
+      "docs/workflow/PROMPT_OPTIMIZATION.md",
+      "src/cli/promptCommands.ts"
+    ],
+    "code_signal_locations": [
+      {
+        "path": "examples/event-demo.ts",
+        "line": 37
+      },
+      {
+        "path": "src/adapters/AiderAdapter.ts",
+        "line": 228
+      },
+      {
+        "path": "src/adapters/AiderAdapter.ts",
+        "line": 245
+      },
+      {
+        "path": "src/adapters/ClaudeCodeAdapter.ts",
+        "line": 215
+      },
+      {
+        "path": "src/agents/AgentChannel.ts",
+        "line": 80
+      },
+      {
+        "path": "src/agents/AgentChannel.ts",
+        "line": 92
+      },
+      {
+        "path": "src/agents/AgentChannel.ts",
+        "line": 137
+      },
+      {
+        "path": "src/agents/AgentChannel.ts",
+        "line": 147
+      },
+      {
+        "path": "src/api/cli.ts",
+        "line": 249
+      },
+      {
+        "path": "src/api/doctor.ts",
+        "line": 250
+      },
+      {
+        "path": "src/api/doctor.ts",
+        "line": 819
+      },
+      {
+        "path": "src/api/doctor.ts",
+        "line": 903
+      },
+      {
+        "path": "src/cache/ScanCache.ts",
+        "line": 119
+      },
+      {
+        "path": "src/cli/contextCommands.ts",
+        "line": 160
+      },
+      {
+        "path": "src/cli/contextCommands.ts",
+        "line": 398
+      },
+      {
+        "path": "src/cli/engineBootstrap.ts",
+        "line": 53
+      },
+      {
+        "path": "src/cli/initConfigCommands.ts",
+        "line": 580
+      },
+      {
+        "path": "src/cli/initConfigCommands.ts",
+        "line": 609
+      },
+      {
+        "path": "src/cli/phaseCommands.ts",
+        "line": 1718
+      },
+      {
+        "path": "src/codegraph/CodeIntelligence.ts",
+        "line": 500
+      },
+      {
+        "path": "src/codegraph/CodeIntelligence.ts",
+        "line": 955
+      },
+      {
+        "path": "src/codegraph/CodeIntelligence.ts",
+        "line": 1020
+      },
+      {
+        "path": "src/communication/FeishuChannelProvider.ts",
+        "line": 180
+      },
+      {
+        "path": "src/communication/FeishuChannelProvider.ts",
+        "line": 182
+      },
+      {
+        "path": "src/context/ContextBudget.ts",
+        "line": 394
+      },
+      {
+        "path": "src/context/ContextBuilder.ts",
+        "line": 289
+      },
+      {
+        "path": "src/context/ContextBuilder.ts",
+        "line": 326
+      },
+      {
+        "path": "src/context/ProjectAnatomy.ts",
+        "line": 138
+      },
+      {
+        "path": "src/context/ProjectAnatomy.ts",
+        "line": 286
+      },
+      {
+        "path": "src/context/SessionStartSequence.ts",
+        "line": 112
+      },
+      {
+        "path": "src/core/GbrainRuntime.ts",
+        "line": 224
+      },
+      {
+        "path": "src/cortex/ReflexionEngine.ts",
+        "line": 115
+      },
+      {
+        "path": "src/cortex/SessionInjector.ts",
+        "line": 102
+      },
+      {
+        "path": "src/cortex/SessionInjector.ts",
+        "line": 190
+      },
+      {
+        "path": "src/dashboard/DashboardServer.ts",
+        "line": 455
+      },
+      {
+        "path": "src/dashboard/DashboardServer.ts",
+        "line": 500
+      },
+      {
+        "path": "src/dashboard/DashboardServer.ts",
+        "line": 519
+      },
+      {
+        "path": "src/dashboard/DashboardServer.ts",
+        "line": 818
+      },
+      {
+        "path": "src/dashboard/spa/app.js",
+        "line": 17
+      },
+      {
+        "path": "src/dashboard/spa/app.js",
+        "line": 57
+      },
+      {
+        "path": "src/dashboard/spa/app.js",
+        "line": 58
+      },
+      {
+        "path": "src/dashboard/spa/app.js",
+        "line": 105
+      },
+      {
+        "path": "src/dashboard/spa/app.js",
+        "line": 108
+      },
+      {
+        "path": "src/dashboard/spa/app.js",
+        "line": 111
+      },
+      {
+        "path": "src/dashboard/spa/app.js",
+        "line": 121
+      },
+      {
+        "path": "src/dashboard/spa/app.js",
+        "line": 129
+      },
+      {
+        "path": "src/dashboard/spa/app.js",
+        "line": 258
+      },
+      {
+        "path": "src/dashboard/spa/app.js",
+        "line": 267
+      },
+      {
+        "path": "src/dashboard/spa/app.js",
+        "line": 282
+      },
+      {
+        "path": "src/dashboard/spa/app.js",
+        "line": 365
+      }
+    ]
+  },
+  "skills": [
+    {
+      "name": "kc-autopilot",
+      "path": ".cursor/skills/kc-autopilot/SKILL.md",
+      "lines": 306,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "12ba49be0423348132b09d7340b9e7cbe1df6a1819bd2fa9c090d2535eb09cde"
+    },
+    {
+      "name": ".harness",
+      "path": ".harness/SKILL.md",
+      "lines": 76,
+      "has_frontmatter": false,
+      "has_description": false,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "49714f530c3282cbae23c0e4997c907eee6a1740eaa8820901ebfb8f7eb85a2a"
+    },
+    {
+      "name": "api-design",
+      "path": ".scale/skills/api-design/SKILL.md",
+      "lines": 62,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "e84d1a3a341e3c954f0c332a3dcfa7a2099a7708209e41486590c491182cfb6c"
+    },
+    {
+      "name": "code-review",
+      "path": ".scale/skills/code-review/SKILL.md",
+      "lines": 53,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "38848b3a169be8066cfc9efc1fabb02fc575bd9a80a51b16ba8e1910327b8cdd"
+    },
+    {
+      "name": "debugging",
+      "path": ".scale/skills/debugging/SKILL.md",
+      "lines": 52,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "38875d25f2d5f9554539f373531f0ddfddfeb24353c996dd09bd4b51f034b011"
+    },
+    {
+      "name": "documentation",
+      "path": ".scale/skills/documentation/SKILL.md",
+      "lines": 45,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "c5a9c92ef5832e1efd4b01140472f7e04431f5c19049f5f79d47d1f08ce63cd6"
+    },
+    {
+      "name": "fix",
+      "path": ".scale/skills/fix/SKILL.md",
+      "lines": 36,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "dd55e263af670be6789bf61ede3adae8d7966362a9c0c324a6e58b35b2977c6e"
+    },
+    {
+      "name": "frontend-design",
+      "path": ".scale/skills/frontend-design/SKILL.md",
+      "lines": 38,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "ae22e8e9c2f624c34479a8a2179f98037c2a0099cfa73846071782b7767249f9"
+    },
+    {
+      "name": "git-workflow",
+      "path": ".scale/skills/git-workflow/SKILL.md",
+      "lines": 56,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "232e6eb1c04cdad498bdca5606dd9369772fd3d41584368354662e42ef0465dd"
+    },
+    {
+      "name": "performance",
+      "path": ".scale/skills/performance/SKILL.md",
+      "lines": 56,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "deabab4fd5e10282aa50a1c644f0c359927dfff2d53b6d7b8d3274c8b60331a1"
+    },
+    {
+      "name": "planning",
+      "path": ".scale/skills/planning/SKILL.md",
+      "lines": 51,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "ef105254b064ba671ed370210b72778af6880ea8e61b3f8b86f080ecbe718f41"
+    },
+    {
+      "name": "pr-creator",
+      "path": ".scale/skills/pr-creator/SKILL.md",
+      "lines": 37,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "3ab7eadeb78aab42ff75ddbd58d63d5b06519bc2041deaf614d9ea762009b4a2"
+    },
+    {
+      "name": "refactoring",
+      "path": ".scale/skills/refactoring/SKILL.md",
+      "lines": 59,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "e6fe28abfa73502b2bca444cc38b3fd07a94c4ff916541f6fefb2f2443cae359"
+    },
+    {
+      "name": "release",
+      "path": ".scale/skills/release/SKILL.md",
+      "lines": 211,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "7780a00732faa43fb2760e4b56baa9e3cce78cad09c219100650c0f313967bdd"
+    },
+    {
+      "name": "security-audit",
+      "path": ".scale/skills/security-audit/SKILL.md",
+      "lines": 71,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "43467337860122310ef0812bfb8c93814fd9c5d9cefd3eb145c29899c351b982"
+    },
+    {
+      "name": "storage-analyzer",
+      "path": ".scale/skills/storage-analyzer/SKILL.md",
+      "lines": 112,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": true,
+      "has_references": true,
+      "has_assets": true,
+      "sha256": "721a36a47ebb28e5120caddb5363c53d80bc5c8fd1f3714c3e9a8b61040c0fc5"
+    },
+    {
+      "name": "tdd",
+      "path": ".scale/skills/tdd/SKILL.md",
+      "lines": 41,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "049ab06cfca87bdce9d5e6e1543445b6d46c31e75377cbb441a20f29234c763c"
+    },
+    {
+      "name": "update-docs",
+      "path": ".scale/skills/update-docs/SKILL.md",
+      "lines": 37,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "7ec932ea084e3dfe69805fa3f0d2c383ed8e639dc6c4640b907d85fb60d38121"
+    },
+    {
+      "name": "karpathy-guidelines",
+      "path": "src/skills/karpathy-guidelines/SKILL.md",
+      "lines": 73,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "de720891c2ff89192d95c853c30802f45d7e4afc1ebaaabcabc4a1497c16abf3"
+    }
+  ],
+  "pattern_signals": [
+    {
+      "signal": "progressive-disclosure-assets",
+      "present": true,
+      "evidence": [
+        ".scale/skills/storage-analyzer/SKILL.md"
+      ]
+    },
+    {
+      "signal": "tool-backed-skills",
+      "present": true,
+      "evidence": [
+        ".scale/skills/storage-analyzer/SKILL.md"
+      ]
+    },
+    {
+      "signal": "explicit-guardrails",
+      "present": true,
+      "evidence": [
+        ".claude/settings.json",
+        ".cursor/skills/kc-autopilot/SKILL.md",
+        ".planning/quick/20260421-scale-optimization/PLAN.md",
+        ".scale/frameworks.json",
+        ".scale/policy.yaml",
+        ".scale/skills/api-design/SKILL.md",
+        ".scale/skills/release/SKILL.md",
+        ".scale/skills/storage-analyzer/SKILL.md",
+        "AGENTS.md",
+        "CHANGELOG.md",
+        "articles/agentmemory-deep-dive.md",
+        "docs/03-CORE-MODULES.md",
+        "docs/05-ROADMAP.md",
+        "docs/AI_ENGINEERING_OS_POSITIONING.md",
+        "docs/DEPENDENCY_AUDIT.md",
+        "docs/DOCUMENT_STANDARDS.md",
+        "docs/ENGINEERING_STANDARDS.md",
+        "docs/EVOLUTION_SHADOW_MODE.md",
+        "docs/GITLAB_FLOW.md",
+        "docs/LEADERSHIP-PRESETS.md"
+      ]
+    },
+    {
+      "signal": "tests-or-evals",
+      "present": true,
+      "evidence": [
+        ".scale/evals/suites/workflow-baseline.json",
+        "examples/demo-projects/agent-governance-demo/tests/oauth-state.test.ts",
+        "src/eval/BenchmarkPublisher.ts",
+        "src/eval/WorkflowEval.ts",
+        "tests/agents/acpCollaboration.test.ts",
+        "tests/agents/externalAgentCatalog.test.ts",
+        "tests/agents/leadershipPresets.test.ts",
+        "tests/agents/profiles.test.ts",
+        "tests/agents/registry.test.ts",
+        "tests/api/aiOsCli.test.ts",
+        "tests/api/bootstrapCli.test.ts",
+        "tests/api/codegraphCli.test.ts",
+        "tests/api/cognitiveWorkflowCli.test.ts",
+        "tests/api/contextBudgetCli.test.ts",
+        "tests/api/cortexCli.test.ts",
+        "tests/api/dependencyAuditCli.test.ts",
+        "tests/api/doctor.test.ts",
+        "tests/api/environmentDoctorCli.test.ts",
+        "tests/api/hookSafetyCli.test.ts",
+        "tests/api/huntCli.test.ts"
+      ]
+    }
+  ],
+  "structural_score": {
+    "scope": "structural-readiness-only",
+    "not_an_adoption_score": true,
+    "dimensions": {
+      "painpoint_precision": 20,
+      "workflow_clarity": 11,
+      "context_efficiency": 20,
+      "resource_design": 10,
+      "extensibility": 20
+    },
+    "total": 81,
+    "maximum": 100
+  },
+  "comparison": {
+    "adk_catalog_size": 65,
+    "exact_name_overlap": [],
+    "novel_name_candidates": [
+      ".harness",
+      "api-design",
+      "code-review",
+      "debugging",
+      "documentation",
+      "fix",
+      "frontend-design",
+      "git-workflow",
+      "karpathy-guidelines",
+      "kc-autopilot",
+      "performance",
+      "planning",
+      "pr-creator",
+      "refactoring",
+      "release",
+      "security-audit",
+      "storage-analyzer",
+      "tdd",
+      "update-docs"
+    ]
+  },
+  "license_evidence": [
+    ".scale/skills/storage-analyzer/LICENSE",
+    "LICENSE"
+  ],
+  "limitations": [
+    "static snapshot evidence does not prove semantic quality",
+    "structural score is not an adoption score",
+    "runtime effectiveness and security require separate verification"
+  ]
+}

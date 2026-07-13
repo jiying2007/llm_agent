@@ -1,0 +1,27 @@
+{
+  "schema": "llm-agent-adoption-decision/v1",
+  "status": "review-required",
+  "repository": "OpenSpec",
+  "source_commit": "3c7a05c5dc88b2397c478805890b55ed392b19e8",
+  "recommendation": "semantic-review",
+  "auto_apply": false,
+  "candidate_assets": [],
+  "required_reviews": [
+    "semantic-value",
+    "existing-asset-duplication",
+    "architecture-fit",
+    "license-and-provenance",
+    "security-and-supply-chain",
+    "runtime-effectiveness"
+  ],
+  "prohibited_actions": [
+    "direct-copy",
+    "automatic-adoption-matrix-update",
+    "automatic-adk-write"
+  ],
+  "evidence": [
+    "analysis.json",
+    "prompt-analysis.md",
+    "skill-deep-analysis.md"
+  ]
+}

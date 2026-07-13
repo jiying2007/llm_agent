@@ -1,0 +1,337 @@
+{
+  "schema": "llm-agent-intake-analysis/v1",
+  "status": "static-complete",
+  "repository": "OpenSpec",
+  "mode": "all",
+  "generated_at": "2026-07-13T05:50:32Z",
+  "source": {
+    "commit": "3c7a05c5dc88b2397c478805890b55ed392b19e8",
+    "ref": "HEAD",
+    "worktree_branch": "main",
+    "snapshot_mode": "git-archive",
+    "skipped_archive_links": 0,
+    "worktree": {
+      "schema_version": 1,
+      "repo": "OpenSpec",
+      "head": "3c7a05c5dc88b2397c478805890b55ed392b19e8",
+      "branch": "main",
+      "dirty_count": 655,
+      "classification": "mode+content",
+      "categories": [
+        "mode",
+        "content"
+      ],
+      "mode_changes": 655,
+      "content_changes": 2,
+      "type_changes": 0,
+      "untracked_changes": 0,
+      "staged_changes": 0,
+      "status_fingerprint": "385f220663e442f93e150c5b1397cb334f3c99c0dbc83a44e0b7a9c475f99d23"
+    }
+  },
+  "inventory": {
+    "total_files": 658,
+    "markdown_files": 402,
+    "skill_files": 0,
+    "agent_files": 1,
+    "script_files": 213,
+    "test_or_eval_files": 73
+  },
+  "prompt_evidence": {
+    "named_files": [
+      "AGENTS.md",
+      "src/commands/workflow/instructions.ts",
+      "src/core/artifact-graph/instruction-loader.ts",
+      "src/core/config-prompts.ts"
+    ],
+    "code_signal_locations": [
+      {
+        "path": "src/commands/change.ts",
+        "line": 87
+      },
+      {
+        "path": "src/commands/change.ts",
+        "line": 109
+      },
+      {
+        "path": "src/commands/change.ts",
+        "line": 116
+      },
+      {
+        "path": "src/commands/change.ts",
+        "line": 161
+      },
+      {
+        "path": "src/commands/change.ts",
+        "line": 165
+      },
+      {
+        "path": "src/commands/schema.ts",
+        "line": 164
+      },
+      {
+        "path": "src/commands/schema.ts",
+        "line": 627
+      },
+      {
+        "path": "src/commands/schema.ts",
+        "line": 865
+      },
+      {
+        "path": "src/commands/schema.ts",
+        "line": 875
+      },
+      {
+        "path": "src/commands/spec.ts",
+        "line": 22
+      },
+      {
+        "path": "src/commands/spec.ts",
+        "line": 63
+      },
+      {
+        "path": "src/commands/workflow/instructions.ts",
+        "line": 290
+      },
+      {
+        "path": "src/core/archive.ts",
+        "line": 123
+      },
+      {
+        "path": "src/core/artifact-graph/instruction-loader.ts",
+        "line": 226
+      },
+      {
+        "path": "src/core/artifact-graph/resolver.ts",
+        "line": 126
+      },
+      {
+        "path": "src/core/artifact-graph/schema.ts",
+        "line": 16
+      },
+      {
+        "path": "src/core/completions/installers/bash-installer.ts",
+        "line": 170
+      },
+      {
+        "path": "src/core/completions/installers/bash-installer.ts",
+        "line": 223
+      },
+      {
+        "path": "src/core/completions/installers/bash-installer.ts",
+        "line": 224
+      },
+      {
+        "path": "src/core/completions/installers/fish-installer.ts",
+        "line": 59
+      },
+      {
+        "path": "src/core/completions/installers/fish-installer.ts",
+        "line": 60
+      },
+      {
+        "path": "src/core/completions/installers/powershell-installer.ts",
+        "line": 57
+      },
+      {
+        "path": "src/core/completions/installers/powershell-installer.ts",
+        "line": 177
+      },
+      {
+        "path": "src/core/completions/installers/powershell-installer.ts",
+        "line": 182
+      },
+      {
+        "path": "src/core/completions/installers/powershell-installer.ts",
+        "line": 211
+      },
+      {
+        "path": "src/core/completions/installers/powershell-installer.ts",
+        "line": 241
+      },
+      {
+        "path": "src/core/completions/installers/powershell-installer.ts",
+        "line": 272
+      },
+      {
+        "path": "src/core/completions/installers/powershell-installer.ts",
+        "line": 297
+      },
+      {
+        "path": "src/core/completions/installers/powershell-installer.ts",
+        "line": 298
+      },
+      {
+        "path": "src/core/completions/installers/zsh-installer.ts",
+        "line": 162
+      },
+      {
+        "path": "src/core/completions/installers/zsh-installer.ts",
+        "line": 179
+      },
+      {
+        "path": "src/core/completions/installers/zsh-installer.ts",
+        "line": 209
+      },
+      {
+        "path": "src/core/completions/installers/zsh-installer.ts",
+        "line": 259
+      },
+      {
+        "path": "src/core/completions/installers/zsh-installer.ts",
+        "line": 260
+      },
+      {
+        "path": "src/core/config-schema.ts",
+        "line": 238
+      },
+      {
+        "path": "src/core/converters/json-converter.ts",
+        "line": 10
+      },
+      {
+        "path": "src/core/converters/json-converter.ts",
+        "line": 28
+      },
+      {
+        "path": "src/core/global-config.ts",
+        "line": 109
+      },
+      {
+        "path": "src/core/init.ts",
+        "line": 542
+      },
+      {
+        "path": "src/core/init.ts",
+        "line": 614
+      },
+      {
+        "path": "src/core/legacy-cleanup.ts",
+        "line": 162
+      },
+      {
+        "path": "src/core/legacy-cleanup.ts",
+        "line": 289
+      },
+      {
+        "path": "src/core/legacy-cleanup.ts",
+        "line": 381
+      },
+      {
+        "path": "src/core/legacy-cleanup.ts",
+        "line": 382
+      },
+      {
+        "path": "src/core/list.ts",
+        "line": 175
+      },
+      {
+        "path": "src/core/parsers/change-parser.ts",
+        "line": 68
+      },
+      {
+        "path": "src/core/parsers/change-parser.ts",
+        "line": 180
+      },
+      {
+        "path": "src/core/parsers/markdown-parser.ts",
+        "line": 142
+      },
+      {
+        "path": "src/core/parsers/markdown-parser.ts",
+        "line": 220
+      },
+      {
+        "path": "src/core/project-config.ts",
+        "line": 77
+      }
+    ]
+  },
+  "skills": [],
+  "pattern_signals": [
+    {
+      "signal": "progressive-disclosure-assets",
+      "present": false,
+      "evidence": []
+    },
+    {
+      "signal": "tool-backed-skills",
+      "present": false,
+      "evidence": []
+    },
+    {
+      "signal": "explicit-guardrails",
+      "present": true,
+      "evidence": [
+        "openspec/changes/archive/2025-08-06-adopt-future-state-storage/tasks.md",
+        "openspec/changes/archive/2025-08-11-add-complexity-guidelines/specs/openspec-docs/README.md",
+        "openspec/changes/archive/2025-09-29-add-multi-agent-init/proposal.md",
+        "openspec/changes/archive/2025-09-29-improve-init-onboarding/specs/cli-init/spec.md",
+        "openspec/changes/archive/2026-02-17-add-feedback-command/specs/cli-feedback/spec.md",
+        "openspec/changes/archive/2026-02-17-add-opsx-onboard-skill/specs/opsx-onboard-skill/spec.md",
+        "openspec/changes/archive/2026-02-17-project-config/design.md",
+        "openspec/explorations/workspace-architecture.md",
+        "openspec/explorations/workspace-user-journeys.md",
+        "openspec/specs/cli-feedback/spec.md",
+        "openspec/specs/opsx-onboard-skill/spec.md",
+        "src/core/config-schema.ts",
+        "src/core/templates/workflows/feedback.ts",
+        "src/core/templates/workflows/onboard.ts",
+        "test/specs/source-specs-normalization.test.ts",
+        "test/telemetry/index.test.ts"
+      ]
+    },
+    {
+      "signal": "tests-or-evals",
+      "present": true,
+      "evidence": [
+        "test/cli-e2e/basic.test.ts",
+        "test/commands/artifact-workflow.test.ts",
+        "test/commands/change.interactive-show.test.ts",
+        "test/commands/change.interactive-validate.test.ts",
+        "test/commands/completion.test.ts",
+        "test/commands/config-profile.test.ts",
+        "test/commands/config.test.ts",
+        "test/commands/feedback.test.ts",
+        "test/commands/schema.test.ts",
+        "test/commands/show.test.ts",
+        "test/commands/spec.interactive-show.test.ts",
+        "test/commands/spec.interactive-validate.test.ts",
+        "test/commands/spec.test.ts",
+        "test/commands/validate.enriched-output.test.ts",
+        "test/commands/validate.test.ts",
+        "test/core/archive.test.ts",
+        "test/core/artifact-graph/graph.test.ts",
+        "test/core/artifact-graph/instruction-loader.test.ts",
+        "test/core/artifact-graph/outputs.test.ts",
+        "test/core/artifact-graph/resolver.test.ts"
+      ]
+    }
+  ],
+  "structural_score": {
+    "scope": "structural-readiness-only",
+    "not_an_adoption_score": true,
+    "dimensions": {
+      "painpoint_precision": 4,
+      "workflow_clarity": 6,
+      "context_efficiency": 4,
+      "resource_design": 7,
+      "extensibility": 8
+    },
+    "total": 29,
+    "maximum": 100
+  },
+  "comparison": {
+    "adk_catalog_size": 65,
+    "exact_name_overlap": [],
+    "novel_name_candidates": []
+  },
+  "license_evidence": [
+    "LICENSE"
+  ],
+  "limitations": [
+    "static snapshot evidence does not prove semantic quality",
+    "structural score is not an adoption score",
+    "runtime effectiveness and security require separate verification"
+  ]
+}

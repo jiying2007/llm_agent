@@ -44,4 +44,7 @@ rtk tests/test_architecture_reports.sh
 
 ## 当前报告
 
-- `llm-agent-adk-target-architecture-2026-07-11.md`
+- `llm-agent-adk-product-maturity-audit-2026-07-13.md`：当前产品成熟度与落地状态。
+- `llm-agent-adk-target-architecture-2026-07-11.md`：历史目标架构，已 superseded。
+
+机器可读 current/superseded 关系见 `manifests/report_registry.json`，当前成熟度以 `manifests/product_maturity_scorecard.json` 为准。

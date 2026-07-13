@@ -1,0 +1,122 @@
+{
+  "schema": "llm-agent-product-maturity-scorecard/v1",
+  "updated_at": "2026-07-13",
+  "product_boundary": "reference-intake workspace plus platform-neutral agent asset compiler/control plane; no LLM agent runtime",
+  "overall": {
+    "level": "M3",
+    "status": "release-candidate",
+    "terminal_mature": false,
+    "reason": "Core product paths are implemented and locally verified, and Codex shows a fixed-suite gain, but the second runtime, long-term operation, broader usability, and real field evidence are not complete.",
+    "field_status": "field_not_verified"
+  },
+  "levels": ["M0", "M1", "M2", "M3", "M4", "M5"],
+  "evidence_layers": ["source", "test", "runtime", "field"],
+  "dimensions": [
+    {
+      "id": "D01",
+      "name": "goal-and-product-boundary",
+      "priority": "P0",
+      "level": "M4",
+      "status": "verified",
+      "evidence": ["docs/product-maturity-model.md", "agent-dev-kit/manifest.json", "agent-dev-kit/docs/changes/adk-v3-product-maturity/proposal.md"]
+    },
+    {
+      "id": "D02",
+      "name": "architecture-and-contracts",
+      "priority": "P0",
+      "level": "M4",
+      "status": "verified",
+      "evidence": ["agent-dev-kit/manifests/manifest.schema.json", "agent-dev-kit/src/agent_dev_kit/model.py", "tools/codex_assets/intake_pipeline.py"]
+    },
+    {
+      "id": "D03",
+      "name": "functional-completeness",
+      "priority": "P0",
+      "level": "M4",
+      "status": "verified",
+      "evidence": ["agent-dev-kit/src/agent_dev_kit/cli.py", "agent-dev-kit/src/agent_dev_kit/compiler.py", "agent-dev-kit/src/agent_dev_kit/installer.py", "agent-dev-kit/src/agent_dev_kit/release.py"]
+    },
+    {
+      "id": "D04",
+      "name": "outcome-effectiveness",
+      "priority": "P0",
+      "level": "M3",
+      "status": "partially_verified",
+      "evidence": ["agent-dev-kit/tests/fixtures/product_eval_tasks.jsonl", "agent-dev-kit/src/agent_dev_kit/evaluation.py", "agent-dev-kit/docs/changes/adk-v3-product-maturity/codex-comparison-final.json", "agent-dev-kit/docs/changes/adk-v3-product-maturity/claude-adk-final.json"],
+      "gap": "Codex improved from 90% to 100% success/route accuracy with safety held at 100%; Claude is installed but unauthenticated, so cross-runtime effectiveness remains unverified."
+    },
+    {
+      "id": "D05",
+      "name": "reliability-and-verification",
+      "priority": "P0",
+      "level": "M4",
+      "status": "verified",
+      "evidence": ["agent-dev-kit/tests/test_product_maturity_v3.sh", "tests/test_product_maturity_contracts.sh", "tests/test_reference_source_integrity.sh", "agent-dev-kit/tests/run_all.sh"]
+    },
+    {
+      "id": "D06",
+      "name": "performance-and-cost",
+      "priority": "P1",
+      "level": "M4",
+      "status": "verified",
+      "evidence": ["agent-dev-kit/src/agent_dev_kit/quality.py", "agent-dev-kit/docs/changes/adk-v3-product-maturity/benchmark.json"]
+    },
+    {
+      "id": "D07",
+      "name": "security-and-supply-chain",
+      "priority": "P0",
+      "level": "M4",
+      "status": "verified",
+      "evidence": ["agent-dev-kit/src/agent_dev_kit/quality.py", "agent-dev-kit/.github/workflows/ci.yml", "agent-dev-kit/.github/workflows/release.yml", ".github/workflows/ci.yml"]
+    },
+    {
+      "id": "D08",
+      "name": "release-and-rollback",
+      "priority": "P0",
+      "level": "M4",
+      "status": "verified_local",
+      "evidence": ["agent-dev-kit/src/agent_dev_kit/installer.py", "agent-dev-kit/src/agent_dev_kit/release.py", "agent-dev-kit/docs/changes/adk-v3-product-maturity/verify-report.md", "reports/adk-v3-release-evidence-2026-07-13.json"],
+      "gap": "Source-to-live remains separately approved; this change has no mapped runtime asset delta, so live apply is intentionally not required. Remote release publish remains an explicit owner operation."
+    },
+    {
+      "id": "D09",
+      "name": "maintainability",
+      "priority": "P1",
+      "level": "M4",
+      "status": "verified",
+      "evidence": ["agent-dev-kit/scripts/devkit.sh", "agent-dev-kit/docs/commands.md", "tools/codex_assets/update_pipeline.py"]
+    },
+    {
+      "id": "D10",
+      "name": "extensibility-and-compatibility",
+      "priority": "P1",
+      "level": "M4",
+      "status": "verified",
+      "evidence": ["agent-dev-kit/manifest.json", "agent-dev-kit/src/agent_dev_kit/compiler.py", "agent-dev-kit/scripts/check-runtime-boundary.sh"]
+    },
+    {
+      "id": "D11",
+      "name": "operator-and-developer-experience",
+      "priority": "P1",
+      "level": "M3",
+      "status": "implemented",
+      "evidence": ["agent-dev-kit/docs/commands.md", "agent-dev-kit/src/agent_dev_kit/cli.py", "scripts/analyze-repo.sh"],
+      "gap": "Broader operator usability feedback and non-local installation evidence are not yet recorded."
+    },
+    {
+      "id": "D12",
+      "name": "long-term-assets-and-field-evidence",
+      "priority": "P1",
+      "level": "M2",
+      "status": "field_not_verified",
+      "evidence": ["docs/product-maturity-model.md", "manifests/product_maturity_task_pack.json", "reports/architecture/llm-agent-adk-product-maturity-audit-2026-07-13.md"],
+      "gap": "No real device/team field pilot, upgrade cycle, incident trend, or maintenance-cost record was provided in this change."
+    }
+  ],
+  "release_gates": {
+    "blocking": ["D01", "D02", "D03", "D05", "D07", "D08"],
+    "conditional": ["D04", "D11", "D12"],
+    "hardware_policy": "conditional; simulation never upgrades field evidence",
+    "status": "conditional-pass"
+  }
+}

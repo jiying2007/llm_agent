@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "landed-design",
-  "last_updated": "2026-07-11",
+  "last_updated": "2026-07-13",
   "purpose": "Machine-readable terminal optimization backlog for llm_agent and agent-dev-kit architecture governance. This manifest is the SSOT for the Comprehensive Optimization Backlog section in reports/architecture/llm-agent-adk-target-architecture-2026-07-11.md.",
   "source_report": "reports/architecture/llm-agent-adk-target-architecture-2026-07-11.md",
   "rules": {
@@ -21,7 +21,7 @@
       "optimization_area": "Goal and scope control",
       "terminal_outcome": "Every cross-repo goal has a goal statement, non-goal boundary, maturity level, stop condition, and completion evidence.",
       "design_status": "landed",
-      "implementation_status": "planned",
+      "implementation_status": "done",
       "implementation_targets": [
         "architecture report template",
         "current-status update rules",
@@ -30,7 +30,8 @@
       "verification": [
         "rtk scripts/check-architecture-reports.sh . --summary-json",
         "rtk scripts/check-current-status-consistency.sh . --summary-json"
-      ]
+      ],
+      "implementation_evidence": ["docs/product-maturity-model.md", "manifests/product_maturity_scorecard.json"]
     },
     {
       "id": "G2",
@@ -38,7 +39,7 @@
       "optimization_area": "Governance correctness",
       "terminal_outcome": "Registry, adoption, lifecycle, dirty baseline, and Hub candidate state claims do not contradict each other.",
       "design_status": "landed",
-      "implementation_status": "planned",
+      "implementation_status": "done",
       "implementation_targets": [
         "root reports",
         "lifecycle gates",
@@ -48,7 +49,8 @@
         "rtk scripts/check-oss-intake-ledger.sh .",
         "rtk scripts/check-adoption-matrix-structured.sh .",
         "rtk scripts/check-subrepo-state.sh . --summary-json"
-      ]
+      ],
+      "implementation_evidence": ["tools/codex_assets/intake_pipeline.py", "tools/codex_assets/update_pipeline.py"]
     },
     {
       "id": "G3",
@@ -56,7 +58,7 @@
       "optimization_area": "Evidence integrity",
       "terminal_outcome": "Every complete, applied, archived, or promoted claim is tied to command-level evidence and at least one negative or before-fix record.",
       "design_status": "landed",
-      "implementation_status": "planned",
+      "implementation_status": "in_progress",
       "implementation_targets": [
         "Evidence Index",
         "evidence bundle",
@@ -65,7 +67,8 @@
       "verification": [
         "rtk scripts/check-evidence-bundle.sh .",
         "rtk scripts/check-all.sh --quick"
-      ]
+      ],
+      "implementation_evidence": ["agent-dev-kit/docs/changes/adk-v3-product-maturity/negative-results.md", "agent-dev-kit/docs/changes/adk-v3-product-maturity/verify-report.md"]
     },
     {
       "id": "G4",
@@ -73,7 +76,7 @@
       "optimization_area": "Functional coverage",
       "terminal_outcome": "ADK capability gaps are closed by enhancing existing agents, skills, or workflows instead of creating parallel skills by default.",
       "design_status": "landed",
-      "implementation_status": "planned",
+      "implementation_status": "done",
       "implementation_targets": [
         "agent-dev-kit/manifest.yaml",
         "routing matrix",
@@ -83,7 +86,8 @@
         "rtk bash agent-dev-kit/scripts/devkit.sh capability health --summary-json",
         "rtk scripts/check-skill-routing-conflicts.sh .",
         "rtk bash agent-dev-kit/scripts/devkit.sh workflow-closure --profile core --summary-json"
-      ]
+      ],
+      "implementation_evidence": ["agent-dev-kit/manifest.json", "agent-dev-kit/src/agent_dev_kit/cli.py"]
     },
     {
       "id": "G5",
@@ -91,7 +95,7 @@
       "optimization_area": "Performance and token cost",
       "terminal_outcome": "Default entrypoints stay short, deep evidence is read on demand, and new reports prefer summary-json gates.",
       "design_status": "landed",
-      "implementation_status": "planned",
+      "implementation_status": "done",
       "implementation_targets": [
         "reports/current-status.md",
         "scripts/README.md",
@@ -100,7 +104,8 @@
       "verification": [
         "rtk scripts/check-token-budget.sh . --summary-json",
         "rtk rg -n \"summary-json|current-status\" reports scripts"
-      ]
+      ],
+      "implementation_evidence": ["agent-dev-kit/src/agent_dev_kit/quality.py", "agent-dev-kit/docs/changes/adk-v3-product-maturity/benchmark.json"]
     },
     {
       "id": "G6",
@@ -108,7 +113,7 @@
       "optimization_area": "Maintainability",
       "terminal_outcome": "Long-term design, current state, execution plan, and knowledge candidates each have one canonical entrypoint.",
       "design_status": "landed",
-      "implementation_status": "planned",
+      "implementation_status": "done",
       "implementation_targets": [
         "reports/architecture/README.md",
         "reports/current-status.md",
@@ -117,7 +122,8 @@
       "verification": [
         "rtk scripts/check-doc-sync.sh .",
         "rtk scripts/check-current-status-consistency.sh . --summary-json"
-      ]
+      ],
+      "implementation_evidence": ["manifests/report_registry.json", "reports/architecture/README.md"]
     },
     {
       "id": "G7",
@@ -125,7 +131,7 @@
       "optimization_area": "Extensibility",
       "terminal_outcome": "New runtimes, reference sources, and profiles enter candidate or dry-run state before becoming active.",
       "design_status": "landed",
-      "implementation_status": "planned",
+      "implementation_status": "done",
       "implementation_targets": [
         "runtime target registry",
         "OSS intake lifecycle",
@@ -135,7 +141,8 @@
         "rtk scripts/check-runtime-targets.sh . --summary-json",
         "rtk scripts/check-oss-registration-plan.sh .",
         "rtk scripts/check-oss-approval-queue.sh ."
-      ]
+      ],
+      "implementation_evidence": ["agent-dev-kit/manifest.json", "agent-dev-kit/scripts/check-runtime-boundary.sh"]
     },
     {
       "id": "G8",
@@ -143,7 +150,7 @@
       "optimization_area": "Asset experience",
       "terminal_outcome": "Operators can reach the correct runbook, skill, and verification command from low-token entrypoints.",
       "design_status": "landed",
-      "implementation_status": "planned",
+      "implementation_status": "done",
       "implementation_targets": [
         "root README/AGENTS",
         "ADK docs/workflows",
@@ -152,7 +159,8 @@
       "verification": [
         "rtk scripts/check-agents-coverage.sh .",
         "rtk bash agent-dev-kit/tests/test_templates.sh"
-      ]
+      ],
+      "implementation_evidence": ["agent-dev-kit/docs/commands.md", "agent-dev-kit/scripts/devkit.sh"]
     },
     {
       "id": "G9",
@@ -160,7 +168,7 @@
       "optimization_area": "Knowledge retention",
       "terminal_outcome": "High-value conclusions generate sanitized candidates, and active or archive promotion requires owner review.",
       "design_status": "landed",
-      "implementation_status": "planned",
+      "implementation_status": "in_progress",
       "implementation_targets": [
         "architecture knowledge candidate",
         "Hub dry-run evidence",
@@ -169,7 +177,8 @@
       "verification": [
         "rtk bash ~/knowledge-hub/tools/knowledge-promote.sh --id llm-agent-adk-target-architecture --target projects/llm-agent --dry-run --json",
         "rtk bash ~/knowledge-hub/tools/knowledge-status.sh --json --review-queue-limit 5"
-      ]
+      ],
+      "implementation_evidence": ["manifests/product_maturity_task_pack.json"]
     },
     {
       "id": "G10",
@@ -177,7 +186,7 @@
       "optimization_area": "Release and rollback clarity",
       "terminal_outcome": "Source-to-live, Hub promotion, and reference cleanup have separate approval points and rollback or stop conditions.",
       "design_status": "landed",
-      "implementation_status": "planned",
+      "implementation_status": "in_progress",
       "implementation_targets": [
         "runtime delivery contract",
         "knowledge promotion contract",
@@ -186,7 +195,8 @@
       "verification": [
         "rtk scripts/check-runtime-target-evidence-index.sh .",
         "rtk scripts/check-oss-removal-plan.sh ."
-      ]
+      ],
+      "implementation_evidence": ["agent-dev-kit/src/agent_dev_kit/installer.py", "agent-dev-kit/src/agent_dev_kit/release.py"]
     }
   ]
 }

@@ -1,0 +1,47 @@
+{
+  "schema": "llm-agent-adoption-decision/v1",
+  "status": "review-required",
+  "repository": "scale-engine",
+  "source_commit": "ace49169c4191db656989b738f31edb19a380a63",
+  "recommendation": "semantic-review",
+  "auto_apply": false,
+  "candidate_assets": [
+    ".harness",
+    "api-design",
+    "code-review",
+    "debugging",
+    "documentation",
+    "fix",
+    "frontend-design",
+    "git-workflow",
+    "karpathy-guidelines",
+    "kc-autopilot",
+    "performance",
+    "planning",
+    "pr-creator",
+    "refactoring",
+    "release",
+    "security-audit",
+    "storage-analyzer",
+    "tdd",
+    "update-docs"
+  ],
+  "required_reviews": [
+    "semantic-value",
+    "existing-asset-duplication",
+    "architecture-fit",
+    "license-and-provenance",
+    "security-and-supply-chain",
+    "runtime-effectiveness"
+  ],
+  "prohibited_actions": [
+    "direct-copy",
+    "automatic-adoption-matrix-update",
+    "automatic-adk-write"
+  ],
+  "evidence": [
+    "analysis.json",
+    "prompt-analysis.md",
+    "skill-deep-analysis.md"
+  ]
+}

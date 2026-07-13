@@ -11,22 +11,25 @@ if [[ ! -d "${ADK_ROOT}" ]]; then
   exit 1
 fi
 
-rtk bash "${ADK_ROOT}/tests/test_performance_ops.sh"
-rtk bash "${ADK_ROOT}/scripts/devkit.sh" perf analyze --summary-json >"${TMP_DIR}/perf-analyze.json"
-rtk bash "${ADK_ROOT}/scripts/devkit.sh" ops weekly --summary-json >"${TMP_DIR}/ops-weekly.json"
+rtk bash "${ADK_ROOT}/tests/test_product_maturity_v3.sh"
+rtk bash "${ADK_ROOT}/scripts/devkit.sh" benchmark run --iterations 5 --summary-json >"${TMP_DIR}/benchmark.json"
+rtk bash "${ADK_ROOT}/scripts/devkit.sh" security check --summary-json >"${TMP_DIR}/security.json"
+rtk bash "${ADK_ROOT}/scripts/devkit.sh" release check --summary-json >"${TMP_DIR}/release.json"
 rtk bash "${ADK_ROOT}/tests/run_all.sh" --quick --timing-json "${TMP_DIR}/run-all-quick.json" --max-failure-lines 20
 
-if ! rtk rg -q '"status":"pass"|"status":"warn"' "${TMP_DIR}/perf-analyze.json"; then
-  echo "[FAIL] perf analyze summary missing pass/warn status" >&2
-  exit 1
-fi
-if ! rtk rg -q '"apply":0' "${TMP_DIR}/ops-weekly.json"; then
-  echo "[FAIL] ops weekly summary must default to apply=0" >&2
-  exit 1
-fi
+python3 - "${TMP_DIR}/benchmark.json" "${TMP_DIR}/security.json" "${TMP_DIR}/release.json" <<'PY'
+import json
+import sys
+
+benchmark, security, release = [json.load(open(path, encoding="utf-8")) for path in sys.argv[1:4]]
+assert benchmark["status"] == "pass", benchmark
+assert benchmark["budget_gate"] and all(benchmark["budget_gate"].values()), benchmark
+assert security["status"] == "pass", security
+assert release["status"] == "pass", release
+PY
 if ! rtk rg -q '"mode": "quick"' "${TMP_DIR}/run-all-quick.json"; then
   echo "[FAIL] quick run timing json missing quick mode" >&2
   exit 1
 fi
 
-echo "[PASS] adk performance and ops gates passed"
+echo "[PASS] adk benchmark, security, release, and quick regression gates passed"

@@ -1,0 +1,35 @@
+{
+  "schema": "llm-agent-adk-release-evidence/v1",
+  "generated_at": "2026-07-13",
+  "agent_dev_kit": {
+    "version": "3.0.0",
+    "commit": "eec7cd14447bb75f93f810e758d2c34261a884a9",
+    "previous_commit": "b29a2ce840a6f6c636fada3d162b52cc5b5a9c48"
+  },
+  "release": {
+    "artifact": "agent-dev-kit-3.0.0.tar.gz",
+    "sha256": "4cd2e4b3bdb2676c3f4256751ced38c66ed713d10399470295e41ca7e834ba4a",
+    "reproducible_pair": true,
+    "checksum_verified": true,
+    "source_file_count": 478,
+    "direct_targets": ["claude-code", "hermes-agent", "opencode"],
+    "external_targets": ["codex"]
+  },
+  "wheel": {
+    "artifact": "agent_dev_kit-3.0.0-py3-none-any.whl",
+    "sha256": "f0b9b837a7eb3a42e4629daa166787a46190dac2e07f9b640855c654b31e9fb0",
+    "pip_check": "pass",
+    "non_repository_smoke": "pass"
+  },
+  "verification": {
+    "full_regression": {"status": "pass", "total": 48, "failed": 0, "elapsed_ms": 395482},
+    "quick_regression": {"status": "pass", "total": 14, "failed": 0},
+    "review": {"blocker": 0, "unresolved_major": 0, "verdict": "pass"}
+  },
+  "source_to_live": {
+    "mapping_paths": ["agents", "skills", "optional-skills", "workflows", "templates"],
+    "mapped_content_changed": false,
+    "decision": "not-required-no-mapped-assets"
+  },
+  "field_status": "field_not_verified"
+}

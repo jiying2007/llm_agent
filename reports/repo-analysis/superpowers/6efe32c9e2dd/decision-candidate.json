@@ -1,0 +1,42 @@
+{
+  "schema": "llm-agent-adoption-decision/v1",
+  "status": "review-required",
+  "repository": "superpowers",
+  "source_commit": "6efe32c9e2dd002d0c394e861e0529675d1ab32e",
+  "recommendation": "semantic-review",
+  "auto_apply": false,
+  "candidate_assets": [
+    "brainstorming",
+    "dispatching-parallel-agents",
+    "executing-plans",
+    "finishing-a-development-branch",
+    "receiving-code-review",
+    "requesting-code-review",
+    "subagent-driven-development",
+    "systematic-debugging",
+    "test-driven-development",
+    "using-git-worktrees",
+    "using-superpowers",
+    "verification-before-completion",
+    "writing-plans",
+    "writing-skills"
+  ],
+  "required_reviews": [
+    "semantic-value",
+    "existing-asset-duplication",
+    "architecture-fit",
+    "license-and-provenance",
+    "security-and-supply-chain",
+    "runtime-effectiveness"
+  ],
+  "prohibited_actions": [
+    "direct-copy",
+    "automatic-adoption-matrix-update",
+    "automatic-adk-write"
+  ],
+  "evidence": [
+    "analysis.json",
+    "prompt-analysis.md",
+    "skill-deep-analysis.md"
+  ]
+}

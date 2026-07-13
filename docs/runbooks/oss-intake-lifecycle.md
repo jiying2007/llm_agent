@@ -225,7 +225,7 @@ Rules:
 3. Do not copy third-party prose into core docs.
 4. Do not copy third-party code into `agent-dev-kit` without a separate security and license review.
 5. Do not execute third-party install commands during discovery or analysis.
-6. Treat `scripts/auto-absorb.sh` as legacy/report-only inspiration. It is not the target-state write path.
+6. The repository has no automatic absorption writer. `decision-candidate.json` remains review-required until an approved ADK change artifact is created.
 
 ## 10. Required Artifacts
 

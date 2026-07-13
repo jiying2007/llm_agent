@@ -9,7 +9,7 @@
 
 ### OSS intake 终态边界
 
-外部开源仓库的发现、评分、自动注册、自动吸收和自动移除以 `docs/runbooks/oss-intake-lifecycle.md` 为终态设计。`scripts/auto-absorb.sh` 属于历史自动吸收入口，只能作为 legacy/report-only 思路参考；新增自动化不得复用其直接复制文件、追加文档或生成核心资产的写入模式。
+外部开源仓库的发现、评分、注册、分析和退出以 `docs/runbooks/oss-intake-lifecycle.md` 为终态设计。仓库不提供自动吸收写入口；`scripts/analyze-repo.sh` 只生成 commit-snapshot 静态证据、`review-required` 决策候选和 task pack，不得直接复制文件、追加核心文档或修改 agent-dev-kit。
 
 ### 禁止：完全增量更新
 
@@ -158,7 +158,7 @@ rtk scripts/analyze-repo.sh <repo_name> --ref HEAD --all
 
 # 1.2 生成分析报告
 # 输出到 reports/repo-analysis/<repo>/<commit>/
-# 必须包含：source_commit、snapshot_mode、dirty classification、功能定位、与现有资产关系、潜在冲突、质量评估
+# 固定包含：analysis.json、decision-candidate.json、task-pack.json、source_commit、snapshot_mode、dirty classification 和静态证据边界
 ```
 
 来源分析只能读取不可变 commit snapshot。禁止直接扫描 dirty 工作树，禁止把报告写回参考仓；内容或文件类型漂移必须显式记录，但不得进入 snapshot 分析输入。
@@ -224,8 +224,8 @@ find agent-dev-kit -name "*.md" | xargs grep -l "类似功能"
 # 6.1 备份当前状态
 bash scripts/backup-rollback.sh backup
 
-# 6.2 执行吸收
-bash scripts/auto-absorb.sh <repo_name> --apply
+# 6.2 为已批准候选创建 agent-dev-kit change artifact，并按 proposal/design/tasks/negative-results 实施
+rtk bash agent-dev-kit/scripts/change-governance.sh propose --change <change-id> --title "<title>"
 
 # 6.3 更新 adoption-matrix.md
 # 记录决策、理由、证据

@@ -38,9 +38,9 @@
 | 版本发布 | 发布、release、tag、版本 | 执行发布流程 | `scripts/version-manager.sh` |
 | 健康摘要 | summary-json、低 token 健康、health json | 输出低 token JSON 健康摘要 | `scripts/health-check.sh --summary-json` |
 | 安装 hook | hook、pre-commit、提交检查 | 安装 git pre-commit hook | `scripts/install-pre-commit-hook.sh` |
-| 一键流水线 | 流水线、pipeline、一键更新、全量更新 | 同步、差异、分级、分析、采纳、模式检测、吸收、报告 | `scripts/pipeline-subrepo-update.sh` |
+| 一键流水线 | 流水线、pipeline、一键更新、全量更新 | 同步、差异、分级、commit-snapshot 分析、grade drift、跨仓证据聚合和报告；不自动吸收 | `scripts/pipeline-subrepo-update.sh` |
 | 优化 adk | 优化、改进、升级 adk、enhance | 在 `agent-dev-kit` 压实资产、验证并记录证据 | `agent-dev-kit/scripts/devkit.sh` |
-| 自动吸收 | 吸收、absorb、自动吸收、提取模式 | 必须全盘比对、去重、冲突检查、冗余检查、架构评估、决策论证、质量补充、验证 | `docs/absorption-governance.md`、`scripts/auto-absorb.sh` |
+| 吸收落地 | 吸收、absorb、提取模式 | 从结构化决策候选开始，经语义、重复、架构、许可证、安全和运行效果复核后创建 ADK change artifact；禁止自动复制或静默写入 | `docs/absorption-governance.md`、`scripts/analyze-repo.sh` |
 | 需求探索增强 | brainstorm、grill-me、需求拷问、先发散、拷问需求 | 先发散 2-4 个方向，再收敛目标/非目标/边界/验收 | `adk-structured-requirements-questioning`、`adk-requirements-triage` |
 | 备份回滚 | 备份、回滚、backup、rollback、恢复 | 创建安装备份、列出备份、恢复或回滚 | `agent-dev-kit/scripts/backup-rollback.sh` |
 | 冻结后周期 | 冻结后、post-freeze、冻结后检查、周期执行 | 文档同步、差异扫描、采纳矩阵状态、摘要生成 | `scripts/run-post-freeze-cycle.sh` |
@@ -83,7 +83,7 @@ rtk scripts/check-all.sh --quick
 | 结构化低 token 读取 | `subrepos/adoption-matrix.jsonl` |
 | 维护流程、门禁解释、source-to-live 证据链 | `docs/llm-agent-maintenance-guide.md` |
 | 新仓发现、评分、注册、拒绝生命周期 | `docs/runbooks/oss-intake-lifecycle.md` |
-| 自动吸收的全盘评估规则 | `docs/absorption-governance.md` |
+| 吸收前的全盘评估与人工批准规则 | `docs/absorption-governance.md` |
 | 一次性试跑、复核、周报、证据包 | `reports/` |
 
 根 `AGENTS.md` 只在路由、硬边界或高频入口变化时更新；不要把完整参考子仓清单、历史计划、长报告或一次性分析写回本文件。

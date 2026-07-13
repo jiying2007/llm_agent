@@ -1,0 +1,565 @@
+{
+  "schema": "llm-agent-intake-analysis/v1",
+  "status": "static-complete",
+  "repository": "planning-with-files",
+  "mode": "all",
+  "generated_at": "2026-07-13T06:46:07Z",
+  "source": {
+    "commit": "d71b3be47b62fe49d60fb2ede800e1907ebea3d9",
+    "ref": "HEAD",
+    "worktree_branch": "master",
+    "snapshot_mode": "git-archive",
+    "skipped_archive_links": 0,
+    "worktree": {
+      "schema_version": 1,
+      "repo": "planning-with-files",
+      "head": "d71b3be47b62fe49d60fb2ede800e1907ebea3d9",
+      "branch": "master",
+      "dirty_count": 0,
+      "classification": "clean",
+      "categories": [],
+      "mode_changes": 0,
+      "content_changes": 0,
+      "type_changes": 0,
+      "untracked_changes": 0,
+      "staged_changes": 0,
+      "status_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "inventory": {
+    "total_files": 421,
+    "markdown_files": 167,
+    "skill_files": 17,
+    "agent_files": 1,
+    "script_files": 161,
+    "test_or_eval_files": 29
+  },
+  "prompt_evidence": {
+    "named_files": [
+      ".codebuddy/skills/planning-with-files/SKILL.md",
+      ".codex/hooks/user-prompt-submit.sh",
+      ".codex/skills/planning-with-files/SKILL.md",
+      ".continue/prompts/planning-with-files.prompt",
+      ".continue/skills/planning-with-files/SKILL.md",
+      ".cursor/hooks/user-prompt-submit.ps1",
+      ".cursor/hooks/user-prompt-submit.sh",
+      ".cursor/skills/planning-with-files/SKILL.md",
+      ".factory/skills/planning-with-files/SKILL.md",
+      ".gemini/skills/planning-with-files/SKILL.md",
+      ".hermes/skills/planning-with-files/SKILL.md",
+      ".kiro/skills/planning-with-files/SKILL.md",
+      ".mastracode/skills/planning-with-files/SKILL.md"
+    ],
+    "code_signal_locations": [
+      {
+        "path": ".codebuddy/skills/planning-with-files/scripts/session-catchup.py",
+        "line": 367
+      },
+      {
+        "path": ".codebuddy/skills/planning-with-files/scripts/session-catchup.py",
+        "line": 417
+      },
+      {
+        "path": ".codebuddy/skills/planning-with-files/scripts/session-catchup.py",
+        "line": 487
+      },
+      {
+        "path": ".codebuddy/skills/planning-with-files/scripts/session-catchup.py",
+        "line": 496
+      },
+      {
+        "path": ".codebuddy/skills/planning-with-files/scripts/session-catchup.py",
+        "line": 535
+      },
+      {
+        "path": ".codebuddy/skills/planning-with-files/scripts/session-catchup.py",
+        "line": 587
+      },
+      {
+        "path": ".codex/skills/planning-with-files/scripts/session-catchup.py",
+        "line": 367
+      },
+      {
+        "path": ".codex/skills/planning-with-files/scripts/session-catchup.py",
+        "line": 417
+      },
+      {
+        "path": ".codex/skills/planning-with-files/scripts/session-catchup.py",
+        "line": 487
+      },
+      {
+        "path": ".codex/skills/planning-with-files/scripts/session-catchup.py",
+        "line": 496
+      },
+      {
+        "path": ".codex/skills/planning-with-files/scripts/session-catchup.py",
+        "line": 535
+      },
+      {
+        "path": ".codex/skills/planning-with-files/scripts/session-catchup.py",
+        "line": 587
+      },
+      {
+        "path": ".continue/skills/planning-with-files/scripts/session-catchup.py",
+        "line": 367
+      },
+      {
+        "path": ".continue/skills/planning-with-files/scripts/session-catchup.py",
+        "line": 417
+      },
+      {
+        "path": ".continue/skills/planning-with-files/scripts/session-catchup.py",
+        "line": 487
+      },
+      {
+        "path": ".continue/skills/planning-with-files/scripts/session-catchup.py",
+        "line": 496
+      },
+      {
+        "path": ".continue/skills/planning-with-files/scripts/session-catchup.py",
+        "line": 535
+      },
+      {
+        "path": ".continue/skills/planning-with-files/scripts/session-catchup.py",
+        "line": 587
+      },
+      {
+        "path": ".factory/skills/planning-with-files/scripts/session-catchup.py",
+        "line": 367
+      },
+      {
+        "path": ".factory/skills/planning-with-files/scripts/session-catchup.py",
+        "line": 417
+      },
+      {
+        "path": ".factory/skills/planning-with-files/scripts/session-catchup.py",
+        "line": 487
+      },
+      {
+        "path": ".factory/skills/planning-with-files/scripts/session-catchup.py",
+        "line": 496
+      },
+      {
+        "path": ".factory/skills/planning-with-files/scripts/session-catchup.py",
+        "line": 535
+      },
+      {
+        "path": ".factory/skills/planning-with-files/scripts/session-catchup.py",
+        "line": 587
+      },
+      {
+        "path": ".gemini/skills/planning-with-files/scripts/session-catchup.py",
+        "line": 367
+      },
+      {
+        "path": ".gemini/skills/planning-with-files/scripts/session-catchup.py",
+        "line": 417
+      },
+      {
+        "path": ".gemini/skills/planning-with-files/scripts/session-catchup.py",
+        "line": 487
+      },
+      {
+        "path": ".gemini/skills/planning-with-files/scripts/session-catchup.py",
+        "line": 496
+      },
+      {
+        "path": ".gemini/skills/planning-with-files/scripts/session-catchup.py",
+        "line": 535
+      },
+      {
+        "path": ".gemini/skills/planning-with-files/scripts/session-catchup.py",
+        "line": 587
+      },
+      {
+        "path": ".hermes/plugins/planning-with-files/hooks.py",
+        "line": 11
+      },
+      {
+        "path": ".hermes/plugins/planning-with-files/hooks.py",
+        "line": 35
+      },
+      {
+        "path": ".hermes/plugins/planning-with-files/hooks.py",
+        "line": 36
+      },
+      {
+        "path": ".hermes/skills/planning-with-files/scripts/session-catchup.py",
+        "line": 135
+      },
+      {
+        "path": ".hermes/skills/planning-with-files/scripts/session-catchup.py",
+        "line": 183
+      },
+      {
+        "path": ".hermes/skills/planning-with-files/scripts/session-catchup.py",
+        "line": 187
+      },
+      {
+        "path": ".hermes/skills/planning-with-files/scripts/session-catchup.py",
+        "line": 190
+      },
+      {
+        "path": ".hermes/skills/planning-with-files/scripts/session-catchup.py",
+        "line": 205
+      },
+      {
+        "path": ".hermes/skills/planning-with-files/scripts/session-catchup.py",
+        "line": 206
+      },
+      {
+        "path": ".hermes/skills/planning-with-files/scripts/session-catchup.py",
+        "line": 210
+      },
+      {
+        "path": ".hermes/skills/planning-with-files/scripts/session-catchup.py",
+        "line": 214
+      },
+      {
+        "path": ".hermes/skills/planning-with-files/scripts/session-catchup.py",
+        "line": 291
+      },
+      {
+        "path": ".hermes/skills/planning-with-files/scripts/session-catchup.py",
+        "line": 303
+      },
+      {
+        "path": ".hermes/skills/planning-with-files/scripts/session-catchup.py",
+        "line": 322
+      },
+      {
+        "path": ".kiro/skills/planning-with-files/assets/scripts/session-catchup.py",
+        "line": 73
+      },
+      {
+        "path": ".mastracode/skills/planning-with-files/scripts/session-catchup.py",
+        "line": 52
+      },
+      {
+        "path": ".mastracode/skills/planning-with-files/scripts/session-catchup.py",
+        "line": 76
+      },
+      {
+        "path": ".mastracode/skills/planning-with-files/scripts/session-catchup.py",
+        "line": 104
+      },
+      {
+        "path": ".mastracode/skills/planning-with-files/scripts/session-catchup.py",
+        "line": 108
+      },
+      {
+        "path": ".mastracode/skills/planning-with-files/scripts/session-catchup.py",
+        "line": 111
+      }
+    ]
+  },
+  "skills": [
+    {
+      "name": "planning-with-files",
+      "path": ".codebuddy/skills/planning-with-files/SKILL.md",
+      "lines": 228,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": true,
+      "has_references": true,
+      "has_assets": false,
+      "sha256": "6e2f2be3a527c14dddee99ee95ed708bd1f57a5e318d5046e5130019e7bd70e0"
+    },
+    {
+      "name": "planning-with-files",
+      "path": ".codex/skills/planning-with-files/SKILL.md",
+      "lines": 227,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": true,
+      "has_references": true,
+      "has_assets": false,
+      "sha256": "ae2038527ffccf315b1a2bbe22e215f57b72470443d3e366734fd51ca2d05408"
+    },
+    {
+      "name": "planning-with-files",
+      "path": ".continue/skills/planning-with-files/SKILL.md",
+      "lines": 249,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": true,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "99c5d364856502f4eaa81725e258184c36a8c42693e066b0bde906e0dc498351"
+    },
+    {
+      "name": "planning-with-files",
+      "path": ".cursor/skills/planning-with-files/SKILL.md",
+      "lines": 227,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "31f4b33a6eb2ebbfec70ca43125a16effda65ea36acf5554f6d1a73b6dd3cf18"
+    },
+    {
+      "name": "planning-with-files",
+      "path": ".factory/skills/planning-with-files/SKILL.md",
+      "lines": 227,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": true,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "24fa69c614c54370226b1a81de583b0e53198e8bfc1be16b30730e6fa301d342"
+    },
+    {
+      "name": "planning-with-files",
+      "path": ".gemini/skills/planning-with-files/SKILL.md",
+      "lines": 250,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": true,
+      "has_references": true,
+      "has_assets": false,
+      "sha256": "893654e9f991633a071e4f7c44812fccf1a2496e468f627508f7880a14a3ef54"
+    },
+    {
+      "name": "planning-with-files",
+      "path": ".hermes/skills/planning-with-files/SKILL.md",
+      "lines": 232,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": true,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "faab3f4e2b4a6a72f5f5924d0564cabdb9adb53c45a5a7a2dde72e3f38919453"
+    },
+    {
+      "name": "planning-with-files",
+      "path": ".kiro/skills/planning-with-files/SKILL.md",
+      "lines": 230,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": true,
+      "has_assets": true,
+      "sha256": "8e1a44ed8f0c5080c8d358ba5254e79adab9775f35869759d681499bb02d4c40"
+    },
+    {
+      "name": "planning-with-files",
+      "path": ".mastracode/skills/planning-with-files/SKILL.md",
+      "lines": 227,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": true,
+      "has_references": true,
+      "has_assets": false,
+      "sha256": "c6ce17e38f5e416c8747140a239b1ad92a30b70830d656eea937c6cd22057d33"
+    },
+    {
+      "name": "planning-with-files",
+      "path": ".opencode/skills/planning-with-files/SKILL.md",
+      "lines": 227,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": true,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "893b7ce200b8cfffbbd5a3fd32df5810e1f18a9ff972ee02759e6e4ad0c3e339"
+    },
+    {
+      "name": "pi-planning-with-files",
+      "path": ".pi/skills/planning-with-files/SKILL.md",
+      "lines": 262,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": true,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "3987b2f728c0ec0c38c0ac4fc398cb2800b3e282fc11ddf78a37f4ebb7505807"
+    },
+    {
+      "name": "planning-with-files",
+      "path": "skills/planning-with-files/SKILL.md",
+      "lines": 455,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": true,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "3f70e233df7fa2f78ad15d1bc04d3f8f61d9dfebc077222a7eddd530444a1494"
+    },
+    {
+      "name": "planning-with-files-ar",
+      "path": "skills/planning-with-files-ar/SKILL.md",
+      "lines": 242,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": true,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "20119ca08b715740897a5c7ae9f7da25ded8a20f9cf02a68ed773fb52d631173"
+    },
+    {
+      "name": "planning-with-files-de",
+      "path": "skills/planning-with-files-de/SKILL.md",
+      "lines": 242,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": true,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "6b8fe65f854f8acd5b9ce689df94f0f33a3ba3b485ee79855cb6d5546c2ffce8"
+    },
+    {
+      "name": "planning-with-files-es",
+      "path": "skills/planning-with-files-es/SKILL.md",
+      "lines": 242,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": true,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "501d4fb5fc5f7cc87286bb7ababa53c751f2d57aa251cbfe7273ccb6c915feec"
+    },
+    {
+      "name": "planning-with-files-zh",
+      "path": "skills/planning-with-files-zh/SKILL.md",
+      "lines": 244,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": true,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "018404f737724a327955b9eab194d6a9a4134f420a47e5b5fec925ef1b2de530"
+    },
+    {
+      "name": "planning-with-files-zht",
+      "path": "skills/planning-with-files-zht/SKILL.md",
+      "lines": 244,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": true,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "f13ba75e4a744667bfd51b2b15d8516eaa11efc3600fbcda6009534e0f14e949"
+    }
+  ],
+  "pattern_signals": [
+    {
+      "signal": "progressive-disclosure-assets",
+      "present": true,
+      "evidence": [
+        ".codebuddy/skills/planning-with-files/SKILL.md",
+        ".codex/skills/planning-with-files/SKILL.md",
+        ".gemini/skills/planning-with-files/SKILL.md",
+        ".kiro/skills/planning-with-files/SKILL.md",
+        ".mastracode/skills/planning-with-files/SKILL.md"
+      ]
+    },
+    {
+      "signal": "tool-backed-skills",
+      "present": true,
+      "evidence": [
+        ".codebuddy/skills/planning-with-files/SKILL.md",
+        ".codex/skills/planning-with-files/SKILL.md",
+        ".continue/skills/planning-with-files/SKILL.md",
+        ".factory/skills/planning-with-files/SKILL.md",
+        ".gemini/skills/planning-with-files/SKILL.md",
+        ".hermes/skills/planning-with-files/SKILL.md",
+        ".mastracode/skills/planning-with-files/SKILL.md",
+        ".opencode/skills/planning-with-files/SKILL.md",
+        ".pi/skills/planning-with-files/SKILL.md",
+        "skills/planning-with-files/SKILL.md",
+        "skills/planning-with-files-ar/SKILL.md",
+        "skills/planning-with-files-de/SKILL.md",
+        "skills/planning-with-files-es/SKILL.md",
+        "skills/planning-with-files-zh/SKILL.md",
+        "skills/planning-with-files-zht/SKILL.md"
+      ]
+    },
+    {
+      "signal": "explicit-guardrails",
+      "present": true,
+      "evidence": [
+        ".codebuddy/skills/planning-with-files/scripts/attest-plan.sh",
+        ".codebuddy/skills/planning-with-files/scripts/check-complete.sh",
+        ".codex/skills/planning-with-files/scripts/attest-plan.sh",
+        ".codex/skills/planning-with-files/scripts/check-complete.sh",
+        ".continue/skills/planning-with-files/scripts/attest-plan.sh",
+        ".continue/skills/planning-with-files/scripts/check-complete.sh",
+        ".factory/skills/planning-with-files/scripts/attest-plan.sh",
+        ".factory/skills/planning-with-files/scripts/check-complete.sh",
+        ".gemini/skills/planning-with-files/scripts/attest-plan.sh",
+        ".gemini/skills/planning-with-files/scripts/check-complete.sh",
+        ".pi/skills/planning-with-files/README.md",
+        ".pi/skills/planning-with-files/SKILL.md",
+        ".pi/skills/planning-with-files/extensions/planning-with-files/__tests__/runtime.test.ts",
+        ".pi/skills/planning-with-files/extensions/planning-with-files/runtime.ts",
+        ".pi/skills/planning-with-files/scripts/attest-plan.sh",
+        ".pi/skills/planning-with-files/scripts/check-complete.sh",
+        "CHANGELOG.md",
+        "CONTRIBUTORS.md",
+        "README.md",
+        "docs/pi-agent.md"
+      ]
+    },
+    {
+      "signal": "tests-or-evals",
+      "present": true,
+      "evidence": [
+        "tests/test_canonical_script_sync.py",
+        "tests/test_check_complete_resolver.py",
+        "tests/test_clear_recovery.sh",
+        "tests/test_codex_hooks.py",
+        "tests/test_codex_session_isolation.py",
+        "tests/test_containment.py",
+        "tests/test_gate.py",
+        "tests/test_hermes_adapter.py",
+        "tests/test_hook_body_v240.py",
+        "tests/test_hook_resolver_integration.py",
+        "tests/test_init_modes.py",
+        "tests/test_init_session_slug.py",
+        "tests/test_ledger.py",
+        "tests/test_path_fix.py",
+        "tests/test_pi_docs_hook_support.py",
+        "tests/test_pi_extension_capabilities.py",
+        "tests/test_pi_extension_packaging.py",
+        "tests/test_plan_attestation.py",
+        "tests/test_planning_disabled_optout.py",
+        "tests/test_precompact_hook.py"
+      ]
+    }
+  ],
+  "structural_score": {
+    "scope": "structural-readiness-only",
+    "not_an_adoption_score": true,
+    "dimensions": {
+      "painpoint_precision": 20,
+      "workflow_clarity": 20,
+      "context_efficiency": 20,
+      "resource_design": 20,
+      "extensibility": 20
+    },
+    "total": 100,
+    "maximum": 100
+  },
+  "comparison": {
+    "adk_catalog_size": 65,
+    "exact_name_overlap": [],
+    "novel_name_candidates": [
+      "pi-planning-with-files",
+      "planning-with-files",
+      "planning-with-files-ar",
+      "planning-with-files-de",
+      "planning-with-files-es",
+      "planning-with-files-zh",
+      "planning-with-files-zht"
+    ]
+  },
+  "license_evidence": [
+    "LICENSE"
+  ],
+  "limitations": [
+    "static snapshot evidence does not prove semantic quality",
+    "structural score is not an adoption score",
+    "runtime effectiveness and security require separate verification"
+  ]
+}

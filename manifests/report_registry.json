@@ -1,0 +1,25 @@
+{
+  "schema": "llm-agent-report-registry/v1",
+  "updated_at": "2026-07-13",
+  "reports": [
+    {
+      "id": "target-architecture-2026-07-11",
+      "path": "reports/architecture/llm-agent-adk-target-architecture-2026-07-11.md",
+      "status": "superseded",
+      "superseded_by": "product-maturity-audit-2026-07-13",
+      "purpose": "historical target architecture and design baseline"
+    },
+    {
+      "id": "product-maturity-audit-2026-07-13",
+      "path": "reports/architecture/llm-agent-adk-product-maturity-audit-2026-07-13.md",
+      "status": "current",
+      "superseded_by": null,
+      "purpose": "current product, architecture, function, performance, maintainability and long-term maturity audit"
+    }
+  ],
+  "policy": {
+    "one_current_report_per_purpose": true,
+    "historical_reports_are_not_runtime_ssot": true,
+    "machine_state_source": "manifests/product_maturity_scorecard.json"
+  }
+}

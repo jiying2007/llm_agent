@@ -1,0 +1,351 @@
+{
+  "schema": "llm-agent-intake-analysis/v1",
+  "status": "static-complete",
+  "repository": "superpowers",
+  "mode": "all",
+  "generated_at": "2026-07-13T05:50:31Z",
+  "source": {
+    "commit": "6efe32c9e2dd002d0c394e861e0529675d1ab32e",
+    "ref": "HEAD",
+    "worktree_branch": "main",
+    "snapshot_mode": "git-archive",
+    "skipped_archive_links": 1,
+    "worktree": {
+      "schema_version": 1,
+      "repo": "superpowers",
+      "head": "6efe32c9e2dd002d0c394e861e0529675d1ab32e",
+      "branch": "main",
+      "dirty_count": 115,
+      "classification": "mode+content+type",
+      "categories": [
+        "mode",
+        "content",
+        "type"
+      ],
+      "mode_changes": 114,
+      "content_changes": 2,
+      "type_changes": 1,
+      "untracked_changes": 0,
+      "staged_changes": 0,
+      "status_fingerprint": "de009e378c682c59be9ee534ac63bcfbcda952068b0ff1186cff0404f2f109a2"
+    }
+  },
+  "inventory": {
+    "total_files": 146,
+    "markdown_files": 73,
+    "skill_files": 14,
+    "agent_files": 0,
+    "script_files": 35,
+    "test_or_eval_files": 48
+  },
+  "prompt_evidence": {
+    "named_files": [
+      "docs/superpowers/plans/2026-01-22-document-review-system.md",
+      "docs/superpowers/specs/2026-01-22-document-review-system-design.md",
+      "skills/brainstorming/SKILL.md",
+      "skills/brainstorming/spec-document-reviewer-prompt.md",
+      "skills/dispatching-parallel-agents/SKILL.md",
+      "skills/executing-plans/SKILL.md",
+      "skills/finishing-a-development-branch/SKILL.md",
+      "skills/receiving-code-review/SKILL.md",
+      "skills/requesting-code-review/SKILL.md",
+      "skills/subagent-driven-development/SKILL.md",
+      "skills/subagent-driven-development/code-quality-reviewer-prompt.md",
+      "skills/subagent-driven-development/implementer-prompt.md",
+      "skills/subagent-driven-development/spec-reviewer-prompt.md",
+      "skills/systematic-debugging/SKILL.md",
+      "skills/test-driven-development/SKILL.md",
+      "skills/using-git-worktrees/SKILL.md",
+      "skills/using-superpowers/SKILL.md",
+      "skills/verification-before-completion/SKILL.md",
+      "skills/writing-plans/SKILL.md",
+      "skills/writing-plans/plan-document-reviewer-prompt.md",
+      "skills/writing-skills/SKILL.md",
+      "skills/writing-skills/testing-skills-with-subagents.md",
+      "tests/claude-code/test-document-review-system.sh",
+      "tests/explicit-skill-requests/prompts/use-systematic-debugging.txt",
+      "tests/skill-triggering/prompts/systematic-debugging.txt"
+    ],
+    "code_signal_locations": [
+      {
+        "path": ".opencode/plugins/superpowers.js",
+        "line": 56
+      },
+      {
+        "path": ".opencode/plugins/superpowers.js",
+        "line": 61
+      },
+      {
+        "path": "skills/brainstorming/scripts/helper.js",
+        "line": 54
+      },
+      {
+        "path": "skills/writing-skills/render-graphs.js",
+        "line": 26
+      },
+      {
+        "path": "tests/brainstorm-server/server.test.js",
+        "line": 385
+      },
+      {
+        "path": "tests/brainstorm-server/server.test.js",
+        "line": 389
+      }
+    ]
+  },
+  "skills": [
+    {
+      "name": "brainstorming",
+      "path": "skills/brainstorming/SKILL.md",
+      "lines": 164,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": true,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "bba47904a7f6bbee3bf8a107ebbe84e65d392be683bbb898ded736b29e415f90"
+    },
+    {
+      "name": "dispatching-parallel-agents",
+      "path": "skills/dispatching-parallel-agents/SKILL.md",
+      "lines": 182,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "76806091c7f923ba2596546b19cccd98a08e57a68745df77c3a7b998fe838e2b"
+    },
+    {
+      "name": "executing-plans",
+      "path": "skills/executing-plans/SKILL.md",
+      "lines": 70,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "a711f83fb762e2ea0fa151f598893da9911a408895c91cc7a7e0770dd59a27b3"
+    },
+    {
+      "name": "finishing-a-development-branch",
+      "path": "skills/finishing-a-development-branch/SKILL.md",
+      "lines": 200,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "dd2f82c6dc8582b621f9eb57fcb65f557f88eadf872727ac81d0840ae12c504e"
+    },
+    {
+      "name": "receiving-code-review",
+      "path": "skills/receiving-code-review/SKILL.md",
+      "lines": 213,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "c9382e92b8f32363566068ecfed19d3b2651eaf40d3942b24840f839dedfc406"
+    },
+    {
+      "name": "requesting-code-review",
+      "path": "skills/requesting-code-review/SKILL.md",
+      "lines": 105,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "a5ff68586ccf62d1803cedeb71d60fd96ec05591d29c8d123196117eefd34cd0"
+    },
+    {
+      "name": "subagent-driven-development",
+      "path": "skills/subagent-driven-development/SKILL.md",
+      "lines": 277,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "081ad3869e55c80bf8f890b4768a90c0e8057daf94b1b6fadebfc85ea5b8304a"
+    },
+    {
+      "name": "systematic-debugging",
+      "path": "skills/systematic-debugging/SKILL.md",
+      "lines": 296,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "4999cb851360485eca5074e727bbdd62ef20549c5d5b01216fcbf5831badb473"
+    },
+    {
+      "name": "test-driven-development",
+      "path": "skills/test-driven-development/SKILL.md",
+      "lines": 371,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "7dee67b4af6bdccc7a914ca34533184d64592d0f5b23aeae631538168db14994"
+    },
+    {
+      "name": "using-git-worktrees",
+      "path": "skills/using-git-worktrees/SKILL.md",
+      "lines": 218,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "de9dcde34840eee074047ec327d4ea6ca4954c5a73a6d874dc48f25fe46c9e7c"
+    },
+    {
+      "name": "using-superpowers",
+      "path": "skills/using-superpowers/SKILL.md",
+      "lines": 117,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": true,
+      "has_assets": false,
+      "sha256": "316e29381219adf0cac62190c67aeabf427d6e6e5f2735541d502b3d339be7aa"
+    },
+    {
+      "name": "verification-before-completion",
+      "path": "skills/verification-before-completion/SKILL.md",
+      "lines": 139,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "ea52d15aabaf72bc6b558efe2c126f161b53961090ddcd712000273bfe8c7b6c"
+    },
+    {
+      "name": "writing-plans",
+      "path": "skills/writing-plans/SKILL.md",
+      "lines": 152,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "90056bad3d5f196fa7c9fec0ffe592e6d9c86bc983e406642a51d1a4198b7024"
+    },
+    {
+      "name": "writing-skills",
+      "path": "skills/writing-skills/SKILL.md",
+      "lines": 655,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "38ba648975ae6ba512d6695676f146163db61a496b867f716f4bdfb0ee3aca3e"
+    }
+  ],
+  "pattern_signals": [
+    {
+      "signal": "progressive-disclosure-assets",
+      "present": true,
+      "evidence": [
+        "skills/using-superpowers/SKILL.md"
+      ]
+    },
+    {
+      "signal": "tool-backed-skills",
+      "present": true,
+      "evidence": [
+        "skills/brainstorming/SKILL.md"
+      ]
+    },
+    {
+      "signal": "explicit-guardrails",
+      "present": true,
+      "evidence": [
+        "CLAUDE.md",
+        "README.md",
+        "RELEASE-NOTES.md",
+        "docs/superpowers/plans/2026-01-22-document-review-system.md",
+        "docs/superpowers/specs/2026-01-22-document-review-system-design.md",
+        "skills/brainstorming/SKILL.md",
+        "skills/brainstorming/spec-document-reviewer-prompt.md",
+        "skills/dispatching-parallel-agents/SKILL.md",
+        "skills/receiving-code-review/SKILL.md",
+        "skills/writing-plans/plan-document-reviewer-prompt.md"
+      ]
+    },
+    {
+      "signal": "tests-or-evals",
+      "present": true,
+      "evidence": [
+        "tests/brainstorm-server/package-lock.json",
+        "tests/brainstorm-server/package.json",
+        "tests/brainstorm-server/server.test.js",
+        "tests/brainstorm-server/windows-lifecycle.test.sh",
+        "tests/brainstorm-server/ws-protocol.test.js",
+        "tests/claude-code/README.md",
+        "tests/claude-code/analyze-token-usage.py",
+        "tests/claude-code/run-skill-tests.sh",
+        "tests/claude-code/test-document-review-system.sh",
+        "tests/claude-code/test-helpers.sh",
+        "tests/claude-code/test-subagent-driven-development-integration.sh",
+        "tests/claude-code/test-subagent-driven-development.sh",
+        "tests/codex-plugin-sync/test-sync-to-codex-plugin.sh",
+        "tests/explicit-skill-requests/prompts/action-oriented.txt",
+        "tests/explicit-skill-requests/prompts/after-planning-flow.txt",
+        "tests/explicit-skill-requests/prompts/claude-suggested-it.txt",
+        "tests/explicit-skill-requests/prompts/i-know-what-sdd-means.txt",
+        "tests/explicit-skill-requests/prompts/mid-conversation-execute-plan.txt",
+        "tests/explicit-skill-requests/prompts/please-use-brainstorming.txt",
+        "tests/explicit-skill-requests/prompts/skip-formalities.txt"
+      ]
+    }
+  ],
+  "structural_score": {
+    "scope": "structural-readiness-only",
+    "not_an_adoption_score": true,
+    "dimensions": {
+      "painpoint_precision": 20,
+      "workflow_clarity": 11,
+      "context_efficiency": 20,
+      "resource_design": 10,
+      "extensibility": 20
+    },
+    "total": 81,
+    "maximum": 100
+  },
+  "comparison": {
+    "adk_catalog_size": 65,
+    "exact_name_overlap": [],
+    "novel_name_candidates": [
+      "brainstorming",
+      "dispatching-parallel-agents",
+      "executing-plans",
+      "finishing-a-development-branch",
+      "receiving-code-review",
+      "requesting-code-review",
+      "subagent-driven-development",
+      "systematic-debugging",
+      "test-driven-development",
+      "using-git-worktrees",
+      "using-superpowers",
+      "verification-before-completion",
+      "writing-plans",
+      "writing-skills"
+    ]
+  },
+  "license_evidence": [
+    "LICENSE"
+  ],
+  "limitations": [
+    "static snapshot evidence does not prove semantic quality",
+    "structural score is not an adoption score",
+    "runtime effectiveness and security require separate verification"
+  ]
+}

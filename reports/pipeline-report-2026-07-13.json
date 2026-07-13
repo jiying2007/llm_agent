@@ -1,0 +1,102 @@
+{
+  "schema": "llm-agent-update-pipeline/v1",
+  "generated_at": "2026-07-13T06:46:07Z",
+  "status": "pass",
+  "mode": "active",
+  "stages": [
+    {
+      "name": "diff-scan",
+      "status": "pass",
+      "exit_code": 0,
+      "elapsed_seconds": 0.114,
+      "stdout": "[OK] report generated: ./reports/weekly-change-report.md\n",
+      "stderr": ""
+    },
+    {
+      "name": "quality-grade",
+      "status": "pass",
+      "exit_code": 0,
+      "elapsed_seconds": 0.249,
+      "stdout": "=== 子仓库质量分级 (2026-07-13) ===\n\n\u001b[0;36m[A]\u001b[0m OpenSpec                       score=65  days=83   commits=567   group=workflow-core      enabled=yes\n\u001b[0m[B]\u001b[0m oh-my-codex                    score=50  days=9    commits=3083  group=codex-runtime      enabled=yes\n\u001b[0;36m[A]\u001b[0m planning-with-files            score=55  days=7    commits=294   group=workflow-quality   enabled=yes\n\u001b[0;36m[A]\u001b[0m superpowers                    score=65  days=81   commits=438   group=workflow-core      enabled=yes\n\u001b[0;36m[A]\u001b[0m vibeflow                       score=65  days=91   commits=113   group=workflow-core      enabled=yes\n\u001b[0;32m[S]\u001b[0m scale-engine                   score=85  days=17   commits=325   group=workflow-core      enabled=yes\n\n=== 分级完成 ===\n报告: ./subrepos/repo-grading-report.md\n用法: bash scripts/check-repo-quality.sh --report --auto-disable\n",
+      "stderr": ""
+    }
+  ],
+  "analyzed": [
+    {
+      "schema": "llm-agent-intake-result/v1",
+      "status": "pass",
+      "repository": "planning-with-files",
+      "source_commit": "d71b3be47b62fe49d60fb2ede800e1907ebea3d9",
+      "report_dir": "reports/repo-analysis/planning-with-files/d71b3be47b62",
+      "analysis_status": "static-complete",
+      "decision_status": "review-required",
+      "skill_count": 17,
+      "age_days": 7
+    },
+    {
+      "schema": "llm-agent-intake-result/v1",
+      "status": "pass",
+      "repository": "scale-engine",
+      "source_commit": "ace49169c4191db656989b738f31edb19a380a63",
+      "report_dir": "reports/repo-analysis/scale-engine/ace49169c419",
+      "analysis_status": "static-complete",
+      "decision_status": "review-required",
+      "skill_count": 19,
+      "age_days": 17
+    }
+  ],
+  "eligible_repositories": [
+    {
+      "repository": "planning-with-files",
+      "age_days": 7
+    },
+    {
+      "repository": "scale-engine",
+      "age_days": 17
+    }
+  ],
+  "patterns": {
+    "repeated_skill_names": {},
+    "repeated_pattern_signals": {
+      "explicit-guardrails": 2,
+      "progressive-disclosure-assets": 2,
+      "tests-or-evals": 2,
+      "tool-backed-skills": 2
+    },
+    "evidence_files": [
+      "reports/repo-analysis/planning-with-files/d71b3be47b62/analysis.json",
+      "reports/repo-analysis/scale-engine/ace49169c419/analysis.json"
+    ],
+    "decision_boundary": "pattern frequency is discovery evidence, not an adoption decision"
+  },
+  "grade_drift": [
+    {
+      "repository": "OpenSpec",
+      "registry_grade": "S",
+      "dynamic_grade": "A"
+    },
+    {
+      "repository": "oh-my-codex",
+      "registry_grade": "A",
+      "dynamic_grade": "B"
+    },
+    {
+      "repository": "superpowers",
+      "registry_grade": "S",
+      "dynamic_grade": "A"
+    },
+    {
+      "repository": "vibeflow",
+      "registry_grade": "S",
+      "dynamic_grade": "A"
+    },
+    {
+      "repository": "scale-engine",
+      "registry_grade": "A",
+      "dynamic_grade": "S"
+    }
+  ],
+  "failure": null,
+  "report_json": "reports/pipeline-report-2026-07-13.json",
+  "report_markdown": "reports/pipeline-report-2026-07-13.md"
+}

@@ -1,0 +1,1290 @@
+{
+  "schema": "llm-agent-intake-analysis/v1",
+  "status": "static-complete",
+  "repository": "oh-my-codex",
+  "mode": "all",
+  "generated_at": "2026-07-13T05:50:32Z",
+  "source": {
+    "commit": "f947e3a41c062c25fd107686862b68ee5d1b66a5",
+    "ref": "HEAD",
+    "worktree_branch": "main",
+    "snapshot_mode": "git-archive",
+    "skipped_archive_links": 0,
+    "worktree": {
+      "schema_version": 1,
+      "repo": "oh-my-codex",
+      "head": "f947e3a41c062c25fd107686862b68ee5d1b66a5",
+      "branch": "main",
+      "dirty_count": 0,
+      "classification": "clean",
+      "categories": [],
+      "mode_changes": 0,
+      "content_changes": 0,
+      "type_changes": 0,
+      "untracked_changes": 0,
+      "staged_changes": 0,
+      "status_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "inventory": {
+    "total_files": 1259,
+    "markdown_files": 402,
+    "skill_files": 75,
+    "agent_files": 1,
+    "script_files": 756,
+    "test_or_eval_files": 23
+  },
+  "prompt_evidence": {
+    "named_files": [
+      "crates/omx-sparkshell/src/prompt.rs",
+      "docs/prompt-guidance-contract.md",
+      "docs/prompt-migration-changelog.md",
+      "docs/qa/ci-speedups-after-prompt-worker-fix.md",
+      "plugins/oh-my-codex/skills/ai-slop-cleaner/SKILL.md",
+      "plugins/oh-my-codex/skills/analyze/SKILL.md",
+      "plugins/oh-my-codex/skills/ask/SKILL.md",
+      "plugins/oh-my-codex/skills/autopilot/SKILL.md",
+      "plugins/oh-my-codex/skills/autoresearch/SKILL.md",
+      "plugins/oh-my-codex/skills/autoresearch-goal/SKILL.md",
+      "plugins/oh-my-codex/skills/best-practice-research/SKILL.md",
+      "plugins/oh-my-codex/skills/cancel/SKILL.md",
+      "plugins/oh-my-codex/skills/code-review/SKILL.md",
+      "plugins/oh-my-codex/skills/configure-notifications/SKILL.md",
+      "plugins/oh-my-codex/skills/deep-interview/SKILL.md",
+      "plugins/oh-my-codex/skills/design/SKILL.md",
+      "plugins/oh-my-codex/skills/doctor/SKILL.md",
+      "plugins/oh-my-codex/skills/hud/SKILL.md",
+      "plugins/oh-my-codex/skills/omx-setup/SKILL.md",
+      "plugins/oh-my-codex/skills/performance-goal/SKILL.md",
+      "plugins/oh-my-codex/skills/pipeline/SKILL.md",
+      "plugins/oh-my-codex/skills/plan/SKILL.md",
+      "plugins/oh-my-codex/skills/prometheus-strict/SKILL.md",
+      "plugins/oh-my-codex/skills/ralph/SKILL.md",
+      "plugins/oh-my-codex/skills/ralplan/SKILL.md",
+      "plugins/oh-my-codex/skills/skill/SKILL.md",
+      "plugins/oh-my-codex/skills/team/SKILL.md",
+      "plugins/oh-my-codex/skills/ultragoal/SKILL.md",
+      "plugins/oh-my-codex/skills/ultraqa/SKILL.md",
+      "plugins/oh-my-codex/skills/ultrawork/SKILL.md",
+      "plugins/oh-my-codex/skills/visual-ralph/SKILL.md",
+      "plugins/oh-my-codex/skills/wiki/SKILL.md",
+      "plugins/oh-my-codex/skills/worker/SKILL.md",
+      "skills/ai-slop-cleaner/SKILL.md",
+      "skills/analyze/SKILL.md",
+      "skills/ask/SKILL.md",
+      "skills/ask-claude/SKILL.md",
+      "skills/ask-gemini/SKILL.md",
+      "skills/autopilot/SKILL.md",
+      "skills/autoresearch/SKILL.md",
+      "skills/autoresearch-goal/SKILL.md",
+      "skills/best-practice-research/SKILL.md",
+      "skills/build-fix/SKILL.md",
+      "skills/cancel/SKILL.md",
+      "skills/code-review/SKILL.md",
+      "skills/configure-notifications/SKILL.md",
+      "skills/deep-interview/SKILL.md",
+      "skills/deepsearch/SKILL.md",
+      "skills/design/SKILL.md",
+      "skills/doctor/SKILL.md",
+      "skills/ecomode/SKILL.md",
+      "skills/frontend-ui-ux/SKILL.md",
+      "skills/git-master/SKILL.md",
+      "skills/help/SKILL.md",
+      "skills/hud/SKILL.md",
+      "skills/note/SKILL.md",
+      "skills/omx-setup/SKILL.md",
+      "skills/performance-goal/SKILL.md",
+      "skills/pipeline/SKILL.md",
+      "skills/plan/SKILL.md",
+      "skills/prometheus-strict/SKILL.md",
+      "skills/ralph/SKILL.md",
+      "skills/ralph-init/SKILL.md",
+      "skills/ralplan/SKILL.md",
+      "skills/review/SKILL.md",
+      "skills/security-review/SKILL.md",
+      "skills/skill/SKILL.md",
+      "skills/swarm/SKILL.md",
+      "skills/tdd/SKILL.md",
+      "skills/team/SKILL.md",
+      "skills/trace/SKILL.md",
+      "skills/ultragoal/SKILL.md",
+      "skills/ultraqa/SKILL.md",
+      "skills/ultrawork/SKILL.md",
+      "skills/visual-ralph/SKILL.md",
+      "skills/visual-verdict/SKILL.md",
+      "skills/web-clone/SKILL.md",
+      "skills/wiki/SKILL.md",
+      "skills/worker/SKILL.md",
+      "src/cli/__tests__/prompt-skill-sanitization.test.ts",
+      "src/cli/__tests__/setup-prompts-overwrite.test.ts"
+    ],
+    "code_signal_locations": [
+      {
+        "path": "packages/vscode-extension/src/chatView.ts",
+        "line": 230
+      },
+      {
+        "path": "packages/vscode-extension/src/chatView.ts",
+        "line": 231
+      },
+      {
+        "path": "packages/vscode-extension/src/chatView.ts",
+        "line": 287
+      },
+      {
+        "path": "packages/vscode-extension/src/chatView.ts",
+        "line": 288
+      },
+      {
+        "path": "packages/vscode-extension/src/chatView.ts",
+        "line": 289
+      },
+      {
+        "path": "packages/vscode-extension/src/chatView.ts",
+        "line": 293
+      },
+      {
+        "path": "packages/vscode-extension/src/chatView.ts",
+        "line": 297
+      },
+      {
+        "path": "packages/vscode-extension/src/chatView.ts",
+        "line": 301
+      },
+      {
+        "path": "packages/vscode-extension/src/chatView.ts",
+        "line": 305
+      },
+      {
+        "path": "packages/vscode-extension/src/chatView.ts",
+        "line": 315
+      },
+      {
+        "path": "packages/vscode-extension/src/chatView.ts",
+        "line": 318
+      },
+      {
+        "path": "packages/vscode-extension/src/chatView.ts",
+        "line": 323
+      },
+      {
+        "path": "packages/vscode-extension/src/chatView.ts",
+        "line": 334
+      },
+      {
+        "path": "packages/vscode-extension/src/chatView.ts",
+        "line": 340
+      },
+      {
+        "path": "src/agents/native-config.ts",
+        "line": 159
+      },
+      {
+        "path": "src/agents/native-config.ts",
+        "line": 426
+      },
+      {
+        "path": "src/autoresearch/__tests__/runtime-parity-extra.test.ts",
+        "line": 36
+      },
+      {
+        "path": "src/autoresearch/__tests__/runtime-parity-extra.test.ts",
+        "line": 38
+      },
+      {
+        "path": "src/autoresearch/__tests__/runtime.test.ts",
+        "line": 36
+      },
+      {
+        "path": "src/autoresearch/__tests__/runtime.test.ts",
+        "line": 37
+      },
+      {
+        "path": "src/autoresearch/contracts.ts",
+        "line": 230
+      },
+      {
+        "path": "src/autoresearch/contracts.ts",
+        "line": 231
+      },
+      {
+        "path": "src/catalog/skill-mirror.ts",
+        "line": 65
+      },
+      {
+        "path": "src/cli/__tests__/agents-init.test.ts",
+        "line": 150
+      },
+      {
+        "path": "src/cli/__tests__/agents.test.ts",
+        "line": 85
+      },
+      {
+        "path": "src/cli/__tests__/autoresearch-guided.test.ts",
+        "line": 446
+      },
+      {
+        "path": "src/cli/__tests__/autoresearch-guided.test.ts",
+        "line": 450
+      },
+      {
+        "path": "src/cli/__tests__/autoresearch-guided.test.ts",
+        "line": 451
+      },
+      {
+        "path": "src/cli/__tests__/autoresearch-guided.test.ts",
+        "line": 455
+      },
+      {
+        "path": "src/cli/__tests__/autoresearch-guided.test.ts",
+        "line": 491
+      },
+      {
+        "path": "src/cli/__tests__/codex-plugin-layout.test.ts",
+        "line": 1067
+      },
+      {
+        "path": "src/cli/__tests__/index.test.ts",
+        "line": 5667
+      },
+      {
+        "path": "src/cli/__tests__/install-docs-contract.test.ts",
+        "line": 61
+      },
+      {
+        "path": "src/cli/__tests__/setup-agents-overwrite.test.ts",
+        "line": 134
+      },
+      {
+        "path": "src/cli/__tests__/setup-agents-overwrite.test.ts",
+        "line": 144
+      },
+      {
+        "path": "src/cli/__tests__/setup-agents-overwrite.test.ts",
+        "line": 202
+      },
+      {
+        "path": "src/cli/__tests__/setup-agents-overwrite.test.ts",
+        "line": 254
+      },
+      {
+        "path": "src/cli/__tests__/setup-agents-overwrite.test.ts",
+        "line": 309
+      },
+      {
+        "path": "src/cli/__tests__/setup-agents-overwrite.test.ts",
+        "line": 409
+      },
+      {
+        "path": "src/cli/__tests__/setup-agents-overwrite.test.ts",
+        "line": 443
+      },
+      {
+        "path": "src/cli/__tests__/setup-agents-overwrite.test.ts",
+        "line": 449
+      },
+      {
+        "path": "src/cli/__tests__/setup-agents-overwrite.test.ts",
+        "line": 502
+      },
+      {
+        "path": "src/cli/__tests__/setup-agents-overwrite.test.ts",
+        "line": 563
+      },
+      {
+        "path": "src/cli/__tests__/setup-agents-overwrite.test.ts",
+        "line": 676
+      },
+      {
+        "path": "src/cli/__tests__/setup-agents-overwrite.test.ts",
+        "line": 706
+      },
+      {
+        "path": "src/cli/__tests__/setup-agents-overwrite.test.ts",
+        "line": 711
+      },
+      {
+        "path": "src/cli/__tests__/setup-agents-overwrite.test.ts",
+        "line": 758
+      },
+      {
+        "path": "src/cli/__tests__/setup-skill-validation.test.ts",
+        "line": 11
+      },
+      {
+        "path": "src/cli/__tests__/setup-skill-validation.test.ts",
+        "line": 20
+      },
+      {
+        "path": "src/cli/__tests__/setup-skill-validation.test.ts",
+        "line": 29
+      }
+    ]
+  },
+  "skills": [
+    {
+      "name": "ai-slop-cleaner",
+      "path": "plugins/oh-my-codex/skills/ai-slop-cleaner/SKILL.md",
+      "lines": 148,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "3b34b200e4797cf0b31a2840ee745565a84bcd59fd0537b41825fa5951087a8c"
+    },
+    {
+      "name": "analyze",
+      "path": "plugins/oh-my-codex/skills/analyze/SKILL.md",
+      "lines": 146,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "3f64b3f5b888a75e9d6d043b3b87b6961cc780a997ee22f44d77dbb1716dcae5"
+    },
+    {
+      "name": "ask",
+      "path": "plugins/oh-my-codex/skills/ask/SKILL.md",
+      "lines": 58,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "5301bee75b021060a7021bb27782c904e4bebff1217e158a3107285e649c65ed"
+    },
+    {
+      "name": "autopilot",
+      "path": "plugins/oh-my-codex/skills/autopilot/SKILL.md",
+      "lines": 219,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "55f05e82682133fd7c42f524d69d54ff73b1f1e9d4e65333bead4fa146410197"
+    },
+    {
+      "name": "autoresearch",
+      "path": "plugins/oh-my-codex/skills/autoresearch/SKILL.md",
+      "lines": 72,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "5620155f31222fc0b2b76fce133aa7a77ca7d6e89607c65495f9efbb48d53eb2"
+    },
+    {
+      "name": "autoresearch-goal",
+      "path": "plugins/oh-my-codex/skills/autoresearch-goal/SKILL.md",
+      "lines": 39,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "6ca757600cd96cb2c1fe3fe9dac83dbec9a65aa98f12a05abe49e03bb9b3ae6d"
+    },
+    {
+      "name": "best-practice-research",
+      "path": "plugins/oh-my-codex/skills/best-practice-research/SKILL.md",
+      "lines": 88,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "3d5904298db7125184742e86d075eb331954586e45d2647c09249a3dac38e010"
+    },
+    {
+      "name": "cancel",
+      "path": "plugins/oh-my-codex/skills/cancel/SKILL.md",
+      "lines": 399,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "9dc56f2817d218c696c7de198dc21b7666e8c37d8a78373cc1b04869586ba96b"
+    },
+    {
+      "name": "code-review",
+      "path": "plugins/oh-my-codex/skills/code-review/SKILL.md",
+      "lines": 308,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "529e730550f911b935ebb2f15085e8e148fbd70c85dce93a9b3b6b4f4e8299d7"
+    },
+    {
+      "name": "configure-notifications",
+      "path": "plugins/oh-my-codex/skills/configure-notifications/SKILL.md",
+      "lines": 287,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "c6aa441dda9be9389e8069c8d6e6817f9f4183beaf7cabec22ca4dc793a02d1e"
+    },
+    {
+      "name": "deep-interview",
+      "path": "plugins/oh-my-codex/skills/deep-interview/SKILL.md",
+      "lines": 579,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "9979d0d4aef4e917af9559ce952f51530c525263d545c01f4780372078523bb0"
+    },
+    {
+      "name": "design",
+      "path": "plugins/oh-my-codex/skills/design/SKILL.md",
+      "lines": 180,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "793d9fb7ce9fbcb238ee27c96d31dc2c0edf4d77cdaf28d023138a4197b1f956"
+    },
+    {
+      "name": "doctor",
+      "path": "plugins/oh-my-codex/skills/doctor/SKILL.md",
+      "lines": 239,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "75acd48ed891b72a5c6be5ecd6606343961830f064e933a6a1650a9f2cef7bdd"
+    },
+    {
+      "name": "hud",
+      "path": "plugins/oh-my-codex/skills/hud/SKILL.md",
+      "lines": 98,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "d5c30b632149f1fc06e9945872e3eb02a5efeb93ba66bf512ecae558d1e3b4ea"
+    },
+    {
+      "name": "omx-setup",
+      "path": "plugins/oh-my-codex/skills/omx-setup/SKILL.md",
+      "lines": 135,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "1a17d6a955d95a6e792fa76ab380f4e760032c028f8a664cd3ccc7d27ce95a8b"
+    },
+    {
+      "name": "performance-goal",
+      "path": "plugins/oh-my-codex/skills/performance-goal/SKILL.md",
+      "lines": 68,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "5adac796c4d807e4d30506a67dd9f39fc8812a0675536140e4566771e4806dfd"
+    },
+    {
+      "name": "pipeline",
+      "path": "plugins/oh-my-codex/skills/pipeline/SKILL.md",
+      "lines": 97,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "f23018b67d7ea59bfca4e5321bfd0c5584f34d547598334fba625869fbdd7a37"
+    },
+    {
+      "name": "plan",
+      "path": "plugins/oh-my-codex/skills/plan/SKILL.md",
+      "lines": 277,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "24ddfa88be1efd06baf8fd93373be6d19ade207a6d2c37822d8dcc08835770ac"
+    },
+    {
+      "name": "prometheus-strict",
+      "path": "plugins/oh-my-codex/skills/prometheus-strict/SKILL.md",
+      "lines": 219,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "43b2639c4dc2ac3853fc141927270ab6c6cb1d791b52934f0eb1a437e57d6b81"
+    },
+    {
+      "name": "ralph",
+      "path": "plugins/oh-my-codex/skills/ralph/SKILL.md",
+      "lines": 294,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "fd631c8fd4011af487c5521b2f29c9c31d0f9f90480be294811b9c9ae8da2b6c"
+    },
+    {
+      "name": "ralplan",
+      "path": "plugins/oh-my-codex/skills/ralplan/SKILL.md",
+      "lines": 203,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "510b639a0e79c611f9f46c4739db2b2ba7873dfc5e41656c506acf3db5fd9467"
+    },
+    {
+      "name": "skill",
+      "path": "plugins/oh-my-codex/skills/skill/SKILL.md",
+      "lines": 836,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "b459ca43f1cefbf9a367a39dd0b76283408cdef8cf52ad1890d806359d5bb9bb"
+    },
+    {
+      "name": "team",
+      "path": "plugins/oh-my-codex/skills/team/SKILL.md",
+      "lines": 536,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "2163d2df462e21a9c5734dfbd764044195814937866cfe037b5a860a2f803397"
+    },
+    {
+      "name": "ultragoal",
+      "path": "plugins/oh-my-codex/skills/ultragoal/SKILL.md",
+      "lines": 180,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "c6d8d253dd0f3041c0c671838a346218a03c1479169777ede02734dffe8d3c73"
+    },
+    {
+      "name": "ultraqa",
+      "path": "plugins/oh-my-codex/skills/ultraqa/SKILL.md",
+      "lines": 263,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "7c5296ae3961274d26a2c3ed05636c63f745250f37c25017cf854e0151cff7b2"
+    },
+    {
+      "name": "ultrawork",
+      "path": "plugins/oh-my-codex/skills/ultrawork/SKILL.md",
+      "lines": 190,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": true,
+      "has_assets": false,
+      "sha256": "b363978ba2db76b700f51472f963388f686d19e8b8def976b5d7b9b64bfa1b13"
+    },
+    {
+      "name": "visual-ralph",
+      "path": "plugins/oh-my-codex/skills/visual-ralph/SKILL.md",
+      "lines": 161,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "ed55aee5968859d4655679f6e7a7dfee1a2a2e9313fdb2c71a2e90824f79f6d7"
+    },
+    {
+      "name": "wiki",
+      "path": "plugins/oh-my-codex/skills/wiki/SKILL.md",
+      "lines": 57,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "94c4715d92451a6ae4281bc1690564a659ad68cb58b0938004a49b1079a14241"
+    },
+    {
+      "name": "worker",
+      "path": "plugins/oh-my-codex/skills/worker/SKILL.md",
+      "lines": 120,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "d0d46a07b7675ac854d993be56565bc96d0f3c8c0776ec38a58955df3003fe51"
+    },
+    {
+      "name": "ai-slop-cleaner",
+      "path": "skills/ai-slop-cleaner/SKILL.md",
+      "lines": 148,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "3b34b200e4797cf0b31a2840ee745565a84bcd59fd0537b41825fa5951087a8c"
+    },
+    {
+      "name": "analyze",
+      "path": "skills/analyze/SKILL.md",
+      "lines": 146,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "3f64b3f5b888a75e9d6d043b3b87b6961cc780a997ee22f44d77dbb1716dcae5"
+    },
+    {
+      "name": "ask",
+      "path": "skills/ask/SKILL.md",
+      "lines": 58,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "5301bee75b021060a7021bb27782c904e4bebff1217e158a3107285e649c65ed"
+    },
+    {
+      "name": "ask-claude",
+      "path": "skills/ask-claude/SKILL.md",
+      "lines": 12,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "496e7a4dedcb55860b38e126d270e08f331d4f695e2dc22fb0249b6104517d0e"
+    },
+    {
+      "name": "ask-gemini",
+      "path": "skills/ask-gemini/SKILL.md",
+      "lines": 12,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "04f4dbf8f289f2be15cb986b5aed5b46a7974e5f4655eacbc38696ee3a7f1082"
+    },
+    {
+      "name": "autopilot",
+      "path": "skills/autopilot/SKILL.md",
+      "lines": 219,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "55f05e82682133fd7c42f524d69d54ff73b1f1e9d4e65333bead4fa146410197"
+    },
+    {
+      "name": "autoresearch",
+      "path": "skills/autoresearch/SKILL.md",
+      "lines": 72,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "5620155f31222fc0b2b76fce133aa7a77ca7d6e89607c65495f9efbb48d53eb2"
+    },
+    {
+      "name": "autoresearch-goal",
+      "path": "skills/autoresearch-goal/SKILL.md",
+      "lines": 39,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "6ca757600cd96cb2c1fe3fe9dac83dbec9a65aa98f12a05abe49e03bb9b3ae6d"
+    },
+    {
+      "name": "best-practice-research",
+      "path": "skills/best-practice-research/SKILL.md",
+      "lines": 88,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "3d5904298db7125184742e86d075eb331954586e45d2647c09249a3dac38e010"
+    },
+    {
+      "name": "build-fix",
+      "path": "skills/build-fix/SKILL.md",
+      "lines": 10,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "aafbdee5a0c1df78850f1db9ee078f818d63cc442371ca822ec0df2d52c34e40"
+    },
+    {
+      "name": "cancel",
+      "path": "skills/cancel/SKILL.md",
+      "lines": 399,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "9dc56f2817d218c696c7de198dc21b7666e8c37d8a78373cc1b04869586ba96b"
+    },
+    {
+      "name": "code-review",
+      "path": "skills/code-review/SKILL.md",
+      "lines": 308,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "529e730550f911b935ebb2f15085e8e148fbd70c85dce93a9b3b6b4f4e8299d7"
+    },
+    {
+      "name": "configure-notifications",
+      "path": "skills/configure-notifications/SKILL.md",
+      "lines": 287,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "c6aa441dda9be9389e8069c8d6e6817f9f4183beaf7cabec22ca4dc793a02d1e"
+    },
+    {
+      "name": "deep-interview",
+      "path": "skills/deep-interview/SKILL.md",
+      "lines": 579,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "9979d0d4aef4e917af9559ce952f51530c525263d545c01f4780372078523bb0"
+    },
+    {
+      "name": "deepsearch",
+      "path": "skills/deepsearch/SKILL.md",
+      "lines": 10,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "2dc38ba1be7baacb09edf09df30d394d7ec24428cc6055ecef23ebb0b7b92fd9"
+    },
+    {
+      "name": "design",
+      "path": "skills/design/SKILL.md",
+      "lines": 180,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "793d9fb7ce9fbcb238ee27c96d31dc2c0edf4d77cdaf28d023138a4197b1f956"
+    },
+    {
+      "name": "doctor",
+      "path": "skills/doctor/SKILL.md",
+      "lines": 239,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "75acd48ed891b72a5c6be5ecd6606343961830f064e933a6a1650a9f2cef7bdd"
+    },
+    {
+      "name": "ecomode",
+      "path": "skills/ecomode/SKILL.md",
+      "lines": 114,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": true,
+      "has_assets": false,
+      "sha256": "0fab8ea1c8cb5696578ef3b350b45f72177a8074563b5750cc29564bd28613c3"
+    },
+    {
+      "name": "frontend-ui-ux",
+      "path": "skills/frontend-ui-ux/SKILL.md",
+      "lines": 16,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "70e692291e8f1c58bdf8a42cc1809d9f8d987a900e9b816fb2f51d34869111d0"
+    },
+    {
+      "name": "git-master",
+      "path": "skills/git-master/SKILL.md",
+      "lines": 27,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "d917dbd61c1476133a6fa2e5c3ff3fbd4d56a458fea71aa0594c16b8d998f2b7"
+    },
+    {
+      "name": "help",
+      "path": "skills/help/SKILL.md",
+      "lines": 10,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "84fda285c398f5a496ce221e931f8395a8864fc592fbf4cb5ef7322f8c5a8785"
+    },
+    {
+      "name": "hud",
+      "path": "skills/hud/SKILL.md",
+      "lines": 98,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "d5c30b632149f1fc06e9945872e3eb02a5efeb93ba66bf512ecae558d1e3b4ea"
+    },
+    {
+      "name": "note",
+      "path": "skills/note/SKILL.md",
+      "lines": 10,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "4c842f56d349dd03ce1d69fff55c0389cd4158f3c802620b936967b41677c687"
+    },
+    {
+      "name": "omx-setup",
+      "path": "skills/omx-setup/SKILL.md",
+      "lines": 135,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "1a17d6a955d95a6e792fa76ab380f4e760032c028f8a664cd3ccc7d27ce95a8b"
+    },
+    {
+      "name": "performance-goal",
+      "path": "skills/performance-goal/SKILL.md",
+      "lines": 68,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "5adac796c4d807e4d30506a67dd9f39fc8812a0675536140e4566771e4806dfd"
+    },
+    {
+      "name": "pipeline",
+      "path": "skills/pipeline/SKILL.md",
+      "lines": 97,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "f23018b67d7ea59bfca4e5321bfd0c5584f34d547598334fba625869fbdd7a37"
+    },
+    {
+      "name": "plan",
+      "path": "skills/plan/SKILL.md",
+      "lines": 277,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "24ddfa88be1efd06baf8fd93373be6d19ade207a6d2c37822d8dcc08835770ac"
+    },
+    {
+      "name": "prometheus-strict",
+      "path": "skills/prometheus-strict/SKILL.md",
+      "lines": 219,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "43b2639c4dc2ac3853fc141927270ab6c6cb1d791b52934f0eb1a437e57d6b81"
+    },
+    {
+      "name": "ralph",
+      "path": "skills/ralph/SKILL.md",
+      "lines": 294,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "fd631c8fd4011af487c5521b2f29c9c31d0f9f90480be294811b9c9ae8da2b6c"
+    },
+    {
+      "name": "ralph-init",
+      "path": "skills/ralph-init/SKILL.md",
+      "lines": 10,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "b81b0739c103e044c97ad808739a83c252d92f486084202374fec69eeb8a194e"
+    },
+    {
+      "name": "ralplan",
+      "path": "skills/ralplan/SKILL.md",
+      "lines": 203,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "510b639a0e79c611f9f46c4739db2b2ba7873dfc5e41656c506acf3db5fd9467"
+    },
+    {
+      "name": "review",
+      "path": "skills/review/SKILL.md",
+      "lines": 10,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "6099f7c30780c96c0bea1a339319e6324eeddabe84003a6d928ccc877bc4d0ec"
+    },
+    {
+      "name": "security-review",
+      "path": "skills/security-review/SKILL.md",
+      "lines": 10,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "007ac9f94b8d246f64a5c0360408f5682ae43d5468c4415ca9c2f6623e82321c"
+    },
+    {
+      "name": "skill",
+      "path": "skills/skill/SKILL.md",
+      "lines": 836,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "b459ca43f1cefbf9a367a39dd0b76283408cdef8cf52ad1890d806359d5bb9bb"
+    },
+    {
+      "name": "swarm",
+      "path": "skills/swarm/SKILL.md",
+      "lines": 12,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "9806ce3dff32a149edc61bc62ee20ecadc1cce6fdc9f997f3abc5ec4cc1633d4"
+    },
+    {
+      "name": "tdd",
+      "path": "skills/tdd/SKILL.md",
+      "lines": 104,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "b94bc25930af9f996be7f892b161b53ef9f8cf951784d31806548f5ad45e142c"
+    },
+    {
+      "name": "team",
+      "path": "skills/team/SKILL.md",
+      "lines": 536,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "2163d2df462e21a9c5734dfbd764044195814937866cfe037b5a860a2f803397"
+    },
+    {
+      "name": "trace",
+      "path": "skills/trace/SKILL.md",
+      "lines": 10,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "c39af0c40fddb921bff9f6e34bc8c85f736265c2935e664709de7b33e2ea94bb"
+    },
+    {
+      "name": "ultragoal",
+      "path": "skills/ultragoal/SKILL.md",
+      "lines": 180,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "c6d8d253dd0f3041c0c671838a346218a03c1479169777ede02734dffe8d3c73"
+    },
+    {
+      "name": "ultraqa",
+      "path": "skills/ultraqa/SKILL.md",
+      "lines": 263,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "7c5296ae3961274d26a2c3ed05636c63f745250f37c25017cf854e0151cff7b2"
+    },
+    {
+      "name": "ultrawork",
+      "path": "skills/ultrawork/SKILL.md",
+      "lines": 190,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": true,
+      "has_assets": false,
+      "sha256": "b363978ba2db76b700f51472f963388f686d19e8b8def976b5d7b9b64bfa1b13"
+    },
+    {
+      "name": "visual-ralph",
+      "path": "skills/visual-ralph/SKILL.md",
+      "lines": 161,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "ed55aee5968859d4655679f6e7a7dfee1a2a2e9313fdb2c71a2e90824f79f6d7"
+    },
+    {
+      "name": "visual-verdict",
+      "path": "skills/visual-verdict/SKILL.md",
+      "lines": 10,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "abeaa514ff016d8e84db48aa58e278bcf1f62848147d556114e60e4039399c3f"
+    },
+    {
+      "name": "web-clone",
+      "path": "skills/web-clone/SKILL.md",
+      "lines": 357,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "b4baf27613f89cea1096845f66398e206f88b4eb82252b2c4b4cd8bcd5551f28"
+    },
+    {
+      "name": "wiki",
+      "path": "skills/wiki/SKILL.md",
+      "lines": 57,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "94c4715d92451a6ae4281bc1690564a659ad68cb58b0938004a49b1079a14241"
+    },
+    {
+      "name": "worker",
+      "path": "skills/worker/SKILL.md",
+      "lines": 120,
+      "has_frontmatter": true,
+      "has_description": true,
+      "has_scripts": false,
+      "has_references": false,
+      "has_assets": false,
+      "sha256": "d0d46a07b7675ac854d993be56565bc96d0f3c8c0776ec38a58955df3003fe51"
+    }
+  ],
+  "pattern_signals": [
+    {
+      "signal": "progressive-disclosure-assets",
+      "present": true,
+      "evidence": [
+        "plugins/oh-my-codex/skills/ultrawork/SKILL.md",
+        "skills/ecomode/SKILL.md",
+        "skills/ultrawork/SKILL.md"
+      ]
+    },
+    {
+      "signal": "tool-backed-skills",
+      "present": false,
+      "evidence": []
+    },
+    {
+      "signal": "explicit-guardrails",
+      "present": true,
+      "evidence": [
+        ".gjc/plans/hud-state-session-reconciliation.md",
+        ".gjc/ultragoal/brief.md",
+        ".gjc/ultragoal/goals.json",
+        ".gjc/ultragoal/quality-gate-g001.json",
+        "CHANGELOG.md",
+        "CONTRIBUTING.md",
+        "DEMO.md",
+        "README.md",
+        "docs/STATE_MODEL.md",
+        "docs/architecture/cli-first-mcp-taxonomy.md",
+        "docs/clawhip-event-contract.md",
+        "docs/codex-native-hooks.md",
+        "docs/contracts/explicit-terminal-stop-model.md",
+        "docs/contracts/multi-state-transition-contract.md",
+        "docs/contracts/mux-operation-space.md",
+        "docs/contracts/ralph-cancel-contract.md",
+        "docs/contracts/ralph-state-contract.md",
+        "docs/contracts/ralplan-consensus-gate.md",
+        "docs/contracts/repo-aware-team-dag-decomposition.md",
+        "docs/contracts/runtime-command-event-snapshot-schema.md"
+      ]
+    },
+    {
+      "signal": "tests-or-evals",
+      "present": true,
+      "evidence": [
+        "crates/omx-api/tests/cli.rs",
+        "crates/omx-runtime/tests/execution.rs",
+        "crates/omx-sparkshell/tests/execution.rs",
+        "crates/omx-sparkshell/tests/registry.rs",
+        "src/compat/fixtures/doctor/install-onboarding.exitcode.txt",
+        "src/compat/fixtures/doctor/install-onboarding.stdout.txt",
+        "src/compat/fixtures/doctor/team-resume-blocker.exitcode.txt",
+        "src/compat/fixtures/doctor/team-resume-blocker.stdout.txt",
+        "src/compat/fixtures/help.stdout.txt",
+        "src/scripts/eval/eval-adaptive-sort-optimization.py",
+        "src/scripts/eval/eval-candidate-handoff.ts",
+        "src/scripts/eval/eval-cli-discoverability.ts",
+        "src/scripts/eval/eval-fresh-run-tagging.ts",
+        "src/scripts/eval/eval-help-consistency.ts",
+        "src/scripts/eval/eval-in-action-cat-shellout-demo.ts",
+        "src/scripts/eval/eval-ml-kaggle-model-optimization.py",
+        "src/scripts/eval/eval-noisy-bayesopt-highdim.py",
+        "src/scripts/eval/eval-noisy-latent-subspace-discovery.py",
+        "src/scripts/eval/eval-parity-smoke.ts",
+        "src/scripts/eval/eval-parity-sweep.ts"
+      ]
+    }
+  ],
+  "structural_score": {
+    "scope": "structural-readiness-only",
+    "not_an_adoption_score": true,
+    "dimensions": {
+      "painpoint_precision": 20,
+      "workflow_clarity": 7,
+      "context_efficiency": 20,
+      "resource_design": 16,
+      "extensibility": 20
+    },
+    "total": 83,
+    "maximum": 100
+  },
+  "comparison": {
+    "adk_catalog_size": 65,
+    "exact_name_overlap": [],
+    "novel_name_candidates": [
+      "ai-slop-cleaner",
+      "analyze",
+      "ask",
+      "ask-claude",
+      "ask-gemini",
+      "autopilot",
+      "autoresearch",
+      "autoresearch-goal",
+      "best-practice-research",
+      "build-fix",
+      "cancel",
+      "code-review",
+      "configure-notifications",
+      "deep-interview",
+      "deepsearch",
+      "design",
+      "doctor",
+      "ecomode",
+      "frontend-ui-ux",
+      "git-master",
+      "help",
+      "hud",
+      "note",
+      "omx-setup",
+      "performance-goal",
+      "pipeline",
+      "plan",
+      "prometheus-strict",
+      "ralph",
+      "ralph-init",
+      "ralplan",
+      "review",
+      "security-review",
+      "skill",
+      "swarm",
+      "tdd",
+      "team",
+      "trace",
+      "ultragoal",
+      "ultraqa",
+      "ultrawork",
+      "visual-ralph",
+      "visual-verdict",
+      "web-clone",
+      "wiki",
+      "worker"
+    ]
+  },
+  "license_evidence": [],
+  "limitations": [
+    "static snapshot evidence does not prove semantic quality",
+    "structural score is not an adoption score",
+    "runtime effectiveness and security require separate verification"
+  ]
+}

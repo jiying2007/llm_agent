@@ -1,0 +1,28 @@
+{
+  "schema": "llm-agent-intake-task-pack/v1",
+  "status": "ready-for-review",
+  "repository": "oh-my-codex",
+  "source_commit": "f947e3a41c062c25fd107686862b68ee5d1b66a5",
+  "tasks": [
+    {
+      "id": "semantic-review",
+      "action": "Review candidate behavior against source evidence and ADK equivalents",
+      "acceptance": "Each candidate has adopt, observe, or reject rationale with evidence paths"
+    },
+    {
+      "id": "risk-review",
+      "action": "Review license, provenance, secrets, executable scripts, hooks, and network behavior",
+      "acceptance": "No unresolved blocker remains before implementation"
+    },
+    {
+      "id": "implementation-change",
+      "action": "Create an ADK change artifact for approved candidates only",
+      "acceptance": "Proposal, design, negative test, implementation test, rollback, and evidence index exist"
+    },
+    {
+      "id": "effectiveness-eval",
+      "action": "Compare baseline and ADK-assisted behavior on representative tasks",
+      "acceptance": "Effectiveness evidence is recorded; static structure alone is not used as proof"
+    }
+  ]
+}

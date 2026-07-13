@@ -13,7 +13,7 @@ fi
 
 rtk bash "${ADK_ROOT}/scripts/devkit.sh" goal check --summary-json >"${TMP_DIR}/goal-contracts.json"
 rtk bash "${ADK_ROOT}/scripts/devkit.sh" capability health --summary-json >"${TMP_DIR}/capability-health.json"
-rtk bash "${ADK_ROOT}/scripts/devkit.sh" perf budget --summary-json >"${TMP_DIR}/performance-budgets.json"
+rtk bash "${ADK_ROOT}/scripts/devkit.sh" benchmark run --iterations 3 --summary-json >"${TMP_DIR}/performance-budgets.json"
 
 if ! rtk rg -q '"status":"pass"' "${TMP_DIR}/goal-contracts.json"; then
   echo "[FAIL] ADK goal contracts did not pass" >&2
@@ -23,9 +23,13 @@ if ! rtk rg -q '"status":"pass"' "${TMP_DIR}/capability-health.json"; then
   echo "[FAIL] ADK capability health did not pass" >&2
   exit 1
 fi
-if ! rtk rg -q '"status":"pass"' "${TMP_DIR}/performance-budgets.json"; then
-  echo "[FAIL] ADK performance budgets did not pass" >&2
-  exit 1
-fi
+python3 - "${TMP_DIR}/performance-budgets.json" <<'PY'
+import json
+import sys
 
-echo "[PASS] adk goal, capability, and performance budget gates passed"
+report = json.load(open(sys.argv[1], encoding="utf-8"))
+assert report["status"] == "pass", report
+assert report["budget_gate"] and all(report["budget_gate"].values()), report
+PY
+
+echo "[PASS] adk goal, capability, and benchmark budget gates passed"

@@ -1,0 +1,45 @@
+name: llm-agent-ci
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  product-gate:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout root source
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          submodules: false
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.8'
+
+      - name: Install gate dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ripgrep
+          python -m pip install 'PyYAML>=5.3,<7'
+
+      - name: Validate entry points
+        run: |
+          bash -n scripts/*.sh
+          python -m py_compile tools/codex_assets/*.py
+
+      - name: Run product contracts
+        run: |
+          bash tests/test_product_maturity_contracts.sh
+          bash tests/test_reference_source_integrity.sh
+
+      - name: Run self-contained documentation gate
+        run: bash scripts/check-doc-sync.sh .

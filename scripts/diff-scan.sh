@@ -69,6 +69,9 @@ while IFS=',' read -r repo group priority sync_mode branch enabled notes status 
     continue
   fi
 
+  if ((found > 0)); then
+    echo >> "${OUT}"
+  fi
   ((found+=1))
   {
     echo "## ${repo}"
@@ -91,7 +94,6 @@ while IFS=',' read -r repo group priority sync_mode branch enabled notes status 
     else
       echo "- 建议动作：进入 adoption-matrix 评估（adopt / observe / reject）"
     fi
-    echo
   } >> "${OUT}"
 done < "${REGISTRY}"
 
@@ -100,7 +102,6 @@ if ((found == 0)); then
     echo "## 本周期无命中变更"
     echo
     echo "- 结论：未扫描到目标范围内的增量。"
-    echo
   } >> "${OUT}"
 fi
 

@@ -1,0 +1,35 @@
+{
+  "schema": "llm-agent-adoption-decision/v1",
+  "status": "review-required",
+  "repository": "planning-with-files",
+  "source_commit": "d71b3be47b62fe49d60fb2ede800e1907ebea3d9",
+  "recommendation": "semantic-review",
+  "auto_apply": false,
+  "candidate_assets": [
+    "pi-planning-with-files",
+    "planning-with-files",
+    "planning-with-files-ar",
+    "planning-with-files-de",
+    "planning-with-files-es",
+    "planning-with-files-zh",
+    "planning-with-files-zht"
+  ],
+  "required_reviews": [
+    "semantic-value",
+    "existing-asset-duplication",
+    "architecture-fit",
+    "license-and-provenance",
+    "security-and-supply-chain",
+    "runtime-effectiveness"
+  ],
+  "prohibited_actions": [
+    "direct-copy",
+    "automatic-adoption-matrix-update",
+    "automatic-adk-write"
+  ],
+  "evidence": [
+    "analysis.json",
+    "prompt-analysis.md",
+    "skill-deep-analysis.md"
+  ]
+}
