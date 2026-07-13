@@ -1,72 +1,52 @@
-# Last Verified Status
+# Last Verified Product Baseline
 
 - updated_at: 2026-07-13
-- status_semantics: last-verified-committed-baseline
+- status_semantics: last-verified-product-baseline
 - last_verified_at: 2026-07-13
-- source_design_commit: a5a22f9
-- root_v4_source_commit: f995048
-- root_v4_source_status: committed and post-commit gates passed
-- agent_dev_kit_base_commit: 14a5739
-- agent_dev_kit_v4_commit: b29a2ce
-- adk_version: 2.9.0
-- live_refresh_status: live-applied no file content changes; source-to-live apply summary copy=0 keep=481 overwrite=0 delete=0 mkdir=270 skip=0
-- knowledge_promotion_status: dry-run promotion planned; apply_supported=false and active promotion not applied
-- working_tree_state: status consistency gate implemented; V4/L4/L5 evidence recorded; reference dirty state remains baseline-governed
+- root_product_commit: e744400836c8b6ae8842263bcbe6157507ecfb18
+- agent_dev_kit_commit: eec7cd14447bb75f93f810e758d2c34261a884a9
+- adk_previous_commit: b29a2ce840a6f6c636fada3d162b52cc5b5a9c48
+- adk_version: 3.0.0
+- product_maturity: M3
+- terminal_mature: false
+- field_status: field_not_verified
+- root_gate_status: pass
+- runtime_eval_status: codex-pass-claude-not-run
+- live_refresh_status: not-required-no-mapped-assets
+- knowledge_candidate_status: dry-run-planned-not-applied
+- working_tree_scope: product commits exclude registered dirty reference worktrees
 
 ## Summary
 
-本文件记录最近一次已验证的提交基线，不等同于实时工作树健康结论。实时状态必须读取 `rtk scripts/health-check.sh . --summary-json`、`rtk scripts/check-subrepo-state.sh . --summary-json` 或 `rtk scripts/governance-review.sh . --format json`；任一实时门禁为 `needs-fix` 时，不得引用本文件中的历史 PASS 作为当前放行证据。
+本文件记录最近一次已验证的产品提交基线，不等同于把当前工作树、开放世界效果或现场状态声明为全面成熟。机器状态以 `manifests/product_maturity_scorecard.json` 为准，当前审计以 `manifests/report_registry.json` 指向的 `reports/architecture/llm-agent-adk-product-maturity-audit-2026-07-13.md` 为准。
 
-最近已提交基线的 root 与 `agent-dev-kit` 主链路健康。ADK 参考源分析边界文档已提交为 `b29a2ce docs(governance): 强化参考源分析边界`；该提交不改变 manifest、导出资产或 runtime mapping。既有 V4 闭环控制架构继续要求 Runtime Delivery Contract、Knowledge Promotion Contract 和 State Reconciliation Contract 同时进入报告、ADK 模板和 root 门禁。source-to-live 最近一次已通过 `~/codex -> ~/.codex` 链路完成真实 apply，且没有 copy/overwrite/delete 文件内容变更；Knowledge Hub 侧完成 promotion dry-run、knowledge-check/status/final-gate，active promotion 因 bootstrap 工具要求 human review 而未执行。
+`llm_agent` 已收敛为 evidence-first reference intake 与决策工作区；`agent-dev-kit` 3.0 已收敛为平台中立的 Agent 资产 compiler/control plane，不实现 LLM agent runtime。ADK 先提交并推送，根仓产品实现提交随后固定 gitlink 与 `adk.lock`。
 
-`OpenSpec`、`superpowers`、`vibeflow` 保留已登记的 observe-mode dirty baseline。2026-07-13 只读 triage 已分别验证 `mode+content`、`mode+content+type` 和 `mode` 分类，统一执行 `commit-snapshot-only` 分析策略，baseline 复核窗口刷新到 2026-07-20。
+总体成熟度是 **M3 / release-candidate**。关键软件与发布路径达到本地可验证状态，但 Claude runtime 未认证、固定任务集不代表开放世界、并发 writer 未做压力验证，且真实设备/团队/生产现场证据缺失，因此 `terminal_mature=false`、`field_not_verified`。
 
-历史报告中保留的 `NEEDS-FIX` 多数是当时 `agent-dev-kit` 尚未提交导致的严格子仓状态失败，不代表当前已提交基线状态。
+## Verified Evidence
 
-## Latest Gates
-
-| Gate | Result | Evidence |
+| Area | Result | Evidence |
 |---|---|---|
-| root doc sync | PASS | `rtk scripts/check-doc-sync.sh .` |
-| AGENTS coverage | PASS | `rtk scripts/check-agents-coverage.sh .` -> active=7, missing_path=0 |
-| architecture reports | PASS | `rtk scripts/check-architecture-reports.sh . --summary-json` -> reports=1, failures=0; `rtk tests/test_architecture_reports.sh` |
-| V2 architecture review | PASS | `reports/architecture/llm-agent-adk-target-architecture-2026-07-11.md` contains `V2 Review Matrix`, `External Evidence Refresh`, `Target Architecture Delta`, and `Next Implementation Backlog` |
-| V3 architecture redesign | PASS | `reports/architecture/llm-agent-adk-target-architecture-2026-07-11.md` contains `Architecture Operating Model`, `SSOT Matrix`, and `Landing Protocol`; checker enforces these sections |
-| V4 closed-loop architecture | PASS | Runtime delivery, knowledge promotion and state reconciliation are in report, ADK template and root checker; `rtk scripts/check-current-status-consistency.sh . --summary-json` is the follow-up consistency gate |
-| current-status consistency | PASS | `rtk scripts/check-current-status-consistency.sh . --summary-json`; `rtk tests/test_current_status_consistency.sh` |
-| root quick gate | PASS | `rtk scripts/check-all.sh --quick` -> 54/54,约 31 秒；重复 release gate 独立执行 |
-| adk harden readiness | PASS | `rtk scripts/check-adk-harden-readiness.sh .` -> ADK tests 47/47 |
-| ADK target architecture template | PASS | `rtk bash agent-dev-kit/tests/test_templates.sh` -> 19/19; `rtk bash agent-dev-kit/scripts/quality-gate-check.sh check-artifacts --verbose`; `rtk bash agent-dev-kit/scripts/devkit.sh validate --strict` |
-| ADK full regression | PASS | `rtk bash agent-dev-kit/tests/run_all.sh` -> 47/47 |
-| root token budget | PASS | `rtk scripts/check-token-budget.sh . --summary-json` -> max_root_lines=518, failures=0 |
-| ADK lock | PASS | `rtk scripts/check-adk-lock.sh .` -> gitlink/adk.lock/manifest match `f8c3370` |
-| evidence bundle | PASS | `rtk scripts/check-evidence-bundle.sh .`; `rtk scripts/evidence-bundle.sh . --format json --fail-on-needs-fix` -> status=pass, agent_dev_kit_head=f8c3370 |
-| ADK goal contract | PASS | `rtk bash agent-dev-kit/scripts/devkit.sh goal check --summary-json` -> goals=4 |
-| ADK capability health | PASS | `rtk bash agent-dev-kit/scripts/devkit.sh capability health --summary-json` -> capabilities=7 |
-| ADK workflow closure | PASS | `rtk bash agent-dev-kit/scripts/devkit.sh workflow-closure --profile core --summary-json` |
-| ADK perf budget | PASS | `rtk bash agent-dev-kit/scripts/devkit.sh perf budget --summary-json` |
-| runtime targets | PASS | `rtk scripts/check-runtime-targets.sh . --summary-json` -> enabled_targets=1, candidate_targets=3 |
-| runtime health minimal | PASS | `rtk scripts/check-runtime-health.sh . --profile minimal --summary-json` |
-| subrepo state baseline | PASS | `rtk scripts/check-subrepo-state.sh . --summary-json` -> known_dirty=3, unexpected_dirty=0, stale_baseline=0 |
-| reference dirty triage | PASS | `rtk scripts/check-reference-dirty-triage.sh . --summary-json` -> `reports/reference-dirty-triage-2026-07-13.json`, schema v2 classification/policy evidence |
-| reference source integrity | PASS | commit snapshot analysis、dirty classification、dirty pull 拒绝和 path traversal 负向 fixture 通过；见 `reports/reference-source-integrity-remediation-2026-07-13.md` |
-| V4 root quick gate | PASS | `rtk scripts/check-all.sh --quick` -> 55/55 |
-| source-to-live mapping | PASS | `rtk rg ... /home/leiwenjun/codex` -> no target architecture template live asset mapping found; this run is no-op live refresh evidence |
-| source-to-live build | PASS | `rtk bash ~/codex/scripts/build.sh --profile team-collab` -> managed=749 |
-| source-to-live doctor | PASS | `rtk bash ~/codex/scripts/doctor.sh --scope all` -> errors=0, warnings=0 |
-| source-to-live plan | PASS | `rtk bash ~/codex/scripts/plan.sh --target ~/.codex --prune-stale --output ~/codex/build/apply-plan.json` -> copy=0, overwrite=0, delete=0 |
-| source-to-live dry-run/apply | PASS | dry-run and apply both reported copy=0, keep=481, overwrite=0, delete=0, mkdir=270, skip=0 |
-| source-to-live post-check | PASS | `rtk bash ~/codex/scripts/check-routing-precedence.sh`; `rtk bash ~/codex/scripts/check.sh`; `rtk scripts/check-runtime-health.sh . --profile minimal` |
-| Knowledge Hub promotion dry-run | PASS_WITH_BOUNDARY | `knowledge-promote --dry-run` -> status=planned, required_review=true, apply_supported=false |
-| Knowledge Hub final gate | PASS | `knowledge-check --dry-run --json`, `knowledge-status --json`, `knowledge-final-gate --json` all returned pass/ok |
+| ADK strict/product/full | PASS | strict validate；product contract；full regression `48/48`；quick `14/14` |
+| ADK release | PASS | reproducible archive SHA256 `4cd2e4b3bdb2676c3f4256751ced38c66ed713d10399470295e41ca7e834ba4a`；wheel SHA256 `f0b9b837a7eb3a42e4629daa166787a46190dac2e07f9b640855c654b31e9fb0` |
+| Codex runtime A/B | PASS | baseline `27/30`、ADK `30/30`；success/route `0.90 -> 1.00`，safety `1.00 -> 1.00` |
+| Claude runtime | NOT_RUN | CLI installed but unauthenticated；baseline/adk plans both retain explicit reason |
+| Root product contracts | PASS | product maturity、reference integrity、architecture、doc sync、gitlink/lock and dirty baseline gates |
+| Root integrated gate | PASS | `scripts/check-all.sh` -> `61/61`, failures `0`; applicable closeout gates validate this status contract |
+| Active intake pipeline | PASS | only recent registry+dynamic S/A candidates analyzed；all decisions remain `review-required` |
 
-## Open Boundaries
+## Delivery Boundaries
 
-- `embedded-production-field-readiness` 目前是 `simulated-pass`，不等于真实设备 production-ready。
-- 真实生产放行前仍需实机烧录/readback、boot log、HIL/产测、OTA rollback 和现场维护包证据。
-- 3 个参考子仓 dirty 为 `subrepos/dirty-baseline.tsv` 登记的 observe baseline，本轮只刷新治理 baseline，不清理、不 reset、不同步参考子仓。
-- `agent-dev-kit` 子仓 V4 模板升级已提交为 `3e87b90`，状态一致性门禁增量已提交为 `d59047e`，本轮终态设计模板与观察仓吸收门禁增量已提交为 `f8c3370`，父仓 gitlink 与 `adk.lock` 已同步。
-- source-to-live 本轮已完成真实 apply，但由于本次 ADK 目标架构模板没有 `~/codex` live asset 映射，运行态结果是 no-op file-content refresh：没有 copy、overwrite 或 delete。
-- Knowledge Hub active promotion 当前不作为完成声明；本轮落为 archive/decision candidate 与 promotion dry-run 证据，后续 active apply 仍需 owner review 和工具链支持。
-- `reports/architecture/llm-agent-adk-target-architecture-2026-07-11.md` 是本轮目标架构和任务表的当前审查产物，后续落地应按其中 P0/P1/P2 顺序推进。
-- 官方 OpenAI/Codex 外部来源仅作为本轮 report-level evidence；没有提升新的 ADK manifest 规则，也没有启用 automation 或 live runtime 写入。
+- Direct release targets are Claude Code、Hermes Agent and OpenCode. Codex is an external handoff target.
+- `b29a2ce..eec7cd1` has no content delta under `agents/skills/optional-skills/workflows/templates`; a `~/codex -> ~/.codex` apply is therefore not required and was intentionally not executed.
+- Knowledge Hub preflight selected `projects/llm-agent/validation`. Candidate `llm-agent-adk-v3-product-maturity-20260713` was planned with `active_promotion=false`; Hub had unrelated dirty changes, so apply and memory promotion were not executed.
+- Root GitHub CI is self-contained because the ADK submodule is private. ADK full CI runs in its own repository; local root integration reconciles gitlink、lock、manifest and worktree state.
+- `OpenSpec`、`superpowers`、`vibeflow` remain registered observe-mode dirty baselines. They were neither reset nor included in product commits.
+
+## Remaining Evidence
+
+- Authenticate Claude and repeat the same full baseline/adk suite before making a cross-runtime effectiveness claim.
+- Add repeated/open-world evaluation, confidence intervals and tail-latency investigation before generalizing the fixed-suite result.
+- Collect real device/team pilot、upgrade/rollback、incident trend、maintenance cost and field telemetry before changing field maturity.
+- Validate concurrent writer behavior or add a target lock before supporting simultaneous export/install operations against one destination.

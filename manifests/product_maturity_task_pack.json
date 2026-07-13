@@ -59,10 +59,10 @@
     {
       "id": "PM-07",
       "priority": "P0",
-      "status": "pending",
+      "status": "implemented",
       "scope": "full regression and independent review",
       "acceptance": "ADK full suite, root quick/full applicable gates and review loop have no unresolved blocker",
-      "verify": ["rtk bash agent-dev-kit/tests/run_all.sh", "rtk scripts/check-all.sh --quick"]
+      "verify": ["rtk bash agent-dev-kit/tests/run_all.sh", "rtk scripts/check-all.sh"]
     },
     {
       "id": "PM-08",

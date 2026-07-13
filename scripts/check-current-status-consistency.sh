@@ -19,8 +19,8 @@ while [[ $# -gt 0 ]]; do
       cat <<USAGE
 usage: scripts/check-current-status-consistency.sh [root] [--summary-json]
 
-Checks reports/current-status.md against git/adk/source-to-live/Hub boundary
-facts so completed architecture work cannot regress to stale in-progress text.
+Checks the last verified product baseline against root/adk commits, maturity
+SSOT, runtime evidence, source-to-live applicability and knowledge boundaries.
 USAGE
       exit 0
       ;;
@@ -32,108 +32,115 @@ USAGE
 done
 
 python3 - "$ROOT" "$SUMMARY_JSON" <<'PY'
-import json
 import datetime as dt
+import json
 import os
 import re
 import subprocess
 import sys
 
+
 root, summary_json = sys.argv[1:3]
 summary_json = summary_json == "1"
-current_status = os.path.join(root, "reports", "current-status.md")
-arch_report = os.path.join(root, "reports", "architecture", "llm-agent-adk-target-architecture-2026-07-11.md")
-lock_path = os.path.join(root, "adk.lock")
 failures = []
 
 
-def rel(path):
-    return os.path.relpath(path, root)
+def path(*parts):
+    return os.path.join(root, *parts)
 
 
-def read(path):
-    with open(path, "r", encoding="utf-8") as handle:
-        return handle.read()
+def read_text(file_path):
+    try:
+        with open(file_path, "r", encoding="utf-8") as stream:
+            return stream.read()
+    except OSError as exc:
+        failures.append("cannot read {}: {}".format(os.path.relpath(file_path, root), exc))
+        return ""
 
 
-def git(*args, cwd=root, check=True):
-    proc = subprocess.run(["git", "-C", cwd, *args], text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    if check and proc.returncode != 0:
-        failures.append(f"git {' '.join(args)} failed: {proc.stderr.strip()}")
-    return proc
-
-
-def lock_value(content, key):
-    for line in content.splitlines():
-        if line.startswith(key + "="):
-            return line.split("=", 1)[1].strip()
-    return ""
+def read_json(file_path):
+    try:
+        with open(file_path, "r", encoding="utf-8") as stream:
+            value = json.load(stream)
+    except (OSError, json.JSONDecodeError) as exc:
+        failures.append("invalid JSON {}: {}".format(os.path.relpath(file_path, root), exc))
+        return {}
+    if not isinstance(value, dict):
+        failures.append("JSON root must be an object: {}".format(os.path.relpath(file_path, root)))
+        return {}
+    return value
 
 
 def field(content, name):
-    match = re.search(rf"^- {re.escape(name)}:\s*(.+)$", content, re.MULTILINE)
+    match = re.search(r"^- {}:\s*(.+)$".format(re.escape(name)), content, re.MULTILINE)
     return match.group(1).strip() if match else ""
 
 
-for path in (current_status, arch_report, lock_path):
-    if not os.path.isfile(path):
-        failures.append(f"missing required file: {rel(path)}")
+def key_values(content):
+    result = {}
+    for line in content.splitlines():
+        if "=" in line:
+            key, value = line.split("=", 1)
+            result[key.strip()] = value.strip()
+    return result
 
-status_text = read(current_status) if os.path.isfile(current_status) else ""
-arch_text = read(arch_report) if os.path.isfile(arch_report) else ""
-lock_text = read(lock_path) if os.path.isfile(lock_path) else ""
 
-root_head = git("rev-parse", "--short=7", "HEAD").stdout.strip()
-root_head_full = git("rev-parse", "HEAD").stdout.strip()
-adk_lock_commit = lock_value(lock_text, "agent-dev-kit.commit")
-adk_lock_short = adk_lock_commit[:7]
-
-index_proc = git("ls-files", "-s", "agent-dev-kit")
-gitlink_commit = ""
-for line in index_proc.stdout.splitlines():
-    parts = line.split()
-    if len(parts) >= 2 and parts[0] == "160000":
-        gitlink_commit = parts[1]
-        break
-
-adk_proc = git("rev-parse", "HEAD", cwd=os.path.join(root, "agent-dev-kit"), check=False)
-adk_worktree_commit = adk_proc.stdout.strip() if adk_proc.returncode == 0 else ""
-
-subrepo_checker = os.path.join(root, "scripts", "check-subrepo-state.sh")
-if not os.path.isfile(subrepo_checker):
-    failures.append("missing current subrepo state checker")
-    subrepo_state = {}
-else:
-    subrepo_proc = subprocess.run(
-        [subrepo_checker, root, "--summary-json"],
+def git(*args, cwd=None, check=True):
+    completed = subprocess.run(
+        ["git", "-C", cwd or root, *args],
+        check=False,
         text=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
-    try:
-        subrepo_state = json.loads(subrepo_proc.stdout)
-    except json.JSONDecodeError:
-        subrepo_state = {}
-        failures.append("current subrepo state output is not valid JSON")
-    if subrepo_proc.returncode != 0 or subrepo_state.get("status") != "pass":
-        failures.append(
-            "current subrepo state is not pass: "
-            f"unexpected_dirty={subrepo_state.get('unexpected_dirty', 'unknown')} "
-            f"stale_baseline={subrepo_state.get('stale_baseline', 'unknown')}"
-        )
+    if check and completed.returncode != 0:
+        failures.append("git {} failed: {}".format(" ".join(args), completed.stderr.strip()))
+    return completed
 
-if not adk_lock_commit:
-    failures.append("adk.lock missing agent-dev-kit.commit")
-if not gitlink_commit:
-    failures.append("agent-dev-kit gitlink missing from index")
-if adk_lock_commit and gitlink_commit and adk_lock_commit != gitlink_commit:
-    failures.append(f"agent-dev-kit gitlink {gitlink_commit} != adk.lock {adk_lock_commit}")
-if adk_lock_commit and adk_worktree_commit and adk_lock_commit != adk_worktree_commit:
-    failures.append(f"agent-dev-kit worktree {adk_worktree_commit} != adk.lock {adk_lock_commit}")
 
-status_semantics = field(status_text, "status_semantics")
-if status_semantics != "last-verified-committed-baseline":
-    failures.append("current-status status_semantics must be last-verified-committed-baseline")
+required = {
+    "status": path("reports", "current-status.md"),
+    "scorecard": path("manifests", "product_maturity_scorecard.json"),
+    "tasks": path("manifests", "product_maturity_task_pack.json"),
+    "registry": path("manifests", "report_registry.json"),
+    "audit": path("reports", "architecture", "llm-agent-adk-product-maturity-audit-2026-07-13.md"),
+    "release": path("reports", "adk-v3-release-evidence-2026-07-13.json"),
+    "lock": path("adk.lock"),
+    "manifest": path("agent-dev-kit", "manifest.json"),
+    "comparison": path("agent-dev-kit", "docs", "changes", "adk-v3-product-maturity", "codex-comparison-final.json"),
+    "claude_baseline": path("agent-dev-kit", "docs", "changes", "adk-v3-product-maturity", "claude-baseline-final.json"),
+    "claude_adk": path("agent-dev-kit", "docs", "changes", "adk-v3-product-maturity", "claude-adk-final.json"),
+}
+for label, file_path in required.items():
+    if not os.path.isfile(file_path):
+        failures.append("missing required {} file: {}".format(label, os.path.relpath(file_path, root)))
+
+status_text = read_text(required["status"])
+audit_text = read_text(required["audit"])
+lock = key_values(read_text(required["lock"]))
+scorecard = read_json(required["scorecard"])
+task_pack = read_json(required["tasks"])
+registry = read_json(required["registry"])
+release = read_json(required["release"])
+manifest = read_json(required["manifest"])
+comparison = read_json(required["comparison"])
+claude_reports = [read_json(required["claude_baseline"]), read_json(required["claude_adk"])]
+
+expected_fields = {
+    "status_semantics": "last-verified-product-baseline",
+    "adk_version": "3.0.0",
+    "product_maturity": "M3",
+    "terminal_mature": "false",
+    "field_status": "field_not_verified",
+    "root_gate_status": "pass",
+    "runtime_eval_status": "codex-pass-claude-not-run",
+    "live_refresh_status": "not-required-no-mapped-assets",
+    "knowledge_candidate_status": "dry-run-planned-not-applied",
+}
+for name, expected in expected_fields.items():
+    actual = field(status_text, name)
+    if actual != expected:
+        failures.append("current-status {} must be {}, got {}".format(name, expected, actual or "<missing>"))
 
 last_verified_at = field(status_text, "last_verified_at")
 try:
@@ -145,71 +152,141 @@ else:
     if age_days < 0:
         failures.append("current-status last_verified_at must not be in the future")
     elif age_days > 7:
-        failures.append(f"current-status verification is stale: age_days={age_days}")
+        failures.append("current-status verification is stale: age_days={}".format(age_days))
 
-stale_tokens = [
-    "V4 closed-loop architecture | IN PROGRESS",
-    "本轮 V4 模板升级需再次提交",
-    "pending V4",
-    "pending source-to-live",
-    "Hub dry-run promotion pending",
+root_product_commit = field(status_text, "root_product_commit")
+if not root_product_commit:
+    failures.append("current-status missing root_product_commit")
+elif git("merge-base", "--is-ancestor", root_product_commit, "HEAD", check=False).returncode != 0:
+    failures.append("current-status root_product_commit is not an ancestor of HEAD: {}".format(root_product_commit))
+
+index = git("ls-files", "-s", "agent-dev-kit").stdout.strip().split()
+gitlink_commit = index[1] if len(index) >= 2 and index[0] == "160000" else ""
+adk_worktree = git("rev-parse", "HEAD", cwd=path("agent-dev-kit"), check=False).stdout.strip()
+adk_lock_commit = lock.get("agent-dev-kit.commit", "")
+adk_status_commit = field(status_text, "agent_dev_kit_commit")
+for label, value in (
+    ("gitlink", gitlink_commit),
+    ("adk.lock", adk_lock_commit),
+    ("ADK worktree", adk_worktree),
+    ("current-status", adk_status_commit),
+):
+    if value != adk_status_commit or not value:
+        failures.append("{} ADK commit does not match current-status: {}".format(label, value or "<missing>"))
+
+if lock.get("agent-dev-kit.version") != "3.0.0" or manifest.get("version") != "3.0.0":
+    failures.append("ADK version is not synchronized across lock and manifest")
+
+overall = scorecard.get("overall", {})
+if not isinstance(overall, dict) or overall.get("level") != "M3":
+    failures.append("product scorecard overall level must be M3")
+if overall.get("terminal_mature") is not False:
+    failures.append("product scorecard must keep terminal_mature=false")
+if overall.get("field_status") != "field_not_verified":
+    failures.append("product scorecard must keep field_not_verified")
+
+task_status = {
+    item.get("id"): item.get("status")
+    for item in task_pack.get("tasks", [])
+    if isinstance(item, dict)
+}
+for task_id, expected in (
+    ("PM-07", "implemented"),
+    ("PM-08", "not_required"),
+    ("PM-09", "field_not_verified"),
+    ("PM-10", "ready"),
+):
+    if task_status.get(task_id) != expected:
+        failures.append("{} status must be {}".format(task_id, expected))
+
+current_reports = [
+    item for item in registry.get("reports", []) if isinstance(item, dict) and item.get("status") == "current"
 ]
-for token in stale_tokens:
-    if token in status_text:
-        failures.append(f"{rel(current_status)} contains stale status token: {token}")
+expected_audit = "reports/architecture/llm-agent-adk-product-maturity-audit-2026-07-13.md"
+if len(current_reports) != 1 or current_reports[0].get("path") != expected_audit:
+    failures.append("report registry must select the product maturity audit as its only current report")
 
-adk_status_commit = field(status_text, "agent_dev_kit_v4_commit")
-if adk_lock_short and adk_status_commit and adk_status_commit != adk_lock_short:
-    failures.append(f"current-status agent_dev_kit_v4_commit {adk_status_commit} != adk.lock {adk_lock_short}")
+if comparison.get("suite") != "runtime-routing-comparison" or comparison.get("status") != "pass":
+    failures.append("Codex runtime comparison is not pass")
+if comparison.get("baseline", {}).get("success_rate") != 0.9:
+    failures.append("Codex baseline success rate evidence must be 0.9")
+if comparison.get("candidate", {}).get("success_rate") != 1.0:
+    failures.append("Codex ADK success rate evidence must be 1.0")
+if comparison.get("no_regression") is not True or comparison.get("measurable_gain") is not True:
+    failures.append("Codex comparison must preserve no-regression and measurable-gain evidence")
+for report in claude_reports:
+    if report.get("status") != "not-run" or "not authenticated" not in str(report.get("reason", "")):
+        failures.append("Claude runtime evidence must remain not-run with authentication reason")
 
-root_v4_commit = field(status_text, "root_v4_source_commit")
-if root_v4_commit:
-    ancestor = git("merge-base", "--is-ancestor", root_v4_commit, "HEAD", check=False)
-    if ancestor.returncode != 0:
-        failures.append(f"current-status root_v4_source_commit is not an ancestor of HEAD: {root_v4_commit}")
-else:
-    failures.append("current-status missing root_v4_source_commit")
+previous_adk_commit = field(status_text, "adk_previous_commit")
+mapping_paths = ["agents", "skills", "optional-skills", "workflows", "templates"]
+mapping_diff = git(
+    "diff",
+    "--quiet",
+    previous_adk_commit,
+    adk_status_commit,
+    "--",
+    *mapping_paths,
+    cwd=path("agent-dev-kit"),
+    check=False,
+)
+if mapping_diff.returncode != 0:
+    failures.append("mapped ADK asset paths changed; no-live-write decision is invalid")
 
-live_status = field(status_text, "live_refresh_status")
-if "live-applied" in live_status:
-    for token in ("copy=0", "overwrite=0", "delete=0", "mkdir=270"):
-        if token not in live_status:
-            failures.append(f"live_refresh_status missing apply summary token: {token}")
-    for token in ("source-to-live dry-run/apply", "source-to-live post-check"):
-        if token not in status_text:
-            failures.append(f"current-status missing live-applied evidence row: {token}")
-else:
-    failures.append("live_refresh_status must explicitly state live-applied boundary")
-
-knowledge_status = field(status_text, "knowledge_promotion_status")
-if "apply_supported=false" not in knowledge_status:
-    failures.append("knowledge_promotion_status must record apply_supported=false")
-if re.search(r"knowledge_promotion_status:.*active promotion applied", status_text, re.IGNORECASE):
-    failures.append("knowledge_promotion_status must not claim active promotion applied")
-if "PASS_WITH_BOUNDARY" not in status_text:
-    failures.append("current-status must record Knowledge Hub dry-run as PASS_WITH_BOUNDARY")
+release_adk = release.get("agent_dev_kit", {})
+release_mapping = release.get("source_to_live", {})
+if release_adk.get("commit") != adk_status_commit:
+    failures.append("release evidence ADK commit does not match current-status")
+if release_mapping.get("mapped_content_changed") is not False:
+    failures.append("release evidence must record mapped_content_changed=false")
+if release_mapping.get("decision") != "not-required-no-mapped-assets":
+    failures.append("release evidence has an invalid source-to-live decision")
+if release.get("field_status") != "field_not_verified":
+    failures.append("release evidence must preserve field_not_verified")
 
 for token in (
-    "Runtime Delivery Contract",
-    "Knowledge Promotion Contract",
-    "State Reconciliation Contract",
-    "Status Consistency Gate",
+    "llm-agent-adk-v3-product-maturity-20260713",
+    "active_promotion=false",
+    "未执行 apply",
 ):
-    if token not in arch_text:
-        failures.append(f"{rel(arch_report)} missing architecture consistency token: {token}")
+    if token not in audit_text:
+        failures.append("maturity audit missing knowledge boundary token: {}".format(token))
+if re.search(r"active promotion (?:was )?applied", status_text + audit_text, re.IGNORECASE):
+    failures.append("status evidence must not claim active knowledge promotion")
 
-status = "pass" if not failures else "fail"
+subrepo_checker = path("scripts", "check-subrepo-state.sh")
+if not os.path.isfile(subrepo_checker):
+    failures.append("missing current subrepo state checker")
+    subrepo_state = {}
+else:
+    completed = subprocess.run(
+        [subrepo_checker, root, "--summary-json"],
+        check=False,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    try:
+        subrepo_state = json.loads(completed.stdout)
+    except json.JSONDecodeError:
+        subrepo_state = {}
+        failures.append("current subrepo state output is not valid JSON")
+    if completed.returncode != 0 or subrepo_state.get("status") != "pass":
+        failures.append("current subrepo state is not pass")
+
+root_head = git("rev-parse", "--short=7", "HEAD").stdout.strip()
 payload = {
-    "status": status,
+    "status": "pass" if not failures else "fail",
     "failures": failures,
     "root_head": root_head,
-    "root_head_full": root_head_full,
-    "agent_dev_kit_head": adk_worktree_commit[:7] if adk_worktree_commit else "",
-    "adk_lock_commit": adk_lock_short,
-    "live_refresh_status": live_status,
-    "knowledge_promotion_status": knowledge_status,
-    "status_semantics": status_semantics,
-    "last_verified_at": last_verified_at,
+    "root_product_commit": root_product_commit,
+    "agent_dev_kit_commit": adk_status_commit,
+    "adk_version": field(status_text, "adk_version"),
+    "product_maturity": field(status_text, "product_maturity"),
+    "field_status": field(status_text, "field_status"),
+    "runtime_eval_status": field(status_text, "runtime_eval_status"),
+    "live_refresh_status": field(status_text, "live_refresh_status"),
+    "knowledge_candidate_status": field(status_text, "knowledge_candidate_status"),
     "subrepo_state": subrepo_state,
 }
 
@@ -217,9 +294,9 @@ if summary_json:
     print(json.dumps(payload, ensure_ascii=False, separators=(",", ":")))
 elif failures:
     for failure in failures:
-        print(f"[FAIL] {failure}", file=sys.stderr)
+        print("[FAIL] {}".format(failure), file=sys.stderr)
 else:
-    print(f"[PASS] current status consistent: root={root_head} adk={adk_lock_short}")
+    print("[PASS] product status consistent: root={} adk={}".format(root_head, adk_status_commit[:7]))
 
 if failures:
     sys.exit(1)

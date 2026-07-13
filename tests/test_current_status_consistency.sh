@@ -10,62 +10,97 @@ trap 'rm -rf "${TMP_DIR}"' EXIT
 
 make_fixture() {
   local dest="$1"
-  mkdir -p "${dest}/reports/architecture" "${dest}/agent-dev-kit" "${dest}/scripts" "${dest}/subrepos"
+  local adk_evidence="docs/changes/adk-v3-product-maturity"
+  mkdir -p \
+    "${dest}/reports/architecture" \
+    "${dest}/manifests" \
+    "${dest}/scripts" \
+    "${dest}/subrepos" \
+    "${dest}/agent-dev-kit/agents/example" \
+    "${dest}/agent-dev-kit/${adk_evidence}"
+
   cp "${ROOT}/reports/current-status.md" "${dest}/reports/current-status.md"
-  cp "${ROOT}/reports/architecture/llm-agent-adk-target-architecture-2026-07-11.md" "${dest}/reports/architecture/llm-agent-adk-target-architecture-2026-07-11.md"
+  cp "${ROOT}/reports/architecture/llm-agent-adk-product-maturity-audit-2026-07-13.md" "${dest}/reports/architecture/"
+  cp "${ROOT}/reports/adk-v3-release-evidence-2026-07-13.json" "${dest}/reports/"
+  cp "${ROOT}/manifests/product_maturity_scorecard.json" "${dest}/manifests/"
+  cp "${ROOT}/manifests/product_maturity_task_pack.json" "${dest}/manifests/"
+  cp "${ROOT}/manifests/report_registry.json" "${dest}/manifests/"
   cp "${ROOT}/adk.lock" "${dest}/adk.lock"
-  cp "${ROOT}/scripts/check-subrepo-state.sh" "${dest}/scripts/check-subrepo-state.sh"
-  cp "${ROOT}/scripts/classify-repo-worktree.sh" "${dest}/scripts/classify-repo-worktree.sh"
+  cp "${ROOT}/scripts/check-subrepo-state.sh" "${dest}/scripts/"
+  cp "${ROOT}/scripts/classify-repo-worktree.sh" "${dest}/scripts/"
   chmod +x "${dest}/scripts/check-subrepo-state.sh" "${dest}/scripts/classify-repo-worktree.sh"
+
   cat >"${dest}/subrepos/registry.csv" <<'CSV'
 repo,group,priority,sync_mode,branch,enabled,notes,status,owner,last_reviewed_on,intake_policy,grade
 agent-dev-kit,adk-core,P0,pull,main,yes,fixture,active,tester,2026-07-13,adopt-first,S
 CSV
 
+  printf '{"version":"2.9.0"}\n' >"${dest}/agent-dev-kit/manifest.json"
+  printf 'baseline asset\n' >"${dest}/agent-dev-kit/agents/example/AGENTS.md"
   git -C "${dest}/agent-dev-kit" init -q
   git -C "${dest}/agent-dev-kit" config user.email "fixture@example.invalid"
   git -C "${dest}/agent-dev-kit" config user.name "Fixture"
-  printf 'version: 2.9.0\n' >"${dest}/agent-dev-kit/manifest.yaml"
-  git -C "${dest}/agent-dev-kit" add manifest.yaml
-  git -C "${dest}/agent-dev-kit" commit -q -m "fixture adk"
-  local adk_commit
-  adk_commit="$(git -C "${dest}/agent-dev-kit" rev-parse HEAD)"
+  git -C "${dest}/agent-dev-kit" add manifest.json agents/example/AGENTS.md
+  git -C "${dest}/agent-dev-kit" commit -q -m "fixture baseline"
+  local previous_adk
+  previous_adk="$(git -C "${dest}/agent-dev-kit" rev-parse HEAD)"
 
-  python3 - "${dest}/adk.lock" "${dest}/reports/current-status.md" "${adk_commit}" <<'PY'
+  cp "${ROOT}/agent-dev-kit/manifest.json" "${dest}/agent-dev-kit/manifest.json"
+  cp "${ROOT}/agent-dev-kit/${adk_evidence}/codex-comparison-final.json" "${dest}/agent-dev-kit/${adk_evidence}/"
+  cp "${ROOT}/agent-dev-kit/${adk_evidence}/claude-baseline-final.json" "${dest}/agent-dev-kit/${adk_evidence}/"
+  cp "${ROOT}/agent-dev-kit/${adk_evidence}/claude-adk-final.json" "${dest}/agent-dev-kit/${adk_evidence}/"
+  git -C "${dest}/agent-dev-kit" add manifest.json "${adk_evidence}"
+  git -C "${dest}/agent-dev-kit" commit -q -m "fixture product"
+  local current_adk
+  current_adk="$(git -C "${dest}/agent-dev-kit" rev-parse HEAD)"
+
+  python3 - \
+    "${dest}/reports/current-status.md" \
+    "${dest}/reports/adk-v3-release-evidence-2026-07-13.json" \
+    "${dest}/adk.lock" \
+    "${previous_adk}" \
+    "${current_adk}" <<'PY'
+import json
 import pathlib
 import re
 import sys
 
-lock_path, status_path, adk_commit = sys.argv[1:4]
-lock = pathlib.Path(lock_path).read_text(encoding="utf-8")
-lock = re.sub(r"agent-dev-kit.commit=.*", f"agent-dev-kit.commit={adk_commit}", lock)
-pathlib.Path(lock_path).write_text(lock, encoding="utf-8")
+status_path, release_path, lock_path, previous_adk, current_adk = sys.argv[1:]
 
 status = pathlib.Path(status_path).read_text(encoding="utf-8")
-status = re.sub(r"- agent_dev_kit_v4_commit: .*", f"- agent_dev_kit_v4_commit: {adk_commit[:7]}", status)
+status = re.sub(r"^- agent_dev_kit_commit: .+$", f"- agent_dev_kit_commit: {current_adk}", status, flags=re.MULTILINE)
+status = re.sub(r"^- adk_previous_commit: .+$", f"- adk_previous_commit: {previous_adk}", status, flags=re.MULTILINE)
 pathlib.Path(status_path).write_text(status, encoding="utf-8")
+
+release = json.loads(pathlib.Path(release_path).read_text(encoding="utf-8"))
+release["agent_dev_kit"]["commit"] = current_adk
+release["agent_dev_kit"]["previous_commit"] = previous_adk
+pathlib.Path(release_path).write_text(json.dumps(release, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+lock = pathlib.Path(lock_path).read_text(encoding="utf-8")
+lock = re.sub(r"agent-dev-kit.commit=.*", f"agent-dev-kit.commit={current_adk}", lock)
+pathlib.Path(lock_path).write_text(lock, encoding="utf-8")
 PY
 
   git -C "${dest}" init -q
   git -C "${dest}" config user.email "fixture@example.invalid"
   git -C "${dest}" config user.name "Fixture"
-  git -C "${dest}" add reports/current-status.md reports/architecture/llm-agent-adk-target-architecture-2026-07-11.md adk.lock
-  git -C "${dest}" update-index --add --cacheinfo "160000,${adk_commit},agent-dev-kit"
-  git -C "${dest}" commit -q -m "fixture root"
-  local root_commit
-  root_commit="$(git -C "${dest}" rev-parse --short=7 HEAD)"
+  git -C "${dest}" add reports manifests adk.lock subrepos
+  git -C "${dest}" update-index --add --cacheinfo "160000,${current_adk},agent-dev-kit"
+  git -C "${dest}" commit -q -m "fixture product"
+  local root_product
+  root_product="$(git -C "${dest}" rev-parse HEAD)"
 
-  python3 - "${dest}/reports/current-status.md" "${root_commit}" <<'PY'
+  python3 - "${dest}/reports/current-status.md" "${root_product}" <<'PY'
 import pathlib
 import re
 import sys
 
-status_path, root_commit = sys.argv[1:3]
+status_path, root_product = sys.argv[1:]
 status = pathlib.Path(status_path).read_text(encoding="utf-8")
-status = re.sub(r"- root_v4_source_commit: .*", f"- root_v4_source_commit: {root_commit}", status)
+status = re.sub(r"^- root_product_commit: .+$", f"- root_product_commit: {root_product}", status, flags=re.MULTILINE)
 pathlib.Path(status_path).write_text(status, encoding="utf-8")
 PY
-
   git -C "${dest}" add reports/current-status.md
   git -C "${dest}" commit -q -m "fixture status"
 }
@@ -73,14 +108,14 @@ PY
 expect_fail_contains() {
   local fixture="$1"
   local expected="$2"
-  local out="${fixture}.out"
-  if "${CHECKER}" "${fixture}" --summary-json >"${out}" 2>&1; then
+  local output="${fixture}.out"
+  if "${CHECKER}" "${fixture}" --summary-json >"${output}" 2>&1; then
     echo "[FAIL] fixture unexpectedly passed: ${fixture}" >&2
     exit 1
   fi
-  if ! rg -q --fixed-strings -- "${expected}" "${out}"; then
+  if ! rg -q --fixed-strings -- "${expected}" "${output}"; then
     echo "[FAIL] expected failure did not include: ${expected}" >&2
-    sed -n '1,120p' "${out}" >&2 || true
+    sed -n '1,120p' "${output}" >&2 || true
     exit 1
   fi
 }
@@ -89,69 +124,97 @@ pass_root="${TMP_DIR}/pass-root"
 make_fixture "${pass_root}"
 "${CHECKER}" "${pass_root}" --summary-json >/dev/null
 
-stale_root="${TMP_DIR}/stale-root"
-make_fixture "${stale_root}"
-python3 - "${stale_root}/reports/current-status.md" <<'PY'
-import pathlib
-import sys
-path = pathlib.Path(sys.argv[1])
-text = path.read_text(encoding="utf-8")
-text = text.replace("V4 closed-loop architecture | PASS", "V4 closed-loop architecture | IN PROGRESS")
-path.write_text(text, encoding="utf-8")
-PY
-expect_fail_contains "${stale_root}" "V4 closed-loop architecture | IN PROGRESS"
-
-submit_root="${TMP_DIR}/submit-root"
-make_fixture "${submit_root}"
-printf '\n- 本轮 V4 模板升级需再次提交子仓并同步父仓 gitlink 与 `adk.lock`。\n' >>"${submit_root}/reports/current-status.md"
-expect_fail_contains "${submit_root}" "本轮 V4 模板升级需再次提交"
-
 mismatch_root="${TMP_DIR}/mismatch-root"
-make_fixture "${mismatch_root}"
+cp -a "${pass_root}" "${mismatch_root}"
 python3 - "${mismatch_root}/reports/current-status.md" <<'PY'
 import pathlib
 import re
 import sys
 path = pathlib.Path(sys.argv[1])
-text = path.read_text(encoding="utf-8")
-text = re.sub(r"- agent_dev_kit_v4_commit: .*", "- agent_dev_kit_v4_commit: 0000000", text)
-path.write_text(text, encoding="utf-8")
+path.write_text(re.sub(r"^- agent_dev_kit_commit: .+$", "- agent_dev_kit_commit: 0000000", path.read_text(encoding="utf-8"), flags=re.MULTILINE), encoding="utf-8")
 PY
-expect_fail_contains "${mismatch_root}" "current-status agent_dev_kit_v4_commit"
+expect_fail_contains "${mismatch_root}" "gitlink ADK commit does not match current-status"
 
-active_root="${TMP_DIR}/active-root"
-make_fixture "${active_root}"
-python3 - "${active_root}/reports/current-status.md" <<'PY'
+stale_root="${TMP_DIR}/stale-root"
+cp -a "${pass_root}" "${stale_root}"
+python3 - "${stale_root}/reports/current-status.md" <<'PY'
 import pathlib
 import re
 import sys
 path = pathlib.Path(sys.argv[1])
-text = path.read_text(encoding="utf-8")
-text = re.sub(
-    r"- knowledge_promotion_status: .*",
-    "- knowledge_promotion_status: active promotion applied",
-    text,
-)
-path.write_text(text, encoding="utf-8")
+path.write_text(re.sub(r"^- last_verified_at: .+$", "- last_verified_at: 2000-01-01", path.read_text(encoding="utf-8"), flags=re.MULTILINE), encoding="utf-8")
 PY
-expect_fail_contains "${active_root}" "knowledge_promotion_status must record apply_supported=false"
+expect_fail_contains "${stale_root}" "current-status verification is stale"
 
-stale_date_root="${TMP_DIR}/stale-date-root"
-make_fixture "${stale_date_root}"
-python3 - "${stale_date_root}/reports/current-status.md" <<'PY'
+terminal_root="${TMP_DIR}/terminal-root"
+cp -a "${pass_root}" "${terminal_root}"
+python3 - "${terminal_root}/manifests/product_maturity_scorecard.json" <<'PY'
+import json
+import pathlib
+import sys
+path = pathlib.Path(sys.argv[1])
+value = json.loads(path.read_text(encoding="utf-8"))
+value["overall"]["terminal_mature"] = True
+path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+PY
+expect_fail_contains "${terminal_root}" "product scorecard must keep terminal_mature=false"
+
+runtime_root="${TMP_DIR}/runtime-root"
+cp -a "${pass_root}" "${runtime_root}"
+python3 - "${runtime_root}/agent-dev-kit/docs/changes/adk-v3-product-maturity/codex-comparison-final.json" <<'PY'
+import json
+import pathlib
+import sys
+path = pathlib.Path(sys.argv[1])
+value = json.loads(path.read_text(encoding="utf-8"))
+value["candidate"]["success_rate"] = 0.8
+path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+PY
+expect_fail_contains "${runtime_root}" "Codex ADK success rate evidence must be 1.0"
+
+knowledge_root="${TMP_DIR}/knowledge-root"
+cp -a "${pass_root}" "${knowledge_root}"
+python3 - "${knowledge_root}/reports/current-status.md" <<'PY'
 import pathlib
 import re
 import sys
 path = pathlib.Path(sys.argv[1])
-text = path.read_text(encoding="utf-8")
-text = re.sub(r"- last_verified_at: .*", "- last_verified_at: 2000-01-01", text)
-path.write_text(text, encoding="utf-8")
+path.write_text(re.sub(r"^- knowledge_candidate_status: .+$", "- knowledge_candidate_status: active-promotion-applied", path.read_text(encoding="utf-8"), flags=re.MULTILINE), encoding="utf-8")
 PY
-expect_fail_contains "${stale_date_root}" "current-status verification is stale"
+expect_fail_contains "${knowledge_root}" "knowledge_candidate_status must be dry-run-planned-not-applied"
+
+mapped_root="${TMP_DIR}/mapped-root"
+cp -a "${pass_root}" "${mapped_root}"
+printf 'mapped change\n' >>"${mapped_root}/agent-dev-kit/agents/example/AGENTS.md"
+git -C "${mapped_root}/agent-dev-kit" add agents/example/AGENTS.md
+git -C "${mapped_root}/agent-dev-kit" commit -q -m "fixture mapped change"
+mapped_adk="$(git -C "${mapped_root}/agent-dev-kit" rev-parse HEAD)"
+python3 - \
+  "${mapped_root}/reports/current-status.md" \
+  "${mapped_root}/reports/adk-v3-release-evidence-2026-07-13.json" \
+  "${mapped_root}/adk.lock" \
+  "${mapped_adk}" <<'PY'
+import json
+import pathlib
+import re
+import sys
+status_path, release_path, lock_path, mapped_adk = sys.argv[1:]
+status = pathlib.Path(status_path).read_text(encoding="utf-8")
+status = re.sub(r"^- agent_dev_kit_commit: .+$", f"- agent_dev_kit_commit: {mapped_adk}", status, flags=re.MULTILINE)
+pathlib.Path(status_path).write_text(status, encoding="utf-8")
+release = json.loads(pathlib.Path(release_path).read_text(encoding="utf-8"))
+release["agent_dev_kit"]["commit"] = mapped_adk
+pathlib.Path(release_path).write_text(json.dumps(release, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+lock = pathlib.Path(lock_path).read_text(encoding="utf-8")
+lock = re.sub(r"agent-dev-kit.commit=.*", f"agent-dev-kit.commit={mapped_adk}", lock)
+pathlib.Path(lock_path).write_text(lock, encoding="utf-8")
+PY
+git -C "${mapped_root}" update-index --cacheinfo "160000,${mapped_adk},agent-dev-kit"
+expect_fail_contains "${mapped_root}" "mapped ADK asset paths changed"
 
 dirty_root="${TMP_DIR}/dirty-root"
-make_fixture "${dirty_root}"
-printf '\n# unexpected dirty\n' >>"${dirty_root}/agent-dev-kit/manifest.yaml"
+cp -a "${pass_root}" "${dirty_root}"
+printf '\n' >>"${dirty_root}/agent-dev-kit/manifest.json"
 expect_fail_contains "${dirty_root}" "current subrepo state is not pass"
 
-echo "[PASS] current status consistency checks behave as expected"
+echo "[PASS] current product status consistency checks behave as expected"
