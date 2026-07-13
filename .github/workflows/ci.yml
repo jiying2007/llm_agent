@@ -40,6 +40,7 @@ jobs:
         run: |
           bash tests/test_product_maturity_contracts.sh
           bash tests/test_reference_source_integrity.sh
+          bash tests/test_software_m5_certification.sh
 
       - name: Run self-contained documentation gate
         run: bash scripts/check-doc-sync.sh .

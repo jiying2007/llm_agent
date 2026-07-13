@@ -1,0 +1,153 @@
+{
+  "schema": "llm-agent-software-m5-policy/v1",
+  "updated_at": "2026-07-13",
+  "scope": "software-only",
+  "release": {
+    "previous_version": "3.0.0",
+    "candidate_version": "3.1.0-rc.1",
+    "evaluation_version": "3.1.0-rc.1",
+    "final_version": "3.1.0",
+    "manifest": "agent-dev-kit/manifest.json",
+    "candidate_sha256": "b6adcb98d5fc3be9138754a114122a1d1d92aa72a577b2a8200850558114324f",
+    "rehearsal_report": "agent-dev-kit/docs/changes/adk-v3-1-software-m5-ready/release-rehearsal.json"
+  },
+  "runtime_campaign": {
+    "manifest": "agent-dev-kit/manifest.json",
+    "contract": "agent-dev-kit/manifests/software_m5_eval_contract.json",
+    "tasks": "agent-dev-kit/tests/fixtures/software_m5_eval_tasks.jsonl",
+    "state_dir": "agent-dev-kit/docs/changes/adk-v3-1-software-m5-ready/software-m5-campaign-state",
+    "report": "agent-dev-kit/docs/changes/adk-v3-1-software-m5-ready/software-m5-campaign-state/campaign-report.json",
+    "required_runtimes": [
+      "codex",
+      "claude"
+    ],
+    "required_models": {
+      "codex": "gpt-5.5",
+      "claude": "claude-sonnet-4-6"
+    },
+    "minimum_tasks": 60,
+    "minimum_trials": 3,
+    "max_budget_usd": 150.0
+  },
+  "field_certification": {
+    "minimum_calendar_days": 30,
+    "minimum_real_repositories": 2,
+    "minimum_independent_repositories": 1,
+    "minimum_human_operators": 2,
+    "required_event_types": [
+      "pilot_started",
+      "workload_executed",
+      "upgrade_completed",
+      "rollback_exercised",
+      "fault_observed",
+      "recovery_completed",
+      "maintenance_recorded",
+      "pilot_reviewed"
+    ],
+    "required_metrics": {
+      "workload_executed": [
+        "task_count",
+        "success_rate"
+      ],
+      "upgrade_completed": [
+        "from_version",
+        "to_version",
+        "downtime_seconds"
+      ],
+      "rollback_exercised": [
+        "restored_version",
+        "downtime_seconds"
+      ],
+      "fault_observed": [
+        "severity"
+      ],
+      "recovery_completed": [
+        "recovery_minutes"
+      ],
+      "maintenance_recorded": [
+        "human_minutes"
+      ],
+      "pilot_reviewed": [
+        "decision"
+      ]
+    },
+    "metric_contracts": {
+      "workload_executed": {
+        "task_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "success_rate": {
+          "type": "number",
+          "minimum": 0.85,
+          "maximum": 1.0
+        }
+      },
+      "upgrade_completed": {
+        "from_version": {
+          "type": "semver",
+          "equals_release": "previous_version"
+        },
+        "to_version": {
+          "type": "semver",
+          "equals_release": "evaluation_version"
+        },
+        "downtime_seconds": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "rollback_exercised": {
+        "restored_version": {
+          "type": "semver",
+          "equals_release": "previous_version"
+        },
+        "downtime_seconds": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "fault_observed": {
+        "severity": {
+          "type": "string",
+          "enum": [
+            "contained",
+            "minor",
+            "major",
+            "critical"
+          ]
+        }
+      },
+      "recovery_completed": {
+        "recovery_minutes": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "maintenance_recorded": {
+        "human_minutes": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "pilot_reviewed": {
+        "decision": {
+          "type": "string",
+          "enum": [
+            "approve"
+          ]
+        }
+      }
+    }
+  },
+  "rules": {
+    "fail_closed": true,
+    "field_evidence_cannot_be_simulated": true,
+    "append_only_hash_chain": true,
+    "independent_repository_required": true,
+    "second_human_operator_required": true,
+    "final_release_requires_eligibility": true,
+    "no_automatic_external_write": true,
+    "operator_pii_forbidden": true
+  }
+}

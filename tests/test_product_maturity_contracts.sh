@@ -18,6 +18,16 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
   exit 1
 }
 
+[[ -f "$ROOT/manifests/software_m5_policy.json" ]] || {
+  echo "[FAIL] software M5 policy missing" >&2
+  exit 1
+}
+
+[[ -f "$ROOT/manifests/software_m5_pilot_ledger.json" ]] || {
+  echo "[FAIL] software M5 pilot ledger missing" >&2
+  exit 1
+}
+
 [[ -f "$ROOT/manifests/report_registry.json" ]] || {
   echo "[FAIL] report registry missing" >&2
   exit 1
@@ -38,8 +48,26 @@ assert len(scorecard["dimensions"]) == 12, scorecard
 assert [item["id"] for item in scorecard["dimensions"]] == [f"D{i:02d}" for i in range(1, 13)]
 assert len({item["name"] for item in scorecard["dimensions"]}) == 12, scorecard
 assert scorecard["overall"]["terminal_mature"] is False
-assert scorecard["overall"]["field_status"] == "field_not_verified"
+assert scorecard["overall"]["field_status"] == "self_pilot_active"
 assert scorecard["release_gates"]["status"] == "conditional-pass", scorecard
+software_m5 = scorecard["software_m5"]
+assert software_m5 == {
+    "readiness_status": "m5-ready",
+    "eligibility_status": "blocked",
+    "certification_status": "blocked",
+    "certified": False,
+    "candidate_version": "3.1.0-rc.1",
+    "final_version": "3.1.0",
+    "blocking_gates": [
+        "final_version",
+        "independent_repository",
+        "operator_count",
+        "pilot_duration",
+        "real_repository_count",
+        "required_field_events",
+        "runtime_campaign",
+    ],
+}, software_m5
 levels = {f"M{i}" for i in range(6)}
 statuses = {
     "verified",
@@ -84,12 +112,33 @@ for task in task_pack["tasks"]:
     assert all(isinstance(command, str) and command.startswith("rtk ") for command in commands), task
     if task["status"] == "implemented":
         assert commands, task
-assert next(item for item in task_pack["tasks"] if item["id"] == "PM-09")["status"] == "field_not_verified"
+assert next(item for item in task_pack["tasks"] if item["id"] == "PM-09")["status"] == "in_progress"
+
+policy = json.loads((root / "manifests/software_m5_policy.json").read_text(encoding="utf-8"))
+assert policy["schema"] == "llm-agent-software-m5-policy/v1", policy
+assert policy["release"]["candidate_version"] == "3.1.0-rc.1", policy
+assert policy["release"]["final_version"] == "3.1.0", policy
+assert policy["runtime_campaign"]["required_runtimes"] == ["codex", "claude"], policy
+assert policy["runtime_campaign"]["minimum_tasks"] >= 60, policy
+assert policy["runtime_campaign"]["minimum_trials"] >= 3, policy
+assert policy["runtime_campaign"]["max_budget_usd"] <= 150, policy
+assert policy["field_certification"]["minimum_calendar_days"] >= 30, policy
+assert policy["field_certification"]["minimum_independent_repositories"] >= 1, policy
+assert policy["field_certification"]["minimum_human_operators"] >= 2, policy
+assert all(policy["rules"].values()), policy
+
+ledger = json.loads((root / "manifests/software_m5_pilot_ledger.json").read_text(encoding="utf-8"))
+assert ledger["schema"] == "llm-agent-software-m5-pilot-ledger/v1", ledger
+assert ledger["candidate_version"] == policy["release"]["candidate_version"], ledger
+assert (root / ledger["event_log"]).is_file(), ledger
+assert any(item["status"] == "active" and item["environment_class"] == "self" for item in ledger["pilots"])
+assert all(set(item) == {"id", "operator_type", "role", "independent_reviewer"} for item in ledger["operators"])
 
 registry = json.loads((root / "manifests/report_registry.json").read_text(encoding="utf-8"))
 assert registry["schema"] == "llm-agent-report-registry/v1", registry
 current = [item for item in registry["reports"] if item["status"] == "current"]
 assert len(current) == 1, registry
+assert current[0]["path"] == "reports/architecture/llm-agent-adk-software-m5-readiness-2026-07-13.md", current
 ids = {item["id"] for item in registry["reports"]}
 for item in registry["reports"]:
     assert item["status"] in {"current", "superseded"}, item
@@ -106,6 +155,7 @@ workflow = github_ci.read_text(encoding="utf-8")
 assert re.search(r"(?m)^permissions:\n  contents: read$", workflow), workflow
 assert "submodules: false" in workflow, workflow
 assert "bash tests/test_reference_source_integrity.sh" in workflow, workflow
+assert "bash tests/test_software_m5_certification.sh" in workflow, workflow
 assert "bash scripts/check-doc-sync.sh ." in workflow, workflow
 for action in re.findall(r"(?m)^\s*uses:\s*([^\s#]+)", workflow):
     if action.startswith("./"):

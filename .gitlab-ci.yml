@@ -29,6 +29,7 @@ validate-product-contracts:
   script:
     - bash tests/test_product_maturity_contracts.sh
     - bash tests/test_reference_source_integrity.sh
+    - bash tests/test_software_m5_certification.sh
 
 check-coverage:
   stage: test

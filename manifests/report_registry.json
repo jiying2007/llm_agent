@@ -12,9 +12,16 @@
     {
       "id": "product-maturity-audit-2026-07-13",
       "path": "reports/architecture/llm-agent-adk-product-maturity-audit-2026-07-13.md",
+      "status": "superseded",
+      "superseded_by": "software-m5-readiness-2026-07-13",
+      "purpose": "current product, architecture, function, performance, maintainability and long-term maturity audit"
+    },
+    {
+      "id": "software-m5-readiness-2026-07-13",
+      "path": "reports/architecture/llm-agent-adk-software-m5-readiness-2026-07-13.md",
       "status": "current",
       "superseded_by": null,
-      "purpose": "current product, architecture, function, performance, maintainability and long-term maturity audit"
+      "purpose": "current software M5 readiness, certification boundary and field pilot plan"
     }
   ],
   "policy": {

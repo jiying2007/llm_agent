@@ -1,0 +1,62 @@
+{
+  "schema": "llm-agent-adk-software-m5-ready-release-evidence/v1",
+  "generated_at": "2026-07-13",
+  "release_scope": "local-release-candidate-evidence",
+  "agent_dev_kit": {
+    "version": "3.1.0-rc.1",
+    "commit": "53681eb8b563d49dabea97f39dda706e5ae6df70",
+    "previous_version": "3.0.0",
+    "previous_commit": "eec7cd14447bb75f93f810e758d2c34261a884a9"
+  },
+  "artifacts": {
+    "source_sha256": "b6adcb98d5fc3be9138754a114122a1d1d92aa72a577b2a8200850558114324f",
+    "source_reproducible_builds": 2,
+    "wheel_sha256": "a03ce13931277db2d95cba81d279035122f899eed04fa36f643473295609fcf6",
+    "previous_source_sha256": "1f5c125b0ee4712d66e57fbd480968956062678ee6a738ac1077726dcf556e1f",
+    "release_rehearsal_report_sha256": "941ac68945e646f137d7554335d22bd30a590949f80398dea867a291d7094c71"
+  },
+  "validation": {
+    "strict": "pass",
+    "security": "pass",
+    "release_check": "pass",
+    "quick": {
+      "total": 15,
+      "pass": 15,
+      "fail": 0
+    },
+    "full": {
+      "total": 49,
+      "pass": 49,
+      "fail": 0
+    },
+    "wheel_isolated_install": "pass",
+    "pip_check": "pass",
+    "non_repository_cwd_cli": "pass",
+    "upgrade_rollback_rehearsal": "pass",
+    "restored_assets": 31
+  },
+  "source_to_live": {
+    "comparison": "eec7cd14447bb75f93f810e758d2c34261a884a9..53681eb8b563d49dabea97f39dda706e5ae6df70",
+    "mapped_paths": [
+      "agents",
+      "skills",
+      "optional-skills",
+      "workflows",
+      "templates"
+    ],
+    "mapped_content_changed": false,
+    "decision": "not-required-no-mapped-assets"
+  },
+  "software_m5": {
+    "readiness_status": "m5-ready",
+    "certified": false,
+    "field_status": "self_pilot_active",
+    "runtime_campaign": "blocked-claude-unauthenticated"
+  },
+  "publication": {
+    "tag_created": false,
+    "remote_release_created": false,
+    "remote_artifact_uploaded": false,
+    "reason": "Final 3.1.0 promotion and publication remain blocked until runtime campaign and independent field eligibility pass."
+  }
+}

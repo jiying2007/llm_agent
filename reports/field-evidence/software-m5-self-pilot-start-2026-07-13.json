@@ -1,0 +1,15 @@
+{
+  "schema": "llm-agent-software-m5-pilot-start/v1",
+  "candidate_version": "3.1.0-rc.1",
+  "pilot_id": "software-m5-self-pilot-20260713",
+  "started_at": "2026-07-13T09:26:55Z",
+  "environment_class": "self",
+  "repository_ids": [
+    "llm-agent",
+    "agent-dev-kit"
+  ],
+  "operator_ids": [
+    "operator-primary"
+  ],
+  "certification_boundary": "Self-pilot evidence exercises the M5-ready control plane but cannot satisfy independent field certification."
+}

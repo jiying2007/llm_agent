@@ -1,0 +1,45 @@
+{
+  "schema": "llm-agent-software-m5-pilot-ledger/v1",
+  "updated_at": "2026-07-13",
+  "candidate_version": "3.1.0-rc.1",
+  "event_log": "reports/field-evidence/software-m5-events.jsonl",
+  "repositories": [
+    {
+      "id": "llm-agent",
+      "path": ".",
+      "classification": "self",
+      "real_software": true
+    },
+    {
+      "id": "agent-dev-kit",
+      "path": "agent-dev-kit",
+      "classification": "self",
+      "real_software": true
+    }
+  ],
+  "operators": [
+    {
+      "id": "operator-primary",
+      "operator_type": "human",
+      "role": "repository-owner",
+      "independent_reviewer": false
+    }
+  ],
+  "pilots": [
+    {
+      "id": "software-m5-self-pilot-20260713",
+      "environment_class": "self",
+      "status": "active",
+      "started_at": "2026-07-13T09:26:55Z",
+      "ended_at": null,
+      "repositories": [
+        "llm-agent",
+        "agent-dev-kit"
+      ],
+      "operators": [
+        "operator-primary"
+      ],
+      "objective": "Operate the M5-ready control plane without treating self evidence as independent field certification."
+    }
+  ]
+}

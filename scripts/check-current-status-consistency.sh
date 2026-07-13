@@ -1,14 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT="${1:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+SCRIPT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ROOT="${1:-${SCRIPT_ROOT}}"
 SUMMARY_JSON=0
 
 if [[ $# -gt 0 && "$1" != --* ]]; then
-  ROOT="$1"
   shift
 fi
-
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --summary-json)
@@ -19,8 +18,9 @@ while [[ $# -gt 0 ]]; do
       cat <<USAGE
 usage: scripts/check-current-status-consistency.sh [root] [--summary-json]
 
-Checks the last verified product baseline against root/adk commits, maturity
-SSOT, runtime evidence, source-to-live applicability and knowledge boundaries.
+Checks the last verified 3.1 M5-ready baseline against root/adk commits,
+release rehearsal, runtime campaign boundary, software M5 certifier,
+source-to-live applicability, report registry and current subrepo state.
 USAGE
       exit 0
       ;;
@@ -31,16 +31,22 @@ USAGE
   esac
 done
 
+export PYTHONPATH="${SCRIPT_ROOT}${PYTHONPATH:+:${PYTHONPATH}}"
 python3 - "$ROOT" "$SUMMARY_JSON" <<'PY'
 import datetime as dt
+import hashlib
 import json
 import os
 import re
 import subprocess
 import sys
+from pathlib import Path
+
+from tools.codex_assets.software_m5 import check as check_software_m5
 
 
 root, summary_json = sys.argv[1:3]
+root = os.path.abspath(root)
 summary_json = summary_json == "1"
 failures = []
 
@@ -85,6 +91,12 @@ def key_values(content):
     return result
 
 
+def canonical_digest(value):
+    return hashlib.sha256(
+        json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+
+
 def git(*args, cwd=None, check=True):
     completed = subprocess.run(
         ["git", "-C", cwd or root, *args],
@@ -103,39 +115,45 @@ required = {
     "scorecard": path("manifests", "product_maturity_scorecard.json"),
     "tasks": path("manifests", "product_maturity_task_pack.json"),
     "registry": path("manifests", "report_registry.json"),
-    "audit": path("reports", "architecture", "llm-agent-adk-product-maturity-audit-2026-07-13.md"),
-    "release": path("reports", "adk-v3-release-evidence-2026-07-13.json"),
+    "audit": path("reports", "architecture", "llm-agent-adk-software-m5-readiness-2026-07-13.md"),
+    "release_evidence": path("reports", "adk-v3-1-software-m5-ready-release-evidence-2026-07-13.json"),
     "lock": path("adk.lock"),
     "manifest": path("agent-dev-kit", "manifest.json"),
-    "comparison": path("agent-dev-kit", "docs", "changes", "adk-v3-product-maturity", "codex-comparison-final.json"),
-    "claude_baseline": path("agent-dev-kit", "docs", "changes", "adk-v3-product-maturity", "claude-baseline-final.json"),
-    "claude_adk": path("agent-dev-kit", "docs", "changes", "adk-v3-product-maturity", "claude-adk-final.json"),
+    "rehearsal": path("agent-dev-kit", "docs", "changes", "adk-v3-1-software-m5-ready", "release-rehearsal.json"),
+    "campaign_plan": path("agent-dev-kit", "docs", "changes", "adk-v3-1-software-m5-ready", "software-m5-campaign-plan.json"),
+    "codex_smoke": path("agent-dev-kit", "docs", "changes", "adk-v3-1-software-m5-ready", "codex-runtime-smoke.json"),
+    "m5_policy": path("manifests", "software_m5_policy.json"),
+    "m5_ledger": path("manifests", "software_m5_pilot_ledger.json"),
+    "m5_events": path("reports", "field-evidence", "software-m5-events.jsonl"),
 }
 for label, file_path in required.items():
     if not os.path.isfile(file_path):
         failures.append("missing required {} file: {}".format(label, os.path.relpath(file_path, root)))
 
 status_text = read_text(required["status"])
-audit_text = read_text(required["audit"])
 lock = key_values(read_text(required["lock"]))
 scorecard = read_json(required["scorecard"])
 task_pack = read_json(required["tasks"])
 registry = read_json(required["registry"])
-release = read_json(required["release"])
 manifest = read_json(required["manifest"])
-comparison = read_json(required["comparison"])
-claude_reports = [read_json(required["claude_baseline"]), read_json(required["claude_adk"])]
+release = read_json(required["release_evidence"])
+rehearsal = read_json(required["rehearsal"])
+campaign_plan = read_json(required["campaign_plan"])
+codex_smoke = read_json(required["codex_smoke"])
 
 expected_fields = {
     "status_semantics": "last-verified-product-baseline",
-    "adk_version": "3.0.0",
+    "adk_version": "3.1.0-rc.1",
     "product_maturity": "M3",
+    "software_m5_readiness": "m5-ready",
+    "software_m5_certified": "false",
     "terminal_mature": "false",
-    "field_status": "field_not_verified",
+    "field_status": "self_pilot_active",
     "root_gate_status": "pass",
-    "runtime_eval_status": "codex-pass-claude-not-run",
+    "runtime_eval_status": "codex-smoke-pass-claude-blocked",
+    "m5_campaign_status": "blocked-claude-unauthenticated",
     "live_refresh_status": "not-required-no-mapped-assets",
-    "knowledge_candidate_status": "dry-run-planned-not-applied",
+    "knowledge_candidate_status": "not-required-repo-only",
 }
 for name, expected in expected_fields.items():
     actual = field(status_text, name)
@@ -174,16 +192,21 @@ for label, value in (
     if value != adk_status_commit or not value:
         failures.append("{} ADK commit does not match current-status: {}".format(label, value or "<missing>"))
 
-if lock.get("agent-dev-kit.version") != "3.0.0" or manifest.get("version") != "3.0.0":
+if lock.get("agent-dev-kit.version") != "3.1.0-rc.1" or manifest.get("version") != "3.1.0-rc.1":
     failures.append("ADK version is not synchronized across lock and manifest")
 
 overall = scorecard.get("overall", {})
+software_m5 = scorecard.get("software_m5", {})
 if not isinstance(overall, dict) or overall.get("level") != "M3":
     failures.append("product scorecard overall level must be M3")
 if overall.get("terminal_mature") is not False:
     failures.append("product scorecard must keep terminal_mature=false")
-if overall.get("field_status") != "field_not_verified":
-    failures.append("product scorecard must keep field_not_verified")
+if overall.get("field_status") != "self_pilot_active":
+    failures.append("product scorecard must keep self_pilot_active")
+if not isinstance(software_m5, dict) or software_m5.get("readiness_status") != "m5-ready":
+    failures.append("product scorecard software M5 readiness must be m5-ready")
+if software_m5.get("certified") is not False or software_m5.get("certification_status") != "blocked":
+    failures.append("product scorecard must keep software M5 certification blocked")
 
 task_status = {
     item.get("id"): item.get("status")
@@ -191,9 +214,10 @@ task_status = {
     if isinstance(item, dict)
 }
 for task_id, expected in (
+    ("PM-06", "blocked_external"),
     ("PM-07", "implemented"),
-    ("PM-08", "not_required"),
-    ("PM-09", "field_not_verified"),
+    ("PM-08", "implemented"),
+    ("PM-09", "in_progress"),
     ("PM-10", "ready"),
 ):
     if task_status.get(task_id) != expected:
@@ -202,21 +226,64 @@ for task_id, expected in (
 current_reports = [
     item for item in registry.get("reports", []) if isinstance(item, dict) and item.get("status") == "current"
 ]
-expected_audit = "reports/architecture/llm-agent-adk-product-maturity-audit-2026-07-13.md"
+expected_audit = "reports/architecture/llm-agent-adk-software-m5-readiness-2026-07-13.md"
 if len(current_reports) != 1 or current_reports[0].get("path") != expected_audit:
-    failures.append("report registry must select the product maturity audit as its only current report")
+    failures.append("report registry must select the software M5 readiness audit as its only current report")
 
-if comparison.get("suite") != "runtime-routing-comparison" or comparison.get("status") != "pass":
-    failures.append("Codex runtime comparison is not pass")
-if comparison.get("baseline", {}).get("success_rate") != 0.9:
-    failures.append("Codex baseline success rate evidence must be 0.9")
-if comparison.get("candidate", {}).get("success_rate") != 1.0:
-    failures.append("Codex ADK success rate evidence must be 1.0")
-if comparison.get("no_regression") is not True or comparison.get("measurable_gain") is not True:
-    failures.append("Codex comparison must preserve no-regression and measurable-gain evidence")
-for report in claude_reports:
-    if report.get("status") != "not-run" or "not authenticated" not in str(report.get("reason", "")):
-        failures.append("Claude runtime evidence must remain not-run with authentication reason")
+if codex_smoke.get("suite") != "runtime-routing" or codex_smoke.get("runtime") != "codex":
+    failures.append("Codex runtime smoke has an invalid identity")
+if codex_smoke.get("status") != "pass" or codex_smoke.get("total") != 1 or codex_smoke.get("passed") != 1:
+    failures.append("Codex runtime smoke is not a one-task pass")
+if codex_smoke.get("requested_model") != "gpt-5.5":
+    failures.append("Codex runtime smoke must request gpt-5.5")
+if not all(codex_smoke.get("quality_gate", {}).values()):
+    failures.append("Codex runtime smoke quality gates are not all passing")
+
+stored_plan_digest = campaign_plan.get("plan_sha256")
+unsigned_plan = dict(campaign_plan)
+unsigned_plan.pop("plan_sha256", None)
+if stored_plan_digest != canonical_digest(unsigned_plan):
+    failures.append("software M5 campaign plan hash does not match content")
+if campaign_plan.get("status") != "blocked" or campaign_plan.get("task_count") != 60 or campaign_plan.get("trials") != 3:
+    failures.append("software M5 campaign plan must remain the frozen blocked 60-task/3-trial plan")
+if campaign_plan.get("maximum_worst_cost_usd") != 144.0:
+    failures.append("software M5 campaign worst-case cost must be $144")
+runtime_entries = {
+    item.get("runtime"): item for item in campaign_plan.get("runtimes", []) if isinstance(item, dict)
+}
+if runtime_entries.get("codex", {}).get("status") != "planned":
+    failures.append("software M5 Codex campaign runtime must be planned")
+if runtime_entries.get("codex", {}).get("requested_model") != "gpt-5.5":
+    failures.append("software M5 Codex campaign model mismatch")
+claude_entry = runtime_entries.get("claude", {})
+if claude_entry.get("status") != "not-run" or "not authenticated" not in str(claude_entry.get("reason", "")):
+    failures.append("software M5 Claude campaign must remain blocked by authentication")
+if claude_entry.get("requested_model") != "claude-sonnet-4-6":
+    failures.append("software M5 Claude campaign model mismatch")
+if any("executable" in item and item.get("executable") for item in runtime_entries.values()):
+    failures.append("software M5 campaign plan must not persist absolute executable paths")
+
+if rehearsal.get("status") != "pass" or rehearsal.get("candidate_version") != "3.1.0-rc.1":
+    failures.append("release rehearsal is not a passing 3.1.0-rc.1 rehearsal")
+if rehearsal.get("rollback", {}).get("status") != "pass" or rehearsal.get("restored_assets") != 31:
+    failures.append("release rehearsal rollback did not restore 31 managed assets")
+
+release_adk = release.get("agent_dev_kit", {})
+release_artifacts = release.get("artifacts", {})
+release_mapping = release.get("source_to_live", {})
+release_m5 = release.get("software_m5", {})
+if release.get("schema") != "llm-agent-adk-software-m5-ready-release-evidence/v1":
+    failures.append("software M5 release evidence schema is invalid")
+if release_adk.get("commit") != adk_status_commit or release_adk.get("version") != "3.1.0-rc.1":
+    failures.append("software M5 release evidence ADK identity does not match current-status")
+if release_artifacts.get("source_sha256") != rehearsal.get("candidate_sha256"):
+    failures.append("software M5 release artifact SHA does not match rehearsal")
+if release_mapping.get("mapped_content_changed") is not False:
+    failures.append("software M5 release evidence must record mapped_content_changed=false")
+if release_mapping.get("decision") != "not-required-no-mapped-assets":
+    failures.append("software M5 release evidence has an invalid source-to-live decision")
+if release_m5.get("readiness_status") != "m5-ready" or release_m5.get("certified") is not False:
+    failures.append("software M5 release evidence has an invalid maturity boundary")
 
 previous_adk_commit = field(status_text, "adk_previous_commit")
 mapping_paths = ["agents", "skills", "optional-skills", "workflows", "templates"]
@@ -233,25 +300,28 @@ mapping_diff = git(
 if mapping_diff.returncode != 0:
     failures.append("mapped ADK asset paths changed; no-live-write decision is invalid")
 
-release_adk = release.get("agent_dev_kit", {})
-release_mapping = release.get("source_to_live", {})
-if release_adk.get("commit") != adk_status_commit:
-    failures.append("release evidence ADK commit does not match current-status")
-if release_mapping.get("mapped_content_changed") is not False:
-    failures.append("release evidence must record mapped_content_changed=false")
-if release_mapping.get("decision") != "not-required-no-mapped-assets":
-    failures.append("release evidence has an invalid source-to-live decision")
-if release.get("field_status") != "field_not_verified":
-    failures.append("release evidence must preserve field_not_verified")
+try:
+    m5_status = check_software_m5(Path(root), dt.datetime.now(dt.timezone.utc))
+except Exception as exc:
+    m5_status = {}
+    failures.append("software M5 certifier failed: {}".format(exc))
+expected_blockers = [
+    "final_version",
+    "independent_repository",
+    "operator_count",
+    "pilot_duration",
+    "real_repository_count",
+    "required_field_events",
+    "runtime_campaign",
+]
+if m5_status.get("integrity_status") != "pass" or m5_status.get("declaration_status") != "pass":
+    failures.append("software M5 evidence integrity or scorecard declaration is not pass")
+if m5_status.get("readiness_status") != "m5-ready" or m5_status.get("software_m5_certified") is not False:
+    failures.append("software M5 certifier boundary is not m5-ready/blocked")
+if m5_status.get("blocker_ids") != expected_blockers:
+    failures.append("software M5 certifier blocker set has drifted")
 
-for token in (
-    "llm-agent-adk-v3-product-maturity-20260713",
-    "active_promotion=false",
-    "未执行 apply",
-):
-    if token not in audit_text:
-        failures.append("maturity audit missing knowledge boundary token: {}".format(token))
-if re.search(r"active promotion (?:was )?applied", status_text + audit_text, re.IGNORECASE):
+if re.search(r"active promotion (?:was )?applied", status_text, re.IGNORECASE):
     failures.append("status evidence must not claim active knowledge promotion")
 
 subrepo_checker = path("scripts", "check-subrepo-state.sh")
@@ -283,10 +353,14 @@ payload = {
     "agent_dev_kit_commit": adk_status_commit,
     "adk_version": field(status_text, "adk_version"),
     "product_maturity": field(status_text, "product_maturity"),
+    "software_m5_readiness": field(status_text, "software_m5_readiness"),
+    "software_m5_certified": field(status_text, "software_m5_certified"),
     "field_status": field(status_text, "field_status"),
     "runtime_eval_status": field(status_text, "runtime_eval_status"),
+    "m5_campaign_status": field(status_text, "m5_campaign_status"),
     "live_refresh_status": field(status_text, "live_refresh_status"),
     "knowledge_candidate_status": field(status_text, "knowledge_candidate_status"),
+    "software_m5": m5_status,
     "subrepo_state": subrepo_state,
 }
 
@@ -296,7 +370,7 @@ elif failures:
     for failure in failures:
         print("[FAIL] {}".format(failure), file=sys.stderr)
 else:
-    print("[PASS] product status consistent: root={} adk={}".format(root_head, adk_status_commit[:7]))
+    print("[PASS] product status consistent: root={} adk={} m5=m5-ready/blocked".format(root_head, adk_status_commit[:7]))
 
 if failures:
     sys.exit(1)

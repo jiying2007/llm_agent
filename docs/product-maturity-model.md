@@ -29,6 +29,21 @@
 
 单个维度可以达到 M4；产品整体等级取关键维度短板，不做简单平均。没有现场证据时不得声称 M5。
 
+### 软件侧 M5-ready 与 M5 certified
+
+`M5-ready` 是 M4 之后的认证准备状态，不是新的成熟度等级。它要求软件控制面已经具备可执行的 campaign、writer lock、升级回退、现场账本、append-only hash chain、预算门禁和 fail-closed certifier。它不允许把自测、fixture 或本地 rehearsal 当作最终现场证明。
+
+软件侧 `M5 certified` 还必须同时满足：
+
+- 至少 60 个任务、Codex/Claude 两个 runtime、baseline/adk 两个条件和 3 次 trial 的认证 campaign 通过；模型、CLI、成本、latency、token、结果 hash 与置信门禁完整。
+- 至少两个有真实 field 事件的软件仓，其中至少一个是独立于本产品的真实仓。
+- 至少两个 human operator 实际贡献现场事件，不能只在 ledger 中声明身份。
+- 至少一个 independent pilot 的 ledger 跨度和事件观测跨度都达到 30 天。
+- 同一 independent pilot 覆盖 workload、upgrade、rollback、fault、recovery、maintenance 和 review，并满足结构化 metric 契约。
+- RC 先达到 `eligible-for-final`，随后只做必要版本提升、完整回归和最终 `3.1.0` 制品验证；不得先发布 final 再补现场证据。
+
+权威策略、账本和入口分别是 `manifests/software_m5_policy.json`、`manifests/software_m5_pilot_ledger.json` 和 `scripts/software-m5.sh`。自试点启动后可使用 `field_status=self_pilot_active`，但在独立试点认证前必须保持 `terminal_mature=false`。
+
 ## 四层证据
 
 | Layer | 含义 | 可接受证据 | 不可替代项 |
@@ -75,3 +90,4 @@ M4 可用于发布资产平台；M5 只能用于明确完成真实试点的维�
 - 每个 `verified` 状态至少关联 source/test/runtime 中适用的两层证据。
 - field gate 只在有真实设备、团队或发布记录时改变；模拟测试永远保持 `field_not_verified`。
 - 当前任务和剩余门禁进入 `manifests/product_maturity_task_pack.json`，一次性过程不写入长期规则。
+- 软件 M5 事件只能追加，修改历史行会破坏 hash chain 并触发阻断；operator 只保存匿名稳定 ID，不保存姓名、邮箱或凭证。

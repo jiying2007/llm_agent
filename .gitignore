@@ -10,3 +10,4 @@ dist/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+reports/field-evidence/software-m5-events.jsonl.lock

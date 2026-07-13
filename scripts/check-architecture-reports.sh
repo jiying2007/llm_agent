@@ -379,8 +379,8 @@ if product_scorecard:
     else:
         if overall.get("terminal_mature") is not False:
             fail("current product scorecard must not claim terminal maturity without field evidence")
-        if overall.get("field_status") != "field_not_verified":
-            fail("current product scorecard must preserve field_not_verified")
+        if overall.get("field_status") != "self_pilot_active":
+            fail("current product scorecard must preserve self_pilot_active until independent certification")
 
 report_registry = read_json(report_registry_path)
 if report_registry:
