@@ -1,7 +1,7 @@
 {
   "schema": "llm-agent-adk-software-m5-ready-release-evidence/v1",
   "generated_at": "2026-07-14",
-  "release_scope": "source-committed-local-release-candidate-evidence",
+  "release_scope": "source-committed-pushed-live-validated-release-candidate-evidence",
   "agent_dev_kit": {
     "version": "3.1.0-rc.2",
     "commit": "dd67b488c13e96933d80336f05160b9eea94e4fe",
@@ -49,8 +49,27 @@
       "templates"
     ],
     "mapped_content_changed": false,
-    "decision": "authorized-pending-apply",
-    "plan_status": "pending"
+    "decision": "applied-declarative-no-op",
+    "profile": "team-collab",
+    "managed_files": 749,
+    "plan_status": "pass",
+    "plan_summary": {
+      "copy": 0,
+      "keep": 481,
+      "overwrite": 0,
+      "delete": 0,
+      "mkdir": 270,
+      "skip": 0
+    },
+    "dry_run_status": "pass",
+    "apply_status": "pass",
+    "post_apply": {
+      "codex_assets_check": "pass-66-tests",
+      "profile_smoke": "pass-minimal-solo-dev-team-collab-superpowers-compat",
+      "routing_precedence": "pass-active-superpowers-in-default-0",
+      "live_compare": "same-480-diff-0-missing-0-stale-0-unmanaged-0",
+      "runtime_health": "pass-errors-0-warnings-0"
+    }
   },
   "software_m5": {
     "readiness_status": "m5-ready",
@@ -58,8 +77,19 @@
     "field_status": "self_pilot_active",
     "runtime_campaign": "blocked-claude-unauthenticated"
   },
+  "knowledge_hub": {
+    "candidate_id": "llm-agent-adk-v3-1-rc2-release-closure-20260714",
+    "path": "projects/llm-agent/validation/adk-v3-1-rc2-release-closure-20260714.md",
+    "status": "reviewing",
+    "active_promotion": false,
+    "knowledge_check": "pass",
+    "strict_link_audit": "pass",
+    "memory_write": false
+  },
   "publication": {
     "adk_source_commit_pushed": true,
+    "root_product_commit": "4cae24857c4c378798b85a8cd096e1d513da7b10",
+    "root_product_commit_pushed": true,
     "tag_created": false,
     "remote_release_created": false,
     "remote_artifact_uploaded": false,

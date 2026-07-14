@@ -3,7 +3,7 @@
 - updated_at: 2026-07-14
 - status_semantics: last-verified-product-baseline
 - last_verified_at: 2026-07-14
-- root_product_commit: 83e8a26a754adaa162cc424b80fe64edb3b93215
+- root_product_commit: 4cae24857c4c378798b85a8cd096e1d513da7b10
 - agent_dev_kit_commit: dd67b488c13e96933d80336f05160b9eea94e4fe
 - adk_previous_commit: 53681eb8b563d49dabea97f39dda706e5ae6df70
 - adk_version: 3.1.0-rc.2
@@ -15,8 +15,8 @@
 - root_gate_status: pass
 - runtime_eval_status: codex-smoke-pass-claude-blocked
 - m5_campaign_status: blocked-claude-unauthenticated
-- live_refresh_status: authorized-pending-apply
-- knowledge_candidate_status: required-pending-capture
+- live_refresh_status: applied-declarative-no-op
+- knowledge_candidate_status: captured-reviewing
 - working_tree_scope: product commits exclude registered dirty reference worktrees
 
 ## Summary
@@ -52,15 +52,19 @@ fail-closed software M5 certifier。
 | Release artifact | PASS | 三次 source build SHA256 `8571134df515289d32905961ae78d5e5c2dd308d2771691690594a85c76142ac` |
 | Wheel | NOT-RUN | 本地不重复制造 wheel 证据；GitHub CI/release workflow 负责 Python 3.12 wheel 与 attestation |
 | Upgrade/rollback | PASS | `3.1.0-rc.1 -> 3.1.0-rc.2 -> rollback/fallback`；52 项 rc.1 managed hashes 恢复并清理 |
+| Source-to-live | PASS/NO-OP | `team-collab` 749 managed；plan/apply 为 copy 0、overwrite 0、delete 0、keep 481、mkdir 270 |
+| Live health | PASS | `~/codex` 66 tests 与四 profile smoke 通过；live diff/missing/stale/unmanaged 均为 0；runtime health 0 error/0 warning |
 | Software M5 certifier | PASS/BOUNDARY | integrity/declaration pass；readiness `m5-ready`；certified `false` |
 
 ## Delivery Boundaries
 
 - Direct release targets 是 Claude Code、Hermes Agent 和 OpenCode；Codex 是 external handoff target。
 - `53681eb..dd67b48` 在 `agents/skills/optional-skills/workflows/templates` 下无内容变化；
-  用户仍已明确授权执行完整 `~/codex -> ~/.codex` 声明式链路，当前状态为等待 root 提交后的 plan/dry-run/apply 复核。
+  已按授权完成完整 `~/codex -> ~/.codex` 声明式链路；实际 apply 为零复制、零覆盖、零删除的可验证 no-op。
 - 本次不创建 tag、GitHub Release 或远端制品；final `3.1.0` 由 eligibility gate 阻断。
-- Knowledge Hub 只创建 `reviewing` validation candidate，不执行 active promotion，也不写 `~/.codex/memories`。
+- Knowledge Hub 已创建 `reviewing` validation candidate
+  `llm-agent-adk-v3-1-rc2-release-closure-20260714`，`knowledge-check` 与 strict link audit 均通过；
+  未执行 active promotion，也未写 `~/.codex/memories`。
 - `OpenSpec`、`superpowers`、`vibeflow` 保持已登记 dirty baseline，未被清理、暂存或提交。
 
 ## Remaining Evidence

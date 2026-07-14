@@ -20,7 +20,7 @@
   },
   "working_candidate": {
     "version": "3.1.0-rc.2",
-    "status": "source-committed-pushed",
+    "status": "source-committed-pushed-live-applied",
     "overall_level": "M3",
     "target_status": "experimental",
     "implemented_controls": [
@@ -42,9 +42,12 @@
       "target_static": "3/3-pass",
       "effect_eval": "24/24-pass-ablation-delta-0.3333",
       "release_rehearsal": "pass",
+      "source_to_live": "pass-declarative-no-op",
+      "codex_assets_check": "66/66-pass-four-profile-smoke",
+      "live_runtime_health": "pass-errors-0-warnings-0",
       "artifact_sha256": "8571134df515289d32905961ae78d5e5c2dd308d2771691690594a85c76142ac"
     },
-    "promotion_boundary": "The rc.2 source commit is pushed and the root lock is synchronized, but target stability and M4/M5 promotion remain blocked until root gates, native runtime smoke, remote CI and field evidence pass."
+    "promotion_boundary": "The rc.2 source and root product commits are pushed, the lock is synchronized and the declarative Codex live apply is verified, but target stability and M4/M5 promotion remain blocked until native runtime smoke, remote CI and field evidence pass."
   },
   "assessment_model": {
     "implementation_level": "highest level supported by code and local control-plane behavior",
@@ -143,8 +146,8 @@
       "evidence_level": "M3",
       "evidence_layers_present": ["source", "test", "runtime"],
       "status": "verified_local",
-      "evidence": ["agent-dev-kit/src/agent_dev_kit/installer.py", "agent-dev-kit/src/agent_dev_kit/release.py", "agent-dev-kit/docs/changes/adk-v3-1-rc2-target-conformance/release-rehearsal.json", "agent-dev-kit/docs/changes/adk-v3-1-rc2-target-conformance/verify-report.md", "reports/adk-v3-release-evidence-2026-07-13.json"],
-      "gap": "The local rc.1-to-rc.2 rollback-before-install rehearsal and reproducible build pass. Real target installation, source-to-live apply and remote release publish remain explicit owner operations."
+      "evidence": ["agent-dev-kit/src/agent_dev_kit/installer.py", "agent-dev-kit/src/agent_dev_kit/release.py", "agent-dev-kit/docs/changes/adk-v3-1-rc2-target-conformance/release-rehearsal.json", "agent-dev-kit/docs/changes/adk-v3-1-rc2-target-conformance/verify-report.md", "reports/adk-v3-1-rc2-release-evidence-2026-07-14.json"],
+      "gap": "The local rc.1-to-rc.2 rollback-before-install rehearsal, reproducible build and declarative Codex source-to-live apply pass. Real direct-target installation and remote release publish remain explicit owner operations."
     },
     {
       "id": "D09",

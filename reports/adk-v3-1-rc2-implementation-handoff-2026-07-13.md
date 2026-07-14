@@ -4,7 +4,7 @@
 
 `agent-dev-kit 3.1.0-rc.2` 已提交并推送，覆盖审计中最高优先级的 direct-target conformance，并补齐 JSON Schema 执行、clean-clone CI、静态/依赖/Scorecard 门禁、SBOM/provenance、端到端性能曲线和 OOD trace/outcome eval 控制面。
 
-总体评级保持 **M3 release candidate**。三个 direct target 保持 `experimental`；本报告不声明真实 Claude Code、OpenCode、Hermes runtime 已认证。根仓 gitlink、`adk.lock`、Software M5 policy 和 current status 已同步到 rc.2，并通过 quick 门禁。
+总体评级保持 **M3 release candidate**。三个 direct target 保持 `experimental`；本报告不声明真实 Claude Code、OpenCode、Hermes runtime 已认证。根仓 gitlink、`adk.lock`、Software M5 policy 和 current status 已同步到 rc.2，产品基线已提交推送，并完成声明式 live apply。
 
 ## 已实现
 
@@ -21,8 +21,8 @@
 ## 当前锁与提交边界
 
 - ADK commit `dd67b488c13e96933d80336f05160b9eea94e4fe` 已推送到 `origin/main`。
-- 根仓 gitlink 与 `adk.lock` 已同步到 `3.1.0-rc.2 / dd67b488...`，根仓提交与推送仍在本轮后续步骤。
-- 用户已授权完整 `~/codex -> ~/.codex` 声明式 apply；仍不创建 tag、GitHub Release 或远端制品。
+- 根仓 gitlink 与 `adk.lock` 已同步到 `3.1.0-rc.2 / dd67b488...`；产品基线 commit `4cae24857c4c378798b85a8cd096e1d513da7b10` 已推送到 `origin/main`。
+- 已按授权完成 `~/codex -> ~/.codex` 声明式 apply：`copy=0`、`overwrite=0`、`delete=0`、`keep=481`、`mkdir=270`；仍不创建 tag、GitHub Release 或远端制品。
 
 ## 外部阻塞
 
@@ -44,5 +44,8 @@
 - rc.1 → rc.2 演练：legacy 52 文件回滚、rc.2 39 文件安装与回滚均 PASS；随后从保留的 rc.1 artifact 重装并核对 52 个 managed hashes，最终清理 52 个文件；evidence 写入后 artifact SHA 不变。
 - 根仓 quick：56/56 PASS；lock/current-status/software-M5/subrepo-state 的 rc.1 边界失败已在真实 ADK commit 后闭环。
 - 根仓 full：62/62 PASS；harden readiness、性能、证据包、Token、WeChat 和 workspace entrypoints 全部通过。
+- source-to-live：build 749 managed，doctor 0 error/0 warning，plan/dry-run/apply 均 PASS 且零复制/覆盖/删除；`~/codex` 66 tests、四 profile smoke、routing precedence 和 live compare 全部 PASS。
+- 应用后 runtime health：PASS，live `team-collab` profile 0 error/0 warning。
+- Knowledge Hub：已创建 `reviewing` candidate `llm-agent-adk-v3-1-rc2-release-closure-20260714`；`knowledge-check` 和 strict link audit 均 PASS，未 active promotion、未写 memory。
 
 完整本地证据见 `agent-dev-kit/docs/changes/adk-v3-1-rc2-target-conformance/verify-report.md`；机器可读演练见同目录 `release-rehearsal.json`。根仓机器可读 release evidence 见 `reports/adk-v3-1-rc2-release-evidence-2026-07-14.json`。

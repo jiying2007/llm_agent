@@ -72,7 +72,7 @@ working_candidate = scorecard["working_candidate"]
 assert working_candidate["version"] == "3.1.0-rc.2", working_candidate
 assert working_candidate["overall_level"] == "M3", working_candidate
 assert working_candidate["target_status"] == "experimental", working_candidate
-assert working_candidate["status"] == "source-committed-pushed", working_candidate
+assert working_candidate["status"] == "source-committed-pushed-live-applied", working_candidate
 assert working_candidate["lock_state"] == "synchronized", working_candidate
 assert working_candidate["runtime_certification"] == "not-run", working_candidate
 levels = {f"M{i}" for i in range(6)}

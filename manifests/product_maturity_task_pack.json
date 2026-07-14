@@ -83,7 +83,7 @@
     {
       "id": "PM-10",
       "priority": "P0",
-      "status": "ready",
+      "status": "implemented",
       "scope": "commit and push",
       "acceptance": "ADK commits are pushed first; root gitlink and root changes are committed and pushed without touching unrelated dirty subrepos",
       "verify": ["rtk git status --short", "rtk git log -1 --oneline", "rtk git status -sb"]
