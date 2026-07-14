@@ -192,6 +192,7 @@ gitlink_commit = index[1] if len(index) >= 2 and index[0] == "160000" else ""
 adk_worktree = git("rev-parse", "HEAD", cwd=path("agent-dev-kit"), check=False).stdout.strip()
 adk_lock_commit = lock.get("agent-dev-kit.commit", "")
 adk_status_commit = field(status_text, "agent_dev_kit_commit")
+adk_release_commit = field(status_text, "agent_dev_kit_release_commit") or adk_status_commit
 for label, value in (
     ("gitlink", gitlink_commit),
     ("adk.lock", adk_lock_commit),
@@ -200,6 +201,19 @@ for label, value in (
 ):
     if value != adk_status_commit or not value:
         failures.append("{} ADK commit does not match current-status: {}".format(label, value or "<missing>"))
+if (
+    not adk_release_commit
+    or git(
+        "merge-base",
+        "--is-ancestor",
+        adk_release_commit,
+        adk_status_commit,
+        cwd=path("agent-dev-kit"),
+        check=False,
+    ).returncode
+    != 0
+):
+    failures.append("current-status ADK release commit must be an ancestor of the current ADK commit")
 
 if (
     not isinstance(candidate_version, str)
@@ -303,7 +317,7 @@ release_mapping = release.get("source_to_live", {})
 release_m5 = release.get("software_m5", {})
 if release.get("schema") != "llm-agent-adk-software-m5-ready-release-evidence/v1":
     failures.append("software M5 release evidence schema is invalid")
-if release_adk.get("commit") != adk_status_commit or release_adk.get("version") != candidate_version:
+if release_adk.get("commit") != adk_release_commit or release_adk.get("version") != candidate_version:
     failures.append("software M5 release evidence ADK identity does not match current-status")
 if release_artifacts.get("source_sha256") != rehearsal.get("candidate_sha256"):
     failures.append("software M5 release artifact SHA does not match rehearsal")
@@ -319,14 +333,14 @@ if release_full.get("total") != 51 or release_full.get("pass") != 51 or release_
 
 previous_adk_commit = field(status_text, "adk_previous_commit")
 mapping_paths = ["agents", "skills", "optional-skills", "workflows", "templates"]
-expected_comparison = "{}..{}".format(previous_adk_commit, adk_status_commit)
+expected_comparison = "{}..{}".format(previous_adk_commit, adk_release_commit)
 if release_mapping.get("comparison") != expected_comparison:
     failures.append("software M5 release evidence comparison does not match current-status commits")
 mapping_diff = git(
     "diff",
     "--quiet",
     previous_adk_commit,
-    adk_status_commit,
+    adk_release_commit,
     "--",
     *mapping_paths,
     cwd=path("agent-dev-kit"),
@@ -334,6 +348,18 @@ mapping_diff = git(
 )
 if mapping_diff.returncode != 0:
     failures.append("mapped ADK asset paths changed; no-live-write decision is invalid")
+post_release_mapping_diff = git(
+    "diff",
+    "--quiet",
+    adk_release_commit,
+    adk_status_commit,
+    "--",
+    *mapping_paths,
+    cwd=path("agent-dev-kit"),
+    check=False,
+)
+if post_release_mapping_diff.returncode != 0:
+    failures.append("mapped ADK asset paths changed after release baseline; current no-live-write decision is invalid")
 
 try:
     m5_status = check_software_m5(Path(root), dt.datetime.now(dt.timezone.utc))
@@ -386,6 +412,7 @@ payload = {
     "root_head": root_head,
     "root_product_commit": root_product_commit,
     "agent_dev_kit_commit": adk_status_commit,
+    "agent_dev_kit_release_commit": adk_release_commit,
     "adk_version": field(status_text, "adk_version"),
     "product_maturity": field(status_text, "product_maturity"),
     "software_m5_readiness": field(status_text, "software_m5_readiness"),
@@ -405,7 +432,11 @@ elif failures:
     for failure in failures:
         print("[FAIL] {}".format(failure), file=sys.stderr)
 else:
-    print("[PASS] product status consistent: root={} adk={} m5=m5-ready/blocked".format(root_head, adk_status_commit[:7]))
+    print(
+        "[PASS] product status consistent: root={} adk={} release={} m5=m5-ready/blocked".format(
+            root_head, adk_status_commit[:7], adk_release_commit[:7]
+        )
+    )
 
 if failures:
     sys.exit(1)

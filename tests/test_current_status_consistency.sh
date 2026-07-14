@@ -61,6 +61,12 @@ CSV
   cp "${ROOT}/agent-dev-kit/${legacy_change_path}/codex-runtime-smoke.json" "${dest}/agent-dev-kit/${legacy_change_path}/"
   git -C "${dest}/agent-dev-kit" add manifest.json "${legacy_change_path}" "${rehearsal_change_path}"
   git -C "${dest}/agent-dev-kit" commit -q -m "fixture M5-ready candidate"
+  local release_adk
+  release_adk="$(git -C "${dest}/agent-dev-kit" rev-parse HEAD)"
+
+  printf 'governance-only change\n' >"${dest}/agent-dev-kit/docs/governance-contract.md"
+  git -C "${dest}/agent-dev-kit" add docs/governance-contract.md
+  git -C "${dest}/agent-dev-kit" commit -q -m "fixture governance-only change"
   local current_adk
   current_adk="$(git -C "${dest}/agent-dev-kit" rev-parse HEAD)"
 
@@ -69,22 +75,24 @@ CSV
     "${dest}/reports/adk-v3-1-rc2-release-evidence-2026-07-14.json" \
     "${dest}/adk.lock" \
     "${previous_adk}" \
+    "${release_adk}" \
     "${current_adk}" <<'PY'
 import json
 import pathlib
 import re
 import sys
 
-status_path, release_path, lock_path, previous_adk, current_adk = sys.argv[1:]
+status_path, release_path, lock_path, previous_adk, release_adk, current_adk = sys.argv[1:]
 status = pathlib.Path(status_path).read_text(encoding="utf-8")
 status = re.sub(r"^- agent_dev_kit_commit: .+$", f"- agent_dev_kit_commit: {current_adk}", status, flags=re.MULTILINE)
+status = re.sub(r"^- agent_dev_kit_release_commit: .+$", f"- agent_dev_kit_release_commit: {release_adk}", status, flags=re.MULTILINE)
 status = re.sub(r"^- adk_previous_commit: .+$", f"- adk_previous_commit: {previous_adk}", status, flags=re.MULTILINE)
 pathlib.Path(status_path).write_text(status, encoding="utf-8")
 
 release = json.loads(pathlib.Path(release_path).read_text(encoding="utf-8"))
-release["agent_dev_kit"]["commit"] = current_adk
+release["agent_dev_kit"]["commit"] = release_adk
 release["agent_dev_kit"]["previous_commit"] = previous_adk
-release["source_to_live"]["comparison"] = f"{previous_adk}..{current_adk}"
+release["source_to_live"]["comparison"] = f"{previous_adk}..{release_adk}"
 pathlib.Path(release_path).write_text(json.dumps(release, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 lock = pathlib.Path(lock_path).read_text(encoding="utf-8")
@@ -145,6 +153,17 @@ path = pathlib.Path(sys.argv[1])
 path.write_text(re.sub(r"^- agent_dev_kit_commit: .+$", "- agent_dev_kit_commit: 0000000", path.read_text(encoding="utf-8"), flags=re.MULTILINE), encoding="utf-8")
 PY
 expect_fail_contains "${mismatch_root}" "gitlink ADK commit does not match current-status"
+
+release_mismatch_root="${TMP_DIR}/release-mismatch-root"
+cp -a "${pass_root}" "${release_mismatch_root}"
+python3 - "${release_mismatch_root}/reports/current-status.md" <<'PY'
+import pathlib
+import re
+import sys
+path = pathlib.Path(sys.argv[1])
+path.write_text(re.sub(r"^- agent_dev_kit_release_commit: .+$", "- agent_dev_kit_release_commit: 0000000", path.read_text(encoding="utf-8"), flags=re.MULTILINE), encoding="utf-8")
+PY
+expect_fail_contains "${release_mismatch_root}" "software M5 release evidence ADK identity does not match current-status"
 
 stale_root="${TMP_DIR}/stale-root"
 cp -a "${pass_root}" "${stale_root}"
@@ -217,27 +236,21 @@ git -C "${mapped_root}/agent-dev-kit" commit -q -m "fixture mapped change"
 mapped_adk="$(git -C "${mapped_root}/agent-dev-kit" rev-parse HEAD)"
 python3 - \
   "${mapped_root}/reports/current-status.md" \
-  "${mapped_root}/reports/adk-v3-1-rc2-release-evidence-2026-07-14.json" \
   "${mapped_root}/adk.lock" \
   "${mapped_adk}" <<'PY'
-import json
 import pathlib
 import re
 import sys
-status_path, release_path, lock_path, mapped_adk = sys.argv[1:]
+status_path, lock_path, mapped_adk = sys.argv[1:]
 status = pathlib.Path(status_path).read_text(encoding="utf-8")
 status = re.sub(r"^- agent_dev_kit_commit: .+$", f"- agent_dev_kit_commit: {mapped_adk}", status, flags=re.MULTILINE)
 pathlib.Path(status_path).write_text(status, encoding="utf-8")
-release = json.loads(pathlib.Path(release_path).read_text(encoding="utf-8"))
-release["agent_dev_kit"]["commit"] = mapped_adk
-release["source_to_live"]["comparison"] = f"{release['agent_dev_kit']['previous_commit']}..{mapped_adk}"
-pathlib.Path(release_path).write_text(json.dumps(release, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 lock = pathlib.Path(lock_path).read_text(encoding="utf-8")
 lock = re.sub(r"agent-dev-kit.commit=.*", f"agent-dev-kit.commit={mapped_adk}", lock)
 pathlib.Path(lock_path).write_text(lock, encoding="utf-8")
 PY
 git -C "${mapped_root}" update-index --cacheinfo "160000,${mapped_adk},agent-dev-kit"
-expect_fail_contains "${mapped_root}" "mapped ADK asset paths changed"
+expect_fail_contains "${mapped_root}" "mapped ADK asset paths changed after release baseline"
 
 dirty_root="${TMP_DIR}/dirty-root"
 cp -a "${pass_root}" "${dirty_root}"

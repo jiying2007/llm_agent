@@ -4,7 +4,8 @@
 - status_semantics: last-verified-product-baseline
 - last_verified_at: 2026-07-14
 - root_product_commit: 4cae24857c4c378798b85a8cd096e1d513da7b10
-- agent_dev_kit_commit: dd67b488c13e96933d80336f05160b9eea94e4fe
+- agent_dev_kit_commit: 0d25f3da7ac1f141a5172d62cfc7b6f4bfbd93b1
+- agent_dev_kit_release_commit: dd67b488c13e96933d80336f05160b9eea94e4fe
 - adk_previous_commit: 53681eb8b563d49dabea97f39dda706e5ae6df70
 - adk_version: 3.1.0-rc.2
 - product_maturity: M3
@@ -29,6 +30,10 @@
 `agent-dev-kit 3.1.0-rc.2` 已修复 direct target 原生路径/frontmatter，统一 export/install
 renderer，并补齐 receipt v3、Draft 2020-12 Schema、OOD trace/outcome eval、性能曲线、
 静态/依赖/Scorecard 门禁、SBOM/provenance 和 rc.1 -> rc.2 回滚演练。
+`0d25f3d` 进一步补齐 Agent Skills、OWASP ASI01-ASI10、safe-output、MCP provenance、
+OTel GenAI adapter 与 ACP/A2A watch-only 治理契约；全部为 method-only/additive，未启用外部 runtime。
+`agent_dev_kit_release_commit` 继续锚定已验证的 RC2 制品及回滚证据，`agent_dev_kit_commit`
+则记录当前 gitlink/lock 治理基线；门禁要求前者是后者祖先且两者之间无 runtime 映射资产变化。
 `llm_agent` 已具备不可弱化 policy、匿名 pilot ledger、append-only evidence hash chain 和
 fail-closed software M5 certifier。
 
@@ -41,7 +46,8 @@ fail-closed software M5 certifier。
 | Area | Result | Evidence |
 |---|---|---|
 | ADK strict/security/release | PASS | 三项结构化门禁均为 pass |
-| ADK full | PASS | full `51/51`，fail `0` |
+| ADK release full | PASS | `dd67b48` 制品基线 full `51/51`，fail `0` |
+| ADK current governance full | PASS | `0d25f3d` 治理基线 full `52/52`，fail `0` |
 | Root quick/full | PASS | quick `56/56`；full `62/62`，fail `0` |
 | Direct target static | PASS/BOUNDARY | Claude Code/OpenCode/Hermes `3/3`；真实 runtime smoke 仍为 `not-run` |
 | Effect eval | PASS | OOD/adversarial `24/24`；routing ablation delta `0.3333` |
@@ -61,6 +67,8 @@ fail-closed software M5 certifier。
 - Direct release targets 是 Claude Code、Hermes Agent 和 OpenCode；Codex 是 external handoff target。
 - `53681eb..dd67b48` 在 `agents/skills/optional-skills/workflows/templates` 下无内容变化；
   已按授权完成完整 `~/codex -> ~/.codex` 声明式链路；实际 apply 为零复制、零覆盖、零删除的可验证 no-op。
+- `dd67b48..0d25f3d` 只增加平台中立治理契约、fixtures、checker 和测试；没有 runtime/default target 变更，
+  因此本轮不执行新的 source-to-live apply。
 - 本次不创建 tag、GitHub Release 或远端制品；final `3.1.0` 由 eligibility gate 阻断。
 - Knowledge Hub 已创建 `reviewing` validation candidate
   `llm-agent-adk-v3-1-rc2-release-closure-20260714`，`knowledge-check` 与 strict link audit 均通过；
