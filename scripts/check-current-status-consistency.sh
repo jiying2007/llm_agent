@@ -116,10 +116,10 @@ required = {
     "tasks": path("manifests", "product_maturity_task_pack.json"),
     "registry": path("manifests", "report_registry.json"),
     "audit": path("reports", "architecture", "llm-agent-adk-software-m5-readiness-2026-07-13.md"),
-    "release_evidence": path("reports", "adk-v3-1-software-m5-ready-release-evidence-2026-07-13.json"),
+    "release_evidence": path("reports", "adk-v3-1-rc2-release-evidence-2026-07-14.json"),
     "lock": path("adk.lock"),
     "manifest": path("agent-dev-kit", "manifest.json"),
-    "rehearsal": path("agent-dev-kit", "docs", "changes", "adk-v3-1-software-m5-ready", "release-rehearsal.json"),
+    "rehearsal": path("agent-dev-kit", "docs", "changes", "adk-v3-1-rc2-target-conformance", "release-rehearsal.json"),
     "campaign_plan": path("agent-dev-kit", "docs", "changes", "adk-v3-1-software-m5-ready", "software-m5-campaign-plan.json"),
     "codex_smoke": path("agent-dev-kit", "docs", "changes", "adk-v3-1-software-m5-ready", "codex-runtime-smoke.json"),
     "m5_policy": path("manifests", "software_m5_policy.json"),
@@ -140,10 +140,12 @@ release = read_json(required["release_evidence"])
 rehearsal = read_json(required["rehearsal"])
 campaign_plan = read_json(required["campaign_plan"])
 codex_smoke = read_json(required["codex_smoke"])
+m5_policy = read_json(required["m5_policy"])
+release_policy = m5_policy.get("release", {}) if isinstance(m5_policy, dict) else {}
+candidate_version = release_policy.get("candidate_version")
 
 expected_fields = {
     "status_semantics": "last-verified-product-baseline",
-    "adk_version": "3.1.0-rc.1",
     "product_maturity": "M3",
     "software_m5_readiness": "m5-ready",
     "software_m5_certified": "false",
@@ -152,13 +154,20 @@ expected_fields = {
     "root_gate_status": "pass",
     "runtime_eval_status": "codex-smoke-pass-claude-blocked",
     "m5_campaign_status": "blocked-claude-unauthenticated",
-    "live_refresh_status": "not-required-no-mapped-assets",
-    "knowledge_candidate_status": "not-required-repo-only",
 }
 for name, expected in expected_fields.items():
     actual = field(status_text, name)
     if actual != expected:
         failures.append("current-status {} must be {}, got {}".format(name, expected, actual or "<missing>"))
+
+if field(status_text, "adk_version") != candidate_version:
+    failures.append("current-status adk_version does not match software M5 candidate_version")
+live_refresh_status = field(status_text, "live_refresh_status")
+if live_refresh_status not in {"authorized-pending-apply", "applied-declarative-no-op"}:
+    failures.append("current-status live_refresh_status is invalid for rc.2 delivery")
+knowledge_candidate_status = field(status_text, "knowledge_candidate_status")
+if knowledge_candidate_status not in {"required-pending-capture", "captured-reviewing"}:
+    failures.append("current-status knowledge_candidate_status is invalid for rc.2 delivery")
 
 last_verified_at = field(status_text, "last_verified_at")
 try:
@@ -192,7 +201,11 @@ for label, value in (
     if value != adk_status_commit or not value:
         failures.append("{} ADK commit does not match current-status: {}".format(label, value or "<missing>"))
 
-if lock.get("agent-dev-kit.version") != "3.1.0-rc.1" or manifest.get("version") != "3.1.0-rc.1":
+if (
+    not isinstance(candidate_version, str)
+    or lock.get("agent-dev-kit.version") != candidate_version
+    or manifest.get("version") != candidate_version
+):
     failures.append("ADK version is not synchronized across lock and manifest")
 
 overall = scorecard.get("overall", {})
@@ -207,6 +220,8 @@ if not isinstance(software_m5, dict) or software_m5.get("readiness_status") != "
     failures.append("product scorecard software M5 readiness must be m5-ready")
 if software_m5.get("certified") is not False or software_m5.get("certification_status") != "blocked":
     failures.append("product scorecard must keep software M5 certification blocked")
+if software_m5.get("candidate_version") != candidate_version:
+    failures.append("product scorecard software M5 candidate version does not match policy")
 
 task_status = {
     item.get("id"): item.get("status")
@@ -218,10 +233,11 @@ for task_id, expected in (
     ("PM-07", "implemented"),
     ("PM-08", "implemented"),
     ("PM-09", "in_progress"),
-    ("PM-10", "ready"),
 ):
     if task_status.get(task_id) != expected:
         failures.append("{} status must be {}".format(task_id, expected))
+if task_status.get("PM-10") not in {"ready", "implemented"}:
+    failures.append("PM-10 status must be ready or implemented")
 
 current_reports = [
     item for item in registry.get("reports", []) if isinstance(item, dict) and item.get("status") == "current"
@@ -263,10 +279,23 @@ if claude_entry.get("requested_model") != "claude-sonnet-4-6":
 if any("executable" in item and item.get("executable") for item in runtime_entries.values()):
     failures.append("software M5 campaign plan must not persist absolute executable paths")
 
-if rehearsal.get("status") != "pass" or rehearsal.get("candidate_version") != "3.1.0-rc.1":
-    failures.append("release rehearsal is not a passing 3.1.0-rc.1 rehearsal")
-if rehearsal.get("rollback", {}).get("status") != "pass" or rehearsal.get("restored_assets") != 31:
-    failures.append("release rehearsal rollback did not restore 31 managed assets")
+if rehearsal.get("status") != "pass" or rehearsal.get("candidate_version") != candidate_version:
+    failures.append("release rehearsal is not a passing current-candidate rehearsal")
+if (
+    rehearsal.get("rollback", {}).get("status") != "pass"
+    or not isinstance(rehearsal.get("restored_assets"), int)
+    or rehearsal.get("restored_assets", 0) < 1
+):
+    failures.append("release rehearsal rollback did not restore managed assets")
+if rehearsal.get("schema_version") == 2 and rehearsal.get("migration_mode") == "rollback-before-install":
+    fallback = rehearsal.get("fallback_restore", {})
+    if (
+        rehearsal.get("legacy_rollback", {}).get("status") != "pass"
+        or fallback.get("status") != "pass"
+        or fallback.get("strategy") != "reinstall-previous-artifact"
+        or fallback.get("cleanup_removed") != fallback.get("installed")
+    ):
+        failures.append("release rehearsal rc.1 fallback restoration is incomplete")
 
 release_adk = release.get("agent_dev_kit", {})
 release_artifacts = release.get("artifacts", {})
@@ -274,19 +303,25 @@ release_mapping = release.get("source_to_live", {})
 release_m5 = release.get("software_m5", {})
 if release.get("schema") != "llm-agent-adk-software-m5-ready-release-evidence/v1":
     failures.append("software M5 release evidence schema is invalid")
-if release_adk.get("commit") != adk_status_commit or release_adk.get("version") != "3.1.0-rc.1":
+if release_adk.get("commit") != adk_status_commit or release_adk.get("version") != candidate_version:
     failures.append("software M5 release evidence ADK identity does not match current-status")
 if release_artifacts.get("source_sha256") != rehearsal.get("candidate_sha256"):
     failures.append("software M5 release artifact SHA does not match rehearsal")
 if release_mapping.get("mapped_content_changed") is not False:
     failures.append("software M5 release evidence must record mapped_content_changed=false")
-if release_mapping.get("decision") != "not-required-no-mapped-assets":
-    failures.append("software M5 release evidence has an invalid source-to-live decision")
+if release_mapping.get("decision") != live_refresh_status:
+    failures.append("software M5 release evidence source-to-live decision does not match current-status")
 if release_m5.get("readiness_status") != "m5-ready" or release_m5.get("certified") is not False:
     failures.append("software M5 release evidence has an invalid maturity boundary")
+release_full = release.get("validation", {}).get("full", {})
+if release_full.get("total") != 51 or release_full.get("pass") != 51 or release_full.get("fail") != 0:
+    failures.append("software M5 release evidence does not record the 51/51 ADK full gate")
 
 previous_adk_commit = field(status_text, "adk_previous_commit")
 mapping_paths = ["agents", "skills", "optional-skills", "workflows", "templates"]
+expected_comparison = "{}..{}".format(previous_adk_commit, adk_status_commit)
+if release_mapping.get("comparison") != expected_comparison:
+    failures.append("software M5 release evidence comparison does not match current-status commits")
 mapping_diff = git(
     "diff",
     "--quiet",

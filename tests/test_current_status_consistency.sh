@@ -10,7 +10,8 @@ trap 'rm -rf "${TMP_DIR}"' EXIT
 
 make_fixture() {
   local dest="$1"
-  local change_path="docs/changes/adk-v3-1-software-m5-ready"
+  local legacy_change_path="docs/changes/adk-v3-1-software-m5-ready"
+  local rehearsal_change_path="docs/changes/adk-v3-1-rc2-target-conformance"
   mkdir -p \
     "${dest}/reports/architecture" \
     "${dest}/reports/field-evidence" \
@@ -19,11 +20,12 @@ make_fixture() {
     "${dest}/subrepos" \
     "${dest}/docs" \
     "${dest}/agent-dev-kit/agents/example" \
-    "${dest}/agent-dev-kit/${change_path}"
+    "${dest}/agent-dev-kit/${legacy_change_path}" \
+    "${dest}/agent-dev-kit/${rehearsal_change_path}"
 
   cp "${ROOT}/reports/current-status.md" "${dest}/reports/current-status.md"
   cp "${ROOT}/reports/architecture/llm-agent-adk-software-m5-readiness-2026-07-13.md" "${dest}/reports/architecture/"
-  cp "${ROOT}/reports/adk-v3-1-software-m5-ready-release-evidence-2026-07-13.json" "${dest}/reports/"
+  cp "${ROOT}/reports/adk-v3-1-rc2-release-evidence-2026-07-14.json" "${dest}/reports/"
   cp "${ROOT}/reports/field-evidence/software-m5-events.jsonl" "${dest}/reports/field-evidence/"
   cp "${ROOT}/reports/field-evidence/software-m5-self-pilot-start-2026-07-13.json" "${dest}/reports/field-evidence/"
   cp "${ROOT}/manifests/product_maturity_scorecard.json" "${dest}/manifests/"
@@ -53,17 +55,18 @@ CSV
   previous_adk="$(git -C "${dest}/agent-dev-kit" rev-parse HEAD)"
 
   cp "${ROOT}/agent-dev-kit/manifest.json" "${dest}/agent-dev-kit/manifest.json"
-  cp "${ROOT}/agent-dev-kit/${change_path}/release-rehearsal.json" "${dest}/agent-dev-kit/${change_path}/"
-  cp "${ROOT}/agent-dev-kit/${change_path}/software-m5-campaign-plan.json" "${dest}/agent-dev-kit/${change_path}/"
-  cp "${ROOT}/agent-dev-kit/${change_path}/codex-runtime-smoke.json" "${dest}/agent-dev-kit/${change_path}/"
-  git -C "${dest}/agent-dev-kit" add manifest.json "${change_path}"
+  cp "${ROOT}/agent-dev-kit/${rehearsal_change_path}/release-rehearsal.json" "${dest}/agent-dev-kit/${rehearsal_change_path}/"
+  cp "${ROOT}/agent-dev-kit/${legacy_change_path}/release-rehearsal.json" "${dest}/agent-dev-kit/${legacy_change_path}/"
+  cp "${ROOT}/agent-dev-kit/${legacy_change_path}/software-m5-campaign-plan.json" "${dest}/agent-dev-kit/${legacy_change_path}/"
+  cp "${ROOT}/agent-dev-kit/${legacy_change_path}/codex-runtime-smoke.json" "${dest}/agent-dev-kit/${legacy_change_path}/"
+  git -C "${dest}/agent-dev-kit" add manifest.json "${legacy_change_path}" "${rehearsal_change_path}"
   git -C "${dest}/agent-dev-kit" commit -q -m "fixture M5-ready candidate"
   local current_adk
   current_adk="$(git -C "${dest}/agent-dev-kit" rev-parse HEAD)"
 
   python3 - \
     "${dest}/reports/current-status.md" \
-    "${dest}/reports/adk-v3-1-software-m5-ready-release-evidence-2026-07-13.json" \
+    "${dest}/reports/adk-v3-1-rc2-release-evidence-2026-07-14.json" \
     "${dest}/adk.lock" \
     "${previous_adk}" \
     "${current_adk}" <<'PY'
@@ -81,10 +84,11 @@ pathlib.Path(status_path).write_text(status, encoding="utf-8")
 release = json.loads(pathlib.Path(release_path).read_text(encoding="utf-8"))
 release["agent_dev_kit"]["commit"] = current_adk
 release["agent_dev_kit"]["previous_commit"] = previous_adk
+release["source_to_live"]["comparison"] = f"{previous_adk}..{current_adk}"
 pathlib.Path(release_path).write_text(json.dumps(release, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 lock = pathlib.Path(lock_path).read_text(encoding="utf-8")
-lock = re.sub(r"agent-dev-kit.version=.*", "agent-dev-kit.version=3.1.0-rc.1", lock)
+lock = re.sub(r"agent-dev-kit.version=.*", "agent-dev-kit.version=3.1.0-rc.2", lock)
 lock = re.sub(r"agent-dev-kit.commit=.*", f"agent-dev-kit.commit={current_adk}", lock)
 pathlib.Path(lock_path).write_text(lock, encoding="utf-8")
 PY
@@ -188,7 +192,7 @@ import sys
 path = pathlib.Path(sys.argv[1])
 path.write_text(re.sub(r"^- knowledge_candidate_status: .+$", "- knowledge_candidate_status: active-promotion-applied", path.read_text(encoding="utf-8"), flags=re.MULTILINE), encoding="utf-8")
 PY
-expect_fail_contains "${knowledge_root}" "knowledge_candidate_status must be not-required-repo-only"
+expect_fail_contains "${knowledge_root}" "knowledge_candidate_status is invalid for rc.2 delivery"
 
 events_root="${TMP_DIR}/events-root"
 cp -a "${pass_root}" "${events_root}"
@@ -213,7 +217,7 @@ git -C "${mapped_root}/agent-dev-kit" commit -q -m "fixture mapped change"
 mapped_adk="$(git -C "${mapped_root}/agent-dev-kit" rev-parse HEAD)"
 python3 - \
   "${mapped_root}/reports/current-status.md" \
-  "${mapped_root}/reports/adk-v3-1-software-m5-ready-release-evidence-2026-07-13.json" \
+  "${mapped_root}/reports/adk-v3-1-rc2-release-evidence-2026-07-14.json" \
   "${mapped_root}/adk.lock" \
   "${mapped_adk}" <<'PY'
 import json
@@ -226,6 +230,7 @@ status = re.sub(r"^- agent_dev_kit_commit: .+$", f"- agent_dev_kit_commit: {mapp
 pathlib.Path(status_path).write_text(status, encoding="utf-8")
 release = json.loads(pathlib.Path(release_path).read_text(encoding="utf-8"))
 release["agent_dev_kit"]["commit"] = mapped_adk
+release["source_to_live"]["comparison"] = f"{release['agent_dev_kit']['previous_commit']}..{mapped_adk}"
 pathlib.Path(release_path).write_text(json.dumps(release, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 lock = pathlib.Path(lock_path).read_text(encoding="utf-8")
 lock = re.sub(r"agent-dev-kit.commit=.*", f"agent-dev-kit.commit={mapped_adk}", lock)

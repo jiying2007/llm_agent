@@ -1,12 +1,12 @@
 # Last Verified Product Baseline
 
-- updated_at: 2026-07-13
+- updated_at: 2026-07-14
 - status_semantics: last-verified-product-baseline
-- last_verified_at: 2026-07-13
-- root_product_commit: d8813e53dcbc0d1963b6b51b78540aec80b71213
-- agent_dev_kit_commit: 53681eb8b563d49dabea97f39dda706e5ae6df70
-- adk_previous_commit: eec7cd14447bb75f93f810e758d2c34261a884a9
-- adk_version: 3.1.0-rc.1
+- last_verified_at: 2026-07-14
+- root_product_commit: 83e8a26a754adaa162cc424b80fe64edb3b93215
+- agent_dev_kit_commit: dd67b488c13e96933d80336f05160b9eea94e4fe
+- adk_previous_commit: 53681eb8b563d49dabea97f39dda706e5ae6df70
+- adk_version: 3.1.0-rc.2
 - product_maturity: M3
 - software_m5_readiness: m5-ready
 - software_m5_certified: false
@@ -15,8 +15,8 @@
 - root_gate_status: pass
 - runtime_eval_status: codex-smoke-pass-claude-blocked
 - m5_campaign_status: blocked-claude-unauthenticated
-- live_refresh_status: not-required-no-mapped-assets
-- knowledge_candidate_status: not-required-repo-only
+- live_refresh_status: authorized-pending-apply
+- knowledge_candidate_status: required-pending-capture
 - working_tree_scope: product commits exclude registered dirty reference worktrees
 
 ## Summary
@@ -26,8 +26,9 @@
 `manifests/report_registry.json` 指向
 `reports/architecture/llm-agent-adk-software-m5-readiness-2026-07-13.md`。
 
-`agent-dev-kit 3.1.0-rc.1` 已具备平台中立 compiler/control plane、并发 writer lock、
-transactional install/rollback、可恢复双 runtime campaign、可复现发布和本地升级演练。
+`agent-dev-kit 3.1.0-rc.2` 已修复 direct target 原生路径/frontmatter，统一 export/install
+renderer，并补齐 receipt v3、Draft 2020-12 Schema、OOD trace/outcome eval、性能曲线、
+静态/依赖/Scorecard 门禁、SBOM/provenance 和 rc.1 -> rc.2 回滚演练。
 `llm_agent` 已具备不可弱化 policy、匿名 pilot ledger、append-only evidence hash chain 和
 fail-closed software M5 certifier。
 
@@ -40,23 +41,26 @@ fail-closed software M5 certifier。
 | Area | Result | Evidence |
 |---|---|---|
 | ADK strict/security/release | PASS | 三项结构化门禁均为 pass |
-| ADK quick/full | PASS | quick `15/15`；full `49/49`，fail `0` |
+| ADK full | PASS | full `51/51`，fail `0` |
+| Root quick/full | PASS | quick `56/56`；full `62/62`，fail `0` |
+| Direct target static | PASS/BOUNDARY | Claude Code/OpenCode/Hermes `3/3`；真实 runtime smoke 仍为 `not-run` |
+| Effect eval | PASS | OOD/adversarial `24/24`；routing ablation delta `0.3333` |
 | Deterministic routing | PASS | 60/60；本轮 P95 `0.330ms` |
 | Codex runtime smoke | PASS | `gpt-5.5` 单任务只读 smoke `1/1` |
 | Claude runtime | BLOCKED | CLI `2.1.138` 已安装但未认证；没有伪造调用或费用 |
 | Runtime campaign | BLOCKED | 60 tasks、2 runtimes、2 conditions、3 trials；720 raw result 合同；最坏 `$144` |
-| Release artifact | PASS | source 两次 SHA256 `b6adcb98d5fc3be9138754a114122a1d1d92aa72a577b2a8200850558114324f` |
-| Wheel | PASS | SHA256 `a03ce13931277db2d95cba81d279035122f899eed04fa36f643473295609fcf6`；隔离安装和 `pip check` 通过 |
-| Upgrade/rollback | PASS | `3.0.0 -> 3.1.0-rc.1 -> rollback`；31 项 managed assets 全部恢复 |
+| Release artifact | PASS | 三次 source build SHA256 `8571134df515289d32905961ae78d5e5c2dd308d2771691690594a85c76142ac` |
+| Wheel | NOT-RUN | 本地不重复制造 wheel 证据；GitHub CI/release workflow 负责 Python 3.12 wheel 与 attestation |
+| Upgrade/rollback | PASS | `3.1.0-rc.1 -> 3.1.0-rc.2 -> rollback/fallback`；52 项 rc.1 managed hashes 恢复并清理 |
 | Software M5 certifier | PASS/BOUNDARY | integrity/declaration pass；readiness `m5-ready`；certified `false` |
 
 ## Delivery Boundaries
 
 - Direct release targets 是 Claude Code、Hermes Agent 和 OpenCode；Codex 是 external handoff target。
-- `eec7cd1..53681eb` 在 `agents/skills/optional-skills/workflows/templates` 下无内容变化，
-  因此不执行无意义的 `~/codex -> ~/.codex` apply。
+- `53681eb..dd67b48` 在 `agents/skills/optional-skills/workflows/templates` 下无内容变化；
+  用户仍已明确授权执行完整 `~/codex -> ~/.codex` 声明式链路，当前状态为等待 root 提交后的 plan/dry-run/apply 复核。
 - 本次不创建 tag、GitHub Release 或远端制品；final `3.1.0` 由 eligibility gate 阻断。
-- 本次不执行 Knowledge Hub active promotion，也不写 `~/.codex/memories`；长期结论保存在仓库审计与事件证据中。
+- Knowledge Hub 只创建 `reviewing` validation candidate，不执行 active promotion，也不写 `~/.codex/memories`。
 - `OpenSpec`、`superpowers`、`vibeflow` 保持已登记 dirty baseline，未被清理、暂存或提交。
 
 ## Remaining Evidence

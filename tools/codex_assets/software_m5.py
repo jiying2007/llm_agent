@@ -558,8 +558,9 @@ def _validate_release(root: Path, policy: Mapping[str, Any]) -> Tuple[bool, str]
     unsigned.pop("report_sha256", None)
     if not isinstance(stored_digest, str) or stored_digest != _digest(unsigned):
         raise M5Error("release rehearsal report hash does not match content")
-    if report.get("schema_version") != 1 or report.get("status") != "pass":
-        raise M5Error("release rehearsal report is not a passing v1 report")
+    schema_version = report.get("schema_version")
+    if schema_version not in {1, 2} or report.get("status") != "pass":
+        raise M5Error("release rehearsal report is not a supported passing report")
     if report.get("previous_version") != release["previous_version"]:
         raise M5Error("release rehearsal previous version does not match policy")
     if report.get("candidate_version") != release["candidate_version"]:
@@ -574,6 +575,21 @@ def _validate_release(root: Path, policy: Mapping[str, Any]) -> Tuple[bool, str]
         or restored_assets < 1
     ):
         raise M5Error("release rehearsal does not prove rollback restoration")
+    if schema_version == 2 and report.get("migration_mode") == "rollback-before-install":
+        legacy_rollback = report.get("legacy_rollback")
+        fallback_restore = report.get("fallback_restore")
+        if not isinstance(legacy_rollback, dict) or legacy_rollback.get("status") != "pass":
+            raise M5Error("release rehearsal does not prove legacy rollback")
+        if (
+            not isinstance(fallback_restore, dict)
+            or fallback_restore.get("status") != "pass"
+            or fallback_restore.get("strategy") != "reinstall-previous-artifact"
+            or isinstance(fallback_restore.get("installed"), bool)
+            or not isinstance(fallback_restore.get("installed"), int)
+            or fallback_restore.get("installed", 0) < 1
+            or fallback_restore.get("cleanup_removed") != fallback_restore.get("installed")
+        ):
+            raise M5Error("release rehearsal does not prove previous artifact fallback restoration")
     if report.get("candidate_sha256") != release["candidate_sha256"]:
         raise M5Error("release rehearsal candidate checksum does not match policy")
     if report.get("candidate_manifest_sha256") != manifest_sha256:

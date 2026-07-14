@@ -1,0 +1,68 @@
+{
+  "schema": "llm-agent-adk-software-m5-ready-release-evidence/v1",
+  "generated_at": "2026-07-14",
+  "release_scope": "source-committed-local-release-candidate-evidence",
+  "agent_dev_kit": {
+    "version": "3.1.0-rc.2",
+    "commit": "dd67b488c13e96933d80336f05160b9eea94e4fe",
+    "previous_version": "3.1.0-rc.1",
+    "previous_commit": "53681eb8b563d49dabea97f39dda706e5ae6df70"
+  },
+  "artifacts": {
+    "source_sha256": "8571134df515289d32905961ae78d5e5c2dd308d2771691690594a85c76142ac",
+    "source_reproducible_builds": 3,
+    "source_file_count": 521,
+    "wheel_sha256": null,
+    "wheel_status": "not-run-local-ci-build-required",
+    "previous_source_sha256": "af779cce69661b30947f596f3ba12851bf30588122e2f34df9efc8ebfb6621e9",
+    "candidate_manifest_sha256": "0fab24064996ade45a03562e8548bcff99bf172f6e6fa4a077aa5466c54ea4f0",
+    "release_rehearsal_report_sha256": "798543979354ef87c5390faa62909e2ab645cbd5422ea4c76d959547e4ac78c0"
+  },
+  "validation": {
+    "strict": "pass",
+    "format": "pass",
+    "security": "pass",
+    "release_check": "pass",
+    "shellcheck": "pass",
+    "ruff": "pass",
+    "dependency_audit": "pass-local-compatible-version",
+    "full": {
+      "total": 51,
+      "pass": 51,
+      "fail": 0
+    },
+    "root_quick": "56/56-pass",
+    "root_full": "62/62-pass",
+    "target_static": "3/3-pass",
+    "target_runtime": "not-run-experimental",
+    "effect_eval": "24/24-pass-ablation-delta-0.3333",
+    "upgrade_rollback_rehearsal": "pass",
+    "restored_assets": 52
+  },
+  "source_to_live": {
+    "comparison": "53681eb8b563d49dabea97f39dda706e5ae6df70..dd67b488c13e96933d80336f05160b9eea94e4fe",
+    "mapped_paths": [
+      "agents",
+      "skills",
+      "optional-skills",
+      "workflows",
+      "templates"
+    ],
+    "mapped_content_changed": false,
+    "decision": "authorized-pending-apply",
+    "plan_status": "pending"
+  },
+  "software_m5": {
+    "readiness_status": "m5-ready",
+    "certified": false,
+    "field_status": "self_pilot_active",
+    "runtime_campaign": "blocked-claude-unauthenticated"
+  },
+  "publication": {
+    "adk_source_commit_pushed": true,
+    "tag_created": false,
+    "remote_release_created": false,
+    "remote_artifact_uploaded": false,
+    "reason": "The rc.2 source commit is pushed, but target stable promotion, final 3.1.0 and remote artifact publication remain blocked by runtime and field gates."
+  }
+}

@@ -1,6 +1,6 @@
 {
   "schema": "llm-agent-product-maturity-task-pack/v1",
-  "updated_at": "2026-07-13",
+  "updated_at": "2026-07-14",
   "rules": {
     "fail_closed": true,
     "no_automatic_external_write": true,
@@ -54,7 +54,7 @@
       "status": "blocked_external",
       "scope": "effectiveness evaluation",
       "acceptance": "60 tasks pass deterministic routing and Codex/Claude baseline/adk each run three trials with confidence, resource and budget gates",
-      "verify": ["rtk bash agent-dev-kit/scripts/devkit.sh eval run --suite deterministic --tasks agent-dev-kit/tests/fixtures/software_m5_eval_tasks.jsonl --summary-json", "rtk bash agent-dev-kit/scripts/devkit.sh eval campaign check --contract agent-dev-kit/manifests/software_m5_eval_contract.json --state-dir /approved/local/software-m5-campaign --certify --summary-json"]
+      "verify": ["rtk bash agent-dev-kit/scripts/devkit.sh eval run --suite deterministic --tasks agent-dev-kit/tests/fixtures/software_m5_eval_tasks.jsonl --summary-json", "rtk bash agent-dev-kit/scripts/devkit.sh eval campaign check --contract agent-dev-kit/manifests/software_m5_eval_contract_rc2.json --state-dir /approved/local/software-m5-campaign --certify --summary-json"]
     },
     {
       "id": "PM-07",
@@ -87,6 +87,38 @@
       "scope": "commit and push",
       "acceptance": "ADK commits are pushed first; root gitlink and root changes are committed and pushed without touching unrelated dirty subrepos",
       "verify": ["rtk git status --short", "rtk git log -1 --oneline", "rtk git status -sb"]
+    },
+    {
+      "id": "PM-11",
+      "priority": "P0",
+      "status": "implemented",
+      "scope": "direct target native conformance",
+      "acceptance": "Claude Code/OpenCode/Hermes use versioned contracts, native paths and required frontmatter; export/install share rendered hashes; unsupported kinds and symlinks fail without partial output",
+      "verify": ["rtk bash agent-dev-kit/tests/test_target_contracts.sh", "rtk bash agent-dev-kit/scripts/devkit.sh target check --all --level static --summary-json"]
+    },
+    {
+      "id": "PM-12",
+      "priority": "P0",
+      "status": "implemented",
+      "scope": "clean-clone and supply-chain gates",
+      "acceptance": "root initializes only locked ADK over HTTPS; ADK CI runs ShellCheck/Ruff/pip-audit; release emits validated SBOM and provenance; Scorecard is reportable",
+      "verify": ["rtk bash tests/test_product_maturity_contracts.sh", "rtk bash agent-dev-kit/scripts/devkit.sh security check --summary-json", "rtk shellcheck -S error -x -P agent-dev-kit/scripts agent-dev-kit/scripts/*.sh agent-dev-kit/tests/*.sh"]
+    },
+    {
+      "id": "PM-13",
+      "priority": "P0",
+      "status": "implemented",
+      "scope": "OOD trace and outcome evaluation",
+      "acceptance": "separate hashed inputs/labels cover OOD and adversarial cases; route, safety, trace and outcome graders pass; routing ablation is recomputed",
+      "verify": ["rtk bash agent-dev-kit/tests/test_effect_eval.sh", "rtk bash agent-dev-kit/scripts/devkit.sh eval effect --contract agent-dev-kit/manifests/effect_eval_contract.json --summary-json"]
+    },
+    {
+      "id": "PM-14",
+      "priority": "P0",
+      "status": "blocked_external",
+      "scope": "native target runtime certification",
+      "acceptance": "Claude Code, OpenCode and Hermes execute discovery/load/trigger/permission smoke using their real installed runtimes and immutable evidence records",
+      "verify": ["rtk bash agent-dev-kit/scripts/devkit.sh target smoke --target <target> --stage <stage> --runtime-command <approved-read-only-smoke>"]
     }
   ]
 }

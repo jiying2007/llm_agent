@@ -3,7 +3,7 @@
 	url = https://github.com/Fission-AI/OpenSpec
 [submodule "agent-dev-kit"]
 	path = agent-dev-kit
-	url = git@github.com:jiying2007/agent-dev-kit.git
+	url = https://github.com/jiying2007/agent-dev-kit.git
 [submodule "scale-engine"]
 	path = scale-engine
 	url = https://gitee.com/hongmaple/scale-engine.git

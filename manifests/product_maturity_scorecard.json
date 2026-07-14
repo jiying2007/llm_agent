@@ -1,6 +1,6 @@
 {
   "schema": "llm-agent-product-maturity-scorecard/v1",
-  "updated_at": "2026-07-13",
+  "updated_at": "2026-07-14",
   "product_boundary": "reference-intake workspace plus platform-neutral agent asset compiler/control plane; no LLM agent runtime",
   "overall": {
     "level": "M3",
@@ -14,9 +14,41 @@
     "eligibility_status": "blocked",
     "certification_status": "blocked",
     "certified": false,
-    "candidate_version": "3.1.0-rc.1",
+    "candidate_version": "3.1.0-rc.2",
     "final_version": "3.1.0",
     "blocking_gates": ["final_version", "independent_repository", "operator_count", "pilot_duration", "real_repository_count", "required_field_events", "runtime_campaign"]
+  },
+  "working_candidate": {
+    "version": "3.1.0-rc.2",
+    "status": "source-committed-pushed",
+    "overall_level": "M3",
+    "target_status": "experimental",
+    "implemented_controls": [
+      "versioned target contracts and native trees",
+      "shared export/install renderer and receipt v3",
+      "Draft 2020-12 manifest validation",
+      "clean-clone ADK integration workflow",
+      "Ruff, ShellCheck, pip-audit, Scorecard and provenance workflows",
+      "CLI cold-start, 10x I/O and peak-memory budgets",
+      "OOD/adversarial trace-outcome evaluation with routing ablation",
+      "provider-balanced OpenAI and Anthropic official-doc freshness gates"
+    ],
+    "lock_state": "synchronized",
+    "runtime_certification": "not-run",
+    "local_validation": {
+      "adk_full": "51/51-pass",
+      "root_quick": "56/56-pass",
+      "root_full": "62/62-pass",
+      "target_static": "3/3-pass",
+      "effect_eval": "24/24-pass-ablation-delta-0.3333",
+      "release_rehearsal": "pass",
+      "artifact_sha256": "8571134df515289d32905961ae78d5e5c2dd308d2771691690594a85c76142ac"
+    },
+    "promotion_boundary": "The rc.2 source commit is pushed and the root lock is synchronized, but target stability and M4/M5 promotion remain blocked until root gates, native runtime smoke, remote CI and field evidence pass."
+  },
+  "assessment_model": {
+    "implementation_level": "highest level supported by code and local control-plane behavior",
+    "evidence_level": "highest level supported by source/test/runtime/field evidence; must not exceed implementation level"
   },
   "levels": ["M0", "M1", "M2", "M3", "M4", "M5"],
   "evidence_layers": ["source", "test", "runtime", "field"],
@@ -26,6 +58,9 @@
       "name": "goal-and-product-boundary",
       "priority": "P0",
       "level": "M4",
+      "implementation_level": "M4",
+      "evidence_level": "M4",
+      "evidence_layers_present": ["source", "test"],
       "status": "verified",
       "evidence": ["docs/product-maturity-model.md", "agent-dev-kit/manifest.json", "agent-dev-kit/docs/changes/adk-v3-product-maturity/proposal.md"]
     },
@@ -34,24 +69,34 @@
       "name": "architecture-and-contracts",
       "priority": "P0",
       "level": "M4",
+      "implementation_level": "M4",
+      "evidence_level": "M4",
+      "evidence_layers_present": ["source", "test"],
       "status": "verified",
-      "evidence": ["agent-dev-kit/manifests/manifest.schema.json", "agent-dev-kit/src/agent_dev_kit/model.py", "tools/codex_assets/intake_pipeline.py"]
+      "evidence": ["agent-dev-kit/manifests/manifest.schema.json", "agent-dev-kit/manifests/target-contract.schema.json", "agent-dev-kit/src/agent_dev_kit/model.py", "agent-dev-kit/src/agent_dev_kit/targets.py", "tools/codex_assets/intake_pipeline.py"]
     },
     {
       "id": "D03",
       "name": "functional-completeness",
       "priority": "P0",
       "level": "M4",
+      "implementation_level": "M4",
+      "evidence_level": "M3",
+      "evidence_layers_present": ["source", "test"],
       "status": "verified",
-      "evidence": ["agent-dev-kit/src/agent_dev_kit/cli.py", "agent-dev-kit/src/agent_dev_kit/compiler.py", "agent-dev-kit/src/agent_dev_kit/installer.py", "agent-dev-kit/src/agent_dev_kit/release.py"]
+      "evidence": ["agent-dev-kit/src/agent_dev_kit/cli.py", "agent-dev-kit/src/agent_dev_kit/compiler.py", "agent-dev-kit/src/agent_dev_kit/installer.py", "agent-dev-kit/src/agent_dev_kit/release.py", "agent-dev-kit/tests/test_target_contracts.sh", "agent-dev-kit/docs/changes/adk-v3-1-rc2-target-conformance/verify-report.md"],
+      "gap": "Native target trees and static discovery contracts pass, but real Claude Code/OpenCode/Hermes discovery, load and trigger smoke is not yet recorded."
     },
     {
       "id": "D04",
       "name": "outcome-effectiveness",
       "priority": "P0",
       "level": "M3",
+      "implementation_level": "M3",
+      "evidence_level": "M3",
+      "evidence_layers_present": ["source", "test", "runtime"],
       "status": "partially_verified",
-      "evidence": ["agent-dev-kit/tests/fixtures/software_m5_eval_tasks.jsonl", "agent-dev-kit/src/agent_dev_kit/evaluation.py", "agent-dev-kit/src/agent_dev_kit/campaign.py", "agent-dev-kit/docs/changes/adk-v3-product-maturity/codex-comparison-final.json", "agent-dev-kit/docs/changes/adk-v3-1-software-m5-ready/software-m5-campaign-plan.json"],
+      "evidence": ["agent-dev-kit/tests/fixtures/software_m5_eval_tasks.jsonl", "agent-dev-kit/manifests/effect_eval_contract.json", "agent-dev-kit/tests/test_effect_eval.sh", "agent-dev-kit/src/agent_dev_kit/evaluation.py", "agent-dev-kit/src/agent_dev_kit/campaign.py", "agent-dev-kit/docs/changes/adk-v3-1-rc2-target-conformance/effect-eval.json", "agent-dev-kit/docs/changes/adk-v3-1-software-m5-ready/software-m5-campaign-plan.json"],
       "gap": "The 60-task, three-trial dual-runtime campaign is frozen at a worst-case $144 budget, but Claude is installed and unauthenticated, so cross-runtime effectiveness remains unverified."
     },
     {
@@ -59,6 +104,9 @@
       "name": "reliability-and-verification",
       "priority": "P0",
       "level": "M4",
+      "implementation_level": "M4",
+      "evidence_level": "M4",
+      "evidence_layers_present": ["source", "test", "runtime"],
       "status": "verified",
       "evidence": ["agent-dev-kit/tests/test_product_maturity_v3.sh", "agent-dev-kit/tests/test_software_m5_ready.sh", "tests/test_product_maturity_contracts.sh", "tests/test_software_m5_certification.sh", "tests/test_reference_source_integrity.sh", "agent-dev-kit/tests/run_all.sh"]
     },
@@ -67,31 +115,45 @@
       "name": "performance-and-cost",
       "priority": "P1",
       "level": "M4",
+      "implementation_level": "M4",
+      "evidence_level": "M3",
+      "evidence_layers_present": ["source", "test"],
       "status": "verified",
-      "evidence": ["agent-dev-kit/src/agent_dev_kit/quality.py", "agent-dev-kit/manifests/software_m5_eval_contract.json", "agent-dev-kit/docs/changes/adk-v3-product-maturity/benchmark.json"]
+      "evidence": ["agent-dev-kit/src/agent_dev_kit/quality.py", "agent-dev-kit/manifests/adk_performance_budgets.json", "agent-dev-kit/manifests/software_m5_eval_contract_rc2.json", "agent-dev-kit/docs/changes/adk-v3-1-rc2-target-conformance/benchmark.json"],
+      "gap": "Cold-start, 10x I/O and peak-memory curves are local only; concurrent lock contention and field-scale runtime curves remain unverified."
     },
     {
       "id": "D07",
       "name": "security-and-supply-chain",
       "priority": "P0",
       "level": "M4",
+      "implementation_level": "M4",
+      "evidence_level": "M3",
+      "evidence_layers_present": ["source", "test"],
       "status": "verified",
-      "evidence": ["agent-dev-kit/src/agent_dev_kit/quality.py", "agent-dev-kit/.github/workflows/ci.yml", "agent-dev-kit/.github/workflows/release.yml", ".github/workflows/ci.yml"]
+      "evidence": ["agent-dev-kit/src/agent_dev_kit/quality.py", "agent-dev-kit/.github/workflows/ci.yml", "agent-dev-kit/.github/workflows/release.yml", "agent-dev-kit/.github/workflows/scorecard.yml", "agent-dev-kit/manifests/official_docs_freshness_gates.json", ".github/workflows/ci.yml"],
+      "gap": "Local security and lint gates pass; remote Scorecard, dependency audit and artifact attestation have not yet run for rc.2."
     },
     {
       "id": "D08",
       "name": "release-and-rollback",
       "priority": "P0",
       "level": "M4",
+      "implementation_level": "M4",
+      "evidence_level": "M3",
+      "evidence_layers_present": ["source", "test", "runtime"],
       "status": "verified_local",
-      "evidence": ["agent-dev-kit/src/agent_dev_kit/installer.py", "agent-dev-kit/src/agent_dev_kit/release.py", "agent-dev-kit/docs/changes/adk-v3-1-software-m5-ready/release-rehearsal.json", "agent-dev-kit/docs/changes/adk-v3-product-maturity/verify-report.md", "reports/adk-v3-release-evidence-2026-07-13.json"],
-      "gap": "Source-to-live remains separately approved; this change has no mapped runtime asset delta, so live apply is intentionally not required. Remote release publish remains an explicit owner operation."
+      "evidence": ["agent-dev-kit/src/agent_dev_kit/installer.py", "agent-dev-kit/src/agent_dev_kit/release.py", "agent-dev-kit/docs/changes/adk-v3-1-rc2-target-conformance/release-rehearsal.json", "agent-dev-kit/docs/changes/adk-v3-1-rc2-target-conformance/verify-report.md", "reports/adk-v3-release-evidence-2026-07-13.json"],
+      "gap": "The local rc.1-to-rc.2 rollback-before-install rehearsal and reproducible build pass. Real target installation, source-to-live apply and remote release publish remain explicit owner operations."
     },
     {
       "id": "D09",
       "name": "maintainability",
       "priority": "P1",
       "level": "M4",
+      "implementation_level": "M4",
+      "evidence_level": "M3",
+      "evidence_layers_present": ["source", "test"],
       "status": "verified",
       "evidence": ["agent-dev-kit/scripts/devkit.sh", "agent-dev-kit/docs/commands.md", "tools/codex_assets/update_pipeline.py"]
     },
@@ -100,14 +162,21 @@
       "name": "extensibility-and-compatibility",
       "priority": "P1",
       "level": "M4",
+      "implementation_level": "M4",
+      "evidence_level": "M3",
+      "evidence_layers_present": ["source", "test"],
       "status": "verified",
-      "evidence": ["agent-dev-kit/manifest.json", "agent-dev-kit/src/agent_dev_kit/compiler.py", "agent-dev-kit/scripts/check-runtime-boundary.sh"]
+      "evidence": ["agent-dev-kit/manifest.json", "agent-dev-kit/manifests/target-contracts/claude-code.json", "agent-dev-kit/manifests/target-contracts/opencode.json", "agent-dev-kit/manifests/target-contracts/hermes-agent.json", "agent-dev-kit/src/agent_dev_kit/targets.py", "agent-dev-kit/tests/test_target_contracts.sh", "agent-dev-kit/scripts/check-runtime-boundary.sh"],
+      "gap": "Target contract extension is versioned and fail-closed, but compatibility remains experimental until native runtime smoke is complete."
     },
     {
       "id": "D11",
       "name": "operator-and-developer-experience",
       "priority": "P1",
       "level": "M4",
+      "implementation_level": "M4",
+      "evidence_level": "M3",
+      "evidence_layers_present": ["source", "test"],
       "status": "verified_local",
       "evidence": ["agent-dev-kit/docs/commands.md", "agent-dev-kit/src/agent_dev_kit/cli.py", "agent-dev-kit/src/agent_dev_kit/doctor.py", "docs/software-m5-certification-plan.md", "scripts/software-m5.sh"],
       "gap": "Local doctor, isolated wheel installation and non-repository-cwd entry points are verified; independent operator usability remains a field certification requirement."
@@ -117,6 +186,9 @@
       "name": "long-term-assets-and-field-evidence",
       "priority": "P1",
       "level": "M3",
+      "implementation_level": "M3",
+      "evidence_level": "M2",
+      "evidence_layers_present": ["source", "test", "field"],
       "status": "partially_verified",
       "evidence": ["docs/product-maturity-model.md", "docs/software-m5-certification-plan.md", "manifests/software_m5_policy.json", "manifests/software_m5_pilot_ledger.json", "reports/field-evidence/software-m5-events.jsonl"],
       "gap": "A real self-pilot and append-only evidence chain are active, but no completed 30-day independent pilot, second human operator, maintenance trend, or reviewed field cycle exists."

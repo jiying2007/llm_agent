@@ -56,7 +56,7 @@ assert software_m5 == {
     "eligibility_status": "blocked",
     "certification_status": "blocked",
     "certified": False,
-    "candidate_version": "3.1.0-rc.1",
+    "candidate_version": "3.1.0-rc.2",
     "final_version": "3.1.0",
     "blocking_gates": [
         "final_version",
@@ -68,6 +68,13 @@ assert software_m5 == {
         "runtime_campaign",
     ],
 }, software_m5
+working_candidate = scorecard["working_candidate"]
+assert working_candidate["version"] == "3.1.0-rc.2", working_candidate
+assert working_candidate["overall_level"] == "M3", working_candidate
+assert working_candidate["target_status"] == "experimental", working_candidate
+assert working_candidate["status"] == "source-committed-pushed", working_candidate
+assert working_candidate["lock_state"] == "synchronized", working_candidate
+assert working_candidate["runtime_certification"] == "not-run", working_candidate
 levels = {f"M{i}" for i in range(6)}
 statuses = {
     "verified",
@@ -79,6 +86,10 @@ statuses = {
 for dimension in scorecard["dimensions"]:
     assert dimension["priority"] in {"P0", "P1", "P2"}, dimension
     assert dimension["level"] in levels, dimension
+    assert dimension["implementation_level"] in levels, dimension
+    assert dimension["evidence_level"] in levels, dimension
+    assert int(dimension["evidence_level"][1:]) <= int(dimension["implementation_level"][1:]), dimension
+    assert set(dimension["evidence_layers_present"]).issubset({"source", "test", "runtime", "field"}), dimension
     assert dimension["status"] in statuses, dimension
     evidence = dimension.get("evidence")
     assert isinstance(evidence, list) and len(evidence) >= 2, dimension
@@ -94,7 +105,7 @@ for dimension in scorecard["dimensions"]:
 task_pack = json.loads((root / "manifests/product_maturity_task_pack.json").read_text(encoding="utf-8"))
 assert task_pack["schema"] == "llm-agent-product-maturity-task-pack/v1", task_pack
 assert all(task_pack["rules"].values()), task_pack
-assert [item["id"] for item in task_pack["tasks"]] == [f"PM-{i:02d}" for i in range(1, 11)]
+assert [item["id"] for item in task_pack["tasks"]] == [f"PM-{i:02d}" for i in range(1, 15)]
 task_statuses = {
     "implemented",
     "in_progress",
@@ -116,7 +127,10 @@ assert next(item for item in task_pack["tasks"] if item["id"] == "PM-09")["statu
 
 policy = json.loads((root / "manifests/software_m5_policy.json").read_text(encoding="utf-8"))
 assert policy["schema"] == "llm-agent-software-m5-policy/v1", policy
-assert policy["release"]["candidate_version"] == "3.1.0-rc.1", policy
+assert policy["release"]["previous_version"] == "3.1.0-rc.1", policy
+assert policy["release"]["candidate_version"] == "3.1.0-rc.2", policy
+assert policy["release"]["evaluation_version"] == "3.1.0-rc.2", policy
+assert policy["runtime_campaign"]["contract"] == "agent-dev-kit/manifests/software_m5_eval_contract_rc2.json", policy
 assert policy["release"]["final_version"] == "3.1.0", policy
 assert policy["runtime_campaign"]["required_runtimes"] == ["codex", "claude"], policy
 assert policy["runtime_campaign"]["minimum_tasks"] >= 60, policy
@@ -154,6 +168,10 @@ assert github_ci.is_file(), "GitHub is the delivery remote but its blocking CI w
 workflow = github_ci.read_text(encoding="utf-8")
 assert re.search(r"(?m)^permissions:\n  contents: read$", workflow), workflow
 assert "submodules: false" in workflow, workflow
+assert "git submodule update --init agent-dev-kit" in workflow, workflow
+assert "bash scripts/check-adk-lock.sh ." in workflow, workflow
+assert "bash agent-dev-kit/scripts/devkit.sh validate --strict" in workflow, workflow
+assert "bash agent-dev-kit/tests/run_all.sh --quick" in workflow, workflow
 assert "bash tests/test_reference_source_integrity.sh" in workflow, workflow
 assert "bash tests/test_software_m5_certification.sh" in workflow, workflow
 assert "bash scripts/check-doc-sync.sh ." in workflow, workflow
