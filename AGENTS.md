@@ -33,6 +33,7 @@
 | 同步子仓 | 同步、sync、拉取更新、fetch | 在 phase gate 允许后拉取 enabled active 参考仓；`agent-dev-kit` 为应用/落地仓，默认排除 | `scripts/sync-subrepos.sh` |
 | 差异扫描 | 差异、diff、变更、最近变化 | 扫描子仓近 N 天变更 | `scripts/diff-scan.sh` |
 | 深度分析 | 深度分析、拆解、analyze、prompt分析、skill拆解 | 从不可变 commit snapshot 分析参考实现，报告写入根仓 `reports/` | `scripts/analyze-repo.sh` |
+| 公众号研究归档 | 微信公众号批量搜索、指定公众号近半年文章、搜狗微信归档 | 先生成账号×主题×时间窗计划，再用受限公共读取核验账号/日期并输出 metadata-only 证据包；不保存正文，不自动吸收 | `~/codex/skills/wechat-account-research/SKILL.md`、`~/codex/scripts/wechat-archive.sh` |
 | 生成周报 | 周报、weekly report、本周汇总 | 生成本周变更周报 | `scripts/generate-weekly-report.sh` |
 | 清理报告 | 清理、归档、cleanup、prune | 归档过期报告 | `scripts/cleanup-reports.sh` |
 | 版本发布 | 发布、release、tag、版本 | 执行发布流程 | `scripts/version-manager.sh` |
@@ -52,6 +53,7 @@
 3. `agent-dev-kit -> ~/codex -> ~/.codex` 是运行资产交付链路；不要从本仓绕过 `~/codex` 直接修改 `~/.codex`。
 4. `subrepos/phase-gate.env` 控制是否允许追踪上游更新；未满足压实门禁时不要常态同步参考仓。
 5. 官方 OpenAI 实践吸收要记录 source URL、retrieved_at、review_status、expires_at，并区分“实质吸收”和“纳入观察”。
+6. 公众号采集与实践吸收必须分阶段：采集只生成 `review-required` 元数据和负证据；经重复、冲突、架构与安全复核后才允许修改 ADK 或 Codex 资产。
 
 ## 4. 常用验证入口
 

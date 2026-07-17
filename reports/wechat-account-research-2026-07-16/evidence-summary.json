@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "generated_on": "2026-07-16",
+  "timezone": "Asia/Hong_Kong",
+  "window": {
+    "from": "2026-01-16",
+    "to": "2026-07-16",
+    "inclusive": true
+  },
+  "accounts": [
+    {
+      "canonical": "腾讯技术工程",
+      "discovery_aliases": ["腾讯技术工程"]
+    },
+    {
+      "canonical": "阿里云开发者",
+      "discovery_aliases": ["阿里云开发者", "阿里开发者"]
+    }
+  ],
+  "query_terms": [
+    "LLM",
+    "大模型",
+    "Agent",
+    "智能体",
+    "Skill",
+    "Skills",
+    "Workflow",
+    "工作流",
+    "Profile",
+    "MCP",
+    "Hook",
+    "Harness",
+    "上下文工程",
+    "Agent 记忆",
+    "Token 优化",
+    "多 Agent",
+    "AI Coding",
+    "Agent 评测",
+    "Agent 安全",
+    "工具调用",
+    "RAG"
+  ],
+  "discovery": {
+    "engine": "Sogou WeChat public search",
+    "implementation": "Hermes wechat-article-reader/SogouSearcher",
+    "queries_per_account": 21,
+    "max_results_per_query": 10,
+    "total_queries": 42,
+    "raw_hits": 420,
+    "exact_discovery_source_hits": {
+      "腾讯技术工程": 37,
+      "阿里开发者": 27
+    }
+  },
+  "verification": {
+    "implementation": "Hermes SogouSearcher -> LinkResolver -> ArticleFetcher -> ArticleAnalyzer -> ArticleClassifier",
+    "candidate_attempts": 41,
+    "status_counts": {
+      "direct-read": 19,
+      "out-of-window": 8,
+      "account-mismatch": 6,
+      "search-unresolved": 8
+    },
+    "official_mirror_supplements": 1
+  },
+  "curated": {
+    "total": 20,
+    "by_account": {
+      "腾讯技术工程": 11,
+      "阿里云开发者": 9
+    },
+    "by_tier": {
+      "P0": 13,
+      "P1": 5,
+      "P2": 2
+    }
+  },
+  "body_policy": {
+    "fetched_body_persisted": false,
+    "stored_evidence": [
+      "title",
+      "account",
+      "wechat publication date",
+      "character count",
+      "topic tags",
+      "content SHA-256",
+      "verification status",
+      "stable locator when available"
+    ]
+  },
+  "limitations": [
+    "Sogou returns ranked result pages rather than a complete account archive.",
+    "Very recent articles can have search-index latency.",
+    "Temporary signed WeChat redirect URLs are deliberately not persisted.",
+    "Official-site-only candidates are not counted as target-account WeChat articles without account-level verification."
+  ]
+}

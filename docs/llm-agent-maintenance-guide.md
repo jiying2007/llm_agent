@@ -179,6 +179,40 @@ rtk scripts/diff-scan.sh . 7 reports/weekly-change-report.md
 
 候选吸收默认先走 `docs/runbooks/oss-intake-lifecycle.md` 中的 candidate ledger、scoring、analysis 和 decision 流程。只有正式登记为治理来源后，才更新 `subrepos/adoption-matrix.md`。
 
+### 3.5.1 微信公众号账号研究归档
+
+指定公众号、日期窗口和主题范围的批量研究统一路由到 `~/codex` 的 `wechat-account-research`。该入口用于生成可审查研究证据，不属于 ADK 自动吸收入口：
+
+```bash
+rtk bash ~/codex/scripts/wechat-archive.sh plan \
+  --account '腾讯技术工程' \
+  --account '阿里云开发者|阿里开发者' \
+  --date-from 2026-01-16 \
+  --date-to 2026-07-16 \
+  --output-dir /tmp/wechat-research
+
+rtk bash ~/codex/scripts/wechat-archive.sh collect \
+  --plan-file /tmp/wechat-research/plan.json \
+  --discovery-index /path/to/hermes/articles.json \
+  --output-dir /tmp/wechat-research
+
+rtk bash ~/codex/scripts/wechat-archive.sh report \
+  --plan-file /tmp/wechat-research/plan.json \
+  --output-dir /tmp/wechat-research
+
+rtk bash ~/codex/scripts/wechat-archive.sh check \
+  --plan-file /tmp/wechat-research/plan.json \
+  --output-dir /tmp/wechat-research
+```
+
+约束：
+
+- Hermes `articles.json` 只作为 discovery 输入，不回写；没有索引时才使用受限 `agent-browser` 公共读取。
+- CAPTCHA、登录、anti-spider、付费或安全验证页是终止状态，不使用代理池、UA/身份轮换、Cookie 或自动验证绕过。
+- 正文只在内存中用于账号/日期核验、主题信号和 SHA-256；证据包不得保存正文、raw HTML、浏览器状态或临时签名 URL。
+- `catalog.jsonl` 默认 `review-required`。只有再经过 `external-practice-absorption` 的语义、重复、架构、安全和验证复核，才能形成 ADK/Codex 改动。
+- 搜狗返回排序结果页而非账号完整导出，最终报告必须披露索引延迟和非穷尽边界。
+
 P1-P4 基座使用 root manifests、candidate JSONL、fixtures、plan report、approval queue 和 cycle report；P1/P4 保持 report-only，P2 默认 dry-run，P3 只生成/校验 removal plan。统一入口优先用 `rtk scripts/oss-intake.sh status|cycle|queue|score|plan-onboard|plan-remove|check`：
 
 ```bash
