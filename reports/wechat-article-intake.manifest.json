@@ -1,0 +1,12 @@
+{
+  "article_count": 313,
+  "artifact_kind": "wechat-intake-portable-snapshot",
+  "decisions_path": "reports/wechat-article-decisions.tsv",
+  "decisions_sha256": "17ec7898faf903641965578a62176bf350f954f4795081574a7dd48b6d0f0a01",
+  "ledger_path": "reports/wechat-article-intake.jsonl",
+  "ledger_sha256": "15f8f153dc09f19c12ce151e9e2801ed64f5c87db442143a2726473c5e16ad7f",
+  "logical_corpus_path": "wechat-articles",
+  "schema_version": 1,
+  "source_mode": "external-untracked-corpus",
+  "strict_live_check_required_when_corpus_present": true
+}

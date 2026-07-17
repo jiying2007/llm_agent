@@ -17,9 +17,18 @@ rtk scripts/generate-wechat-intake-ledger.sh
 rtk scripts/check-wechat-intake-ledger.sh .
 ```
 
+默认检查按输入能力分层：
+
+- 纯 checkout：校验提交内 ledger/decision overlay 的结构、行数和 snapshot SHA256，输出 `mode=committed-snapshot`。
+- 本地存在 `wechat-articles/`：除 snapshot 校验外，再从真实 corpus 生成临时 ledger 并逐字节对比，输出 `mode=live-corpus`。
+- corpus 位于仓外：传 `--articles-dir <path>`；要求缺少 corpus 时硬失败：加 `--require-corpus`。
+
+`committed-snapshot` 只证明仓内吸收账本未被篡改且可在 clone/CI 中恢复，不证明原始文章 corpus 已保留或当前可访问。
+
 生成物：
 
 - `reports/wechat-article-intake.jsonl`：每篇文章的结构化 intake ledger。
+- `reports/wechat-article-intake.manifest.json`：ledger、decision overlay、行数与 SHA256 的纯 checkout 校验契约。
 - `reports/wechat-article-decisions.tsv`：人工审查后的决策输入，由 generator 合成回 ledger；不得手工改 ledger 状态。
 - `reports/wechat-absorb-next-batch.md`：按 P0/P1 优先选出的下一批候选。
 - `reports/wechat-absorb-batch.template.md`：每批决策与验证报告模板。
@@ -60,7 +69,16 @@ P0 批次不得混入 P1 实装；若旧批次报告出现 P1 候选，只能登
 
 ```bash
 rtk scripts/check-wechat-intake-ledger.sh .
+rtk tests/test_wechat_intake_ledger.sh
 rtk scripts/check-all.sh --quick
+```
+
+需要验证原始 corpus 的严格链路时追加：
+
+```bash
+rtk scripts/check-wechat-intake-ledger.sh . --require-corpus
+# 或
+rtk scripts/check-wechat-intake-ledger.sh . --articles-dir /path/to/wechat-articles --require-corpus
 ```
 
 涉及 `agent-dev-kit` 资产时追加：

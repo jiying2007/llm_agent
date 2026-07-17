@@ -33,10 +33,11 @@ USAGE
   esac
 done
 
-if [[ ! -d "${ROOT}/.git" ]]; then
+if ! resolved_root="$(git -C "${ROOT}" rev-parse --show-toplevel 2>/dev/null)"; then
   echo "[FAIL] not a git repository: ${ROOT}" >&2
   exit 1
 fi
+ROOT="${resolved_root}"
 
 missing=0
 unexpected_exec=0

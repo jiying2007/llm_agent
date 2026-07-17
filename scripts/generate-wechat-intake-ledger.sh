@@ -9,11 +9,14 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
-OUT="${ROOT}/reports/wechat-article-intake.jsonl"
-NEXT_BATCH="${ROOT}/reports/wechat-absorb-next-batch.md"
-DECISIONS="${ROOT}/reports/wechat-article-decisions.tsv"
+OUT=""
+NEXT_BATCH=""
+DECISIONS=""
+MANIFEST=""
+ARTICLES_DIR=""
 BATCH_SIZE=10
 WRITE_BATCH=1
+WRITE_MANIFEST=1
 
 usage() {
   cat <<USAGE
@@ -22,11 +25,14 @@ Usage:
 
 Options:
   --root <path>          Workspace root. Defaults to this repository.
+  --articles-dir <path>  Article corpus. Defaults to <root>/wechat-articles.
   --out <path>           Output JSONL ledger. Defaults to reports/wechat-article-intake.jsonl.
+  --manifest <path>      Output portable snapshot manifest. Defaults to reports/wechat-article-intake.manifest.json.
   --next-batch <path>    Output next-batch Markdown report. Defaults to reports/wechat-absorb-next-batch.md.
   --decisions <path>     Optional reviewed decisions TSV. Defaults to reports/wechat-article-decisions.tsv.
   --batch-size <n>       Number of P0/P1 items in next-batch report. Defaults to 10.
   --no-batch-report      Generate only the JSONL ledger.
+  --no-manifest          Do not write the portable snapshot manifest.
   -h, --help             Show this help.
 USAGE
 }
@@ -35,15 +41,22 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --root)
       [[ $# -ge 2 ]] || { echo "[FAIL] --root requires a path" >&2; exit 1; }
-      ROOT="$(cd "$2" && pwd)"
-      OUT="${ROOT}/reports/wechat-article-intake.jsonl"
-      NEXT_BATCH="${ROOT}/reports/wechat-absorb-next-batch.md"
-      DECISIONS="${ROOT}/reports/wechat-article-decisions.tsv"
+      ROOT="$2"
+      shift 2
+      ;;
+    --articles-dir)
+      [[ $# -ge 2 ]] || { echo "[FAIL] --articles-dir requires a path" >&2; exit 1; }
+      ARTICLES_DIR="$2"
       shift 2
       ;;
     --out)
       [[ $# -ge 2 ]] || { echo "[FAIL] --out requires a path" >&2; exit 1; }
       OUT="$2"
+      shift 2
+      ;;
+    --manifest)
+      [[ $# -ge 2 ]] || { echo "[FAIL] --manifest requires a path" >&2; exit 1; }
+      MANIFEST="$2"
       shift 2
       ;;
     --next-batch)
@@ -66,6 +79,10 @@ while [[ $# -gt 0 ]]; do
       WRITE_BATCH=0
       shift
       ;;
+    --no-manifest)
+      WRITE_MANIFEST=0
+      shift
+      ;;
     -h|--help)
       usage
       exit 0
@@ -78,13 +95,22 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-ARTICLES_DIR="${ROOT}/wechat-articles"
+ROOT="$(cd "${ROOT}" && pwd)"
+OUT="${OUT:-${ROOT}/reports/wechat-article-intake.jsonl}"
+NEXT_BATCH="${NEXT_BATCH:-${ROOT}/reports/wechat-absorb-next-batch.md}"
+DECISIONS="${DECISIONS:-${ROOT}/reports/wechat-article-decisions.tsv}"
+MANIFEST="${MANIFEST:-${ROOT}/reports/wechat-article-intake.manifest.json}"
+ARTICLES_DIR="${ARTICLES_DIR:-${ROOT}/wechat-articles}"
 [[ -d "${ARTICLES_DIR}" ]] || {
   echo "[FAIL] missing wechat-articles directory: ${ARTICLES_DIR}" >&2
   exit 1
 }
+ARTICLES_DIR="$(cd "${ARTICLES_DIR}" && pwd)"
 
 mkdir -p "$(dirname "${OUT}")"
+if [[ "${WRITE_MANIFEST}" -eq 1 ]]; then
+  mkdir -p "$(dirname "${MANIFEST}")"
+fi
 if [[ "${WRITE_BATCH}" -eq 1 ]]; then
   mkdir -p "$(dirname "${NEXT_BATCH}")"
 fi
@@ -142,6 +168,8 @@ article_count=0
 external_count=0
 
 if [[ -f "${DECISIONS}" ]]; then
+  # The final notes column is consumed to preserve TSV alignment but is not used by generation.
+  # shellcheck disable=SC2034
   while IFS=$'\t' read -r row_id row_decision row_status row_target row_evidence _row_notes; do
     [[ -n "${row_id:-}" ]] || continue
     [[ "${row_id}" == "id" ]] && continue
@@ -157,7 +185,8 @@ fi
 
 while IFS= read -r -d '' file; do
   article_count=$((article_count + 1))
-  rel="${file#${ROOT}/}"
+  article_rel="${file#${ARTICLES_DIR}/}"
+  rel="wechat-articles/${article_rel}"
   category="${rel#wechat-articles/}"
   category="${category%%/*}"
   if [[ "${category}" == "${rel}" ]]; then
@@ -257,6 +286,8 @@ while IFS= read -r -d '' file; do
   risk_counts["${risk}"]=$(( ${risk_counts["${risk}"]:-0} + 1 ))
   candidate_counts["${candidate_type}"]=$(( ${candidate_counts["${candidate_type}"]:-0} + 1 ))
 
+  # The row is emitted incrementally so every value passes through json_string at its source.
+  # shellcheck disable=SC2129
   printf '{' >> "${tmp_ledger}"
   printf '"id":%s,' "$(json_string "${id}")" >> "${tmp_ledger}"
   printf '"path":%s,' "$(json_string "${rel}")" >> "${tmp_ledger}"
@@ -281,6 +312,8 @@ while IFS= read -r -d '' file; do
     if [[ "${priority}" == "P0" || "${priority}" == "P1" ]]; then
       batch_target="${tmp_batch_p1}"
       [[ "${priority}" == "P0" ]] && batch_target="${tmp_batch_p0}"
+      # Backticks are intentional Markdown literals around the path cell.
+      # shellcheck disable=SC2016
       printf '| %s | %s | %s | %s | %s | %s | %s | `%s` |\n' \
         "${id}" \
         "$(safe_md_cell "${category}")" \
@@ -295,6 +328,56 @@ while IFS= read -r -d '' file; do
 done < <(find "${ARTICLES_DIR}" -type f -name '*.md' ! -path "${ARTICLES_DIR}/_reports/*" ! -name 'INDEX.md' ! -name 'REPORT.md' -print0 | sort -z)
 
 mv "${tmp_ledger}" "${OUT}"
+
+if [[ "${WRITE_MANIFEST}" -eq 1 ]]; then
+  python3 - "${ROOT}" "${OUT}" "${DECISIONS}" "${MANIFEST}" "${article_count}" <<'PY'
+import hashlib
+import json
+import pathlib
+import sys
+
+root = pathlib.Path(sys.argv[1]).resolve()
+ledger = pathlib.Path(sys.argv[2]).resolve()
+decisions = pathlib.Path(sys.argv[3]).resolve()
+manifest = pathlib.Path(sys.argv[4])
+article_count = int(sys.argv[5])
+
+
+def sha256(path: pathlib.Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def logical_path(path: pathlib.Path):
+    if not path.exists():
+        return None
+    try:
+        return path.relative_to(root).as_posix()
+    except ValueError:
+        return str(path)
+
+
+payload = {
+    "schema_version": 1,
+    "artifact_kind": "wechat-intake-portable-snapshot",
+    "source_mode": "external-untracked-corpus",
+    "logical_corpus_path": "wechat-articles",
+    "article_count": article_count,
+    "ledger_path": logical_path(ledger),
+    "ledger_sha256": sha256(ledger),
+    "decisions_path": logical_path(decisions),
+    "decisions_sha256": sha256(decisions) if decisions.exists() else None,
+    "strict_live_check_required_when_corpus_present": True,
+}
+manifest.write_text(
+    json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+    encoding="utf-8",
+)
+PY
+fi
 
 if [[ "${WRITE_BATCH}" -eq 1 ]]; then
   {
@@ -350,6 +433,9 @@ if [[ "${WRITE_BATCH}" -eq 1 ]]; then
 fi
 
 echo "[OK] wechat intake ledger generated: ${OUT}"
+if [[ "${WRITE_MANIFEST}" -eq 1 ]]; then
+  echo "[OK] portable snapshot manifest generated: ${MANIFEST}"
+fi
 if [[ "${WRITE_BATCH}" -eq 1 ]]; then
   echo "[OK] next batch report generated: ${NEXT_BATCH}"
 fi

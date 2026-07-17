@@ -48,6 +48,7 @@ rtk scripts/check-wechat-intake-ledger.sh .
 固定产物：
 
 - `reports/wechat-article-intake.jsonl`：每篇文章的唯一 intake 状态源。
+- `reports/wechat-article-intake.manifest.json`：提交内 ledger、decision overlay、行数和 SHA256 的可移植快照契约。
 - `reports/wechat-absorb-next-batch.md`：下一批 P0/P1 候选。
 - `reports/wechat-absorb-batch.template.md`：每批吸收决策报告模板。
 - `docs/runbooks/wechat-article-absorption.md`：文章吸收 runbook。
@@ -58,6 +59,8 @@ rtk scripts/check-wechat-intake-ledger.sh .
 - 外部 GitHub / 源码 / 安装命令默认 `report-only-until-security-review`，不得自动新增子仓或执行安装。
 - 已有等价能力时默认增强现有 skill/workflow/script，不新增平行资产。
 - 纯资讯、重复教程、过期模型动态默认 `REFERENCE_ONLY` 或 `REJECT`。
+- 纯 checkout 没有被 `.gitignore` 排除的 `wechat-articles/` 时，门禁必须校验提交内 snapshot manifest；真实 corpus 存在时必须自动升级为逐文件再生成对比。
+- 需要证明真实 corpus 可用时显式运行 `rtk scripts/check-wechat-intake-ledger.sh . --require-corpus`；不得用 snapshot 模式冒充 live-corpus 校验。
 - 每批吸收后至少运行 `rtk scripts/check-wechat-intake-ledger.sh .` 与 `rtk scripts/check-all.sh --quick`。
 
 ---
