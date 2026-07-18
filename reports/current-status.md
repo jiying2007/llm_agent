@@ -3,7 +3,7 @@
 - updated_at: 2026-07-18
 - status_semantics: last-verified-product-baseline
 - last_verified_at: 2026-07-18
-- root_product_commit: 4cae24857c4c378798b85a8cd096e1d513da7b10
+- root_product_commit: d47e0cc821fb9821ed23105b072f7090a873d6e2
 - agent_dev_kit_commit: a1b5e2fed679d8002b21567103c6366c57236915
 - agent_dev_kit_release_commit: defe8a078b9693b6963e434f3131891ebbcf5d62
 - adk_previous_commit: 0d25f3da7ac1f141a5172d62cfc7b6f4bfbd93b1

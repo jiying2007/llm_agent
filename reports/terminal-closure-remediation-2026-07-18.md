@@ -101,6 +101,7 @@
 ## RC3 commit / version / rehearsal 闭环
 
 - ADK 版本合同：`3.1.0-rc.3`；source commit `defe8a078b9693b6963e434f3131891ebbcf5d62`，evidence commit `a1b5e2fed679d8002b21567103c6366c57236915`。
+- 根产品基线 commit：`d47e0cc821fb9821ed23105b072f7090a873d6e2`；后续状态提交只回填该不可自引用的基线 ID。
 - exact-commit source artifact：两次独立 build 字节一致，SHA256 `46afbb507f61fce8facffbfa36c23f59fe3f5498e3f1843ceaa53f2507d8fcd8`，576 source files，两个 sidecar 均通过。
 - rc.2 → rc.3 rehearsal：previous/candidate 各安装 39 项，candidate rollback removed/restored=39，report SHA256 `1526ac3aaeb275c4c34da79419e2aed9588620c6487ee6b8805232de31096de9`。
 - 历史 RC2 provenance 负证据：从 `dd67b48` 重建为 520 files，而 checksum 有效的历史最终 artifact 为 521 files；唯一额外文件是 Git 忽略的 `history.log`。RC3 release assembler 已排除 `*.log` 并增加归档负例，未改写 RC2 证据。
