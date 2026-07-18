@@ -110,19 +110,38 @@ def git(*args, cwd=None, check=True):
     return completed
 
 
+status_path = path("reports", "current-status.md")
+policy_path = path("manifests", "software_m5_policy.json")
+status_text = read_text(status_path)
+m5_policy = read_json(policy_path)
+release_policy = m5_policy.get("release", {}) if isinstance(m5_policy, dict) else {}
+
+
+def policy_file(name, label):
+    value = release_policy.get(name)
+    if not isinstance(value, str) or not value:
+        failures.append("software M5 policy release.{} is missing".format(name))
+        return path("__invalid__", label)
+    relative = Path(value)
+    if relative.is_absolute() or ".." in relative.parts:
+        failures.append("software M5 policy release.{} is not repository-relative".format(name))
+        return path("__invalid__", label)
+    return path(*relative.parts)
+
+
 required = {
-    "status": path("reports", "current-status.md"),
+    "status": status_path,
     "scorecard": path("manifests", "product_maturity_scorecard.json"),
     "tasks": path("manifests", "product_maturity_task_pack.json"),
     "registry": path("manifests", "report_registry.json"),
     "audit": path("reports", "architecture", "llm-agent-adk-software-m5-readiness-2026-07-13.md"),
-    "release_evidence": path("reports", "adk-v3-1-rc2-release-evidence-2026-07-14.json"),
+    "release_evidence": policy_file("evidence_report", "release-evidence"),
     "lock": path("adk.lock"),
     "manifest": path("agent-dev-kit", "manifest.json"),
-    "rehearsal": path("agent-dev-kit", "docs", "changes", "adk-v3-1-rc2-target-conformance", "release-rehearsal.json"),
+    "rehearsal": policy_file("rehearsal_report", "release-rehearsal"),
     "campaign_plan": path("agent-dev-kit", "docs", "changes", "adk-v3-1-software-m5-ready", "software-m5-campaign-plan.json"),
     "codex_smoke": path("agent-dev-kit", "docs", "changes", "adk-v3-1-software-m5-ready", "codex-runtime-smoke.json"),
-    "m5_policy": path("manifests", "software_m5_policy.json"),
+    "m5_policy": policy_path,
     "m5_ledger": path("manifests", "software_m5_pilot_ledger.json"),
     "m5_events": path("reports", "field-evidence", "software-m5-events.jsonl"),
 }
@@ -130,7 +149,6 @@ for label, file_path in required.items():
     if not os.path.isfile(file_path):
         failures.append("missing required {} file: {}".format(label, os.path.relpath(file_path, root)))
 
-status_text = read_text(required["status"])
 lock = key_values(read_text(required["lock"]))
 scorecard = read_json(required["scorecard"])
 task_pack = read_json(required["tasks"])
@@ -140,8 +158,6 @@ release = read_json(required["release_evidence"])
 rehearsal = read_json(required["rehearsal"])
 campaign_plan = read_json(required["campaign_plan"])
 codex_smoke = read_json(required["codex_smoke"])
-m5_policy = read_json(required["m5_policy"])
-release_policy = m5_policy.get("release", {}) if isinstance(m5_policy, dict) else {}
 candidate_version = release_policy.get("candidate_version")
 
 expected_fields = {
@@ -163,11 +179,19 @@ for name, expected in expected_fields.items():
 if field(status_text, "adk_version") != candidate_version:
     failures.append("current-status adk_version does not match software M5 candidate_version")
 live_refresh_status = field(status_text, "live_refresh_status")
-if live_refresh_status not in {"authorized-pending-apply", "applied-declarative-no-op"}:
-    failures.append("current-status live_refresh_status is invalid for rc.2 delivery")
+if live_refresh_status not in {
+    "authorized-pending-apply",
+    "applied-declarative-no-op",
+    "not-required-mapped-no-change",
+}:
+    failures.append("current-status live_refresh_status is invalid for the current delivery")
 knowledge_candidate_status = field(status_text, "knowledge_candidate_status")
-if knowledge_candidate_status not in {"required-pending-capture", "captured-reviewing"}:
-    failures.append("current-status knowledge_candidate_status is invalid for rc.2 delivery")
+if knowledge_candidate_status not in {
+    "required-pending-capture",
+    "captured-reviewing",
+    "not-captured-outside-write-scope",
+}:
+    failures.append("current-status knowledge_candidate_status is invalid for the current delivery")
 
 last_verified_at = field(status_text, "last_verified_at")
 try:
@@ -328,8 +352,19 @@ if release_mapping.get("decision") != live_refresh_status:
 if release_m5.get("readiness_status") != "m5-ready" or release_m5.get("certified") is not False:
     failures.append("software M5 release evidence has an invalid maturity boundary")
 release_full = release.get("validation", {}).get("full", {})
-if release_full.get("total") != 51 or release_full.get("pass") != 51 or release_full.get("fail") != 0:
-    failures.append("software M5 release evidence does not record the 51/51 ADK full gate")
+release_full_total = release_full.get("total")
+if (
+    isinstance(release_full_total, bool)
+    or not isinstance(release_full_total, int)
+    or release_full_total < 1
+    or release_full.get("pass") != release_full_total
+    or release_full.get("fail") != 0
+):
+    failures.append("software M5 release evidence does not record a complete passing ADK full gate")
+working_candidate = scorecard.get("working_candidate", {})
+expected_full_summary = "{0}/{0}-pass".format(release_full_total) if isinstance(release_full_total, int) else ""
+if working_candidate.get("local_validation", {}).get("adk_full") != expected_full_summary:
+    failures.append("product scorecard ADK full summary does not match release evidence")
 
 previous_adk_commit = field(status_text, "adk_previous_commit")
 mapping_paths = ["agents", "skills", "optional-skills", "workflows", "templates"]

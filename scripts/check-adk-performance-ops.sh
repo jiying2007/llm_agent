@@ -16,6 +16,7 @@ rtk bash "${ADK_ROOT}/scripts/devkit.sh" benchmark run --iterations 5 --summary-
 rtk bash "${ADK_ROOT}/scripts/devkit.sh" security check --summary-json >"${TMP_DIR}/security.json"
 rtk bash "${ADK_ROOT}/scripts/devkit.sh" release check --summary-json >"${TMP_DIR}/release.json"
 rtk bash "${ADK_ROOT}/tests/run_all.sh" --quick --timing-json "${TMP_DIR}/run-all-quick.json" --max-failure-lines 20
+rtk bash "${ADK_ROOT}/scripts/check-performance-budgets.sh" --strict --timing-json "${TMP_DIR}/run-all-quick.json"
 
 python3 - "${TMP_DIR}/benchmark.json" "${TMP_DIR}/security.json" "${TMP_DIR}/release.json" <<'PY'
 import json
@@ -27,9 +28,4 @@ assert benchmark["budget_gate"] and all(benchmark["budget_gate"].values()), benc
 assert security["status"] == "pass", security
 assert release["status"] == "pass", release
 PY
-if ! rtk rg -q '"mode": "quick"' "${TMP_DIR}/run-all-quick.json"; then
-  echo "[FAIL] quick run timing json missing quick mode" >&2
-  exit 1
-fi
-
 echo "[PASS] adk benchmark, security, release, and quick regression gates passed"

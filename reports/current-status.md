@@ -1,13 +1,13 @@
 # Last Verified Product Baseline
 
-- updated_at: 2026-07-14
+- updated_at: 2026-07-18
 - status_semantics: last-verified-product-baseline
-- last_verified_at: 2026-07-14
+- last_verified_at: 2026-07-18
 - root_product_commit: 4cae24857c4c378798b85a8cd096e1d513da7b10
-- agent_dev_kit_commit: 0d25f3da7ac1f141a5172d62cfc7b6f4bfbd93b1
-- agent_dev_kit_release_commit: dd67b488c13e96933d80336f05160b9eea94e4fe
-- adk_previous_commit: 53681eb8b563d49dabea97f39dda706e5ae6df70
-- adk_version: 3.1.0-rc.2
+- agent_dev_kit_commit: a1b5e2fed679d8002b21567103c6366c57236915
+- agent_dev_kit_release_commit: defe8a078b9693b6963e434f3131891ebbcf5d62
+- adk_previous_commit: 0d25f3da7ac1f141a5172d62cfc7b6f4bfbd93b1
+- adk_version: 3.1.0-rc.3
 - product_maturity: M3
 - software_m5_readiness: m5-ready
 - software_m5_certified: false
@@ -16,8 +16,8 @@
 - root_gate_status: pass
 - runtime_eval_status: codex-smoke-pass-claude-blocked
 - m5_campaign_status: blocked-claude-unauthenticated
-- live_refresh_status: applied-declarative-no-op
-- knowledge_candidate_status: captured-reviewing
+- live_refresh_status: not-required-mapped-no-change
+- knowledge_candidate_status: not-captured-outside-write-scope
 - working_tree_scope: product commits exclude registered dirty reference worktrees
 
 ## Summary
@@ -27,13 +27,11 @@
 `manifests/report_registry.json` 指向
 `reports/architecture/llm-agent-adk-software-m5-readiness-2026-07-13.md`。
 
-`agent-dev-kit 3.1.0-rc.2` 已修复 direct target 原生路径/frontmatter，统一 export/install
-renderer，并补齐 receipt v3、Draft 2020-12 Schema、OOD trace/outcome eval、性能曲线、
-静态/依赖/Scorecard 门禁、SBOM/provenance 和 rc.1 -> rc.2 回滚演练。
-`0d25f3d` 进一步补齐 Agent Skills、OWASP ASI01-ASI10、safe-output、MCP provenance、
-OTel GenAI adapter 与 ACP/A2A watch-only 治理契约；全部为 method-only/additive，未启用外部 runtime。
-`agent_dev_kit_release_commit` 继续锚定已验证的 RC2 制品及回滚证据，`agent_dev_kit_commit`
-则记录当前 gitlink/lock 治理基线；门禁要求前者是后者祖先且两者之间无 runtime 映射资产变化。
+`agent-dev-kit 3.1.0-rc.3` 在 RC2 target contract 基础上完成终态合同加固：Harness readiness、
+typed manifest、copy-only 安装声明、Python 3.11+ 依赖基线、严格性能包装门禁和受控本地 CI parity。
+release source commit `defe8a0` 的两次独立 archive build 字节一致；evidence commit `a1b5e2f`
+只增加 rehearsal/change 证据。两者与前一治理基线 `0d25f3d` 之间均无
+`agents/skills/optional-skills/workflows/templates` 内容变化，因此本候选不需要 live apply。
 `llm_agent` 已具备不可弱化 policy、匿名 pilot ledger、append-only evidence hash chain 和
 fail-closed software M5 certifier。
 
@@ -46,8 +44,8 @@ fail-closed software M5 certifier。
 | Area | Result | Evidence |
 |---|---|---|
 | ADK strict/security/release | PASS | 三项结构化门禁均为 pass |
-| ADK release full | PASS | `dd67b48` 制品基线 full `51/51`，fail `0` |
-| ADK current governance full | PASS | `0d25f3d` 治理基线 full `52/52`，fail `0` |
+| ADK release full | PASS | `defe8a0` RC3 source/evidence tree full `54/54`，335446ms，fail `0` |
+| ADK current evidence | PASS | `a1b5e2f` 只增加 rehearsal/change 证据，无 mapped asset 变化 |
 | Root quick/full | PASS | quick `56/56`；full `62/62`，fail `0` |
 | Direct target static | PASS/BOUNDARY | Claude Code/OpenCode/Hermes `3/3`；真实 runtime smoke 仍为 `not-run` |
 | Effect eval | PASS | OOD/adversarial `24/24`；routing ablation delta `0.3333` |
@@ -55,25 +53,24 @@ fail-closed software M5 certifier。
 | Codex runtime smoke | PASS | `gpt-5.5` 单任务只读 smoke `1/1` |
 | Claude runtime | BLOCKED | CLI `2.1.138` 已安装但未认证；没有伪造调用或费用 |
 | Runtime campaign | BLOCKED | 60 tasks、2 runtimes、2 conditions、3 trials；720 raw result 合同；最坏 `$144` |
-| Release artifact | PASS | 三次 source build SHA256 `8571134df515289d32905961ae78d5e5c2dd308d2771691690594a85c76142ac` |
-| Wheel | NOT-RUN | 本地不重复制造 wheel 证据；GitHub CI/release workflow 负责 Python 3.12 wheel 与 attestation |
-| Upgrade/rollback | PASS | `3.1.0-rc.1 -> 3.1.0-rc.2 -> rollback/fallback`；52 项 rc.1 managed hashes 恢复并清理 |
-| Source-to-live | PASS/NO-OP | `team-collab` 749 managed；plan/apply 为 copy 0、overwrite 0、delete 0、keep 481、mkdir 270 |
-| Live health | PASS | `~/codex` 66 tests 与四 profile smoke 通过；live diff/missing/stale/unmanaged 均为 0；runtime health 0 error/0 warning |
+| Release artifact | PASS | 两次 exact-commit build SHA256 `46afbb507f61fce8facffbfa36c23f59fe3f5498e3f1843ceaa53f2507d8fcd8`；576 source files |
+| Wheel | PASS/LOCAL | 固定 Python 3.11/3.12 容器 wheel build 通过；远端 attestation 未运行 |
+| Upgrade/rollback | PASS | `3.1.0-rc.2 -> 3.1.0-rc.3 -> rollback`；candidate/previous 各 39 项，恢复 39 项 |
+| Source-to-live | NOT-REQUIRED | `0d25f3d..defe8a0` 与 `defe8a0..a1b5e2f` 的 mapped paths 均无变化；未执行 plan/apply |
+| Live health | INHERITED | RC2 映射内容未变；最近一次 66 tests/四 profile/live health 证据继续有效，但本轮未重新 apply |
 | Software M5 certifier | PASS/BOUNDARY | integrity/declaration pass；readiness `m5-ready`；certified `false` |
 
 ## Delivery Boundaries
 
 - Direct release targets 是 Claude Code、Hermes Agent 和 OpenCode；Codex 是 external handoff target。
-- `53681eb..dd67b48` 在 `agents/skills/optional-skills/workflows/templates` 下无内容变化；
-  已按授权完成完整 `~/codex -> ~/.codex` 声明式链路；实际 apply 为零复制、零覆盖、零删除的可验证 no-op。
-- `dd67b48..0d25f3d` 只增加平台中立治理契约、fixtures、checker 和测试；没有 runtime/default target 变更，
-  因此本轮不执行新的 source-to-live apply。
-- 本次不创建 tag、GitHub Release 或远端制品；final `3.1.0` 由 eligibility gate 阻断。
-- Knowledge Hub 已创建 `reviewing` validation candidate
-  `llm-agent-adk-v3-1-rc2-release-closure-20260714`，`knowledge-check` 与 strict link audit 均通过；
+- `0d25f3d..defe8a0` 与 `defe8a0..a1b5e2f` 的 mapped ADK 资产均未变化，故本轮不写
+  `~/codex`/`~/.codex`；这不是 apply pass 声明，而是机械 diff 支持的 not-required 决策。
+- RC2 历史 artifact checksum 有效，但比其 release commit 重建多一个 ignored `history.log`；
+  RC3 已排除 `*.log` 并增加归档负例，历史 provenance 缺口保留在 release evidence 中。
+- 本次未 push、tag、创建 GitHub Release、上传制品或运行远端 CI/attestation；final `3.1.0` 继续由 eligibility gate 阻断。
+- 本次未写 Knowledge Hub：仓库证据已落地，Hub 不在当前授权写入范围；历史 RC2 candidate 仍为 reviewing，
   未执行 active promotion，也未写 `~/.codex/memories`。
-- `OpenSpec`、`superpowers`、`vibeflow` 保持已登记 dirty baseline，未被清理、暂存或提交。
+- `OpenSpec`、`superpowers`、`vibeflow`、`hermes/`、`hermes_data/` 保持既有 dirty/untracked baseline，未被清理、暂存或提交。
 
 ## Remaining Evidence
 

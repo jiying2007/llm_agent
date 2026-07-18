@@ -224,8 +224,12 @@ def _validate_policy(policy: Mapping[str, Any]) -> None:
         value = release.get(name)
         if not isinstance(value, str) or not SEMVER_RE.fullmatch(value):
             raise M5Error("release.{} must be a semantic version".format(name))
-    for name in ("manifest", "rehearsal_report"):
-        if not isinstance(release.get(name), str) or not release[name]:
+    for name in ("manifest", "rehearsal_report", "evidence_report"):
+        value = release.get(name)
+        if not isinstance(value, str) or not value:
+            raise M5Error("release.{} must be a repository-relative path".format(name))
+        relative = Path(value)
+        if relative.is_absolute() or ".." in relative.parts:
             raise M5Error("release.{} must be a repository-relative path".format(name))
     if not HEX64_RE.fullmatch(str(release.get("candidate_sha256", ""))):
         raise M5Error("release.candidate_sha256 must be a SHA256 digest")

@@ -1,7 +1,7 @@
 {
   "schema": "llm-agent-software-m5-pilot-ledger/v1",
-  "updated_at": "2026-07-14",
-  "candidate_version": "3.1.0-rc.2",
+  "updated_at": "2026-07-18",
+  "candidate_version": "3.1.0-rc.3",
   "event_log": "reports/field-evidence/software-m5-events.jsonl",
   "repositories": [
     {

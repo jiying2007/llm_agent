@@ -97,6 +97,7 @@ policy = {
         "manifest": "evidence/candidate-manifest.json",
         "candidate_sha256": "a" * 64,
         "rehearsal_report": "evidence/release.json",
+        "evidence_report": "evidence/release-evidence.json",
     },
     "runtime_campaign": {
         "manifest": "evidence/evaluation-manifest.json",
@@ -616,6 +617,15 @@ policy_path.write_text(json.dumps(weakened_policy) + "\n", encoding="utf-8")
 weakened = assess(root, recorded_at)
 assert weakened["integrity_status"] == "fail", weakened
 assert weakened["blocker_ids"] == ["evidence_integrity"], weakened
+policy_path.write_text(original_policy, encoding="utf-8")
+
+for invalid_evidence_report in ("", "../outside-release-evidence.json"):
+    invalid_policy = json.loads(original_policy)
+    invalid_policy["release"]["evidence_report"] = invalid_evidence_report
+    policy_path.write_text(json.dumps(invalid_policy) + "\n", encoding="utf-8")
+    invalid_result = assess(root, recorded_at)
+    assert invalid_result["integrity_status"] == "fail", invalid_result
+    assert invalid_result["blocker_ids"] == ["evidence_integrity"], invalid_result
 policy_path.write_text(original_policy, encoding="utf-8")
 
 try:

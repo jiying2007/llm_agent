@@ -1,0 +1,103 @@
+{
+  "schema": "llm-agent-adk-software-m5-ready-release-evidence/v1",
+  "generated_at": "2026-07-18",
+  "release_scope": "source-committed-local-rehearsed-release-candidate-evidence",
+  "agent_dev_kit": {
+    "version": "3.1.0-rc.3",
+    "commit": "defe8a078b9693b6963e434f3131891ebbcf5d62",
+    "evidence_commit": "a1b5e2fed679d8002b21567103c6366c57236915",
+    "previous_version": "3.1.0-rc.2",
+    "previous_commit": "dd67b488c13e96933d80336f05160b9eea94e4fe",
+    "previous_governance_commit": "0d25f3da7ac1f141a5172d62cfc7b6f4bfbd93b1"
+  },
+  "artifacts": {
+    "source_sha256": "46afbb507f61fce8facffbfa36c23f59fe3f5498e3f1843ceaa53f2507d8fcd8",
+    "source_reproducible_builds": 2,
+    "source_file_count": 576,
+    "wheel_sha256": null,
+    "wheel_status": "pass-local-parity-not-published",
+    "previous_source_sha256": "8571134df515289d32905961ae78d5e5c2dd308d2771691690594a85c76142ac",
+    "previous_source_provenance": "checksum-valid-historical-artifact-not-commit-reproducible",
+    "candidate_manifest_sha256": "3836581349363acc56c72f7c99406ef884976ebc4a6478d58b1806ef1ebb9f94",
+    "release_rehearsal_report_sha256": "1526ac3aaeb275c4c34da79419e2aed9588620c6487ee6b8805232de31096de9"
+  },
+  "validation": {
+    "strict": "pass",
+    "format": "pass",
+    "security": "pass",
+    "release_check": "pass",
+    "shellcheck": "pass",
+    "ruff": "pass-local-parity",
+    "dependency_audit": "pass-local-python-3.11-and-3.12",
+    "full": {
+      "total": 54,
+      "pass": 54,
+      "fail": 0,
+      "elapsed_ms": 335446
+    },
+    "root_quick": "56/56-pass",
+    "root_full": "62/62-pass",
+    "target_static": "3/3-pass",
+    "target_runtime": "not-run-experimental",
+    "effect_eval": "24/24-pass-ablation-delta-0.3333",
+    "upgrade_rollback_rehearsal": "pass",
+    "previous_installed": 39,
+    "candidate_installed": 39,
+    "restored_assets": 39,
+    "local_ci_parity": "python-3.11-and-3.12-full-54/54-pass",
+    "remote_ci": "not-run-owner-waiver"
+  },
+  "source_to_live": {
+    "comparison": "0d25f3da7ac1f141a5172d62cfc7b6f4bfbd93b1..defe8a078b9693b6963e434f3131891ebbcf5d62",
+    "mapped_paths": [
+      "agents",
+      "skills",
+      "optional-skills",
+      "workflows",
+      "templates"
+    ],
+    "mapped_content_changed": false,
+    "decision": "not-required-mapped-no-change",
+    "profile": "inherited-team-collab",
+    "managed_files": 749,
+    "plan_status": "not-run-mapped-content-unchanged",
+    "dry_run_status": "not-run",
+    "apply_status": "not-run",
+    "post_apply": {
+      "basis": "inherited-rc2-identical-mapped-content",
+      "codex_assets_check": "pass-66-tests",
+      "profile_smoke": "pass-minimal-solo-dev-team-collab-superpowers-compat",
+      "routing_precedence": "pass-active-superpowers-in-default-0",
+      "live_compare": "same-480-diff-0-missing-0-stale-0-unmanaged-0",
+      "runtime_health": "pass-errors-0-warnings-0"
+    }
+  },
+  "software_m5": {
+    "readiness_status": "m5-ready",
+    "certified": false,
+    "field_status": "self_pilot_active",
+    "runtime_campaign": "blocked-claude-unauthenticated"
+  },
+  "knowledge_hub": {
+    "candidate_id": null,
+    "path": null,
+    "status": "not-captured-outside-write-scope",
+    "active_promotion": false,
+    "memory_write": false,
+    "historical_candidate": "llm-agent-adk-v3-1-rc2-release-closure-20260714"
+  },
+  "publication": {
+    "adk_source_commit_pushed": false,
+    "root_product_commit": "4cae24857c4c378798b85a8cd096e1d513da7b10",
+    "root_product_commit_pushed": false,
+    "tag_created": false,
+    "remote_release_created": false,
+    "remote_artifact_uploaded": false,
+    "reason": "RC3 is locally committed and rehearsed. Push, tag, remote CI/attestation and publication were not authorized or executed; final 3.1.0 remains blocked by runtime and field gates."
+  },
+  "known_provenance_gap": {
+    "version": "3.1.0-rc.2",
+    "finding": "The checksum-valid historical artifact contains one ignored history.log and cannot be reproduced from its declared release commit alone.",
+    "rc3_prevention": "Release source assembly excludes all *.log files and the archive contract has a negative regression."
+  }
+}

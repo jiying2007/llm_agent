@@ -41,6 +41,9 @@ import subprocess
 import sys
 
 root = pathlib.Path(sys.argv[1])
+policy = json.loads((root / "manifests/software_m5_policy.json").read_text(encoding="utf-8"))
+release_policy = policy["release"]
+candidate_version = release_policy["candidate_version"]
 scorecard = json.loads((root / "manifests/product_maturity_scorecard.json").read_text(encoding="utf-8"))
 adk_initialized = (root / "agent-dev-kit/manifest.json").is_file()
 assert scorecard["schema"] == "llm-agent-product-maturity-scorecard/v1", scorecard
@@ -56,7 +59,7 @@ assert software_m5 == {
     "eligibility_status": "blocked",
     "certification_status": "blocked",
     "certified": False,
-    "candidate_version": "3.1.0-rc.2",
+    "candidate_version": candidate_version,
     "final_version": "3.1.0",
     "blocking_gates": [
         "final_version",
@@ -69,10 +72,10 @@ assert software_m5 == {
     ],
 }, software_m5
 working_candidate = scorecard["working_candidate"]
-assert working_candidate["version"] == "3.1.0-rc.2", working_candidate
+assert working_candidate["version"] == candidate_version, working_candidate
 assert working_candidate["overall_level"] == "M3", working_candidate
 assert working_candidate["target_status"] == "experimental", working_candidate
-assert working_candidate["status"] == "source-committed-pushed-live-applied", working_candidate
+assert working_candidate["status"] == "source-committed-local-rehearsed", working_candidate
 assert working_candidate["lock_state"] == "synchronized", working_candidate
 assert working_candidate["runtime_certification"] == "not-run", working_candidate
 levels = {f"M{i}" for i in range(6)}
@@ -125,12 +128,14 @@ for task in task_pack["tasks"]:
         assert commands, task
 assert next(item for item in task_pack["tasks"] if item["id"] == "PM-09")["status"] == "in_progress"
 
-policy = json.loads((root / "manifests/software_m5_policy.json").read_text(encoding="utf-8"))
 assert policy["schema"] == "llm-agent-software-m5-policy/v1", policy
-assert policy["release"]["previous_version"] == "3.1.0-rc.1", policy
-assert policy["release"]["candidate_version"] == "3.1.0-rc.2", policy
-assert policy["release"]["evaluation_version"] == "3.1.0-rc.2", policy
-assert policy["runtime_campaign"]["contract"] == "agent-dev-kit/manifests/software_m5_eval_contract_rc2.json", policy
+assert re.fullmatch(r"\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?", policy["release"]["previous_version"]), policy
+assert policy["release"]["previous_version"] != candidate_version, policy
+assert policy["release"]["evaluation_version"] == candidate_version, policy
+assert (root / policy["release"]["evidence_report"]).is_file(), policy
+contract_path = root / policy["runtime_campaign"]["contract"]
+contract = json.loads(contract_path.read_text(encoding="utf-8"))
+assert contract["campaign_id"] == f"software-m5-{candidate_version}", contract
 assert policy["release"]["final_version"] == "3.1.0", policy
 assert policy["runtime_campaign"]["required_runtimes"] == ["codex", "claude"], policy
 assert policy["runtime_campaign"]["minimum_tasks"] >= 60, policy
@@ -222,6 +227,11 @@ rg -q 'tools\.codex_assets\.intake_pipeline' "$ROOT/scripts/analyze-repo.sh" || 
 
 rg -q 'tools\.codex_assets\.update_pipeline' "$ROOT/scripts/pipeline-subrepo-update.sh" || {
   echo "[FAIL] update pipeline is not routed through the fail-fast core" >&2
+  exit 1
+}
+
+rg -q 'check-performance-budgets\.sh.*--strict.*--timing-json' "$ROOT/scripts/check-adk-performance-ops.sh" || {
+  echo "[FAIL] adk performance wrapper does not enforce the declared strict timing budget" >&2
   exit 1
 }
 
