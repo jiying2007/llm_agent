@@ -84,7 +84,7 @@
   },
   "publication": {
     "adk_source_commit_pushed": false,
-    "root_product_commit": null,
+    "root_product_commit": "c0080f4169046d084a7c73a3d47922456c64e7ec",
     "root_product_commit_pushed": false,
     "tag_created": false,
     "remote_release_created": false,
