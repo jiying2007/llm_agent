@@ -1,0 +1,15 @@
+{
+  "schema": "external-practice-cycle-plan/v1",
+  "mode": "report-only",
+  "as_of": "2026-07-19",
+  "allow_degraded": true,
+  "jobs": [
+    {"id": "github-fixture", "provider": "github", "enabled": true, "query": "agent", "fixture": "fixtures/external-practice/providers/github.json", "max_results": 10},
+    {"id": "gitlab-fixture", "provider": "gitlab", "enabled": true, "query": "agent", "fixture": "fixtures/external-practice/providers/gitlab.json", "max_results": 10},
+    {"id": "gitee-fixture", "provider": "gitee", "enabled": true, "query": "agent", "fixture": "fixtures/external-practice/providers/gitee.json", "max_results": 10},
+    {"id": "openai-fixture", "provider": "openai-official", "enabled": true, "input": "fixtures/external-practice/providers/official.json", "max_results": 10},
+    {"id": "anthropic-fixture", "provider": "anthropic-official", "enabled": true, "input": "fixtures/external-practice/providers/official.json", "max_results": 10},
+    {"id": "wechat-fixture", "provider": "wechat", "enabled": true, "input": "fixtures/external-practice/providers/wechat.jsonl", "max_results": 10},
+    {"id": "manual-fixture", "provider": "manual", "enabled": true, "input": "fixtures/external-practice/providers/manual.jsonl", "max_results": 10}
+  ]
+}

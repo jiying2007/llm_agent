@@ -1,14 +1,13 @@
 {
   "schema_version": 1,
   "status": "report-only",
-  "last_updated": "2026-06-16",
+  "last_updated": "2026-07-19",
   "states": [
     "discovered",
     "scored",
     "quarantined",
     "analyzed",
     "watch",
-    "onboard-candidate",
     "active-core",
     "active-reference",
     "archive-only",

@@ -1,0 +1,16 @@
+[
+  {
+    "id": 202,
+    "full_name": "example/agent-skill-kit",
+    "html_url": "https://gitee.com/example/agent-skill-kit",
+    "description": "面向工程治理的 Agent、Skill 与 Workflow 工具集。",
+    "default_branch": "master",
+    "language": "Python",
+    "stars_count": 66,
+    "forks_count": 9,
+    "watches_count": 12,
+    "last_push_at": "2026-07-12T09:08:07+08:00",
+    "license": "MulanPSL-2.0",
+    "fork": false
+  }
+]

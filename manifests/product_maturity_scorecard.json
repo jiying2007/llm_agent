@@ -1,6 +1,6 @@
 {
   "schema": "llm-agent-product-maturity-scorecard/v1",
-  "updated_at": "2026-07-18",
+  "updated_at": "2026-07-19",
   "product_boundary": "reference-intake workspace plus platform-neutral agent asset compiler/control plane; no LLM agent runtime",
   "overall": {
     "level": "M3",
@@ -14,12 +14,12 @@
     "eligibility_status": "blocked",
     "certification_status": "blocked",
     "certified": false,
-    "candidate_version": "3.1.0-rc.3",
+    "candidate_version": "3.1.0-rc.4",
     "final_version": "3.1.0",
     "blocking_gates": ["final_version", "independent_repository", "operator_count", "pilot_duration", "real_repository_count", "required_field_events", "runtime_campaign"]
   },
   "working_candidate": {
-    "version": "3.1.0-rc.3",
+    "version": "3.1.0-rc.4",
     "status": "source-committed-local-rehearsed",
     "overall_level": "M3",
     "target_status": "experimental",
@@ -33,23 +33,24 @@
       "OOD/adversarial trace-outcome evaluation with routing ablation",
       "provider-balanced OpenAI and Anthropic official-doc freshness gates",
       "seven-dimension Harness readiness with ownership and freshness controls",
-      "non-root offline Python 3.11/3.12 local CI parity with isolated dependency audit"
+      "non-root offline Python 3.11/3.12 local CI parity with isolated dependency audit",
+      "report-only external practice intake with seven governed providers, independent decision handoff and hard-cut legacy retirement"
     ],
     "lock_state": "synchronized",
     "runtime_certification": "not-run",
     "local_validation": {
       "adk_full": "54/54-pass",
-      "root_quick": "56/56-pass",
-      "root_full": "62/62-pass",
+      "root_quick": "53/53-pass",
+      "root_full": "58/58-pass",
       "target_static": "3/3-pass",
       "effect_eval": "24/24-pass-ablation-delta-0.3333",
       "release_rehearsal": "pass",
-      "source_to_live": "not-required-mapped-no-change",
-      "codex_assets_check": "inherited-rc2-pass-66-tests-four-profile-smoke",
-      "live_runtime_health": "inherited-rc2-pass-errors-0-warnings-0",
-      "artifact_sha256": "46afbb507f61fce8facffbfa36c23f59fe3f5498e3f1843ceaa53f2507d8fcd8"
+      "source_to_live": "required-pending-owner-authorization",
+      "codex_assets_check": "not-run-pending-live-apply",
+      "live_runtime_health": "not-run-pending-live-apply",
+      "artifact_sha256": "34ffba31a1da63edb7d0120b76b01746d2b2bbf2573ad445b636acd30cbc706d"
     },
-    "promotion_boundary": "The rc.3 source and evidence commits are local, the lock is synchronized, exact-commit build and rollback rehearsal pass, and mapped runtime assets are unchanged. Push, remote CI/attestation, native runtime smoke and field evidence remain blocked or not run."
+    "promotion_boundary": "The rc.4 source commit and exact-commit rollback rehearsal pass locally. Mapped Agent/Skill/Workflow assets changed, so source-to-live remains pending separate owner authorization; push, remote CI/attestation, native runtime smoke and field evidence remain blocked or not run."
   },
   "assessment_model": {
     "implementation_level": "highest level supported by code and local control-plane behavior",
@@ -124,7 +125,7 @@
       "evidence_level": "M3",
       "evidence_layers_present": ["source", "test"],
       "status": "verified",
-      "evidence": ["agent-dev-kit/src/agent_dev_kit/quality.py", "agent-dev-kit/manifests/adk_performance_budgets.json", "agent-dev-kit/manifests/software_m5_eval_contract_rc3.json", "agent-dev-kit/docs/changes/adk-v3-1-rc2-target-conformance/benchmark.json", "agent-dev-kit/docs/changes/adk-terminal-contract-hardening/verification-evidence.md"],
+      "evidence": ["agent-dev-kit/src/agent_dev_kit/quality.py", "agent-dev-kit/manifests/adk_performance_budgets.json", "agent-dev-kit/manifests/software_m5_eval_contract_rc4.json", "agent-dev-kit/docs/changes/adk-v3-1-rc2-target-conformance/benchmark.json", "agent-dev-kit/docs/changes/external-practice-intake-v1/verification-evidence.md"],
       "gap": "Cold-start, 10x I/O and peak-memory curves are local only; concurrent lock contention and field-scale runtime curves remain unverified."
     },
     {
@@ -137,7 +138,7 @@
       "evidence_layers_present": ["source", "test"],
       "status": "verified",
       "evidence": ["agent-dev-kit/src/agent_dev_kit/quality.py", "agent-dev-kit/.github/workflows/ci.yml", "agent-dev-kit/.github/workflows/release.yml", "agent-dev-kit/.github/workflows/scorecard.yml", "agent-dev-kit/manifests/official_docs_freshness_gates.json", "agent-dev-kit/docs/runbooks/local-ci-parity.md", ".github/workflows/ci.yml"],
-      "gap": "Local security, lint and controlled Python 3.11/3.12 parity gates pass; remote Scorecard, dependency audit workflow and artifact attestation have not run for rc.3."
+      "gap": "Local security and lint gates pass; remote Scorecard, dependency audit workflow, Python 3.11/3.12 parity and artifact attestation have not run for rc.4."
     },
     {
       "id": "D08",
@@ -148,8 +149,8 @@
       "evidence_level": "M3",
       "evidence_layers_present": ["source", "test", "runtime"],
       "status": "verified_local",
-      "evidence": ["agent-dev-kit/src/agent_dev_kit/installer.py", "agent-dev-kit/src/agent_dev_kit/release.py", "agent-dev-kit/docs/changes/adk-terminal-contract-hardening/release-rehearsal.json", "agent-dev-kit/docs/changes/adk-terminal-contract-hardening/verify-report.md", "reports/adk-v3-1-rc3-release-evidence-2026-07-18.json"],
-      "gap": "The local rc.2-to-rc.3 exact-commit build and rollback rehearsal pass. Push, real direct-target installation, remote CI/attestation and release publication remain explicit owner or external operations."
+      "evidence": ["agent-dev-kit/src/agent_dev_kit/installer.py", "agent-dev-kit/src/agent_dev_kit/release.py", "agent-dev-kit/docs/changes/external-practice-intake-v1/release-rehearsal.json", "agent-dev-kit/docs/changes/external-practice-intake-v1/verify-report.md", "reports/adk-v3-1-rc4-release-evidence-2026-07-19.json"],
+      "gap": "The local rc.3-to-rc.4 exact-commit build and rollback rehearsal pass. Source-to-live apply, push, real direct-target installation, remote CI/attestation and release publication remain explicit owner or external operations."
     },
     {
       "id": "D09",

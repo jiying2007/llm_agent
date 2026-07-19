@@ -1,0 +1,20 @@
+{
+  "total_count": 1,
+  "incomplete_results": false,
+  "items": [
+    {
+      "full_name": "example/agent-harness",
+      "html_url": "https://github.com/example/agent-harness",
+      "description": "A governed agent workflow and evaluation harness.",
+      "topics": ["agent", "workflow", "evaluation"],
+      "language": "Python",
+      "default_branch": "main",
+      "stargazers_count": 420,
+      "forks_count": 21,
+      "watchers_count": 420,
+      "pushed_at": "2026-07-10T03:04:05Z",
+      "license": {"spdx_id": "Apache-2.0"},
+      "archived": false
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "artifact_sha256": {
+    "adoption_decision": "0ee6b9568be91696b745af3a6fcb93d61c559da820e668ef2ed5977968b9affc",
+    "dirty_baseline_review": "fb903ce58e81c53ca7511d5cb668768658539f24a7eb445782cac6cbcc90afa4",
+    "evidence_dependency_scan": "69d99bbe058863285665c50529ded721903eef325cf905cf473ad40eccd38bb4",
+    "rollback_plan": "69d99bbe058863285665c50529ded721903eef325cf905cf473ad40eccd38bb4"
+  },
+  "as_of": "2026-07-19",
+  "boundaries": {
+    "agent_dev_kit_modified": false,
+    "apply_supported": false,
+    "live_runtime_modified": false,
+    "repository_deleted": false
+  },
+  "gates": {
+    "active_core_gate": true,
+    "adoption_decision_gate": true,
+    "dirty_baseline_gate": true,
+    "evidence_dependency_gate": true,
+    "lifecycle_state_gate": true,
+    "postcheck_gate": true,
+    "precheck_gate": true,
+    "protected_repo_gate": true,
+    "rollback_plan_gate": true
+  },
+  "mode": "dry-run",
+  "planned_changes": {
+    "dirty_baseline": {"action": "drop-entry-if-present", "path": "subrepos/dirty-baseline.tsv"},
+    "docs_reports": {"action": "write-removal-evidence", "path": "reports/reference-repository-removal-codex-2026-07-19.md"},
+    "gitlink": {"action": "remove-gitlink", "path": "codex"},
+    "gitmodules": {"action": "remove-entry", "path": ".gitmodules"},
+    "lifecycle": {"action": "mark-removed", "path": "manifests/subrepo_lifecycle.json"},
+    "registry": {"action": "mark-removed", "path": "subrepos/registry.csv"}
+  },
+  "postcheck": {"command": "rtk scripts/check-all.sh --quick"},
+  "precheck": {"command": "rtk scripts/check-all.sh --quick"},
+  "repository": {
+    "active_core": false,
+    "lifecycle_state": "disabled",
+    "protected": false,
+    "registry_status": "disabled",
+    "repo": "codex"
+  },
+  "required_artifacts": {
+    "adoption_decision": "subrepos/adoption-matrix.md",
+    "dirty_baseline_review": "subrepos/dirty-baseline.tsv",
+    "evidence_dependency_scan": "reports/subrepo-removal-plan-codex-2026-06-16.md",
+    "rollback_plan": "reports/subrepo-removal-plan-codex-2026-06-16.md"
+  },
+  "rollback": {
+    "commands": ["rtk git revert <removal-commit>"],
+    "files": [".gitmodules", "manifests/subrepo_lifecycle.json", "subrepos/dirty-baseline.tsv", "subrepos/registry.csv"]
+  },
+  "schema": "reference-repository-removal/v1",
+  "status": "planned"
+}

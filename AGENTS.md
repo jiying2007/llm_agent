@@ -28,7 +28,8 @@
 
 | 用户意图 | 触发关键词 | 执行动作 | 主要入口 |
 |---|---|---|---|
-| 接入新仓库 | 接入、新增子仓、add repo、onboard、纳入治理 | 先发现/评分/隔离分析，再注册或拒绝 | `docs/runbooks/oss-intake-lifecycle.md`、`scripts/oss-intake.sh` |
+| 外部实践 intake | GitHub/GitLab/Gitee/官方实践/公众号/人工 URL、吸收、候选研究 | 统一生成 review-required candidate/queue/evidence；不自动吸收 | `docs/runbooks/external-practice-intake.md`、`scripts/practice-intake.sh` |
+| 参考仓登记 | 接入、新增子仓、add repo、onboard、纳入治理 | 只接受 v1 candidate + 独立 ADOPT decision，默认 dry-run | `docs/runbooks/reference-repository-lifecycle.md`、`scripts/onboard-reference-repository.sh` |
 | 全面检查 | 检查、check、验证、门禁、健康检查 | 运行一键检查并汇总门禁结果 | `scripts/check-all.sh`、`scripts/devkit.sh check` |
 | 同步子仓 | 同步、sync、拉取更新、fetch | 在 phase gate 允许后拉取 enabled active 参考仓；`agent-dev-kit` 为应用/落地仓，默认排除 | `scripts/sync-subrepos.sh` |
 | 差异扫描 | 差异、diff、变更、最近变化 | 扫描子仓近 N 天变更 | `scripts/diff-scan.sh` |
@@ -41,7 +42,7 @@
 | 安装 hook | hook、pre-commit、提交检查 | 安装 git pre-commit hook | `scripts/install-pre-commit-hook.sh` |
 | 一键流水线 | 流水线、pipeline、一键更新、全量更新 | 同步、差异、分级、commit-snapshot 分析、grade drift、跨仓证据聚合和报告；不自动吸收 | `scripts/pipeline-subrepo-update.sh` |
 | 优化 adk | 优化、改进、升级 adk、enhance | 在 `agent-dev-kit` 压实资产、验证并记录证据 | `agent-dev-kit/scripts/devkit.sh` |
-| 吸收落地 | 吸收、absorb、提取模式 | 从结构化决策候选开始，经语义、重复、架构、许可证、安全和运行效果复核后创建 ADK change artifact；禁止自动复制或静默写入 | `docs/absorption-governance.md`、`scripts/analyze-repo.sh` |
+| 吸收落地 | 吸收、absorb、提取模式 | 从统一 candidate + 独立 owner decision 开始，经重复、架构、许可证/版权、安全、验证、pilot 和退役复核后创建 ADK change；禁止自动复制 | `docs/absorption-governance.md`、`adk-external-practice-absorption` |
 | 需求探索增强 | brainstorm、grill-me、需求拷问、先发散、拷问需求 | 先发散 2-4 个方向，再收敛目标/非目标/边界/验收 | `adk-structured-requirements-questioning`、`adk-requirements-triage` |
 | 备份回滚 | 备份、回滚、backup、rollback、恢复 | 创建安装备份、列出备份、恢复或回滚 | `agent-dev-kit/scripts/backup-rollback.sh` |
 | 冻结后周期 | 冻结后、post-freeze、冻结后检查、周期执行 | 文档同步、差异扫描、采纳矩阵状态、摘要生成 | `scripts/run-post-freeze-cycle.sh` |
@@ -54,6 +55,7 @@
 4. `subrepos/phase-gate.env` 控制是否允许追踪上游更新；未满足压实门禁时不要常态同步参考仓。
 5. 官方 OpenAI 实践吸收要记录 source URL、retrieved_at、review_status、expires_at，并区分“实质吸收”和“纳入观察”。
 6. 公众号采集与实践吸收必须分阶段：采集只生成 `review-required` 元数据和负证据；经重复、冲突、架构与安全复核后才允许修改 ADK 或 Codex 资产。
+7. Gitee search 空列表必须标记 `degraded-empty`；GitHub/GitLab/Gitee live metadata 只有显式 `--allow-network` 才执行。
 
 ## 4. 常用验证入口
 
@@ -64,6 +66,7 @@ rtk scripts/check-doc-sync.sh .
 rtk scripts/check-agents-coverage.sh .
 rtk scripts/check-adoption-matrix-status.sh .
 rtk scripts/check-adk-target-evidence.sh .
+rtk scripts/check-practice-intake.sh .
 rtk scripts/check-token-budget.sh . --summary-json
 ```
 
@@ -84,7 +87,7 @@ rtk scripts/check-all.sh --quick
 | 候选实践的采纳/观察/拒绝、目标层和证据 | `subrepos/adoption-matrix.md` |
 | 结构化低 token 读取 | `subrepos/adoption-matrix.jsonl` |
 | 维护流程、门禁解释、source-to-live 证据链 | `docs/llm-agent-maintenance-guide.md` |
-| 新仓发现、评分、注册、拒绝生命周期 | `docs/runbooks/oss-intake-lifecycle.md` |
+| 外部实践候选发现、独立决策与参考仓登记 | `docs/runbooks/external-practice-intake.md`、`docs/runbooks/reference-repository-lifecycle.md` |
 | 吸收前的全盘评估与人工批准规则 | `docs/absorption-governance.md` |
 | 一次性试跑、复核、周报、证据包 | `reports/` |
 

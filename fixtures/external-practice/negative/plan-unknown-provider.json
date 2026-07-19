@@ -1,0 +1,1 @@
+{"schema":"external-practice-cycle-plan/v1","mode":"report-only","allow_degraded":true,"jobs":[{"id":"unknown-provider","provider":"legacy-oss","enabled":true,"query":"agent","max_results":10}]}

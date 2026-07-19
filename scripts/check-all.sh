@@ -62,7 +62,6 @@ case "${CHECK_MODE}" in
       "check-adk-performance-ops.sh"
       "check-evidence-bundle.sh"
       "check-token-budget.sh"
-      "check-wechat-intake-ledger.sh"
       "check-workspace-entrypoints.sh"
     )
     ;;

@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://llm-agent.local/schemas/external-practice-cycle-plan.schema.json",
+  "title": "external-practice-cycle-plan/v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "mode", "allow_degraded", "jobs"],
+  "properties": {
+    "schema": {"const": "external-practice-cycle-plan/v1"},
+    "mode": {"const": "report-only"},
+    "as_of": {"type": "string", "format": "date"},
+    "allow_degraded": {"type": "boolean"},
+    "jobs": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 50,
+      "contains": {
+        "type": "object",
+        "required": ["enabled"],
+        "properties": {"enabled": {"const": true}}
+      },
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "provider", "enabled", "max_results"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]{1,79}$"},
+          "provider": {"enum": ["github", "gitlab", "gitee", "openai-official", "anthropic-official", "wechat", "manual"]},
+          "enabled": {"type": "boolean"},
+          "query": {"type": "string", "minLength": 1, "maxLength": 500},
+          "input": {"type": "string", "minLength": 1, "maxLength": 500, "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"},
+          "fixture": {"type": "string", "minLength": 1, "maxLength": 500, "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"},
+          "urls": {"type": "array", "minItems": 1, "maxItems": 100, "items": {"type": "string", "pattern": "^https://"}},
+          "max_results": {"type": "integer", "minimum": 1, "maximum": 100}
+        },
+        "oneOf": [
+          {
+            "properties": {"provider": {"enum": ["github", "gitlab", "gitee"]}},
+            "required": ["query"],
+            "not": {"anyOf": [{"required": ["input"]}, {"required": ["urls"]}]}
+          },
+          {
+            "properties": {"provider": {"enum": ["openai-official", "anthropic-official", "wechat"]}},
+            "required": ["input"],
+            "not": {"anyOf": [{"required": ["query"]}, {"required": ["fixture"]}, {"required": ["urls"]}]}
+          },
+          {
+            "properties": {"provider": {"const": "manual"}},
+            "anyOf": [{"required": ["input"]}, {"required": ["urls"]}],
+            "not": {"anyOf": [{"required": ["query"]}, {"required": ["fixture"]}]}
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,7 +1,7 @@
 # 新仓库接入 Runbook
 
 > 当有新的参考仓库需要纳入 llm_agent 治理时，按此流程执行。
-> 终态接入优先走 `docs/runbooks/oss-intake-lifecycle.md`：先发现、评分、隔离分析和决策，再自动注册或拒绝。本文保留为人工备用路径。
+> 终态接入先走 `docs/runbooks/external-practice-intake.md` 生成候选并形成独立决策，再按 `docs/runbooks/reference-repository-lifecycle.md` 登记；本文仅保留为人工备用路径。
 
 ## AI 自动化模式（推荐）
 

@@ -1,0 +1,56 @@
+{
+  "schema": "external-practice-cycle-plan/v1",
+  "mode": "report-only",
+  "allow_degraded": true,
+  "jobs": [
+    {
+      "id": "github-agent-engineering",
+      "provider": "github",
+      "enabled": true,
+      "query": "agent coding workflow skill harness",
+      "max_results": 30
+    },
+    {
+      "id": "gitlab-agent-engineering",
+      "provider": "gitlab",
+      "enabled": true,
+      "query": "agent coding workflow skill harness",
+      "max_results": 30
+    },
+    {
+      "id": "gitee-agent-engineering",
+      "provider": "gitee",
+      "enabled": true,
+      "query": "AI Agent Skill Workflow",
+      "max_results": 30
+    },
+    {
+      "id": "openai-official",
+      "provider": "openai-official",
+      "enabled": true,
+      "input": "agent-dev-kit/manifests/official_docs_freshness_gates.json",
+      "max_results": 100
+    },
+    {
+      "id": "anthropic-official",
+      "provider": "anthropic-official",
+      "enabled": true,
+      "input": "agent-dev-kit/manifests/official_docs_freshness_gates.json",
+      "max_results": 100
+    },
+    {
+      "id": "wechat-governed-catalog",
+      "provider": "wechat",
+      "enabled": true,
+      "input": "reports/wechat-account-research-2026-07-16/catalog.jsonl",
+      "max_results": 100
+    },
+    {
+      "id": "manual-review-ledger",
+      "provider": "manual",
+      "enabled": false,
+      "input": "fixtures/external-practice/providers/manual.jsonl",
+      "max_results": 100
+    }
+  ]
+}

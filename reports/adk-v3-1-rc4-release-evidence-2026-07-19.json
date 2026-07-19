@@ -1,0 +1,99 @@
+{
+  "schema": "llm-agent-adk-software-m5-ready-release-evidence/v1",
+  "generated_at": "2026-07-19",
+  "release_scope": "source-committed-local-rehearsed-release-candidate-evidence",
+  "agent_dev_kit": {
+    "version": "3.1.0-rc.4",
+    "commit": "ecec9185e44fe7389fc82640e563643954e7ec2d",
+    "evidence_commit": "bffcd93eefac45669d8a038000161ff0fcc05e04",
+    "previous_version": "3.1.0-rc.3",
+    "previous_commit": "defe8a078b9693b6963e434f3131891ebbcf5d62",
+    "previous_governance_commit": "a1b5e2fed679d8002b21567103c6366c57236915"
+  },
+  "artifacts": {
+    "source_sha256": "34ffba31a1da63edb7d0120b76b01746d2b2bbf2573ad445b636acd30cbc706d",
+    "source_reproducible_builds": 2,
+    "source_file_count": 587,
+    "wheel_sha256": null,
+    "wheel_status": "not-run-rc4",
+    "previous_source_sha256": "46afbb507f61fce8facffbfa36c23f59fe3f5498e3f1843ceaa53f2507d8fcd8",
+    "previous_source_provenance": "exact-commit-reproducible",
+    "candidate_manifest_sha256": "7a6e3983a814bf0dc791142482a023d07c92f9941f7ee3a825c58c57293efe6e",
+    "release_rehearsal_report_sha256": "7115da51b19433e12853587f186d02ea550a16df46e33a5934053a391efef886"
+  },
+  "validation": {
+    "strict": "pass",
+    "format": "pass",
+    "security": "pass",
+    "release_check": "pass",
+    "shellcheck": "pass",
+    "ruff": "not-run-unavailable",
+    "dependency_audit": "not-run-rc4",
+    "full": {
+      "total": 54,
+      "pass": 54,
+      "fail": 0,
+      "elapsed_ms": 351240
+    },
+    "root_quick": "53/53-pass",
+    "root_full": "58/58-pass",
+    "target_static": "3/3-pass-in-adk-full",
+    "target_runtime": "not-run-experimental",
+    "effect_eval": "24/24-pass-in-adk-full",
+    "upgrade_rollback_rehearsal": "pass",
+    "previous_installed": 39,
+    "candidate_installed": 39,
+    "restored_assets": 39,
+    "local_ci_parity": "not-run-rc4-remote-ci-temporarily-bypassed",
+    "remote_ci": "not-run-owner-waiver"
+  },
+  "source_to_live": {
+    "comparison": "a1b5e2fed679d8002b21567103c6366c57236915..ecec9185e44fe7389fc82640e563643954e7ec2d",
+    "mapped_paths": [
+      "agents",
+      "skills",
+      "optional-skills",
+      "workflows",
+      "templates"
+    ],
+    "mapped_content_changed": true,
+    "decision": "required-pending-owner-authorization",
+    "profile": "research-intake-with-optional-skill",
+    "managed_files": null,
+    "plan_status": "not-run-owner-authorization-required",
+    "dry_run_status": "not-run",
+    "apply_status": "not-run",
+    "post_apply": null
+  },
+  "software_m5": {
+    "readiness_status": "m5-ready",
+    "certified": false,
+    "field_status": "self_pilot_active",
+    "runtime_campaign": "blocked-claude-unauthenticated"
+  },
+  "knowledge_hub": {
+    "candidate_id": "llm-agent-external-practice-intake-terminal-20260719",
+    "path": "domains/codex/archive/codex-archive/research-notes/20260719-llm-agent-external-practice-intake-terminal.md",
+    "status": "captured-reviewing",
+    "search_status": "pass-exact-id-one-result",
+    "strict_body_coverage": "pass-361-checked",
+    "global_check": "fail-199-pre-existing-frontmatter-drift-candidate-errors-0",
+    "active_promotion": false,
+    "memory_write": false,
+    "historical_candidate": "llm-agent-adk-v3-1-rc2-release-closure-20260714"
+  },
+  "publication": {
+    "adk_source_commit_pushed": false,
+    "root_product_commit": null,
+    "root_product_commit_pushed": false,
+    "tag_created": false,
+    "remote_release_created": false,
+    "remote_artifact_uploaded": false,
+    "reason": "RC4 source is locally committed and rehearsed. Live apply, push, tag, remote CI/attestation and publication were not executed; final 3.1.0 remains blocked by runtime and field gates."
+  },
+  "compatibility_boundary": {
+    "removed_asset": "adk-intake-workflow",
+    "compatibility_alias": false,
+    "rollback": "restore the complete checksum-verified RC3 artifact; do not reintroduce the removed asset into RC4"
+  }
+}

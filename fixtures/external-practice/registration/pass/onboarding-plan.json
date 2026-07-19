@@ -1,0 +1,115 @@
+{
+  "artifact_sha256": {
+    "analysis_report": "6a513e143e0f19dcbd765632a07e8f6aadc888a5e9afb0a65c2327951577e29e",
+    "candidate_ledger": "1994023e1c1f25e604184b1412dcac61a05debcdf2e22fe7e268a24e2ae36fc8",
+    "decision_ledger": "04a2b96e459bc3aec80a3a7dd3f49767ef0e1961f03dbceaf3b5cafa69d871bc",
+    "duplicate_check": "ec497e019aff38f57c5f21c2b743ef8a29ba4677737939c1ae463229fc00c4fc",
+    "security_review": "091b4bbbb4e0a119a9137c54e6497e0583c790e577f81874d974e2da47fb788c"
+  },
+  "boundaries": {
+    "agent_dev_kit_modified": false,
+    "external_code_executed": false,
+    "live_runtime_modified": false,
+    "network_discovery": false
+  },
+  "candidate": {
+    "candidate_id": "epc-34d27bd9c1f6bcea6e95",
+    "content_sha256": "174c82599d10f3444dc2e6172cf835e2cb91ec8fb913449e014a67c9fb00fb10",
+    "license": "Apache-2.0",
+    "provider": "github",
+    "repo": "example/agent-harness",
+    "risk_flags": [],
+    "source_id": "github-search",
+    "url": "https://github.com/example/agent-harness"
+  },
+  "decision": {
+    "decision": "ADOPT",
+    "evidence_refs": [
+      "reports/oss-analysis-example-runtime-policy-gates-2026-06-16.md",
+      "reports/oss-duplicate-check-example-runtime-policy-gates-2026-06-16.md",
+      "reports/oss-security-review-example-runtime-policy-gates-2026-06-16.md"
+    ],
+    "owner": "fixture-governance-owner",
+    "reviewed_at": "2026-07-19",
+    "target": "reference-repository"
+  },
+  "gates": {
+    "analysis_report_gate": true,
+    "apply_workspace_gate": true,
+    "candidate_contract_gate": true,
+    "duplicate_check_gate": true,
+    "materialization_gate": true,
+    "owner_decision_gate": true,
+    "phase_gate": true,
+    "registry_conflict_gate": true,
+    "repository_metadata_gate": true,
+    "rollback_plan_gate": true,
+    "security_review_gate": true,
+    "source_risk_gate": true,
+    "target_path_gate": true
+  },
+  "materialization": {
+    "mode": "metadata-only",
+    "source_clean": null,
+    "source_head": null,
+    "source_origin": null
+  },
+  "mode": "dry-run",
+  "planned_changes": {
+    "adoption_matrix": {
+      "capability": "approved external-practice reference epc-34d27bd9c1f6bcea6e95",
+      "category": "agent-ecosystem",
+      "cost": "中",
+      "date": "2026-07-19",
+      "decision": "observe",
+      "evidence": "reports/reference-repository-onboarding-fixture.md",
+      "risk": "中",
+      "source_repo": "agent-harness",
+      "state": "pending",
+      "target": "llm_agent",
+      "value": "高"
+    },
+    "gitmodules": {
+      "materialization": "metadata-only",
+      "name": "agent-harness",
+      "path": "agent-harness",
+      "url": "https://github.com/example/agent-harness"
+    },
+    "registry": {
+      "branch": "main",
+      "enabled": "yes",
+      "grade": "A",
+      "group": "agent-ecosystem",
+      "intake_policy": "observe-first",
+      "last_reviewed_on": "2026-07-19",
+      "notes": "approved external-practice reference; candidate=epc-34d27bd9c1f6bcea6e95",
+      "owner": "fixture-governance-owner",
+      "priority": "P1",
+      "repo": "agent-harness",
+      "status": "active",
+      "sync_mode": "fetch"
+    }
+  },
+  "required_artifacts": {
+    "analysis_report": "reports/oss-analysis-example-runtime-policy-gates-2026-06-16.md",
+    "candidate_ledger": "fixtures/external-practice/registration/candidates.jsonl",
+    "decision_ledger": "fixtures/external-practice/registration/decisions.jsonl",
+    "duplicate_check": "reports/oss-duplicate-check-example-runtime-policy-gates-2026-06-16.md",
+    "security_review": "reports/oss-security-review-example-runtime-policy-gates-2026-06-16.md"
+  },
+  "rollback": {
+    "commands": [
+      "rtk scripts/plan-reference-repository-removal.sh . --repo agent-harness --evidence-dependency-scan <report> --rollback-plan <report>",
+      "rtk scripts/check-reference-repository-removal.sh ."
+    ],
+    "files": [
+      ".gitmodules",
+      "manifests/subrepo_lifecycle.json",
+      "subrepos/adoption-matrix.jsonl",
+      "subrepos/adoption-matrix.md",
+      "subrepos/registry.csv"
+    ]
+  },
+  "schema": "reference-repository-onboarding/v1",
+  "status": "planned"
+}

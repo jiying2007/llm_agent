@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0.0",
+  "review_policy": {
+    "allowed_domains": [
+      "code.claude.com",
+      "developers.openai.com"
+    ]
+  },
+  "sources": [
+    {
+      "id": "openai-codex-agent-skills",
+      "title": "Codex Agent Skills",
+      "url": "https://developers.openai.com/codex/skills",
+      "retrieved_at": "2026-07-01",
+      "expires_at": "2026-09-29",
+      "review_status": "adopted",
+      "adoption_scope": "P0",
+      "owner": "agent-dev-kit",
+      "decision": "Use as a primary source for progressive disclosure and skill routing.",
+      "required_checks": ["validate-assets --strict"]
+    },
+    {
+      "id": "anthropic-claude-code-best-practices",
+      "title": "Claude Code best practices",
+      "url": "https://code.claude.com/docs/en/best-practices",
+      "retrieved_at": "2026-07-01",
+      "expires_at": "2026-09-29",
+      "review_status": "watch",
+      "adoption_scope": "P1",
+      "owner": "agent-dev-kit",
+      "decision": "Track platform-specific context and subagent guidance without copying runtime assumptions.",
+      "required_checks": ["check-official-docs-governance"]
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "landed-design",
-  "last_updated": "2026-07-13",
+  "last_updated": "2026-07-19",
   "purpose": "Machine-readable terminal optimization backlog for llm_agent and agent-dev-kit architecture governance. This manifest is the SSOT for the Comprehensive Optimization Backlog section in reports/architecture/llm-agent-adk-target-architecture-2026-07-11.md.",
   "source_report": "reports/architecture/llm-agent-adk-target-architecture-2026-07-11.md",
   "rules": {
@@ -46,11 +46,11 @@
         "adoption gates"
       ],
       "verification": [
-        "rtk scripts/check-oss-intake-ledger.sh .",
+        "rtk scripts/check-practice-intake.sh .",
         "rtk scripts/check-adoption-matrix-structured.sh .",
         "rtk scripts/check-subrepo-state.sh . --summary-json"
       ],
-      "implementation_evidence": ["tools/codex_assets/intake_pipeline.py", "tools/codex_assets/update_pipeline.py"]
+      "implementation_evidence": ["tools/codex_assets/practice_intake.py", "tools/codex_assets/reference_repository.py"]
     },
     {
       "id": "G3",
@@ -134,15 +134,15 @@
       "implementation_status": "done",
       "implementation_targets": [
         "runtime target registry",
-        "OSS intake lifecycle",
-        "approval queue"
+        "unified external-practice intake",
+        "independent adoption decision"
       ],
       "verification": [
         "rtk scripts/check-runtime-targets.sh . --summary-json",
-        "rtk scripts/check-oss-registration-plan.sh .",
-        "rtk scripts/check-oss-approval-queue.sh ."
+        "rtk scripts/check-practice-intake.sh .",
+        "rtk scripts/check-reference-repository-registration.sh ."
       ],
-      "implementation_evidence": ["agent-dev-kit/manifest.json", "agent-dev-kit/scripts/check-runtime-boundary.sh"]
+      "implementation_evidence": ["manifests/external_practice_sources.json", "agent-dev-kit/manifest.json", "agent-dev-kit/scripts/check-runtime-boundary.sh"]
     },
     {
       "id": "G8",
@@ -194,7 +194,7 @@
       ],
       "verification": [
         "rtk scripts/check-runtime-target-evidence-index.sh .",
-        "rtk scripts/check-oss-removal-plan.sh ."
+        "rtk scripts/check-reference-repository-removal.sh ."
       ],
       "implementation_evidence": ["agent-dev-kit/src/agent_dev_kit/installer.py", "agent-dev-kit/src/agent_dev_kit/release.py"]
     }

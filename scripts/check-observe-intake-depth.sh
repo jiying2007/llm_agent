@@ -26,7 +26,7 @@ function trim(s) {
 
     has_agent = index(evidence, "agent-dev-kit/agents/") > 0
     has_skill = index(evidence, "agent-dev-kit/skills/") > 0 || index(evidence, "agent-dev-kit/optional-skills/") > 0
-    has_workflow = index(evidence, "agent-dev-kit/docs/runbooks/") > 0 || index(evidence, "agent-dev-kit/docs/workflows.md") > 0 || index(evidence, "agent-dev-kit/docs/agent-skill-catalog.md") > 0
+    has_workflow = index(evidence, "agent-dev-kit/workflows/") > 0 || index(evidence, "agent-dev-kit/docs/runbooks/") > 0 || index(evidence, "agent-dev-kit/docs/workflows.md") > 0 || index(evidence, "agent-dev-kit/docs/agent-skill-catalog.md") > 0
     has_report = index(evidence, "reports/") > 0
     has_pack_report = index(evidence, "reports/observe-secondary-intake-packages") > 0 || index(evidence, "reports/post-freeze-kickoff-") > 0
 

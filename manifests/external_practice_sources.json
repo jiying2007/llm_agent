@@ -1,0 +1,155 @@
+{
+  "schema": "external-practice-source-policy/v1",
+  "status": "report-only",
+  "last_updated": "2026-07-19",
+  "rules": {
+    "network_requires_explicit_allow": true,
+    "metadata_only": true,
+    "review_required": true,
+    "must_not_clone": true,
+    "must_not_execute_external_code": true,
+    "must_not_register_repository": true,
+    "must_not_modify_adk": true,
+    "must_not_write_live_runtime": true,
+    "must_not_persist_credentials": true,
+    "must_not_persist_article_body": true,
+    "must_not_auto_decide": true,
+    "must_not_auto_publish": true
+  },
+  "limits": {
+    "timeout_seconds": 15,
+    "response_bytes": 4194304,
+    "candidates_per_job": 100,
+    "candidates_per_cycle": 500,
+    "summary_characters": 1000,
+    "title_characters": 300,
+    "topics_per_candidate": 50
+  },
+  "authority_order": [
+    "official",
+    "project",
+    "community",
+    "secondary",
+    "manual"
+  ],
+  "providers": {
+    "github": {
+      "kind": "forge-search",
+      "transport": "metadata-only",
+      "source_type": "repository",
+      "authority_level": "project",
+      "endpoint": "https://api.github.com/search/repositories",
+      "allowed_hosts": [
+        "api.github.com",
+        "github.com"
+      ],
+      "path_prefix": "/search/repositories",
+      "token_env": "GITHUB_TOKEN",
+      "token_delivery": "authorization-header",
+      "freshness_days": 90
+    },
+    "gitlab": {
+      "kind": "forge-search",
+      "transport": "metadata-only",
+      "source_type": "repository",
+      "authority_level": "project",
+      "endpoint": "https://gitlab.com/api/v4/projects",
+      "allowed_hosts": [
+        "gitlab.com"
+      ],
+      "path_prefix": "/api/v4/projects",
+      "token_env": "GITLAB_TOKEN",
+      "token_delivery": "private-token-header",
+      "freshness_days": 90
+    },
+    "gitee": {
+      "kind": "forge-search",
+      "transport": "metadata-only",
+      "source_type": "repository",
+      "authority_level": "project",
+      "endpoint": "https://gitee.com/api/v5/search/repositories",
+      "allowed_hosts": [
+        "gitee.com"
+      ],
+      "path_prefix": "/api/v5/search/repositories",
+      "token_env": "GITEE_TOKEN",
+      "token_delivery": "access-token-query",
+      "freshness_days": 90,
+      "empty_result_status": "degraded-empty"
+    },
+    "openai-official": {
+      "kind": "official-manifest",
+      "transport": "ledger-only",
+      "source_type": "official-document",
+      "authority_level": "official",
+      "input_path": "agent-dev-kit/manifests/official_docs_freshness_gates.json",
+      "allowed_hosts": [
+        "developers.openai.com",
+        "platform.openai.com"
+      ],
+      "freshness_days": 90
+    },
+    "anthropic-official": {
+      "kind": "official-manifest",
+      "transport": "ledger-only",
+      "source_type": "official-document",
+      "authority_level": "official",
+      "input_path": "agent-dev-kit/manifests/official_docs_freshness_gates.json",
+      "allowed_hosts": [
+        "code.claude.com",
+        "www.anthropic.com"
+      ],
+      "freshness_days": 90
+    },
+    "wechat": {
+      "kind": "wechat-catalog",
+      "transport": "ledger-only",
+      "source_type": "wechat-article",
+      "authority_level": "secondary",
+      "input_path": "reports/wechat-account-research-2026-07-16/catalog.jsonl",
+      "allowed_hosts": [
+        "agentscope.io",
+        "cloud.tencent.com",
+        "cn-sec.com",
+        "developer.aliyun.com",
+        "mp.weixin.qq.com",
+        "weixin.sogou.com",
+        "www.gm7.org",
+        "www.lddgo.net",
+        "www.tencent.com",
+        "zhuanlan.zhihu.com"
+      ],
+      "trusted_verification_statuses": [
+        "hermes-direct-read",
+        "official-mirror-verified"
+      ],
+      "freshness_days": 180
+    },
+    "manual": {
+      "kind": "manual-input",
+      "transport": "ledger-only",
+      "source_type": "manual-reference",
+      "authority_level": "manual",
+      "allowed_hosts": [
+        "agentscope.io",
+        "cloud.tencent.com",
+        "cn-sec.com",
+        "code.claude.com",
+        "developer.aliyun.com",
+        "developers.openai.com",
+        "gitee.com",
+        "github.com",
+        "gitlab.com",
+        "mp.weixin.qq.com",
+        "platform.openai.com",
+        "weixin.sogou.com",
+        "www.anthropic.com",
+        "www.gm7.org",
+        "www.lddgo.net",
+        "www.tencent.com",
+        "zhuanlan.zhihu.com"
+      ],
+      "freshness_days": 30
+    }
+  }
+}

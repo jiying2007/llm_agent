@@ -1,0 +1,14 @@
+[
+  {
+    "id": 101,
+    "path_with_namespace": "example/agent-dev-workflow",
+    "web_url": "https://gitlab.com/example/agent-dev-workflow",
+    "description": "A maintainable agent development workflow with policy gates.",
+    "topics": ["agent", "workflow", "governance"],
+    "default_branch": "main",
+    "star_count": 80,
+    "forks_count": 7,
+    "last_activity_at": "2026-07-11T10:20:30Z",
+    "archived": false
+  }
+]

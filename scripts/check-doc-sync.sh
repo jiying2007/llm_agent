@@ -8,25 +8,25 @@ ADOPTION_MATRIX="${ROOT}/subrepos/adoption-matrix.md"
 ROOT_AGENTS="${ROOT}/AGENTS.md"
 MAX_ROOT_AGENTS_LINES=180
 
-if [[ ! -f "${REGISTRY}" ]]; then
-  echo "[FAIL] registry missing: ${REGISTRY}" >&2
-  exit 1
-fi
+required_docs=(
+  "${REGISTRY}"
+  "${SCRIPTS_README}"
+  "${ADOPTION_MATRIX}"
+  "${ROOT_AGENTS}"
+  "${ROOT}/docs/llm-agent-maintenance-guide.md"
+  "${ROOT}/docs/absorption-governance.md"
+  "${ROOT}/docs/runbooks/external-practice-intake.md"
+  "${ROOT}/docs/runbooks/reference-repository-lifecycle.md"
+  "${ROOT}/docs/runbooks/wechat-metadata-intake.md"
+  "${ROOT}/architecture/external-practice-intake-terminal.md"
+)
 
-if [[ ! -f "${SCRIPTS_README}" ]]; then
-  echo "[FAIL] scripts README missing: ${SCRIPTS_README}" >&2
-  exit 1
-fi
-
-if [[ ! -f "${ADOPTION_MATRIX}" ]]; then
-  echo "[FAIL] adoption matrix missing: ${ADOPTION_MATRIX}" >&2
-  exit 1
-fi
-
-if [[ ! -f "${ROOT_AGENTS}" ]]; then
-  echo "[FAIL] root AGENTS.md missing: ${ROOT_AGENTS}" >&2
-  exit 1
-fi
+for path in "${required_docs[@]}"; do
+  if [[ ! -f "${path}" ]]; then
+    echo "[FAIL] required governance document missing: ${path}" >&2
+    exit 1
+  fi
+done
 
 root_agents_lines="$(wc -l <"${ROOT_AGENTS}" | tr -d ' ')"
 if [[ "${root_agents_lines}" -gt "${MAX_ROOT_AGENTS_LINES}" ]]; then
@@ -39,6 +39,8 @@ root_agents_tokens=(
   "subrepos/adoption-matrix.md"
   "docs/llm-agent-maintenance-guide.md"
   "docs/absorption-governance.md"
+  "external-practice"
+  "Gitee"
   "agent-dev-kit/"
 )
 
@@ -58,159 +60,52 @@ if [[ "${actual_header}" != "${expected_header}" ]]; then
   exit 2
 fi
 
-required_tokens=(
-  "check-architecture-reports.sh"
-  "check-current-status-consistency.sh"
-  "software-m5.sh"
-  "check-software-m5-readiness.sh"
-  "check-skill-metadata.sh"
-  "check-skill-routing-conflicts.sh"
-  "check-adk-lock.sh"
-  "check-subrepo-state.sh"
-  "check-reference-dirty-triage.sh"
-  "classify-repo-worktree.sh"
-  "check-reference-source-integrity.sh"
-  "tests/test_reference_source_integrity.sh"
-  "commit-snapshot-only"
-  "reports/repo-analysis/"
-  "check-doc-sync.sh"
-  "check-adoption-matrix-structured.sh"
+readme_tokens=(
+  "practice-intake.sh"
+  "check-practice-intake.sh"
+  "external_practice_sources.json"
+  "external_practice_cycle.json"
+  "external-practice-candidate/v1"
+  "onboard-reference-repository.sh"
+  "check-reference-repository-registration.sh"
+  "check-reference-repository-removal.sh"
+  "plan-reference-repository-removal.sh"
+  "external-practice-intake.md"
+  "reference-repository-lifecycle.md"
+  "wechat-metadata-intake.md"
+  "Gitee"
+  "degraded-empty"
+  "--allow-network"
+  "report-only"
   "check-adoption-matrix-status.sh"
   "check-adoption-real-assets.sh"
   "check-adk-target-evidence.sh"
-  "check-observe-intake-depth.sh"
   "check-runtime-targets.sh"
-  "--explain-target"
-  "generate-runtime-target-evidence-index.sh"
-  "check-runtime-target-evidence-index.sh"
-  "collect-runtime-target-evidence-package.sh"
-  "--promote-current"
-  "--index"
-  "--require-index"
-  "--strict-artifacts"
   "check-runtime-health.sh"
-  "check-runtime-health-adapters-fixtures.sh"
   "check-runtime-routing.sh"
   "check-runtime-pilot.sh"
-  "check-runtime-pilot-evidence.sh"
-  "check-runtime-pilot-coverage.sh"
   "check-runtime-live-footprint.sh"
-  "check-workspace-entrypoints.sh"
-  "generate-wechat-intake-ledger.sh"
-  "check-wechat-intake-ledger.sh"
-  "check-oss-intake-ledger.sh"
-  "discover-oss-repos.sh"
-  "--github-query"
-  "--discover-github"
-  "oss-discovery-rate-limit"
-  "candidate-review"
-  "score-oss-candidates.sh"
-  "check-oss-registration-plan.sh"
-  "onboard-oss-candidate.sh"
-  "check-oss-removal-plan.sh"
-  "plan-oss-subrepo-removal.sh"
-  "check-oss-continuous-operation.sh"
-  "run-oss-intake-cycle.sh"
-  "check-oss-approval-queue.sh"
-  "generate-oss-intake-approval-queue.sh"
-  "oss-intake.sh"
-  "check-oss-intake-fixtures.sh"
   "check-loop-readiness.sh"
   "check-scale-engine-governance.sh"
-  "check-stale-references.sh"
   "check-token-budget.sh"
-  "check-asset-inventory.sh"
   "check-file-modes.sh"
-  "tests/test_adoption_real_assets.sh"
-  "tests/test_architecture_reports.sh"
-  "tests/test_current_status_consistency.sh"
-  "tests/test_software_m5_certification.sh"
-  "tests/test_oss_intake_ledger.sh"
-  "tests/test_oss_discovery.sh"
-  "tests/test_oss_registration_plan.sh"
-  "tests/test_oss_removal_plan.sh"
-  "tests/test_oss_continuous_operation.sh"
-  "tests/test_oss_approval_queue.sh"
-  "tests/test_runtime_health_adapters.sh"
-  "tests/test_runtime_target_evidence_promotion.sh"
-  "oss_discovery_sources.json"
-  "oss_candidate_scoring_policy.json"
-  "subrepo_lifecycle.json"
-  "oss_registration_policy.json"
-  "oss_removal_policy.json"
-  "oss_continuous_operation.json"
-  "oss_intake_approval_queue.json"
-  "loop_readiness_contracts.json"
-  "scale_engine_governance_contracts.json"
-  "runtime_targets.json"
-  "runtime_health_adapters.json"
-  "software_m5_policy.json"
-  "software_m5_pilot_ledger.json"
-  "software-m5-events.jsonl"
-  "runtime-target-activation.md"
-  "runtime-target-activation/<target-id>/evidence-index.md"
-  "reports/runtime-target-activation/<target-id>/"
-  "reports/runtime-target-activation/<target-id>/evidence-index.jsonl"
-  "current-status.md"
-  "canonical evidence-index.jsonl"
-  "evidence package"
-  "evidence-index.jsonl"
-  "Evidence Index"
-  "Approval Status"
-  "approved_by"
-  "approved_at"
-  "approval_scope"
-  "artifact_exists"
-  "artifact_sha256"
-  "passed/approved artifact hash"
-  "required_evidence is not artifact evidence"
-  "declaration gate only"
-  "error_code"
-  "message:null"
-  "does not run apply"
-  "does not run rollback"
-  "live root writes"
-  "promotion never changes enabled state"
-  "realpath"
-  "reference-dirty-triage"
-  "fixtures/oss-intake"
-  "discovery-source.md"
-  "github-search-response.json"
-  "oss-discovery-candidates"
-  "oss-score-report"
-  "oss-onboarding-plan"
-  "subrepo-removal-plan"
-  "oss-intake-cycle"
-  "oss-intake-approval-queue"
-  "oss-intake-evidence-bundle"
-  "check-upstream-intake-readiness.sh"
-  "check-loop-readiness.sh"
-  "check-scale-engine-governance.sh"
-  "generate-adoption-matrix-summary.sh"
-  "export-adoption-matrix-jsonl.sh"
-  "run-post-freeze-cycle.sh"
-  "wechat-article-absorption.md"
   "--summary-json"
-  "--check-skill-metadata"
-  "--check-routing-conflicts"
-  "--check-doc-sync"
-  "--check-observe-intake-depth"
-  "--check-runtime-routing"
-  "--check-pilot-coverage"
-  "--check-upstream-intake"
-  "runtime-live"
-  "reports/architecture/"
-  "active promotion claims"
 )
 
-for token in "${required_tokens[@]}"; do
+for token in "${readme_tokens[@]}"; do
   if ! rg -q --fixed-strings -- "${token}" "${SCRIPTS_README}"; then
     echo "[FAIL] scripts/README.md missing token: ${token}" >&2
     exit 2
   fi
 done
 
-required_scripts=(
+required_executables=(
+  "scripts/practice-intake.sh"
+  "scripts/check-practice-intake.sh"
+  "scripts/onboard-reference-repository.sh"
+  "scripts/check-reference-repository-registration.sh"
+  "scripts/check-reference-repository-removal.sh"
+  "scripts/plan-reference-repository-removal.sh"
   "scripts/check-architecture-reports.sh"
   "scripts/check-current-status-consistency.sh"
   "scripts/software-m5.sh"
@@ -229,60 +124,52 @@ required_scripts=(
   "scripts/generate-reference-dirty-triage.sh"
   "scripts/classify-repo-worktree.sh"
   "scripts/check-reference-source-integrity.sh"
-  "tests/test_reference_source_integrity.sh"
   "scripts/check-asset-inventory.sh"
   "scripts/check-workspace-entrypoints.sh"
   "scripts/check-adoption-real-assets.sh"
   "scripts/check-adk-target-evidence.sh"
-  "scripts/generate-wechat-intake-ledger.sh"
-  "scripts/check-wechat-intake-ledger.sh"
-  "scripts/check-oss-intake-ledger.sh"
-  "scripts/discover-oss-repos.sh"
-  "scripts/score-oss-candidates.sh"
-  "scripts/check-oss-registration-plan.sh"
-  "scripts/onboard-oss-candidate.sh"
-  "scripts/check-oss-removal-plan.sh"
-  "scripts/plan-oss-subrepo-removal.sh"
-  "scripts/check-oss-continuous-operation.sh"
-  "scripts/run-oss-intake-cycle.sh"
-  "scripts/check-oss-approval-queue.sh"
-  "scripts/generate-oss-intake-approval-queue.sh"
-  "scripts/oss-intake.sh"
-  "scripts/check-oss-intake-fixtures.sh"
   "scripts/check-loop-readiness.sh"
   "scripts/check-scale-engine-governance.sh"
   "scripts/check-stale-references.sh"
   "scripts/check-token-budget.sh"
   "scripts/check-file-modes.sh"
-  "tests/test_adoption_real_assets.sh"
-  "tests/test_architecture_reports.sh"
-  "tests/test_current_status_consistency.sh"
-  "tests/test_software_m5_certification.sh"
-  "tests/test_oss_intake_ledger.sh"
-  "tests/test_oss_discovery.sh"
-  "tests/test_oss_registration_plan.sh"
-  "tests/test_oss_removal_plan.sh"
-  "tests/test_oss_continuous_operation.sh"
-  "tests/test_oss_approval_queue.sh"
+  "tests/test_external_practice_intake.sh"
+  "tests/test_reference_repository_registration.sh"
+  "tests/test_reference_repository_removal.sh"
+  "tests/test_reference_source_integrity.sh"
   "tests/test_runtime_health_adapters.sh"
   "tests/test_runtime_target_evidence_index.sh"
   "tests/test_runtime_target_evidence_package.sh"
   "tests/test_runtime_target_evidence_promotion.sh"
 )
 
-for script in "${required_scripts[@]}"; do
-  if [[ ! -x "${ROOT}/${script}" ]]; then
-    echo "[FAIL] required script missing or not executable: ${script}" >&2
+for executable in "${required_executables[@]}"; do
+  if [[ ! -x "${ROOT}/${executable}" ]]; then
+    echo "[FAIL] required executable missing or not executable: ${executable}" >&2
     exit 2
   fi
 done
 
-matrix_tokens=(
-  "类别标签"
-  "验收状态"
-  "codex-cookbook"
+required_assets=(
+  "manifests/external_practice_sources.json"
+  "manifests/external_practice_cycle.json"
+  "manifests/reference_repository_registration_policy.json"
+  "manifests/reference_repository_removal_policy.json"
+  "manifests/runtime_targets.json"
+  "schemas/external-practice-candidate.schema.json"
+  "schemas/external-practice-decision.schema.json"
+  "fixtures/external-practice"
+  "fixtures/reference-repository/removal"
 )
 
+for asset in "${required_assets[@]}"; do
+  if [[ ! -e "${ROOT}/${asset}" ]]; then
+    echo "[FAIL] required governance asset missing: ${asset}" >&2
+    exit 2
+  fi
+done
+
+matrix_tokens=("类别标签" "验收状态" "codex-cookbook")
 for token in "${matrix_tokens[@]}"; do
   if ! rg -q --fixed-strings -- "${token}" "${ADOPTION_MATRIX}"; then
     echo "[FAIL] adoption-matrix missing token: ${token}" >&2

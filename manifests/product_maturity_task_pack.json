@@ -1,6 +1,6 @@
 {
   "schema": "llm-agent-product-maturity-task-pack/v1",
-  "updated_at": "2026-07-18",
+  "updated_at": "2026-07-19",
   "rules": {
     "fail_closed": true,
     "no_automatic_external_write": true,
@@ -29,16 +29,16 @@
       "priority": "P0",
       "status": "implemented",
       "scope": "reproducible release and supply chain",
-      "acceptance": "two exact-commit builds have identical SHA256; checksum and SPDX SBOM exist; rc.2 to rc.3 upgrade and rollback restore managed hashes",
-      "verify": ["rtk bash agent-dev-kit/scripts/devkit.sh release check --summary-json", "rtk bash agent-dev-kit/scripts/devkit.sh security check --summary-json", "rtk python3 -m json.tool agent-dev-kit/docs/changes/adk-terminal-contract-hardening/release-rehearsal.json"]
+      "acceptance": "two exact-commit builds have identical SHA256; checksum and SPDX SBOM exist; rc.3 to rc.4 upgrade and rollback restore managed hashes",
+      "verify": ["rtk bash agent-dev-kit/scripts/devkit.sh release check --summary-json", "rtk bash agent-dev-kit/scripts/devkit.sh security check --summary-json", "rtk python3 -m json.tool agent-dev-kit/docs/changes/external-practice-intake-v1/release-rehearsal.json"]
     },
     {
       "id": "PM-04",
       "priority": "P0",
       "status": "implemented",
-      "scope": "reference intake",
-      "acceptance": "dirty reference worktree is analyzed only through git archive and emits structured evidence/decision/task artifacts",
-      "verify": ["rtk bash tests/test_reference_source_integrity.sh", "rtk bash tests/test_product_maturity_contracts.sh"]
+      "scope": "external practice and reference repository intake",
+      "acceptance": "seven governed providers emit report-only candidate/evidence artifacts; repository registration requires a separate ADOPT decision and immutable local source binding",
+      "verify": ["rtk bash tests/test_external_practice_intake.sh", "rtk bash tests/test_reference_repository_registration.sh", "rtk bash tests/test_reference_source_integrity.sh"]
     },
     {
       "id": "PM-05",
@@ -54,7 +54,7 @@
       "status": "blocked_external",
       "scope": "effectiveness evaluation",
       "acceptance": "60 tasks pass deterministic routing and Codex/Claude baseline/adk each run three trials with confidence, resource and budget gates",
-      "verify": ["rtk bash agent-dev-kit/scripts/devkit.sh eval run --suite deterministic --tasks agent-dev-kit/tests/fixtures/software_m5_eval_tasks.jsonl --summary-json", "rtk bash agent-dev-kit/scripts/devkit.sh eval campaign check --contract agent-dev-kit/manifests/software_m5_eval_contract_rc3.json --state-dir /approved/local/software-m5-campaign --certify --summary-json"]
+      "verify": ["rtk bash agent-dev-kit/scripts/devkit.sh eval run --suite deterministic --tasks agent-dev-kit/tests/fixtures/software_m5_eval_tasks.jsonl --summary-json", "rtk bash agent-dev-kit/scripts/devkit.sh eval campaign check --contract agent-dev-kit/manifests/software_m5_eval_contract_rc4.json --state-dir /approved/local/software-m5-campaign --certify --summary-json"]
     },
     {
       "id": "PM-07",
@@ -70,7 +70,7 @@
       "status": "implemented",
       "scope": "concurrent writer and upgrade recovery",
       "acceptance": "same-target writers serialize or fail closed; injected failures preserve prior state; release upgrade and rollback restore managed hashes",
-      "verify": ["rtk bash agent-dev-kit/tests/test_software_m5_ready.sh", "rtk python3 -m json.tool agent-dev-kit/docs/changes/adk-terminal-contract-hardening/release-rehearsal.json"]
+      "verify": ["rtk bash agent-dev-kit/tests/test_software_m5_ready.sh", "rtk python3 -m json.tool agent-dev-kit/docs/changes/external-practice-intake-v1/release-rehearsal.json"]
     },
     {
       "id": "PM-09",

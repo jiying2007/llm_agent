@@ -1,0 +1,1 @@
+{"schema":"reference-repository-removal/v1","status":"planned","mode":"dry-run","as_of":"2026-07-19","repository":{"repo":"legacy-reference","lifecycle_state":"disabled","registry_status":"disabled","protected":false,"active_core":false}}

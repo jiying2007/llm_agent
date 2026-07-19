@@ -44,4 +44,7 @@ expect_fail "missing executable bit" "${CHECKER}" "${linked}"
 "${CHECKER}" "${linked}" --fix >/dev/null
 "${CHECKER}" "${linked}" >/dev/null
 
+rm "${linked}/plain.txt"
+"${CHECKER}" "${linked}" >/dev/null
+
 echo "[PASS] file-mode checker supports linked worktrees and preserves mode policy"

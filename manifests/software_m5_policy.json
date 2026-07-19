@@ -1,23 +1,23 @@
 {
   "schema": "llm-agent-software-m5-policy/v1",
-  "updated_at": "2026-07-18",
+  "updated_at": "2026-07-19",
   "scope": "software-only",
   "release": {
-    "previous_version": "3.1.0-rc.2",
-    "candidate_version": "3.1.0-rc.3",
-    "evaluation_version": "3.1.0-rc.3",
+    "previous_version": "3.1.0-rc.3",
+    "candidate_version": "3.1.0-rc.4",
+    "evaluation_version": "3.1.0-rc.4",
     "final_version": "3.1.0",
     "manifest": "agent-dev-kit/manifest.json",
-    "candidate_sha256": "46afbb507f61fce8facffbfa36c23f59fe3f5498e3f1843ceaa53f2507d8fcd8",
-    "rehearsal_report": "agent-dev-kit/docs/changes/adk-terminal-contract-hardening/release-rehearsal.json",
-    "evidence_report": "reports/adk-v3-1-rc3-release-evidence-2026-07-18.json"
+    "candidate_sha256": "34ffba31a1da63edb7d0120b76b01746d2b2bbf2573ad445b636acd30cbc706d",
+    "rehearsal_report": "agent-dev-kit/docs/changes/external-practice-intake-v1/release-rehearsal.json",
+    "evidence_report": "reports/adk-v3-1-rc4-release-evidence-2026-07-19.json"
   },
   "runtime_campaign": {
     "manifest": "agent-dev-kit/manifest.json",
-    "contract": "agent-dev-kit/manifests/software_m5_eval_contract_rc3.json",
+    "contract": "agent-dev-kit/manifests/software_m5_eval_contract_rc4.json",
     "tasks": "agent-dev-kit/tests/fixtures/software_m5_eval_tasks.jsonl",
-    "state_dir": "agent-dev-kit/docs/changes/adk-terminal-contract-hardening/software-m5-campaign-state",
-    "report": "agent-dev-kit/docs/changes/adk-terminal-contract-hardening/software-m5-campaign-state/campaign-report.json",
+    "state_dir": "agent-dev-kit/docs/changes/external-practice-intake-v1/software-m5-campaign-state",
+    "report": "agent-dev-kit/docs/changes/external-practice-intake-v1/software-m5-campaign-state/campaign-report.json",
     "required_runtimes": [
       "codex",
       "claude"

@@ -22,6 +22,9 @@ Checks tracked regular files against Git index modes:
   100644 -> not executable
   100755 -> executable
 
+Tracked paths deleted in the working tree are outside this mode-only gate and
+are left to status, inventory, and review checks.
+
 Use --fix to chmod the working tree to match the index.
 USAGE
       exit 0
@@ -39,7 +42,6 @@ if ! resolved_root="$(git -C "${ROOT}" rev-parse --show-toplevel 2>/dev/null)"; 
 fi
 ROOT="${resolved_root}"
 
-missing=0
 unexpected_exec=0
 missing_exec=0
 
@@ -54,8 +56,6 @@ while IFS= read -r -d '' record; do
 
   full_path="${ROOT}/${path}"
   if [[ ! -f "${full_path}" ]]; then
-    echo "[FAIL] tracked file missing: ${path}" >&2
-    missing=$((missing + 1))
     continue
   fi
 
@@ -82,17 +82,13 @@ while IFS= read -r -d '' record; do
   fi
 done < <(git -C "${ROOT}" ls-files -z -s)
 
-total=$((missing + unexpected_exec + missing_exec))
+total=$((unexpected_exec + missing_exec))
 if [[ "${total}" -ne 0 ]]; then
   if [[ "${FIX}" -eq 1 ]]; then
-    if [[ "${missing}" -eq 0 ]]; then
-      echo "[PASS] file modes normalized: unexpected_exec=${unexpected_exec} missing_exec=${missing_exec}"
-      exit 0
-    fi
-    echo "[FAIL] file modes partially normalized but tracked files are missing: missing=${missing}" >&2
-    exit 1
+    echo "[PASS] file modes normalized: unexpected_exec=${unexpected_exec} missing_exec=${missing_exec}"
+    exit 0
   fi
-  echo "[FAIL] file mode drift found: missing=${missing} unexpected_exec=${unexpected_exec} missing_exec=${missing_exec}" >&2
+  echo "[FAIL] file mode drift found: unexpected_exec=${unexpected_exec} missing_exec=${missing_exec}" >&2
   echo "[INFO] run scripts/check-file-modes.sh ${ROOT} --fix to normalize working tree permissions" >&2
   exit 1
 fi

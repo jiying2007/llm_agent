@@ -1,0 +1,36 @@
+{
+  "schema": "reference-repository-registration-policy/v1",
+  "last_updated": "2026-07-19",
+  "status": "gated-registration",
+  "default_mode": "dry-run",
+  "candidate_schema": "external-practice-candidate/v1",
+  "decision_schema": "external-practice-decision/v1",
+  "required_gates": [
+    "candidate_contract_gate",
+    "owner_decision_gate",
+    "repository_metadata_gate",
+    "source_risk_gate",
+    "analysis_report_gate",
+    "duplicate_check_gate",
+    "security_review_gate",
+    "phase_gate",
+    "registry_conflict_gate",
+    "target_path_gate",
+    "materialization_gate",
+    "apply_workspace_gate",
+    "rollback_plan_gate"
+  ],
+  "rules": {
+    "apply_requires_explicit_flag": true,
+    "apply_requires_owner_decision": true,
+    "apply_requires_materialization_mode": true,
+    "apply_requires_clean_workspace": true,
+    "apply_requires_clean_source_origin_and_head": true,
+    "apply_metadata_transaction_must_rollback": true,
+    "apply_must_not_modify_agent_dev_kit": true,
+    "apply_must_not_run_network_discovery": true,
+    "apply_must_generate_rollback_evidence": true,
+    "collector_or_curator_must_not_be_decision_owner": true,
+    "legacy_candidate_schema_must_be_rejected": true
+  }
+}

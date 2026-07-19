@@ -42,8 +42,8 @@
 | `subrepos/phase-gate.env` | 是否允许追踪上游更新 | 默认先压实 adk，再开门同步 |
 | `subrepos/dirty-baseline.tsv` | observe 子仓预期 dirty 状态 | 区分已知参考仓噪音与本轮风险 dirty |
 | `adk.lock` | adk 版本和子模块指针锁 | adk 升级或子模块指针变化时同步更新 |
-| `manifests/` | OSS intake P1-P4 发现、评分、生命周期、注册、移除、周期运行和 runtime target/adapter 声明 | 修改后必须运行对应 manifest 检查 |
-| `fixtures/oss-intake/` | OSS intake 正负样例 | 修改后必须运行 OSS intake fixture 测试 |
+| `manifests/` | external-practice source/cycle、reference repository lifecycle、runtime target/adapter 声明 | 修改后必须运行对应 contract 检查 |
+| `fixtures/external-practice/` | 多来源 candidate/decision/cycle 和 repository handoff 正负样例 | 修改后必须运行 practice intake 测试 |
 | `tests/` | 根仓定向回归测试 | 新增脚本或 fixture 后补相应测试入口 |
 | `scripts/` | 治理、同步、门禁脚本 | 新脚本必须写入 `scripts/README.md` |
 | `reports/` | pilot、安装、周报、wave 记录 | 生产结论必须有报告证据 |
@@ -74,11 +74,9 @@ rtk scripts/check-adk-lock.sh .
 rtk scripts/check-phase-gate.sh .
 rtk scripts/check-subrepo-state.sh .
 rtk scripts/check-runtime-routing.sh .
-rtk scripts/check-oss-intake-ledger.sh .
-rtk scripts/check-oss-registration-plan.sh .
-rtk scripts/check-oss-removal-plan.sh .
-rtk scripts/check-oss-continuous-operation.sh .
-rtk scripts/check-oss-approval-queue.sh .
+rtk scripts/check-practice-intake.sh .
+rtk scripts/check-reference-repository-registration.sh .
+rtk scripts/check-reference-repository-removal.sh .
 rtk scripts/check-upstream-intake-readiness.sh .
 rtk scripts/check-stale-references.sh .
 rtk scripts/check-token-budget.sh . --summary-json
@@ -158,7 +156,7 @@ rtk scripts/check-runtime-health.sh . --profile minimal
 
 ### 3.4 参考子仓同步
 
-开源仓库发现、评分、自动注册和自动移除的终态设计见 `docs/runbooks/oss-intake-lifecycle.md`。现有 `sync-subrepos` / `diff-scan` 流程只处理已登记子仓，不替代候选发现和生命周期治理。
+多来源候选发现与批准前治理见 `docs/runbooks/external-practice-intake.md`；批准后的参考仓登记与退出见 `docs/runbooks/reference-repository-lifecycle.md`。`sync-subrepos` / `diff-scan` 只处理已登记子仓，不承担发现、决策或吸收。
 
 同步前先跑：
 
@@ -177,7 +175,7 @@ rtk scripts/diff-scan.sh . 7 reports/weekly-change-report.md
 
 ### 3.5 候选吸收
 
-候选吸收默认先走 `docs/runbooks/oss-intake-lifecycle.md` 中的 candidate ledger、scoring、analysis 和 decision 流程。只有正式登记为治理来源后，才更新 `subrepos/adoption-matrix.md`。
+候选吸收先走统一 `external-practice-candidate/v1 -> owner decision -> ADK change`。不使用跨来源分数，不把 star 或官方身份当作批准；只有独立 decision 和可审查证据齐全后，才更新 `subrepos/adoption-matrix.md` 或进入 reference repository lifecycle。
 
 ### 3.5.1 微信公众号账号研究归档
 
@@ -213,25 +211,28 @@ rtk bash ~/codex/scripts/wechat-archive.sh check \
 - `catalog.jsonl` 默认 `review-required`。只有再经过 `external-practice-absorption` 的语义、重复、架构、安全和验证复核，才能形成 ADK/Codex 改动。
 - 搜狗返回排序结果页而非账号完整导出，最终报告必须披露索引延迟和非穷尽边界。
 
-P1-P4 基座使用 root manifests、candidate JSONL、fixtures、plan report、approval queue 和 cycle report；P1/P4 保持 report-only，P2 默认 dry-run，P3 只生成/校验 removal plan。统一入口优先用 `rtk scripts/oss-intake.sh status|cycle|queue|score|plan-onboard|plan-remove|check`：
+统一控制面固定为 `scripts/practice-intake.sh`。GitHub/GitLab/Gitee live metadata 只有显式 `--allow-network` 才执行；官方与微信 provider 只读本地受治理 manifest/catalog；所有自动阶段止于 `review-required`：
 
 ```bash
-rtk scripts/check-oss-intake-ledger.sh .
-rtk scripts/discover-oss-repos.sh . --dry-run --repo example/manual-discovery --out /tmp/oss-discovery-candidates.jsonl
-rtk scripts/discover-oss-repos.sh . --dry-run --github-query "topic:agent archived:false" --github-max-results 30 --github-rate-limit-out /tmp/oss-discovery-rate-limit.json --out /tmp/oss-discovery-candidates.jsonl
-rtk scripts/score-oss-candidates.sh . --ledger reports/oss-discovery-candidates-2026-06-16.jsonl --out reports/oss-score-report-2026-06-16.md
-rtk scripts/onboard-oss-candidate.sh . --ledger reports/oss-discovery-candidates-2026-06-16.jsonl --repo example/runtime-policy-gates --analysis reports/oss-analysis-example-runtime-policy-gates-2026-06-16.md --duplicate-check reports/oss-duplicate-check-example-runtime-policy-gates-2026-06-16.md --security-review reports/oss-security-review-example-runtime-policy-gates-2026-06-16.md
-rtk scripts/plan-oss-subrepo-removal.sh . --repo codex
-rtk scripts/run-oss-intake-cycle.sh .
-rtk scripts/run-oss-intake-cycle.sh . --discover-github --github-query "topic:agent archived:false"
-rtk scripts/generate-oss-intake-approval-queue.sh .
-rtk scripts/generate-oss-intake-approval-queue.sh . --ledger reports/oss-discovery-candidates-2026-06-16.jsonl --rate-limit reports/oss-discovery-rate-limit-2026-06-16.json
-rtk tests/test_oss_discovery.sh
-rtk tests/test_oss_intake_ledger.sh
-rtk tests/test_oss_registration_plan.sh
-rtk tests/test_oss_removal_plan.sh
-rtk tests/test_oss_continuous_operation.sh
-rtk tests/test_oss_approval_queue.sh
+rtk scripts/practice-intake.sh cycle \
+  --plan manifests/external_practice_cycle.json \
+  --out-ledger reports/external-practice-candidates.jsonl \
+  --out-queue reports/external-practice-review-queue.json \
+  --out-evidence reports/external-practice-cycle-evidence.json \
+  --out-md reports/external-practice-cycle.md
+rtk scripts/practice-intake.sh check --kind candidate --input reports/external-practice-candidates.jsonl
+rtk scripts/practice-intake.sh check --kind decision --input reports/external-practice-decisions.jsonl
+rtk scripts/onboard-reference-repository.sh . \
+  --candidates reports/external-practice-candidates.jsonl \
+  --decisions reports/external-practice-decisions.jsonl \
+  --candidate-id <epc-id> \
+  --analysis <analysis> --duplicate-check <duplicate-review> --security-review <security-review>
+rtk scripts/plan-reference-repository-removal.sh . --repo codex \
+  --evidence-dependency-scan reports/subrepo-removal-plan-codex-2026-06-16.md \
+  --rollback-plan reports/subrepo-removal-plan-codex-2026-06-16.md
+rtk tests/test_external_practice_intake.sh
+rtk tests/test_reference_repository_registration.sh
+rtk tests/test_reference_repository_removal.sh
 ```
 
 1. 在 `subrepos/adoption-matrix.md` 增加候选行。
@@ -258,13 +259,10 @@ rtk scripts/check-adk-harden-readiness.sh . --require-pilot
 | Agent/Skill 内容 | `rtk agent-dev-kit/tests/run_all.sh` | 会覆盖 frontmatter、内容质量、触发矩阵 |
 | profile / manifest | `rtk agent-dev-kit/tests/test_profile_coherence.sh` + `rtk agent-dev-kit/tests/run_all.sh` | 防止继承重复与未知引用 |
 | install / convert 脚本 | `rtk agent-dev-kit/tests/run_all.sh` | 必须覆盖安装、转换、dry-run |
-| root manifest | `rtk scripts/check-oss-intake-ledger.sh .` + `rtk scripts/check-oss-registration-plan.sh .` + `rtk scripts/check-oss-removal-plan.sh .` + `rtk scripts/check-oss-continuous-operation.sh .` + `rtk scripts/check-oss-approval-queue.sh .` + `rtk scripts/check-doc-sync.sh .` | 防止发现、评分、lifecycle、注册、移除、周期运行和审批队列 SSOT 漂移 |
-| fixture | `rtk scripts/check-oss-intake-fixtures.sh .` + `rtk scripts/check-oss-intake-ledger.sh .` | 正负样例必须与 validator 语义一致 |
-| OSS discovery | `rtk scripts/discover-oss-repos.sh . --dry-run --repo example/manual-discovery --out /tmp/oss-discovery-candidates.jsonl` + `rtk tests/test_oss_discovery.sh` | 默认本地发现；手工 GitHub/Gitee URL 只写 ledger；GitHub metadata provider 必须显式 `--github-query`，只写候选 ledger 和 rate-limit 记录，不 clone、不注册、不吸收 |
-| OSS registration plan | `rtk scripts/check-oss-registration-plan.sh .` + `rtk tests/test_oss_registration_plan.sh` | P2 自动注册必须先通过 dry-run plan 与 rollback gate |
-| OSS removal / cycle plan | `rtk scripts/check-oss-removal-plan.sh .` + `rtk scripts/check-oss-continuous-operation.sh .` + `rtk tests/test_oss_removal_plan.sh` + `rtk tests/test_oss_continuous_operation.sh` | P3/P4 必须保持 dry-run/report-only，禁止自动删除、吸收或 apply |
-| OSS approval queue | `rtk scripts/check-oss-approval-queue.sh .` + `rtk tests/test_oss_approval_queue.sh` | L1 `candidate-review` 审查候选质量和 hard reject；L2/L3 审批 metadata/destructive apply；脚本不得执行审批动作 |
-| OSS intake check / score 脚本 | `rtk bash -n scripts/<name>.sh` + `rtk scripts/check-oss-intake-fixtures.sh .` + `rtk scripts/check-all.sh --quick` | 必须保持离线、只读和 report-only 边界 |
+| external-practice manifest/schema | `rtk scripts/check-practice-intake.sh .` + `rtk tests/test_external_practice_intake.sh` | 防止 provider、candidate/decision/cycle、网络和正文边界漂移 |
+| external-practice fixture | `rtk tests/test_external_practice_intake.sh` | 七个 provider、Gitee degraded、幂等、redaction、预算和旧 schema 负例必须一致 |
+| Reference repository registration | `rtk scripts/check-reference-repository-registration.sh .` + `rtk tests/test_reference_repository_registration.sh` | 只接受 v1 candidate + 独立 `ADOPT` decision；默认 dry-run，不吸收 ADK |
+| Reference repository removal | `rtk scripts/check-reference-repository-removal.sh .` + `rtk tests/test_reference_repository_removal.sh` | 只生成/校验带 artifact hash 的 removal plan，禁止自动删除 |
 | root 门禁脚本 | `rtk scripts/check-adk-harden-readiness.sh . --require-pilot` | 影响生产放行链路 |
 | `~/codex -> ~/.codex` 部署 | `rtk scripts/check-adk-harden-readiness.sh . --require-pilot` + `~/codex` apply plan / dry-run / health 证据 | 必须保留 backup |
 

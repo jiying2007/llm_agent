@@ -1,0 +1,1 @@
+{"schema_version":"external-practice-decision/v1","candidate_id":"epc-0123456789abcdef0123","decision":"ADOPT","reviewed_at":"2026-07-19","rationale":"This rationale is long enough but has no independent owner.","target":"agent-dev-kit","evidence_refs":["reports/review.md"]}

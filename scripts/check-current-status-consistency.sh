@@ -180,7 +180,9 @@ if field(status_text, "adk_version") != candidate_version:
     failures.append("current-status adk_version does not match software M5 candidate_version")
 live_refresh_status = field(status_text, "live_refresh_status")
 if live_refresh_status not in {
+    "required-pending-owner-authorization",
     "authorized-pending-apply",
+    "applied-declarative-changed",
     "applied-declarative-no-op",
     "not-required-mapped-no-change",
 }:
@@ -345,8 +347,20 @@ if release_adk.get("commit") != adk_release_commit or release_adk.get("version")
     failures.append("software M5 release evidence ADK identity does not match current-status")
 if release_artifacts.get("source_sha256") != rehearsal.get("candidate_sha256"):
     failures.append("software M5 release artifact SHA does not match rehearsal")
-if release_mapping.get("mapped_content_changed") is not False:
-    failures.append("software M5 release evidence must record mapped_content_changed=false")
+mapped_content_changed = release_mapping.get("mapped_content_changed")
+if not isinstance(mapped_content_changed, bool):
+    failures.append("software M5 release evidence mapped_content_changed must be boolean")
+elif mapped_content_changed and live_refresh_status not in {
+    "required-pending-owner-authorization",
+    "authorized-pending-apply",
+    "applied-declarative-changed",
+}:
+    failures.append("mapped ADK assets require an explicit pending or applied live-refresh boundary")
+elif not mapped_content_changed and live_refresh_status not in {
+    "applied-declarative-no-op",
+    "not-required-mapped-no-change",
+}:
+    failures.append("unchanged mapped ADK assets require a no-op or not-required live-refresh decision")
 if release_mapping.get("decision") != live_refresh_status:
     failures.append("software M5 release evidence source-to-live decision does not match current-status")
 if release_m5.get("readiness_status") != "m5-ready" or release_m5.get("certified") is not False:
@@ -381,8 +395,9 @@ mapping_diff = git(
     cwd=path("agent-dev-kit"),
     check=False,
 )
-if mapping_diff.returncode != 0:
-    failures.append("mapped ADK asset paths changed; no-live-write decision is invalid")
+actual_mapped_content_changed = mapping_diff.returncode != 0
+if isinstance(mapped_content_changed, bool) and mapped_content_changed != actual_mapped_content_changed:
+    failures.append("mapped ADK asset diff does not match release evidence declaration")
 post_release_mapping_diff = git(
     "diff",
     "--quiet",

@@ -8,19 +8,25 @@ trap 'rm -rf "${TMP_DIR}"' EXIT
 
 mapfile -t POLICY_VALUES < <(python3 - "${ROOT}/manifests/software_m5_policy.json" <<'PY'
 import json
+import pathlib
 import sys
 
-policy = json.load(open(sys.argv[1], encoding="utf-8"))
+policy_path = pathlib.Path(sys.argv[1])
+root = policy_path.parent.parent
+policy = json.load(open(policy_path, encoding="utf-8"))
 release = policy["release"]
 print(release["candidate_version"])
 print(release["rehearsal_report"])
 print(release["evidence_report"])
+evidence = json.load(open(root / release["evidence_report"], encoding="utf-8"))
+print(str(evidence["source_to_live"]["mapped_content_changed"]).lower())
 PY
 )
 CANDIDATE_VERSION="${POLICY_VALUES[0]}"
 REHEARSAL_REPO_PATH="${POLICY_VALUES[1]}"
 REHEARSAL_ADK_PATH="${REHEARSAL_REPO_PATH#agent-dev-kit/}"
 RELEASE_EVIDENCE_PATH="${POLICY_VALUES[2]}"
+MAPPED_CONTENT_CHANGED="${POLICY_VALUES[3]}"
 
 "${CHECKER}" "${ROOT}" --summary-json >/dev/null
 
@@ -79,7 +85,10 @@ CSV
   cp "${ROOT}/agent-dev-kit/${legacy_change_path}/release-rehearsal.json" "${dest}/agent-dev-kit/${legacy_change_path}/"
   cp "${ROOT}/agent-dev-kit/${legacy_change_path}/software-m5-campaign-plan.json" "${dest}/agent-dev-kit/${legacy_change_path}/"
   cp "${ROOT}/agent-dev-kit/${legacy_change_path}/codex-runtime-smoke.json" "${dest}/agent-dev-kit/${legacy_change_path}/"
-  git -C "${dest}/agent-dev-kit" add manifest.json "${legacy_change_path}" "${REHEARSAL_ADK_PATH}"
+  if [[ "${MAPPED_CONTENT_CHANGED}" == "true" ]]; then
+    printf 'candidate mapped asset\n' >"${dest}/agent-dev-kit/agents/example/AGENTS.md"
+  fi
+  git -C "${dest}/agent-dev-kit" add manifest.json agents/example/AGENTS.md "${legacy_change_path}" "${REHEARSAL_ADK_PATH}"
   git -C "${dest}/agent-dev-kit" commit -q -m "fixture M5-ready candidate"
   local release_adk
   release_adk="$(git -C "${dest}/agent-dev-kit" rev-parse HEAD)"
