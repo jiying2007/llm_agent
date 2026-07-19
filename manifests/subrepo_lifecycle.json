@@ -209,13 +209,16 @@
       "owner": "adk-team",
       "review_window": "manual",
       "automation_eligible": false,
-      "watch_reason": "2026-07-11 复核发现 v1.1.0 后仍活跃，按 sampled watch 观察新增契约；不恢复全量 submodule",
+      "watch_reason": "2026-07-19 固定 9603c1c 快照并吸收 invocation、work-item、Hotspot scope 与 prototype provenance；继续 sampled watch 稳定 release 或新增契约，不恢复全量 submodule",
       "evidence": [
         "subrepos/registry.csv",
         "subrepos/adoption-matrix.md",
         "reports/subrepo-removal-direct-2026-06-25.md",
         "reports/external-coding-skill-repos-assessment-2026-07-11.md",
-        "reports/oss-absorption-implementation-coding-skills-2026-07-11.md"
+        "reports/oss-absorption-implementation-coding-skills-2026-07-11.md",
+        "reports/observe-secondary-intake-packages-2026-07-19.md",
+        "reports/mattpocock-skills-absorption-2026-07-19.md",
+        "agent-dev-kit/docs/changes/archive/20260719-intent-boundary-governance-v2/"
       ]
     },
     {

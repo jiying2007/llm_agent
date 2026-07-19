@@ -1,0 +1,107 @@
+{
+  "schema": "llm-agent-adk-software-m5-ready-release-evidence/v1",
+  "generated_at": "2026-07-19",
+  "release_scope": "source-committed-local-rehearsed-live-applied-release-candidate-evidence",
+  "agent_dev_kit": {
+    "version": "3.1.0-rc.5",
+    "commit": "66a8c199fa7b11fe1396676b3eeb82249ef05554",
+    "evidence_commit": "9a8f735928976cf2efac81dd167911664bf6c490",
+    "previous_version": "3.1.0-rc.4",
+    "previous_commit": "bffcd93eefac45669d8a038000161ff0fcc05e04",
+    "previous_release_commit": "ecec9185e44fe7389fc82640e563643954e7ec2d"
+  },
+  "artifacts": {
+    "source_sha256": "7c0ddf0c0d0e2174abcb682e0df1e6b5d10fdcb8695bdaaa2dccc37a5daf3907",
+    "source_reproducible_builds": 2,
+    "source_file_count": 611,
+    "wheel_sha256": null,
+    "wheel_status": "not-run-rc5",
+    "previous_source_sha256": "50e62c3f3bd3f2433d10b3a27ef4eabb824cf96d0ce8d869360fd4f3c7e5be3a",
+    "previous_source_provenance": "checksum-verified-rc4-artifact",
+    "candidate_manifest_sha256": "6a9c39de1e5b7212e1adbe39e5820996e023dfc3b4cd51a6989faefa58554a18",
+    "release_rehearsal_report_sha256": "f9a1439b6a1d8ea8d75148b8f33ee4987bd682d4e4150cb8da031d9c04470013"
+  },
+  "validation": {
+    "strict": "pass",
+    "format": "pass",
+    "security": "731-files-0-failure-0-warning",
+    "release_check": "pass",
+    "shellcheck": "pass-in-full",
+    "ruff": "not-run-unavailable",
+    "dependency_audit": "not-run-rc5",
+    "full": {
+      "total": 55,
+      "pass": 55,
+      "fail": 0,
+      "elapsed_ms": 355296
+    },
+    "root_quick": "53/53-pass",
+    "root_full": "58/58-pass",
+    "target_static": "3/3-pass-in-adk-full",
+    "target_runtime": "not-run-experimental",
+    "effect_eval": "pass-in-adk-full",
+    "upgrade_rollback_rehearsal": "pass",
+    "previous_installed": 62,
+    "candidate_installed": 39,
+    "restored_assets": 62,
+    "local_ci_parity": "local-full-pass-remote-ci-temporarily-bypassed",
+    "remote_ci": "not-run-owner-waiver"
+  },
+  "source_to_live": {
+    "comparison": "bffcd93eefac45669d8a038000161ff0fcc05e04..66a8c199fa7b11fe1396676b3eeb82249ef05554",
+    "mapped_paths": [
+      "agents",
+      "skills",
+      "optional-skills",
+      "workflows",
+      "templates"
+    ],
+    "mapped_content_changed": true,
+    "decision": "applied-declarative-changed",
+    "profile": "token-lean",
+    "managed_files": 712,
+    "plan_status": "pass-copy-0-overwrite-0-delete-0",
+    "dry_run_status": "pass",
+    "apply_status": "pass",
+    "rollback_anchor": "/home/leiwenjun/codex/.backups/codex-home/20260719-134739",
+    "post_apply": {
+      "codex_tests": "101-pass",
+      "profiles": "5/5-pass",
+      "metadata": "63/63-nested-legacy-0-implicit-true-0",
+      "drift": "0"
+    }
+  },
+  "software_m5": {
+    "readiness_status": "m5-ready",
+    "certified": false,
+    "field_status": "self_pilot_active",
+    "runtime_campaign": "blocked-claude-unauthenticated"
+  },
+  "knowledge_hub": {
+    "new_candidate": false,
+    "reason": "The canonical root source assessment and archived ADK change artifact already contain the reusable decision and evidence; an additional Hub candidate would duplicate SSOT.",
+    "canonical_source_assessment": "reports/mattpocock-skills-absorption-2026-07-19.md",
+    "canonical_change_archive": "agent-dev-kit/docs/changes/archive/20260719-intent-boundary-governance-v2",
+    "memory_write": false
+  },
+  "publication": {
+    "adk_source_commit_pushed": false,
+    "root_product_commit": "e7b92eff2cf426ca86614e0a67c59232151bcda9",
+    "root_product_commit_pushed": false,
+    "codex_source_commit": "684f7f8b39d6b0e9ccf46440c01cdd6dbe841482",
+    "tag_created": false,
+    "remote_release_created": false,
+    "remote_artifact_uploaded": false,
+    "reason": "RC5 source, evidence, Codex source-to-live and local rehearsal are committed or applied. Push, tag, remote CI/attestation, publication and final 3.1.0 remain outside this closure or blocked by runtime/field gates."
+  },
+  "compatibility_boundary": {
+    "removed_contracts": [
+      "adk-task-package-schema-v1",
+      "legacy-codex-top-level-interface",
+      "redundant-allow-implicit-invocation-true",
+      "active-legacy-target-contract-reader"
+    ],
+    "compatibility_alias": false,
+    "rollback": "restore the complete checksum-verified RC4 artifact and Codex source-to-live backup; do not restore dual schema, legacy metadata or an active compatibility reader"
+  }
+}
