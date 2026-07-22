@@ -13,7 +13,7 @@ dotfiles,config,P2,fetch,master,no,最小变更与基线校验策略已吸收，
 agent-dev-kit,adk-core,P0,pull,main,yes,主落地仓库,active,adk-team,2026-05-02,adopt-first,S
 hermes-agent,delivery,P1,fetch,main,no,大型 Agent 工程目录职责与测试入口已吸收，移除本地参考仓,disabled,adk-team,2026-06-25,observe-first,A
 hermes-collaboration-skill,agent-ecosystem,P1,fetch,main,no,协作 runbook 范式已吸收，移除本地参考仓,disabled,adk-team,2026-06-25,observe-first,B
-mattpocock-skills,agent-ecosystem,P1,fetch,main,no,2026-07-19 已吸收意图边界并继续 sampled watch 稳定 release,disabled,adk-team,2026-07-19,adopt-first,A
+mattpocock-skills,agent-ecosystem,P1,fetch,main,yes,approved external-practice active reference; candidate=epc-43e82b2e69e37e419c3f,active,llm-agent-governance-owner,2026-07-22,adopt-first,A
 andrej-karpathy-skills,agent-ecosystem,P2,fetch,main,no,Karpathy四原则已被全局规则覆盖；2026-07-11 复核仍保持archive-only,disabled,adk-team,2026-07-11,observe-first,B
 awesome-agent-skills,skill-index,P2,fetch,main,no,跨平台skill索引仅作discovery feed；2026-07-11 继续 watch 元数据,disabled,adk-team,2026-07-11,observe-first,B
 claude-skills,skill-pool,P2,fetch,main,no,大型skill池按域候选抽样；2026-07-11 继续 selective-only watch,disabled,adk-team,2026-07-11,selective-adopt,B

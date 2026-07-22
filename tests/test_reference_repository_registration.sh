@@ -297,9 +297,14 @@ plan = json.loads((root / "reports/apply-plan.json").read_text(encoding="utf-8")
 assert plan["status"] == "applied"
 assert plan["mode"] == "apply"
 assert plan["materialization"]["source_clean"] is True
+assert plan["planned_changes"]["adoption_matrix"]["decision"] == "adopt"
+assert plan["planned_changes"]["adoption_matrix"]["state"] == "done"
 assert (root / "agent-harness/.git").exists()
 assert "agent-harness,agent-ecosystem" in (root / "subrepos/registry.csv").read_text(encoding="utf-8")
-assert "| agent-harness |" in (root / "subrepos/adoption-matrix.md").read_text(encoding="utf-8")
+matrix = (root / "subrepos/adoption-matrix.md").read_text(encoding="utf-8")
+assert "| agent-harness |" in matrix
+assert "| adopt | done | llm_agent |" in matrix
+assert matrix.index("| agent-harness |") < matrix.index("\n## 模板")
 assert '"repo":"agent-harness"' in (root / "subrepos/adoption-matrix.jsonl").read_text(encoding="utf-8")
 lifecycle = json.loads((root / "manifests/subrepo_lifecycle.json").read_text(encoding="utf-8"))
 assert any(item.get("repo") == "agent-harness" and item.get("state") == "active-reference" for item in lifecycle["entries"])

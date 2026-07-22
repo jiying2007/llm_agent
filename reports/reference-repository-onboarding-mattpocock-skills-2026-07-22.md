@@ -1,8 +1,8 @@
 # Reference Repository Onboarding Plan
 
 > schema: reference-repository-onboarding/v1
-> status: planned
-> mode: dry-run
+> status: applied
+> mode: apply
 > candidate: epc-43e82b2e69e37e419c3f
 > owner: llm-agent-governance-owner
 
@@ -27,8 +27,8 @@
 ## Planned Changes
 
 - registry repository: `mattpocock-skills`
-- materialization: `metadata-only`
-- reviewed source HEAD: `not-applicable`
+- materialization: `local-submodule`
+- reviewed source HEAD: `ed37663cc5fbef691ddfecd080dff42f7e7e350d`
 - ADK absorption: not performed by repository registration
 - external discovery/runtime writes: disabled
 

@@ -43,7 +43,8 @@ awk -F'|' '
 
     if (decision == "adopt" && status == "done") {
       checked++
-      if (target !~ /agent-dev-kit|codex/) {
+      reference_adopt=(target == "llm_agent" && evidence ~ /^reports\/reference-repository-onboarding-[A-Za-z0-9._-]+\.md$/)
+      if (target !~ /agent-dev-kit|codex/ && !reference_adopt) {
         print "[FAIL] adopt row missing production target:" $0 > "/dev/stderr"
         failed=1
       }

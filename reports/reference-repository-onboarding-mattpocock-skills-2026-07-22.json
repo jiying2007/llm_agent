@@ -49,28 +49,28 @@
     "target_path_gate": true
   },
   "materialization": {
-    "mode": "metadata-only",
-    "source_clean": null,
-    "source_head": null,
-    "source_origin": null
+    "mode": "local-submodule",
+    "source_clean": true,
+    "source_head": "ed37663cc5fbef691ddfecd080dff42f7e7e350d",
+    "source_origin": "https://github.com/mattpocock/skills"
   },
-  "mode": "dry-run",
+  "mode": "apply",
   "planned_changes": {
     "adoption_matrix": {
       "capability": "approved external-practice reference epc-43e82b2e69e37e419c3f",
       "category": "agent-ecosystem",
       "cost": "中",
       "date": "2026-07-22",
-      "decision": "observe",
+      "decision": "adopt",
       "evidence": "reports/reference-repository-onboarding-mattpocock-skills-2026-07-22.md",
       "risk": "中",
       "source_repo": "mattpocock-skills",
-      "state": "pending",
+      "state": "done",
       "target": "llm_agent",
       "value": "高"
     },
     "gitmodules": {
-      "materialization": "metadata-only",
+      "materialization": "local-submodule",
       "name": "mattpocock-skills",
       "path": "mattpocock-skills",
       "url": "https://github.com/mattpocock/skills"
@@ -111,5 +111,5 @@
     ]
   },
   "schema": "reference-repository-onboarding/v1",
-  "status": "planned"
+  "status": "applied"
 }

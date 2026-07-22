@@ -19,3 +19,6 @@
 [submodule "planning-with-files"]
 	path = planning-with-files
 	url = https://github.com/OthmanAdi/planning-with-files.git
+[submodule "mattpocock-skills"]
+	path = mattpocock-skills
+	url = https://github.com/mattpocock/skills

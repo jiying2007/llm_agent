@@ -277,6 +277,22 @@ def _matrix_jsonl_bytes(markdown: str) -> bytes:
     )
 
 
+def _matrix_with_row(markdown: str, row: str) -> str:
+    section_marker = "## 当前记录（全量治理）"
+    section_start = markdown.find(section_marker)
+    if section_start < 0:
+        raise IntakeError("adoption matrix canonical table section is missing")
+    next_section = markdown.find("\n## ", section_start + len(section_marker))
+    if next_section < 0:
+        next_section = len(markdown)
+    table = markdown[section_start:next_section]
+    matches = list(re.finditer(r"(?m)^\| [0-9]{4}-[0-9]{2}-[0-9]{2} \|.*\n", table))
+    if not matches:
+        raise IntakeError("adoption matrix canonical table has no governed rows")
+    insert_at = section_start + matches[-1].end()
+    return markdown[:insert_at] + row + markdown[insert_at:]
+
+
 def _contracts(
     root: Path,
     candidate_path: Path,
@@ -447,8 +463,8 @@ def _plan(
                 "value": "高",
                 "cost": "中",
                 "risk": "中",
-                "decision": "observe",
-                "state": "pending",
+                "decision": "adopt",
+                "state": "done" if apply_mode else "pending",
                 "target": "llm_agent",
                 "evidence": plan_evidence,
             },
@@ -617,8 +633,8 @@ def _validate_plan(value: Any, root: Path) -> Mapping[str, Any]:
         matrix.get("date") != reviewed_at
         or matrix.get("source_repo") != repo_name
         or matrix.get("category") != registry.get("group")
-        or matrix.get("decision") != "observe"
-        or matrix.get("state") != "pending"
+        or matrix.get("decision") != "adopt"
+        or matrix.get("state") != ("done" if mode == "apply" else "pending")
         or matrix.get("target") != "llm_agent"
     ):
         raise IntakeError("onboarding plan adoption_matrix projection is inconsistent")
@@ -759,7 +775,7 @@ def _apply(
     if _matrix_jsonl_bytes(current_matrix) != current_matrix_jsonl:
         raise IntakeError("adoption matrix JSONL is stale before registration")
     row = "| {date} | {source_repo} | {category} | {capability} | {value} | {cost} | {risk} | {decision} | {state} | {target} | {evidence} |\n".format(**changes["adoption_matrix"])
-    matrix_payload_text = current_matrix + row
+    matrix_payload_text = _matrix_with_row(current_matrix, row)
     matrix_payload = matrix_payload_text.encode("utf-8")
     matrix_jsonl_payload = _matrix_jsonl_bytes(matrix_payload_text)
 

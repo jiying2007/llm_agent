@@ -1,7 +1,553 @@
 {
+  "entries": [
+    {
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/subrepo-removal-direct-2026-06-25.md"
+      ],
+      "owner": "adk-team",
+      "removal_reason": "业务闭环验证证据写法已吸收，本地参考仓维护收益低",
+      "removed_at": "2026-06-25",
+      "repo": "AUBB-Server",
+      "review_window": "manual",
+      "state": "removed"
+    },
+    {
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/subrepo-removal-direct-2026-06-25.md"
+      ],
+      "owner": "adk-team",
+      "removal_reason": "候选筛选方法已吸收，资产模板化严重，本地参考仓维护收益低",
+      "removed_at": "2026-06-25",
+      "repo": "Migrationed_skills",
+      "review_window": "manual",
+      "state": "removed"
+    },
+    {
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md"
+      ],
+      "owner": "adk-team",
+      "repo": "OpenSpec",
+      "review_window": "monthly",
+      "state": "active-core"
+    },
+    {
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/subrepo-removal-direct-2026-06-25.md"
+      ],
+      "owner": "adk-team",
+      "removal_reason": "角色职责矩阵与术语体系已吸收，本地参考仓维护收益低",
+      "removed_at": "2026-06-25",
+      "repo": "agency-agents-zh",
+      "review_window": "manual",
+      "state": "removed"
+    },
+    {
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/subrepo-removal-direct-2026-06-25.md",
+        "reports/oss-absorption-implementation-coding-skills-2026-07-11.md"
+      ],
+      "owner": "adk-team",
+      "removal_reason": "技能触发路由与生命周期映射已吸收，本地参考仓维护收益低",
+      "removed_at": "2026-06-25",
+      "repo": "agent-skills",
+      "review_window": "manual",
+      "state": "removed"
+    },
+    {
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/subrepo-removal-direct-2026-06-25.md"
+      ],
+      "owner": "adk-team",
+      "removal_reason": "场景化工作流导览与风险提示已吸收，本地参考仓维护收益低",
+      "removed_at": "2026-06-25",
+      "repo": "ai-coding-guide",
+      "review_window": "manual",
+      "state": "removed"
+    },
+    {
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/subrepo-removal-direct-2026-06-25.md"
+      ],
+      "owner": "adk-team",
+      "removal_reason": "贡献规范与发布质量门槛已吸收，本地参考仓维护收益低",
+      "removed_at": "2026-06-25",
+      "repo": "arthas",
+      "review_window": "manual",
+      "state": "removed"
+    },
+    {
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/subrepo-removal-direct-2026-06-25.md"
+      ],
+      "owner": "adk-team",
+      "removal_reason": "负结果留痕方法已吸收，旧分级报告已判禁用，本地参考仓维护收益低",
+      "removed_at": "2026-06-25",
+      "repo": "auto-research",
+      "review_window": "manual",
+      "state": "removed"
+    },
+    {
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/subrepo-removal-direct-2026-06-25.md"
+      ],
+      "owner": "adk-team",
+      "removal_reason": "Codex 协作模板与分层触发写法已吸收，本地参考仓维护收益低",
+      "removed_at": "2026-06-25",
+      "repo": "codex-cookbook",
+      "review_window": "manual",
+      "state": "removed"
+    },
+    {
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv"
+      ],
+      "owner": "adk-team",
+      "repo": "codex",
+      "review_window": "manual",
+      "state": "disabled"
+    },
+    {
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/subrepo-removal-direct-2026-06-25.md"
+      ],
+      "owner": "adk-team",
+      "removal_reason": "最小变更与环境基线校验策略已吸收，本地参考仓维护收益低",
+      "removed_at": "2026-06-25",
+      "repo": "dotfiles",
+      "review_window": "manual",
+      "state": "removed"
+    },
+    {
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv",
+        "adk.lock"
+      ],
+      "owner": "adk-team",
+      "repo": "agent-dev-kit",
+      "review_window": "continuous",
+      "state": "active-core"
+    },
+    {
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/subrepo-removal-direct-2026-06-25.md"
+      ],
+      "owner": "adk-team",
+      "removal_reason": "大型 Agent 工程目录职责与测试入口已吸收，本地参考仓维护收益低",
+      "removed_at": "2026-06-25",
+      "repo": "hermes-agent",
+      "review_window": "manual",
+      "state": "removed"
+    },
+    {
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/subrepo-removal-direct-2026-06-25.md"
+      ],
+      "owner": "adk-team",
+      "removal_reason": "多人协作文档模板与 runbook 化结构已吸收，本地参考仓维护收益低",
+      "removed_at": "2026-06-25",
+      "repo": "hermes-collaboration-skill",
+      "review_window": "manual",
+      "state": "removed"
+    },
+    {
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/subrepo-removal-direct-2026-06-25.md",
+        "reports/external-coding-skill-repos-assessment-2026-07-11.md",
+        "reports/oss-absorption-implementation-coding-skills-2026-07-11.md",
+        "reports/observe-secondary-intake-packages-2026-07-19.md",
+        "reports/mattpocock-skills-absorption-2026-07-19.md",
+        "agent-dev-kit/docs/changes/archive/20260719-intent-boundary-governance-v2/",
+        ".gitmodules",
+        "reports/reference-repository-onboarding-mattpocock-skills-2026-07-22.md",
+        "reports/external-practice-candidates-mattpocock-skills-2026-07-22.jsonl",
+        "reports/external-practice-decisions-mattpocock-skills-2026-07-22.jsonl",
+        "reports/reference-analysis-mattpocock-skills-2026-07-22.md",
+        "reports/reference-duplicate-review-mattpocock-skills-2026-07-22.md",
+        "reports/reference-security-review-mattpocock-skills-2026-07-22.md",
+        "reports/governance-review-mattpocock-reference-2026-07-22.md"
+      ],
+      "owner": "llm-agent-governance-owner",
+      "reactivated_at": "2026-07-22",
+      "reactivated_from": "watch",
+      "repo": "mattpocock-skills",
+      "review_window": "monthly",
+      "runtime_boundaries": [
+        "do-not-install-external-skills",
+        "do-not-execute-external-hooks-or-runtime",
+        "review-before-adk-absorption"
+      ],
+      "source": {
+        "branch": "main",
+        "commit": "ed37663cc5fbef691ddfecd080dff42f7e7e350d",
+        "provider": "github",
+        "retrieved_at": "2026-07-22",
+        "url": "https://github.com/mattpocock/skills"
+      },
+      "state": "active-reference"
+    },
+    {
+      "archive_reason": "Karpathy 四原则已被全局 AGENTS 与 ADK 规则覆盖；2026-07-11 复核仍有 license/重复覆盖问题，仅保留措辞和反模式参考",
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/external-skill-repos-assessment-2026-06-29.md",
+        "reports/external-coding-skill-repos-assessment-2026-07-11.md",
+        "reports/oss-absorption-implementation-coding-skills-2026-07-11.md"
+      ],
+      "owner": "adk-team",
+      "repo": "andrej-karpathy-skills",
+      "review_window": "manual",
+      "state": "archive-only"
+    },
+    {
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/external-skill-repos-assessment-2026-06-29.md",
+        "reports/external-coding-skill-repos-assessment-2026-07-11.md",
+        "reports/oss-absorption-implementation-coding-skills-2026-07-11.md"
+      ],
+      "owner": "adk-team",
+      "repo": "awesome-agent-skills",
+      "review_window": "manual",
+      "state": "watch",
+      "watch_reason": "索引型 skill 清单仅作 discovery feed，不作为本地参考仓或运行时依赖；2026-07-11 继续元数据 watch"
+    },
+    {
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/external-skill-repos-assessment-2026-06-29.md",
+        "reports/external-coding-skill-repos-assessment-2026-07-11.md",
+        "reports/oss-absorption-implementation-coding-skills-2026-07-11.md"
+      ],
+      "owner": "adk-team",
+      "repo": "claude-skills",
+      "review_window": "manual",
+      "state": "watch",
+      "watch_reason": "大型 skill 池按域抽样和供应链审查，不完整长期跟进，不全量安装；2026-07-11 继续 selective-only watch"
+    },
+    {
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/external-coding-skill-repos-assessment-2026-07-11.md",
+        "reports/oss-discovery-candidates-2026-07-11.jsonl",
+        "reports/oss-absorption-implementation-coding-skills-2026-07-11.md"
+      ],
+      "owner": "adk-team",
+      "repo": "ECC",
+      "review_window": "manual",
+      "state": "watch",
+      "watch_reason": "Everything Claude Code 当前重定向到 affaan-m/ECC；高星且活跃，但 hook/MCP/memory/install surface 风险高，先 watch 和安全评审"
+    },
+    {
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/external-coding-skill-repos-assessment-2026-07-11.md",
+        "reports/oss-discovery-candidates-2026-07-11.jsonl",
+        "reports/oss-absorption-implementation-coding-skills-2026-07-11.md"
+      ],
+      "owner": "adk-team",
+      "reject_reason": "Requires hosted service credentials and open-world tool actions; review only for a concrete integration request",
+      "repo": "composio",
+      "review_window": "manual",
+      "state": "rejected"
+    },
+    {
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/external-coding-skill-repos-assessment-2026-07-11.md",
+        "reports/oss-discovery-candidates-2026-07-11.jsonl",
+        "reports/oss-absorption-implementation-coding-skills-2026-07-11.md"
+      ],
+      "owner": "adk-team",
+      "repo": "claude-code-plugins-plus-skills",
+      "review_window": "manual",
+      "state": "watch",
+      "watch_reason": "Marketplace/catalog source; use as discovery feed only until CLI/install surface is reviewed"
+    },
+    {
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/external-coding-skill-repos-assessment-2026-07-11.md",
+        "reports/oss-discovery-candidates-2026-07-11.jsonl",
+        "reports/oss-absorption-implementation-coding-skills-2026-07-11.md"
+      ],
+      "owner": "adk-team",
+      "repo": "awesome-claude-code",
+      "review_window": "manual",
+      "state": "watch",
+      "watch_reason": "Owner-requested Claude Code navigation source; discovery feed only, license and individual downstream sources require review"
+    },
+    {
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/external-coding-skill-repos-assessment-2026-07-11.md",
+        "reports/oss-discovery-candidates-2026-07-11.jsonl",
+        "reports/oss-absorption-implementation-coding-skills-2026-07-11.md"
+      ],
+      "owner": "adk-team",
+      "repo": "awesome-claude-skills",
+      "review_window": "manual",
+      "state": "watch",
+      "watch_reason": "Curated skill list; discovery feed only, individual skills still require source/license/runtime review"
+    },
+    {
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/external-coding-skill-repos-assessment-2026-07-11.md",
+        "reports/oss-discovery-candidates-2026-07-11.jsonl",
+        "reports/oss-absorption-implementation-coding-skills-2026-07-11.md"
+      ],
+      "owner": "adk-team",
+      "repo": "awesome-claude-code-toolkit",
+      "review_window": "manual",
+      "state": "watch",
+      "watch_reason": "Owner-requested broad toolkit source; hooks/MCP/apps increase review cost, so watch only and do not enable runtime"
+    },
+    {
+      "automation_eligible": false,
+      "evidence": [
+        ".gitmodules",
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/external-skill-repos-assessment-2026-06-29.md",
+        "reports/oss-analysis-oh-my-codex-2026-06-29.md",
+        "reports/oss-absorption-plan-oh-my-codex-2026-06-29.md",
+        "reports/oss-security-review-oh-my-codex-2026-06-29.md",
+        "reports/oss-deep-assessment-oh-my-codex-2026-06-29.md"
+      ],
+      "owner": "adk-team",
+      "repo": "oh-my-codex",
+      "review_window": "monthly",
+      "runtime_boundaries": [
+        "do-not-install-global-omx",
+        "do-not-run-omx-runtime",
+        "do-not-enable-tmux-hooks-mcp-or-plugin",
+        "method-only-goal-worktree-doctor-release-evidence"
+      ],
+      "source": {
+        "branch": "main",
+        "commit": "d96b698c5f2fabc85c890f7b8fcdc6e02f253ec7",
+        "provider": "github",
+        "retrieved_at": "2026-06-29",
+        "url": "https://github.com/Yeachan-Heo/oh-my-codex.git"
+      },
+      "state": "active-reference"
+    },
+    {
+      "automation_eligible": false,
+      "evidence": [
+        ".gitmodules",
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/external-skill-repos-assessment-2026-06-29.md",
+        "reports/oss-analysis-planning-with-files-2026-06-29.md",
+        "reports/oss-absorption-plan-planning-with-files-2026-06-29.md",
+        "reports/oss-security-review-planning-with-files-2026-06-29.md",
+        "reports/oss-deep-assessment-planning-with-files-2026-06-29.md"
+      ],
+      "owner": "adk-team",
+      "repo": "planning-with-files",
+      "review_window": "monthly",
+      "runtime_boundaries": [
+        "do-not-install-planning-hooks",
+        "do-not-enable-stop-gate",
+        "do-not-write-task-plan-by-default",
+        "method-only-plan-files-attestation-context-restore"
+      ],
+      "source": {
+        "branch": "master",
+        "commit": "8f5a3c2e1c347635cf94debde033b3c1ac97e4ab",
+        "provider": "github",
+        "retrieved_at": "2026-06-29",
+        "url": "https://github.com/OthmanAdi/planning-with-files.git"
+      },
+      "state": "active-reference"
+    },
+    {
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/subrepo-removal-direct-2026-06-25.md"
+      ],
+      "owner": "adk-team",
+      "removal_reason": "提示词资产轻量演进机制已吸收，本地参考仓维护收益低",
+      "removed_at": "2026-06-25",
+      "repo": "prompts",
+      "review_window": "manual",
+      "state": "removed"
+    },
+    {
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/subrepo-removal-direct-2026-06-25.md"
+      ],
+      "owner": "adk-team",
+      "removal_reason": "skills CLI 目录约定与安装入口已吸收，本地参考仓维护收益低",
+      "removed_at": "2026-06-25",
+      "repo": "skills",
+      "review_window": "manual",
+      "state": "removed"
+    },
+    {
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/oss-absorption-implementation-coding-skills-2026-07-11.md"
+      ],
+      "owner": "adk-team",
+      "repo": "superpowers",
+      "review_window": "monthly",
+      "state": "active-core"
+    },
+    {
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/subrepo-removal-direct-2026-06-25.md"
+      ],
+      "owner": "adk-team",
+      "removal_reason": "中文触发词与流程表达已吸收，保留 superpowers 主仓作为流程基线",
+      "removed_at": "2026-06-25",
+      "repo": "superpowers-zh",
+      "review_window": "manual",
+      "state": "removed"
+    },
+    {
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/subrepo-removal-direct-2026-06-25.md"
+      ],
+      "owner": "aiot03",
+      "removal_reason": "知识图谱与状态上下文边界已吸收为 optional-pilot，本地参考仓维护收益低",
+      "removed_at": "2026-06-25",
+      "repo": "Trellis",
+      "review_window": "manual",
+      "state": "removed"
+    },
+    {
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md"
+      ],
+      "owner": "aiot03",
+      "repo": "vibeflow",
+      "review_window": "monthly",
+      "state": "active-core"
+    },
+    {
+      "automation_eligible": false,
+      "evidence": [
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/subrepo-removal-direct-2026-06-25.md"
+      ],
+      "owner": "aiot03",
+      "removal_reason": "浏览器快照压缩与 ref 交互模式已吸收为 optional-pilot，本地参考仓维护收益低",
+      "removed_at": "2026-06-25",
+      "repo": "agent-browser",
+      "review_window": "manual",
+      "state": "removed"
+    },
+    {
+      "automation_eligible": false,
+      "evidence": [
+        ".gitmodules",
+        "subrepos/registry.csv",
+        "subrepos/adoption-matrix.md",
+        "reports/oss-analysis-hongmaple-scale-engine-2026-06-24.md",
+        "reports/oss-absorption-plan-hongmaple-scale-engine-2026-06-24.md",
+        "reports/oss-deep-assessment-hongmaple-scale-engine-2026-06-25.md",
+        "reports/oss-governance-contracts-hongmaple-scale-engine-2026-06-25.md",
+        "reports/oss-loop-readiness-hongmaple-scale-engine-2026-06-25.md",
+        "reports/observe-secondary-intake-packages-2026-06-24.md",
+        "reports/oss-security-review-hongmaple-scale-engine-2026-06-24.md"
+      ],
+      "owner": "adk-team",
+      "repo": "scale-engine",
+      "review_window": "monthly",
+      "runtime_boundaries": [
+        "do-not-run-npm-npx-scale",
+        "do-not-enable-hooks-mcp-orchestrator",
+        "do-not-copy-runtime-assets"
+      ],
+      "source": {
+        "branch": "master",
+        "commit": "60f38279b76030056738cc9eac7bc8b9cc6173c2",
+        "provider": "gitee",
+        "retrieved_at": "2026-06-24",
+        "url": "https://gitee.com/hongmaple/scale-engine.git"
+      },
+      "state": "active-reference"
+    }
+  ],
+  "last_updated": "2026-07-22",
   "schema_version": 1,
-  "status": "report-only",
-  "last_updated": "2026-07-19",
   "states": [
     "discovered",
     "scored",
@@ -15,530 +561,5 @@
     "removed",
     "rejected"
   ],
-  "entries": [
-    {
-      "repo": "AUBB-Server",
-      "state": "removed",
-      "owner": "adk-team",
-      "review_window": "manual",
-      "automation_eligible": false,
-      "removed_at": "2026-06-25",
-      "removal_reason": "业务闭环验证证据写法已吸收，本地参考仓维护收益低",
-      "evidence": [
-        "subrepos/registry.csv",
-        "subrepos/adoption-matrix.md",
-        "reports/subrepo-removal-direct-2026-06-25.md"
-      ]
-    },
-    {
-      "repo": "Migrationed_skills",
-      "state": "removed",
-      "owner": "adk-team",
-      "review_window": "manual",
-      "automation_eligible": false,
-      "removed_at": "2026-06-25",
-      "removal_reason": "候选筛选方法已吸收，资产模板化严重，本地参考仓维护收益低",
-      "evidence": [
-        "subrepos/registry.csv",
-        "subrepos/adoption-matrix.md",
-        "reports/subrepo-removal-direct-2026-06-25.md"
-      ]
-    },
-    {
-      "repo": "OpenSpec",
-      "state": "active-core",
-      "owner": "adk-team",
-      "review_window": "monthly",
-      "automation_eligible": false,
-      "evidence": [
-        "subrepos/registry.csv",
-        "subrepos/adoption-matrix.md"
-      ]
-    },
-    {
-      "repo": "agency-agents-zh",
-      "state": "removed",
-      "owner": "adk-team",
-      "review_window": "manual",
-      "automation_eligible": false,
-      "removed_at": "2026-06-25",
-      "removal_reason": "角色职责矩阵与术语体系已吸收，本地参考仓维护收益低",
-      "evidence": [
-        "subrepos/registry.csv",
-        "subrepos/adoption-matrix.md",
-        "reports/subrepo-removal-direct-2026-06-25.md"
-      ]
-    },
-    {
-      "repo": "agent-skills",
-      "state": "removed",
-      "owner": "adk-team",
-      "review_window": "manual",
-      "automation_eligible": false,
-      "removed_at": "2026-06-25",
-      "removal_reason": "技能触发路由与生命周期映射已吸收，本地参考仓维护收益低",
-      "evidence": [
-        "subrepos/registry.csv",
-        "subrepos/adoption-matrix.md",
-        "reports/subrepo-removal-direct-2026-06-25.md",
-        "reports/oss-absorption-implementation-coding-skills-2026-07-11.md"
-      ]
-    },
-    {
-      "repo": "ai-coding-guide",
-      "state": "removed",
-      "owner": "adk-team",
-      "review_window": "manual",
-      "automation_eligible": false,
-      "removed_at": "2026-06-25",
-      "removal_reason": "场景化工作流导览与风险提示已吸收，本地参考仓维护收益低",
-      "evidence": [
-        "subrepos/registry.csv",
-        "subrepos/adoption-matrix.md",
-        "reports/subrepo-removal-direct-2026-06-25.md"
-      ]
-    },
-    {
-      "repo": "arthas",
-      "state": "removed",
-      "owner": "adk-team",
-      "review_window": "manual",
-      "automation_eligible": false,
-      "removed_at": "2026-06-25",
-      "removal_reason": "贡献规范与发布质量门槛已吸收，本地参考仓维护收益低",
-      "evidence": [
-        "subrepos/registry.csv",
-        "subrepos/adoption-matrix.md",
-        "reports/subrepo-removal-direct-2026-06-25.md"
-      ]
-    },
-    {
-      "repo": "auto-research",
-      "state": "removed",
-      "owner": "adk-team",
-      "review_window": "manual",
-      "automation_eligible": false,
-      "removed_at": "2026-06-25",
-      "removal_reason": "负结果留痕方法已吸收，旧分级报告已判禁用，本地参考仓维护收益低",
-      "evidence": [
-        "subrepos/registry.csv",
-        "subrepos/adoption-matrix.md",
-        "reports/subrepo-removal-direct-2026-06-25.md"
-      ]
-    },
-    {
-      "repo": "codex-cookbook",
-      "state": "removed",
-      "owner": "adk-team",
-      "review_window": "manual",
-      "automation_eligible": false,
-      "removed_at": "2026-06-25",
-      "removal_reason": "Codex 协作模板与分层触发写法已吸收，本地参考仓维护收益低",
-      "evidence": [
-        "subrepos/registry.csv",
-        "subrepos/adoption-matrix.md",
-        "reports/subrepo-removal-direct-2026-06-25.md"
-      ]
-    },
-    {
-      "repo": "codex",
-      "state": "disabled",
-      "owner": "adk-team",
-      "review_window": "manual",
-      "automation_eligible": false,
-      "evidence": [
-        "subrepos/registry.csv"
-      ]
-    },
-    {
-      "repo": "dotfiles",
-      "state": "removed",
-      "owner": "adk-team",
-      "review_window": "manual",
-      "automation_eligible": false,
-      "removed_at": "2026-06-25",
-      "removal_reason": "最小变更与环境基线校验策略已吸收，本地参考仓维护收益低",
-      "evidence": [
-        "subrepos/registry.csv",
-        "subrepos/adoption-matrix.md",
-        "reports/subrepo-removal-direct-2026-06-25.md"
-      ]
-    },
-    {
-      "repo": "agent-dev-kit",
-      "state": "active-core",
-      "owner": "adk-team",
-      "review_window": "continuous",
-      "automation_eligible": false,
-      "evidence": [
-        "subrepos/registry.csv",
-        "adk.lock"
-      ]
-    },
-    {
-      "repo": "hermes-agent",
-      "state": "removed",
-      "owner": "adk-team",
-      "review_window": "manual",
-      "automation_eligible": false,
-      "removed_at": "2026-06-25",
-      "removal_reason": "大型 Agent 工程目录职责与测试入口已吸收，本地参考仓维护收益低",
-      "evidence": [
-        "subrepos/registry.csv",
-        "subrepos/adoption-matrix.md",
-        "reports/subrepo-removal-direct-2026-06-25.md"
-      ]
-    },
-    {
-      "repo": "hermes-collaboration-skill",
-      "state": "removed",
-      "owner": "adk-team",
-      "review_window": "manual",
-      "automation_eligible": false,
-      "removed_at": "2026-06-25",
-      "removal_reason": "多人协作文档模板与 runbook 化结构已吸收，本地参考仓维护收益低",
-      "evidence": [
-        "subrepos/registry.csv",
-        "subrepos/adoption-matrix.md",
-        "reports/subrepo-removal-direct-2026-06-25.md"
-      ]
-    },
-    {
-      "repo": "mattpocock-skills",
-      "state": "watch",
-      "owner": "adk-team",
-      "review_window": "manual",
-      "automation_eligible": false,
-      "watch_reason": "2026-07-19 固定 9603c1c 快照并吸收 invocation、work-item、Hotspot scope 与 prototype provenance；继续 sampled watch 稳定 release 或新增契约，不恢复全量 submodule",
-      "evidence": [
-        "subrepos/registry.csv",
-        "subrepos/adoption-matrix.md",
-        "reports/subrepo-removal-direct-2026-06-25.md",
-        "reports/external-coding-skill-repos-assessment-2026-07-11.md",
-        "reports/oss-absorption-implementation-coding-skills-2026-07-11.md",
-        "reports/observe-secondary-intake-packages-2026-07-19.md",
-        "reports/mattpocock-skills-absorption-2026-07-19.md",
-        "agent-dev-kit/docs/changes/archive/20260719-intent-boundary-governance-v2/"
-      ]
-    },
-    {
-      "repo": "andrej-karpathy-skills",
-      "state": "archive-only",
-      "owner": "adk-team",
-      "review_window": "manual",
-      "automation_eligible": false,
-      "archive_reason": "Karpathy 四原则已被全局 AGENTS 与 ADK 规则覆盖；2026-07-11 复核仍有 license/重复覆盖问题，仅保留措辞和反模式参考",
-      "evidence": [
-        "subrepos/registry.csv",
-        "subrepos/adoption-matrix.md",
-        "reports/external-skill-repos-assessment-2026-06-29.md",
-        "reports/external-coding-skill-repos-assessment-2026-07-11.md",
-        "reports/oss-absorption-implementation-coding-skills-2026-07-11.md"
-      ]
-    },
-    {
-      "repo": "awesome-agent-skills",
-      "state": "watch",
-      "owner": "adk-team",
-      "review_window": "manual",
-      "automation_eligible": false,
-      "watch_reason": "索引型 skill 清单仅作 discovery feed，不作为本地参考仓或运行时依赖；2026-07-11 继续元数据 watch",
-      "evidence": [
-        "subrepos/registry.csv",
-        "subrepos/adoption-matrix.md",
-        "reports/external-skill-repos-assessment-2026-06-29.md",
-        "reports/external-coding-skill-repos-assessment-2026-07-11.md",
-        "reports/oss-absorption-implementation-coding-skills-2026-07-11.md"
-      ]
-    },
-    {
-      "repo": "claude-skills",
-      "state": "watch",
-      "owner": "adk-team",
-      "review_window": "manual",
-      "automation_eligible": false,
-      "watch_reason": "大型 skill 池按域抽样和供应链审查，不完整长期跟进，不全量安装；2026-07-11 继续 selective-only watch",
-      "evidence": [
-        "subrepos/registry.csv",
-        "subrepos/adoption-matrix.md",
-        "reports/external-skill-repos-assessment-2026-06-29.md",
-        "reports/external-coding-skill-repos-assessment-2026-07-11.md",
-        "reports/oss-absorption-implementation-coding-skills-2026-07-11.md"
-      ]
-    },
-    {
-      "repo": "ECC",
-      "state": "watch",
-      "owner": "adk-team",
-      "review_window": "manual",
-      "automation_eligible": false,
-      "watch_reason": "Everything Claude Code 当前重定向到 affaan-m/ECC；高星且活跃，但 hook/MCP/memory/install surface 风险高，先 watch 和安全评审",
-      "evidence": [
-        "subrepos/registry.csv",
-        "subrepos/adoption-matrix.md",
-        "reports/external-coding-skill-repos-assessment-2026-07-11.md",
-        "reports/oss-discovery-candidates-2026-07-11.jsonl",
-        "reports/oss-absorption-implementation-coding-skills-2026-07-11.md"
-      ]
-    },
-    {
-      "repo": "composio",
-      "state": "rejected",
-      "owner": "adk-team",
-      "review_window": "manual",
-      "automation_eligible": false,
-      "reject_reason": "Requires hosted service credentials and open-world tool actions; review only for a concrete integration request",
-      "evidence": [
-        "subrepos/registry.csv",
-        "subrepos/adoption-matrix.md",
-        "reports/external-coding-skill-repos-assessment-2026-07-11.md",
-        "reports/oss-discovery-candidates-2026-07-11.jsonl",
-        "reports/oss-absorption-implementation-coding-skills-2026-07-11.md"
-      ]
-    },
-    {
-      "repo": "claude-code-plugins-plus-skills",
-      "state": "watch",
-      "owner": "adk-team",
-      "review_window": "manual",
-      "automation_eligible": false,
-      "watch_reason": "Marketplace/catalog source; use as discovery feed only until CLI/install surface is reviewed",
-      "evidence": [
-        "subrepos/registry.csv",
-        "subrepos/adoption-matrix.md",
-        "reports/external-coding-skill-repos-assessment-2026-07-11.md",
-        "reports/oss-discovery-candidates-2026-07-11.jsonl",
-        "reports/oss-absorption-implementation-coding-skills-2026-07-11.md"
-      ]
-    },
-    {
-      "repo": "awesome-claude-code",
-      "state": "watch",
-      "owner": "adk-team",
-      "review_window": "manual",
-      "automation_eligible": false,
-      "watch_reason": "Owner-requested Claude Code navigation source; discovery feed only, license and individual downstream sources require review",
-      "evidence": [
-        "subrepos/registry.csv",
-        "subrepos/adoption-matrix.md",
-        "reports/external-coding-skill-repos-assessment-2026-07-11.md",
-        "reports/oss-discovery-candidates-2026-07-11.jsonl",
-        "reports/oss-absorption-implementation-coding-skills-2026-07-11.md"
-      ]
-    },
-    {
-      "repo": "awesome-claude-skills",
-      "state": "watch",
-      "owner": "adk-team",
-      "review_window": "manual",
-      "automation_eligible": false,
-      "watch_reason": "Curated skill list; discovery feed only, individual skills still require source/license/runtime review",
-      "evidence": [
-        "subrepos/registry.csv",
-        "subrepos/adoption-matrix.md",
-        "reports/external-coding-skill-repos-assessment-2026-07-11.md",
-        "reports/oss-discovery-candidates-2026-07-11.jsonl",
-        "reports/oss-absorption-implementation-coding-skills-2026-07-11.md"
-      ]
-    },
-    {
-      "repo": "awesome-claude-code-toolkit",
-      "state": "watch",
-      "owner": "adk-team",
-      "review_window": "manual",
-      "automation_eligible": false,
-      "watch_reason": "Owner-requested broad toolkit source; hooks/MCP/apps increase review cost, so watch only and do not enable runtime",
-      "evidence": [
-        "subrepos/registry.csv",
-        "subrepos/adoption-matrix.md",
-        "reports/external-coding-skill-repos-assessment-2026-07-11.md",
-        "reports/oss-discovery-candidates-2026-07-11.jsonl",
-        "reports/oss-absorption-implementation-coding-skills-2026-07-11.md"
-      ]
-    },
-    {
-      "repo": "oh-my-codex",
-      "state": "active-reference",
-      "source": {
-        "url": "https://github.com/Yeachan-Heo/oh-my-codex.git",
-        "provider": "github",
-        "branch": "main",
-        "commit": "d96b698c5f2fabc85c890f7b8fcdc6e02f253ec7",
-        "retrieved_at": "2026-06-29"
-      },
-      "runtime_boundaries": [
-        "do-not-install-global-omx",
-        "do-not-run-omx-runtime",
-        "do-not-enable-tmux-hooks-mcp-or-plugin",
-        "method-only-goal-worktree-doctor-release-evidence"
-      ],
-      "owner": "adk-team",
-      "review_window": "monthly",
-      "automation_eligible": false,
-      "evidence": [
-        ".gitmodules",
-        "subrepos/registry.csv",
-        "subrepos/adoption-matrix.md",
-        "reports/external-skill-repos-assessment-2026-06-29.md",
-        "reports/oss-analysis-oh-my-codex-2026-06-29.md",
-        "reports/oss-absorption-plan-oh-my-codex-2026-06-29.md",
-        "reports/oss-security-review-oh-my-codex-2026-06-29.md",
-        "reports/oss-deep-assessment-oh-my-codex-2026-06-29.md"
-      ]
-    },
-    {
-      "repo": "planning-with-files",
-      "state": "active-reference",
-      "source": {
-        "url": "https://github.com/OthmanAdi/planning-with-files.git",
-        "provider": "github",
-        "branch": "master",
-        "commit": "8f5a3c2e1c347635cf94debde033b3c1ac97e4ab",
-        "retrieved_at": "2026-06-29"
-      },
-      "runtime_boundaries": [
-        "do-not-install-planning-hooks",
-        "do-not-enable-stop-gate",
-        "do-not-write-task-plan-by-default",
-        "method-only-plan-files-attestation-context-restore"
-      ],
-      "owner": "adk-team",
-      "review_window": "monthly",
-      "automation_eligible": false,
-      "evidence": [
-        ".gitmodules",
-        "subrepos/registry.csv",
-        "subrepos/adoption-matrix.md",
-        "reports/external-skill-repos-assessment-2026-06-29.md",
-        "reports/oss-analysis-planning-with-files-2026-06-29.md",
-        "reports/oss-absorption-plan-planning-with-files-2026-06-29.md",
-        "reports/oss-security-review-planning-with-files-2026-06-29.md",
-        "reports/oss-deep-assessment-planning-with-files-2026-06-29.md"
-      ]
-    },
-    {
-      "repo": "prompts",
-      "state": "removed",
-      "owner": "adk-team",
-      "review_window": "manual",
-      "automation_eligible": false,
-      "removed_at": "2026-06-25",
-      "removal_reason": "提示词资产轻量演进机制已吸收，本地参考仓维护收益低",
-      "evidence": [
-        "subrepos/registry.csv",
-        "subrepos/adoption-matrix.md",
-        "reports/subrepo-removal-direct-2026-06-25.md"
-      ]
-    },
-    {
-      "repo": "skills",
-      "state": "removed",
-      "owner": "adk-team",
-      "review_window": "manual",
-      "automation_eligible": false,
-      "removed_at": "2026-06-25",
-      "removal_reason": "skills CLI 目录约定与安装入口已吸收，本地参考仓维护收益低",
-      "evidence": [
-        "subrepos/registry.csv",
-        "subrepos/adoption-matrix.md",
-        "reports/subrepo-removal-direct-2026-06-25.md"
-      ]
-    },
-    {
-      "repo": "superpowers",
-      "state": "active-core",
-      "owner": "adk-team",
-      "review_window": "monthly",
-      "automation_eligible": false,
-      "evidence": [
-        "subrepos/registry.csv",
-        "subrepos/adoption-matrix.md",
-        "reports/oss-absorption-implementation-coding-skills-2026-07-11.md"
-      ]
-    },
-    {
-      "repo": "superpowers-zh",
-      "state": "removed",
-      "owner": "adk-team",
-      "review_window": "manual",
-      "automation_eligible": false,
-      "removed_at": "2026-06-25",
-      "removal_reason": "中文触发词与流程表达已吸收，保留 superpowers 主仓作为流程基线",
-      "evidence": [
-        "subrepos/registry.csv",
-        "subrepos/adoption-matrix.md",
-        "reports/subrepo-removal-direct-2026-06-25.md"
-      ]
-    },
-    {
-      "repo": "Trellis",
-      "state": "removed",
-      "owner": "aiot03",
-      "review_window": "manual",
-      "automation_eligible": false,
-      "removed_at": "2026-06-25",
-      "removal_reason": "知识图谱与状态上下文边界已吸收为 optional-pilot，本地参考仓维护收益低",
-      "evidence": [
-        "subrepos/registry.csv",
-        "subrepos/adoption-matrix.md",
-        "reports/subrepo-removal-direct-2026-06-25.md"
-      ]
-    },
-    {
-      "repo": "vibeflow",
-      "state": "active-core",
-      "owner": "aiot03",
-      "review_window": "monthly",
-      "automation_eligible": false,
-      "evidence": [
-        "subrepos/registry.csv",
-        "subrepos/adoption-matrix.md"
-      ]
-    },
-    {
-      "repo": "agent-browser",
-      "state": "removed",
-      "owner": "aiot03",
-      "review_window": "manual",
-      "automation_eligible": false,
-      "removed_at": "2026-06-25",
-      "removal_reason": "浏览器快照压缩与 ref 交互模式已吸收为 optional-pilot，本地参考仓维护收益低",
-      "evidence": [
-        "subrepos/registry.csv",
-        "subrepos/adoption-matrix.md",
-        "reports/subrepo-removal-direct-2026-06-25.md"
-      ]
-    },
-    {
-      "repo": "scale-engine",
-      "state": "active-reference",
-      "source": {
-        "url": "https://gitee.com/hongmaple/scale-engine.git",
-        "provider": "gitee",
-        "branch": "master",
-        "commit": "60f38279b76030056738cc9eac7bc8b9cc6173c2",
-        "retrieved_at": "2026-06-24"
-      },
-      "runtime_boundaries": [
-        "do-not-run-npm-npx-scale",
-        "do-not-enable-hooks-mcp-orchestrator",
-        "do-not-copy-runtime-assets"
-      ],
-      "owner": "adk-team",
-      "review_window": "monthly",
-      "automation_eligible": false,
-      "evidence": [
-        ".gitmodules",
-        "subrepos/registry.csv",
-        "subrepos/adoption-matrix.md",
-        "reports/oss-analysis-hongmaple-scale-engine-2026-06-24.md",
-        "reports/oss-absorption-plan-hongmaple-scale-engine-2026-06-24.md",
-        "reports/oss-deep-assessment-hongmaple-scale-engine-2026-06-25.md",
-        "reports/oss-governance-contracts-hongmaple-scale-engine-2026-06-25.md",
-        "reports/oss-loop-readiness-hongmaple-scale-engine-2026-06-25.md",
-        "reports/observe-secondary-intake-packages-2026-06-24.md",
-        "reports/oss-security-review-hongmaple-scale-engine-2026-06-24.md"
-      ]
-    }
-  ]
+  "status": "report-only"
 }

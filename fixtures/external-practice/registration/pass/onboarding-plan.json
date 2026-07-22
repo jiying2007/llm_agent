@@ -61,7 +61,7 @@
       "category": "agent-ecosystem",
       "cost": "中",
       "date": "2026-07-19",
-      "decision": "observe",
+      "decision": "adopt",
       "evidence": "reports/reference-repository-onboarding-fixture.md",
       "risk": "中",
       "source_repo": "agent-harness",

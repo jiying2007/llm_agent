@@ -45,6 +45,8 @@ rtk scripts/onboard-reference-repository.sh . \
 
 Apply 可能修改 `.gitmodules`、registry、adoption matrix Markdown/JSONL 和 subrepo lifecycle；执行前必须审查 plan 与 rollback。metadata 与 applied plan 作为一个事务写入；任一步失败都会恢复旧 metadata 并移除本轮新增 submodule。它不会联网发现、clone 远端、执行第三方代码、写 agent-dev-kit 或 apply `~/.codex`。
 
+dry-run 的 adoption matrix projection 固定为 `adopt/pending`；apply 成功后必须切换为 `adopt/done`。`llm_agent` 只在 evidence 严格匹配 `reports/reference-repository-onboarding-*.md` 时被 upstream readiness 识别为 reference-repository production target，普通 capability adoption 仍必须落到 `agent-dev-kit` 或 `codex`。
+
 物化使用已审查的本地 clean source，但完成后必须把 `.gitmodules` URL 和 submodule `origin` 同步回候选中批准的 canonical HTTPS URL，禁止长期留下 `/tmp`、本机路径或其他替代 remote。重新激活会原位更新既有 registry/lifecycle 记录并保留历史 evidence，不另起别名或追加重复行。
 
 ## Removal

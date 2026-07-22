@@ -205,6 +205,7 @@
 | 2026-07-19 | mattpocock-skills | intent-boundary | 将 cross-harness invocation、typed work-item permission、Hotspot/YAGNI scope 与 prototype provenance 以 method-only 方式增强既有 ADK contract 和消费者 | 高 | 中 | 中 | adopt | done | agent-dev-kit | reports/mattpocock-skills-absorption-2026-07-19.md; agent-dev-kit/docs/changes/archive/20260719-intent-boundary-governance-v2/; agent-dev-kit/manifests/structured_output_contracts.json; agent-dev-kit/manifests/skill_reproducibility_contracts.json |
 | 2026-07-19 | mattpocock-skills | sampled-watch | `batch-grill-me`、`to-questionnaire`、`setup-ts-deep-modules` 尚在 in-progress，只保留稳定 release 或新增 contract 的人工抽样观察 | 中 | 低 | 中 | observe | done | llm_agent, agent-dev-kit | agent-dev-kit/agents/architecture-planner/AGENTS.md; agent-dev-kit/skills/adk-task-breakdown/SKILL.md; agent-dev-kit/workflows/external-practice-absorption/WORKFLOW.md; reports/observe-secondary-intake-packages-2026-07-19.md; reports/mattpocock-skills-absorption-2026-07-19.md; manifests/subrepo_lifecycle.json |
 | 2026-07-19 | mattpocock-skills | runtime-security-boundary | 拒绝直接安装、plugin、submodule、代码复制和未审查 runtime；不因 Codex 支持 plugin 就绕过本地治理链 | 高 | 低 | 高 | reject | done | llm_agent | reports/mattpocock-skills-absorption-2026-07-19.md; docs/absorption-governance.md |
+| 2026-07-22 | mattpocock-skills | agent-ecosystem | approved external-practice reference epc-43e82b2e69e37e419c3f | 高 | 中 | 中 | adopt | done | llm_agent | reports/reference-repository-onboarding-mattpocock-skills-2026-07-22.md |
 
 ## 模板
 
