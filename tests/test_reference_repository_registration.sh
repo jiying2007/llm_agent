@@ -21,6 +21,29 @@ trap 'rm -rf "${TMP_DIR}"' EXIT
 
 "${CHECK}" "${ROOT}" --no-fixtures --plan "${TMP_DIR}/plan.json" >/dev/null
 
+"${ONBOARD}" "${ROOT}" \
+  --candidates "${ROOT}/fixtures/external-practice/registration/candidates.jsonl" \
+  --decisions "${ROOT}/fixtures/external-practice/registration/decisions.jsonl" \
+  --candidate-id epc-34d27bd9c1f6bcea6e95 \
+  --analysis "${ROOT}/reports/oss-analysis-example-runtime-policy-gates-2026-06-16.md" \
+  --duplicate-check "${ROOT}/reports/oss-duplicate-check-example-runtime-policy-gates-2026-06-16.md" \
+  --security-review "${ROOT}/reports/oss-security-review-example-runtime-policy-gates-2026-06-16.md" \
+  --repo-name agent-harness-alias \
+  --target-path agent-harness-alias \
+  --out-json "${TMP_DIR}/alias-plan.json" \
+  --out-md "${TMP_DIR}/alias-plan.md" >/dev/null
+
+python3 - "${TMP_DIR}/alias-plan.json" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as stream:
+    plan = json.load(stream)
+assert plan["candidate"]["repo"] == "example/agent-harness"
+assert plan["planned_changes"]["registry"]["repo"] == "agent-harness-alias"
+assert plan["planned_changes"]["gitmodules"]["path"] == "agent-harness-alias"
+PY
+
 python3 - "${TMP_DIR}/plan.json" <<'PY'
 import json
 import sys
@@ -137,6 +160,90 @@ rtk proxy git -C "${APPLY_ROOT}" config user.email fixture@example.invalid
 rtk proxy git -C "${APPLY_ROOT}" add .
 rtk proxy git -C "${APPLY_ROOT}" commit -m "fixture baseline" >/dev/null 2>&1
 
+REACTIVATE_ROOT="${TMP_DIR}/reactivate-root"
+rtk proxy git clone "${APPLY_ROOT}" "${REACTIVATE_ROOT}" >/dev/null 2>&1
+python3 - "${REACTIVATE_ROOT}" <<'PY'
+import csv
+import json
+import pathlib
+import sys
+
+root = pathlib.Path(sys.argv[1])
+registry_path = root / "subrepos/registry.csv"
+with registry_path.open(encoding="utf-8", newline="") as stream:
+    rows = list(csv.DictReader(stream))
+rows.append({
+    "repo": "agent-harness",
+    "group": "agent-ecosystem",
+    "priority": "P1",
+    "sync_mode": "fetch",
+    "branch": "main",
+    "enabled": "no",
+    "notes": "previously removed after method absorption",
+    "status": "disabled",
+    "owner": "fixture-owner",
+    "last_reviewed_on": "2026-06-25",
+    "intake_policy": "observe-first",
+    "grade": "A",
+})
+with registry_path.open("w", encoding="utf-8", newline="") as stream:
+    writer = csv.DictWriter(stream, fieldnames=list(rows[0]))
+    writer.writeheader()
+    writer.writerows(rows)
+
+lifecycle_path = root / "manifests/subrepo_lifecycle.json"
+lifecycle = json.loads(lifecycle_path.read_text(encoding="utf-8"))
+lifecycle["entries"].append({
+    "repo": "agent-harness",
+    "state": "watch",
+    "owner": "fixture-owner",
+    "review_window": "manual",
+    "automation_eligible": False,
+    "watch_reason": "previous method-only absorption",
+    "evidence": ["reports/previous-agent-harness-review.md"],
+})
+lifecycle_path.write_text(json.dumps(lifecycle, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+PY
+rtk proxy git -C "${REACTIVATE_ROOT}" add subrepos/registry.csv manifests/subrepo_lifecycle.json
+rtk proxy git -C "${REACTIVATE_ROOT}" commit -m "fixture disabled reference" >/dev/null 2>&1
+
+PYTHONPATH="${ROOT}" python3 -m tools.codex_assets.reference_repository \
+  --root "${REACTIVATE_ROOT}" plan \
+  --candidates fixtures/external-practice/registration/candidates.jsonl \
+  --decisions fixtures/external-practice/registration/decisions.jsonl \
+  --candidate-id epc-34d27bd9c1f6bcea6e95 \
+  --analysis reports/oss-analysis-example-runtime-policy-gates-2026-06-16.md \
+  --duplicate-check reports/oss-duplicate-check-example-runtime-policy-gates-2026-06-16.md \
+  --security-review reports/oss-security-review-example-runtime-policy-gates-2026-06-16.md \
+  --out-json reports/reactivate-plan.json \
+  --out-md reports/reactivate-plan.md \
+  --apply \
+  --materialization local-submodule \
+  --submodule-source "${SOURCE_ROOT}" >/dev/null
+
+python3 - "${REACTIVATE_ROOT}" <<'PY'
+import csv
+import json
+import pathlib
+import sys
+
+root = pathlib.Path(sys.argv[1])
+with (root / "subrepos/registry.csv").open(encoding="utf-8", newline="") as stream:
+    rows = [row for row in csv.DictReader(stream) if row.get("repo") == "agent-harness"]
+assert len(rows) == 1
+assert rows[0]["enabled"] == "yes"
+assert rows[0]["status"] == "active"
+lifecycle = json.loads((root / "manifests/subrepo_lifecycle.json").read_text(encoding="utf-8"))
+entries = [item for item in lifecycle["entries"] if item.get("repo") == "agent-harness"]
+assert len(entries) == 1
+assert entries[0]["state"] == "active-reference"
+assert entries[0]["reactivated_from"] == "watch"
+assert entries[0]["review_window"] == "monthly"
+assert "reports/previous-agent-harness-review.md" in entries[0]["evidence"]
+PY
+[[ "$(rtk proxy git -C "${REACTIVATE_ROOT}" config -f .gitmodules --get submodule.agent-harness.url)" == "https://github.com/example/agent-harness" ]]
+[[ "$(rtk proxy git -C "${REACTIVATE_ROOT}/agent-harness" config --get remote.origin.url)" == "https://github.com/example/agent-harness" ]]
+
 FAIL_ROOT="${TMP_DIR}/apply-failure-root"
 rtk proxy git clone "${APPLY_ROOT}" "${FAIL_ROOT}" >/dev/null 2>&1
 chmod 555 "${FAIL_ROOT}/manifests"
@@ -197,5 +304,7 @@ assert '"repo":"agent-harness"' in (root / "subrepos/adoption-matrix.jsonl").rea
 lifecycle = json.loads((root / "manifests/subrepo_lifecycle.json").read_text(encoding="utf-8"))
 assert any(item.get("repo") == "agent-harness" and item.get("state") == "active-reference" for item in lifecycle["entries"])
 PY
+[[ "$(rtk proxy git -C "${APPLY_ROOT}" config -f .gitmodules --get submodule.agent-harness.url)" == "https://github.com/example/agent-harness" ]]
+[[ "$(rtk proxy git -C "${APPLY_ROOT}/agent-harness" config --get remote.origin.url)" == "https://github.com/example/agent-harness" ]]
 
-echo "[PASS] reference repository onboarding requires v1 candidate and independent ADOPT decision"
+echo "[PASS] reference repository onboarding requires v1 candidate, independent ADOPT decision, and safe reactivation"

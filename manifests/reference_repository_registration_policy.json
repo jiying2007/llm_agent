@@ -1,6 +1,6 @@
 {
   "schema": "reference-repository-registration-policy/v1",
-  "last_updated": "2026-07-19",
+  "last_updated": "2026-07-22",
   "status": "gated-registration",
   "default_mode": "dry-run",
   "candidate_schema": "external-practice-candidate/v1",
@@ -31,6 +31,7 @@
     "apply_must_not_run_network_discovery": true,
     "apply_must_generate_rollback_evidence": true,
     "collector_or_curator_must_not_be_decision_owner": true,
-    "legacy_candidate_schema_must_be_rejected": true
+    "legacy_candidate_schema_must_be_rejected": true,
+    "reactivation_requires_disabled_registry_and_inactive_lifecycle": true
   }
 }

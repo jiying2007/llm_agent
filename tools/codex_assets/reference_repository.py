@@ -68,6 +68,7 @@ ALLOWED_APPLY_TARGETS = {
     "manifests/subrepo_lifecycle.json",
 }
 BLOCKING_RISKS = {"archived-source", "source-rejected", "provider-degraded"}
+REACTIVATABLE_LIFECYCLE_STATES = {"archive-only", "disabled", "removed", "watch"}
 REMOVAL_REQUIRED_GATES = [
     "lifecycle_state_gate",
     "protected_repo_gate",
@@ -123,6 +124,7 @@ def _load_registration_policy(root: Path) -> Tuple[Mapping[str, Any], Path]:
         "apply_must_generate_rollback_evidence",
         "collector_or_curator_must_not_be_decision_owner",
         "legacy_candidate_schema_must_be_rejected",
+        "reactivation_requires_disabled_registry_and_inactive_lifecycle",
     }
     if not isinstance(rules, dict) or set(rules) != required_rules or not all(item is True for item in rules.values()):
         raise IntakeError("registration policy rules weaken the v1 boundary")
@@ -315,9 +317,28 @@ def _phase_gate(root: Path) -> bool:
     return "allow_upstream_sync=yes" in path.read_text(encoding="utf-8").splitlines()
 
 
-def _registry_conflict(root: Path, repo_name: str) -> bool:
+def _registration_mode(root: Path, repo_name: str) -> Optional[str]:
     with (root / "subrepos/registry.csv").open("r", encoding="utf-8", newline="") as stream:
-        return any(row.get("repo") == repo_name for row in csv.DictReader(stream))
+        registry_rows = [row for row in csv.DictReader(stream) if row.get("repo") == repo_name]
+    lifecycle = _load_json(root / "manifests/subrepo_lifecycle.json", 4194304, "subrepo lifecycle")
+    if not isinstance(lifecycle, dict) or not isinstance(lifecycle.get("entries"), list):
+        return None
+    lifecycle_rows = [
+        entry
+        for entry in lifecycle["entries"]
+        if isinstance(entry, dict) and entry.get("repo") == repo_name
+    ]
+    if not registry_rows and not lifecycle_rows:
+        return "register"
+    if len(registry_rows) != 1 or len(lifecycle_rows) != 1:
+        return None
+    registry = registry_rows[0]
+    lifecycle_entry = lifecycle_rows[0]
+    if registry.get("enabled") != "no" or registry.get("status") != "disabled":
+        return None
+    if lifecycle_entry.get("state") not in REACTIVATABLE_LIFECYCLE_STATES:
+        return None
+    return "reactivate"
 
 
 def _plan(
@@ -330,6 +351,7 @@ def _plan(
     apply_mode: bool,
     materialization: str,
     source_snapshot: Optional[Mapping[str, Any]],
+    local_repo_name: str,
     target_path: str,
     branch: str,
     priority: str,
@@ -339,9 +361,10 @@ def _plan(
 ) -> Mapping[str, Any]:
     repository = candidate["repository"]
     full_name = str(repository["full_name"])
-    repo_name = _safe_component(full_name.split("/")[-1], "repository name")
+    repo_name = _safe_component(local_repo_name or full_name.split("/")[-1], "local repository name")
     target = _safe_target(target_path or repo_name)
     branch = _safe_branch(branch)
+    registration_mode = _registration_mode(root, repo_name)
     source_risks = set(candidate.get("risk_flags") or [])
     materialization_ready = materialization == "metadata-only" or source_snapshot is not None
     if apply_mode:
@@ -359,7 +382,7 @@ def _plan(
         "duplicate_check_gate": True,
         "security_review_gate": True,
         "phase_gate": _phase_gate(root),
-        "registry_conflict_gate": not _registry_conflict(root, repo_name),
+        "registry_conflict_gate": registration_mode is not None,
         "target_path_gate": not (root / target).exists(),
         "materialization_gate": materialization_ready,
         "apply_workspace_gate": not apply_mode or _workspace_clean(root),
@@ -403,7 +426,7 @@ def _plan(
                 "sync_mode": "fetch",
                 "branch": branch,
                 "enabled": "yes",
-                "notes": "approved external-practice reference; candidate={}".format(candidate["candidate_id"]),
+                "notes": "approved external-practice active reference; candidate={}".format(candidate["candidate_id"]),
                 "status": "active",
                 "owner": decision["owner"],
                 "last_reviewed_on": decision["reviewed_at"],
@@ -565,8 +588,8 @@ def _validate_plan(value: Any, root: Path) -> Mapping[str, Any]:
     registry_fields = {"repo", "group", "priority", "sync_mode", "branch", "enabled", "notes", "status", "owner", "last_reviewed_on", "intake_policy", "grade"}
     if not isinstance(registry, dict) or set(registry) != registry_fields:
         raise IntakeError("onboarding plan registry projection is invalid")
-    repo_name = candidate["repo"].split("/")[-1]
-    if registry.get("repo") != repo_name or registry.get("status") != "active" or registry.get("enabled") != "yes" or registry.get("sync_mode") != "fetch":
+    repo_name = _safe_component(str(registry.get("repo", "")), "onboarding plan local repository name")
+    if registry.get("status") != "active" or registry.get("enabled") != "yes" or registry.get("sync_mode") != "fetch":
         raise IntakeError("onboarding plan registry state is invalid")
     _safe_component(str(registry.get("group", "")), "onboarding plan registry group")
     if registry.get("priority") not in {"P0", "P1", "P2"} or registry.get("grade") not in {"S", "A", "B", "C"}:
@@ -682,6 +705,11 @@ def _rollback_added_submodule(root: Path, target: str) -> None:
     )
     if completed.returncode != 0:
         raise IntakeError("registration rollback could not remove the newly added submodule")
+    target_path = root / target
+    if target_path.exists():
+        if not target_path.is_dir() or any(target_path.iterdir()):
+            raise IntakeError("registration rollback left a non-empty submodule target")
+        target_path.rmdir()
 
 
 def _apply(
@@ -705,12 +733,23 @@ def _apply(
     registry_path = root / "subrepos/registry.csv"
     fieldnames = ["repo", "group", "priority", "sync_mode", "branch", "enabled", "notes", "status", "owner", "last_reviewed_on", "intake_policy", "grade"]
     current_registry = registry_path.read_text(encoding="utf-8")
+    registration_mode = _registration_mode(root, repo_name)
+    if registration_mode is None:
+        raise IntakeError("registration apply found an unsafe registry/lifecycle baseline")
+    registry_rows = list(csv.DictReader(io.StringIO(current_registry)))
+    matching_registry = [row for row in registry_rows if row.get("repo") == repo_name]
+    if registration_mode == "register" and not matching_registry:
+        registry_rows.append(changes["registry"])
+        previous_lifecycle_state = None
+    elif registration_mode == "reactivate" and len(matching_registry) == 1:
+        registry_rows = [changes["registry"] if row.get("repo") == repo_name else row for row in registry_rows]
+        previous_lifecycle_state = ""
+    else:
+        raise IntakeError("registration apply found a conflicting registry state")
     buffer = io.StringIO()
-    buffer.write(current_registry)
-    if current_registry and not current_registry.endswith("\n"):
-        buffer.write("\n")
     writer = csv.DictWriter(buffer, fieldnames=fieldnames, lineterminator="\n")
-    writer.writerow(changes["registry"])
+    writer.writeheader()
+    writer.writerows(registry_rows)
     registry_payload = buffer.getvalue().encode("utf-8")
 
     matrix_path = root / "subrepos/adoption-matrix.md"
@@ -728,21 +767,55 @@ def _apply(
     lifecycle = _load_json(lifecycle_path, 4194304, "subrepo lifecycle")
     if not isinstance(lifecycle, dict) or not isinstance(lifecycle.get("entries"), list):
         raise IntakeError("subrepo lifecycle manifest is invalid")
-    if any(entry.get("repo") == changes["registry"]["repo"] for entry in lifecycle["entries"] if isinstance(entry, dict)):
-        raise IntakeError("subrepo lifecycle already contains the reference repository")
+    matching_lifecycle = [
+        (index, entry)
+        for index, entry in enumerate(lifecycle["entries"])
+        if isinstance(entry, dict) and entry.get("repo") == changes["registry"]["repo"]
+    ]
+    if len(matching_lifecycle) > 1:
+        raise IntakeError("subrepo lifecycle contains duplicate reference repository entries")
+    if registration_mode == "reactivate":
+        if len(matching_lifecycle) != 1 or matching_lifecycle[0][1].get("state") not in REACTIVATABLE_LIFECYCLE_STATES:
+            raise IntakeError("registration apply found a conflicting lifecycle state")
+        previous_lifecycle_state = str(matching_lifecycle[0][1]["state"])
+        previous_evidence = matching_lifecycle[0][1].get("evidence") or []
+    elif matching_lifecycle:
+        raise IntakeError("new registration unexpectedly found an existing lifecycle entry")
+    else:
+        previous_evidence = []
     lifecycle["last_updated"] = changes["registry"]["last_reviewed_on"]
-    lifecycle["entries"].append({
+    lifecycle_entry = {
         "repo": changes["registry"]["repo"],
         "state": "active-reference",
+        "source": {
+            "url": plan["candidate"]["url"],
+            "provider": plan["candidate"]["provider"],
+            "branch": changes["registry"]["branch"],
+            "commit": plan["materialization"]["source_head"],
+            "retrieved_at": changes["registry"]["last_reviewed_on"],
+        },
+        "runtime_boundaries": [
+            "do-not-install-external-skills",
+            "do-not-execute-external-hooks-or-runtime",
+            "review-before-adk-absorption",
+        ],
         "owner": changes["registry"]["owner"],
-        "review_window": "quarterly",
+        "review_window": "monthly",
         "automation_eligible": False,
-        "evidence": [
+        "evidence": list(dict.fromkeys([
+            *[item for item in previous_evidence if isinstance(item, str)],
+            ".gitmodules",
             "subrepos/registry.csv",
             changes["adoption_matrix"]["evidence"],
             *plan["required_artifacts"].values(),
-        ],
-    })
+        ])),
+    }
+    if previous_lifecycle_state is not None:
+        lifecycle_entry["reactivated_from"] = previous_lifecycle_state
+        lifecycle_entry["reactivated_at"] = changes["registry"]["last_reviewed_on"]
+        lifecycle["entries"][matching_lifecycle[0][0]] = lifecycle_entry
+    else:
+        lifecycle["entries"].append(lifecycle_entry)
     lifecycle_payload = _json_bytes(lifecycle)
 
     applied_plan = dict(plan)
@@ -778,6 +851,17 @@ def _apply(
         materialized_head = _run_git(root / target, ["rev-parse", "HEAD"], "materialized submodule HEAD lookup")
         if materialized_head != plan["materialization"]["source_head"]:
             raise IntakeError("materialized submodule HEAD does not match the reviewed source")
+        _run_git(
+            root,
+            ["config", "-f", ".gitmodules", "submodule.{}.url".format(repo_name), str(plan["candidate"]["url"])],
+            "approved submodule URL write",
+        )
+        _run_git(root, ["add", "--", ".gitmodules"], "approved submodule URL staging")
+        _run_git(root, ["submodule", "sync", "--", target], "materialized submodule URL sync")
+        configured_url = _run_git(root, ["config", "-f", ".gitmodules", "--get", "submodule.{}.url".format(repo_name)], "submodule URL verification")
+        materialized_origin = _run_git(root / target, ["config", "--get", "remote.origin.url"], "materialized origin verification")
+        if configured_url != plan["candidate"]["url"] or materialized_origin != plan["candidate"]["url"]:
+            raise IntakeError("materialized submodule origin does not match the approved candidate")
         _transactional_write(
             [
                 (registry_path, registry_payload),
@@ -794,7 +878,7 @@ def _apply(
             try:
                 _rollback_added_submodule(root, target)
             except IntakeError as rollback_exc:
-                raise IntakeError("registration failed and automatic rollback also failed") from rollback_exc
+                raise IntakeError("registration failed and automatic rollback also failed: {}".format(rollback_exc)) from rollback_exc
         if isinstance(exc, IntakeError):
             raise
         raise IntakeError("registration metadata transaction failed") from exc
@@ -852,6 +936,7 @@ def _cmd_plan(args: argparse.Namespace, root: Path, intake_policy: Mapping[str, 
         args.apply,
         args.materialization,
         source_snapshot,
+        args.repo_name or "",
         args.target_path or "",
         args.branch,
         args.priority,
@@ -1164,6 +1249,7 @@ def _parser() -> argparse.ArgumentParser:
     plan.add_argument("--apply", action="store_true")
     plan.add_argument("--materialization", default="metadata-only")
     plan.add_argument("--submodule-source")
+    plan.add_argument("--repo-name")
     plan.add_argument("--target-path")
     plan.add_argument("--branch", default="main")
     plan.add_argument("--priority", default="P1")

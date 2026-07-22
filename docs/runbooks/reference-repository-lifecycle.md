@@ -11,6 +11,7 @@
 - Owner 不能是 collector、automation 或 `external-practice-curator`。
 - analysis、duplicate review、security review 均为仓库内持久证据。
 - phase gate、registry/path conflict、materialization 和 rollback gate 全部通过。
+- 已存在仓库只允许受控 reactivation：registry 必须唯一且保持 `enabled=no/status=disabled`，lifecycle 必须唯一且处于 `watch|removed|disabled|archive-only`；active、重复或 registry/lifecycle 不一致均 fail closed。
 
 ## Dry-run Registration
 
@@ -28,6 +29,8 @@ rtk scripts/check-reference-repository-registration.sh . --plan reports/referenc
 
 默认 mode=`dry-run`。计划 schema 固定 `reference-repository-onboarding/v1`；旧评分状态和旧 plan schema 直接失败。
 
+当 canonical repository basename 与本仓既有唯一标识不同或会冲突时，必须显式传 `--repo-name <local-unique-name>`；`--target-path` 只决定目录，不隐式改写 registry identity。例如 `mattpocock/skills` 使用 `--repo-name mattpocock-skills --target-path mattpocock-skills`，禁止误激活另一个 `skills` 条目。
+
 ## Explicit Apply
 
 `--apply` 是单独授权点，只登记 reference lifecycle，不修改 ADK 或 live runtime。`metadata-only` 只允许 dry-run；apply 必须显式选择 `local-submodule`，并同时满足：workspace clean、本地 source 为 clean Git worktree、HTTPS `origin` 与批准候选完全一致、HEAD 已写入 plan、全部 review artifact hash 未漂移、plan 输出位于仓库 `reports/`：
@@ -41,6 +44,8 @@ rtk scripts/onboard-reference-repository.sh . \
 ```
 
 Apply 可能修改 `.gitmodules`、registry、adoption matrix Markdown/JSONL 和 subrepo lifecycle；执行前必须审查 plan 与 rollback。metadata 与 applied plan 作为一个事务写入；任一步失败都会恢复旧 metadata 并移除本轮新增 submodule。它不会联网发现、clone 远端、执行第三方代码、写 agent-dev-kit 或 apply `~/.codex`。
+
+物化使用已审查的本地 clean source，但完成后必须把 `.gitmodules` URL 和 submodule `origin` 同步回候选中批准的 canonical HTTPS URL，禁止长期留下 `/tmp`、本机路径或其他替代 remote。重新激活会原位更新既有 registry/lifecycle 记录并保留历史 evidence，不另起别名或追加重复行。
 
 ## Removal
 

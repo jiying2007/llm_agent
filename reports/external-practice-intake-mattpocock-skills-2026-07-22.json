@@ -1,0 +1,41 @@
+{
+  "as_of": "2026-07-22",
+  "auto_actions": [],
+  "boundaries": {
+    "adk_modified": false,
+    "article_body_persisted": false,
+    "credentials_persisted": false,
+    "decision_generated": false,
+    "external_code_executed": false,
+    "live_runtime_modified": false,
+    "network_write": false,
+    "repository_modified": false
+  },
+  "candidate_count": 1,
+  "deduplicated_count": 0,
+  "jobs": [
+    {
+      "candidate_count": 1,
+      "deduplicated_count": 0,
+      "duration_ms": 759,
+      "error_code": null,
+      "id": "github-collect",
+      "input_ref": null,
+      "input_sha256": null,
+      "mode": "live",
+      "provider": "github",
+      "rate_limit": {},
+      "request": {
+        "host": "api.github.com",
+        "path": "/search/repositories",
+        "query_sha256": "f0c257ce283e9230"
+      },
+      "status": "complete",
+      "transport": "metadata-only"
+    }
+  ],
+  "ledger_sha256": "2db0611a4d1d1c5f4190074ce2cfe421f498caa3a3a00daee4b7072f4aa13484",
+  "mode": "report-only",
+  "schema": "external-practice-cycle-evidence/v1",
+  "status": "complete"
+}

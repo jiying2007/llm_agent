@@ -1,0 +1,115 @@
+{
+  "artifact_sha256": {
+    "analysis_report": "fe057d8bfb314dc704796e4329b6bc5a64bdc6be4c94a3ede55368969006f7ce",
+    "candidate_ledger": "2db0611a4d1d1c5f4190074ce2cfe421f498caa3a3a00daee4b7072f4aa13484",
+    "decision_ledger": "fb9067fe9927c913a5e7808f932b5b013b1d24a960da53432ce53ec9d8e1d658",
+    "duplicate_check": "4953eab6e8e9bdf7b53b94599b1c243b38914de0b13b323e57c2ccaf80ed09bf",
+    "security_review": "3bd4473fc36cb5540224dc19b937d3680786cba3322854d42d400053a1eb6d2f"
+  },
+  "boundaries": {
+    "agent_dev_kit_modified": false,
+    "external_code_executed": false,
+    "live_runtime_modified": false,
+    "network_discovery": false
+  },
+  "candidate": {
+    "candidate_id": "epc-43e82b2e69e37e419c3f",
+    "content_sha256": "e7427dec07d5cbed5365e142688dc1024b3eb9bece41f8eb84f49a015d080aef",
+    "license": "MIT",
+    "provider": "github",
+    "repo": "mattpocock/skills",
+    "risk_flags": [],
+    "source_id": "github-search",
+    "url": "https://github.com/mattpocock/skills"
+  },
+  "decision": {
+    "decision": "ADOPT",
+    "evidence_refs": [
+      "reports/reference-analysis-mattpocock-skills-2026-07-22.md",
+      "reports/reference-duplicate-review-mattpocock-skills-2026-07-22.md",
+      "reports/reference-security-review-mattpocock-skills-2026-07-22.md"
+    ],
+    "owner": "llm-agent-governance-owner",
+    "reviewed_at": "2026-07-22",
+    "target": "reference-repository"
+  },
+  "gates": {
+    "analysis_report_gate": true,
+    "apply_workspace_gate": true,
+    "candidate_contract_gate": true,
+    "duplicate_check_gate": true,
+    "materialization_gate": true,
+    "owner_decision_gate": true,
+    "phase_gate": true,
+    "registry_conflict_gate": true,
+    "repository_metadata_gate": true,
+    "rollback_plan_gate": true,
+    "security_review_gate": true,
+    "source_risk_gate": true,
+    "target_path_gate": true
+  },
+  "materialization": {
+    "mode": "metadata-only",
+    "source_clean": null,
+    "source_head": null,
+    "source_origin": null
+  },
+  "mode": "dry-run",
+  "planned_changes": {
+    "adoption_matrix": {
+      "capability": "approved external-practice reference epc-43e82b2e69e37e419c3f",
+      "category": "agent-ecosystem",
+      "cost": "中",
+      "date": "2026-07-22",
+      "decision": "observe",
+      "evidence": "reports/reference-repository-onboarding-mattpocock-skills-2026-07-22.md",
+      "risk": "中",
+      "source_repo": "mattpocock-skills",
+      "state": "pending",
+      "target": "llm_agent",
+      "value": "高"
+    },
+    "gitmodules": {
+      "materialization": "metadata-only",
+      "name": "mattpocock-skills",
+      "path": "mattpocock-skills",
+      "url": "https://github.com/mattpocock/skills"
+    },
+    "registry": {
+      "branch": "main",
+      "enabled": "yes",
+      "grade": "A",
+      "group": "agent-ecosystem",
+      "intake_policy": "adopt-first",
+      "last_reviewed_on": "2026-07-22",
+      "notes": "approved external-practice active reference; candidate=epc-43e82b2e69e37e419c3f",
+      "owner": "llm-agent-governance-owner",
+      "priority": "P1",
+      "repo": "mattpocock-skills",
+      "status": "active",
+      "sync_mode": "fetch"
+    }
+  },
+  "required_artifacts": {
+    "analysis_report": "reports/reference-analysis-mattpocock-skills-2026-07-22.md",
+    "candidate_ledger": "reports/external-practice-candidates-mattpocock-skills-2026-07-22.jsonl",
+    "decision_ledger": "reports/external-practice-decisions-mattpocock-skills-2026-07-22.jsonl",
+    "duplicate_check": "reports/reference-duplicate-review-mattpocock-skills-2026-07-22.md",
+    "security_review": "reports/reference-security-review-mattpocock-skills-2026-07-22.md"
+  },
+  "rollback": {
+    "commands": [
+      "rtk scripts/plan-reference-repository-removal.sh . --repo mattpocock-skills --evidence-dependency-scan <report> --rollback-plan <report>",
+      "rtk scripts/check-reference-repository-removal.sh ."
+    ],
+    "files": [
+      ".gitmodules",
+      "manifests/subrepo_lifecycle.json",
+      "subrepos/adoption-matrix.jsonl",
+      "subrepos/adoption-matrix.md",
+      "subrepos/registry.csv"
+    ]
+  },
+  "schema": "reference-repository-onboarding/v1",
+  "status": "planned"
+}
