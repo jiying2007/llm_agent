@@ -1,6 +1,6 @@
 {
   "schema": "llm-agent-software-m5-policy/v1",
-  "updated_at": "2026-07-19",
+  "updated_at": "2026-07-23",
   "scope": "software-only",
   "release": {
     "previous_version": "3.1.0-rc.4",
@@ -30,6 +30,19 @@
     "minimum_trials": 3,
     "max_budget_usd": 150.0
   },
+  "repository_runtime_campaign": {
+    "root": "agent-dev-kit",
+    "contract": "agent-dev-kit/manifests/repository_runtime_eval_contract.json",
+    "report": "agent-dev-kit/docs/changes/repository-runtime-evidence-v1/repository-runtime-report.json",
+    "required_runtimes": [
+      "codex",
+      "claude"
+    ],
+    "minimum_tasks": 5,
+    "minimum_real_tasks": 2,
+    "minimum_trials": 3,
+    "max_budget_usd": 150.0
+  },
   "field_certification": {
     "minimum_calendar_days": 30,
     "minimum_real_repositories": 2,
@@ -37,6 +50,8 @@
     "minimum_human_operators": 2,
     "required_event_types": [
       "pilot_started",
+      "task_selection_recorded",
+      "human_baseline_recorded",
       "workload_executed",
       "upgrade_completed",
       "rollback_exercised",
@@ -46,9 +61,26 @@
       "pilot_reviewed"
     ],
     "required_metrics": {
+      "task_selection_recorded": [
+        "preregistered_task_count",
+        "accepted_task_count",
+        "rejected_task_count",
+        "refusal_log_status"
+      ],
+      "human_baseline_recorded": [
+        "baseline_task_count",
+        "human_estimate_minutes",
+        "estimation_method"
+      ],
       "workload_executed": [
         "task_count",
-        "success_rate"
+        "success_rate",
+        "preregistered_task_count",
+        "rejected_task_count",
+        "wall_clock_minutes",
+        "human_active_minutes",
+        "agent_active_minutes",
+        "concurrent_agent_peak"
       ],
       "upgrade_completed": [
         "from_version",
@@ -69,10 +101,50 @@
         "human_minutes"
       ],
       "pilot_reviewed": [
-        "decision"
+        "decision",
+        "selection_bias_status",
+        "time_measurement_status",
+        "confidence_interval_status"
       ]
     },
     "metric_contracts": {
+      "task_selection_recorded": {
+        "preregistered_task_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "accepted_task_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "rejected_task_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "refusal_log_status": {
+          "type": "string",
+          "enum": [
+            "complete"
+          ]
+        }
+      },
+      "human_baseline_recorded": {
+        "baseline_task_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "human_estimate_minutes": {
+          "type": "number",
+          "minimum": 0.01
+        },
+        "estimation_method": {
+          "type": "string",
+          "enum": [
+            "measured",
+            "historical-calibrated"
+          ]
+        }
+      },
       "workload_executed": {
         "task_count": {
           "type": "integer",
@@ -82,6 +154,30 @@
           "type": "number",
           "minimum": 0.85,
           "maximum": 1.0
+        },
+        "preregistered_task_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "rejected_task_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "wall_clock_minutes": {
+          "type": "number",
+          "minimum": 0.01
+        },
+        "human_active_minutes": {
+          "type": "number",
+          "minimum": 0
+        },
+        "agent_active_minutes": {
+          "type": "number",
+          "minimum": 0.01
+        },
+        "concurrent_agent_peak": {
+          "type": "integer",
+          "minimum": 1
         }
       },
       "upgrade_completed": {
@@ -136,6 +232,24 @@
           "type": "string",
           "enum": [
             "approve"
+          ]
+        },
+        "selection_bias_status": {
+          "type": "string",
+          "enum": [
+            "assessed"
+          ]
+        },
+        "time_measurement_status": {
+          "type": "string",
+          "enum": [
+            "measured"
+          ]
+        },
+        "confidence_interval_status": {
+          "type": "string",
+          "enum": [
+            "reported"
           ]
         }
       }

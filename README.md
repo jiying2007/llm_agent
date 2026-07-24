@@ -82,5 +82,6 @@ rtk scripts/check-adk-harden-readiness.sh . --require-pilot
 
 1. 若只修改 adk 文档：至少运行 `rtk scripts/check-doc-sync.sh .` 与相关 adk 测试。
 2. 若修改 Agent/Skill/Profile/Target：运行 `rtk bash agent-dev-kit/scripts/devkit.sh validate --strict` 与 `rtk bash agent-dev-kit/tests/run_all.sh`。
-3. 若影响生产部署、`~/codex` 分发或 `~/.codex`：运行 `rtk scripts/check-adk-harden-readiness.sh . --require-pilot`，并在 `~/codex` 侧执行 build/apply dry-run。
-4. 若评估参考仓更新：先运行 `rtk scripts/analyze-repo.sh <repo> --ref HEAD --all`，审查结构化 decision/task pack 后再决定是否创建 ADK change artifact。
+3. 若修改根仓脚本、契约或治理资产：运行 `rtk tests/run_all.sh`；全量门禁使用 `rtk scripts/check-all.sh --full --result-json <artifact>` 留存逐项状态和耗时。
+4. 若影响生产部署、`~/codex` 分发或 `~/.codex`：运行 `rtk scripts/check-adk-harden-readiness.sh . --require-pilot`，并在 `~/codex` 侧执行 build/apply dry-run。
+5. 若评估参考仓更新：先运行 `rtk scripts/analyze-repo.sh <repo> --ref HEAD --all`，审查结构化 decision/task pack 后再决定是否创建 ADK change artifact。

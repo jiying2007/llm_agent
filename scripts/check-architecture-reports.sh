@@ -360,6 +360,19 @@ else:
 
 product_scorecard = read_json(product_scorecard_path)
 if product_scorecard:
+    assessment_model = product_scorecard.get("assessment_model")
+    if not isinstance(assessment_model, dict):
+        fail("product_maturity_scorecard.json assessment_model must be an object")
+    else:
+        if not str(assessment_model.get("effective_level", "")).startswith("minimum of "):
+            fail("product_maturity_scorecard.json must define effective_level as the minimum evidence-backed level")
+        semantics = assessment_model.get("status_semantics")
+        if not isinstance(semantics, dict) or set(semantics) != {
+            "verified",
+            "verified_local",
+            "partially_verified",
+        }:
+            fail("product_maturity_scorecard.json must define status semantics")
     dimensions = product_scorecard.get("dimensions")
     if not isinstance(dimensions, list) or len(dimensions) != 12:
         fail("product_maturity_scorecard.json must contain exactly 12 dimensions")
@@ -371,6 +384,34 @@ if product_scorecard:
         for item in dimensions:
             if item.get("level") not in {"M0", "M1", "M2", "M3", "M4", "M5"}:
                 fail(f"product maturity dimension {item.get('id')} has invalid level")
+            implementation_level = item.get("implementation_level")
+            evidence_level = item.get("evidence_level")
+            effective_level = item.get("effective_level")
+            if implementation_level not in {"M0", "M1", "M2", "M3", "M4", "M5"}:
+                fail(f"product maturity dimension {item.get('id')} has invalid implementation_level")
+            if evidence_level not in {"M0", "M1", "M2", "M3", "M4", "M5"}:
+                fail(f"product maturity dimension {item.get('id')} has invalid evidence_level")
+            if (
+                implementation_level in {"M0", "M1", "M2", "M3", "M4", "M5"}
+                and evidence_level in {"M0", "M1", "M2", "M3", "M4", "M5"}
+            ):
+                expected_effective = f"M{min(int(implementation_level[1:]), int(evidence_level[1:]))}"
+                if effective_level != expected_effective:
+                    fail(
+                        f"product maturity dimension {item.get('id')} effective_level "
+                        f"must be {expected_effective}"
+                    )
+                if implementation_level != evidence_level and item.get("status") == "verified":
+                    fail(
+                        f"product maturity dimension {item.get('id')} cannot be verified "
+                        "while implementation and evidence levels differ"
+                    )
+            if item.get("status") in {"verified_local", "partially_verified"}:
+                if not isinstance(item.get("gap"), str) or not item["gap"].strip():
+                    fail(
+                        f"product maturity dimension {item.get('id')} must document "
+                        f"the gap for status={item.get('status')}"
+                    )
             if not isinstance(item.get("evidence"), list) or not item.get("evidence"):
                 fail(f"product maturity dimension {item.get('id')} must have evidence")
     overall = product_scorecard.get("overall")

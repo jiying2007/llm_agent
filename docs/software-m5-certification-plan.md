@@ -19,6 +19,7 @@
 | P0 软件控制面 | implemented | doctor、writer lock、campaign resume、证据 hash、release rehearsal 均有负向测试 | ADK 3.1 change artifact |
 | P1 M5-ready RC | implemented | rc.4 通过 release-only hard-cut boundary 升级到 rc.5 后可回退；exact-commit 双构建一致；Codex source-to-live 零漂移；自试点保持 active | `release-rehearsal.json`、source-to-live evidence、事件链 |
 | P2 双 runtime campaign | blocked_external | Codex/Claude 各 60 任务、baseline/adk、3 trials；720 条 raw result 与 frozen plan 完整保留；所有统计门禁通过；总预算不超过 `$150` | `software-m5-campaign-state/` |
+| P2.5 真实仓库 campaign | blocked_external | 至少两个 runtime、5 个冻结任务、至少 2 个 owner-approved 真实仓库任务、baseline/adk 各 3 trials；功能/安全/过程/trace/token/cost 门禁全部通过 | `repository_runtime_eval_contract.json` 与 owner-approved report |
 | P3 独立现场试点 | active | 至少一个独立真实软件仓、至少两个 human operator、账本和观测跨度均不少于 30 天 | field 事件链和逐事件证据 |
 | P4 eligibility | blocked | P2/P3 全部通过，故障、恢复、升级、回退、维护成本和复审事件完整 | `software-m5.sh certify` 的非版本 blocker 清零 |
 | P5 最终发布 | blocked | 只做必要的 RC 到 `3.1.0` 提升，重建制品并复跑完整门禁；认证器返回 pass | final release 与 M5 status evidence |
@@ -45,6 +46,28 @@ rtk bash agent-dev-kit/scripts/devkit.sh eval campaign check \
 
 `state-dir` 保存 frozen plan、逐任务原始结果和 campaign report，必须进入受 Git 管理的证据目录。根仓 certifier 会重算 manifest/contract/tasks/plan/record/report 哈希并校验 720 项矩阵；只有汇总 report、没有 raw result 的结果固定阻断。
 
+## 真实仓库执行证据
+
+现有双 runtime campaign 继续验证 Skill 路由与安全分类；真实仓库修改由独立 contract 管理，避免把 route accuracy 当作工程 outcome。默认命令只生成 plan：
+
+```bash
+rtk bash agent-dev-kit/scripts/devkit.sh eval repository plan \
+  --contract agent-dev-kit/manifests/repository_runtime_eval_contract.json \
+  --summary-json
+
+rtk bash agent-dev-kit/scripts/devkit.sh eval repository certify \
+  --contract agent-dev-kit/manifests/repository_runtime_eval_contract.json \
+  --report <owner-approved-repository-report.json> \
+  --summary-json
+```
+
+- baseline 必须证明项目指令、Skills、Hooks、MCP 和 plugins 已隔离；不能证明时为 `not-comparable`。
+- ADK condition 只启用受审 profile；其余 customization surface 保持关闭。
+- 功能测试失败时安全 oracle 标记 skipped；功能通过后安全 oracle 必须通过。
+- 最终测试通过但存在 blind retry、regression cycle、阶段乱序或遗漏最终验证时，按 `pass_with_invalid_process` 阻断。
+- 结果记录 input/output/cached token、p50/p95/max、variation、cost-per-success、attempt、tool call 和 timeout。
+- clean-room fixture 只验证 contract。Software M5 另要求至少两个 `approved-real-repository` task，且外部容器、凭证、网络和预算必须单独批准。
+
 ## 现场事件规则
 
 - 事件只能通过显式 `software-m5.sh append` 追加；工具使用单 writer lock、连续 sequence、`previous_hash` 和 `event_hash`。
@@ -52,6 +75,9 @@ rtk bash agent-dev-kit/scripts/devkit.sh eval campaign check \
 - operator 只使用匿名稳定 ID，不记录姓名、邮箱、token 或 prompt 内容。
 - fixture、模拟 runtime、本地发布 rehearsal 可以进入 source/test/runtime 层，但不能满足 field gate。
 - 最终有效事件必须来自完成的 independent pilot，并覆盖 workload、upgrade、rollback、fault、recovery、maintenance 和 review。
+- qualifying pilot 必须先记录 task preregistration/disposition 与 human baseline；accepted + rejected 必须等于 preregistered，workload 必须与选择记录一致。
+- workload 必须分离 wall-clock、human-active、agent-active time，并记录 concurrent-agent peak；人工活跃时间不得超过 wall-clock，Agent 总时间不得超过并发归一化上限。
+- 独立 reviewer 的 review event 必须明确 selection bias、time measurement 和 confidence interval 已评估，不能用自报“完成”代替。
 - independent repository 必须是独立 Git top-level，且不能与 `llm_agent` 共享 Git common-dir；同仓 worktree 或普通子目录不计入独立仓。
 - required metric 不只检查存在性，还检查类型、范围、版本绑定和 review decision；低于 success threshold 或 `decision!=approve` 均不放行。
 - `pilot_reviewed` 必须由 ledger 中标记为 independent reviewer 的 human operator 亲自记录；仅让 reviewer 参与其他事件不能放行。
@@ -78,4 +104,5 @@ rtk scripts/software-m5.sh certify --summary-json
 - `status` 在证据结构完整时允许返回 `M5-ready + blocked`。
 - `check` 校验 policy、ledger、事件链、scorecard 声明和当前边界；未认证本身不是 RC 门禁失败，状态漂移才是失败。
 - `certify` 只有最终 M5 证据全部成立才返回 0。
+- `repository_runtime_campaign` 与原 `runtime_campaign` 是两个独立 blocker；任一缺失都不能进入 eligibility。
 - 出现 event/evidence hash 破坏、campaign raw evidence 缺失、预算越界、未来时间、证据路径越界、独立仓身份不成立或声明漂移时立即停止，不允许人工改成 pass。

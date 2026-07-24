@@ -29,6 +29,16 @@
 
 单个维度可以达到 M4；产品整体等级取关键维度短板，不做简单平均。没有现场证据时不得声称 M5。
 
+### 实现等级、证据等级与有效等级
+
+每个维度同时记录三个不同语义的等级：
+
+- `implementation_level`：代码和本地控制面已实现到的最高等级。
+- `evidence_level`：已有 source/test/runtime/field 证据可支持的最高等级，且不得高于实现等级。
+- `effective_level`：前两者的较低值，是对外成熟度声明和整体短板计算的唯一依据。兼容字段 `level` 仅保留为实现侧投影，不得替代 `effective_level`。
+
+状态必须与等级差距一致：`verified` 只允许用于实现等级与证据等级相等且当前有效等级无开放证据缺口的维度；`verified_local` 表示本地证据已支持有效等级，但仍有明确的远端、runtime、operator 或 field 缺口；`partially_verified` 表示已有部分证据，但进入下一层所需证据尚不完整。实现等级高于证据等级时禁止标记为 `verified`。
+
 ### 软件侧 M5-ready 与 M5 certified
 
 `M5-ready` 是 M4 之后的认证准备状态，不是新的成熟度等级。它要求软件控制面已经具备可执行的 campaign、writer lock、升级回退、现场账本、append-only hash chain、预算门禁和 fail-closed certifier。它不允许把自测、fixture 或本地 rehearsal 当作最终现场证明。
@@ -53,7 +63,7 @@
 | runtime | 真实命令或模型运行成立 | 安装/回滚、制品构建、Codex/Claude 对照评测、source-to-live dry-run/apply | 不能证明长期现场稳定 |
 | field | 真实项目与运维周期成立 | 设备/团队试点、故障与回滚记录、版本升级、人工成本和效果趋势 | 模拟 pilot、fixture、静态报告均不能替代 |
 
-`status=verified` 必须带证据路径或可重放命令；无法执行时使用 `not_verified`，不得用 `pass` 表示未执行。
+`status=verified` 必须带证据路径或可重放命令；无法执行时使用 scorecard 允许的未完成状态并写明 gap，不得用 `pass` 表示未执行。
 
 ## 十二个成熟度维度
 
@@ -87,7 +97,7 @@ M4 可用于发布资产平台；M5 只能用于明确完成真实试点的维�
 
 - 先更新证据，再更新 scorecard，不允许反向补证据。
 - 设计完成与实现完成分开记录；命令存在但返回占位成功不算实现。
-- 每个 `verified` 状态至少关联 source/test/runtime 中适用的两层证据。
+- 每个 `verified` 状态至少关联 source/test/runtime 中适用的两层证据，且 `implementation_level == evidence_level == effective_level`。
 - field gate 只在有真实设备、团队或发布记录时改变；模拟测试永远保持 `field_not_verified`。
 - 当前任务和剩余门禁进入 `manifests/product_maturity_task_pack.json`，一次性过程不写入长期规则。
 - 软件 M5 事件只能追加，修改历史行会破坏 hash chain 并触发阻断；operator 只保存匿名稳定 ID，不保存姓名、邮箱或凭证。

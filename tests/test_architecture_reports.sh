@@ -11,8 +11,12 @@ trap 'rm -rf "${TMP_DIR}"' EXIT
 fixture_root="${TMP_DIR}/fixture-root"
 mkdir -p "${fixture_root}/reports/architecture" "${fixture_root}/manifests" "${fixture_root}/agent-dev-kit/templates/artifacts"
 cp "${ROOT}/reports/architecture/README.md" "${fixture_root}/reports/architecture/README.md"
-cp "${ROOT}/reports/architecture/llm-agent-adk-target-architecture-2026-07-11.md" "${fixture_root}/reports/architecture/good.md"
+cp "${ROOT}/reports/architecture/llm-agent-adk-target-architecture-2026-07-11.md" "${fixture_root}/reports/architecture/llm-agent-adk-target-architecture-2026-07-11.md"
+cp "${ROOT}/reports/architecture/llm-agent-adk-product-maturity-audit-2026-07-13.md" "${fixture_root}/reports/architecture/llm-agent-adk-product-maturity-audit-2026-07-13.md"
+cp "${ROOT}/reports/architecture/llm-agent-adk-software-m5-readiness-2026-07-13.md" "${fixture_root}/reports/architecture/llm-agent-adk-software-m5-readiness-2026-07-13.md"
 cp "${ROOT}/manifests/comprehensive_optimization_backlog.json" "${fixture_root}/manifests/comprehensive_optimization_backlog.json"
+cp "${ROOT}/manifests/product_maturity_scorecard.json" "${fixture_root}/manifests/product_maturity_scorecard.json"
+cp "${ROOT}/manifests/report_registry.json" "${fixture_root}/manifests/report_registry.json"
 cp "${ROOT}/agent-dev-kit/templates/artifacts/target-architecture-report-template.md" "${fixture_root}/agent-dev-kit/templates/artifacts/target-architecture-report-template.md"
 "${CHECKER}" "${fixture_root}" --summary-json >/dev/null
 
@@ -21,7 +25,7 @@ mkdir -p "${legacy_root}/reports/architecture" "${legacy_root}/manifests" "${leg
 cp "${ROOT}/reports/architecture/README.md" "${legacy_root}/reports/architecture/README.md"
 cp "${ROOT}/manifests/comprehensive_optimization_backlog.json" "${legacy_root}/manifests/comprehensive_optimization_backlog.json"
 cp "${ROOT}/agent-dev-kit/templates/artifacts/target-architecture-report-template.md" "${legacy_root}/agent-dev-kit/templates/artifacts/target-architecture-report-template.md"
-python3 - "${ROOT}/reports/architecture/llm-agent-adk-target-architecture-2026-07-11.md" "${legacy_root}/reports/architecture/legacy.md" <<'PY'
+python3 - "${ROOT}/reports/architecture/llm-agent-adk-target-architecture-2026-07-11.md" "${legacy_root}/reports/architecture/llm-agent-adk-target-architecture-legacy.md" <<'PY'
 import re
 import sys
 
@@ -72,7 +76,7 @@ mkdir -p "${bad_root}/reports/architecture" "${bad_root}/manifests" "${bad_root}
 cp "${ROOT}/reports/architecture/README.md" "${bad_root}/reports/architecture/README.md"
 cp "${ROOT}/manifests/comprehensive_optimization_backlog.json" "${bad_root}/manifests/comprehensive_optimization_backlog.json"
 cp "${ROOT}/agent-dev-kit/templates/artifacts/target-architecture-report-template.md" "${bad_root}/agent-dev-kit/templates/artifacts/target-architecture-report-template.md"
-cat >"${bad_root}/reports/architecture/bad.md" <<'EOF'
+cat >"${bad_root}/reports/architecture/bad-target-architecture.md" <<'EOF'
 # Bad Architecture Report
 
 ## Summary
@@ -110,7 +114,7 @@ PY
 missing_manifest_root="${TMP_DIR}/missing-manifest-root"
 mkdir -p "${missing_manifest_root}/reports/architecture"
 cp "${ROOT}/reports/architecture/README.md" "${missing_manifest_root}/reports/architecture/README.md"
-cp "${ROOT}/reports/architecture/llm-agent-adk-target-architecture-2026-07-11.md" "${missing_manifest_root}/reports/architecture/good.md"
+cp "${ROOT}/reports/architecture/llm-agent-adk-target-architecture-2026-07-11.md" "${missing_manifest_root}/reports/architecture/target-architecture-good.md"
 missing_manifest_out="${TMP_DIR}/missing-manifest.out"
 if "${CHECKER}" "${missing_manifest_root}" >"${missing_manifest_out}" 2>&1; then
   echo "[FAIL] missing manifest fixture unexpectedly passed" >&2

@@ -67,6 +67,7 @@ assert software_m5 == {
         "operator_count",
         "pilot_duration",
         "real_repository_count",
+        "repository_runtime_campaign",
         "required_field_events",
         "runtime_campaign",
     ],
@@ -79,6 +80,13 @@ assert working_candidate["status"] == "source-committed-local-rehearsed", workin
 assert working_candidate["lock_state"] == "synchronized", working_candidate
 assert working_candidate["runtime_certification"] == "not-run", working_candidate
 levels = {f"M{i}" for i in range(6)}
+assessment_model = scorecard["assessment_model"]
+assert assessment_model["effective_level"].startswith("minimum of "), assessment_model
+assert set(assessment_model["status_semantics"]) == {
+    "verified",
+    "verified_local",
+    "partially_verified",
+}, assessment_model
 statuses = {
     "verified",
     "verified_local",
@@ -91,7 +99,17 @@ for dimension in scorecard["dimensions"]:
     assert dimension["level"] in levels, dimension
     assert dimension["implementation_level"] in levels, dimension
     assert dimension["evidence_level"] in levels, dimension
+    assert dimension["effective_level"] in levels, dimension
     assert int(dimension["evidence_level"][1:]) <= int(dimension["implementation_level"][1:]), dimension
+    expected_effective = min(
+        int(dimension["implementation_level"][1:]),
+        int(dimension["evidence_level"][1:]),
+    )
+    assert dimension["effective_level"] == f"M{expected_effective}", dimension
+    if dimension["implementation_level"] != dimension["evidence_level"]:
+        assert dimension["status"] != "verified", dimension
+    if dimension["status"] in {"verified_local", "partially_verified"}:
+        assert isinstance(dimension.get("gap"), str) and dimension["gap"].strip(), dimension
     assert set(dimension["evidence_layers_present"]).issubset({"source", "test", "runtime", "field"}), dimension
     assert dimension["status"] in statuses, dimension
     evidence = dimension.get("evidence")
@@ -103,7 +121,7 @@ for dimension in scorecard["dimensions"]:
             continue
         assert (root / path).exists(), (dimension, value)
     if dimension["status"] in {"verified", "verified_local"}:
-        assert int(dimension["level"][1:]) >= 3, dimension
+        assert int(dimension["effective_level"][1:]) >= 3, dimension
 
 task_pack = json.loads((root / "manifests/product_maturity_task_pack.json").read_text(encoding="utf-8"))
 assert task_pack["schema"] == "llm-agent-product-maturity-task-pack/v1", task_pack
@@ -177,8 +195,8 @@ assert "git submodule update --init agent-dev-kit" in workflow, workflow
 assert "bash scripts/check-adk-lock.sh ." in workflow, workflow
 assert "bash agent-dev-kit/scripts/devkit.sh validate --strict" in workflow, workflow
 assert "bash agent-dev-kit/tests/run_all.sh --quick" in workflow, workflow
-assert "bash tests/test_reference_source_integrity.sh" in workflow, workflow
-assert "bash tests/test_software_m5_certification.sh" in workflow, workflow
+assert "bash tests/run_all.sh --fail-fast" in workflow, workflow
+assert "python-version: '3.11'" in workflow, workflow
 assert "bash scripts/check-doc-sync.sh ." in workflow, workflow
 for action in re.findall(r"(?m)^\s*uses:\s*([^\s#]+)", workflow):
     if action.startswith("./"):

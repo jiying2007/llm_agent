@@ -16,6 +16,7 @@ import sys
 import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
 
 
@@ -41,6 +42,8 @@ REQUIRED_POLICY_RULES = {
 REQUIRED_RUNTIME_MODELS = {"codex": "gpt-5.5", "claude": "claude-sonnet-4-6"}
 REQUIRED_FIELD_EVENT_TYPES = {
     "pilot_started",
+    "task_selection_recorded",
+    "human_baseline_recorded",
     "workload_executed",
     "upgrade_completed",
     "rollback_exercised",
@@ -50,9 +53,26 @@ REQUIRED_FIELD_EVENT_TYPES = {
     "pilot_reviewed",
 }
 REQUIRED_METRIC_CONTRACTS = {
+    "task_selection_recorded": {
+        "preregistered_task_count": {"type": "integer", "minimum": 1},
+        "accepted_task_count": {"type": "integer", "minimum": 1},
+        "rejected_task_count": {"type": "integer", "minimum": 0},
+        "refusal_log_status": {"type": "string", "enum": ["complete"]},
+    },
+    "human_baseline_recorded": {
+        "baseline_task_count": {"type": "integer", "minimum": 1},
+        "human_estimate_minutes": {"type": "number", "minimum": 0.01},
+        "estimation_method": {"type": "string", "enum": ["measured", "historical-calibrated"]},
+    },
     "workload_executed": {
         "task_count": {"type": "integer", "minimum": 1},
         "success_rate": {"type": "number", "minimum": 0.85, "maximum": 1},
+        "preregistered_task_count": {"type": "integer", "minimum": 1},
+        "rejected_task_count": {"type": "integer", "minimum": 0},
+        "wall_clock_minutes": {"type": "number", "minimum": 0.01},
+        "human_active_minutes": {"type": "number", "minimum": 0},
+        "agent_active_minutes": {"type": "number", "minimum": 0.01},
+        "concurrent_agent_peak": {"type": "integer", "minimum": 1},
     },
     "upgrade_completed": {
         "from_version": {"type": "semver", "equals_release": "previous_version"},
@@ -68,7 +88,12 @@ REQUIRED_METRIC_CONTRACTS = {
     },
     "recovery_completed": {"recovery_minutes": {"type": "number", "minimum": 0}},
     "maintenance_recorded": {"human_minutes": {"type": "number", "minimum": 0}},
-    "pilot_reviewed": {"decision": {"type": "string", "enum": ["approve"]}},
+    "pilot_reviewed": {
+        "decision": {"type": "string", "enum": ["approve"]},
+        "selection_bias_status": {"type": "string", "enum": ["assessed"]},
+        "time_measurement_status": {"type": "string", "enum": ["measured"]},
+        "confidence_interval_status": {"type": "string", "enum": ["reported"]},
+    },
 }
 
 
@@ -217,8 +242,9 @@ def _validate_policy(policy: Mapping[str, Any]) -> None:
         raise M5Error("software M5 policy rules must contain the complete non-weakening baseline")
     release = policy.get("release")
     campaign = policy.get("runtime_campaign")
+    repository_campaign = policy.get("repository_runtime_campaign")
     field = policy.get("field_certification")
-    if not all(isinstance(value, dict) for value in (release, campaign, field)):
+    if not all(isinstance(value, dict) for value in (release, campaign, repository_campaign, field)):
         raise M5Error("software M5 policy sections are incomplete")
     for name in ("previous_version", "candidate_version", "evaluation_version", "final_version"):
         value = release.get(name)
@@ -255,6 +281,43 @@ def _validate_policy(policy: Mapping[str, Any]) -> None:
         or minimum_trials < 3
     ):
         raise M5Error("runtime campaign minimum coverage is below the M5 policy")
+    repository_budget = repository_campaign.get("max_budget_usd")
+    if (
+        isinstance(repository_budget, bool)
+        or not isinstance(repository_budget, (int, float))
+        or not (0 < float(repository_budget) <= 150)
+    ):
+        raise M5Error("repository runtime campaign budget must be within $150")
+    required_repository_runtimes = repository_campaign.get("required_runtimes")
+    if (
+        not isinstance(required_repository_runtimes, list)
+        or len(required_repository_runtimes) < 2
+        or len(set(required_repository_runtimes)) != len(required_repository_runtimes)
+        or any(not isinstance(value, str) or not ID_RE.fullmatch(value) for value in required_repository_runtimes)
+    ):
+        raise M5Error("repository runtime campaign must require at least two runtimes")
+    for name in ("root", "contract", "report"):
+        if not isinstance(repository_campaign.get(name), str) or not repository_campaign[name]:
+            raise M5Error("repository_runtime_campaign.{} must be a repository-relative path".format(name))
+        relative = Path(repository_campaign[name])
+        if relative.is_absolute() or ".." in relative.parts:
+            raise M5Error("repository_runtime_campaign.{} must be a repository-relative path".format(name))
+    repository_minimum_tasks = repository_campaign.get("minimum_tasks")
+    repository_minimum_real_tasks = repository_campaign.get("minimum_real_tasks")
+    repository_minimum_trials = repository_campaign.get("minimum_trials")
+    if (
+        isinstance(repository_minimum_tasks, bool)
+        or not isinstance(repository_minimum_tasks, int)
+        or repository_minimum_tasks < 5
+        or isinstance(repository_minimum_real_tasks, bool)
+        or not isinstance(repository_minimum_real_tasks, int)
+        or repository_minimum_real_tasks < 2
+        or repository_minimum_real_tasks > repository_minimum_tasks
+        or isinstance(repository_minimum_trials, bool)
+        or not isinstance(repository_minimum_trials, int)
+        or repository_minimum_trials < 3
+    ):
+        raise M5Error("repository runtime campaign minimum coverage is below policy")
     minimum_days = field.get("minimum_calendar_days")
     minimum_repositories = field.get("minimum_real_repositories")
     minimum_independent = field.get("minimum_independent_repositories")
@@ -939,6 +1002,88 @@ def _validate_campaign(root: Path, policy: Mapping[str, Any]) -> Tuple[bool, str
     return state_ok, state_message, report
 
 
+def _validate_repository_campaign(
+    root: Path, policy: Mapping[str, Any]
+) -> Tuple[bool, str, Optional[Mapping[str, Any]]]:
+    campaign = policy["repository_runtime_campaign"]
+    report_path = _repo_path(root, campaign.get("report"), "repository runtime report", must_exist=False)
+    if not report_path.is_file():
+        return False, "repository runtime report is missing", None
+    campaign_root = _repo_path(root, campaign.get("root"), "repository runtime root")
+    if not campaign_root.is_dir():
+        raise M5Error("repository runtime root must be a directory")
+    contract_path = _repo_path(root, campaign.get("contract"), "repository runtime contract")
+    if not _inside(contract_path, campaign_root) or not _inside(report_path, campaign_root):
+        raise M5Error("repository runtime contract and report must stay inside the declared root")
+    source_root = Path(__file__).resolve().parents[2] / "agent-dev-kit" / "src"
+    if not source_root.is_dir():
+        raise M5Error("repository runtime certifier source is missing")
+    source_value = str(source_root)
+    if source_value not in sys.path:
+        sys.path.insert(0, source_value)
+    try:
+        from agent_dev_kit import model as repository_model
+        from agent_dev_kit import repository_evaluation as repository_evaluation_module
+    except (ImportError, OSError) as exc:
+        raise M5Error("cannot load repository runtime certifier") from exc
+    module_paths = []
+    for module in (repository_model, repository_evaluation_module):
+        module_file = getattr(module, "__file__", None)
+        if not isinstance(module_file, str):
+            raise M5Error("repository runtime certifier module provenance is missing")
+        module_paths.append(Path(module_file).resolve())
+    if not all(_inside(module_path, source_root) for module_path in module_paths):
+        raise M5Error("repository runtime certifier module provenance is outside the trusted source root")
+    RepositoryManifestError = repository_model.ManifestError
+    certify_repository_report = repository_evaluation_module.certify_repository_report
+    try:
+        certification = certify_repository_report(
+            SimpleNamespace(root=campaign_root, version=policy["release"]["evaluation_version"]),
+            contract_path,
+            report_path,
+        )
+    except (RepositoryManifestError, OSError, ValueError) as exc:
+        raise M5Error("repository runtime evidence is invalid: {}".format(exc)) from exc
+    if certification.get("status") != "pass":
+        return False, "repository runtime campaign is not certified", certification
+    required_runtimes = campaign["required_runtimes"]
+    if set(certification.get("runtime_metrics", {})) != set(required_runtimes):
+        raise M5Error("repository runtime certification does not cover required runtimes")
+    if int(certification.get("task_count", 0)) < int(campaign["minimum_tasks"]):
+        return False, "repository runtime task count is below policy", certification
+    report = _load_object(report_path, "repository runtime report")
+    if report.get("runtimes") != required_runtimes:
+        raise M5Error("repository runtime report runtimes do not match policy")
+    if int(report.get("trials", 0)) < int(campaign["minimum_trials"]):
+        return False, "repository runtime trial count is below policy", certification
+    contract = _load_object(contract_path, "repository runtime contract")
+    tasks_path = (campaign_root / str(contract.get("tasks", ""))).resolve()
+    if not _inside(tasks_path, campaign_root) or not tasks_path.is_file():
+        raise M5Error("repository runtime tasks are missing or outside the declared root")
+    try:
+        task_values = [json.loads(line) for line in tasks_path.read_text(encoding="utf-8").splitlines() if line]
+    except (OSError, json.JSONDecodeError) as exc:
+        raise M5Error("repository runtime task evidence is invalid") from exc
+    real_tasks = [
+        task
+        for task in task_values
+        if isinstance(task, dict)
+        and task.get("source_kind") == "approved-real-repository"
+        and task.get("execution_status") == "owner-approved"
+    ]
+    if len(real_tasks) < int(campaign["minimum_real_tasks"]):
+        return False, "repository runtime campaign lacks approved real-repository tasks", certification
+    results = report.get("results", [])
+    total_cost = sum(
+        float(item.get("usage", {}).get("cost_usd", 0))
+        for item in results
+        if isinstance(item, dict) and isinstance(item.get("usage"), dict)
+    )
+    if not math.isfinite(total_cost) or total_cost > float(campaign["max_budget_usd"]):
+        return False, "repository runtime campaign cost exceeds policy", certification
+    return True, "repository runtime campaign passed", certification
+
+
 def _field_progress(
     policy: Mapping[str, Any],
     repositories: Mapping[str, Mapping[str, Any]],
@@ -1018,6 +1163,40 @@ def _field_progress(
                     policy["release"],
                 ):
                     metric_complete = False
+        selection_events = [event for event in pilot_events if event["event_type"] == "task_selection_recorded"]
+        baseline_events = [event for event in pilot_events if event["event_type"] == "human_baseline_recorded"]
+        workload_events = [event for event in pilot_events if event["event_type"] == "workload_executed"]
+        semantic_complete = len(selection_events) == 1 and len(baseline_events) == 1 and bool(workload_events)
+        if semantic_complete:
+            selection_event = selection_events[0]
+            baseline_event = baseline_events[0]
+            selection = selection_event["metrics"]
+            baseline_metrics = baseline_event["metrics"]
+            selection_time = _parse_time(selection_event["occurred_at"], "task selection occurred_at")
+            baseline_time = _parse_time(baseline_event["occurred_at"], "human baseline occurred_at")
+            first_workload_time = min(
+                _parse_time(event["occurred_at"], "workload occurred_at") for event in workload_events
+            )
+            if not selection_time <= baseline_time <= first_workload_time:
+                semantic_complete = False
+            if (
+                selection.get("accepted_task_count", 0) + selection.get("rejected_task_count", 0)
+                != selection.get("preregistered_task_count")
+            ):
+                semantic_complete = False
+            for workload in workload_events:
+                values = workload["metrics"]
+                if (
+                    values.get("task_count") != selection.get("accepted_task_count")
+                    or values.get("preregistered_task_count") != selection.get("preregistered_task_count")
+                    or values.get("rejected_task_count") != selection.get("rejected_task_count")
+                    or baseline_metrics.get("baseline_task_count") != values.get("task_count")
+                    or values.get("human_active_minutes", 0) > values.get("wall_clock_minutes", 0)
+                    or values.get("agent_active_minutes", 0)
+                    > values.get("wall_clock_minutes", 0) * values.get("concurrent_agent_peak", 0)
+                ):
+                    semantic_complete = False
+        metric_complete = metric_complete and semantic_complete
         missing = set(required_types).difference(event_types)
         if (
             ledger_days >= int(field_policy["minimum_calendar_days"])
@@ -1099,6 +1278,7 @@ def assess(root: Path, as_of: Optional[datetime] = None) -> Dict[str, Any]:
         _validate_event_references(events, repositories, operators, pilots)
         release_ok, release_message = _validate_release(root, policy)
         campaign_ok, campaign_message, _ = _validate_campaign(root, policy)
+        repository_campaign_ok, repository_campaign_message, _ = _validate_repository_campaign(root, policy)
         progress, field_gaps = _field_progress(policy, repositories, operators, pilots, events)
         active_self = [
             pilot for pilot in pilots.values() if pilot["status"] == "active" and pilot["environment_class"] == "self"
@@ -1117,6 +1297,10 @@ def assess(root: Path, as_of: Optional[datetime] = None) -> Dict[str, Any]:
             result["readiness_failures"].append({"id": "pilot_start_event", "message": "self pilot has no field pilot_started event"})
         if not campaign_ok:
             result["certification_gaps"].append({"id": "runtime_campaign", "message": campaign_message})
+        if not repository_campaign_ok:
+            result["certification_gaps"].append(
+                {"id": "repository_runtime_campaign", "message": repository_campaign_message}
+            )
         result["certification_gaps"].extend(field_gaps)
         if policy["release"]["candidate_version"] != policy["release"]["final_version"]:
             result["certification_gaps"].append(
@@ -1127,6 +1311,7 @@ def assess(root: Path, as_of: Optional[datetime] = None) -> Dict[str, Any]:
         result["final_version"] = policy["release"]["final_version"]
         result["release_rehearsal"] = "pass" if release_ok else "missing"
         result["runtime_campaign"] = "pass" if campaign_ok else "blocked"
+        result["repository_runtime_campaign"] = "pass" if repository_campaign_ok else "blocked"
         result["field_progress"] = progress
         if not result["readiness_failures"]:
             result["readiness_status"] = "m5-ready"

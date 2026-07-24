@@ -6,6 +6,31 @@ TMP_DIR="$(mktemp -d)"
 FAILURES=0
 INITIAL_STATUS="${TMP_DIR}/initial-status.txt"
 git -C "${ROOT}" status --porcelain=v1 >"${INITIAL_STATUS}"
+SAME_RUN_EVIDENCE_LIB="${ROOT}/scripts/lib/same-run-evidence.sh"
+SAME_RUN_REUSE_READY=0
+REUSE_FINGERPRINT_CACHE=""
+
+if [[ -f "${SAME_RUN_EVIDENCE_LIB}" ]]; then
+  # shellcheck source=scripts/lib/same-run-evidence.sh
+  source "${SAME_RUN_EVIDENCE_LIB}"
+fi
+
+if [[ -n "${LLM_AGENT_SAME_RUN_EVIDENCE_DIR:-}" \
+  && -n "${LLM_AGENT_SAME_RUN_PRODUCER_PID:-}" \
+  && -n "${LLM_AGENT_SAME_RUN_PRODUCER_START:-}" \
+  && -n "${LLM_AGENT_SAME_RUN_REUSE_REPORT:-}" \
+  && "${LLM_AGENT_SAME_RUN_PRODUCER_PID}" == "${PPID}" ]]; then
+  current_parent_start=""
+  if current_parent_start="$(llm_agent_process_start_token "${PPID}")" \
+    && [[ "${current_parent_start}" == "${LLM_AGENT_SAME_RUN_PRODUCER_START}" ]]; then
+    SAME_RUN_REUSE_READY=1
+    export -n \
+      LLM_AGENT_SAME_RUN_EVIDENCE_DIR \
+      LLM_AGENT_SAME_RUN_PRODUCER_PID \
+      LLM_AGENT_SAME_RUN_PRODUCER_START \
+      LLM_AGENT_SAME_RUN_REUSE_REPORT
+  fi
+fi
 
 cleanup() {
   rm -rf "${TMP_DIR}"
@@ -17,9 +42,14 @@ record_fail() {
   FAILURES=$((FAILURES + 1))
 }
 
+invalidate_reuse_fingerprint() {
+  REUSE_FINGERPRINT_CACHE=""
+}
+
 run_check() {
   local name="$1"
   shift
+  invalidate_reuse_fingerprint
   if "$@" >"${TMP_DIR}/${name}.out" 2>"${TMP_DIR}/${name}.err"; then
     echo "[PASS] ${name}"
   else
@@ -33,6 +63,7 @@ run_expected_fail() {
   local name="$1"
   local expected="$2"
   shift 2
+  invalidate_reuse_fingerprint
   if "$@" >"${TMP_DIR}/${name}.out" 2>"${TMP_DIR}/${name}.err"; then
     record_fail "${name} unexpectedly passed"
     sed -n '1,40p' "${TMP_DIR}/${name}.out" >&2 || true
@@ -45,6 +76,53 @@ run_expected_fail() {
       sed -n '1,40p' "${TMP_DIR}/${name}.out" >&2 || true
     fi
   fi
+}
+
+try_same_run_reuse() {
+  local consumer_name="$1"
+  local producer_name="$2"
+  local required_marker="${3:-}"
+  local evidence_output=""
+
+  [[ "${SAME_RUN_REUSE_READY}" -eq 1 ]] || return 1
+  if [[ -z "${REUSE_FINGERPRINT_CACHE}" ]]; then
+    REUSE_FINGERPRINT_CACHE="$(llm_agent_workspace_fingerprint "${ROOT}")" || {
+      REUSE_FINGERPRINT_CACHE=""
+      return 1
+    }
+  fi
+  evidence_output="$(
+    llm_agent_same_run_validate \
+      "${LLM_AGENT_SAME_RUN_EVIDENCE_DIR}" \
+      "${LLM_AGENT_SAME_RUN_PRODUCER_PID}" \
+      "${LLM_AGENT_SAME_RUN_PRODUCER_START}" \
+      "${ROOT}" \
+      "${REUSE_FINGERPRINT_CACHE}" \
+      "${producer_name}" \
+      "${ROOT}/scripts/${producer_name}" \
+      "${required_marker}" \
+      2>/dev/null
+  )" || return 1
+  [[ -f "${evidence_output}" ]] || return 1
+  llm_agent_same_run_report_append \
+    "${LLM_AGENT_SAME_RUN_EVIDENCE_DIR}" \
+    "${LLM_AGENT_SAME_RUN_REUSE_REPORT}" \
+    "${consumer_name}" \
+    "${producer_name}" \
+    2>/dev/null || return 1
+  echo "[REUSE] ${consumer_name} <- ${producer_name}"
+}
+
+run_check_or_reuse() {
+  local consumer_name="$1"
+  local producer_name="$2"
+  local required_marker="$3"
+  shift 3
+
+  if try_same_run_reuse "${consumer_name}" "${producer_name}" "${required_marker}"; then
+    return 0
+  fi
+  run_check "${consumer_name}" "$@"
 }
 
 assert_json_field() {
@@ -80,10 +158,36 @@ run_check "phase_gate_summary_json" "${ROOT}/scripts/check-phase-gate.sh" "${ROO
 run_check "runtime_targets_summary_json" "${ROOT}/scripts/check-runtime-targets.sh" "${ROOT}" --summary-json
 run_check "runtime_target_explain_codex" "${ROOT}/scripts/check-runtime-targets.sh" "${ROOT}" --explain-target codex-home
 run_check "runtime_target_explain_claude_code_candidate" "${ROOT}/scripts/check-runtime-targets.sh" "${ROOT}" --explain-target claude-code-home
-run_check "runtime_target_evidence_index" "${ROOT}/scripts/check-runtime-target-evidence-index.sh" "${ROOT}"
-run_check "runtime_target_evidence_package" "${ROOT}/tests/test_runtime_target_evidence_package.sh"
-run_check "runtime_target_evidence_promotion" "${ROOT}/tests/test_runtime_target_evidence_promotion.sh"
-run_check "stale_references" "${ROOT}/scripts/check-stale-references.sh" "${ROOT}"
+run_check_or_reuse \
+  "runtime_target_evidence_index" \
+  "check-runtime-target-evidence-index.sh" \
+  "" \
+  "${ROOT}/scripts/check-runtime-target-evidence-index.sh" "${ROOT}"
+run_check_or_reuse \
+  "runtime_target_evidence_package" \
+  "check-root-regression.sh" \
+  "[PASS] test_runtime_target_evidence_package" \
+  "${ROOT}/tests/test_runtime_target_evidence_package.sh"
+run_check_or_reuse \
+  "runtime_target_evidence_promotion" \
+  "check-root-regression.sh" \
+  "[PASS] test_runtime_target_evidence_promotion" \
+  "${ROOT}/tests/test_runtime_target_evidence_promotion.sh"
+run_check_or_reuse \
+  "stale_references" \
+  "check-stale-references.sh" \
+  "" \
+  "${ROOT}/scripts/check-stale-references.sh" "${ROOT}"
+run_check_or_reuse \
+  "pilot_evidence_wrapper" \
+  "check-runtime-pilot-evidence.sh" \
+  "" \
+  "${ROOT}/scripts/check-runtime-pilot-evidence.sh" "${ROOT}"
+run_check_or_reuse \
+  "pilot_coverage_wrapper" \
+  "check-runtime-pilot-coverage.sh" \
+  "" \
+  "${ROOT}/scripts/check-runtime-pilot-coverage.sh" "${ROOT}"
 run_check "token_budget_summary_json" "${ROOT}/scripts/check-token-budget.sh" "${ROOT}" --summary-json
 run_check "reference_dirty_triage_summary_json" "${ROOT}/scripts/check-reference-dirty-triage.sh" "${ROOT}" --summary-json
 run_check "runtime_health_summary_json" "${ROOT}/scripts/check-runtime-health.sh" "${ROOT}" --summary-json
@@ -97,8 +201,6 @@ if "${ROOT}/scripts/check-subrepo-state.sh" "${ROOT}" --summary-json >"${TMP_DIR
 else
   echo "[PASS] subrepo_state_summary_json_contract"
 fi
-run_check "pilot_evidence_wrapper" "${ROOT}/scripts/check-runtime-pilot-evidence.sh" "${ROOT}"
-run_check "pilot_coverage_wrapper" "${ROOT}/scripts/check-runtime-pilot-coverage.sh" "${ROOT}"
 run_check "evidence_bundle_json" "${ROOT}/scripts/evidence-bundle.sh" "${ROOT}" --format json
 run_check "governance_health_json" "${ROOT}/scripts/governance-health.sh" "${ROOT}" --format json
 run_check "governance_review_json" "${ROOT}/scripts/governance-review.sh" "${ROOT}" --format json

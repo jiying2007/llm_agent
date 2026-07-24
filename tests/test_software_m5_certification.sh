@@ -8,13 +8,15 @@ cleanup() {
 }
 trap cleanup EXIT
 
-PYTHONPATH="${ROOT}" python3 - "${TMP_DIR}" <<'PY'
+PYTHONPATH="${ROOT}" python3 - "${TMP_DIR}" "${ROOT}" <<'PY'
 import fcntl
 import hashlib
+import itertools
 import json
 import os
 import subprocess
 import sys
+import types
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -29,6 +31,7 @@ from tools.codex_assets.software_m5 import (
 
 
 root = Path(sys.argv[1])
+source_root = Path(sys.argv[2])
 (root / "manifests").mkdir(parents=True)
 (root / "reports/field-evidence").mkdir(parents=True)
 (root / "evidence").mkdir(parents=True)
@@ -85,6 +88,112 @@ tasks_path.write_text(
     encoding="utf-8",
 )
 
+repository_eval_root = root / "repository-eval"
+(repository_eval_root / "manifests").mkdir(parents=True)
+(repository_eval_root / "tests/fixtures").mkdir(parents=True)
+repository_contract = json.loads(
+    (source_root / "agent-dev-kit/manifests/repository_runtime_eval_contract.json").read_text(encoding="utf-8")
+)
+for adapter in repository_contract["runtime_adapters"].values():
+    adapter["status"] = "available"
+    adapter["version_pin"] = "sha256:" + "a" * 64
+repository_contract_path = repository_eval_root / "manifests/repository_runtime_eval_contract.json"
+repository_contract_path.write_text(
+    json.dumps(repository_contract, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+)
+repository_tasks_path = repository_eval_root / repository_contract["tasks"]
+repository_tasks_path.write_text(
+    (source_root / "agent-dev-kit" / repository_contract["tasks"]).read_text(encoding="utf-8"),
+    encoding="utf-8",
+)
+repository_tasks = [
+    json.loads(line)
+    for line in repository_tasks_path.read_text(encoding="utf-8").splitlines()
+    if line
+]
+for task in repository_tasks:
+    task["source_kind"] = "approved-real-repository"
+    task["execution_status"] = "owner-approved"
+repository_tasks_path.write_text(
+    "".join(json.dumps(task, ensure_ascii=False, separators=(",", ":")) + "\n" for task in repository_tasks),
+    encoding="utf-8",
+)
+repository_results = []
+for task, runtime, condition, trial in itertools.product(
+    repository_tasks,
+    repository_contract["runtimes"],
+    repository_contract["conditions"],
+    range(1, repository_contract["trials"] + 1),
+):
+    baseline_failure = condition == "baseline" and task["id"] == repository_tasks[0]["id"]
+    adapter = repository_contract["runtime_adapters"][runtime]
+    repository_results.append(
+        {
+            "task_id": task["id"],
+            "runtime": runtime,
+            "condition": condition,
+            "trial": trial,
+            "repository_revision": task["repository_revision"],
+            "container_digest": task["container_digest"],
+            "adapter_id": adapter["adapter_id"],
+            "isolation": {
+                "verified": True,
+                "strategy": adapter["baseline_isolation" if condition == "baseline" else "adk_isolation"],
+                "disabled_surfaces": (
+                    ["project-instructions", "skills", "hooks", "mcp", "plugins"]
+                    if condition == "baseline"
+                    else ["hooks", "mcp", "plugins"]
+                ),
+                "enabled_surfaces": [] if condition == "baseline" else ["project-instructions", "skills"],
+            },
+            "outcome": {
+                "status": "fail" if baseline_failure else "pass",
+                "functional_tests_passed": not baseline_failure,
+                "security_tests_passed": None if baseline_failure else True,
+                "security_tests_skipped": baseline_failure,
+                "verified_change": not baseline_failure,
+            },
+            "process": {
+                "regression_cycle_count": 0,
+                "blind_retry_count": 0,
+                "final_verification": True,
+                "phase_order_violation": False,
+                "repeated_tool_call_without_new_evidence": 0,
+            },
+            "usage": {
+                "input_tokens": 100,
+                "cached_input_tokens": 10,
+                "output_tokens": 50,
+                "total_tokens": 150,
+                "cost_usd": 0.01,
+                "elapsed_ms": 1000,
+                "attempts": 1,
+                "tool_calls": 4,
+                "timeouts": 0,
+            },
+            "trace": {
+                "summary_ref": "evidence/{}/{}/{}/trial-{}.json".format(task["id"], runtime, condition, trial),
+                "raw_trace_stored": False,
+                "redacted": True,
+            },
+            "recorded_at": "2026-02-01T00:00:00Z",
+        }
+    )
+repository_report = {
+    "schema": "adk-repository-runtime-eval-report/v1",
+    "status": "complete",
+    "contract_sha256": _digest(repository_contract),
+    "tasks_sha256": hashlib.sha256(repository_tasks_path.read_bytes()).hexdigest(),
+    "task_count": len(repository_tasks),
+    "runtimes": repository_contract["runtimes"],
+    "conditions": repository_contract["conditions"],
+    "trials": repository_contract["trials"],
+    "results": repository_results,
+}
+(repository_eval_root / "repository-report.json").write_text(
+    json.dumps(repository_report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+)
+
 policy = {
     "schema": "llm-agent-software-m5-policy/v1",
     "updated_at": "2026-01-01",
@@ -111,6 +220,16 @@ policy = {
         "minimum_trials": 3,
         "max_budget_usd": 150.0,
     },
+    "repository_runtime_campaign": {
+        "root": "repository-eval",
+        "contract": "repository-eval/manifests/repository_runtime_eval_contract.json",
+        "report": "repository-eval/repository-report.json",
+        "required_runtimes": repository_contract["runtimes"],
+        "minimum_tasks": 5,
+        "minimum_real_tasks": 2,
+        "minimum_trials": 3,
+        "max_budget_usd": 150.0,
+    },
     "field_certification": {
         "minimum_calendar_days": 30,
         "minimum_real_repositories": 2,
@@ -118,6 +237,8 @@ policy = {
         "minimum_human_operators": 2,
         "required_event_types": [
             "pilot_started",
+            "task_selection_recorded",
+            "human_baseline_recorded",
             "workload_executed",
             "upgrade_completed",
             "rollback_exercised",
@@ -127,18 +248,63 @@ policy = {
             "pilot_reviewed",
         ],
         "required_metrics": {
-            "workload_executed": ["task_count", "success_rate"],
+            "task_selection_recorded": [
+                "preregistered_task_count",
+                "accepted_task_count",
+                "rejected_task_count",
+                "refusal_log_status",
+            ],
+            "human_baseline_recorded": [
+                "baseline_task_count",
+                "human_estimate_minutes",
+                "estimation_method",
+            ],
+            "workload_executed": [
+                "task_count",
+                "success_rate",
+                "preregistered_task_count",
+                "rejected_task_count",
+                "wall_clock_minutes",
+                "human_active_minutes",
+                "agent_active_minutes",
+                "concurrent_agent_peak",
+            ],
             "upgrade_completed": ["from_version", "to_version", "downtime_seconds"],
             "rollback_exercised": ["restored_version", "downtime_seconds"],
             "fault_observed": ["severity"],
             "recovery_completed": ["recovery_minutes"],
             "maintenance_recorded": ["human_minutes"],
-            "pilot_reviewed": ["decision"],
+            "pilot_reviewed": [
+                "decision",
+                "selection_bias_status",
+                "time_measurement_status",
+                "confidence_interval_status",
+            ],
         },
         "metric_contracts": {
+            "task_selection_recorded": {
+                "preregistered_task_count": {"type": "integer", "minimum": 1},
+                "accepted_task_count": {"type": "integer", "minimum": 1},
+                "rejected_task_count": {"type": "integer", "minimum": 0},
+                "refusal_log_status": {"type": "string", "enum": ["complete"]},
+            },
+            "human_baseline_recorded": {
+                "baseline_task_count": {"type": "integer", "minimum": 1},
+                "human_estimate_minutes": {"type": "number", "minimum": 0.01},
+                "estimation_method": {
+                    "type": "string",
+                    "enum": ["measured", "historical-calibrated"],
+                },
+            },
             "workload_executed": {
                 "task_count": {"type": "integer", "minimum": 1},
                 "success_rate": {"type": "number", "minimum": 0.85, "maximum": 1.0},
+                "preregistered_task_count": {"type": "integer", "minimum": 1},
+                "rejected_task_count": {"type": "integer", "minimum": 0},
+                "wall_clock_minutes": {"type": "number", "minimum": 0.01},
+                "human_active_minutes": {"type": "number", "minimum": 0},
+                "agent_active_minutes": {"type": "number", "minimum": 0.01},
+                "concurrent_agent_peak": {"type": "integer", "minimum": 1},
             },
             "upgrade_completed": {
                 "from_version": {"type": "semver", "equals_release": "previous_version"},
@@ -160,6 +326,9 @@ policy = {
             },
             "pilot_reviewed": {
                 "decision": {"type": "string", "enum": ["approve"]},
+                "selection_bias_status": {"type": "string", "enum": ["assessed"]},
+                "time_measurement_status": {"type": "string", "enum": ["measured"]},
+                "confidence_interval_status": {"type": "string", "enum": ["reported"]},
             },
         },
     },
@@ -367,13 +536,49 @@ events = [
         {},
     ),
     (
+        "selection",
+        "independent-pilot",
+        "2026-01-02T00:00:00Z",
+        "task_selection_recorded",
+        "independent-app",
+        "operator-one",
+        {
+            "preregistered_task_count": 100,
+            "accepted_task_count": 80,
+            "rejected_task_count": 20,
+            "refusal_log_status": "complete",
+        },
+    ),
+    (
+        "human-baseline",
+        "independent-pilot",
+        "2026-01-02T01:00:00Z",
+        "human_baseline_recorded",
+        "independent-app",
+        "operator-one",
+        {
+            "baseline_task_count": 80,
+            "human_estimate_minutes": 4800,
+            "estimation_method": "historical-calibrated",
+        },
+    ),
+    (
         "workload",
         "independent-pilot",
         "2026-01-03T00:00:00Z",
         "workload_executed",
         "independent-app",
         "operator-two",
-        {"task_count": 80, "success_rate": 0.95},
+        {
+            "task_count": 80,
+            "success_rate": 0.95,
+            "preregistered_task_count": 100,
+            "rejected_task_count": 20,
+            "wall_clock_minutes": 4200,
+            "human_active_minutes": 1800,
+            "agent_active_minutes": 3600,
+            "concurrent_agent_peak": 2,
+        },
     ),
     (
         "upgrade",
@@ -427,7 +632,12 @@ events = [
         "pilot_reviewed",
         "independent-app",
         "operator-two",
-        {"decision": "approve"},
+        {
+            "decision": "approve",
+            "selection_bias_status": "assessed",
+            "time_measurement_status": "measured",
+            "confidence_interval_status": "reported",
+        },
     ),
 ]
 for event_id, pilot_id, occurred_at, event_type, repository_id, operator_id, metrics in events:
@@ -455,7 +665,29 @@ assert positive["eligibility_status"] == "eligible-for-final", positive
 assert positive["certification_status"] == "pass", positive
 assert positive["software_m5_certified"] is True, positive
 assert positive["blocker_ids"] == [], positive
+assert positive["repository_runtime_campaign"] == "pass", positive
 assert positive["field_progress"]["best_independent_pilot_observed_days"] == 31
+
+trusted_package = sys.modules["agent_dev_kit"]
+trusted_model = sys.modules["agent_dev_kit.model"]
+trusted_repository_evaluation = sys.modules["agent_dev_kit.repository_evaluation"]
+fake_model = types.ModuleType("agent_dev_kit.model")
+fake_model.__file__ = str(root / "untrusted/agent_dev_kit/model.py")
+fake_model.ManifestError = RuntimeError
+fake_repository_evaluation = types.ModuleType("agent_dev_kit.repository_evaluation")
+fake_repository_evaluation.__file__ = str(root / "untrusted/agent_dev_kit/repository_evaluation.py")
+fake_repository_evaluation.certify_repository_report = lambda *_args: {"status": "pass"}
+sys.modules["agent_dev_kit.model"] = fake_model
+sys.modules["agent_dev_kit.repository_evaluation"] = fake_repository_evaluation
+trusted_package.model = fake_model
+trusted_package.repository_evaluation = fake_repository_evaluation
+untrusted_certifier = assess(root, recorded_at)
+assert untrusted_certifier["integrity_status"] == "fail", untrusted_certifier
+assert "module provenance" in untrusted_certifier["readiness_failures"][0]["message"], untrusted_certifier
+sys.modules["agent_dev_kit.model"] = trusted_model
+sys.modules["agent_dev_kit.repository_evaluation"] = trusted_repository_evaluation
+trusted_package.model = trusted_model
+trusted_package.repository_evaluation = trusted_repository_evaluation
 
 scorecard = {
     "software_m5": {
@@ -520,6 +752,85 @@ event_log.write_text("\n".join(lines) + "\n", encoding="utf-8")
 broken_chain = assess(root, recorded_at)
 assert broken_chain["integrity_status"] == "fail", broken_chain
 assert broken_chain["blocker_ids"] == ["evidence_integrity"]
+event_log.write_text(original_events, encoding="utf-8")
+
+missing_selection_events = [
+    json.loads(line)
+    for line in original_events.splitlines()
+    if json.loads(line)["event_type"] != "task_selection_recorded"
+]
+previous_hash = "0" * 64
+for sequence, event in enumerate(missing_selection_events, start=1):
+    event["sequence"] = sequence
+    event["previous_hash"] = previous_hash
+    event.pop("event_hash", None)
+    event["event_hash"] = _digest(event)
+    previous_hash = event["event_hash"]
+event_log.write_text(
+    "".join(json.dumps(event, separators=(",", ":")) + "\n" for event in missing_selection_events),
+    encoding="utf-8",
+)
+missing_selection = assess(root, recorded_at)
+assert missing_selection["integrity_status"] == "pass", missing_selection
+assert missing_selection["software_m5_certified"] is False, missing_selection
+assert "required_field_events" in missing_selection["blocker_ids"], missing_selection
+event_log.write_text(original_events, encoding="utf-8")
+
+inconsistent_selection_events = [json.loads(line) for line in original_events.splitlines()]
+previous_hash = "0" * 64
+for event in inconsistent_selection_events:
+    if event["event_type"] == "task_selection_recorded":
+        event["metrics"]["accepted_task_count"] = 81
+    event["previous_hash"] = previous_hash
+    event.pop("event_hash", None)
+    event["event_hash"] = _digest(event)
+    previous_hash = event["event_hash"]
+event_log.write_text(
+    "".join(json.dumps(event, separators=(",", ":")) + "\n" for event in inconsistent_selection_events),
+    encoding="utf-8",
+)
+inconsistent_selection = assess(root, recorded_at)
+assert inconsistent_selection["integrity_status"] == "pass", inconsistent_selection
+assert inconsistent_selection["software_m5_certified"] is False, inconsistent_selection
+assert "required_field_events" in inconsistent_selection["blocker_ids"], inconsistent_selection
+event_log.write_text(original_events, encoding="utf-8")
+
+posthoc_selection_events = [json.loads(line) for line in original_events.splitlines()]
+previous_hash = "0" * 64
+for event in posthoc_selection_events:
+    if event["event_type"] == "task_selection_recorded":
+        event["occurred_at"] = "2026-01-04T00:00:00Z"
+    event["previous_hash"] = previous_hash
+    event.pop("event_hash", None)
+    event["event_hash"] = _digest(event)
+    previous_hash = event["event_hash"]
+event_log.write_text(
+    "".join(json.dumps(event, separators=(",", ":")) + "\n" for event in posthoc_selection_events),
+    encoding="utf-8",
+)
+posthoc_selection = assess(root, recorded_at)
+assert posthoc_selection["integrity_status"] == "pass", posthoc_selection
+assert posthoc_selection["software_m5_certified"] is False, posthoc_selection
+assert "required_field_events" in posthoc_selection["blocker_ids"], posthoc_selection
+event_log.write_text(original_events, encoding="utf-8")
+
+zero_baseline_events = [json.loads(line) for line in original_events.splitlines()]
+previous_hash = "0" * 64
+for event in zero_baseline_events:
+    if event["event_type"] == "human_baseline_recorded":
+        event["metrics"]["human_estimate_minutes"] = 0
+    event["previous_hash"] = previous_hash
+    event.pop("event_hash", None)
+    event["event_hash"] = _digest(event)
+    previous_hash = event["event_hash"]
+event_log.write_text(
+    "".join(json.dumps(event, separators=(",", ":")) + "\n" for event in zero_baseline_events),
+    encoding="utf-8",
+)
+zero_baseline = assess(root, recorded_at)
+assert zero_baseline["integrity_status"] == "pass", zero_baseline
+assert zero_baseline["software_m5_certified"] is False, zero_baseline
+assert "required_field_events" in zero_baseline["blocker_ids"], zero_baseline
 event_log.write_text(original_events, encoding="utf-8")
 
 semantic_events = [json.loads(line) for line in original_events.splitlines()]
@@ -669,6 +980,7 @@ expected = [
     "operator_count",
     "pilot_duration",
     "real_repository_count",
+    "repository_runtime_campaign",
     "required_field_events",
     "runtime_campaign",
 ]

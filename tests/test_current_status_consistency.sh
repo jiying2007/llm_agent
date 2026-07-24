@@ -28,8 +28,6 @@ REHEARSAL_ADK_PATH="${REHEARSAL_REPO_PATH#agent-dev-kit/}"
 RELEASE_EVIDENCE_PATH="${POLICY_VALUES[2]}"
 MAPPED_CONTENT_CHANGED="${POLICY_VALUES[3]}"
 
-"${CHECKER}" "${ROOT}" --summary-json >/dev/null
-
 make_fixture() {
   local dest="$1"
   local legacy_change_path="docs/changes/adk-v3-1-software-m5-ready"

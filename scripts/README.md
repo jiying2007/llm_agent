@@ -379,18 +379,16 @@ scripts/check-global-codex-target-policy.sh [WORKSPACE_ROOT]
 ## 7. 一键门禁检查
 
 ```bash
-scripts/check-all.sh --smoke
 scripts/check-all.sh --quick
-scripts/check-all.sh --full
-scripts/check-all.sh --verbose
-scripts/check-all.sh --quick --verbose
+scripts/check-all.sh --full --result-json reports/check-all-result.json
+tests/run_all.sh --timing-json reports/root-tests-timing.json
 ```
 
 功能：
-- 自动发现 `scripts/check-*.sh` 并汇总 PASS/FAIL。
-- `--smoke` 只覆盖最小健康面；`--quick` 跳过 ADK quick suite、evidence/token/WeChat、harden readiness 和 workspace aggregate；`--full` 或无参数运行全部脚本。
-- quick 汇总记录每项耗时；提交或发布前必须单独执行被跳过的 release gate，或直接运行 `--full`。
-- 退出码：全部通过返回 0，否则返回 1
+- 自动发现 `scripts/check-*.sh`；`--smoke` 仅覆盖最小健康面，`--quick` 跳过重门禁，`--full` 或无参数运行全部脚本。
+- 非 verbose 失败日志默认限 40 行，`--max-failure-lines` 可调；`--result-json` 记录状态、退出码和耗时。
+- `tests/run_all.sh` 自动执行全部 `tests/test_*.sh`，支持 `--fail-fast`、`--timing-json` 和 `--slow-threshold-sec`；`check-root-regression.sh` 将其接入 full，`tests/test_check_all_contract.sh` 锁定聚合接口。
+- quick 不替代 release gate；全部通过返回 0，否则返回 1。
 
 ## 8. 统一入口 devkit.sh
 

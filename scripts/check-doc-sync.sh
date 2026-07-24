@@ -89,6 +89,9 @@ readme_tokens=(
   "check-scale-engine-governance.sh"
   "check-token-budget.sh"
   "check-file-modes.sh"
+  "check-root-regression.sh"
+  "tests/run_all.sh"
+  "tests/test_check_all_contract.sh"
   "--summary-json"
 )
 
@@ -133,6 +136,9 @@ required_executables=(
   "scripts/check-stale-references.sh"
   "scripts/check-token-budget.sh"
   "scripts/check-file-modes.sh"
+  "scripts/check-root-regression.sh"
+  "tests/run_all.sh"
+  "tests/test_check_all_contract.sh"
   "tests/test_external_practice_intake.sh"
   "tests/test_reference_repository_registration.sh"
   "tests/test_reference_repository_removal.sh"

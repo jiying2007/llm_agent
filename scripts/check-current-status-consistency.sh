@@ -422,6 +422,7 @@ expected_blockers = [
     "operator_count",
     "pilot_duration",
     "real_repository_count",
+    "repository_runtime_campaign",
     "required_field_events",
     "runtime_campaign",
 ]
