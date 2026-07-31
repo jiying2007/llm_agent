@@ -1,0 +1,95 @@
+{
+  "schema": "llm-agent-adk-software-m5-ready-release-evidence/v1",
+  "generated_at": "2026-07-31",
+  "release_scope": "source-committed-local-rehearsed-release-candidate-evidence-live-pending-owner-authorization",
+  "agent_dev_kit": {
+    "version": "3.1.0-rc.6",
+    "commit": "9f82e1d9deffadc3967f446069375f5872363d46",
+    "evidence_commit": "cf082b602d68f3948ae1fcd6d00a522d116ddd0a",
+    "previous_version": "3.1.0-rc.5",
+    "previous_commit": "66a8c199fa7b11fe1396676b3eeb82249ef05554",
+    "previous_release_commit": "66a8c199fa7b11fe1396676b3eeb82249ef05554"
+  },
+  "artifacts": {
+    "source_sha256": "4cd728126b7242150665315a22706811c12de4de9f136eaef17b0e3ecbe63b15",
+    "source_reproducible_builds": 2,
+    "source_file_count": 720,
+    "wheel_sha256": null,
+    "wheel_status": "built-in-python-3.11-and-3.12-local-ci",
+    "previous_source_sha256": "7c0ddf0c0d0e2174abcb682e0df1e6b5d10fdcb8695bdaaa2dccc37a5daf3907",
+    "previous_source_provenance": "checksum-verified-rc5-artifact",
+    "candidate_manifest_sha256": "4be06fe6418180433e7315956ef7dbc8182ccda6477055688ab2b6858338f54e",
+    "release_rehearsal_report_sha256": "5fb9d467916e96a18db2017cfb0dee4378055d8b553ec333c411edd8ea62c2d6"
+  },
+  "validation": {
+    "strict": "pass",
+    "format": "pass",
+    "security": "pass-python-3.11-and-3.12",
+    "release_check": "pass",
+    "shellcheck": "pass-in-full",
+    "ruff": "pass-python-3.11-and-3.12",
+    "dependency_audit": "pass-no-known-vulnerabilities-python-3.11-and-3.12",
+    "full": {
+      "total": 57,
+      "pass": 57,
+      "fail": 0,
+      "elapsed_ms": null
+    },
+    "root_quick": "not-run-rc6-full-used",
+    "root_full": "60/60-pass",
+    "target_static": "3/3-pass-in-adk-full",
+    "target_runtime": "not-run-experimental",
+    "effect_eval": "pass-in-adk-full",
+    "upgrade_rollback_rehearsal": "pass",
+    "previous_installed": 39,
+    "candidate_installed": 39,
+    "restored_assets": 39,
+    "local_ci_parity": "python-3.11-and-3.12-full-pass",
+    "remote_ci": "not-run"
+  },
+  "source_to_live": {
+    "comparison": "66a8c199fa7b11fe1396676b3eeb82249ef05554..9f82e1d9deffadc3967f446069375f5872363d46",
+    "mapped_paths": [
+      "agents",
+      "skills",
+      "optional-skills",
+      "workflows",
+      "templates"
+    ],
+    "mapped_content_changed": true,
+    "decision": "required-pending-owner-authorization",
+    "profile": "token-lean",
+    "managed_files": null,
+    "plan_status": "not-run-owner-authorization-required",
+    "dry_run_status": "not-run",
+    "apply_status": "not-run",
+    "rollback_anchor": null,
+    "post_apply": null
+  },
+  "software_m5": {
+    "readiness_status": "m5-ready",
+    "certified": false,
+    "field_status": "self_pilot_active",
+    "runtime_campaign": "blocked-claude-unauthenticated"
+  },
+  "knowledge_hub": {
+    "new_candidate": true,
+    "status": "repository-candidate-not-promoted",
+    "candidate": "reports/architecture/knowledge-candidates/llm-agent-rc6-release-baseline-refresh-candidate-2026-07-31.md",
+    "memory_write": false
+  },
+  "publication": {
+    "adk_source_commit_pushed": false,
+    "root_product_commit": "4eeab5faabcf2e56fdb041c14e0edff570d7f337",
+    "root_product_commit_pushed": false,
+    "tag_created": false,
+    "remote_release_created": false,
+    "remote_artifact_uploaded": false,
+    "reason": "RC6 source, supported-Python validation and local rollback rehearsal are complete. Live apply, tag, remote CI/attestation and release publication remain separate owner-authorized operations."
+  },
+  "compatibility_boundary": {
+    "removed_contracts": [],
+    "compatibility_alias": false,
+    "rollback": "restore the checksum-verified RC5 artifact; execute Codex source-to-live only after a separate owner authorization and backup"
+  }
+}

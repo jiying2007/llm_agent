@@ -4,7 +4,7 @@
 
 ## 目标状态
 
-- RC 版本：`agent-dev-kit 3.1.0-rc.5`。
+- RC 版本：`agent-dev-kit 3.1.0-rc.6`。
 - 最终版本：`agent-dev-kit 3.1.0`，只在现场 eligibility 通过后提升。
 - 机器策略：`manifests/software_m5_policy.json`。
 - 试点账本：`manifests/software_m5_pilot_ledger.json`。
@@ -30,16 +30,16 @@
 
 ```bash
 rtk bash agent-dev-kit/scripts/devkit.sh eval campaign plan \
-  --contract agent-dev-kit/manifests/software_m5_eval_contract_rc5.json \
+  --contract agent-dev-kit/manifests/software_m5_eval_contract_rc6.json \
   --output agent-dev-kit/docs/changes/adk-v3-1-software-m5-ready/software-m5-campaign-plan.json
 
 rtk bash agent-dev-kit/scripts/devkit.sh eval campaign run \
-  --contract agent-dev-kit/manifests/software_m5_eval_contract_rc5.json \
+  --contract agent-dev-kit/manifests/software_m5_eval_contract_rc6.json \
   --state-dir agent-dev-kit/docs/changes/archive/20260719-intent-boundary-governance-v2/software-m5-campaign-state \
   --approve-budget-usd 150 --execute --resume
 
 rtk bash agent-dev-kit/scripts/devkit.sh eval campaign check \
-  --contract agent-dev-kit/manifests/software_m5_eval_contract_rc5.json \
+  --contract agent-dev-kit/manifests/software_m5_eval_contract_rc6.json \
   --state-dir agent-dev-kit/docs/changes/archive/20260719-intent-boundary-governance-v2/software-m5-campaign-state \
   --certify --summary-json
 ```

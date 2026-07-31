@@ -54,7 +54,7 @@
       "status": "blocked_external",
       "scope": "effectiveness evaluation",
       "acceptance": "60 tasks pass deterministic routing and Codex/Claude baseline/adk each run three trials with confidence, resource and budget gates",
-      "verify": ["rtk bash agent-dev-kit/scripts/devkit.sh eval run --suite deterministic --tasks agent-dev-kit/tests/fixtures/software_m5_eval_tasks.jsonl --summary-json", "rtk bash agent-dev-kit/scripts/devkit.sh eval campaign check --contract agent-dev-kit/manifests/software_m5_eval_contract_rc5.json --state-dir /approved/local/software-m5-campaign --certify --summary-json"]
+      "verify": ["rtk bash agent-dev-kit/scripts/devkit.sh eval run --suite deterministic --tasks agent-dev-kit/tests/fixtures/software_m5_eval_tasks.jsonl --summary-json", "rtk bash agent-dev-kit/scripts/devkit.sh eval campaign check --contract agent-dev-kit/manifests/software_m5_eval_contract_rc6.json --state-dir /approved/local/software-m5-campaign --certify --summary-json"]
     },
     {
       "id": "PM-07",

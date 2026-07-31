@@ -1,6 +1,6 @@
 {
   "schema": "llm-agent-product-maturity-scorecard/v1",
-  "updated_at": "2026-07-23",
+  "updated_at": "2026-07-31",
   "product_boundary": "reference-intake workspace plus platform-neutral agent asset compiler/control plane; no LLM agent runtime",
   "overall": {
     "level": "M3",
@@ -14,12 +14,12 @@
     "eligibility_status": "blocked",
     "certification_status": "blocked",
     "certified": false,
-    "candidate_version": "3.1.0-rc.5",
+    "candidate_version": "3.1.0-rc.6",
     "final_version": "3.1.0",
     "blocking_gates": ["final_version", "independent_repository", "operator_count", "pilot_duration", "real_repository_count", "repository_runtime_campaign", "required_field_events", "runtime_campaign"]
   },
   "working_candidate": {
-    "version": "3.1.0-rc.5",
+    "version": "3.1.0-rc.6",
     "status": "source-committed-local-rehearsed",
     "overall_level": "M3",
     "target_status": "experimental",
@@ -42,18 +42,18 @@
     "lock_state": "synchronized",
     "runtime_certification": "not-run",
     "local_validation": {
-      "adk_full": "55/55-pass",
-      "root_quick": "53/53-pass",
-      "root_full": "58/58-pass",
+      "adk_full": "57/57-pass",
+      "root_quick": "not-run-rc6-full-used",
+      "root_full": "60/60-pass",
       "target_static": "3/3-pass",
       "effect_eval": "24/24-pass-ablation-delta-0.3333",
       "release_rehearsal": "pass",
-      "source_to_live": "applied-declarative-changed",
-      "codex_assets_check": "101-tests-63-metadata-pass",
-      "live_runtime_health": "source-to-live-zero-drift-pass-native-target-runtime-not-run",
-      "artifact_sha256": "7c0ddf0c0d0e2174abcb682e0df1e6b5d10fdcb8695bdaaa2dccc37a5daf3907"
+      "source_to_live": "required-pending-owner-authorization",
+      "codex_assets_check": "not-run-for-rc6",
+      "live_runtime_health": "not-refreshed-for-rc6-native-target-runtime-not-run",
+      "artifact_sha256": "4cd728126b7242150665315a22706811c12de4de9f136eaef17b0e3ecbe63b15"
     },
-    "promotion_boundary": "The rc.5 release source commit, exact-commit deterministic build, hard-cut rollback rehearsal and Codex source-to-live apply pass locally. Push, remote CI/attestation, native direct-target runtime smoke, dual-runtime campaign and field certification remain blocked or not run."
+    "promotion_boundary": "The rc.6 release source commit, exact-commit deterministic build and rc.5-to-rc.6 rollback rehearsal pass locally. Codex source-to-live is pending separate owner authorization; remote CI/attestation, native runtime smoke, dual-runtime campaign and field certification remain blocked or not run."
   },
   "assessment_model": {
     "implementation_level": "highest level supported by code and local control-plane behavior",
@@ -140,7 +140,7 @@
       "effective_level": "M3",
       "evidence_layers_present": ["source", "test"],
       "status": "verified_local",
-      "evidence": ["agent-dev-kit/src/agent_dev_kit/quality.py", "agent-dev-kit/manifests/adk_performance_budgets.json", "agent-dev-kit/manifests/software_m5_eval_contract_rc5.json", "agent-dev-kit/docs/changes/adk-v3-1-rc2-target-conformance/benchmark.json", "agent-dev-kit/docs/changes/archive/20260719-intent-boundary-governance-v2/benchmark-results.json"],
+      "evidence": ["agent-dev-kit/src/agent_dev_kit/quality.py", "agent-dev-kit/manifests/adk_performance_budgets.json", "agent-dev-kit/manifests/software_m5_eval_contract_rc6.json", "agent-dev-kit/docs/changes/adk-v3-1-rc2-target-conformance/benchmark.json", "agent-dev-kit/docs/changes/archive/20260719-intent-boundary-governance-v2/benchmark-results.json"],
       "gap": "Cold-start, 10x I/O and peak-memory curves are local only; concurrent lock contention and field-scale runtime curves remain unverified."
     },
     {
@@ -166,8 +166,8 @@
       "effective_level": "M3",
       "evidence_layers_present": ["source", "test", "runtime"],
       "status": "verified_local",
-      "evidence": ["agent-dev-kit/src/agent_dev_kit/installer.py", "agent-dev-kit/src/agent_dev_kit/release.py", "agent-dev-kit/docs/changes/archive/20260719-intent-boundary-governance-v2/release-rehearsal.json", "agent-dev-kit/docs/changes/archive/20260719-intent-boundary-governance-v2/verify-report.md", "reports/adk-v3-1-rc5-release-evidence-2026-07-19.json"],
-      "gap": "The local rc.4-to-rc.5 exact-commit build, rollback rehearsal and Codex source-to-live apply pass. Push, native direct-target installation, remote CI/attestation and release publication remain explicit owner or external operations."
+      "evidence": ["agent-dev-kit/src/agent_dev_kit/installer.py", "agent-dev-kit/src/agent_dev_kit/release.py", "agent-dev-kit/docs/changes/rc6-release-baseline-refresh-2026-07-31/release-rehearsal.json", "agent-dev-kit/docs/changes/rc6-release-baseline-refresh-2026-07-31/verify-report.md", "reports/adk-v3-1-rc6-release-evidence-2026-07-31.json"],
+      "gap": "The local rc.5-to-rc.6 exact-commit build and rollback rehearsal pass. Codex source-to-live, native direct-target installation, remote CI/attestation and release publication remain explicit owner or external operations."
     },
     {
       "id": "D09",
