@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "suite": "llm-agent-root-regression",
+  "status": "pass",
+  "total": 17,
+  "pass": 17,
+  "fail": 0,
+  "elapsed_ms": 78602,
+  "slow_threshold_sec": 30,
+  "tests": [
+    {"name": "test_adoption_real_assets", "status": "pass", "elapsed_ms": 202},
+    {"name": "test_architecture_reports", "status": "pass", "elapsed_ms": 517},
+    {"name": "test_check_all_contract", "status": "pass", "elapsed_ms": 1000},
+    {"name": "test_current_status_consistency", "status": "pass", "elapsed_ms": 2245},
+    {"name": "test_external_practice_intake", "status": "pass", "elapsed_ms": 4875},
+    {"name": "test_file_modes_worktree", "status": "pass", "elapsed_ms": 122},
+    {"name": "test_official_docs_adoption_review", "status": "pass", "elapsed_ms": 211},
+    {"name": "test_product_maturity_contracts", "status": "pass", "elapsed_ms": 78},
+    {"name": "test_reference_repository_registration", "status": "pass", "elapsed_ms": 2656},
+    {"name": "test_reference_repository_removal", "status": "pass", "elapsed_ms": 470},
+    {"name": "test_reference_source_integrity", "status": "pass", "elapsed_ms": 704},
+    {"name": "test_runtime_health_adapters", "status": "pass", "elapsed_ms": 2698},
+    {"name": "test_runtime_target_evidence_index", "status": "pass", "elapsed_ms": 2535},
+    {"name": "test_runtime_target_evidence_package", "status": "pass", "elapsed_ms": 17154},
+    {"name": "test_runtime_target_evidence_promotion", "status": "pass", "elapsed_ms": 36949},
+    {"name": "test_same_run_evidence", "status": "pass", "elapsed_ms": 1751},
+    {"name": "test_software_m5_certification", "status": "pass", "elapsed_ms": 4363}
+  ],
+  "slow_tests": [
+    {"name": "test_runtime_target_evidence_promotion", "elapsed_ms": 36949}
+  ]
+}

@@ -1,0 +1,3371 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-07-24T19:49:05+08:00",
+  "build": "/tmp/codex-adk-source-to-live.ZlzOly/worktree/build/codex-home",
+  "target": "/home/leiwenjun/.codex",
+  "overwrite": false,
+  "summary": {
+    "copy": 5,
+    "keep": 439,
+    "overwrite": 1,
+    "delete": 8,
+    "mkdir": 270,
+    "skip": 0
+  },
+  "actions": [
+    {
+      "action": "mkdir",
+      "path": "."
+    },
+    {
+      "action": "keep",
+      "path": "AGENTS.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "config.toml",
+      "reason": "exists"
+    },
+    {
+      "action": "mkdir",
+      "path": "control"
+    },
+    {
+      "action": "mkdir",
+      "path": "control/agents-local"
+    },
+    {
+      "action": "keep",
+      "path": "control/agents-local/agent-browser.toml",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "control/agents-local/local-architect.toml",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "control/agents-local/local-context-curator.toml",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "control/agents-local/local-implementer.toml",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "control/agents-local/local-integrator.toml",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "control/agents-local/local-tester.toml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "control/state"
+    },
+    {
+      "action": "keep",
+      "path": "control/state/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "control/state/active-profile.env",
+      "reason": "same-file"
+    },
+    {
+      "action": "overwrite",
+      "path": "control/state/managed-files.json",
+      "kind": "file",
+      "backup": "/tmp/codex-adk-source-to-live.ZlzOly/worktree/.backups/apply/20260724-194905/control/state/managed-files.json"
+    },
+    {
+      "action": "mkdir",
+      "path": "mcp"
+    },
+    {
+      "action": "mkdir",
+      "path": "mcp/policies"
+    },
+    {
+      "action": "keep",
+      "path": "mcp/policies/allowlist.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "mcp/policies/tool-gates.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "mcp/servers"
+    },
+    {
+      "action": "keep",
+      "path": "mcp/servers/docs.toml",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "mcp/servers/figma.toml",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "mcp/servers/github.toml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "prompts"
+    },
+    {
+      "action": "keep",
+      "path": "prompts/opsx-apply.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "prompts/opsx-archive.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "prompts/opsx-explore.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "prompts/opsx-propose.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "rules"
+    },
+    {
+      "action": "keep",
+      "path": "rules/default.rules",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "skills"
+    },
+    {
+      "action": "keep",
+      "path": "skills/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "skills/adk-branch-closeout",
+      "reason": "same-symlink"
+    },
+    {
+      "action": "keep",
+      "path": "skills/adk-code-review-loop",
+      "reason": "same-symlink"
+    },
+    {
+      "action": "keep",
+      "path": "skills/adk-commit-pr-quality-gate",
+      "reason": "same-symlink"
+    },
+    {
+      "action": "keep",
+      "path": "skills/adk-context-compress-handoff",
+      "reason": "same-symlink"
+    },
+    {
+      "action": "keep",
+      "path": "skills/adk-knowledge-archive",
+      "reason": "same-symlink"
+    },
+    {
+      "action": "keep",
+      "path": "skills/adk-memory-curator",
+      "reason": "same-symlink"
+    },
+    {
+      "action": "keep",
+      "path": "skills/adk-parallel-agent-governance",
+      "reason": "same-symlink"
+    },
+    {
+      "action": "keep",
+      "path": "skills/adk-planning-execution-loop",
+      "reason": "same-symlink"
+    },
+    {
+      "action": "keep",
+      "path": "skills/adk-requirements-triage",
+      "reason": "same-symlink"
+    },
+    {
+      "action": "keep",
+      "path": "skills/adk-runtime-router",
+      "reason": "same-symlink"
+    },
+    {
+      "action": "keep",
+      "path": "skills/adk-systematic-debugging",
+      "reason": "same-symlink"
+    },
+    {
+      "action": "keep",
+      "path": "skills/adk-task-breakdown",
+      "reason": "same-symlink"
+    },
+    {
+      "action": "keep",
+      "path": "skills/adk-test-strategy",
+      "reason": "same-symlink"
+    },
+    {
+      "action": "keep",
+      "path": "skills/adk-token-context-governance",
+      "reason": "same-symlink"
+    },
+    {
+      "action": "keep",
+      "path": "skills/adk-verification-before-completion",
+      "reason": "same-symlink"
+    },
+    {
+      "action": "keep",
+      "path": "skills/adk-worktree-governance",
+      "reason": "same-symlink"
+    },
+    {
+      "action": "keep",
+      "path": "skills/caveman",
+      "reason": "same-symlink"
+    },
+    {
+      "action": "keep",
+      "path": "skills/codex-parallel-collab",
+      "reason": "same-symlink"
+    },
+    {
+      "action": "keep",
+      "path": "skills/registry.csv",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "skills/scripts"
+    },
+    {
+      "action": "keep",
+      "path": "skills/scripts/check-skills.sh",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "skills/session-wrap",
+      "reason": "same-symlink"
+    },
+    {
+      "action": "keep",
+      "path": "skills/worktree-closeout",
+      "reason": "same-symlink"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/agents"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/agents/agent-dev-kit"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/agents/agent-dev-kit/2.9.0"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/agents/agent-dev-kit/2.9.0/architecture-planner"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/agents/agent-dev-kit/2.9.0/architecture-planner/AGENTS.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/agents/agent-dev-kit/2.9.0/build-release-engineer"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/agents/agent-dev-kit/2.9.0/build-release-engineer/AGENTS.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/agents/agent-dev-kit/2.9.0/code-review-governor"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/agents/agent-dev-kit/2.9.0/code-review-governor/AGENTS.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/agents/agent-dev-kit/2.9.0/component-engineer"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/agents/agent-dev-kit/2.9.0/component-engineer/AGENTS.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/agents/agent-dev-kit/2.9.0/driver-engineer"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/agents/agent-dev-kit/2.9.0/driver-engineer/AGENTS.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/agents/agent-dev-kit/2.9.0/performance-reliability-engineer"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/agents/agent-dev-kit/2.9.0/performance-reliability-engineer/AGENTS.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/agents/agent-dev-kit/2.9.0/requirements-analyst"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/agents/agent-dev-kit/2.9.0/requirements-analyst/AGENTS.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/agents/agent-dev-kit/2.9.0/security-compliance-reviewer"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/agents/agent-dev-kit/2.9.0/security-compliance-reviewer/AGENTS.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/agents/agent-dev-kit/2.9.0/test-validation-engineer"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/agents/agent-dev-kit/2.9.0/test-validation-engineer/AGENTS.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/lock"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/lock/vendor.lock.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/plugins"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/plugins/superpowers"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/plugins/superpowers/1.1.9"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/plugins/superpowers/1.1.9/.claude-plugin"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/.claude-plugin/marketplace.json",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/.claude-plugin/plugin.json",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/plugins/superpowers/1.1.9/.cursor-plugin"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/.cursor-plugin/plugin.json",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/.gitattributes",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/plugins/superpowers/1.1.9/.github"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/plugins/superpowers/1.1.9/.github/ISSUE_TEMPLATE"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/.github/ISSUE_TEMPLATE/bug_report.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/.github/ISSUE_TEMPLATE/config.yml",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/.github/ISSUE_TEMPLATE/feature_request.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/.github/ISSUE_TEMPLATE/platform_support.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/.github/PULL_REQUEST_TEMPLATE.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/plugins/superpowers/1.1.9/.github/workflows"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/.github/workflows/ci.yml",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/.gitignore",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/plugins/superpowers/1.1.9/.opencode"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/.opencode/INSTALL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/plugins/superpowers/1.1.9/.opencode/plugins"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/.opencode/plugins/superpowers.js",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/CODE_OF_CONDUCT.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/GEMINI.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/plugins/superpowers/1.1.9/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/agents/code-reviewer.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/plugins/superpowers/1.1.9/bin"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/bin/superpowers-zh.js",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/plugins/superpowers/1.1.9/commands"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/commands/brainstorm.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/commands/execute-plan.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/commands/write-plan.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/plugins/superpowers/1.1.9/docs"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/docs/README.aider.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/docs/README.antigravity.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/docs/README.codex.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/docs/README.deerflow.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/docs/README.gemini-cli.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/docs/README.hermes.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/docs/README.kiro.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/docs/README.openclaw.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/docs/README.opencode.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/docs/README.qwen.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/docs/README.trae.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/docs/README.vscode.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/docs/README.windsurf.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/plugins/superpowers/1.1.9/docs/assets"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/docs/assets/RECORDING-GUIDE.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/docs/assets/demo.tape",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/gemini-extension.json",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/plugins/superpowers/1.1.9/hooks"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/hooks/hooks-cursor.json",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/hooks/hooks.json",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/hooks/run-hook.cmd",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/hooks/session-start",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/package.json",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/plugins/superpowers/1.1.9/skills"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/plugins/superpowers/1.1.9/tests"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/brainstorm-server"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/brainstorm-server/package-lock.json",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/brainstorm-server/package.json",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/brainstorm-server/server.test.js",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/brainstorm-server/windows-lifecycle.test.sh",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/brainstorm-server/ws-protocol.test.js",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/claude-code"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/claude-code/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/claude-code/analyze-token-usage.py",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/claude-code/run-skill-tests.sh",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/claude-code/test-document-review-system.sh",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/claude-code/test-helpers.sh",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/claude-code/test-subagent-driven-development-integration.sh",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/claude-code/test-subagent-driven-development.sh",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/explicit-skill-requests"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/explicit-skill-requests/prompts"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/explicit-skill-requests/prompts/action-oriented.txt",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/explicit-skill-requests/prompts/after-planning-flow.txt",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/explicit-skill-requests/prompts/claude-suggested-it.txt",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/explicit-skill-requests/prompts/i-know-what-sdd-means.txt",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/explicit-skill-requests/prompts/mid-conversation-execute-plan.txt",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/explicit-skill-requests/prompts/please-use-brainstorming.txt",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/explicit-skill-requests/prompts/skip-formalities.txt",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/explicit-skill-requests/prompts/subagent-driven-development-please.txt",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/explicit-skill-requests/prompts/use-systematic-debugging.txt",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/explicit-skill-requests/run-all.sh",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/explicit-skill-requests/run-claude-describes-sdd.sh",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/explicit-skill-requests/run-extended-multiturn-test.sh",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/explicit-skill-requests/run-haiku-test.sh",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/explicit-skill-requests/run-multiturn-test.sh",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/explicit-skill-requests/run-test.sh",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/opencode"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/opencode/run-tests.sh",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/opencode/setup.sh",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/opencode/test-plugin-loading.sh",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/opencode/test-priority.sh",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/opencode/test-tools.sh",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/skill-triggering"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/skill-triggering/prompts"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/skill-triggering/prompts/dispatching-parallel-agents.txt",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/skill-triggering/prompts/executing-plans.txt",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/skill-triggering/prompts/requesting-code-review.txt",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/skill-triggering/prompts/systematic-debugging.txt",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/skill-triggering/prompts/test-driven-development.txt",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/skill-triggering/prompts/writing-plans.txt",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/skill-triggering/run-all.sh",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/skill-triggering/run-test.sh",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/subagent-driven-dev"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/subagent-driven-dev/go-fractals"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/subagent-driven-dev/go-fractals/design.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/subagent-driven-dev/go-fractals/plan.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/subagent-driven-dev/go-fractals/scaffold.sh",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/subagent-driven-dev/run-test.sh",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/subagent-driven-dev/svelte-todo"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/subagent-driven-dev/svelte-todo/design.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/subagent-driven-dev/svelte-todo/plan.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/plugins/superpowers/1.1.9/tests/subagent-driven-dev/svelte-todo/scaffold.sh",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/policies"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/policies/rtk"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/policies/rtk/1.0.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/policies/rtk/1.0.0/RTK.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-after-action-review"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-after-action-review/1.0.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-after-action-review/1.0.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-after-action-review/1.0.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-after-action-review/1.0.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-after-action-review/1.0.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-after-action-review/1.0.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-archive-governance"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-archive-governance/1.0.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-archive-governance/1.0.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-archive-governance/1.0.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-archive-governance/1.0.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-archive-governance/1.0.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-archive-governance/1.0.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-artifact-gated-lite"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-artifact-gated-lite/1.0.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-artifact-gated-lite/1.0.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-artifact-gated-lite/1.0.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-artifact-gated-lite/1.0.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-artifact-gated-lite/1.0.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-artifact-gated-lite/1.0.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-branch-closeout"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-branch-closeout/1.0.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-branch-closeout/1.0.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-branch-closeout/1.0.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-branch-closeout/1.0.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-branch-closeout/1.0.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-branch-closeout/1.0.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-code-review-loop"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-code-review-loop/1.0.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-code-review-loop/1.0.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-code-review-loop/1.0.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-code-review-loop/1.0.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-code-review-loop/1.0.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-code-review-loop/1.0.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-code-review-loop/1.0.0/references"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-code-review-loop/1.0.0/references/review-feedback-fixtures.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-commit-pr-quality-gate"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-commit-pr-quality-gate/1.0.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-commit-pr-quality-gate/1.0.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-commit-pr-quality-gate/1.0.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-commit-pr-quality-gate/1.0.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-commit-pr-quality-gate/1.0.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-commit-pr-quality-gate/1.0.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-context-compress-handoff"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-context-compress-handoff/1.0.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-context-compress-handoff/1.0.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-context-compress-handoff/1.0.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-context-compress-handoff/1.0.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-context-compress-handoff/1.0.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-context-compress-handoff/1.0.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-cross-team-handoff"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-cross-team-handoff/1.0.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-cross-team-handoff/1.0.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-cross-team-handoff/1.0.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-cross-team-handoff/1.0.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-cross-team-handoff/1.0.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-cross-team-handoff/1.0.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-embedded-debug-transport"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-embedded-debug-transport/1.0.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-embedded-debug-transport/1.0.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-embedded-debug-transport/1.0.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-embedded-debug-transport/1.0.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-embedded-debug-transport/1.0.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-embedded-debug-transport/1.0.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-embedded-diagnostic-harness"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-embedded-diagnostic-harness/1.0.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-embedded-diagnostic-harness/1.0.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-embedded-diagnostic-harness/1.0.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-embedded-diagnostic-harness/1.0.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-embedded-diagnostic-harness/1.0.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-embedded-diagnostic-harness/1.0.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-embedded-release-orchestration"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-embedded-release-orchestration/1.0.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-embedded-release-orchestration/1.0.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-embedded-release-orchestration/1.0.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-embedded-release-orchestration/1.0.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-embedded-release-orchestration/1.0.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-embedded-release-orchestration/1.0.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-embedded-remote-debug-log-triage"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-embedded-remote-debug-log-triage/1.0.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-embedded-remote-debug-log-triage/1.0.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-embedded-remote-debug-log-triage/1.0.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-embedded-remote-debug-log-triage/1.0.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-embedded-remote-debug-log-triage/1.0.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-embedded-remote-debug-log-triage/1.0.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-engineering-growth-review"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-engineering-growth-review/1.0.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-engineering-growth-review/1.0.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-engineering-growth-review/1.0.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-engineering-growth-review/1.0.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-engineering-growth-review/1.0.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-engineering-growth-review/1.0.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-interface-contract-design"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-interface-contract-design/1.0.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-interface-contract-design/1.0.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-interface-contract-design/1.0.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-interface-contract-design/1.0.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-interface-contract-design/1.0.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-interface-contract-design/1.0.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-interface-contract-design/1.0.0/references"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-interface-contract-design/1.0.0/references/details.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-knowledge-archive"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-knowledge-archive/1.0.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-knowledge-archive/1.0.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-knowledge-archive/1.0.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-knowledge-archive/1.0.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-knowledge-archive/1.0.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-knowledge-archive/1.0.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-lightweight-planning"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-lightweight-planning/1.0.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-lightweight-planning/1.0.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-lightweight-planning/1.0.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-lightweight-planning/1.0.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-lightweight-planning/1.0.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-lightweight-planning/1.0.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-memory-curator"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-memory-curator/1.0.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-memory-curator/1.0.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-memory-curator/1.0.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-memory-curator/1.0.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-memory-curator/1.0.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-memory-curator/1.0.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-offline-core-dump-triage"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-offline-core-dump-triage/1.0.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-offline-core-dump-triage/1.0.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-offline-core-dump-triage/1.0.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-offline-core-dump-triage/1.0.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-offline-core-dump-triage/1.0.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-offline-core-dump-triage/1.0.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-parallel-agent-governance"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-parallel-agent-governance/1.0.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-parallel-agent-governance/1.0.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-parallel-agent-governance/1.0.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-parallel-agent-governance/1.0.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-parallel-agent-governance/1.0.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-parallel-agent-governance/1.0.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-parallel-agent-governance/1.0.0/references"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-parallel-agent-governance/1.0.0/references/parallel-worktree-task-package.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-parallel-agent-governance/1.0.0/references/subagent-review-checklist.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-planning-execution-loop"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-planning-execution-loop/1.0.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-planning-execution-loop/1.0.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-planning-execution-loop/1.0.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-planning-execution-loop/1.0.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-planning-execution-loop/1.0.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-planning-execution-loop/1.0.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-planning-execution-loop/1.0.0/references"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-planning-execution-loop/1.0.0/references/long-task-recovery.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-production-field-readiness"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-production-field-readiness/1.0.0"
+    },
+    {
+      "action": "copy",
+      "path": "vendor/skills/adk-production-field-readiness/1.0.0/LICENSE",
+      "kind": "file"
+    },
+    {
+      "action": "copy",
+      "path": "vendor/skills/adk-production-field-readiness/1.0.0/README.md",
+      "kind": "file"
+    },
+    {
+      "action": "copy",
+      "path": "vendor/skills/adk-production-field-readiness/1.0.0/SKILL.md",
+      "kind": "file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-production-field-readiness/1.0.0/agents"
+    },
+    {
+      "action": "copy",
+      "path": "vendor/skills/adk-production-field-readiness/1.0.0/agents/openai.yaml",
+      "kind": "file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-production-field-readiness/1.0.0/references"
+    },
+    {
+      "action": "copy",
+      "path": "vendor/skills/adk-production-field-readiness/1.0.0/references/pilot-measurement-evidence.md",
+      "kind": "file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-release-versioning"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-release-versioning/1.1.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-release-versioning/1.1.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-release-versioning/1.1.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-release-versioning/1.1.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-release-versioning/1.1.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-release-versioning/1.1.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-release-versioning/1.1.0/references"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-release-versioning/1.1.0/references/details.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-repo-drift-remediation"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-repo-drift-remediation/1.0.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-repo-drift-remediation/1.0.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-repo-drift-remediation/1.0.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-repo-drift-remediation/1.0.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-repo-drift-remediation/1.0.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-repo-drift-remediation/1.0.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-repo-prompt-analysis"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-repo-prompt-analysis/1.0.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-repo-prompt-analysis/1.0.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-repo-prompt-analysis/1.0.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-repo-prompt-analysis/1.0.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-repo-prompt-analysis/1.0.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-repo-prompt-analysis/1.0.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-requirements-triage"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-requirements-triage/1.1.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-requirements-triage/1.1.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-requirements-triage/1.1.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-requirements-triage/1.1.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-requirements-triage/1.1.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-requirements-triage/1.1.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-requirements-triage/1.1.0/references"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-requirements-triage/1.1.0/references/embedded-discovery-brief.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-runtime-router"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-runtime-router/1.0.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-runtime-router/1.0.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-runtime-router/1.0.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-runtime-router/1.0.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-runtime-router/1.0.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-runtime-router/1.0.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-security-supply-chain"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-security-supply-chain/1.0.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-security-supply-chain/1.0.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-security-supply-chain/1.0.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-security-supply-chain/1.0.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-security-supply-chain/1.0.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-security-supply-chain/1.0.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-skill-composition-governance"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-skill-composition-governance/1.0.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-skill-composition-governance/1.0.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-skill-composition-governance/1.0.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-skill-composition-governance/1.0.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-skill-composition-governance/1.0.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-skill-composition-governance/1.0.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-skill-composition-governance/1.0.0/references"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-skill-composition-governance/1.0.0/references/adk-skill-lifecycle.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-skill-deep-analysis"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-skill-deep-analysis/1.0.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-skill-deep-analysis/1.0.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-skill-deep-analysis/1.0.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-skill-deep-analysis/1.0.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-skill-deep-analysis/1.0.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-skill-deep-analysis/1.0.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-skill-deep-analysis/1.0.0/references"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-skill-deep-analysis/1.0.0/references/details.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-static-analysis-c-cpp"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-static-analysis-c-cpp/1.0.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-static-analysis-c-cpp/1.0.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-static-analysis-c-cpp/1.0.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-static-analysis-c-cpp/1.0.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-static-analysis-c-cpp/1.0.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-static-analysis-c-cpp/1.0.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-structured-requirements-questioning"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-structured-requirements-questioning/1.0.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-structured-requirements-questioning/1.0.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-structured-requirements-questioning/1.0.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-structured-requirements-questioning/1.0.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-structured-requirements-questioning/1.0.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-structured-requirements-questioning/1.0.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-systematic-debugging"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-systematic-debugging/1.1.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-systematic-debugging/1.1.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-systematic-debugging/1.1.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-systematic-debugging/1.1.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-systematic-debugging/1.1.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-systematic-debugging/1.1.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-task-breakdown"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-task-breakdown/1.1.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-task-breakdown/1.1.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-task-breakdown/1.1.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-task-breakdown/1.1.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-task-breakdown/1.1.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-task-breakdown/1.1.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-test-strategy"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-test-strategy/1.0.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-test-strategy/1.0.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-test-strategy/1.0.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-test-strategy/1.0.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-test-strategy/1.0.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-test-strategy/1.0.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-test-strategy/1.0.0/references"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-test-strategy/1.0.0/references/embedded-tdd-matrix.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-token-context-governance"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-token-context-governance/1.1.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-token-context-governance/1.1.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-token-context-governance/1.1.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-token-context-governance/1.1.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-token-context-governance/1.1.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-token-context-governance/1.1.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-unit-test-embedded"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-unit-test-embedded/1.0.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-unit-test-embedded/1.0.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-unit-test-embedded/1.0.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-unit-test-embedded/1.0.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-unit-test-embedded/1.0.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-unit-test-embedded/1.0.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-verification-before-completion"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-verification-before-completion/1.0.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-verification-before-completion/1.0.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-verification-before-completion/1.0.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-verification-before-completion/1.0.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-verification-before-completion/1.0.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-verification-before-completion/1.0.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-worktree-governance"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-worktree-governance/1.0.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-worktree-governance/1.0.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-worktree-governance/1.0.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-worktree-governance/1.0.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-worktree-governance/1.0.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-worktree-governance/1.0.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/adk-worktree-governance/1.0.0/references"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/adk-worktree-governance/1.0.0/references/parallel-worktree-task-package.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/browser-reader"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/browser-reader/0.1.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/browser-reader/0.1.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/browser-reader/0.1.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/browser-reader/0.1.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/browser-reader/0.1.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/browser-reader/0.1.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/caveman"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/caveman/1.0.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/caveman/1.0.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/caveman/1.0.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/caveman/1.0.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/caveman/1.0.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/caveman/1.0.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/chronicle-workflow-miner"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/chronicle-workflow-miner/1.1.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/chronicle-workflow-miner/1.1.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/chronicle-workflow-miner/1.1.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/chronicle-workflow-miner/1.1.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/chronicle-workflow-miner/1.1.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/chronicle-workflow-miner/1.1.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/cli-creator"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/cli-creator/0.1.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/cli-creator/0.1.0/LICENSE.txt",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/cli-creator/0.1.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/cli-creator/0.1.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/cli-creator/0.1.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/cli-creator/0.1.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/cli-creator/0.1.0/references"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/cli-creator/0.1.0/references/agent-cli-patterns.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/codex-parallel-collab"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/codex-parallel-collab/3.1.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/codex-parallel-collab/3.1.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/codex-parallel-collab/3.1.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/codex-parallel-collab/3.1.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/codex-parallel-collab/3.1.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/codex-parallel-collab/3.1.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/codex-parallel-collab/3.1.0/references"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/codex-parallel-collab/3.1.0/references/subtask-contract.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/codex-usage-telemetry"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/codex-usage-telemetry/0.1.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/codex-usage-telemetry/0.1.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/codex-usage-telemetry/0.1.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/codex-usage-telemetry/0.1.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/codex-usage-telemetry/0.1.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/codex-usage-telemetry/0.1.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/commit-daily-summary"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/commit-daily-summary/3.1.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/commit-daily-summary/3.1.0/.gitignore",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/commit-daily-summary/3.1.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/commit-daily-summary/3.1.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/commit-daily-summary/3.1.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/commit-daily-summary/3.1.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/commit-daily-summary/3.1.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/embedded-app-doc-handoff"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/embedded-app-doc-handoff/0.1.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/embedded-app-doc-handoff/0.1.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/embedded-app-doc-handoff/0.1.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/embedded-app-doc-handoff/0.1.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/embedded-app-doc-handoff/0.1.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/embedded-app-doc-handoff/0.1.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/embedded-audio-stream-triage"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/embedded-audio-stream-triage/0.1.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/embedded-audio-stream-triage/0.1.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/embedded-audio-stream-triage/0.1.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/embedded-audio-stream-triage/0.1.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/embedded-audio-stream-triage/0.1.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/embedded-audio-stream-triage/0.1.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/embedded-core-dump-triage"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/embedded-core-dump-triage/0.2.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/embedded-core-dump-triage/0.2.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/embedded-core-dump-triage/0.2.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/embedded-core-dump-triage/0.2.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/embedded-core-dump-triage/0.2.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/embedded-core-dump-triage/0.2.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/embedded-log-triage"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/embedded-log-triage/0.2.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/embedded-log-triage/0.2.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/embedded-log-triage/0.2.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/embedded-log-triage/0.2.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/embedded-log-triage/0.2.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/embedded-log-triage/0.2.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/embedded-production-test-lifecycle"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/embedded-production-test-lifecycle/0.1.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/embedded-production-test-lifecycle/0.1.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/embedded-production-test-lifecycle/0.1.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/embedded-production-test-lifecycle/0.1.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/embedded-production-test-lifecycle/0.1.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/embedded-production-test-lifecycle/0.1.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/external-practice-absorption"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/external-practice-absorption/0.1.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/external-practice-absorption/0.1.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/external-practice-absorption/0.1.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/external-practice-absorption/0.1.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/external-practice-absorption/0.1.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/external-practice-absorption/0.1.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/mcp-builder"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/mcp-builder/0.1.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/mcp-builder/0.1.0/LICENSE.txt",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/mcp-builder/0.1.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/mcp-builder/0.1.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/mcp-builder/0.1.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/mcp-builder/0.1.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/mcp-builder/0.1.0/reference"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/mcp-builder/0.1.0/reference/evaluation.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/mcp-builder/0.1.0/reference/mcp_best_practices.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/mcp-builder/0.1.0/reference/node_mcp_server.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/mcp-builder/0.1.0/reference/python_mcp_server.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/mcp-builder/0.1.0/scripts"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/mcp-builder/0.1.0/scripts/connections.py",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/mcp-builder/0.1.0/scripts/evaluation.py",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/mcp-builder/0.1.0/scripts/example_evaluation.xml",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/mcp-builder/0.1.0/scripts/requirements.txt",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/mcu-firmware-release-closure"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/mcu-firmware-release-closure/0.1.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/mcu-firmware-release-closure/0.1.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/mcu-firmware-release-closure/0.1.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/mcu-firmware-release-closure/0.1.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/mcu-firmware-release-closure/0.1.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/mcu-firmware-release-closure/0.1.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/multi-search-engine"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/multi-search-engine/0.1.1"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/multi-search-engine/0.1.1/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/multi-search-engine/0.1.1/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/multi-search-engine/0.1.1/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/multi-search-engine/0.1.1/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/multi-search-engine/0.1.1/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/patent-disclosure-normalization"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/patent-disclosure-normalization/0.1.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/patent-disclosure-normalization/0.1.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/patent-disclosure-normalization/0.1.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/patent-disclosure-normalization/0.1.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/patent-disclosure-normalization/0.1.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/patent-disclosure-normalization/0.1.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/project-daily-summary"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/project-daily-summary/3.1.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/project-daily-summary/3.1.0/.gitignore",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/project-daily-summary/3.1.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/project-daily-summary/3.1.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/project-daily-summary/3.1.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/project-daily-summary/3.1.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/project-daily-summary/3.1.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/protocol-implementation-audit"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/protocol-implementation-audit/0.1.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/protocol-implementation-audit/0.1.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/protocol-implementation-audit/0.1.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/protocol-implementation-audit/0.1.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/protocol-implementation-audit/0.1.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/protocol-implementation-audit/0.1.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/research-note-wrap"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/research-note-wrap/3.1.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/research-note-wrap/3.1.0/.gitignore",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/research-note-wrap/3.1.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/research-note-wrap/3.1.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/research-note-wrap/3.1.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/research-note-wrap/3.1.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/research-note-wrap/3.1.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/research-note-wrap/3.1.0/examples"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/research-note-wrap/3.1.0/examples/maintainer-note-example.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/session-wrap"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/session-wrap/3.1.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/session-wrap/3.1.0/.gitignore",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/session-wrap/3.1.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/session-wrap/3.1.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/session-wrap/3.1.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/session-wrap/3.1.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/session-wrap/3.1.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/session-wrap/3.1.0/references"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/session-wrap/3.1.0/references/multi-agent-patterns.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/sigmastar-release-app-flow"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/sigmastar-release-app-flow/0.1.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/sigmastar-release-app-flow/0.1.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/sigmastar-release-app-flow/0.1.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/sigmastar-release-app-flow/0.1.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/sigmastar-release-app-flow/0.1.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/sigmastar-release-app-flow/0.1.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/skill-asset-manager"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/skill-asset-manager/0.2.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/skill-asset-manager/0.2.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/skill-asset-manager/0.2.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/skill-asset-manager/0.2.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/skill-asset-manager/0.2.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/skill-asset-manager/0.2.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/skill-asset-manager/0.2.0/scripts"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/skill-asset-manager/0.2.0/scripts/apply.sh",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/skill-asset-manager/0.2.0/scripts/build.sh",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/skill-asset-manager/0.2.0/scripts/check-skills.sh",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/skill-asset-manager/0.2.0/scripts/check.sh",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/skill-asset-manager/0.2.0/scripts/doctor.sh",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/skill-asset-manager/0.2.0/scripts/drift.sh",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/skill-asset-manager/0.2.0/scripts/plan.sh",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/skill-asset-manager/0.2.0/scripts/promote-skill.sh",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/skill-asset-manager/0.2.0/scripts/rollback.sh",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/skill-asset-manager/0.2.0/scripts/scan-skills.sh",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/wechat-account-research"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/wechat-account-research/0.1.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/wechat-account-research/0.1.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/wechat-account-research/0.1.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/wechat-account-research/0.1.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/wechat-account-research/0.1.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/wechat-account-research/0.1.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/wechat-account-research/0.1.0/references"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/wechat-account-research/0.1.0/references/evidence-contract.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/windows-gui-release-orchestration"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/windows-gui-release-orchestration/0.1.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/windows-gui-release-orchestration/0.1.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/windows-gui-release-orchestration/0.1.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/windows-gui-release-orchestration/0.1.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/windows-gui-release-orchestration/0.1.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/windows-gui-release-orchestration/0.1.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/worktree-closeout"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/worktree-closeout/3.1.0"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/worktree-closeout/3.1.0/.gitignore",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/worktree-closeout/3.1.0/LICENSE",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/worktree-closeout/3.1.0/README.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/worktree-closeout/3.1.0/SKILL.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/worktree-closeout/3.1.0/agents"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/worktree-closeout/3.1.0/agents/openai.yaml",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/worktree-closeout/3.1.0/references"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/worktree-closeout/3.1.0/references/artifact-format.md",
+      "reason": "same-file"
+    },
+    {
+      "action": "mkdir",
+      "path": "vendor/skills/worktree-closeout/3.1.0/scripts"
+    },
+    {
+      "action": "keep",
+      "path": "vendor/skills/worktree-closeout/3.1.0/scripts/scan_closeout.py",
+      "reason": "same-file"
+    },
+    {
+      "action": "delete",
+      "path": "vendor/skills/multi-search-engine/0.1.0/agents",
+      "kind": "dir",
+      "backup": "/tmp/codex-adk-source-to-live.ZlzOly/worktree/.backups/apply/20260724-194905/vendor/skills/multi-search-engine/0.1.0/agents"
+    },
+    {
+      "action": "delete",
+      "path": "vendor/skills/embedded-log-triage/0.1.0/agents",
+      "kind": "dir",
+      "backup": "/tmp/codex-adk-source-to-live.ZlzOly/worktree/.backups/apply/20260724-194905/vendor/skills/embedded-log-triage/0.1.0/agents"
+    },
+    {
+      "action": "delete",
+      "path": "vendor/skills/embedded-core-dump-triage/0.1.0/agents",
+      "kind": "dir",
+      "backup": "/tmp/codex-adk-source-to-live.ZlzOly/worktree/.backups/apply/20260724-194905/vendor/skills/embedded-core-dump-triage/0.1.0/agents"
+    },
+    {
+      "action": "delete",
+      "path": "vendor/skills/chronicle-workflow-miner/1.0.0/agents",
+      "kind": "dir",
+      "backup": "/tmp/codex-adk-source-to-live.ZlzOly/worktree/.backups/apply/20260724-194905/vendor/skills/chronicle-workflow-miner/1.0.0/agents"
+    },
+    {
+      "action": "delete",
+      "path": "vendor/skills/multi-search-engine/0.1.0",
+      "kind": "dir",
+      "backup": "/tmp/codex-adk-source-to-live.ZlzOly/worktree/.backups/apply/20260724-194905/vendor/skills/multi-search-engine/0.1.0"
+    },
+    {
+      "action": "delete",
+      "path": "vendor/skills/embedded-log-triage/0.1.0",
+      "kind": "dir",
+      "backup": "/tmp/codex-adk-source-to-live.ZlzOly/worktree/.backups/apply/20260724-194905/vendor/skills/embedded-log-triage/0.1.0"
+    },
+    {
+      "action": "delete",
+      "path": "vendor/skills/embedded-core-dump-triage/0.1.0",
+      "kind": "dir",
+      "backup": "/tmp/codex-adk-source-to-live.ZlzOly/worktree/.backups/apply/20260724-194905/vendor/skills/embedded-core-dump-triage/0.1.0"
+    },
+    {
+      "action": "delete",
+      "path": "vendor/skills/chronicle-workflow-miner/1.0.0",
+      "kind": "dir",
+      "backup": "/tmp/codex-adk-source-to-live.ZlzOly/worktree/.backups/apply/20260724-194905/vendor/skills/chronicle-workflow-miner/1.0.0"
+    }
+  ]
+}
