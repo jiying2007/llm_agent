@@ -1,0 +1,37 @@
+{
+  "as_of": "2026-07-30",
+  "auto_actions": [],
+  "boundaries": {
+    "adk_modified": false,
+    "article_body_persisted": false,
+    "credentials_persisted": false,
+    "decision_generated": false,
+    "external_code_executed": false,
+    "live_runtime_modified": false,
+    "network_write": false,
+    "repository_modified": false
+  },
+  "candidate_count": 3,
+  "deduplicated_count": 0,
+  "jobs": [
+    {
+      "candidate_count": 3,
+      "deduplicated_count": 0,
+      "duration_ms": 1,
+      "error_code": null,
+      "id": "manual-collect",
+      "input_ref": "reports/external-practice-targeted-input-2026-07-30.jsonl",
+      "input_sha256": "3c6382f818fcbc8b0645b64fc7a427e8b757d335cf635a00eb2b10f729fa73b7",
+      "mode": "manual",
+      "provider": "manual",
+      "rate_limit": {},
+      "request": null,
+      "status": "complete",
+      "transport": "ledger-only"
+    }
+  ],
+  "ledger_sha256": "d4d491244cd092e181a1931c108145ff0614630cebde87da397f31be0c98d558",
+  "mode": "report-only",
+  "schema": "external-practice-cycle-evidence/v1",
+  "status": "complete"
+}

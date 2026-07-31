@@ -1,0 +1,128 @@
+{
+  "as_of": "2026-07-22",
+  "auto_actions": [],
+  "boundaries": {
+    "adk_modified": false,
+    "article_body_persisted": false,
+    "credentials_persisted": false,
+    "decision_generated": false,
+    "external_code_executed": false,
+    "live_runtime_modified": false,
+    "network_write": false,
+    "repository_modified": false
+  },
+  "candidate_count": 118,
+  "deduplicated_count": 1,
+  "jobs": [
+    {
+      "candidate_count": 30,
+      "deduplicated_count": 0,
+      "duration_ms": 1852,
+      "error_code": null,
+      "id": "github-agent-engineering",
+      "input_ref": null,
+      "input_sha256": null,
+      "mode": "live",
+      "provider": "github",
+      "rate_limit": {},
+      "request": {
+        "host": "api.github.com",
+        "path": "/search/repositories",
+        "query_sha256": "f54f9a3905913766"
+      },
+      "status": "complete",
+      "transport": "metadata-only"
+    },
+    {
+      "candidate_count": 0,
+      "deduplicated_count": 0,
+      "duration_ms": 1426,
+      "error_code": null,
+      "id": "gitlab-agent-engineering",
+      "input_ref": null,
+      "input_sha256": null,
+      "mode": "live",
+      "provider": "gitlab",
+      "rate_limit": {
+        "limit": "500",
+        "remaining": "499",
+        "reset": "1784731680"
+      },
+      "request": {
+        "host": "gitlab.com",
+        "path": "/api/v4/projects",
+        "query_sha256": "f54f9a3905913766"
+      },
+      "status": "complete",
+      "transport": "metadata-only"
+    },
+    {
+      "candidate_count": 0,
+      "deduplicated_count": 0,
+      "duration_ms": 10191,
+      "error_code": null,
+      "id": "gitee-agent-engineering",
+      "input_ref": null,
+      "input_sha256": null,
+      "mode": "live",
+      "provider": "gitee",
+      "rate_limit": {},
+      "request": {
+        "host": "gitee.com",
+        "path": "/api/v5/search/repositories",
+        "query_sha256": "6f9425d95e7b0d80"
+      },
+      "status": "degraded-empty",
+      "transport": "metadata-only"
+    },
+    {
+      "candidate_count": 64,
+      "deduplicated_count": 0,
+      "duration_ms": 19,
+      "error_code": null,
+      "id": "openai-official",
+      "input_ref": "agent-dev-kit/manifests/official_docs_freshness_gates.json",
+      "input_sha256": "a038220d1ac9a365bcfaca6c3798a8256cec4e4a3b65e4d1226b66f14f5600e0",
+      "mode": "local",
+      "provider": "openai-official",
+      "rate_limit": {},
+      "request": null,
+      "status": "complete",
+      "transport": "ledger-only"
+    },
+    {
+      "candidate_count": 5,
+      "deduplicated_count": 0,
+      "duration_ms": 2,
+      "error_code": null,
+      "id": "anthropic-official",
+      "input_ref": "agent-dev-kit/manifests/official_docs_freshness_gates.json",
+      "input_sha256": "a038220d1ac9a365bcfaca6c3798a8256cec4e4a3b65e4d1226b66f14f5600e0",
+      "mode": "local",
+      "provider": "anthropic-official",
+      "rate_limit": {},
+      "request": null,
+      "status": "complete",
+      "transport": "ledger-only"
+    },
+    {
+      "candidate_count": 20,
+      "deduplicated_count": 0,
+      "duration_ms": 5,
+      "error_code": null,
+      "id": "wechat-governed-catalog",
+      "input_ref": "reports/wechat-account-research-2026-07-16/catalog.jsonl",
+      "input_sha256": "84db106e3cbdce211444f3ebdd341c3416f28c9d82346b3f098e19a79335e841",
+      "mode": "local",
+      "provider": "wechat",
+      "rate_limit": {},
+      "request": null,
+      "status": "complete",
+      "transport": "ledger-only"
+    }
+  ],
+  "ledger_sha256": "7c0da4dbaa0fe21b0f639deee8fd8e9ef0107a9f747e630adc746a5237172912",
+  "mode": "report-only",
+  "schema": "external-practice-cycle-evidence/v1",
+  "status": "degraded"
+}

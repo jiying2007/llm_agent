@@ -1,0 +1,834 @@
+{
+  "auto_actions": [],
+  "candidate_count": 118,
+  "mode": "report-only",
+  "recommendations": [
+    {
+      "candidate_id": "epc-ff4a0cf8a1a6d0b7fd09",
+      "provider": "wechat",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-a4a36e390d074570f77f",
+      "provider": "wechat",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-02a3b0c215cdc21dc444",
+      "provider": "wechat",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-2ba2af7cbe830dfb3454",
+      "provider": "wechat",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-d663bd4a5d398f0b9ccc",
+      "provider": "anthropic-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "runbook",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-a5fb05975c0b55452b63",
+      "provider": "anthropic-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "skill",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-c3fd8e8d3a73a6907c46",
+      "provider": "anthropic-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "agent",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-4a9088c9d7b71f37d45d",
+      "provider": "wechat",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "agent",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-b7f26fc497824c919495",
+      "provider": "wechat",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-28332e408f2d0b436a22",
+      "provider": "wechat",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-4d01fcaa179330a82e1f",
+      "provider": "wechat",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-67a922525b2daa65c08b",
+      "provider": "wechat",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-0bc6eb597d55c3b3ed6d",
+      "provider": "wechat",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-d167faa48a921f21656f",
+      "provider": "wechat",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-da809590cbcdf622d5ec",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-baaf3a3f1a8b478879d6",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-2aaa6640a4b36b7f8ba1",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-3cc12940d5b71ddb5652",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-0b80a820a0697047a248",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "manifest",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-517dc3ec397f48aa7897",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "manifest",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-111aa1125252d1846167",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "manifest",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-bebee8ccc7685c6efce6",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "script",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-0281c90d0426139455c6",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "script",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-234d873ee4f63b44bf6d",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "script",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-9fb02d533a060b535ab0",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-3278a9bd5ed99e240e35",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "observe",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-15846f698c68da975120",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "script",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-71b13465705d216509ec",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "manifest",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-bd59c434449163754caa",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "observe",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-34658bf5a924b28be670",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "script",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-6e1b0e303cd26036ccd2",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "manifest",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-7253fe67fbfaf4d5440e",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "agent",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-c34c3bbc45b9373f466a",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "observe",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-dd03491ebb9e09ff4d10",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "skill",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-4082a5973550ab4a036e",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "skill",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-06e110bf2c63cd4011c2",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "script",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-f7129e30acad8512bf83",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "observe",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-d0bb5e0687b015cbf9f9",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "script",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-e6fbccf7da229f73448c",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "agent",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-920211b36736c92b4d65",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "manifest",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-51036249078b502b0e12",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "skill",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-8bd0ad84bd3d05278de0",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "manifest",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-d85ce9e5f0268577f9c9",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "observe",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-78ca2f2e8517f50b0f83",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "script",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-6a98964ad32409e539ab",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "skill",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-60a72bf3997f635738db",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "manifest",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-7ae1637090c1379ea930",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "agent",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-b635ab03690feca6b62b",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "manifest",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-d110d787c8924874361a",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "observe",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-b235829ba6f6f40704ce",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "skill",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-905f515b88b62f55fd40",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-6cb88afdc9461c6d917e",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "observe",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-e979816e4615884cf278",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-78dac8f90b23a6e6f9c1",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "manifest",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-0cfe119038d4daecad6c",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "observe",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-6e3096bdce8f5ac1f465",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "skill",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-6e2baa75935feb0dd995",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "manifest",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-d54f89616139244303c0",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "manifest",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-6e0a2c1c8fd8b8b2a453",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "manifest",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-7ba79655ad84088e4628",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "manifest",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-25f31c7aa6be3d96b612",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-b2cac960e51a72a7da62",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "manifest",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-f3699ecb8f514977f3e7",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-0c297cb6f5d6e1899cfa",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "observe",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-f610f53c0cd06ba2c0ca",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "skill",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-48248a6cc408c74c7ea2",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "agent",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-21866938735d64e099db",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "agent",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-71e6aa60af8a9afe7371",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "observe",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-50319d1e849726429f23",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "manifest",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-8b033046c51028166a24",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "observe",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-db7c7a3fdada8229fb5f",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "observe",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-63c1a3c6df2e6439741c",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "skill",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-e4ea3b5a248c7a7a8da8",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "agent",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-51d57c69688cb7751150",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "observe",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-f208b75fa73e6e869901",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "agent",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-3da977cb7ad016cd7a7d",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "runbook",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-c4da78a087a1ebbda3b4",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "skill",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-f1334447d97b7a03073c",
+      "provider": "openai-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "agent",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-abf902c866a8966e3274",
+      "provider": "github",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-a8b862dc5d424e4574af",
+      "provider": "github",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-a5d349221f2ddb4bc69e",
+      "provider": "github",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-79643464758670c16314",
+      "provider": "github",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-7eecb10202984ff28033",
+      "provider": "github",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-94ba98ea983586832957",
+      "provider": "github",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-acfaf0c62a311b7c032d",
+      "provider": "github",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-9374eb8675fc27b04fe0",
+      "provider": "github",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-684007c5b452ffcf8c66",
+      "provider": "github",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-80d87a1e78eefc672e8e",
+      "provider": "github",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-5bda945166cb0c864255",
+      "provider": "github",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-d694ef8f0bd77cd1b917",
+      "provider": "github",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-6487543229d84477fbe4",
+      "provider": "github",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-7e67ed9fec12fc315bc2",
+      "provider": "github",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-1cb578d82ba51d5f951d",
+      "provider": "github",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-f034a0454cf1f5b036cb",
+      "provider": "github",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-875112d4947054eb21cd",
+      "provider": "github",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-455b3664a80b3aebebf9",
+      "provider": "github",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-ee37849c3415d461807b",
+      "provider": "github",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-e9391b304cd08369e0db",
+      "provider": "github",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-c55aeb3385449f60b335",
+      "provider": "github",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-592da129e979b1c4be35",
+      "provider": "github",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-49d4b8d9deda2a9895ab",
+      "provider": "github",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-7c9fe369a57c8dce2838",
+      "provider": "github",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-f9a21b646717ab5cbf03",
+      "provider": "github",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-a30026eb873ba1766329",
+      "provider": "github",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-ad186e6283e3ae28a2d6",
+      "provider": "github",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-3c03d4cc4b691df091dc",
+      "provider": "github",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-a6f02f30087eb492b95f",
+      "provider": "github",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-b640485e908be916f712",
+      "provider": "github",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-e56a8cc6e1d1fd83f166",
+      "provider": "wechat",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-28b232dcd306796e56c0",
+      "provider": "wechat",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "skill",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-6da5d9ca134b9d6ea509",
+      "provider": "wechat",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-0635001b519c50a6390f",
+      "provider": "anthropic-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "agent",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-02e096f879d63048b445",
+      "provider": "anthropic-official",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-d21396d852772c33fc2e",
+      "provider": "wechat",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "skill",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-519fdc0188cb3aa0f114",
+      "provider": "wechat",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-1ef955b47b60ec5ae005",
+      "provider": "wechat",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-52d89db314b1f62bb217",
+      "provider": "wechat",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-c756329cebabbde986b5",
+      "provider": "wechat",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "skill",
+      "status": "review-required"
+    }
+  ],
+  "schema": "external-practice-recommendations/v1"
+}

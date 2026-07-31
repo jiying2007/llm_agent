@@ -1,7 +1,7 @@
 repo,group,priority,sync_mode,branch,enabled,notes,status,owner,last_reviewed_on,intake_policy,grade
 AUBB-Server,delivery,P2,fetch,main,no,业务闭环证据写法已吸收，移除本地参考仓,disabled,adk-team,2026-06-25,selective-adopt,A
 Migrationed_skills,skill-pool,P1,fetch,main,no,方法已吸收，模板化严重，移除本地参考仓,disabled,adk-team,2026-06-25,observe-first,C
-OpenSpec,workflow-core,P0,fetch,main,yes,Spec 工件体系,active,adk-team,2026-05-02,adopt-first,S
+OpenSpec,workflow-core,P0,fetch,main,yes,Spec 工件体系,active,adk-team,2026-07-23,adopt-first,S
 agency-agents-zh,agent-ecosystem,P1,fetch,main,no,角色职责矩阵与术语体系已吸收，移除本地参考仓,disabled,adk-team,2026-06-25,observe-first,S
 agent-skills,agent-ecosystem,P1,fetch,main,no,技能触发路由与生命周期映射已吸收；2026-07-11 继续 observe-light watch 新增质量门禁,disabled,adk-team,2026-07-11,observe-first,S
 ai-coding-guide,knowledge,P1,fetch,main,no,场景化工作流导览与风险提示已吸收，移除本地参考仓,disabled,adk-team,2026-06-25,observe-first,A
@@ -27,9 +27,9 @@ oh-my-codex,codex-runtime,P1,fetch,main,yes,Codex工作流运行层submodule观�
 planning-with-files,workflow-quality,P1,fetch,master,yes,文件化长任务计划与恢复submodule观察，不启用hooks,active,adk-team,2026-06-29,observe-first,A
 prompts,knowledge,P2,fetch,main,no,提示词资产轻量演进机制已吸收，移除本地参考仓,disabled,adk-team,2026-06-25,selective-adopt,A
 skills,agent-ecosystem,P1,fetch,main,no,skills CLI 目录约定与安装入口已吸收，移除本地参考仓,disabled,adk-team,2026-06-25,observe-first,A
-superpowers,workflow-core,P0,fetch,main,yes,流程主干来源,active,adk-team,2026-05-02,adopt-first,S
+superpowers,workflow-core,P0,fetch,main,yes,流程主干来源,active,adk-team,2026-07-23,adopt-first,S
 superpowers-zh,workflow-core,P0,fetch,main,no,中文触发词与流程表达已吸收，保留 superpowers 主仓即可,disabled,adk-team,2026-06-25,adopt-first,A
 Trellis,reference,P2,pull,main,no,知识图谱与状态上下文边界已吸收，移除本地参考仓,disabled,aiot03,2026-06-25,observe-first,B
-vibeflow,workflow-core,P0,fetch,main,yes,SDD+Harness交付编排层; 36 skills覆盖全流程; Claude Code/Codex/OpenCode,active,aiot03,2026-05-12,observe-first,S
+vibeflow,workflow-core,P0,fetch,main,yes,SDD+Harness交付编排层; 36 skills覆盖全流程; Claude Code/Codex/OpenCode,active,aiot03,2026-07-23,observe-first,S
 agent-browser,tooling,P1,fetch,main,no,浏览器快照与 ref 交互模式已吸收，移除本地参考仓,disabled,aiot03,2026-06-25,observe-first,A
 scale-engine,workflow-core,P1,fetch,master,yes,AI Agent治理运行时参考; gates/evidence/context/queue; Gitee submodule持续跟踪,active,adk-team,2026-06-25,observe-first,A

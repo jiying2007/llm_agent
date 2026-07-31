@@ -1,0 +1,1859 @@
+{
+  "as_of": "2026-07-22",
+  "auto_actions": [],
+  "candidate_count": 118,
+  "items": [
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-ff4a0cf8a1a6d0b7fd09",
+      "canonical_url": "https://agentscope.io/blog/alibaba-business-travel/",
+      "evidence_refs": [
+        "reports/wechat-account-research-2026-07-16/catalog.jsonl"
+      ],
+      "provider": "wechat",
+      "risk_flags": [
+        "copyright-review-required",
+        "secondary-source",
+        "untrusted-locator"
+      ],
+      "status": "pending-owner-review",
+      "title": "准确率提升至 90%，阿里商旅基于 AgentScope 构建多智能体差旅助手最佳实践",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-a4a36e390d074570f77f",
+      "canonical_url": "https://cloud.tencent.com/developer/news/3860908",
+      "evidence_refs": [
+        "reports/wechat-account-research-2026-07-16/catalog.jsonl"
+      ],
+      "provider": "wechat",
+      "risk_flags": [
+        "copyright-review-required",
+        "secondary-source"
+      ],
+      "status": "pending-owner-review",
+      "title": "从提需求到部署发布，全AI全自动化后，研发效能全面跃升",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-02a3b0c215cdc21dc444",
+      "canonical_url": "https://cloud.tencent.com/developer/news/4219098",
+      "evidence_refs": [
+        "reports/wechat-account-research-2026-07-16/catalog.jsonl"
+      ],
+      "provider": "wechat",
+      "risk_flags": [
+        "copyright-review-required",
+        "secondary-source"
+      ],
+      "status": "pending-owner-review",
+      "title": "精打细算虾养成指南： 省 Token 和把 AI 用好，从来就是一件事",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-2ba2af7cbe830dfb3454",
+      "canonical_url": "https://cn-sec.com/archives/5060532.html",
+      "evidence_refs": [
+        "reports/wechat-account-research-2026-07-16/catalog.jsonl"
+      ],
+      "provider": "wechat",
+      "risk_flags": [
+        "copyright-review-required",
+        "secondary-source",
+        "untrusted-locator"
+      ],
+      "status": "pending-owner-review",
+      "title": "鹅厂员工怎么看Agent自动持续进化？",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "runbook",
+      "candidate_id": "epc-d663bd4a5d398f0b9ccc",
+      "canonical_url": "https://code.claude.com/docs/en/best-practices",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "anthropic-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Claude Code best practices: verification, exploration, planning and context management",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "skill",
+      "candidate_id": "epc-a5fb05975c0b55452b63",
+      "canonical_url": "https://code.claude.com/docs/en/skills",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "anthropic-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Claude Code skills: discovery paths, frontmatter and progressive disclosure",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "agent",
+      "candidate_id": "epc-c3fd8e8d3a73a6907c46",
+      "canonical_url": "https://code.claude.com/docs/en/sub-agents",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "anthropic-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Claude Code custom subagents: discovery, frontmatter, permissions and context isolation",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "agent",
+      "candidate_id": "epc-4a9088c9d7b71f37d45d",
+      "canonical_url": "https://developer.aliyun.com/article/1704117",
+      "evidence_refs": [
+        "reports/wechat-account-research-2026-07-16/catalog.jsonl"
+      ],
+      "provider": "wechat",
+      "risk_flags": [
+        "copyright-review-required",
+        "secondary-source",
+        "untrusted-locator"
+      ],
+      "status": "pending-owner-review",
+      "title": "AI Agent 记忆系统：从短期到长期的技术架构与实践",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-b7f26fc497824c919495",
+      "canonical_url": "https://developer.aliyun.com/article/1710689",
+      "evidence_refs": [
+        "reports/wechat-account-research-2026-07-16/catalog.jsonl"
+      ],
+      "provider": "wechat",
+      "risk_flags": [
+        "copyright-review-required",
+        "secondary-source",
+        "untrusted-locator"
+      ],
+      "status": "pending-owner-review",
+      "title": "自动化评测的九九归一——评测agent",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-28332e408f2d0b436a22",
+      "canonical_url": "https://developer.aliyun.com/article/1713530",
+      "evidence_refs": [
+        "reports/wechat-account-research-2026-07-16/catalog.jsonl"
+      ],
+      "provider": "wechat",
+      "risk_flags": [
+        "copyright-review-required",
+        "secondary-source",
+        "untrusted-locator"
+      ],
+      "status": "pending-owner-review",
+      "title": "AI Agent系列｜深入解析Function Calling、MCP和Skills的本质差异与最佳实践",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-4d01fcaa179330a82e1f",
+      "canonical_url": "https://developer.aliyun.com/article/1714719",
+      "evidence_refs": [
+        "reports/wechat-account-research-2026-07-16/catalog.jsonl"
+      ],
+      "provider": "wechat",
+      "risk_flags": [
+        "copyright-review-required",
+        "secondary-source",
+        "untrusted-locator"
+      ],
+      "status": "pending-owner-review",
+      "title": "打造高可靠 AI 助手：Skill 编排、Workflow 设计与 Spec Coding 的深度实践",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-67a922525b2daa65c08b",
+      "canonical_url": "https://developer.aliyun.com/article/1719997",
+      "evidence_refs": [
+        "reports/wechat-account-research-2026-07-16/catalog.jsonl"
+      ],
+      "provider": "wechat",
+      "risk_flags": [
+        "copyright-review-required",
+        "secondary-source",
+        "untrusted-locator"
+      ],
+      "status": "pending-owner-review",
+      "title": "企业级 Agent 多智能体架构与选型指南 -- 来自1000+行业应用实践积累",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-0bc6eb597d55c3b3ed6d",
+      "canonical_url": "https://developer.aliyun.com/article/1722841",
+      "evidence_refs": [
+        "reports/wechat-account-research-2026-07-16/catalog.jsonl"
+      ],
+      "provider": "wechat",
+      "risk_flags": [
+        "copyright-review-required",
+        "secondary-source",
+        "untrusted-locator"
+      ],
+      "status": "pending-owner-review",
+      "title": "Agent Skills：打通可复用专业领域知识的最后一公里",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-d167faa48a921f21656f",
+      "canonical_url": "https://developer.aliyun.com/article/1723783",
+      "evidence_refs": [
+        "reports/wechat-account-research-2026-07-16/catalog.jsonl"
+      ],
+      "provider": "wechat",
+      "risk_flags": [
+        "copyright-review-required",
+        "secondary-source",
+        "untrusted-locator"
+      ],
+      "status": "pending-owner-review",
+      "title": "学习笔记：从 Agent 到 Skills — AI 智能体架构的范式转变",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-da809590cbcdf622d5ec",
+      "canonical_url": "https://developers.openai.com/api/docs/guides/agent-evals",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Evaluate agent workflows",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-baaf3a3f1a8b478879d6",
+      "canonical_url": "https://developers.openai.com/api/docs/guides/agents#choose-your-starting-point",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Agents SDK: starting points for definitions, state, handoffs, guardrails, tools, observability",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-2aaa6640a4b36b7f8ba1",
+      "canonical_url": "https://developers.openai.com/api/docs/guides/agents/integrations-observability#tracing",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Agents SDK integrations and observability: tracing",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-3cc12940d5b71ddb5652",
+      "canonical_url": "https://developers.openai.com/api/docs/guides/agents/orchestration",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Agents SDK orchestration: handoffs and agents as tools",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "manifest",
+      "candidate_id": "epc-0b80a820a0697047a248",
+      "canonical_url": "https://developers.openai.com/api/docs/guides/developer-mode#how-to-use",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "ChatGPT Developer mode: MCP app creation, tool selection, JSON payload review and write-action confirmation",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "manifest",
+      "candidate_id": "epc-517dc3ec397f48aa7897",
+      "canonical_url": "https://developers.openai.com/api/docs/guides/function-calling",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Function calling: strict schemas, tool descriptions, namespaces and tool-call output flow",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "manifest",
+      "candidate_id": "epc-111aa1125252d1846167",
+      "canonical_url": "https://developers.openai.com/api/docs/guides/graders",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Graders: deterministic and model-graded evaluation checks",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "script",
+      "candidate_id": "epc-bebee8ccc7685c6efce6",
+      "canonical_url": "https://developers.openai.com/api/docs/guides/latest-model#using-reasoning-models",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Using reasoning models",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "script",
+      "candidate_id": "epc-0281c90d0426139455c6",
+      "canonical_url": "https://developers.openai.com/api/docs/guides/migrate-to-responses",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Migrate to the Responses API",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "script",
+      "candidate_id": "epc-234d873ee4f63b44bf6d",
+      "canonical_url": "https://developers.openai.com/api/docs/guides/migrate-to-responses#4-decide-when-to-use-statefulness",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Responses migration: deciding when to use statefulness",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-9fb02d533a060b535ab0",
+      "canonical_url": "https://developers.openai.com/api/docs/guides/model-optimization#model-optimization-workflow",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Model optimization workflow: eval baseline, prompt, representative eval and iteration",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "observe",
+      "candidate_id": "epc-3278a9bd5ed99e240e35",
+      "canonical_url": "https://developers.openai.com/api/docs/guides/optimizing-llm-accuracy",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Optimizing LLM Accuracy: prompt baseline, eval sets, RAG, fine-tuning and production accuracy tradeoffs",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "script",
+      "candidate_id": "epc-15846f698c68da975120",
+      "canonical_url": "https://developers.openai.com/api/docs/guides/prompt-caching",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Prompt caching: prompt structure, cache key and cached-token observability",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "manifest",
+      "candidate_id": "epc-71b13465705d216509ec",
+      "canonical_url": "https://developers.openai.com/api/docs/guides/prompt-caching#prompt-cache-retention",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Prompt caching: retention policy and model support",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "observe",
+      "candidate_id": "epc-bd59c434449163754caa",
+      "canonical_url": "https://developers.openai.com/api/docs/guides/prompt-engineering#message-formatting-with-markdown-and-xml",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Prompt engineering: message formatting with Markdown and XML",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "script",
+      "candidate_id": "epc-34658bf5a924b28be670",
+      "canonical_url": "https://developers.openai.com/api/docs/guides/prompt-engineering#message-roles-and-instruction-following",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Prompt engineering: message roles and instruction following",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "manifest",
+      "candidate_id": "epc-6e1b0e303cd26036ccd2",
+      "canonical_url": "https://developers.openai.com/api/docs/guides/structured-outputs",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Structured model outputs: JSON schema adherence, refusals and schema drift controls",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "agent",
+      "candidate_id": "epc-7253fe67fbfaf4d5440e",
+      "canonical_url": "https://developers.openai.com/api/docs/guides/tools",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "OpenAI tools guide: hosted tools, function tools, MCP, shell, computer use, file search and tool search",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "observe",
+      "candidate_id": "epc-c34c3bbc45b9373f466a",
+      "canonical_url": "https://developers.openai.com/api/docs/guides/tools-file-search",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "File search and retrieval: vector stores, metadata filters, citations and result controls",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "skill",
+      "candidate_id": "epc-dd03491ebb9e09ff4d10",
+      "canonical_url": "https://developers.openai.com/api/docs/guides/tools-tool-search",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Tool search: deferred tools, namespaces, MCP search surfaces and cache-preserving loading",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "skill",
+      "candidate_id": "epc-4082a5973550ab4a036e",
+      "canonical_url": "https://developers.openai.com/api/docs/guides/your-data#v1responses",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Data controls: /v1/responses retention controls",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "script",
+      "candidate_id": "epc-06e110bf2c63cd4011c2",
+      "canonical_url": "https://developers.openai.com/api/docs/mcp",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Building MCP servers for ChatGPT Apps and API integrations",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "observe",
+      "candidate_id": "epc-e12eb25a1983ad2657e7",
+      "canonical_url": "https://developers.openai.com/api/docs/models",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Models: current OpenAI model catalog and latest-model guidance",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "script",
+      "candidate_id": "epc-d0bb5e0687b015cbf9f9",
+      "canonical_url": "https://developers.openai.com/apps-sdk/deploy/submission#app-review--approval-faqs",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Apps SDK submission FAQ: MCP tools, PII, readOnlyHint, destructiveHint, openWorldHint",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "agent",
+      "candidate_id": "epc-e6fbccf7da229f73448c",
+      "canonical_url": "https://developers.openai.com/codex/agent-approvals-security#dangerous-settings",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Codex agent approvals and security: dangerous settings, network proxy and web search",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "manifest",
+      "candidate_id": "epc-920211b36736c92b4d65",
+      "canonical_url": "https://developers.openai.com/codex/app-server#api-overview",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Codex App Server API overview",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "skill",
+      "candidate_id": "epc-51036249078b502b0e12",
+      "canonical_url": "https://developers.openai.com/codex/app/automations",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Codex app automations: recurring tasks, skills, sandbox, approval policy and first-run review",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "manifest",
+      "candidate_id": "epc-8bd0ad84bd3d05278de0",
+      "canonical_url": "https://developers.openai.com/codex/app/worktrees",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Codex app worktrees: background isolation, handoff, detached HEAD and cleanup",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "observe",
+      "candidate_id": "epc-d85ce9e5f0268577f9c9",
+      "canonical_url": "https://developers.openai.com/codex/appshots",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Codex Appshots: frontmost-window capture, visible text and permission safety",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "script",
+      "candidate_id": "epc-78ca2f2e8517f50b0f83",
+      "canonical_url": "https://developers.openai.com/codex/cli/slash-commands#built-in-slash-commands",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Codex CLI built-in slash commands",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "skill",
+      "candidate_id": "epc-6a98964ad32409e539ab",
+      "canonical_url": "https://developers.openai.com/codex/concepts/customization#skills",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Codex customization: AGENTS, skills, plugins, MCP, subagents",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "manifest",
+      "candidate_id": "epc-60a72bf3997f635738db",
+      "canonical_url": "https://developers.openai.com/codex/concepts/sandboxing#configure-defaults",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Codex sandbox and approvals: configure defaults",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "agent",
+      "candidate_id": "epc-7ae1637090c1379ea930",
+      "canonical_url": "https://developers.openai.com/codex/config-reference#configtoml",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Codex configuration reference: config.toml, project config, agents, MCP, permissions",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "manifest",
+      "candidate_id": "epc-b635ab03690feca6b62b",
+      "canonical_url": "https://developers.openai.com/codex/config-reference#requirementstoml",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Codex admin-enforced requirements.toml",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "observe",
+      "candidate_id": "epc-d110d787c8924874361a",
+      "canonical_url": "https://developers.openai.com/codex/github-action",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Codex GitHub Action: CI/CD Codex execution, outputs, sandbox and security checklist",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "skill",
+      "candidate_id": "epc-b235829ba6f6f40704ce",
+      "canonical_url": "https://developers.openai.com/codex/glossary",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Codex glossary: terms across App, CLI, IDE extension, Cloud, SDK and integrations",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-905f515b88b62f55fd40",
+      "canonical_url": "https://developers.openai.com/codex/guides/agents-sdk#creating-multi-agent-workflows",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Codex with Agents SDK: multi-agent workflows, MCP handoffs and traces",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "observe",
+      "candidate_id": "epc-6cb88afdc9461c6d917e",
+      "canonical_url": "https://developers.openai.com/codex/guides/agents-sdk#running-codex-as-an-mcp-server",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Running Codex as an MCP server",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-e979816e4615884cf278",
+      "canonical_url": "https://developers.openai.com/codex/guides/build-ai-native-engineering-team#how-coding-agents-help-5",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Building an AI-native engineering team: documentation in delivery workflows",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "manifest",
+      "candidate_id": "epc-78dac8f90b23a6e6f9c1",
+      "canonical_url": "https://developers.openai.com/codex/hooks",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Codex lifecycle hooks",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "observe",
+      "candidate_id": "epc-0cfe119038d4daecad6c",
+      "canonical_url": "https://developers.openai.com/codex/hooks#common-output-fields",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Codex hooks common output fields",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "skill",
+      "candidate_id": "epc-6e3096bdce8f5ac1f465",
+      "canonical_url": "https://developers.openai.com/codex/learn/best-practices",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Codex best practices: context, AGENTS.md, testing, MCP, skills, automations and session controls",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "manifest",
+      "candidate_id": "epc-6e2baa75935feb0dd995",
+      "canonical_url": "https://developers.openai.com/codex/mcp#other-configuration-options",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Codex MCP configuration options",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "manifest",
+      "candidate_id": "epc-d54f89616139244303c0",
+      "canonical_url": "https://developers.openai.com/codex/memories",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Codex memories: local memory feature flags, rollout limits and external-context boundary",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "manifest",
+      "candidate_id": "epc-6e0a2c1c8fd8b8b2a453",
+      "canonical_url": "https://developers.openai.com/codex/noninteractive",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Codex non-interactive and programmatic interfaces",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "manifest",
+      "candidate_id": "epc-7ba79655ad84088e4628",
+      "canonical_url": "https://developers.openai.com/codex/permissions",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Codex permissions: named least-privilege filesystem and network profiles",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-25f31c7aa6be3d96b612",
+      "canonical_url": "https://developers.openai.com/codex/plugins/build#create-a-plugin-manually",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Build Codex plugins",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "manifest",
+      "candidate_id": "epc-b2cac960e51a72a7da62",
+      "canonical_url": "https://developers.openai.com/codex/plugins/build#marketplace-metadata",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Codex plugin marketplace metadata",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-f3699ecb8f514977f3e7",
+      "canonical_url": "https://developers.openai.com/codex/record-and-replay",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Codex Record & Replay: demonstrated workflow to reusable skill",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "observe",
+      "candidate_id": "epc-0c297cb6f5d6e1899cfa",
+      "canonical_url": "https://developers.openai.com/codex/rules#create-a-rules-file",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Codex command execution rules",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "skill",
+      "candidate_id": "epc-f610f53c0cd06ba2c0ca",
+      "canonical_url": "https://developers.openai.com/codex/skills",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Codex Agent Skills: progressive disclosure, description-trigger matching, storage scopes and plugin distribution",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "agent",
+      "candidate_id": "epc-48248a6cc408c74c7ea2",
+      "canonical_url": "https://developers.openai.com/codex/subagents",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Codex subagents runtime: custom agents, max threads, max depth and job runtime",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "agent",
+      "candidate_id": "epc-21866938735d64e099db",
+      "canonical_url": "https://developers.openai.com/cookbook/examples/agents_sdk/agent_improvement_loop",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Build an Agent Improvement Loop with Traces, Evals, and Codex",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "observe",
+      "candidate_id": "epc-71e6aa60af8a9afe7371",
+      "canonical_url": "https://developers.openai.com/cookbook/examples/agents_sdk/session_memory#why-context-management-matters",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Context Engineering: short-term memory management with sessions",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "manifest",
+      "candidate_id": "epc-50319d1e849726429f23",
+      "canonical_url": "https://developers.openai.com/cookbook/examples/codex/build_code_review_with_codex_sdk",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Build Code Review with the Codex SDK: structured findings and SCM review publishing",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "observe",
+      "candidate_id": "epc-8b033046c51028166a24",
+      "canonical_url": "https://developers.openai.com/cookbook/examples/codex/build_iterative_repair_loops_with_codex",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Build iterative repair loops with Codex",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "observe",
+      "candidate_id": "epc-db7c7a3fdada8229fb5f",
+      "canonical_url": "https://developers.openai.com/cookbook/examples/evaluation/use-cases/completion-monitoring",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Evals use case: monitoring stored completions for prompt regressions",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "skill",
+      "candidate_id": "epc-63c1a3c6df2e6439741c",
+      "canonical_url": "https://developers.openai.com/cookbook/examples/optimize_prompts#4-using-evaluations-to-arrive-at-these-agents",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Optimize Prompts cookbook: golden examples for instruction tuning",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "agent",
+      "candidate_id": "epc-e4ea3b5a248c7a7a8da8",
+      "canonical_url": "https://developers.openai.com/cookbook/examples/partners/agentic_governance_guide/agentic_governance_cookbook#step-2-create-a-test-dataset",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Agentic governance guide: guardrail positive and negative test datasets",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "observe",
+      "candidate_id": "epc-51d57c69688cb7751150",
+      "canonical_url": "https://developers.openai.com/cookbook/examples/partners/eval_driven_system_design/receipt_inspection#further-improvements",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Eval driven system design: improvement ladder and eval data separation",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "agent",
+      "candidate_id": "epc-f208b75fa73e6e869901",
+      "canonical_url": "https://developers.openai.com/cookbook/examples/partners/macro_evals_for_agentic_systems/macro_evals_for_agentic_systems",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Macro Evals for Agentic Systems",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "runbook",
+      "candidate_id": "epc-3da977cb7ad016cd7a7d",
+      "canonical_url": "https://developers.openai.com/cookbook/examples/partners/model_selection_guide/model_selection_guide",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Practical guide for model selection: KPIs, SLOs, cost, versioning, A/B and rollback",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "skill",
+      "candidate_id": "epc-c4da78a087a1ebbda3b4",
+      "canonical_url": "https://developers.openai.com/cookbook/examples/skills_in_api#operational-best-practices",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Skills in OpenAI API: discoverability, version pinning, tiny CLI behavior and network boundaries",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "agent",
+      "candidate_id": "epc-f1334447d97b7a03073c",
+      "canonical_url": "https://developers.openai.com/learn/docs-mcp#quickstart",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "openai-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "OpenAI Docs MCP quickstart",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-fab28864f8927fb0b5e0",
+      "canonical_url": "https://github.com/AbyssCN/oh-my-dag",
+      "evidence_refs": [
+        "https://api.github.com/search/repositories#query-sha256=f54f9a3905913766"
+      ],
+      "provider": "github",
+      "risk_flags": [],
+      "status": "pending-owner-review",
+      "title": "AbyssCN/oh-my-dag",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-4303fdf53a2b5a25f982",
+      "canonical_url": "https://github.com/GaganChaudhary6378/harness-skills",
+      "evidence_refs": [
+        "https://api.github.com/search/repositories#query-sha256=f54f9a3905913766"
+      ],
+      "provider": "github",
+      "risk_flags": [],
+      "status": "pending-owner-review",
+      "title": "GaganChaudhary6378/harness-skills",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-ca3cf657dc4e587bbf78",
+      "canonical_url": "https://github.com/HaipingShi/coderail",
+      "evidence_refs": [
+        "https://api.github.com/search/repositories#query-sha256=f54f9a3905913766"
+      ],
+      "provider": "github",
+      "risk_flags": [
+        "license-review-required"
+      ],
+      "status": "pending-owner-review",
+      "title": "HaipingShi/coderail",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-596363c2568b0bab1dfe",
+      "canonical_url": "https://github.com/KedraVt/gstack-pi",
+      "evidence_refs": [
+        "https://api.github.com/search/repositories#query-sha256=f54f9a3905913766"
+      ],
+      "provider": "github",
+      "risk_flags": [
+        "license-review-required"
+      ],
+      "status": "pending-owner-review",
+      "title": "KedraVt/gstack-pi",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-5eaa4ceb7b6bb95a39f9",
+      "canonical_url": "https://github.com/LearnPrompt/cc-harness-skills",
+      "evidence_refs": [
+        "https://api.github.com/search/repositories#query-sha256=f54f9a3905913766"
+      ],
+      "provider": "github",
+      "risk_flags": [],
+      "status": "pending-owner-review",
+      "title": "LearnPrompt/cc-harness-skills",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-fdc4772ff96f87c88aa1",
+      "canonical_url": "https://github.com/ajanatka/lean-flow",
+      "evidence_refs": [
+        "https://api.github.com/search/repositories#query-sha256=f54f9a3905913766"
+      ],
+      "provider": "github",
+      "risk_flags": [
+        "license-review-required"
+      ],
+      "status": "pending-owner-review",
+      "title": "ajanatka/lean-flow",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-00a72e902b8a4a32712a",
+      "canonical_url": "https://github.com/appautomaton/latex-arxiv-SKILL",
+      "evidence_refs": [
+        "https://api.github.com/search/repositories#query-sha256=f54f9a3905913766"
+      ],
+      "provider": "github",
+      "risk_flags": [],
+      "status": "pending-owner-review",
+      "title": "appautomaton/latex-arxiv-SKILL",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-d5139fdfabe53e2d5e4f",
+      "canonical_url": "https://github.com/astrojones/astrojones",
+      "evidence_refs": [
+        "https://api.github.com/search/repositories#query-sha256=f54f9a3905913766"
+      ],
+      "provider": "github",
+      "risk_flags": [],
+      "status": "pending-owner-review",
+      "title": "astrojones/astrojones",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-8fc234f768f1c37da9a5",
+      "canonical_url": "https://github.com/blundergoat/goat-flow",
+      "evidence_refs": [
+        "https://api.github.com/search/repositories#query-sha256=f54f9a3905913766"
+      ],
+      "provider": "github",
+      "risk_flags": [],
+      "status": "pending-owner-review",
+      "title": "blundergoat/goat-flow",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-8899c8fa7e261d5165ec",
+      "canonical_url": "https://github.com/codewithvibes/agent-operating-kit",
+      "evidence_refs": [
+        "https://api.github.com/search/repositories#query-sha256=f54f9a3905913766"
+      ],
+      "provider": "github",
+      "risk_flags": [],
+      "status": "pending-owner-review",
+      "title": "codewithvibes/agent-operating-kit",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-fc893f1a5de6038918b5",
+      "canonical_url": "https://github.com/drafael/coding-harness",
+      "evidence_refs": [
+        "https://api.github.com/search/repositories#query-sha256=f54f9a3905913766"
+      ],
+      "provider": "github",
+      "risk_flags": [],
+      "status": "pending-owner-review",
+      "title": "drafael/coding-harness",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-b971651685ab59c071d7",
+      "canonical_url": "https://github.com/dsj1984/mandrel",
+      "evidence_refs": [
+        "https://api.github.com/search/repositories#query-sha256=f54f9a3905913766"
+      ],
+      "provider": "github",
+      "risk_flags": [],
+      "status": "pending-owner-review",
+      "title": "dsj1984/mandrel",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-3a690dfd124b5827fb31",
+      "canonical_url": "https://github.com/ferueda/harness",
+      "evidence_refs": [
+        "https://api.github.com/search/repositories#query-sha256=f54f9a3905913766"
+      ],
+      "provider": "github",
+      "risk_flags": [],
+      "status": "pending-owner-review",
+      "title": "ferueda/harness",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-7e67ed9fec12fc315bc2",
+      "canonical_url": "https://github.com/fl-sean03/skills",
+      "evidence_refs": [
+        "https://api.github.com/search/repositories#query-sha256=f54f9a3905913766"
+      ],
+      "provider": "github",
+      "risk_flags": [],
+      "status": "pending-owner-review",
+      "title": "fl-sean03/skills",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-d1ad23131d98f05f1bfe",
+      "canonical_url": "https://github.com/gzb1128/skill-forge",
+      "evidence_refs": [
+        "https://api.github.com/search/repositories#query-sha256=f54f9a3905913766"
+      ],
+      "provider": "github",
+      "risk_flags": [],
+      "status": "pending-owner-review",
+      "title": "gzb1128/skill-forge",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-b2bd276febcc80e12e70",
+      "canonical_url": "https://github.com/jonhill90/agent-dotfiles",
+      "evidence_refs": [
+        "https://api.github.com/search/repositories#query-sha256=f54f9a3905913766"
+      ],
+      "provider": "github",
+      "risk_flags": [
+        "license-review-required"
+      ],
+      "status": "pending-owner-review",
+      "title": "jonhill90/agent-dotfiles",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-ee37849c3415d461807b",
+      "canonical_url": "https://github.com/kim-dongho/agent-harness-starter",
+      "evidence_refs": [
+        "https://api.github.com/search/repositories#query-sha256=f54f9a3905913766"
+      ],
+      "provider": "github",
+      "risk_flags": [
+        "license-review-required"
+      ],
+      "status": "pending-owner-review",
+      "title": "kim-dongho/agent-harness-starter",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-85251b3213b5a3adbab7",
+      "canonical_url": "https://github.com/lifan-builds/context-harness",
+      "evidence_refs": [
+        "https://api.github.com/search/repositories#query-sha256=f54f9a3905913766"
+      ],
+      "provider": "github",
+      "risk_flags": [
+        "license-review-required"
+      ],
+      "status": "pending-owner-review",
+      "title": "lifan-builds/context-harness",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-7d878cb2ba44769776de",
+      "canonical_url": "https://github.com/loulanyue/awesome-claude-notes",
+      "evidence_refs": [
+        "https://api.github.com/search/repositories#query-sha256=f54f9a3905913766"
+      ],
+      "provider": "github",
+      "risk_flags": [],
+      "status": "pending-owner-review",
+      "title": "loulanyue/awesome-claude-notes",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-6feb1abba652076f7ee4",
+      "canonical_url": "https://github.com/luizgmassa/massa-harness",
+      "evidence_refs": [
+        "https://api.github.com/search/repositories#query-sha256=f54f9a3905913766"
+      ],
+      "provider": "github",
+      "risk_flags": [],
+      "status": "pending-owner-review",
+      "title": "luizgmassa/massa-harness",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-cde7821b57203598ca8b",
+      "canonical_url": "https://github.com/maximus-fox/qa-pipeline",
+      "evidence_refs": [
+        "https://api.github.com/search/repositories#query-sha256=f54f9a3905913766"
+      ],
+      "provider": "github",
+      "risk_flags": [],
+      "status": "pending-owner-review",
+      "title": "maximus-fox/qa-pipeline",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-592da129e979b1c4be35",
+      "canonical_url": "https://github.com/misaya-yang/prd-phase-harness",
+      "evidence_refs": [
+        "https://api.github.com/search/repositories#query-sha256=f54f9a3905913766"
+      ],
+      "provider": "github",
+      "risk_flags": [
+        "license-review-required"
+      ],
+      "status": "pending-owner-review",
+      "title": "misaya-yang/prd-phase-harness",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-7f3b45d83a4d3954effa",
+      "canonical_url": "https://github.com/misty-step/harness-kit",
+      "evidence_refs": [
+        "https://api.github.com/search/repositories#query-sha256=f54f9a3905913766"
+      ],
+      "provider": "github",
+      "risk_flags": [
+        "archived-source"
+      ],
+      "status": "pending-owner-review",
+      "title": "misty-step/harness-kit",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-5350bb30d30ff92399b5",
+      "canonical_url": "https://github.com/paniolo-ai/scan",
+      "evidence_refs": [
+        "https://api.github.com/search/repositories#query-sha256=f54f9a3905913766"
+      ],
+      "provider": "github",
+      "risk_flags": [],
+      "status": "pending-owner-review",
+      "title": "paniolo-ai/scan",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-89e8cb5033f6d1072ecb",
+      "canonical_url": "https://github.com/phuong-leadsoft/katzkin-claude-harness",
+      "evidence_refs": [
+        "https://api.github.com/search/repositories#query-sha256=f54f9a3905913766"
+      ],
+      "provider": "github",
+      "risk_flags": [
+        "license-review-required"
+      ],
+      "status": "pending-owner-review",
+      "title": "phuong-leadsoft/katzkin-claude-harness",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-6c90f26eeee0aa9c3e8e",
+      "canonical_url": "https://github.com/qiyuey/harness-skills",
+      "evidence_refs": [
+        "https://api.github.com/search/repositories#query-sha256=f54f9a3905913766"
+      ],
+      "provider": "github",
+      "risk_flags": [
+        "license-review-required"
+      ],
+      "status": "pending-owner-review",
+      "title": "qiyuey/harness-skills",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-d382b7b615ace7fe7d2c",
+      "canonical_url": "https://github.com/romiluz13/auto-pi",
+      "evidence_refs": [
+        "https://api.github.com/search/repositories#query-sha256=f54f9a3905913766"
+      ],
+      "provider": "github",
+      "risk_flags": [],
+      "status": "pending-owner-review",
+      "title": "romiluz13/auto-pi",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-37cc2da698f6433e00fb",
+      "canonical_url": "https://github.com/semi-sentient/skills-workflow",
+      "evidence_refs": [
+        "https://api.github.com/search/repositories#query-sha256=f54f9a3905913766"
+      ],
+      "provider": "github",
+      "risk_flags": [],
+      "status": "pending-owner-review",
+      "title": "semi-sentient/skills-workflow",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-e09311b4a99e455b574f",
+      "canonical_url": "https://github.com/singhguri/hades-coding-workflows",
+      "evidence_refs": [
+        "https://api.github.com/search/repositories#query-sha256=f54f9a3905913766"
+      ],
+      "provider": "github",
+      "risk_flags": [],
+      "status": "pending-owner-review",
+      "title": "singhguri/hades-coding-workflows",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-37c304363289b201321d",
+      "canonical_url": "https://github.com/wayne930242/Reflexive-Claude-Code",
+      "evidence_refs": [
+        "https://api.github.com/search/repositories#query-sha256=f54f9a3905913766"
+      ],
+      "provider": "github",
+      "risk_flags": [
+        "license-review-required"
+      ],
+      "status": "pending-owner-review",
+      "title": "wayne930242/Reflexive-Claude-Code",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-e56a8cc6e1d1fd83f166",
+      "canonical_url": "https://mp.weixin.qq.com/s/9ikvuGaAJSPyGYidbAdC7g",
+      "evidence_refs": [
+        "reports/wechat-account-research-2026-07-16/catalog.jsonl"
+      ],
+      "provider": "wechat",
+      "risk_flags": [
+        "copyright-review-required",
+        "secondary-source"
+      ],
+      "status": "pending-owner-review",
+      "title": "数据研发Multi-Agent架构的Harness工程实践",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "skill",
+      "candidate_id": "epc-28b232dcd306796e56c0",
+      "canonical_url": "https://mp.weixin.qq.com/s/ISwjIw5lj7JlcQJV7BOx5g",
+      "evidence_refs": [
+        "reports/wechat-account-research-2026-07-16/catalog.jsonl"
+      ],
+      "provider": "wechat",
+      "risk_flags": [
+        "copyright-review-required",
+        "secondary-source"
+      ],
+      "status": "pending-owner-review",
+      "title": "Agent 治理：用 Hook 堵住 LLM 的偷懒、越权与失忆",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-6da5d9ca134b9d6ea509",
+      "canonical_url": "https://weixin.sogou.com/weixin",
+      "evidence_refs": [
+        "reports/wechat-account-research-2026-07-16/catalog.jsonl"
+      ],
+      "provider": "wechat",
+      "risk_flags": [
+        "copyright-review-required",
+        "secondary-source",
+        "untrusted-locator"
+      ],
+      "status": "pending-owner-review",
+      "title": "鹅厂员工的龙虾都长什么样？",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "agent",
+      "candidate_id": "epc-0635001b519c50a6390f",
+      "canonical_url": "https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "anthropic-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Demystifying evals for AI agents",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-02e096f879d63048b445",
+      "canonical_url": "https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents",
+      "evidence_refs": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json"
+      ],
+      "provider": "anthropic-official",
+      "risk_flags": [
+        "license-review-required",
+        "platform-specific"
+      ],
+      "status": "pending-owner-review",
+      "title": "Effective harnesses for long-running agents",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "skill",
+      "candidate_id": "epc-d21396d852772c33fc2e",
+      "canonical_url": "https://www.gm7.org/archives/53058",
+      "evidence_refs": [
+        "reports/wechat-account-research-2026-07-16/catalog.jsonl"
+      ],
+      "provider": "wechat",
+      "risk_flags": [
+        "copyright-review-required",
+        "secondary-source",
+        "untrusted-locator"
+      ],
+      "status": "pending-owner-review",
+      "title": "Skills开发技能指南：OpenClaw也好，Skills也好，都别脱离具体场景谈方案",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-519fdc0188cb3aa0f114",
+      "canonical_url": "https://www.lddgo.net/article/detail/6nn4",
+      "evidence_refs": [
+        "reports/wechat-account-research-2026-07-16/catalog.jsonl"
+      ],
+      "provider": "wechat",
+      "risk_flags": [
+        "copyright-review-required",
+        "secondary-source",
+        "untrusted-locator"
+      ],
+      "status": "pending-owner-review",
+      "title": "从AI Coding到Harness Engineering的端到端工程开发实践",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-1ef955b47b60ec5ae005",
+      "canonical_url": "https://www.lddgo.net/article/detail/vdd4",
+      "evidence_refs": [
+        "reports/wechat-account-research-2026-07-16/catalog.jsonl"
+      ],
+      "provider": "wechat",
+      "risk_flags": [
+        "copyright-review-required",
+        "secondary-source",
+        "untrusted-locator"
+      ],
+      "status": "pending-owner-review",
+      "title": "从Vibe Coding到Harness—— 一套大仓AI工程化实战",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-52d89db314b1f62bb217",
+      "canonical_url": "https://www.tencent.com/zh-cn/tencent-hunyuan-officially-releases-hy3-advancing-agent-capabilities-and-deeper-product-integration/",
+      "evidence_refs": [
+        "reports/wechat-account-research-2026-07-16/catalog.jsonl"
+      ],
+      "provider": "wechat",
+      "risk_flags": [
+        "copyright-review-required",
+        "secondary-source"
+      ],
+      "status": "pending-owner-review",
+      "title": "腾讯混元Hy3发布：Agent能力和产品体验跃升",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "skill",
+      "candidate_id": "epc-c756329cebabbde986b5",
+      "canonical_url": "https://zhuanlan.zhihu.com/p/2020890460856524971",
+      "evidence_refs": [
+        "reports/wechat-account-research-2026-07-16/catalog.jsonl"
+      ],
+      "provider": "wechat",
+      "risk_flags": [
+        "copyright-review-required",
+        "secondary-source",
+        "untrusted-locator"
+      ],
+      "status": "pending-owner-review",
+      "title": "腾讯广泛使用的跨端开发框架——Kuikly在搜狗输入法中的AI Coding实践",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "observe",
+      "candidate_id": null,
+      "canonical_url": null,
+      "evidence_refs": [
+        "cycle-evidence:gitee-agent-engineering"
+      ],
+      "provider": "gitee",
+      "risk_flags": [
+        "provider-degraded"
+      ],
+      "status": "degraded-empty",
+      "title": "gitee-agent-engineering",
+      "type": "provider-health"
+    }
+  ],
+  "mode": "report-only",
+  "schema": "external-practice-review-queue/v1",
+  "status": "degraded"
+}

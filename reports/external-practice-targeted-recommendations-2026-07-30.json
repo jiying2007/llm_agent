@@ -1,0 +1,29 @@
+{
+  "auto_actions": [],
+  "candidate_count": 3,
+  "mode": "report-only",
+  "recommendations": [
+    {
+      "candidate_id": "epc-46da08e2db5a59e486ec",
+      "provider": "manual",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-c6f947d482aa8aa0c78f",
+      "provider": "manual",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "observe",
+      "status": "review-required"
+    },
+    {
+      "candidate_id": "epc-5a312f5a4fb1b05957d4",
+      "provider": "manual",
+      "reason": "heuristic shape only; owner decision and ADK change artifact remain mandatory",
+      "recommendation": "workflow",
+      "status": "review-required"
+    }
+  ],
+  "schema": "external-practice-recommendations/v1"
+}

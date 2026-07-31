@@ -1,0 +1,59 @@
+{
+  "as_of": "2026-07-30",
+  "auto_actions": [],
+  "candidate_count": 3,
+  "items": [
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-46da08e2db5a59e486ec",
+      "canonical_url": "https://github.com/harness/harness-evals",
+      "evidence_refs": [
+        "reports/external-practice-targeted-input-2026-07-30.jsonl"
+      ],
+      "provider": "manual",
+      "risk_flags": [
+        "manual-input",
+        "unverified-source"
+      ],
+      "status": "pending-owner-review",
+      "title": "Harness Evals five-dimension agent evaluation framework",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "observe",
+      "candidate_id": "epc-c6f947d482aa8aa0c78f",
+      "canonical_url": "https://github.com/modelcontextprotocol/modelcontextprotocol",
+      "evidence_refs": [
+        "reports/external-practice-targeted-input-2026-07-30.jsonl"
+      ],
+      "provider": "manual",
+      "risk_flags": [
+        "license-review-required",
+        "manual-input",
+        "unverified-source"
+      ],
+      "status": "pending-owner-review",
+      "title": "Model Context Protocol 2026-07-28 final compatibility refresh",
+      "type": "candidate-review"
+    },
+    {
+      "asset_recommendation": "workflow",
+      "candidate_id": "epc-5a312f5a4fb1b05957d4",
+      "canonical_url": "https://github.com/strongdm/attractor",
+      "evidence_refs": [
+        "reports/external-practice-targeted-input-2026-07-30.jsonl"
+      ],
+      "provider": "manual",
+      "risk_flags": [
+        "manual-input",
+        "unverified-source"
+      ],
+      "status": "pending-owner-review",
+      "title": "StrongDM Attractor coding agent loop NLSpec",
+      "type": "candidate-review"
+    }
+  ],
+  "mode": "report-only",
+  "schema": "external-practice-review-queue/v1",
+  "status": "review-required"
+}

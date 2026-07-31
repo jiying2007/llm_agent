@@ -1,0 +1,115 @@
+{
+  "artifact_sha256": {
+    "analysis_report": "05b0a71f398b3ce2325b16503d40cf203c586b21733b0646b9743f96f2794976",
+    "candidate_ledger": "6653e7fffd0769866dcd254c3f7ca191ade64b207a78114de6c24dfd680f6e7c",
+    "decision_ledger": "4c747c50dc11fd3c98c9dfe330ba40a96875caaa9348adc4d51cab70e5b39a7e",
+    "duplicate_check": "f92d1b892e5d9b44b25272302cdff836a9e02e5d6740abbae2d2135b45fdd6f1",
+    "security_review": "1931b9eb90a4f2fc87fb191391aca4c6d7dc67e5859acb7f20c491c9933c98c4"
+  },
+  "boundaries": {
+    "agent_dev_kit_modified": false,
+    "external_code_executed": false,
+    "live_runtime_modified": false,
+    "network_discovery": false
+  },
+  "candidate": {
+    "candidate_id": "epc-2ab9c988520526e1e0e0",
+    "content_sha256": "dcfa083062e77d0addf7449871fd5a36443e7bcc0203f68a52b46bda325c2184",
+    "license": "MIT",
+    "provider": "github",
+    "repo": "github/spec-kit",
+    "risk_flags": [],
+    "source_id": "github-search",
+    "url": "https://github.com/github/spec-kit"
+  },
+  "decision": {
+    "decision": "ADOPT",
+    "evidence_refs": [
+      "reports/reference-analysis-spec-kit-2026-07-23.md",
+      "reports/reference-duplicate-review-spec-kit-2026-07-23.md",
+      "reports/reference-security-review-spec-kit-2026-07-23.md"
+    ],
+    "owner": "llm-agent-governance-owner",
+    "reviewed_at": "2026-07-23",
+    "target": "reference-repository"
+  },
+  "gates": {
+    "analysis_report_gate": true,
+    "apply_workspace_gate": true,
+    "candidate_contract_gate": true,
+    "duplicate_check_gate": true,
+    "materialization_gate": true,
+    "owner_decision_gate": true,
+    "phase_gate": true,
+    "registry_conflict_gate": true,
+    "repository_metadata_gate": true,
+    "rollback_plan_gate": true,
+    "security_review_gate": true,
+    "source_risk_gate": true,
+    "target_path_gate": true
+  },
+  "materialization": {
+    "mode": "local-submodule",
+    "source_clean": true,
+    "source_head": "ee883a1d4ecee9afe06a81f1bd38a0b745a8d059",
+    "source_origin": "https://github.com/github/spec-kit"
+  },
+  "mode": "dry-run",
+  "planned_changes": {
+    "adoption_matrix": {
+      "capability": "approved external-practice reference epc-2ab9c988520526e1e0e0",
+      "category": "workflow-core",
+      "cost": "中",
+      "date": "2026-07-23",
+      "decision": "adopt",
+      "evidence": "reports/reference-repository-onboarding-spec-kit-2026-07-23.md",
+      "risk": "中",
+      "source_repo": "spec-kit",
+      "state": "pending",
+      "target": "llm_agent",
+      "value": "高"
+    },
+    "gitmodules": {
+      "materialization": "local-submodule",
+      "name": "spec-kit",
+      "path": "spec-kit",
+      "url": "https://github.com/github/spec-kit"
+    },
+    "registry": {
+      "branch": "main",
+      "enabled": "yes",
+      "grade": "A",
+      "group": "workflow-core",
+      "intake_policy": "observe-first",
+      "last_reviewed_on": "2026-07-23",
+      "notes": "approved external-practice active reference; candidate=epc-2ab9c988520526e1e0e0",
+      "owner": "llm-agent-governance-owner",
+      "priority": "P1",
+      "repo": "spec-kit",
+      "status": "active",
+      "sync_mode": "fetch"
+    }
+  },
+  "required_artifacts": {
+    "analysis_report": "reports/reference-analysis-spec-kit-2026-07-23.md",
+    "candidate_ledger": "reports/external-practice-candidates-spec-kit-2026-07-23.jsonl",
+    "decision_ledger": "reports/external-practice-decisions-spec-kit-2026-07-23.jsonl",
+    "duplicate_check": "reports/reference-duplicate-review-spec-kit-2026-07-23.md",
+    "security_review": "reports/reference-security-review-spec-kit-2026-07-23.md"
+  },
+  "rollback": {
+    "commands": [
+      "rtk scripts/plan-reference-repository-removal.sh . --repo spec-kit --evidence-dependency-scan <report> --rollback-plan <report>",
+      "rtk scripts/check-reference-repository-removal.sh ."
+    ],
+    "files": [
+      ".gitmodules",
+      "manifests/subrepo_lifecycle.json",
+      "subrepos/adoption-matrix.jsonl",
+      "subrepos/adoption-matrix.md",
+      "subrepos/registry.csv"
+    ]
+  },
+  "schema": "reference-repository-onboarding/v1",
+  "status": "planned"
+}
