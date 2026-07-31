@@ -1,10 +1,10 @@
 # Last Verified Product Baseline
 
-- updated_at: 2026-07-19
+- updated_at: 2026-07-31
 - status_semantics: last-verified-product-baseline
-- last_verified_at: 2026-07-19
-- root_product_commit: a9775b19005080059f660ee8d77db5b25911df8c
-- agent_dev_kit_commit: 9a8f735928976cf2efac81dd167911664bf6c490
+- last_verified_at: 2026-07-31
+- root_product_commit: 8a4a3ee696289abb9a805f66ba24995442700132
+- agent_dev_kit_commit: bb6d65b1f3fda7209a0b7c656c86932651374042
 - agent_dev_kit_release_commit: 66a8c199fa7b11fe1396676b3eeb82249ef05554
 - adk_previous_commit: bffcd93eefac45669d8a038000161ff0fcc05e04
 - adk_version: 3.1.0-rc.5
@@ -23,8 +23,8 @@
 ## Summary
 
 本文件记录最近一次已验证的软件产品基线，不把 `M5-ready` 伪报为 `M5 certified`。
-机器状态以 `manifests/product_maturity_scorecard.json` 为准，当前审计由
-`manifests/report_registry.json` 指向
+机器状态以 `manifests/product_maturity_scorecard.json` 为准，current 架构报告由
+`manifests/report_registry.json` 动态选择；本基线对应的历史软件 M5 审计是
 `reports/architecture/llm-agent-adk-software-m5-readiness-2026-07-13.md`。
 
 `agent-dev-kit 3.1.0-rc.5` 从不可变 upstream snapshot 吸收调用意图、工作项权限、Hotspot/YAGNI
