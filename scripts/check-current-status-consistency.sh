@@ -134,7 +134,6 @@ required = {
     "scorecard": path("manifests", "product_maturity_scorecard.json"),
     "tasks": path("manifests", "product_maturity_task_pack.json"),
     "registry": path("manifests", "report_registry.json"),
-    "audit": path("reports", "architecture", "llm-agent-adk-software-m5-readiness-2026-07-13.md"),
     "release_evidence": policy_file("evidence_report", "release-evidence"),
     "lock": path("adk.lock"),
     "manifest": path("agent-dev-kit", "manifest.json"),
@@ -282,9 +281,20 @@ if task_status.get("PM-10") not in {"ready", "implemented"}:
 current_reports = [
     item for item in registry.get("reports", []) if isinstance(item, dict) and item.get("status") == "current"
 ]
-expected_audit = "reports/architecture/llm-agent-adk-software-m5-readiness-2026-07-13.md"
-if len(current_reports) != 1 or current_reports[0].get("path") != expected_audit:
-    failures.append("report registry must select the software M5 readiness audit as its only current report")
+if len(current_reports) != 1:
+    failures.append("report registry must select exactly one current architecture report")
+else:
+    current_report = current_reports[0].get("path")
+    if not isinstance(current_report, str) or not current_report:
+        failures.append("report registry current report path is missing")
+    else:
+        current_relative = Path(current_report)
+        if current_relative.is_absolute() or ".." in current_relative.parts:
+            failures.append("report registry current report path must be repository-relative")
+        elif not current_relative.parts or current_relative.parts[:2] != ("reports", "architecture"):
+            failures.append("report registry current report must stay under reports/architecture")
+        elif not os.path.isfile(path(*current_relative.parts)):
+            failures.append("report registry current report is missing: {}".format(current_report))
 
 if codex_smoke.get("suite") != "runtime-routing" or codex_smoke.get("runtime") != "codex":
     failures.append("Codex runtime smoke has an invalid identity")

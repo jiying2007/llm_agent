@@ -20,6 +20,10 @@ print(release["rehearsal_report"])
 print(release["evidence_report"])
 evidence = json.load(open(root / release["evidence_report"], encoding="utf-8"))
 print(str(evidence["source_to_live"]["mapped_content_changed"]).lower())
+registry = json.load(open(root / "manifests/report_registry.json", encoding="utf-8"))
+current = [item for item in registry["reports"] if item["status"] == "current"]
+assert len(current) == 1, registry
+print(current[0]["path"])
 PY
 )
 CANDIDATE_VERSION="${POLICY_VALUES[0]}"
@@ -27,6 +31,7 @@ REHEARSAL_REPO_PATH="${POLICY_VALUES[1]}"
 REHEARSAL_ADK_PATH="${REHEARSAL_REPO_PATH#agent-dev-kit/}"
 RELEASE_EVIDENCE_PATH="${POLICY_VALUES[2]}"
 MAPPED_CONTENT_CHANGED="${POLICY_VALUES[3]}"
+CURRENT_REPORT_PATH="${POLICY_VALUES[4]}"
 
 make_fixture() {
   local dest="$1"
@@ -48,7 +53,7 @@ make_fixture() {
     "${dest}/agent-dev-kit/${rehearsal_change_path}"
 
   cp "${ROOT}/reports/current-status.md" "${dest}/reports/current-status.md"
-  cp "${ROOT}/reports/architecture/llm-agent-adk-software-m5-readiness-2026-07-13.md" "${dest}/reports/architecture/"
+  cp "${ROOT}/${CURRENT_REPORT_PATH}" "${dest}/${CURRENT_REPORT_PATH}"
   cp "${ROOT}/${RELEASE_EVIDENCE_PATH}" "${dest}/${RELEASE_EVIDENCE_PATH}"
   cp "${ROOT}/reports/field-evidence/software-m5-events.jsonl" "${dest}/reports/field-evidence/"
   cp "${ROOT}/reports/field-evidence/software-m5-self-pilot-start-2026-07-13.json" "${dest}/reports/field-evidence/"
@@ -142,10 +147,14 @@ PY
 import pathlib
 import re
 import sys
+import datetime
 
 status_path, root_product = sys.argv[1:]
 status = pathlib.Path(status_path).read_text(encoding="utf-8")
+today = datetime.date.today().isoformat()
 status = re.sub(r"^- root_product_commit: .+$", f"- root_product_commit: {root_product}", status, flags=re.MULTILINE)
+status = re.sub(r"^- updated_at: .+$", f"- updated_at: {today}", status, flags=re.MULTILINE)
+status = re.sub(r"^- last_verified_at: .+$", f"- last_verified_at: {today}", status, flags=re.MULTILINE)
 pathlib.Path(status_path).write_text(status, encoding="utf-8")
 PY
   git -C "${dest}" add reports/current-status.md
@@ -169,7 +178,12 @@ expect_fail_contains() {
 
 pass_root="${TMP_DIR}/pass-root"
 make_fixture "${pass_root}"
-"${CHECKER}" "${pass_root}" --summary-json >/dev/null
+pass_output="${TMP_DIR}/pass-root.out"
+if ! "${CHECKER}" "${pass_root}" --summary-json >"${pass_output}" 2>&1; then
+  echo "[FAIL] current-status pass fixture failed" >&2
+  sed -n '1,160p' "${pass_output}" >&2 || true
+  exit 1
+fi
 
 mismatch_root="${TMP_DIR}/mismatch-root"
 cp -a "${pass_root}" "${mismatch_root}"

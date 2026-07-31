@@ -1,6 +1,6 @@
 {
   "schema": "llm-agent-report-registry/v1",
-  "updated_at": "2026-07-13",
+  "updated_at": "2026-07-30",
   "reports": [
     {
       "id": "target-architecture-2026-07-11",
@@ -19,9 +19,16 @@
     {
       "id": "software-m5-readiness-2026-07-13",
       "path": "reports/architecture/llm-agent-adk-software-m5-readiness-2026-07-13.md",
+      "status": "superseded",
+      "superseded_by": "target-architecture-2026-07-30",
+      "purpose": "historical software M5 readiness, certification boundary and field pilot plan"
+    },
+    {
+      "id": "target-architecture-2026-07-30",
+      "path": "reports/architecture/llm-agent-adk-target-architecture-2026-07-30.md",
       "status": "current",
       "superseded_by": null,
-      "purpose": "current software M5 readiness, certification boundary and field pilot plan"
+      "purpose": "current comprehensive optimization assessment, target architecture, implementation backlog and evidence boundary"
     }
   ],
   "policy": {

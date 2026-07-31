@@ -1,9 +1,10 @@
 {
-  "schema_version": 1,
-  "status": "landed-design",
-  "last_updated": "2026-07-19",
-  "purpose": "Machine-readable terminal optimization backlog for llm_agent and agent-dev-kit architecture governance. This manifest is the SSOT for the Comprehensive Optimization Backlog section in reports/architecture/llm-agent-adk-target-architecture-2026-07-11.md.",
-  "source_report": "reports/architecture/llm-agent-adk-target-architecture-2026-07-11.md",
+  "schema_version": 2,
+  "status": "active",
+  "last_updated": "2026-07-30",
+  "review_after": "2026-08-30",
+  "purpose": "Machine-readable terminal optimization backlog for llm_agent and agent-dev-kit architecture governance. The current source report is selected through manifests/report_registry.json so the backlog can evolve without rewriting historical reports.",
+  "source_report": "reports/architecture/llm-agent-adk-target-architecture-2026-07-30.md",
   "rules": {
     "report_must_reference_manifest": true,
     "report_must_list_every_item_id": true,
@@ -11,9 +12,110 @@
     "items_must_keep_design_and_implementation_status_separate": true,
     "adk_template_must_carry_pattern": true,
     "implementation_requires_owner_approval": true,
-    "no_live_apply_without_source_to_live_evidence": true
+    "no_live_apply_without_source_to_live_evidence": true,
+    "backlog_extensions_are_allowed": true,
+    "item_ids_must_be_unique_and_sequential": true,
+    "current_report_is_registry_driven": true,
+    "blocked_items_require_blocking_condition": true
   },
   "adk_template": "agent-dev-kit/templates/artifacts/target-architecture-report-template.md",
+  "maintainability_budgets": {
+    "schema": "llm-agent-maintainability-budgets/v1",
+    "baseline_date": "2026-07-30",
+    "policy": {
+      "warnings_are_review_required": true,
+      "hard_limits_fail": true,
+      "strict_mode_fails_warnings": true,
+      "growth_requires_owner_and_consolidation_decision": true,
+      "generated_or_archived_assets_are_not_silently_excluded": true
+    },
+    "budgets": [
+      {
+        "id": "root-script-count",
+        "metric": "file_count",
+        "scope_paths": ["scripts"],
+        "include_patterns": ["*.sh"],
+        "exclude_prefixes": [],
+        "baseline": 89,
+        "warning_limit": 92,
+        "hard_limit": 100,
+        "owner": "llm-agent-governance",
+        "next_action": "Consolidate thin wrappers into an existing typed tools.codex_assets entrypoint before adding another root script."
+      },
+      {
+        "id": "root-report-count",
+        "metric": "file_count",
+        "scope_paths": ["reports"],
+        "include_patterns": ["*.md", "*.json", "*.jsonl"],
+        "exclude_prefixes": [],
+        "baseline": 284,
+        "warning_limit": 320,
+        "hard_limit": 400,
+        "owner": "llm-agent-governance",
+        "next_action": "Run governed report cleanup and preserve supersession metadata before creating more active reports."
+      },
+      {
+        "id": "root-manifest-count",
+        "metric": "file_count",
+        "scope_paths": ["manifests"],
+        "include_patterns": ["*.json", "*.jsonl", "*.yaml", "*.yml"],
+        "exclude_prefixes": [],
+        "baseline": 15,
+        "warning_limit": 20,
+        "hard_limit": 25,
+        "owner": "llm-agent-governance",
+        "next_action": "Extend an existing SSOT manifest unless a new lifecycle and owner justify a separate contract."
+      },
+      {
+        "id": "root-largest-shell-lines",
+        "metric": "max_lines",
+        "scope_paths": ["scripts"],
+        "include_patterns": ["*.sh"],
+        "exclude_prefixes": [],
+        "baseline": 666,
+        "warning_limit": 750,
+        "hard_limit": 900,
+        "owner": "llm-agent-governance",
+        "next_action": "Move reusable parsing and state logic into tools.codex_assets and keep shell as a transport wrapper."
+      },
+      {
+        "id": "root-largest-python-lines",
+        "metric": "max_lines",
+        "scope_paths": ["tools/codex_assets"],
+        "include_patterns": ["*.py"],
+        "exclude_prefixes": [],
+        "baseline": 2078,
+        "warning_limit": 2200,
+        "hard_limit": 2500,
+        "owner": "llm-agent-governance",
+        "next_action": "Split the named hotspot by capability boundary with contract tests before adding another responsibility."
+      },
+      {
+        "id": "adk-largest-shell-lines",
+        "metric": "max_lines",
+        "scope_paths": ["agent-dev-kit/scripts"],
+        "include_patterns": ["*.sh"],
+        "exclude_prefixes": [],
+        "baseline": 1745,
+        "warning_limit": 1850,
+        "hard_limit": 2100,
+        "owner": "agent-dev-kit",
+        "next_action": "Move deterministic governance logic into src/agent_dev_kit and retain a thin stable shell entrypoint."
+      },
+      {
+        "id": "adk-largest-python-lines",
+        "metric": "max_lines",
+        "scope_paths": ["agent-dev-kit/src/agent_dev_kit"],
+        "include_patterns": ["*.py"],
+        "exclude_prefixes": [],
+        "baseline": 1054,
+        "warning_limit": 1150,
+        "hard_limit": 1400,
+        "owner": "agent-dev-kit",
+        "next_action": "Split the hotspot only along an owned domain boundary and preserve CLI/API compatibility tests."
+      }
+    ]
+  },
   "items": [
     {
       "id": "G1",
@@ -58,7 +160,7 @@
       "optimization_area": "Evidence integrity",
       "terminal_outcome": "Every complete, applied, archived, or promoted claim is tied to command-level evidence and at least one negative or before-fix record.",
       "design_status": "landed",
-      "implementation_status": "in_progress",
+      "implementation_status": "done",
       "implementation_targets": [
         "Evidence Index",
         "evidence bundle",
@@ -197,6 +299,163 @@
         "rtk scripts/check-reference-repository-removal.sh ."
       ],
       "implementation_evidence": ["agent-dev-kit/src/agent_dev_kit/installer.py", "agent-dev-kit/src/agent_dev_kit/release.py"]
+    },
+    {
+      "id": "G11",
+      "priority": "P0",
+      "optimization_area": "State freshness and report evolution",
+      "terminal_outcome": "The report registry, current-state checks, and optimization backlog can advance to a new current report without hard-coded report paths or a fixed G1-G10 ceiling.",
+      "design_status": "landed",
+      "implementation_status": "done",
+      "implementation_targets": [
+        "report registry driven current report",
+        "extensible sequential optimization item validation",
+        "historical report immutability"
+      ],
+      "verification": [
+        "rtk scripts/check-architecture-reports.sh . --summary-json",
+        "rtk tests/test_architecture_reports.sh",
+        "rtk tests/test_current_status_consistency.sh"
+      ],
+      "implementation_evidence": [
+        "scripts/check-architecture-reports.sh",
+        "scripts/check-current-status-consistency.sh",
+        "manifests/report_registry.json"
+      ]
+    },
+    {
+      "id": "G12",
+      "priority": "P1",
+      "optimization_area": "Control-plane entropy and consolidation",
+      "terminal_outcome": "Root and ADK governance surfaces have measured growth budgets, named hotspots, and an evidence-led consolidation queue instead of unbounded scripts, manifests, reports, and oversized modules.",
+      "design_status": "landed",
+      "implementation_status": "done",
+      "implementation_targets": [
+        "maintainability trend baseline",
+        "thin shell wrappers over typed core",
+        "report retention and supersession policy"
+      ],
+      "verification": [
+        "rtk scripts/check-maintainability-budgets.sh --strict --summary-json",
+        "rtk tests/test_maintainability_budgets.sh",
+        "rtk scripts/health-check.sh --summary-json",
+        "rtk scripts/check-token-budget.sh . --summary-json",
+        "rtk scripts/check-doc-sync.sh ."
+      ],
+      "implementation_evidence": [
+        "tools/codex_assets/maintainability_budget.py",
+        "scripts/check-maintainability-budgets.sh",
+        "tests/test_maintainability_budgets.sh",
+        "reports/architecture/llm-agent-adk-target-architecture-2026-07-30.md",
+        "scripts/health-check.sh",
+        "agent-dev-kit/src/agent_dev_kit/cli.py"
+      ]
+    },
+    {
+      "id": "G13",
+      "priority": "P1",
+      "optimization_area": "Supported toolchain portability",
+      "terminal_outcome": "Every release-grade validation runs on a declared Python and dependency baseline, while unsupported local environments fail clearly without being mistaken for release evidence.",
+      "design_status": "landed",
+      "implementation_status": "in_progress",
+      "implementation_targets": [
+        "reviewed Python 3.11 or 3.12 execution path",
+        "reproducible dependency environment",
+        "doctor evidence before release claims"
+      ],
+      "verification": [
+        "rtk bash agent-dev-kit/scripts/devkit.sh doctor --summary-json",
+        "rtk bash agent-dev-kit/scripts/run-local-ci-parity.sh --python all --mode full"
+      ],
+      "implementation_evidence": [
+        "agent-dev-kit/pyproject.toml",
+        "agent-dev-kit/scripts/run-local-ci-parity.sh",
+        "agent-dev-kit/docs/commands.md",
+        "agent-dev-kit/docs/runbooks/local-ci-parity.md",
+        "agent-dev-kit/docs/changes/official-model-catalog-freshness-2026-07-30/verify-report.md"
+      ]
+    },
+    {
+      "id": "G14",
+      "priority": "P0",
+      "optimization_area": "Runtime and field effectiveness",
+      "terminal_outcome": "Functional completeness, cost, latency, reliability, and rollback claims are supported by real multi-runtime campaigns and independent long-duration repository evidence.",
+      "design_status": "landed",
+      "implementation_status": "blocked",
+      "blocking_condition": "Claude authentication, independent repositories, a second human operator, a 30-day observation window, and required field events are external evidence gaps that cannot be simulated.",
+      "implementation_targets": [
+        "real direct-target runtime smoke",
+        "dual-runtime effectiveness campaign",
+        "independent 30-day pilot and field evidence"
+      ],
+      "verification": [
+        "rtk scripts/check-software-m5-readiness.sh . --summary-json",
+        "rtk scripts/software-m5.sh status --summary-json",
+        "rtk bash agent-dev-kit/scripts/devkit.sh target check --all --level static --summary-json"
+      ],
+      "implementation_evidence": [
+        "manifests/product_maturity_scorecard.json",
+        "manifests/software_m5_policy.json",
+        "manifests/software_m5_pilot_ledger.json",
+        "reports/architecture/g14-g15-runtime-field-handoff-2026-07-30.md"
+      ]
+    },
+    {
+      "id": "G15",
+      "priority": "P1",
+      "optimization_area": "Maintainer scalability and succession",
+      "terminal_outcome": "Critical manifests, release gates, runtime evidence, and knowledge promotion have explicit ownership, review succession, and multi-operator maintenance evidence.",
+      "design_status": "landed",
+      "implementation_status": "blocked",
+      "blocking_condition": "Repository ownership and freshness metadata are implemented, but a named backup reviewer and a real second-operator maintenance rehearsal require another human and cannot be self-attested.",
+      "implementation_targets": [
+        "owner and reviewer coverage",
+        "CODEOWNERS or equivalent ownership contract",
+        "second-operator maintenance rehearsal"
+      ],
+      "verification": [
+        "rtk bash agent-dev-kit/scripts/devkit.sh harness readiness --root agent-dev-kit --summary-json",
+        "rtk scripts/check-current-status-consistency.sh . --summary-json",
+        "rtk scripts/check-software-m5-readiness.sh . --summary-json"
+      ],
+      "implementation_evidence": [
+        "agent-dev-kit/OWNERS",
+        "agent-dev-kit/.adk/harness-readiness.json",
+        "agent-dev-kit/docs/changes/adk-self-readiness-ownership/verify-report.md",
+        "reports/architecture/g14-g15-runtime-field-handoff-2026-07-30.md",
+        "agent-dev-kit/manifests/harness_readiness_contracts.json",
+        "manifests/product_maturity_task_pack.json",
+        "manifests/software_m5_policy.json"
+      ]
+    },
+    {
+      "id": "G16",
+      "priority": "P1",
+      "optimization_area": "External source freshness and provenance",
+      "terminal_outcome": "Promoted official-source contracts have current retrieval evidence, expiry, review status, and a deliberate keep, update, supersede, or retire decision.",
+      "design_status": "landed",
+      "implementation_status": "done",
+      "implementation_targets": [
+        "official source revalidation",
+        "freshness decision evidence",
+        "strict validation recovery"
+      ],
+      "verification": [
+        "rtk bash agent-dev-kit/scripts/devkit.sh official-docs-governance --summary-json",
+        "rtk bash agent-dev-kit/scripts/devkit.sh validate --strict --summary-json",
+        "rtk tests/test_official_docs_adoption_review.sh",
+        "rtk bash agent-dev-kit/tests/test_official_docs_governance.sh",
+        "rtk bash agent-dev-kit/tests/test_agent_ecosystem_standards.sh"
+      ],
+      "implementation_evidence": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json",
+        "agent-dev-kit/scripts/check-official-docs-governance.sh",
+        "agent-dev-kit/docs/runbooks/official-docs-governance.md",
+        "agent-dev-kit/docs/changes/official-model-catalog-freshness-2026-07-30/proposal.md",
+        "reports/external-practice-targeted-decisions-2026-07-30.jsonl",
+        "agent-dev-kit/manifests/external_agent_pattern_contracts.json",
+        "agent-dev-kit/docs/changes/mcp-2026-final-metadata-refresh-2026-07-30/proposal.md"
+      ]
     }
   ]
 }

@@ -202,6 +202,7 @@ active 文档陈旧引用检查：`scripts/check-stale-references.sh .` 检查 a
 
 软件侧 M5 入口：`scripts/software-m5.sh status|check|certify|append` 读取 `manifests/software_m5_policy.json` 与 `manifests/software_m5_pilot_ledger.json`，验证 `reports/field-evidence/software-m5-events.jsonl` append-only hash chain、ADK release rehearsal、双 runtime campaign、独立仓、human operator、30 天跨度和结构化现场事件。`scripts/check-software-m5-readiness.sh . --summary-json` 用于日常/CI readiness 门禁：当前允许 `readiness_status=m5-ready` 且 `certification_status=blocked`，但证据 hash、路径、时间、预算或 scorecard 声明漂移会失败；`scripts/software-m5.sh certify --summary-json` 只有最终 M5 条件全部成立才返回 0。synthetic positive/篡改/lock/path 负例回归为 `tests/test_software_m5_certification.sh`；完整执行计划见 `docs/software-m5-certification-plan.md`。
 动态资产清单：`scripts/health-check.sh . --summary-json` 输出实时 governance status、root/ADK 资产数量和 subrepo state；`scripts/check-asset-inventory.sh .` 独立复算文件系统与 manifest 数量，并阻断 active 文档重新硬编码可变统计。
+维护性增长预算：`scripts/check-maintainability-budgets.sh --summary-json` 从 `manifests/comprehensive_optimization_backlog.json` 读取 root/ADK 的脚本、报告、manifest 和最大源码文件预算，输出 baseline drift 与命名 hotspot；超过 hard limit 必须失败，超过 warning limit 进入 review，`--strict` 会把 warning 作为阻断。新增 root Python 治理逻辑进入 `tools.codex_assets`，shell 入口保持只定位 root、注入 `PYTHONPATH` 和转发参数。
 runtime live 实装态与长会话提醒：
 
 ```bash

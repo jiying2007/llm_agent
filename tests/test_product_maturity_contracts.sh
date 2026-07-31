@@ -175,7 +175,9 @@ registry = json.loads((root / "manifests/report_registry.json").read_text(encodi
 assert registry["schema"] == "llm-agent-report-registry/v1", registry
 current = [item for item in registry["reports"] if item["status"] == "current"]
 assert len(current) == 1, registry
-assert current[0]["path"] == "reports/architecture/llm-agent-adk-software-m5-readiness-2026-07-13.md", current
+current_path = pathlib.PurePosixPath(current[0]["path"])
+assert current_path.parts[:2] == ("reports", "architecture"), current
+assert (root / current_path).is_file(), current
 ids = {item["id"] for item in registry["reports"]}
 for item in registry["reports"]:
     assert item["status"] in {"current", "superseded"}, item

@@ -104,18 +104,39 @@ else:
 
 optimization_manifest = read_json(optimization_manifest_path)
 optimization_items = []
+optimization_source_report = ""
+optimization_source_path = ""
 if optimization_manifest:
-    if optimization_manifest.get("schema_version") != 1:
-        fail("comprehensive_optimization_backlog.json schema_version must be 1")
-    if optimization_manifest.get("status") != "landed-design":
-        fail("comprehensive_optimization_backlog.json status must be landed-design")
-    if optimization_manifest.get("source_report") != "reports/architecture/llm-agent-adk-target-architecture-2026-07-11.md":
-        fail("comprehensive_optimization_backlog.json source_report mismatch")
+    optimization_schema_version = optimization_manifest.get("schema_version")
+    if optimization_schema_version not in {1, 2}:
+        fail("comprehensive_optimization_backlog.json schema_version must be 1 or 2")
+    allowed_statuses = {"landed-design"} if optimization_schema_version == 1 else {"active", "superseded"}
+    if optimization_manifest.get("status") not in allowed_statuses:
+        fail(
+            "comprehensive_optimization_backlog.json status must be one of: "
+            + ", ".join(sorted(allowed_statuses))
+        )
+    optimization_source_report = optimization_manifest.get("source_report")
+    if not isinstance(optimization_source_report, str) or not optimization_source_report:
+        fail("comprehensive_optimization_backlog.json source_report is required")
+    else:
+        source_relative = os.path.normpath(optimization_source_report)
+        if os.path.isabs(optimization_source_report) or source_relative.startswith(".."):
+            fail("comprehensive_optimization_backlog.json source_report must be repository-relative")
+        else:
+            source_candidate = os.path.join(root, source_relative)
+            if not os.path.isfile(source_candidate):
+                fail(
+                    "comprehensive_optimization_backlog.json source_report is missing: "
+                    + optimization_source_report
+                )
+            else:
+                optimization_source_path = source_candidate
     rules = optimization_manifest.get("rules")
     if not isinstance(rules, dict):
         fail("comprehensive_optimization_backlog.json rules must be an object")
     else:
-        for rule in (
+        required_rules = [
             "report_must_reference_manifest",
             "report_must_list_every_item_id",
             "items_must_have_verification",
@@ -123,7 +144,15 @@ if optimization_manifest:
             "adk_template_must_carry_pattern",
             "implementation_requires_owner_approval",
             "no_live_apply_without_source_to_live_evidence",
-        ):
+        ]
+        if optimization_schema_version == 2:
+            required_rules.extend([
+                "backlog_extensions_are_allowed",
+                "item_ids_must_be_unique_and_sequential",
+                "current_report_is_registry_driven",
+                "blocked_items_require_blocking_condition",
+            ])
+        for rule in required_rules:
             if rules.get(rule) is not True:
                 fail(f"comprehensive_optimization_backlog.json rules.{rule} must be true")
     if optimization_manifest.get("adk_template") != "agent-dev-kit/templates/artifacts/target-architecture-report-template.md":
@@ -133,10 +162,15 @@ if optimization_manifest:
         fail("comprehensive_optimization_backlog.json items must be an array")
     else:
         optimization_items = [item for item in raw_items if isinstance(item, dict)]
-        expected_ids = [f"G{i}" for i in range(1, 11)]
         actual_ids = [item.get("id") for item in optimization_items]
+        expected_ids = [f"G{i}" for i in range(1, len(optimization_items) + 1)]
+        if len(optimization_items) < 10:
+            fail("comprehensive_optimization_backlog.json must preserve the G1-G10 baseline")
         if actual_ids != expected_ids:
-            fail(f"comprehensive_optimization_backlog.json item ids must be {expected_ids}")
+            fail(
+                "comprehensive_optimization_backlog.json item ids must be unique and sequential: "
+                f"{expected_ids}"
+            )
         required_areas = {
             "Goal and scope control",
             "Governance correctness",
@@ -170,6 +204,40 @@ if optimization_manifest:
                 fail(f"comprehensive_optimization_backlog.json {item_id} verification must be non-empty")
             elif not all(isinstance(cmd, str) and cmd.startswith("rtk ") for cmd in verification):
                 fail(f"comprehensive_optimization_backlog.json {item_id} verification commands must start with rtk")
+            implementation_evidence = item.get("implementation_evidence")
+            if not isinstance(implementation_evidence, list) or not implementation_evidence:
+                fail(
+                    f"comprehensive_optimization_backlog.json {item_id} "
+                    "implementation_evidence must be non-empty"
+                )
+            else:
+                for evidence_path in implementation_evidence:
+                    if not isinstance(evidence_path, str) or not evidence_path:
+                        fail(
+                            f"comprehensive_optimization_backlog.json {item_id} "
+                            "implementation_evidence paths must be non-empty strings"
+                        )
+                        continue
+                    normalized = os.path.normpath(evidence_path)
+                    if os.path.isabs(evidence_path) or normalized.startswith(".."):
+                        fail(
+                            f"comprehensive_optimization_backlog.json {item_id} "
+                            f"implementation_evidence must be repository-relative: {evidence_path}"
+                        )
+                    elif not os.path.exists(os.path.join(root, normalized)):
+                        fail(
+                            f"comprehensive_optimization_backlog.json {item_id} "
+                            f"implementation_evidence is missing: {evidence_path}"
+                        )
+            if (
+                optimization_schema_version == 2
+                and item.get("implementation_status") == "blocked"
+                and not str(item.get("blocking_condition", "")).strip()
+            ):
+                fail(
+                    f"comprehensive_optimization_backlog.json {item_id} "
+                    "blocked item requires blocking_condition"
+                )
 
 if os.path.isfile(adk_template_path):
     adk_template_text = read(adk_template_path)
@@ -236,6 +304,37 @@ required_goal_fields = [
     "stop_condition:",
 ]
 
+
+def validate_optimization_section(content, label, require_all_items):
+    optimization = section(content, "## Comprehensive Optimization Backlog")
+    if "| ID | Priority | Optimization Area | Terminal Outcome | Implementation Target | Verification |" not in optimization:
+        fail(f"{label} Comprehensive Optimization Backlog table header is missing or malformed")
+    for token in (
+        "Governance correctness",
+        "Performance and token cost",
+        "Maintainability",
+        "Extensibility",
+        "Asset experience",
+    ):
+        if token not in optimization:
+            fail(f"{label} Comprehensive Optimization Backlog missing token: {token}")
+    if "manifests/comprehensive_optimization_backlog.json" not in optimization:
+        fail(
+            f"{label} Comprehensive Optimization Backlog must reference "
+            "manifests/comprehensive_optimization_backlog.json"
+        )
+    if require_all_items:
+        for item in optimization_items:
+            for key in ("id", "priority", "optimization_area"):
+                value = str(item.get(key) or "")
+                if value and value not in optimization:
+                    fail(
+                        f"{label} Comprehensive Optimization Backlog "
+                        f"missing manifest {key}: {value}"
+                    )
+
+
+optimization_source_checked = False
 for report in reports:
     content = read(report)
     label = rel(report)
@@ -288,19 +387,12 @@ for report in reports:
     if "| ID | Priority | Task | Files | Stop Condition | Verification |" not in tasks:
         fail(f"{label} Implementation Tasks table header is missing or malformed")
 
-    optimization = section(content, "## Comprehensive Optimization Backlog")
-    if "| ID | Priority | Optimization Area | Terminal Outcome | Implementation Target | Verification |" not in optimization:
-        fail(f"{label} Comprehensive Optimization Backlog table header is missing or malformed")
-    for token in ("Governance correctness", "Performance and token cost", "Maintainability", "Extensibility", "Asset experience"):
-        if token not in optimization:
-            fail(f"{label} Comprehensive Optimization Backlog missing token: {token}")
-    if "manifests/comprehensive_optimization_backlog.json" not in optimization:
-        fail(f"{label} Comprehensive Optimization Backlog must reference manifests/comprehensive_optimization_backlog.json")
-    for item in optimization_items:
-        for key in ("id", "priority", "optimization_area"):
-            value = str(item.get(key) or "")
-            if value and value not in optimization:
-                fail(f"{label} Comprehensive Optimization Backlog missing manifest {key}: {value}")
+    is_optimization_source = bool(
+        optimization_source_path
+        and os.path.normpath(report) == os.path.normpath(optimization_source_path)
+    )
+    validate_optimization_section(content, label, is_optimization_source)
+    optimization_source_checked = optimization_source_checked or is_optimization_source
 
     rejected = section(content, "## Rejected Options")
     if "| Option | Decision | Reason |" not in rejected:
@@ -322,6 +414,14 @@ for report in reports:
     for field in required_goal_fields:
         if field not in closure:
             fail(f"{label} Goal Closure State missing field: {field}")
+
+if optimization_source_path and not optimization_source_checked:
+    source_content = read(optimization_source_path)
+    validate_optimization_section(
+        source_content,
+        rel(optimization_source_path),
+        True,
+    )
 
 product_reports = sorted(glob.glob(os.path.join(arch_dir, "*product-maturity-audit*.md")))
 if not product_reports:
@@ -424,6 +524,7 @@ if product_scorecard:
             fail("current product scorecard must preserve self_pilot_active until independent certification")
 
 report_registry = read_json(report_registry_path)
+current_report_path = ""
 if report_registry:
     entries = report_registry.get("reports")
     if not isinstance(entries, list):
@@ -432,18 +533,47 @@ if report_registry:
         current = [item for item in entries if isinstance(item, dict) and item.get("status") == "current"]
         if len(current) != 1:
             fail("report_registry.json must declare exactly one current architecture report")
+        else:
+            current_report_path = str(current[0].get("path") or "")
+            if (
+                optimization_manifest
+                and optimization_manifest.get("schema_version") == 2
+                and optimization_manifest.get("rules", {}).get("current_report_is_registry_driven") is True
+                and current_report_path != optimization_source_report
+            ):
+                fail(
+                    "report_registry.json current report must match "
+                    "comprehensive_optimization_backlog.json source_report"
+                )
         for item in entries:
             if not isinstance(item, dict):
                 continue
-            report_path = os.path.join(root, str(item.get("path", "")))
+            registry_path = str(item.get("path") or "")
+            normalized_registry_path = os.path.normpath(registry_path)
+            if (
+                not registry_path
+                or os.path.isabs(registry_path)
+                or normalized_registry_path.startswith("..")
+            ):
+                fail(
+                    "report registry path must be repository-relative: "
+                    f"{registry_path or '<missing>'}"
+                )
+                continue
+            if normalized_registry_path.split(os.sep)[:2] != ["reports", "architecture"]:
+                fail(f"report registry path must stay under reports/architecture: {registry_path}")
+                continue
+            report_path = os.path.join(root, normalized_registry_path)
             if not os.path.isfile(report_path):
-                fail(f"report registry path missing: {item.get('path')}")
+                fail(f"report registry path missing: {registry_path}")
 
 status = "pass" if not failures else "fail"
 if summary_json:
     print(json.dumps({
         "status": status,
         "reports": len(reports) + len(product_reports),
+        "backlog_items": len(optimization_items),
+        "current_report": current_report_path,
         "failures": failures,
     }, ensure_ascii=False, separators=(",", ":")))
 else:

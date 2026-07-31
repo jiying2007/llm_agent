@@ -12,13 +12,84 @@ fixture_root="${TMP_DIR}/fixture-root"
 mkdir -p "${fixture_root}/reports/architecture" "${fixture_root}/manifests" "${fixture_root}/agent-dev-kit/templates/artifacts"
 cp "${ROOT}/reports/architecture/README.md" "${fixture_root}/reports/architecture/README.md"
 cp "${ROOT}/reports/architecture/llm-agent-adk-target-architecture-2026-07-11.md" "${fixture_root}/reports/architecture/llm-agent-adk-target-architecture-2026-07-11.md"
+cp "${ROOT}/reports/architecture/llm-agent-adk-target-architecture-2026-07-30.md" "${fixture_root}/reports/architecture/llm-agent-adk-target-architecture-2026-07-30.md"
 cp "${ROOT}/reports/architecture/llm-agent-adk-product-maturity-audit-2026-07-13.md" "${fixture_root}/reports/architecture/llm-agent-adk-product-maturity-audit-2026-07-13.md"
 cp "${ROOT}/reports/architecture/llm-agent-adk-software-m5-readiness-2026-07-13.md" "${fixture_root}/reports/architecture/llm-agent-adk-software-m5-readiness-2026-07-13.md"
 cp "${ROOT}/manifests/comprehensive_optimization_backlog.json" "${fixture_root}/manifests/comprehensive_optimization_backlog.json"
 cp "${ROOT}/manifests/product_maturity_scorecard.json" "${fixture_root}/manifests/product_maturity_scorecard.json"
 cp "${ROOT}/manifests/report_registry.json" "${fixture_root}/manifests/report_registry.json"
 cp "${ROOT}/agent-dev-kit/templates/artifacts/target-architecture-report-template.md" "${fixture_root}/agent-dev-kit/templates/artifacts/target-architecture-report-template.md"
-"${CHECKER}" "${fixture_root}" --summary-json >/dev/null
+python3 - "${fixture_root}" <<'PY'
+import json
+import pathlib
+import sys
+
+root = pathlib.Path(sys.argv[1])
+manifest = json.loads(
+    (root / "manifests/comprehensive_optimization_backlog.json").read_text(encoding="utf-8")
+)
+for item in manifest["items"]:
+    for relative in item["implementation_evidence"]:
+        target = root / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.touch(exist_ok=True)
+PY
+fixture_output="${TMP_DIR}/fixture.out"
+if ! "${CHECKER}" "${fixture_root}" --summary-json >"${fixture_output}" 2>&1; then
+  echo "[FAIL] architecture pass fixture failed" >&2
+  sed -n '1,160p' "${fixture_output}" >&2 || true
+  exit 1
+fi
+
+gap_root="${TMP_DIR}/gap-root"
+cp -a "${fixture_root}" "${gap_root}"
+python3 - "${gap_root}/manifests/comprehensive_optimization_backlog.json" <<'PY'
+import json
+import pathlib
+import sys
+
+path = pathlib.Path(sys.argv[1])
+value = json.loads(path.read_text(encoding="utf-8"))
+value["items"][-1]["id"] = "G18"
+path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+PY
+gap_output="${TMP_DIR}/gap.out"
+if "${CHECKER}" "${gap_root}" >"${gap_output}" 2>&1; then
+  echo "[FAIL] non-sequential optimization backlog unexpectedly passed" >&2
+  exit 1
+fi
+if ! rg -q --fixed-strings -- "item ids must be unique and sequential" "${gap_output}"; then
+  echo "[FAIL] non-sequential backlog failure was not explicit" >&2
+  sed -n '1,120p' "${gap_output}" >&2 || true
+  exit 1
+fi
+
+registry_mismatch_root="${TMP_DIR}/registry-mismatch-root"
+cp -a "${fixture_root}" "${registry_mismatch_root}"
+python3 - "${registry_mismatch_root}/manifests/report_registry.json" <<'PY'
+import json
+import pathlib
+import sys
+
+path = pathlib.Path(sys.argv[1])
+value = json.loads(path.read_text(encoding="utf-8"))
+for item in value["reports"]:
+    item["status"] = "superseded"
+    if item["id"] == "target-architecture-2026-07-11":
+        item["status"] = "current"
+        item["superseded_by"] = None
+path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+PY
+registry_mismatch_output="${TMP_DIR}/registry-mismatch.out"
+if "${CHECKER}" "${registry_mismatch_root}" >"${registry_mismatch_output}" 2>&1; then
+  echo "[FAIL] registry/backlog current report mismatch unexpectedly passed" >&2
+  exit 1
+fi
+if ! rg -q --fixed-strings -- "current report must match" "${registry_mismatch_output}"; then
+  echo "[FAIL] registry/backlog mismatch failure was not explicit" >&2
+  sed -n '1,120p' "${registry_mismatch_output}" >&2 || true
+  exit 1
+fi
 
 legacy_root="${TMP_DIR}/legacy-root"
 mkdir -p "${legacy_root}/reports/architecture" "${legacy_root}/manifests" "${legacy_root}/agent-dev-kit/templates/artifacts"
