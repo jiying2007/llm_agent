@@ -36,7 +36,7 @@
       "elapsed_ms": null
     },
     "root_quick": "not-run-rc7-full-used",
-    "root_full": "61/61-pass",
+    "root_full": "60/60-pass",
     "target_static": "3/3-pass-in-adk-full",
     "target_runtime": "not-run-experimental",
     "effect_eval": "pass-in-adk-full",
@@ -96,7 +96,7 @@
     "adk_evidence_commit_pushed": true,
     "codex_commit_pushed": true,
     "knowledge_hub_commit_pushed": true,
-    "root_product_commit": "bbd81ef7a254f43676657a0e7d9b8e4dddb0eb35",
+    "root_product_commit": "30e965fa42226ed48f9cc1419b7db7e7b06e0c77",
     "root_product_commit_pushed": false,
     "tag_created": false,
     "remote_release_created": false,

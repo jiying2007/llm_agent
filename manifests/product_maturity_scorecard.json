@@ -45,7 +45,7 @@
     "local_validation": {
       "adk_full": "58/58-pass",
       "root_quick": "not-run-rc7-full-used",
-      "root_full": "61/61-pass",
+      "root_full": "60/60-pass",
       "target_static": "3/3-pass",
       "effect_eval": "24/24-pass-ablation-delta-0.3333",
       "release_rehearsal": "pass",

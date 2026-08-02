@@ -3,7 +3,7 @@
 - updated_at: 2026-08-02
 - status_semantics: last-verified-product-baseline
 - last_verified_at: 2026-08-02
-- root_product_commit: bbd81ef7a254f43676657a0e7d9b8e4dddb0eb35
+- root_product_commit: 30e965fa42226ed48f9cc1419b7db7e7b06e0c77
 - agent_dev_kit_commit: 9bd0afa7d63ad0d14662cdf931333d4fe067ba6a
 - agent_dev_kit_release_commit: 60c9a9ebbcc38ebdfcb07bc1fd399f533ce08e5f
 - adk_previous_commit: 9f82e1d9deffadc3967f446069375f5872363d46
@@ -48,7 +48,7 @@ plan 初次包含 2 个 content changes，重复检查为 `already-applied`，Co
 | ADK strict/security/release | PASS | 三项结构化门禁均为 pass |
 | ADK release full | PASS | Python 3.11/3.12 local-CI 均 `58/58`；dependency audit 无已知漏洞 |
 | ADK current evidence | PASS | release source `60c9a9e`；evidence HEAD `9bd0afa`；post-release mapped asset diff=0 |
-| Root quick/full | PASS | RC7 release-clean full `61/61`，fail `0`；未单独重复 quick |
+| Root quick/full | PASS | RC7 release-clean full `60/60`，fail `0`；未单独重复 quick |
 | Direct target static | PASS/BOUNDARY | Claude Code/OpenCode/Hermes `3/3`；真实 runtime smoke 仍为 `not-run` |
 | Effect eval | PASS | OOD/adversarial `24/24`；routing ablation delta `0.3333` |
 | Deterministic routing | PASS | 60/60；由 ADK full/effect tests 重算通过 |
