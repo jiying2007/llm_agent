@@ -4,7 +4,7 @@
 
 ## 目标状态
 
-- RC 版本：`agent-dev-kit 3.1.0-rc.6`。
+- RC 版本：`agent-dev-kit 3.1.0-rc.7`。
 - 最终版本：`agent-dev-kit 3.1.0`，只在现场 eligibility 通过后提升。
 - 机器策略：`manifests/software_m5_policy.json`。
 - 试点账本：`manifests/software_m5_pilot_ledger.json`。
@@ -17,7 +17,7 @@
 | 阶段 | 状态 | 退出条件 | 主要证据 |
 |---|---|---|---|
 | P0 软件控制面 | implemented | doctor、writer lock、campaign resume、证据 hash、release rehearsal 均有负向测试 | ADK 3.1 change artifact |
-| P1 M5-ready RC | implemented | rc.4 通过 release-only hard-cut boundary 升级到 rc.5 后可回退；exact-commit 双构建一致；Codex source-to-live 零漂移；自试点保持 active | `release-rehearsal.json`、source-to-live evidence、事件链 |
+| P1 M5-ready RC | implemented | rc.6 升级到 rc.7 后可回退；exact-commit 双构建一致；Codex source-to-live 应用后零漂移；自试点保持 active | `release-rehearsal.json`、source-to-live evidence、事件链 |
 | P2 双 runtime campaign | blocked_external | Codex/Claude 各 60 任务、baseline/adk、3 trials；720 条 raw result 与 frozen plan 完整保留；所有统计门禁通过；总预算不超过 `$150` | `software-m5-campaign-state/` |
 | P2.5 真实仓库 campaign | blocked_external | 至少两个 runtime、5 个冻结任务、至少 2 个 owner-approved 真实仓库任务、baseline/adk 各 3 trials；功能/安全/过程/trace/token/cost 门禁全部通过 | `repository_runtime_eval_contract.json` 与 owner-approved report |
 | P3 独立现场试点 | active | 至少一个独立真实软件仓、至少两个 human operator、账本和观测跨度均不少于 30 天 | field 事件链和逐事件证据 |
@@ -30,16 +30,16 @@
 
 ```bash
 rtk bash agent-dev-kit/scripts/devkit.sh eval campaign plan \
-  --contract agent-dev-kit/manifests/software_m5_eval_contract_rc6.json \
+  --contract agent-dev-kit/manifests/software_m5_eval_contract_rc7.json \
   --output agent-dev-kit/docs/changes/adk-v3-1-software-m5-ready/software-m5-campaign-plan.json
 
 rtk bash agent-dev-kit/scripts/devkit.sh eval campaign run \
-  --contract agent-dev-kit/manifests/software_m5_eval_contract_rc6.json \
+  --contract agent-dev-kit/manifests/software_m5_eval_contract_rc7.json \
   --state-dir agent-dev-kit/docs/changes/archive/20260719-intent-boundary-governance-v2/software-m5-campaign-state \
   --approve-budget-usd 150 --execute --resume
 
 rtk bash agent-dev-kit/scripts/devkit.sh eval campaign check \
-  --contract agent-dev-kit/manifests/software_m5_eval_contract_rc6.json \
+  --contract agent-dev-kit/manifests/software_m5_eval_contract_rc7.json \
   --state-dir agent-dev-kit/docs/changes/archive/20260719-intent-boundary-governance-v2/software-m5-campaign-state \
   --certify --summary-json
 ```

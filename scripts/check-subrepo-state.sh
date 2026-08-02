@@ -4,6 +4,7 @@ set -euo pipefail
 ROOT="${1:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 STRICT=0
 SUMMARY_JSON=0
+ALLOW_ADK_DIRTY=0
 CLASSIFIER="${ROOT}/scripts/classify-repo-worktree.sh"
 
 for arg in "${@:2}"; do
@@ -14,9 +15,12 @@ for arg in "${@:2}"; do
     --summary-json)
       SUMMARY_JSON=1
       ;;
+    --allow-agent-dev-kit-dirty)
+      ALLOW_ADK_DIRTY=1
+      ;;
     -h|--help)
       cat <<USAGE
-usage: scripts/check-subrepo-state.sh [root] [--strict] [--summary-json]
+usage: scripts/check-subrepo-state.sh [root] [--strict] [--summary-json] [--allow-agent-dev-kit-dirty]
 
 Default mode enforces strict cleanliness only for agent-dev-kit. Other enabled
 reference repositories are reported as observe state. If
@@ -33,6 +37,11 @@ USAGE
       ;;
   esac
 done
+
+if [[ "${STRICT}" -eq 1 && "${ALLOW_ADK_DIRTY}" -eq 1 ]]; then
+  echo "[FAIL] --strict and --allow-agent-dev-kit-dirty are mutually exclusive" >&2
+  exit 1
+fi
 
 REGISTRY="${ROOT}/subrepos/registry.csv"
 BASELINE="${ROOT}/subrepos/dirty-baseline.tsv"
@@ -83,6 +92,8 @@ stale_baseline=0
 classification_mismatch=0
 clean=0
 failed=0
+agent_dev_kit_fingerprint=""
+agent_dev_kit_change_count=0
 
 if [[ "${SUMMARY_JSON}" -eq 0 ]]; then
   printf '%-28s %-14s %-10s %s\n' "repo" "state" "policy" "detail"
@@ -123,7 +134,21 @@ while IFS=',' read -r repo group priority sync_mode branch enabled notes status 
       analysis_policy="$(baseline_field "${repo}" "analysis_policy" || true)"
       expires_on="$(baseline_field "${repo}" "expires_on" || true)"
       owner="$(baseline_field "${repo}" "owner" || true)"
-      if [[ "${policy}" == "observe" && "${expected_state}" == "dirty" ]]; then
+      if [[ "${repo}" == "agent-dev-kit" && "${ALLOW_ADK_DIRTY}" -eq 1 ]]; then
+        classifier_output=""
+        if ! classifier_output="$("${CLASSIFIER}" "${ROOT}" "${repo}" --format tsv)"; then
+          detail="${detail}; integration-classification-failed"
+          classification_mismatch=$((classification_mismatch + 1))
+          unexpected_dirty=$((unexpected_dirty + 1))
+          failed=1
+        else
+          IFS=$'\t' read -r actual_classification actual_count mode_changes content_changes type_changes untracked_changes staged_changes actual_fingerprint <<<"${classifier_output}"
+          state="integration-dirty"
+          agent_dev_kit_fingerprint="${actual_fingerprint}"
+          agent_dev_kit_change_count="${actual_count}"
+          detail="${detail}; classification=${actual_classification}; mode=${mode_changes}; content=${content_changes}; type=${type_changes}; untracked=${untracked_changes}; staged=${staged_changes}; fingerprint=${actual_fingerprint}"
+        fi
+      elif [[ "${policy}" == "observe" && "${expected_state}" == "dirty" ]]; then
         classifier_output=""
         if ! classifier_output="$("${CLASSIFIER}" "${ROOT}" "${repo}" --format tsv)"; then
           detail="${detail}; baseline=${baseline_ref:-unknown}; classification-failed"
@@ -173,7 +198,7 @@ while IFS=',' read -r repo group priority sync_mode branch enabled notes status 
     printf '%-28s %-14s %-10s %s\n' "${repo}" "${state}" "${policy}" "${detail}"
   fi
 
-  if [[ "${policy}" == "strict" && "${state}" != "clean" ]]; then
+  if [[ "${policy}" == "strict" && "${state}" != "clean" && "${state}" != "integration-dirty" ]]; then
     if [[ "${SUMMARY_JSON}" -eq 0 ]]; then
       echo "[FAIL] strict subrepo not clean: ${repo} (${state})" >&2
     fi
@@ -188,8 +213,8 @@ done < "${REGISTRY}"
 if [[ "${SUMMARY_JSON}" -eq 1 ]]; then
   status="pass"
   [[ "${failed}" -ne 0 ]] && status="fail"
-  printf '{"status":"%s","clean":%s,"dirty":%s,"known_dirty":%s,"unexpected_dirty":%s,"classification_mismatch":%s,"stale_baseline":%s,"uninitialized":%s,"missing":%s,"strict":%s}\n' \
-    "${status}" "${clean}" "${dirty}" "${known_dirty}" "${unexpected_dirty}" "${classification_mismatch}" "${stale_baseline}" "${uninitialized}" "${missing}" "${STRICT}"
+  printf '{"status":"%s","gate_mode":"%s","clean":%s,"dirty":%s,"known_dirty":%s,"unexpected_dirty":%s,"classification_mismatch":%s,"stale_baseline":%s,"uninitialized":%s,"missing":%s,"strict":%s,"agent_dev_kit_change_count":%s,"agent_dev_kit_fingerprint":"%s"}\n' \
+    "${status}" "$([[ "${ALLOW_ADK_DIRTY}" -eq 1 ]] && printf working-tree || printf release)" "${clean}" "${dirty}" "${known_dirty}" "${unexpected_dirty}" "${classification_mismatch}" "${stale_baseline}" "${uninitialized}" "${missing}" "${STRICT}" "${agent_dev_kit_change_count}" "${agent_dev_kit_fingerprint}"
 else
   echo
   echo "[SUMMARY] clean=${clean} dirty=${dirty} known_dirty=${known_dirty} unexpected_dirty=${unexpected_dirty} classification_mismatch=${classification_mismatch} stale_baseline=${stale_baseline} uninitialized=${uninitialized} missing=${missing} strict=${STRICT}"

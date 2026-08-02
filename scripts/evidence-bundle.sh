@@ -6,10 +6,12 @@ FORMAT="markdown"
 OUT=""
 FAIL_ON_NEEDS_FIX=0
 MAX_SUMMARY_CHARS=800
+WORKTREE_INTEGRATION=0
+SAME_RUN_EVIDENCE_LIB="${ROOT}/scripts/lib/same-run-evidence.sh"
 
 usage() {
   cat <<USAGE
-usage: scripts/evidence-bundle.sh [root] [--format markdown|json] [--out <path>] [--fail-on-needs-fix] [--max-summary-chars <n>]
+usage: scripts/evidence-bundle.sh [root] [--format markdown|json] [--out <path>] [--fail-on-needs-fix] [--max-summary-chars <n>] [--worktree-integration]
 
 Collects a compact pre-commit / release evidence bundle for llm_agent and
 agent-dev-kit. The command is read-only except for --out.
@@ -42,6 +44,10 @@ while [[ $# -gt 0 ]]; do
     --max-summary-chars)
       MAX_SUMMARY_CHARS="${2:-}"
       shift 2
+      ;;
+    --worktree-integration)
+      WORKTREE_INTEGRATION=1
+      shift
       ;;
     -h|--help)
       usage
@@ -92,19 +98,73 @@ run_capture() {
   printf '%s' "${rc}" >"${TMP_DIR}/${name}.rc"
 }
 
-run_capture adk_lock "${ROOT}/scripts/check-adk-lock.sh" "${ROOT}"
-run_capture runtime_targets "${ROOT}/scripts/check-runtime-targets.sh" "${ROOT}" --summary-json
-run_capture phase_gate "${ROOT}/scripts/check-phase-gate.sh" "${ROOT}" --summary-json
-run_capture subrepo_state "${ROOT}/scripts/check-subrepo-state.sh" "${ROOT}" --summary-json
-run_capture reference_dirty_triage "${ROOT}/scripts/check-reference-dirty-triage.sh" "${ROOT}" --summary-json
-run_capture runtime_pilot "${ROOT}/scripts/check-runtime-pilot.sh" "${ROOT}" evidence
-run_capture runtime_health "${ROOT}/scripts/check-runtime-health.sh" "${ROOT}" --profile minimal --summary-json
-run_capture runtime_live "${ROOT}/scripts/check-runtime-live-footprint.sh" "${ROOT}" --summary-json
-run_capture pilot_readiness "${ADK_DIR}/scripts/pilot-readiness.sh" --summary-json
-run_capture fallback_sunset "${ADK_DIR}/scripts/check-fallback-sunset.sh" --summary-json
+try_same_run_capture() {
+  local name="$1"
+  local producer="$2"
+  local script_path="$3"
+  local out_file="${TMP_DIR}/${name}.out"
+  local current_fingerprint reused_output
+  [[ -n "${LLM_AGENT_SAME_RUN_EVIDENCE_DIR:-}" \
+    && -n "${LLM_AGENT_SAME_RUN_PRODUCER_PID:-}" \
+    && -n "${LLM_AGENT_SAME_RUN_PRODUCER_START:-}" \
+    && -n "${LLM_AGENT_SAME_RUN_REUSE_REPORT:-}" \
+    && -f "${SAME_RUN_EVIDENCE_LIB}" ]] || return 1
+  # shellcheck source=scripts/lib/same-run-evidence.sh
+  source "${SAME_RUN_EVIDENCE_LIB}"
+  current_fingerprint="$(llm_agent_workspace_fingerprint "${ROOT}")" || return 1
+  reused_output="$(
+    llm_agent_same_run_validate \
+      "${LLM_AGENT_SAME_RUN_EVIDENCE_DIR}" \
+      "${LLM_AGENT_SAME_RUN_PRODUCER_PID}" \
+      "${LLM_AGENT_SAME_RUN_PRODUCER_START}" \
+      "${ROOT}" \
+      "${current_fingerprint}" \
+      "${producer}" \
+      "${script_path}"
+  )" || return 1
+  cp -- "${reused_output}" "${out_file}"
+  printf '0' >"${TMP_DIR}/${name}.rc"
+  llm_agent_same_run_report_append \
+    "${LLM_AGENT_SAME_RUN_EVIDENCE_DIR}" \
+    "${LLM_AGENT_SAME_RUN_REUSE_REPORT}" \
+    "evidence_bundle_${name}" \
+    "${producer}" || return 1
+  return 0
+}
 
-root_head="$(git -C "${ROOT}" rev-parse --short HEAD)"
-adk_head="$(git -C "${ADK_DIR}" rev-parse --short HEAD)"
+capture_or_run() {
+  local name="$1"
+  local producer="$2"
+  shift 2
+  if try_same_run_capture "${name}" "${producer}" "$1"; then
+    return 0
+  fi
+  run_capture "${name}" "$@"
+}
+
+capture_or_run adk_lock check-adk-lock.sh "${ROOT}/scripts/check-adk-lock.sh" "${ROOT}"
+capture_or_run runtime_targets check-runtime-targets.sh "${ROOT}/scripts/check-runtime-targets.sh" "${ROOT}" --summary-json
+capture_or_run phase_gate check-phase-gate.sh "${ROOT}/scripts/check-phase-gate.sh" "${ROOT}" --summary-json
+subrepo_args=("${ROOT}" --summary-json)
+[[ "${WORKTREE_INTEGRATION}" -eq 0 ]] || subrepo_args+=(--allow-agent-dev-kit-dirty)
+capture_or_run subrepo_state check-subrepo-state.sh "${ROOT}/scripts/check-subrepo-state.sh" "${subrepo_args[@]}"
+capture_or_run reference_dirty_triage check-reference-dirty-triage.sh "${ROOT}/scripts/check-reference-dirty-triage.sh" "${ROOT}" --summary-json
+capture_or_run runtime_health check-runtime-health.sh "${ROOT}/scripts/check-runtime-health.sh" "${ROOT}" --profile minimal --summary-json
+capture_or_run runtime_live check-runtime-live-footprint.sh "${ROOT}/scripts/check-runtime-live-footprint.sh" "${ROOT}" --summary-json
+# These three checks are read-only, have disjoint temporary outputs and do not
+# consume one another. Run them as one bounded wave after all reusable checks.
+run_capture runtime_pilot "${ROOT}/scripts/check-runtime-pilot.sh" "${ROOT}" evidence &
+runtime_pilot_pid=$!
+run_capture pilot_readiness "${ADK_DIR}/scripts/pilot-readiness.sh" --summary-json &
+pilot_readiness_pid=$!
+run_capture fallback_sunset "${ADK_DIR}/scripts/check-fallback-sunset.sh" --summary-json &
+fallback_sunset_pid=$!
+wait "${runtime_pilot_pid}"
+wait "${pilot_readiness_pid}"
+wait "${fallback_sunset_pid}"
+
+root_head="$(rtk git -C "${ROOT}" rev-parse --short HEAD)"
+adk_head="$(rtk git -C "${ADK_DIR}" rev-parse --short HEAD)"
 generated_at="$(date -Iseconds)"
 overall_status="pass"
 for check_name in adk_lock runtime_targets phase_gate subrepo_state reference_dirty_triage runtime_pilot runtime_health runtime_live pilot_readiness fallback_sunset; do
@@ -151,6 +211,7 @@ write_json() {
   printf '{\n'
   printf '  "generated_at": %s,\n' "$(json_string "${generated_at}")"
   printf '  "status": %s,\n' "$(json_string "${overall_status}")"
+  printf '  "gate_mode": %s,\n' "$(json_string "$([[ "${WORKTREE_INTEGRATION}" -eq 1 ]] && printf working-tree || printf release)")"
   printf '  "root_head": %s,\n' "$(json_string "${root_head}")"
   printf '  "agent_dev_kit_head": %s,\n' "$(json_string "${adk_head}")"
   printf '  "checks": [\n'

@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "projection": "adk-cross-repo-release-bundle-v1",
+  "status": "provenance-only",
+  "release_authorized": false,
+  "repositories": [
+    {
+      "name": "llm-agent",
+      "root": "/home/leiwenjun/bin/llm_agent",
+      "head": "bbd81ef7a254f43676657a0e7d9b8e4dddb0eb35",
+      "dirty": true,
+      "change_count": 21,
+      "untracked_count": 6,
+      "worktree_fingerprint": "fcb1e559b0c84bdfa460e4762e66ceaad8d7b0e1c1ce38ffdfc5f024fd7be981",
+      "excluded_paths": [
+        "reports/2026-08-01-token-context-governance-v2-release-bundle.json"
+      ],
+      "raw_diff_stored": false
+    },
+    {
+      "name": "agent-dev-kit",
+      "root": "/home/leiwenjun/bin/llm_agent/agent-dev-kit",
+      "head": "cf082b602d68f3948ae1fcd6d00a522d116ddd0a",
+      "dirty": true,
+      "change_count": 31,
+      "untracked_count": 24,
+      "worktree_fingerprint": "10bddf8d4d1216b9238a91d5992f0cc9c61a66cf23a21d4c0e98cfd5be8b6de7",
+      "excluded_paths": [],
+      "raw_diff_stored": false
+    },
+    {
+      "name": "codex",
+      "root": "/home/leiwenjun/codex",
+      "head": "8d0022c67d96d790d2f2e88152b3b99337cb4887",
+      "dirty": true,
+      "change_count": 21,
+      "untracked_count": 2,
+      "worktree_fingerprint": "a4709d0240dc5f39a4b3f89bbcf64a25b7b47c14b957b1eeedbbf56a2a655f31",
+      "excluded_paths": [],
+      "raw_diff_stored": false
+    },
+    {
+      "name": "knowledge-hub",
+      "root": "/home/leiwenjun/knowledge-hub",
+      "head": "1023881676e293c67cf47e142a1cf0b683997a26",
+      "dirty": true,
+      "change_count": 23,
+      "untracked_count": 4,
+      "worktree_fingerprint": "291e590144910b4a4d82c26ef9776e449f8b6a953f784697a08db80651f7fd33",
+      "excluded_paths": [],
+      "raw_diff_stored": false
+    }
+  ],
+  "codex_plan": {
+    "path": "/home/leiwenjun/codex/build/apply-plan.json",
+    "sha256": "5a6f5584cd89fdf08f0a4512ec78b16ac59956b0b183aba597ac2d22d53ecea4",
+    "bytes": 180516,
+    "schema_version": 3,
+    "content_changes": 2,
+    "content_noop": false,
+    "build_tree_sha256": "f02497ee124a7f2e7038e6152ff9a07e0741325eb496c51c665553e08d32529c",
+    "target_precondition_paths_sha256": "4c876063e76588b1a538b17a67759e6ed89d5861677b5e8280b1c93067badd2a",
+    "target_precondition_paths": 433
+  },
+  "hub_candidate": {
+    "path": "/home/leiwenjun/knowledge-hub/projects/agent-dev-kit/validation/2026-08-01-token-context-governance-v2.md",
+    "sha256": "db5e006dae688f61490c8fff60e0123b0d3d17a8831c0e6f05e1141ac4e2ff9d",
+    "bytes": 4275
+  },
+  "evidence": [
+    {
+      "path": "/tmp/llm-agent-v2-smoke-final.json",
+      "sha256": "fc56525dc411ae651950c906d8c5692aae98f8fc3fa267b4111c70564ca1a0ff",
+      "bytes": 2332
+    },
+    {
+      "path": "/tmp/llm-agent-v2-root-tests.json",
+      "sha256": "038915039e1d33fd383e8230a0e3a66b2b6828df4606eeb9e45df74a32f43a10",
+      "bytes": 1923
+    },
+    {
+      "path": "/tmp/llm-agent-v2-full-final.json",
+      "sha256": "a06678d74c90bed73a5e2821ba80b079c9efcc6869e68716e333acc1f8253abc",
+      "bytes": 7948
+    }
+  ],
+  "privacy": {
+    "raw_diff_stored": false,
+    "prompt_stored": false,
+    "query_stored": false,
+    "log_body_stored": false,
+    "credential_stored": false
+  },
+  "must_not": [
+    "commit",
+    "push",
+    "merge",
+    "publish",
+    "promote-active"
+  ]
+}

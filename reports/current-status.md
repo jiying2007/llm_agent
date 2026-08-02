@@ -1,13 +1,13 @@
 # Last Verified Product Baseline
 
-- updated_at: 2026-07-31
+- updated_at: 2026-08-02
 - status_semantics: last-verified-product-baseline
-- last_verified_at: 2026-07-31
-- root_product_commit: 4eeab5faabcf2e56fdb041c14e0edff570d7f337
-- agent_dev_kit_commit: cf082b602d68f3948ae1fcd6d00a522d116ddd0a
-- agent_dev_kit_release_commit: 9f82e1d9deffadc3967f446069375f5872363d46
-- adk_previous_commit: 66a8c199fa7b11fe1396676b3eeb82249ef05554
-- adk_version: 3.1.0-rc.6
+- last_verified_at: 2026-08-02
+- root_product_commit: bbd81ef7a254f43676657a0e7d9b8e4dddb0eb35
+- agent_dev_kit_commit: 9bd0afa7d63ad0d14662cdf931333d4fe067ba6a
+- agent_dev_kit_release_commit: 60c9a9ebbcc38ebdfcb07bc1fd399f533ce08e5f
+- adk_previous_commit: 9f82e1d9deffadc3967f446069375f5872363d46
+- adk_version: 3.1.0-rc.7
 - product_maturity: M3
 - software_m5_readiness: m5-ready
 - software_m5_certified: false
@@ -16,8 +16,8 @@
 - root_gate_status: pass
 - runtime_eval_status: codex-smoke-pass-claude-blocked
 - m5_campaign_status: blocked-claude-unauthenticated
-- live_refresh_status: required-pending-owner-authorization
-- knowledge_candidate_status: required-pending-capture
+- live_refresh_status: applied-declarative-changed
+- knowledge_candidate_status: captured-reviewing
 - working_tree_scope: product commits exclude registered dirty reference worktrees
 
 ## Summary
@@ -27,15 +27,15 @@
 `manifests/report_registry.json` 动态选择；本基线对应的历史软件 M5 审计是
 `reports/architecture/llm-agent-adk-software-m5-readiness-2026-07-13.md`。
 
-`agent-dev-kit 3.1.0-rc.6` 封装 RC5 release source 之后进入主线的 MCP 2026 governance-only
-activation、嵌入式远程 ADB/HIL 取证加固和 G11+ 架构优化模板。release source commit
-`9f82e1d` 的两次 720-file exact build 字节一致；evidence HEAD `cf082b6` 只固化
-rehearsal/review/verification，release source 到 evidence commit 的 mapped asset diff 为空。
+`agent-dev-kit 3.1.0-rc.7` 固化 Token/context governance v2、task-cost、bounded receipt、按需
+routing 和 release-clean/working-tree 双门禁。release source commit `60c9a9e` 的两次 754-file
+exact build 字节一致；evidence HEAD `9bd0afa` 只增加 rehearsal/review/verification，release
+source 到 evidence commit 的 mapped asset diff 为空。
 
-相对 RC5 release source `66a8c19`，映射资产发生变化。RC5→RC6 本地 artifact rehearsal 已通过，
-但本轮没有获得新的 Codex source-to-live 写入授权，因此状态固定为
-`required-pending-owner-authorization`；未执行 build/plan/dry-run/apply，也不复用 RC5 的 live
-apply 证据冒充 RC6 已应用。该边界不影响 RC6 source/local release baseline，但阻止 live-ready 声明。
+相对 RC6 release source `9f82e1d`，映射资产发生变化。RC6→RC7 本地 artifact rehearsal 已通过；
+本轮获得 Codex source-to-live 写入授权并完成 build/doctor/plan v3/dry-run/apply/post-apply check。
+plan 初次包含 2 个 content changes，重复检查为 `already-applied`，Codex 126/126 tests、5 profiles
+和 live diff=0 均通过，因此状态为 `applied-declarative-changed`。
 
 总体成熟度仍是 **M3 / release-candidate**。软件控制面达到 `M5-ready`，但 Claude 未认证、
 完整双 runtime campaign 未执行，也没有独立真实软件仓、第二位 human operator、30 天现场周期和
@@ -46,30 +46,30 @@ apply 证据冒充 RC6 已应用。该边界不影响 RC6 source/local release b
 | Area | Result | Evidence |
 |---|---|---|
 | ADK strict/security/release | PASS | 三项结构化门禁均为 pass |
-| ADK release full | PASS | Python 3.11/3.12 local-CI 均 `57/57`；dependency audit 无已知漏洞 |
-| ADK current evidence | PASS | release source `9f82e1d`；evidence HEAD `cf082b6`；post-release mapped asset diff=0 |
-| Root quick/full | PASS | RC6 full `60/60`，fail `0`；未单独重复 quick |
+| ADK release full | PASS | Python 3.11/3.12 local-CI 均 `58/58`；dependency audit 无已知漏洞 |
+| ADK current evidence | PASS | release source `60c9a9e`；evidence HEAD `9bd0afa`；post-release mapped asset diff=0 |
+| Root quick/full | PASS | RC7 release-clean full `61/61`，fail `0`；未单独重复 quick |
 | Direct target static | PASS/BOUNDARY | Claude Code/OpenCode/Hermes `3/3`；真实 runtime smoke 仍为 `not-run` |
 | Effect eval | PASS | OOD/adversarial `24/24`；routing ablation delta `0.3333` |
 | Deterministic routing | PASS | 60/60；由 ADK full/effect tests 重算通过 |
 | Codex runtime smoke | PASS | `gpt-5.5` 单任务只读 smoke `1/1` |
 | Claude runtime | BLOCKED | CLI `2.1.138` 已安装但未认证；没有伪造调用或费用 |
 | Runtime campaign | BLOCKED | 60 tasks、2 runtimes、2 conditions、3 trials；720 raw result 合同；最坏 `$144` |
-| Release artifact | PASS | release source `9f82e1d` 两次 exact-commit build SHA256 `4cd728126b7242150665315a22706811c12de4de9f136eaef17b0e3ecbe63b15`；720 source files |
+| Release artifact | PASS | release source `60c9a9e` 两次 exact-commit build SHA256 `a46d26d79be3ee0bed02cde9c5fa031a5c0cd6e533793edc906b01f753ec48e0`；754 source files |
 | Wheel | PASS/BOUNDARY | Python 3.11/3.12 均成功构建 wheel；远端 attestation 未运行 |
-| Upgrade/rollback | PASS | `3.1.0-rc.5 -> 3.1.0-rc.6 -> rollback`；previous/candidate 各安装 39 项，rollback removed/restored=39 |
-| Source-to-live | PENDING AUTHORIZATION | RC6 未执行 Codex build/plan/dry-run/apply；等待独立 owner 授权 |
-| Live health | NOT-RUN/BOUNDARY | 不复用 RC5 live health 作为 RC6 证据；native direct-target runtime smoke 仍未执行 |
+| Upgrade/rollback | PASS | `3.1.0-rc.6 -> 3.1.0-rc.7 -> rollback`；previous/candidate 各安装 39 项，rollback removed/restored=39 |
+| Source-to-live | PASS | Codex plan v3 的 2 项 content changes 已 apply；repeat state=`already-applied` |
+| Live health | PASS/BOUNDARY | Codex 126/126、5 profiles 与 live diff=0；native direct-target runtime smoke 仍未执行 |
 | Software M5 certifier | PASS/BOUNDARY | integrity/declaration pass；readiness `m5-ready`；certified `false` |
-| Knowledge Hub archive | PASS/BOUNDARY | candidate `llm-agent-external-practice-intake-terminal-20260719` 已 capture 为 `reviewing`；exact search 与 strict body coverage pass；无 active promotion/memory write；Hub 全局 199 条既有 frontmatter 漂移未掩盖 |
+| Knowledge Hub archive | PASS/BOUNDARY | 两个 Token/context candidates 已 capture 为 `reviewing` 并提交 `f60a722`；无 active promotion/memory write；并发个人/PCR02 草稿不在本轮提交 |
 
 ## Delivery Boundaries
 
 - Direct release targets 是 Claude Code、Hermes Agent 和 OpenCode；Codex 是 external handoff target。
-- `66a8c19..9f82e1d` 的 mapped ADK 资产发生变化；RC6 Codex source-to-live 必须等待独立 owner 授权。
-- RC6 唯一已验证 artifact 回退是 checksum-verified RC5 artifact；本次未创建 live backup anchor，因为没有执行 live apply。
+- `9f82e1d..60c9a9e` 的 mapped ADK 资产发生变化；Codex declarative source-to-live 已授权并应用，post-apply live diff 为 0。
+- RC7 唯一已验证 artifact 回退是 checksum-verified RC6 artifact；本轮未生成新的 Codex backup anchor。
 - 本次未 tag、创建 GitHub Release、上传制品或运行远端 CI/attestation；final `3.1.0` 继续由 eligibility gate 阻断。
-- 已生成 repository knowledge candidate，Knowledge Hub capture/active promotion 和 memory write 均未执行。
+- Token/context knowledge candidates 已 capture 为 `reviewing`；未执行 active promotion 或 memory write。
 - 既有 dirty 参考子仓与未跟踪研究目录保持原样，未清理、暂存或提交。
 
 ## Remaining Evidence

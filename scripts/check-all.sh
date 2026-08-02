@@ -21,6 +21,7 @@ CHECK_MODE="full"
 VERBOSE_MODE=0
 RESULT_JSON=""
 MAX_FAILURE_LINES="${LLM_AGENT_CHECK_FAILURE_LINES:-40}"
+GATE_MODE="release"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -28,6 +29,8 @@ while [[ $# -gt 0 ]]; do
     --quick) CHECK_MODE="quick" ;;
     --full) CHECK_MODE="full" ;;
     --verbose) VERBOSE_MODE=1 ;;
+    --working-tree) GATE_MODE="working-tree" ;;
+    --release-clean) GATE_MODE="release" ;;
     --result-json)
       RESULT_JSON="${2:-}"
       [[ -n "${RESULT_JSON}" ]] || {
@@ -41,12 +44,14 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     -h|--help)
-      echo "用法: $(basename "$0") [--smoke|--quick|--full] [--verbose] [--result-json <path>] [--max-failure-lines <n>]"
+      echo "用法: $(basename "$0") [--smoke|--quick|--full] [--working-tree|--release-clean] [--verbose] [--result-json <path>] [--max-failure-lines <n>]"
       echo ""
       echo "选项:"
       echo "  --smoke     最小健康面：锁、阶段、子仓、doc、runtime、pilot/fallback 摘要"
       echo "  --quick     跳过耗时脚本（check-adk-harden-readiness.sh、check-workspace-entrypoints.sh）"
       echo "  --full      运行全部 check-* 脚本（默认）"
+      echo "  --working-tree  允许 ADK dirty，但绑定整轮 workspace fingerprint；不构成 release 证据"
+      echo "  --release-clean 默认模式；严格要求 release clean-state"
       echo "  --verbose   显示每个脚本的完整输出"
       echo "  --result-json <path>  写入机器可读结果与耗时"
       echo "  --max-failure-lines <n>  非 verbose 失败时展示的最大日志行数（默认 40）"
@@ -111,16 +116,30 @@ contains_item() {
 
 discover_check_scripts() {
   local scripts=()
+  local base f
+  if [[ "${CHECK_MODE}" == "smoke" ]]; then
+    for base in "${SMOKE_SCRIPTS[@]}"; do
+      f="${SCRIPT_DIR}/${base}"
+      [[ -f "${f}" ]] && scripts+=("${f}")
+    done
+    printf '%s\n' "${scripts[@]}"
+    return 0
+  fi
   for f in "${SCRIPT_DIR}"/check-*.sh; do
     [[ -f "${f}" ]] || continue
-    local base
     base="$(basename "${f}")"
     # 跳过自身（check-all.sh 不会出现，因为名字符合 check-*.sh 但自身也叫 check-all.sh）
     [[ "${base}" == "check-all.sh" ]] && continue
-    if [[ "${CHECK_MODE}" == "smoke" ]] && ! contains_item "${base}" "${SMOKE_SCRIPTS[@]}"; then
+    # 跳过 --quick 模式下需要排除的脚本
+    contains_item "${base}" "${SKIP_SCRIPTS[@]:-}" && continue
+    if [[ "${base}" == "check-evidence-bundle.sh" || "${base}" == "check-workspace-entrypoints.sh" ]]; then
       continue
     fi
-    # 跳过 --quick 模式下需要排除的脚本
+    scripts+=("${f}")
+  done
+  for base in check-evidence-bundle.sh check-workspace-entrypoints.sh; do
+    f="${SCRIPT_DIR}/${base}"
+    [[ -f "${f}" ]] || continue
     contains_item "${base}" "${SKIP_SCRIPTS[@]:-}" && continue
     scripts+=("${f}")
   done
@@ -154,7 +173,7 @@ trap cleanup EXIT
 : >"${SAME_RUN_REUSE_REPORT}"
 chmod 600 "${SAME_RUN_REUSE_REPORT}"
 
-if [[ "${CHECK_MODE}" == "full" ]]; then
+  if [[ "${CHECK_MODE}" == "full" || "${CHECK_MODE}" == "smoke" || "${GATE_MODE}" == "working-tree" ]]; then
   if SAME_RUN_INITIAL_FINGERPRINT="$(llm_agent_workspace_fingerprint "${WORKSPACE_ROOT}")" \
     && SAME_RUN_PRODUCER_START_TOKEN="$(llm_agent_process_start_token "$$")" \
     && llm_agent_same_run_init \
@@ -163,7 +182,9 @@ if [[ "${CHECK_MODE}" == "full" ]]; then
       "${SAME_RUN_PRODUCER_START_TOKEN}" \
       "${WORKSPACE_ROOT}" \
       "${SAME_RUN_INITIAL_FINGERPRINT}"; then
-    SAME_RUN_READY=1
+      if [[ "${CHECK_MODE}" == "full" || "${CHECK_MODE}" == "smoke" ]]; then
+        SAME_RUN_READY=1
+      fi
   else
     echo "[WARN] same-run evidence initialization failed; full gate will execute without reuse" >&2
   fi
@@ -190,6 +211,8 @@ write_result_json() {
     printf '  "schema_version": 1,\n'
     printf '  "suite": "llm-agent-check-all",\n'
     printf '  "mode": %s,\n' "$(json_string "${CHECK_MODE}")"
+    printf '  "gate_mode": %s,\n' "$(json_string "${GATE_MODE}")"
+    printf '  "workspace_fingerprint": %s,\n' "$(json_string "${SAME_RUN_INITIAL_FINGERPRINT}")"
     printf '  "status": %s,\n' "$(json_string "${run_status}")"
     printf '  "total": %s,\n' "${TOTAL}"
     printf '  "pass": %s,\n' "${PASSED}"
@@ -233,6 +256,7 @@ case "${CHECK_MODE}" in
   quick) echo " 模式: --quick（跳过耗时综合脚本）" ;;
   full)  echo " 模式: --full（全部脚本）" ;;
 esac
+echo " 门禁: ${GATE_MODE}"
 echo "=============================================="
 echo ""
 
@@ -247,8 +271,16 @@ while IFS= read -r script_path; do
   tmpfile="${RUN_TMP}/${script_name}.out"
   exit_code=0
   started_at="$(date +%s)"
-  check_command=(bash "${script_path}" "${WORKSPACE_ROOT}")
-  if [[ "${script_name}" == "check-workspace-entrypoints.sh" && "${SAME_RUN_READY}" -eq 1 ]]; then
+  check_args=("${WORKSPACE_ROOT}")
+  if [[ "${GATE_MODE}" == "working-tree" ]]; then
+    case "${script_name}" in
+      check-subrepo-state.sh) check_args+=(--allow-agent-dev-kit-dirty) ;;
+      check-current-status-consistency.sh|check-evidence-bundle.sh|check-workspace-entrypoints.sh) check_args+=(--worktree-integration) ;;
+    esac
+  fi
+  check_command=(bash "${script_path}" "${check_args[@]}")
+  if [[ ("${script_name}" == "check-workspace-entrypoints.sh" || "${script_name}" == "check-evidence-bundle.sh") \
+    && "${SAME_RUN_READY}" -eq 1 ]]; then
     current_fingerprint=""
     if current_fingerprint="$(llm_agent_workspace_fingerprint "${WORKSPACE_ROOT}")" \
       && [[ "${current_fingerprint}" == "${SAME_RUN_INITIAL_FINGERPRINT}" ]]; then
@@ -259,7 +291,7 @@ while IFS= read -r script_path; do
         "LLM_AGENT_SAME_RUN_PRODUCER_PID=$$"
         "LLM_AGENT_SAME_RUN_PRODUCER_START=${SAME_RUN_PRODUCER_START_TOKEN}"
         "LLM_AGENT_SAME_RUN_REUSE_REPORT=${SAME_RUN_REUSE_REPORT}"
-        bash "${script_path}" "${WORKSPACE_ROOT}"
+        bash "${script_path}" "${check_args[@]}"
       )
     fi
   fi
@@ -316,16 +348,33 @@ while IFS= read -r script_path; do
     fi
   fi
 
-  if [[ "${script_name}" == "check-workspace-entrypoints.sh" \
-    && -f "${SAME_RUN_REUSE_REPORT}" \
-    && ! -L "${SAME_RUN_REUSE_REPORT}" ]]; then
-    while IFS=$'\t' read -r reused_consumer reused_producer; do
-      [[ -n "${reused_consumer}" && -n "${reused_producer}" ]] || continue
-      REUSED_CONSUMERS+=("${reused_consumer}")
-      REUSED_PRODUCERS+=("${reused_producer}")
-    done <"${SAME_RUN_REUSE_REPORT}"
-  fi
 done < <(discover_check_scripts)
+
+if [[ -f "${SAME_RUN_REUSE_REPORT}" && ! -L "${SAME_RUN_REUSE_REPORT}" ]]; then
+  while IFS=$'\t' read -r reused_consumer reused_producer; do
+    [[ -n "${reused_consumer}" && -n "${reused_producer}" ]] || continue
+    REUSED_CONSUMERS+=("${reused_consumer}")
+    REUSED_PRODUCERS+=("${reused_producer}")
+  done <"${SAME_RUN_REUSE_REPORT}"
+fi
+
+if [[ "${GATE_MODE}" == "working-tree" ]]; then
+  final_fingerprint="$(llm_agent_workspace_fingerprint "${WORKSPACE_ROOT}" || true)"
+  RESULT_NAMES+=("workspace-fingerprint-stability")
+  RESULT_DURATION+=("0")
+  if [[ -n "${SAME_RUN_INITIAL_FINGERPRINT}" && "${final_fingerprint}" == "${SAME_RUN_INITIAL_FINGERPRINT}" ]]; then
+    RESULT_STATUS+=("PASS")
+    RESULT_EXIT_CODE+=("0")
+    TOTAL=$((TOTAL + 1))
+    PASSED=$((PASSED + 1))
+  else
+    RESULT_STATUS+=("FAIL")
+    RESULT_EXIT_CODE+=("1")
+    TOTAL=$((TOTAL + 1))
+    FAILED=$((FAILED + 1))
+    echo "[FAIL] workspace changed during working-tree integration gate" >&2
+  fi
+fi
 
 # --- 汇总表 -----------------------------------------------------------------
 echo ""
@@ -343,7 +392,7 @@ done
 
 echo "------------------------------------------"
 echo "总计: ${TOTAL}   通过: ${PASSED}   失败: ${FAILED}"
-if [[ "${CHECK_MODE}" == "full" ]]; then
+if [[ "${CHECK_MODE}" == "full" || "${CHECK_MODE}" == "smoke" ]]; then
   echo "同运行证据复用: ${#REUSED_CONSUMERS[@]}（eligible=$([[ "${SAME_RUN_ELIGIBLE}" -eq 1 ]] && printf true || printf false)）"
 fi
 

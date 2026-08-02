@@ -14,6 +14,7 @@ COMMAND="check-all"
 VERBOSE=false
 FIX=false
 SUMMARY_JSON=false
+WORKTREE_INTEGRATION=false
 
 log_info() { echo "[INFO] $*"; }
 log_success() { echo "[PASS] $*"; }
@@ -40,6 +41,7 @@ Options:
   --root <path>          指定工作区根目录
   --verbose              输出更多细节
   --summary-json         输出低 token JSON 摘要，不展开逐项日志
+  --worktree-integration 允许 dirty agent-dev-kit，但绑定工作树 fingerprint；仅开发验证
   --fix                  保留兼容参数；当前不做自动修复
   -h, --help             显示帮助
 USAGE
@@ -87,6 +89,10 @@ parse_args() {
         ;;
       --summary-json)
         SUMMARY_JSON=true
+        shift
+        ;;
+      --worktree-integration)
+        WORKTREE_INTEGRATION=true
         shift
         ;;
       --fix)
@@ -147,7 +153,11 @@ emit_summary_json() {
 
   local subrepo_state="fail"
   local subrepo_summary=""
-  if subrepo_summary="$("${ROOT_DIR}/scripts/check-subrepo-state.sh" "${ROOT_DIR}" --summary-json 2>/dev/null)"; then
+  local subrepo_args=("${ROOT_DIR}" --summary-json)
+  if [[ "${WORKTREE_INTEGRATION}" == true ]]; then
+    subrepo_args+=(--allow-agent-dev-kit-dirty)
+  fi
+  if subrepo_summary="$("${ROOT_DIR}/scripts/check-subrepo-state.sh" "${subrepo_args[@]}" 2>/dev/null)"; then
     subrepo_state="pass"
   fi
   local overall_status="needs-fix"
@@ -157,6 +167,7 @@ emit_summary_json() {
 
   printf '{'
   printf '"status":%s,' "$(json_string "${overall_status}")"
+  printf '"gate_mode":%s,' "$(json_string "$([[ "${WORKTREE_INTEGRATION}" == true ]] && printf working-tree || printf release)")"
   printf '"root":%s,' "$(json_string "${ROOT_DIR}")"
   printf '"branch":%s,' "$(json_string "${branch}")"
   printf '"adk_version":%s,' "$(json_string "${adk_version}")"

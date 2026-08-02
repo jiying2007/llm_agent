@@ -59,6 +59,8 @@ with open(sys.argv[1], "r", encoding="utf-8") as handle:
 assert data["schema_version"] == 1
 assert data["suite"] == "llm-agent-check-all"
 assert data["mode"] == "full"
+assert data["gate_mode"] == "release"
+assert len(data["workspace_fingerprint"]) == 64
 assert data["status"] == "fail"
 assert data["total"] == 2
 assert data["pass"] == 1
@@ -150,6 +152,23 @@ assert data["same_run_reuse"]["count"] == 1
 assert data["same_run_reuse"]["checks"] == [
     {"consumer": "integration_leaf", "producer": "check-leaf.sh"}
 ]
+PY
+
+working_result="${TMP_DIR}/working-result.json"
+bash "${integration_root}/scripts/check-all.sh" \
+  --full \
+  --working-tree \
+  --result-json "${working_result}" >/dev/null
+python3 - "${working_result}" <<'PY'
+import json
+import sys
+
+data = json.load(open(sys.argv[1], encoding="utf-8"))
+assert data["status"] == "pass", data
+assert data["gate_mode"] == "working-tree"
+assert len(data["workspace_fingerprint"]) == 64
+checks = {row["name"]: row for row in data["checks"]}
+assert checks["workspace-fingerprint-stability"]["status"] == "pass"
 PY
 
 echo "[PASS] check-all diagnostics and result JSON behave as expected"

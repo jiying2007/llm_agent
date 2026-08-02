@@ -4,6 +4,7 @@ set -euo pipefail
 SCRIPT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ROOT="${1:-${SCRIPT_ROOT}}"
 SUMMARY_JSON=0
+WORKTREE_INTEGRATION=0
 
 if [[ $# -gt 0 && "$1" != --* ]]; then
   shift
@@ -14,9 +15,13 @@ while [[ $# -gt 0 ]]; do
       SUMMARY_JSON=1
       shift
       ;;
+    --worktree-integration)
+      WORKTREE_INTEGRATION=1
+      shift
+      ;;
     -h|--help)
       cat <<USAGE
-usage: scripts/check-current-status-consistency.sh [root] [--summary-json]
+usage: scripts/check-current-status-consistency.sh [root] [--summary-json] [--worktree-integration]
 
 Checks the last verified 3.1 M5-ready baseline against root/adk commits,
 release rehearsal, runtime campaign boundary, software M5 certifier,
@@ -32,7 +37,7 @@ USAGE
 done
 
 export PYTHONPATH="${SCRIPT_ROOT}${PYTHONPATH:+:${PYTHONPATH}}"
-python3 - "$ROOT" "$SUMMARY_JSON" <<'PY'
+python3 - "$ROOT" "$SUMMARY_JSON" "$WORKTREE_INTEGRATION" <<'PY'
 import datetime as dt
 import hashlib
 import json
@@ -45,9 +50,10 @@ from pathlib import Path
 from tools.codex_assets.software_m5 import check as check_software_m5
 
 
-root, summary_json = sys.argv[1:3]
+root, summary_json, worktree_integration = sys.argv[1:4]
 root = os.path.abspath(root)
 summary_json = summary_json == "1"
+worktree_integration = worktree_integration == "1"
 failures = []
 
 
@@ -452,7 +458,8 @@ if not os.path.isfile(subrepo_checker):
     subrepo_state = {}
 else:
     completed = subprocess.run(
-        [subrepo_checker, root, "--summary-json"],
+        [subrepo_checker, root, "--summary-json"]
+        + (["--allow-agent-dev-kit-dirty"] if worktree_integration else []),
         check=False,
         text=True,
         stdout=subprocess.PIPE,
@@ -485,6 +492,7 @@ payload = {
     "knowledge_candidate_status": field(status_text, "knowledge_candidate_status"),
     "software_m5": m5_status,
     "subrepo_state": subrepo_state,
+    "gate_mode": "working-tree" if worktree_integration else "release",
 }
 
 if summary_json:

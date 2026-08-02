@@ -2,10 +2,24 @@
 set -euo pipefail
 
 ROOT="${1:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+WORKTREE_INTEGRATION=0
+if [[ $# -gt 0 && "$1" != --* ]]; then
+  shift
+fi
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --worktree-integration) WORKTREE_INTEGRATION=1; shift ;;
+    -h|--help)
+      echo "usage: scripts/check-workspace-entrypoints.sh [root] [--worktree-integration]"
+      exit 0
+      ;;
+    *) echo "[FAIL] unknown arg: $1" >&2; exit 2 ;;
+  esac
+done
 TMP_DIR="$(mktemp -d)"
 FAILURES=0
 INITIAL_STATUS="${TMP_DIR}/initial-status.txt"
-git -C "${ROOT}" status --porcelain=v1 >"${INITIAL_STATUS}"
+rtk git -C "${ROOT}" status --porcelain=v1 >"${INITIAL_STATUS}"
 SAME_RUN_EVIDENCE_LIB="${ROOT}/scripts/lib/same-run-evidence.sh"
 SAME_RUN_REUSE_READY=0
 REUSE_FINGERPRINT_CACHE=""
@@ -150,9 +164,11 @@ PY
 }
 
 run_check "devkit_help" "${ROOT}/scripts/devkit.sh" help
-run_check "git_submodule_status" git -C "${ROOT}" submodule status
-run_check "devkit_health" "${ROOT}/scripts/devkit.sh" health
-run_check "devkit_health_summary_json" "${ROOT}/scripts/devkit.sh" health --summary-json
+run_check "git_submodule_status" rtk git -C "${ROOT}" submodule status
+health_args=()
+[[ "${WORKTREE_INTEGRATION}" -eq 0 ]] || health_args+=(--worktree-integration)
+run_check "devkit_health" "${ROOT}/scripts/devkit.sh" health "${health_args[@]}"
+run_check "devkit_health_summary_json" "${ROOT}/scripts/devkit.sh" health --summary-json "${health_args[@]}"
 run_check "devkit_sync_status" "${ROOT}/scripts/devkit.sh" sync status
 run_check "phase_gate_summary_json" "${ROOT}/scripts/check-phase-gate.sh" "${ROOT}" --summary-json
 run_check "runtime_targets_summary_json" "${ROOT}/scripts/check-runtime-targets.sh" "${ROOT}" --summary-json
@@ -221,6 +237,11 @@ fi
 if [[ -f "${TMP_DIR}/devkit_health_summary_json.out" ]]; then
   if ! rg -q '"status":"pass"' "${TMP_DIR}/devkit_health_summary_json.out"; then
     record_fail "health summary json is not pass"
+  fi
+  expected_gate_mode="release"
+  [[ "${WORKTREE_INTEGRATION}" -eq 0 ]] || expected_gate_mode="working-tree"
+  if ! rg -q "\"gate_mode\":\"${expected_gate_mode}\"" "${TMP_DIR}/devkit_health_summary_json.out"; then
+    record_fail "health summary json missing expected gate mode"
   fi
   if ! rg -q '"adk_lock_state":"ok"' "${TMP_DIR}/devkit_health_summary_json.out"; then
     record_fail "health summary json missing ok adk lock state"
@@ -372,7 +393,7 @@ if [[ -f "${diff_report}" ]] && rg -q 'intake_policy：.*,[SABCDX]' "${diff_repo
   record_fail "diff scan leaked grade into intake_policy"
 fi
 
-git -C "${ROOT}" status --porcelain=v1 >"${TMP_DIR}/final-status.txt"
+rtk git -C "${ROOT}" status --porcelain=v1 >"${TMP_DIR}/final-status.txt"
 if ! cmp -s "${INITIAL_STATUS}" "${TMP_DIR}/final-status.txt"; then
   record_fail "workspace entrypoints changed repository status"
   diff -u "${INITIAL_STATUS}" "${TMP_DIR}/final-status.txt" >&2 || true

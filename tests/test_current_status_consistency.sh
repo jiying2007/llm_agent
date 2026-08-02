@@ -298,5 +298,18 @@ dirty_root="${TMP_DIR}/dirty-root"
 cp -a "${pass_root}" "${dirty_root}"
 printf '\n' >>"${dirty_root}/agent-dev-kit/manifest.json"
 expect_fail_contains "${dirty_root}" "current subrepo state is not pass"
+integration_output="${TMP_DIR}/dirty-integration.json"
+"${CHECKER}" "${dirty_root}" --worktree-integration --summary-json >"${integration_output}"
+python3 - "${integration_output}" <<'PY'
+import json
+import sys
+
+payload = json.load(open(sys.argv[1], encoding="utf-8"))
+assert payload["status"] == "pass", payload
+assert payload["gate_mode"] == "working-tree"
+assert payload["subrepo_state"]["gate_mode"] == "working-tree"
+assert payload["subrepo_state"]["agent_dev_kit_change_count"] == 1
+assert len(payload["subrepo_state"]["agent_dev_kit_fingerprint"]) == 64
+PY
 
 echo "[PASS] current M5-ready product status consistency checks behave as expected"

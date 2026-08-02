@@ -1,103 +1,44 @@
-# llm_agent 工作区入口
+# llm_agent 工作区规则
 
-`llm_agent` 是长期跟踪 AI Coding 参考实现并把高价值实践压实到 `agent-dev-kit` 的治理工作区。
+高频入口见 `docs/llm-agent-maintenance-guide.md`，吸收边界见 `docs/absorption-governance.md`。
 
-本文件只保留 AI 进入本仓时必须立即执行的路由、硬边界和高频入口。长清单、历史记录和详细 runbook 不放在这里：
+## 1. 默认模式
 
-- 维护指南：`docs/llm-agent-maintenance-guide.md`
-- 吸收治理：`docs/absorption-governance.md`
-- 子仓清单 SSOT：`subrepos/registry.csv`
-- 采纳/观察/拒绝记录：`subrepos/adoption-matrix.md`
-- 结构化矩阵：`subrepos/adoption-matrix.jsonl`
-- adk 源资产：`agent-dev-kit/`
+- 默认简体中文、adk-first、`token-lean`；修改前读目标子仓规则。非平凡任务先冻结目标、边界、风险、验收和产物。
+- 根因未明先取证；行为变化补确定性测试。无新鲜证据不得声明完成、可提交或可合并。
+- dirty 默认属于用户，不回退、覆盖或清理无关内容；单次默认只改一个子仓。
+- 不自动 commit/push/merge/rebase；提交格式 `<type>(scope): <中文动词摘要>`，摘要不超过 50 字且无句号。
 
-进入任一子仓后，若该子仓存在本地 `AGENTS.md`，则子仓规则优先于本文件。
+## 2. 路由与 SSOT
 
-## 1. 工作原则
+- 外部实践 intake：`docs/runbooks/external-practice-intake.md`；只生成 review-required candidate。
+- 参考仓生命周期：`docs/runbooks/reference-repository-lifecycle.md`；candidate 与 ADOPT decision 分离，默认 dry-run。
+- 检查/同步/差异/分析：`scripts/check-all.sh`、`scripts/sync-subrepos.sh`、`scripts/diff-scan.sh`、`scripts/analyze-repo.sh`。
+- 优化/发布/吸收：`agent-dev-kit/scripts/devkit.sh`、`scripts/version-manager.sh`、`docs/absorption-governance.md`。
+- 子仓 SSOT：`subrepos/registry.csv`；采纳 SSOT：`subrepos/adoption-matrix.md|jsonl`；一次性证据进 `reports/`。
 
-1. 默认中文输出，技术标识保留英文。
-2. 修改前先确认目标子仓本地 `AGENTS.md`、README 和局部约定。
-3. 默认单次只改一个子仓，避免混合提交。
-4. 无验证证据不得声称“完成”“可提交”“可合并”。
-5. 发现已有 dirty 变更时默认视为用户改动；不得回退、覆盖或清理无关变更。
-6. 不自动 commit / push / merge / rebase，除非用户明确要求。
-7. 所有 shell 命令必须通过 `rtk` 执行，例如 `rtk scripts/check-doc-sync.sh .` 或 `rtk bash -lc "..."`。
-8. 手工创建或修改源码、脚本、配置和文档时必须使用 `apply_patch`。
+## 3. 硬边界
 
-## 2. 意图路由
+- shell 必须经 `rtk`；手工源码、脚本、配置和文档修改用 `apply_patch`，禁用 heredoc、重定向、cat、tee、Python 写仓库文件。
+- 禁止破坏性命令、直接写 `.git`、硬编码密钥和不可信输入拼接。外网仅显式 `--allow-network`；Gitee 空结果标记 `degraded-empty`。
+- MCP/connector/GUI 先声明 transport、权限、工具、deny-path、脱敏和回退；外部写另行授权。
+- 运行资产只走 `agent-dev-kit -> ~/codex -> ~/.codex`；不得绕过 source-to-live 或手改 `~/.codex`。
 
-| 用户意图 | 触发关键词 | 执行动作 | 主要入口 |
-|---|---|---|---|
-| 外部实践 intake | GitHub/GitLab/Gitee/官方实践/公众号/人工 URL、吸收、候选研究 | 统一生成 review-required candidate/queue/evidence；不自动吸收 | `docs/runbooks/external-practice-intake.md`、`scripts/practice-intake.sh` |
-| 参考仓登记 | 接入、新增子仓、add repo、onboard、纳入治理 | 只接受 v1 candidate + 独立 ADOPT decision，默认 dry-run | `docs/runbooks/reference-repository-lifecycle.md`、`scripts/onboard-reference-repository.sh` |
-| 全面检查 | 检查、check、验证、门禁、健康检查 | 运行一键检查并汇总门禁结果 | `scripts/check-all.sh`、`scripts/devkit.sh check` |
-| 同步子仓 | 同步、sync、拉取更新、fetch | 在 phase gate 允许后拉取 enabled active 参考仓；`agent-dev-kit` 为应用/落地仓，默认排除 | `scripts/sync-subrepos.sh` |
-| 差异扫描 | 差异、diff、变更、最近变化 | 扫描子仓近 N 天变更 | `scripts/diff-scan.sh` |
-| 深度分析 | 深度分析、拆解、analyze、prompt分析、skill拆解 | 从不可变 commit snapshot 分析参考实现，报告写入根仓 `reports/` | `scripts/analyze-repo.sh` |
-| 公众号研究归档 | 微信公众号批量搜索、指定公众号近半年文章、搜狗微信归档 | 先生成账号×主题×时间窗计划，再用受限公共读取核验账号/日期并输出 metadata-only 证据包；不保存正文，不自动吸收 | `~/codex/skills/wechat-account-research/SKILL.md`、`~/codex/scripts/wechat-archive.sh` |
-| 生成周报 | 周报、weekly report、本周汇总 | 生成本周变更周报 | `scripts/generate-weekly-report.sh` |
-| 清理报告 | 清理、归档、cleanup、prune | 归档过期报告 | `scripts/cleanup-reports.sh` |
-| 版本发布 | 发布、release、tag、版本 | 执行发布流程 | `scripts/version-manager.sh` |
-| 健康摘要 | summary-json、低 token 健康、health json | 输出低 token JSON 健康摘要 | `scripts/health-check.sh --summary-json` |
-| 安装 hook | hook、pre-commit、提交检查 | 安装 git pre-commit hook | `scripts/install-pre-commit-hook.sh` |
-| 一键流水线 | 流水线、pipeline、一键更新、全量更新 | 同步、差异、分级、commit-snapshot 分析、grade drift、跨仓证据聚合和报告；不自动吸收 | `scripts/pipeline-subrepo-update.sh` |
-| 优化 adk | 优化、改进、升级 adk、enhance | 在 `agent-dev-kit` 压实资产、验证并记录证据 | `agent-dev-kit/scripts/devkit.sh` |
-| 吸收落地 | 吸收、absorb、提取模式 | 从统一 candidate + 独立 owner decision 开始，经重复、架构、许可证/版权、安全、验证、pilot 和退役复核后创建 ADK change；禁止自动复制 | `docs/absorption-governance.md`、`adk-external-practice-absorption` |
-| 需求探索增强 | brainstorm、grill-me、需求拷问、先发散、拷问需求 | 先发散 2-4 个方向，再收敛目标/非目标/边界/验收 | `adk-structured-requirements-questioning`、`adk-requirements-triage` |
-| 备份回滚 | 备份、回滚、backup、rollback、恢复 | 创建安装备份、列出备份、恢复或回滚 | `agent-dev-kit/scripts/backup-rollback.sh` |
-| 冻结后周期 | 冻结后、post-freeze、冻结后检查、周期执行 | 文档同步、差异扫描、采纳矩阵状态、摘要生成 | `scripts/run-post-freeze-cycle.sh` |
+## 4. Token、Hub 与连续性
 
-## 3. 吸收与落地边界
-
-1. 外部实践吸收必须先判断“可借鉴优点”和“不可迁移缺点”，禁止只做完全增量更新。
-2. 高价值实践优先在 `agent-dev-kit` 落地为 Agent、Skill、Workflow、manifest、脚本或 runbook，再更新采纳矩阵。
-3. `agent-dev-kit -> ~/codex -> ~/.codex` 是运行资产交付链路；不要从本仓绕过 `~/codex` 直接修改 `~/.codex`。
-4. `subrepos/phase-gate.env` 控制是否允许追踪上游更新；未满足压实门禁时不要常态同步参考仓。
-5. 官方 OpenAI 实践吸收要记录 source URL、retrieved_at、review_status、expires_at，并区分“实质吸收”和“纳入观察”。
-6. 公众号采集与实践吸收必须分阶段：采集只生成 `review-required` 元数据和负证据；经重复、冲突、架构与安全复核后才允许修改 ADK 或 Codex 资产。
-7. Gitee search 空列表必须标记 `degraded-empty`；GitHub/GitLab/Gitee live metadata 只有显式 `--allow-network` 才执行。
-
-## 4. 常用验证入口
-
-日常轻量检查：
+- 先摘要后原文；按 stable/dynamic/evidence/excluded 管理，压缩保留目标、证据、fallback 和最多 3 个下一步。
+- 项目事实、决策、runbook、release、debug 或长期结论先运行：
 
 ```bash
-rtk scripts/check-doc-sync.sh .
-rtk scripts/check-agents-coverage.sh .
-rtk scripts/check-adoption-matrix-status.sh .
-rtk scripts/check-adk-target-evidence.sh .
-rtk scripts/check-practice-intake.sh .
-rtk scripts/check-token-budget.sh . --summary-json
+rtk bash ~/knowledge-hub/tools/knowledge-context.sh --cwd "$PWD" --query "<任务>" --task-type <type> --context-budget small --limit 3 --summary-json
 ```
 
-adk 或治理资产改动后：
+- 已知项目加 `--project`；仅歧义/高风险回退 `--json` 与原文。耐久结论写 reviewing candidate，或声明无可归档结论；不得静默写 memory。
+- final/apply/目标切换前运行 session coach；HOT/CRITICAL 优先收口接力。
 
-```bash
-rtk scripts/check-adk-harden-readiness.sh .
-rtk scripts/check-all.sh --quick
-```
+## 5. 验证与并行
 
-准备刷新 `~/codex -> ~/.codex` 运行资产时，必须走 source-to-live 链路，最小证据链见 `docs/llm-agent-maintenance-guide.md`。
-
-## 5. 文档分流
-
-| 内容 | 写入位置 |
-|---|---|
-| 子仓是否纳入治理、状态、owner、复审日期 | `subrepos/registry.csv` |
-| 候选实践的采纳/观察/拒绝、目标层和证据 | `subrepos/adoption-matrix.md` |
-| 结构化低 token 读取 | `subrepos/adoption-matrix.jsonl` |
-| 维护流程、门禁解释、source-to-live 证据链 | `docs/llm-agent-maintenance-guide.md` |
-| 外部实践候选发现、独立决策与参考仓登记 | `docs/runbooks/external-practice-intake.md`、`docs/runbooks/reference-repository-lifecycle.md` |
-| 吸收前的全盘评估与人工批准规则 | `docs/absorption-governance.md` |
-| 一次性试跑、复核、周报、证据包 | `reports/` |
-
-根 `AGENTS.md` 只在路由、硬边界或高频入口变化时更新；不要把完整参考子仓清单、历史计划、长报告或一次性分析写回本文件。
-
-## 6. 维护记录
-
-详细历史记录参见 `reports/` 和相关 runbook。维护本入口时至少运行：
-
-```bash
-rtk scripts/check-doc-sync.sh .
-rtk scripts/check-agents-coverage.sh .
-```
+- 仅 2–4 个边界独立任务并行；shared contract/schema/根配置/依赖/CI/lockfile 串行，由主 Agent 整合。
+- 外部参考只作输入；生产资产由 ADK manifest/handoff 声明。公众号仅 metadata，不保存正文、不自动吸收。
+- 轻量门禁：`rtk scripts/check-doc-sync.sh .`、`rtk scripts/check-agents-coverage.sh .`、`rtk scripts/check-token-budget.sh . --summary-json`。
+- ADK/治理改动运行 `check-adk-harden-readiness.sh` 与 `check-all.sh --quick`；Codex 刷新按维护指南执行完整 source-to-live。

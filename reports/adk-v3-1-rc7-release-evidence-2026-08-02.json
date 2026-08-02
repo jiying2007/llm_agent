@@ -1,0 +1,111 @@
+{
+  "schema": "llm-agent-adk-software-m5-ready-release-evidence/v1",
+  "generated_at": "2026-08-02",
+  "release_scope": "source-and-evidence-pushed-local-rehearsed-live-applied-root-release-clean",
+  "agent_dev_kit": {
+    "version": "3.1.0-rc.7",
+    "commit": "60c9a9ebbcc38ebdfcb07bc1fd399f533ce08e5f",
+    "evidence_commit": "9bd0afa7d63ad0d14662cdf931333d4fe067ba6a",
+    "previous_version": "3.1.0-rc.6",
+    "previous_commit": "9f82e1d9deffadc3967f446069375f5872363d46",
+    "previous_release_commit": "9f82e1d9deffadc3967f446069375f5872363d46"
+  },
+  "artifacts": {
+    "source_sha256": "a46d26d79be3ee0bed02cde9c5fa031a5c0cd6e533793edc906b01f753ec48e0",
+    "source_reproducible_builds": 2,
+    "source_file_count": 754,
+    "wheel_sha256": null,
+    "wheel_status": "built-in-python-3.11-and-3.12-local-ci",
+    "previous_source_sha256": "4cd728126b7242150665315a22706811c12de4de9f136eaef17b0e3ecbe63b15",
+    "previous_source_provenance": "checksum-verified-rc6-artifact",
+    "candidate_manifest_sha256": "3ce075a60ba42826784fd4fb2a6adf5101f921bc844cb7cbcca8083531b4981b",
+    "release_rehearsal_report_sha256": "f5e881ba130b2cd7326c1e0ecafc63f1e6fc00e6401a01a2119a691c9793bb45"
+  },
+  "validation": {
+    "strict": "pass",
+    "format": "pass",
+    "security": "pass-python-3.11-and-3.12",
+    "release_check": "pass",
+    "shellcheck": "pass-in-full",
+    "ruff": "pass-python-3.11-and-3.12",
+    "dependency_audit": "pass-no-known-vulnerabilities-python-3.11-and-3.12",
+    "full": {
+      "total": 58,
+      "pass": 58,
+      "fail": 0,
+      "elapsed_ms": null
+    },
+    "root_quick": "not-run-rc7-full-used",
+    "root_full": "61/61-pass",
+    "target_static": "3/3-pass-in-adk-full",
+    "target_runtime": "not-run-experimental",
+    "effect_eval": "pass-in-adk-full",
+    "upgrade_rollback_rehearsal": "pass",
+    "previous_installed": 39,
+    "candidate_installed": 39,
+    "restored_assets": 39,
+    "local_ci_parity": "python-3.11-and-3.12-full-pass",
+    "remote_ci": "not-run"
+  },
+  "source_to_live": {
+    "comparison": "9f82e1d9deffadc3967f446069375f5872363d46..60c9a9ebbcc38ebdfcb07bc1fd399f533ce08e5f",
+    "mapped_paths": [
+      "agents",
+      "skills",
+      "optional-skills",
+      "workflows",
+      "templates"
+    ],
+    "mapped_content_changed": true,
+    "decision": "applied-declarative-changed",
+    "profile": "token-lean",
+    "managed_files": 433,
+    "plan_status": "applied-then-already-applied",
+    "dry_run_status": "pass",
+    "apply_status": "pass",
+    "rollback_anchor": null,
+    "post_apply": {
+      "codex_commit": "4d0c661a433fa89a5cf8e41ad8cada161e39de1b",
+      "codex_commit_pushed": true,
+      "plan_schema_version": 3,
+      "plan_sha256": "5a6f5584cd89fdf08f0a4512ec78b16ac59956b0b183aba597ac2d22d53ecea4",
+      "build_tree_sha256": "f02497ee124a7f2e7038e6152ff9a07e0741325eb496c51c665553e08d32529c",
+      "target_precondition_paths_sha256": "4c876063e76588b1a538b17a67759e6ed89d5861677b5e8280b1c93067badd2a",
+      "mutation_paths": 2,
+      "check": "126/126-pass-five-profiles-live-diff-zero"
+    }
+  },
+  "software_m5": {
+    "readiness_status": "m5-ready",
+    "certified": false,
+    "field_status": "self_pilot_active",
+    "runtime_campaign": "blocked-claude-unauthenticated"
+  },
+  "knowledge_hub": {
+    "new_candidate": false,
+    "status": "existing-candidates-captured-reviewing-not-promoted",
+    "candidates": [
+      "projects/agent-dev-kit/validation/2026-08-01-token-context-governance-v2.md",
+      "projects/agent-dev-kit/validation/2026-08-01-token-context-workflow-optimization.md"
+    ],
+    "commit": "f60a72295838431e04d8d612690c4a7ec5697e61",
+    "memory_write": false
+  },
+  "publication": {
+    "adk_source_commit_pushed": true,
+    "adk_evidence_commit_pushed": true,
+    "codex_commit_pushed": true,
+    "knowledge_hub_commit_pushed": true,
+    "root_product_commit": "bbd81ef7a254f43676657a0e7d9b8e4dddb0eb35",
+    "root_product_commit_pushed": false,
+    "tag_created": false,
+    "remote_release_created": false,
+    "remote_artifact_uploaded": false,
+    "reason": "RC7 source/evidence, supported-Python validation, deterministic artifact, rollback rehearsal and authorized Codex source-to-live are complete. Root commit/push is recorded after this evidence snapshot; tag, remote Release/artifact, remote CI and active knowledge promotion remain out of scope."
+  },
+  "compatibility_boundary": {
+    "removed_contracts": [],
+    "compatibility_alias": false,
+    "rollback": "restore the checksum-verified RC6 artifact; Codex declarative apply is idempotent and post-apply live diff is zero"
+  }
+}
