@@ -208,11 +208,11 @@ runtime live 实装态与长会话提醒：
 ```bash
 scripts/check-runtime-live-footprint.sh . --summary-json  # 低 token 摘要
 scripts/check-runtime-live-footprint.sh . --strict        # core-live 缺失时失败
-scripts/session-coach.sh . --summary-json         # Top Action
-scripts/session-coach.sh . --deep --summary-json  # 追加 live/token 检查
+rtk bash ~/codex/scripts/runtime-control.sh snapshot  # 唯一任务、Token、上下文和决策快照
+rtk bash ~/codex/scripts/runtime-control.sh watch     # 动态实时观察同一状态与决策
 ```
 
-未传 `--runtime-root` 时，`check-runtime-live-footprint.sh` 从 `manifests/runtime_targets.json` 读取默认 target 的 `live_root`，并检查 fallback 矩阵中的 adk 等价 skill 是否已在目标 direct/system/vendor 路径实装；`session-coach.sh` 根据 dirty worktree、资产变更和 `THREAD_LONG`/`CTX_PRESSURE` 输出 Top Action。
+未传 `--runtime-root` 时，`check-runtime-live-footprint.sh` 从 `manifests/runtime_targets.json` 读取默认 target 的 `live_root`，并检查 fallback 矩阵中的 adk 等价 skill 是否已在目标 direct/system/vendor 路径实装；任务、Token、上下文和动作建议只读取 `~/codex/scripts/runtime-control.sh` 的版本化输出。
 
 Token budget 检查脚本：
 ```bash
@@ -267,7 +267,7 @@ scripts/check-upstream-intake-readiness.sh .
 如需“先试跑再开门”，请在开门命令追加 `--require-pilot`。
 
 harness/loop readiness 合同检查脚本：`scripts/check-loop-readiness.sh .` 只读校验 `manifests/loop_readiness_contracts.json`、`reports/oss-loop-readiness-*.md`、lifecycle 和 adoption 证据链，确保只吸收 DiagnosticLoop、AgentLoopReadiness、failure replay 等 report-only 字段，不接入上游 CLI、hook、orchestrator 或 daemon runtime。scale-engine governance 合同检查脚本：`scripts/check-scale-engine-governance.sh .` 只读校验 `manifests/scale_engine_governance_contracts.json`、`reports/oss-governance-contracts-*.md`、lifecycle 和 adoption 证据链，确保只吸收 progressive governance、resource lifecycle、Git policy 等 report-only 字段，不创建 `.scale` runtime state。harness loop engineering 合同检查脚本：`scripts/check-harness-loop-engineering.sh .` 转发校验 `agent-dev-kit/manifests/harness_loop_engineering_contracts.json`，确保 repo task harness、agent eval CI gate、durable loop、coding agent loop、trace observability 和 guardrail handoff 只作为 method-only 合同输入。
-ADK tool/skill evidence 合同检查脚本：`scripts/check-adk-tool-skill-evidence-contracts.sh .` 转发校验 `agent-dev-kit/manifests/tool_skill_evidence_contracts.json`、routing/verification/memory/context/security 资产，确保只吸收 evidence plan、memory maintenance、command safety 和 code intelligence fallback，不启用外部 runtime。ADK 目标/功能/性能检查脚本：`scripts/check-adk-goal-capability.sh .` 校验 `devkit.sh goal check`、`devkit.sh capability health` 和有阈值的 `devkit.sh benchmark run`。历史文件名 `scripts/check-adk-performance-ops.sh .` 保留为兼容门禁入口，实际校验 3.0 `benchmark`、`security`、`release`、产品契约和 quick timing，不再暴露 ops/perf 公共命令。
+ADK tool/skill evidence 合同检查脚本：`scripts/check-adk-tool-skill-evidence-contracts.sh .` 转发校验 `agent-dev-kit/manifests/tool_skill_evidence_contracts.json`、routing/verification/memory/context/security 资产，确保只吸收 evidence plan、memory maintenance、command safety 和 code intelligence fallback，不启用外部 runtime。ADK 目标/功能/性能检查脚本：`scripts/check-adk-goal-capability.sh .` 校验 `devkit.sh goal check`、`devkit.sh capability health`、实时 Token monitor、长任务 execution guard 确定性回归和有阈值的 `devkit.sh benchmark run`。历史文件名 `scripts/check-adk-performance-ops.sh .` 保留为兼容门禁入口，实际校验 3.0 `benchmark`、`security`、`release`、产品契约和 quick timing，不再暴露 ops/perf 公共命令。
 
 工作区入口回归检查脚本：
 
@@ -420,7 +420,7 @@ scripts/devkit.sh health --summary-json
 
 # runtime live / 长会话提醒
 scripts/devkit.sh runtime-live --summary-json
-scripts/devkit.sh coach --deep --summary-json
+rtk bash ~/codex/scripts/runtime-control.sh snapshot
 
 # 生成周报
 scripts/devkit.sh weekly-report

@@ -14,7 +14,7 @@
       "status": "implemented",
       "scope": "agent-dev-kit structured core",
       "acceptance": "JSON schema, model, deterministic export and stable CLI pass strict validation",
-      "verify": ["rtk bash agent-dev-kit/scripts/devkit.sh validate --strict --summary-json", "rtk bash agent-dev-kit/tests/test_product_maturity_v3.sh"]
+      "verify": ["rtk bash agent-dev-kit/scripts/devkit.sh validate --strict --summary-json", "rtk bash agent-dev-kit/tests/test_product_maturity_v4.sh"]
     },
     {
       "id": "PM-02",
@@ -22,7 +22,7 @@
       "status": "implemented",
       "scope": "transactional installation",
       "acceptance": "plan detects conflicts; apply emits receipt; rollback refuses drift and restores managed state",
-      "verify": ["rtk bash agent-dev-kit/tests/test_product_maturity_v3.sh"]
+      "verify": ["rtk bash agent-dev-kit/tests/test_product_maturity_v4.sh"]
     },
     {
       "id": "PM-03",

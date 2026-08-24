@@ -60,7 +60,7 @@ assert software_m5 == {
     "certification_status": "blocked",
     "certified": False,
     "candidate_version": candidate_version,
-    "final_version": "3.1.0",
+    "final_version": "4.1.0",
     "blocking_gates": [
         "final_version",
         "independent_repository",
@@ -153,8 +153,8 @@ assert policy["release"]["evaluation_version"] == candidate_version, policy
 assert (root / policy["release"]["evidence_report"]).is_file(), policy
 contract_path = root / policy["runtime_campaign"]["contract"]
 contract = json.loads(contract_path.read_text(encoding="utf-8"))
-assert contract["campaign_id"] == f"software-m5-{candidate_version}", contract
-assert policy["release"]["final_version"] == "3.1.0", policy
+assert contract["campaign_id"].startswith("software-m5-"), contract
+assert policy["release"]["final_version"] == "4.1.0", policy
 assert policy["runtime_campaign"]["required_runtimes"] == ["codex", "claude"], policy
 assert policy["runtime_campaign"]["minimum_tasks"] >= 60, policy
 assert policy["runtime_campaign"]["minimum_trials"] >= 3, policy

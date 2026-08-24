@@ -51,6 +51,7 @@ esac
 }
 
 ADK_DIR="${ROOT}/agent-dev-kit"
+RUNTIME_CONTROL="${CODEX_RUNTIME_CONTROL:-${HOME}/codex/scripts/runtime-control.sh}"
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "${TMP_DIR}"' EXIT
 
@@ -80,7 +81,7 @@ run_capture pilot_readiness "${ADK_DIR}/scripts/pilot-readiness.sh" --summary-js
 run_capture fallback_sunset "${ADK_DIR}/scripts/check-fallback-sunset.sh" --summary-json
 run_capture runtime_boundary "${ADK_DIR}/scripts/check-runtime-boundary.sh" --summary-json
 run_capture runtime_live "${ROOT}/scripts/check-runtime-live-footprint.sh" "${ROOT}" --summary-json
-run_capture session_coach "${ROOT}/scripts/session-coach.sh" "${ROOT}" --summary-json
+run_capture runtime_control rtk bash "${RUNTIME_CONTROL}" snapshot
 
 compact_summary() {
   local file="$1"
@@ -93,7 +94,7 @@ compact_summary() {
 }
 
 overall="pass"
-for name in stale_refs subrepo_state evidence_bundle pilot_readiness fallback_sunset runtime_boundary runtime_live session_coach; do
+for name in stale_refs subrepo_state evidence_bundle pilot_readiness fallback_sunset runtime_boundary runtime_live runtime_control; do
   if [[ "$(cat "${TMP_DIR}/${name}.rc")" -ne 0 ]]; then
     overall="needs-fix"
   fi
@@ -118,8 +119,8 @@ fi
 if rg -q '"missing_required":[1-9]' "${TMP_DIR}/runtime_live.out"; then
   top_actions+=("将缺失的 adk 等价 skill 经 ~/codex apply 到 ~/.codex")
 fi
-if rg -q '"priority":"high"' "${TMP_DIR}/session_coach.out"; then
-  top_actions+=("会话过长或上下文压力高，执行收口与新会话接力")
+if rg -q '"recommended_action": *"(checkpoint|compact|replan|stop)"' "${TMP_DIR}/runtime_control.out"; then
+  top_actions+=("按 Runtime Control 决策执行 checkpoint、上下文压缩、重规划或停止")
 fi
 if [[ "${#top_actions[@]}" -eq 0 ]]; then
   top_actions+=("维持周期复核，下一次按 phase-gate next_review_by 执行")
@@ -130,7 +131,7 @@ if [[ "${FORMAT}" == "json" ]]; then
   printf '  "status": %s,\n' "$(json_string "${overall}")"
   printf '  "checks": [\n'
   first=1
-  for name in stale_refs subrepo_state evidence_bundle pilot_readiness fallback_sunset runtime_boundary runtime_live session_coach; do
+  for name in stale_refs subrepo_state evidence_bundle pilot_readiness fallback_sunset runtime_boundary runtime_live runtime_control; do
     [[ "${first}" -eq 1 ]] || printf ',\n'
     first=0
     printf '    {"name": %s, "exit_code": %s, "summary": %s}' \
@@ -155,7 +156,7 @@ else
   echo
   echo "| Check | Exit Code | Summary |"
   echo "|---|---:|---|"
-  for name in stale_refs subrepo_state evidence_bundle pilot_readiness fallback_sunset runtime_boundary runtime_live session_coach; do
+  for name in stale_refs subrepo_state evidence_bundle pilot_readiness fallback_sunset runtime_boundary runtime_live runtime_control; do
     summary="$(compact_summary "${TMP_DIR}/${name}.out")"
     printf '| %s | %s | %s |\n' "${name}" "$(cat "${TMP_DIR}/${name}.rc")" "${summary}"
   done

@@ -1304,7 +1304,12 @@ def assess(root: Path, as_of: Optional[datetime] = None) -> Dict[str, Any]:
         result["certification_gaps"].extend(field_gaps)
         if policy["release"]["candidate_version"] != policy["release"]["final_version"]:
             result["certification_gaps"].append(
-                {"id": "final_version", "message": "final 3.1.0 promotion is blocked until campaign and field eligibility pass"}
+                {
+                    "id": "final_version",
+                    "message": "final {} promotion is blocked until campaign and field eligibility pass".format(
+                        policy["release"]["final_version"]
+                    ),
+                }
             )
         result["candidate_version"] = policy["release"]["candidate_version"]
         result["evaluation_version"] = policy["release"]["evaluation_version"]

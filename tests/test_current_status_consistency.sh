@@ -28,7 +28,6 @@ PY
 )
 CANDIDATE_VERSION="${POLICY_VALUES[0]}"
 REHEARSAL_REPO_PATH="${POLICY_VALUES[1]}"
-REHEARSAL_ADK_PATH="${REHEARSAL_REPO_PATH#agent-dev-kit/}"
 RELEASE_EVIDENCE_PATH="${POLICY_VALUES[2]}"
 MAPPED_CONTENT_CHANGED="${POLICY_VALUES[3]}"
 CURRENT_REPORT_PATH="${POLICY_VALUES[4]}"
@@ -36,8 +35,8 @@ CURRENT_REPORT_PATH="${POLICY_VALUES[4]}"
 make_fixture() {
   local dest="$1"
   local legacy_change_path="docs/changes/adk-v3-1-software-m5-ready"
-  local rehearsal_change_path
-  rehearsal_change_path="$(dirname "${REHEARSAL_ADK_PATH}")"
+  local rehearsal_dir
+  rehearsal_dir="$(dirname "${REHEARSAL_REPO_PATH}")"
   local release_evidence_dir
   release_evidence_dir="$(dirname "${RELEASE_EVIDENCE_PATH}")"
   mkdir -p \
@@ -48,13 +47,14 @@ make_fixture() {
     "${dest}/subrepos" \
     "${dest}/docs" \
     "${dest}/${release_evidence_dir}" \
+    "${dest}/${rehearsal_dir}" \
     "${dest}/agent-dev-kit/agents/example" \
-    "${dest}/agent-dev-kit/${legacy_change_path}" \
-    "${dest}/agent-dev-kit/${rehearsal_change_path}"
+    "${dest}/agent-dev-kit/${legacy_change_path}"
 
   cp "${ROOT}/reports/current-status.md" "${dest}/reports/current-status.md"
   cp "${ROOT}/${CURRENT_REPORT_PATH}" "${dest}/${CURRENT_REPORT_PATH}"
   cp "${ROOT}/${RELEASE_EVIDENCE_PATH}" "${dest}/${RELEASE_EVIDENCE_PATH}"
+  cp "${ROOT}/${REHEARSAL_REPO_PATH}" "${dest}/${REHEARSAL_REPO_PATH}"
   cp "${ROOT}/reports/field-evidence/software-m5-events.jsonl" "${dest}/reports/field-evidence/"
   cp "${ROOT}/reports/field-evidence/software-m5-self-pilot-start-2026-07-13.json" "${dest}/reports/field-evidence/"
   cp "${ROOT}/manifests/product_maturity_scorecard.json" "${dest}/manifests/"
@@ -84,14 +84,13 @@ CSV
   previous_adk="$(git -C "${dest}/agent-dev-kit" rev-parse HEAD)"
 
   cp "${ROOT}/agent-dev-kit/manifest.json" "${dest}/agent-dev-kit/manifest.json"
-  cp "${ROOT}/${REHEARSAL_REPO_PATH}" "${dest}/agent-dev-kit/${REHEARSAL_ADK_PATH}"
   cp "${ROOT}/agent-dev-kit/${legacy_change_path}/release-rehearsal.json" "${dest}/agent-dev-kit/${legacy_change_path}/"
   cp "${ROOT}/agent-dev-kit/${legacy_change_path}/software-m5-campaign-plan.json" "${dest}/agent-dev-kit/${legacy_change_path}/"
   cp "${ROOT}/agent-dev-kit/${legacy_change_path}/codex-runtime-smoke.json" "${dest}/agent-dev-kit/${legacy_change_path}/"
   if [[ "${MAPPED_CONTENT_CHANGED}" == "true" ]]; then
     printf 'candidate mapped asset\n' >"${dest}/agent-dev-kit/agents/example/AGENTS.md"
   fi
-  git -C "${dest}/agent-dev-kit" add manifest.json agents/example/AGENTS.md "${legacy_change_path}" "${REHEARSAL_ADK_PATH}"
+  git -C "${dest}/agent-dev-kit" add manifest.json agents/example/AGENTS.md "${legacy_change_path}"
   git -C "${dest}/agent-dev-kit" commit -q -m "fixture M5-ready candidate"
   local release_adk
   release_adk="$(git -C "${dest}/agent-dev-kit" rev-parse HEAD)"

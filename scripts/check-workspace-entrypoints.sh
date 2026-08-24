@@ -211,7 +211,7 @@ run_expected_fail "runtime_health_claude_code_candidate_blocked" "runtime target
 run_expected_fail "runtime_health_hermes_agent_candidate_blocked" "runtime target is not enabled" "${ROOT}/scripts/check-runtime-health.sh" "${ROOT}" --target hermes-agent-home --summary-json
 run_expected_fail "runtime_health_opencode_candidate_blocked" "runtime target is not enabled" "${ROOT}/scripts/check-runtime-health.sh" "${ROOT}" --target opencode-home --summary-json
 run_check "runtime_live_footprint_summary_json" "${ROOT}/scripts/check-runtime-live-footprint.sh" "${ROOT}" --summary-json
-run_check "session_coach_summary_json" "${ROOT}/scripts/session-coach.sh" "${ROOT}" --summary-json
+run_check "runtime_control_snapshot" rtk bash "${HOME}/codex/scripts/runtime-control.sh" snapshot
 if "${ROOT}/scripts/check-subrepo-state.sh" "${ROOT}" --summary-json >"${TMP_DIR}/subrepo_state_summary_json.out" 2>"${TMP_DIR}/subrepo_state_summary_json.err"; then
   echo "[PASS] subrepo_state_summary_json"
 else
@@ -381,9 +381,9 @@ if [[ -f "${TMP_DIR}/runtime_live_footprint_summary_json.out" ]]; then
   fi
 fi
 
-if [[ -f "${TMP_DIR}/session_coach_summary_json.out" ]]; then
-  if ! rg -q '"top_action":' "${TMP_DIR}/session_coach_summary_json.out"; then
-    record_fail "session coach summary missing top_action"
+if [[ -f "${TMP_DIR}/runtime_control_snapshot.out" ]]; then
+  if ! rg -q '"schema_version": *"runtime_control.decision/v1"' "${TMP_DIR}/runtime_control_snapshot.out"; then
+    record_fail "Runtime Control snapshot missing decision schema"
   fi
 fi
 

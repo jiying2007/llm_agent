@@ -1,0 +1,97 @@
+{
+  "schema": "llm-agent-adk-software-m5-ready-release-evidence/v1",
+  "generated_at": "2026-08-24",
+  "release_scope": "source-pushed-local-rehearsed-codex-live-applied-root-release-pending",
+  "agent_dev_kit": {
+    "version": "4.0.0",
+    "commit": "792a4cb91965d1150fea61d474787072a4cae248",
+    "evidence_commit": "792a4cb91965d1150fea61d474787072a4cae248",
+    "previous_version": "3.1.0-rc.7",
+    "previous_commit": "6d11503d54c8e9f661d039652549a1d6cefb6b35",
+    "previous_release_commit": "6d11503d54c8e9f661d039652549a1d6cefb6b35"
+  },
+  "artifacts": {
+    "source_sha256": "4c1e9b3c906024b0dff8fded2df5c3212b1fc8c4a46bf7381dffba1ef301648d",
+    "source_reproducible_builds": 1,
+    "source_file_count": 844,
+    "wheel_sha256": "dd64702c2a405c34b08e5e07c4f5c09a04566ba72e6096bf6a0a8bb36b5a79a6",
+    "wheel_status": "built-offline-python-3.11-and-pinned-in-codex",
+    "previous_source_sha256": "d811bf58fa8230daad1a890003a361c4f3e62f90b9d594f33110256ce0f513c0",
+    "previous_source_provenance": "exact-local-commit-build",
+    "candidate_manifest_sha256": "cdc70010c8bf1722c2d0a8f562030b45b2105aced0f7b0e76df35cf8de815656",
+    "release_rehearsal_report_sha256": "e9d370d25ed42bba8d1e235da60585b051fd1a3f89f3f875a82ebc16ecbf3535"
+  },
+  "validation": {
+    "strict": "pass",
+    "format": "pass",
+    "security": "pass",
+    "release_check": "pass",
+    "shellcheck": "pass-in-full",
+    "ruff": "pass-in-full",
+    "dependency_audit": "not-rerun-no-dependency-change",
+    "full": {"total": 62, "pass": 62, "fail": 0, "elapsed_ms": null},
+    "root_quick": "pending-release-metadata-refresh",
+    "root_full": "pending-release-metadata-refresh",
+    "target_static": "pass-in-adk-full",
+    "target_runtime": "codex-source-to-live-pass",
+    "effect_eval": "pass-in-adk-full",
+    "upgrade_rollback_rehearsal": "pass",
+    "previous_installed": 40,
+    "candidate_installed": 40,
+    "restored_assets": 40,
+    "local_ci_parity": "full-suite-pass",
+    "remote_ci": "not-run"
+  },
+  "source_to_live": {
+    "comparison": "6d11503d54c8e9f661d039652549a1d6cefb6b35..792a4cb91965d1150fea61d474787072a4cae248",
+    "mapped_paths": ["agents", "skills", "optional-skills", "workflows", "templates"],
+    "mapped_content_changed": false,
+    "decision": "applied-declarative-no-op",
+    "profile": "token-lean",
+    "managed_files": 783,
+    "plan_status": "already-applied",
+    "dry_run_status": "pass",
+    "apply_status": "pass",
+    "rollback_anchor": "codex apply-plan backup receipts",
+    "post_apply": {
+      "codex_commit": "c846a8e",
+      "codex_commit_pushed": true,
+      "plan_schema_version": 3,
+      "plan_sha256": "4262d7547533a9ea35b3f6e072db69f5f974e30aa16bb3cc5c211e3334540cbe",
+      "build_tree_sha256": "30af5fac61d2d1fb671f81f467b0c9aea0c6518cd03b9050584aa625e9bd8aa4",
+      "target_precondition_paths_sha256": null,
+      "mutation_paths": 0,
+      "check": "154/154-pass-five-profiles-live-diff-zero"
+    }
+  },
+  "software_m5": {
+    "readiness_status": "m5-ready",
+    "certified": false,
+    "field_status": "self_pilot_active",
+    "runtime_campaign": "blocked-claude-unauthenticated"
+  },
+  "knowledge_hub": {
+    "new_candidate": false,
+    "status": "runtime-control-decisions-versioned-in-repository",
+    "candidates": [],
+    "commit": null,
+    "memory_write": false
+  },
+  "publication": {
+    "adk_source_commit_pushed": true,
+    "adk_evidence_commit_pushed": true,
+    "codex_commit_pushed": true,
+    "knowledge_hub_commit_pushed": false,
+    "root_product_commit": null,
+    "root_product_commit_pushed": false,
+    "tag_created": false,
+    "remote_release_created": false,
+    "remote_artifact_uploaded": false,
+    "reason": "ADK and Codex commits are pushed; root release metadata is finalized by the enclosing root commit."
+  },
+  "compatibility_boundary": {
+    "removed_contracts": ["token_monitor", "execution_guard", "usage_dashboard", "session_coach", "goal_templates", "ready_wrappers"],
+    "compatibility_alias": false,
+    "rollback": "restore Codex apply backup and revert the complete Runtime Control change; do not restore dual control paths"
+  }
+}

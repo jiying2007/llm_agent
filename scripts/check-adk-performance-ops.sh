@@ -11,7 +11,7 @@ if [[ ! -d "${ADK_ROOT}" ]]; then
   exit 1
 fi
 
-rtk bash "${ADK_ROOT}/tests/test_product_maturity_v3.sh"
+rtk bash "${ADK_ROOT}/tests/test_product_maturity_v4.sh"
 rtk bash "${ADK_ROOT}/scripts/devkit.sh" benchmark run --iterations 5 --summary-json >"${TMP_DIR}/benchmark.json"
 rtk bash "${ADK_ROOT}/scripts/devkit.sh" security check --summary-json >"${TMP_DIR}/security.json"
 rtk bash "${ADK_ROOT}/scripts/devkit.sh" release check --summary-json >"${TMP_DIR}/release.json"

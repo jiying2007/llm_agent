@@ -34,7 +34,7 @@ rtk bash ~/knowledge-hub/tools/knowledge-context.sh --cwd "$PWD" --query "<任�
 ```
 
 - 已知项目加 `--project`；仅歧义/高风险回退 `--json` 与原文。耐久结论写 reviewing candidate，或声明无可归档结论；不得静默写 memory。
-- final/apply/目标切换前运行 session coach；HOT/CRITICAL 优先收口接力。
+- final/apply/目标切换前运行 `rtk bash ~/codex/scripts/runtime-control.sh snapshot`；按 `checkpoint`、`compact`、`replan`、`stop` 决策优先收口接力。
 
 ## 5. 验证与并行
 

@@ -40,9 +40,6 @@ llm_agent devkit — 工作区统一入口
 
   health [--summary-json]        工作区健康检查
   runtime-live [--summary-json]  检查 adk 在目标运行态中的 live footprint
-  coach [--summary-json] [--deep]
-                                 长会话、token 压力和资产变更收口提醒
-
   weekly-report                  生成周报
 
   cleanup [--dry-run]            清理过期报告
@@ -142,11 +139,6 @@ cmd_runtime_live() {
   bash "${SCRIPT_DIR}/check-runtime-live-footprint.sh" "${WORKSPACE_ROOT}" "$@"
 }
 
-# --- 子命令: coach ----------------------------------------------------------
-cmd_coach() {
-  bash "${SCRIPT_DIR}/session-coach.sh" "${WORKSPACE_ROOT}" "$@"
-}
-
 # --- 子命令: weekly-report --------------------------------------------------
 cmd_weekly_report() {
   local report_script="${SCRIPT_DIR}/generate-weekly-report.sh"
@@ -194,7 +186,6 @@ case "${SUBCMD}" in
   diff)         cmd_diff "$@" ;;
   health)       cmd_health "$@" ;;
   runtime-live)   cmd_runtime_live "$@" ;;
-  coach)        cmd_coach "$@" ;;
   weekly-report) cmd_weekly_report "$@" ;;
   cleanup)      cmd_cleanup "$@" ;;
   help|-h|--help) show_help ;;

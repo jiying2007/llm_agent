@@ -143,8 +143,7 @@ for script in \
   "${ROOT}/scripts/evidence-bundle.sh" \
   "${ROOT}/scripts/check-token-budget.sh" \
   "${ROOT}/scripts/check-runtime-health.sh" \
-  "${ROOT}/scripts/check-runtime-live-footprint.sh" \
-  "${ROOT}/scripts/session-coach.sh"; do
+  "${ROOT}/scripts/check-runtime-live-footprint.sh"; do
   summary_scripts=$((summary_scripts + 1))
   if ! rg -q -- '--summary-json|--format json' "$script"; then
     record_failure "compact summary missing: ${script#$ROOT/}"

@@ -1,12 +1,12 @@
 {
   "schema": "llm-agent-product-maturity-scorecard/v1",
-  "updated_at": "2026-08-02",
+  "updated_at": "2026-08-24",
   "product_boundary": "reference-intake workspace plus platform-neutral agent asset compiler/control plane; no LLM agent runtime",
   "overall": {
     "level": "M3",
     "status": "release-candidate",
     "terminal_mature": false,
-    "reason": "The software control plane is M5-ready and a real self-pilot is active, but Claude campaign evidence, an independent repository, a second human operator, 30-day observation, and final 3.1.0 promotion are incomplete.",
+    "reason": "The software control plane is M5-ready and a real self-pilot is active, but Claude campaign evidence, an independent repository, a second human operator, 30-day observation, and final 4.1.0 promotion are incomplete.",
     "field_status": "self_pilot_active"
   },
   "software_m5": {
@@ -14,12 +14,12 @@
     "eligibility_status": "blocked",
     "certification_status": "blocked",
     "certified": false,
-    "candidate_version": "3.1.0-rc.7",
-    "final_version": "3.1.0",
+    "candidate_version": "4.0.0",
+    "final_version": "4.1.0",
     "blocking_gates": ["final_version", "independent_repository", "operator_count", "pilot_duration", "real_repository_count", "repository_runtime_campaign", "required_field_events", "runtime_campaign"]
   },
   "working_candidate": {
-    "version": "3.1.0-rc.7",
+    "version": "4.0.0",
     "status": "source-committed-pushed-local-rehearsed-live-applied",
     "overall_level": "M3",
     "target_status": "experimental",
@@ -43,7 +43,7 @@
     "lock_state": "synchronized",
     "runtime_certification": "not-run",
     "local_validation": {
-      "adk_full": "58/58-pass",
+      "adk_full": "62/62-pass",
       "root_quick": "not-run-rc7-full-used",
       "root_full": "60/60-pass",
       "target_static": "3/3-pass",
@@ -129,7 +129,7 @@
       "effective_level": "M4",
       "evidence_layers_present": ["source", "test", "runtime"],
       "status": "verified",
-      "evidence": ["agent-dev-kit/tests/test_product_maturity_v3.sh", "agent-dev-kit/tests/test_software_m5_ready.sh", "tests/test_product_maturity_contracts.sh", "tests/test_software_m5_certification.sh", "tests/test_reference_source_integrity.sh", "agent-dev-kit/tests/run_all.sh"]
+      "evidence": ["agent-dev-kit/tests/test_product_maturity_v4.sh", "agent-dev-kit/tests/test_software_m5_ready.sh", "tests/test_product_maturity_contracts.sh", "tests/test_software_m5_certification.sh", "tests/test_reference_source_integrity.sh", "agent-dev-kit/tests/run_all.sh"]
     },
     {
       "id": "D06",
