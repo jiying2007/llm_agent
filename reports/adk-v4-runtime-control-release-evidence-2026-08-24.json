@@ -1,7 +1,7 @@
 {
   "schema": "llm-agent-adk-software-m5-ready-release-evidence/v1",
   "generated_at": "2026-08-24",
-  "release_scope": "source-pushed-local-rehearsed-codex-live-applied-root-release-pending",
+  "release_scope": "source-pushed-local-rehearsed-codex-live-applied-root-release-clean",
   "agent_dev_kit": {
     "version": "4.0.0",
     "commit": "792a4cb91965d1150fea61d474787072a4cae248",
@@ -82,12 +82,12 @@
     "adk_evidence_commit_pushed": true,
     "codex_commit_pushed": true,
     "knowledge_hub_commit_pushed": false,
-    "root_product_commit": null,
-    "root_product_commit_pushed": false,
+    "root_product_commit": "e136a9f7b310282ee20b867adb2e2894991c157b",
+    "root_product_commit_pushed": true,
     "tag_created": false,
     "remote_release_created": false,
     "remote_artifact_uploaded": false,
-    "reason": "ADK and Codex commits are pushed; root release metadata is finalized by the enclosing root commit."
+    "reason": "ADK, Codex and root product commits are pushed; release-clean quick and composite full gates passed."
   },
   "compatibility_boundary": {
     "removed_contracts": ["token_monitor", "execution_guard", "usage_dashboard", "session_coach", "goal_templates", "ready_wrappers"],
