@@ -1,10 +1,10 @@
 {
   "schema": "adk-runtime-eval-campaign-plan/v1",
   "status": "ready",
-  "campaign_id": "software-m5-3.1.0-rc.7",
-  "manifest_version": "5.0.0-rc.1",
-  "manifest_sha256": "895e42fa38566f1071d0b7632a851ff3c61922dff71e49bb37dbaa1f0431be9c",
-  "contract_sha256": "76e2471d655676b697e67a103c94a0439e5ba0a5547e51e09dd92ef4e4d47a19",
+  "campaign_id": "software-m5-5.0.0-rc.2",
+  "manifest_version": "5.0.0-rc.2",
+  "manifest_sha256": "50d24127667b235947d731271d6977cb362e962ff43c2f17b0d077c88fde9590",
+  "contract_sha256": "ffc9b4d1a407a89f12df3ff6c54f420d663155fe1a1baf02e06ac7834161e345",
   "tasks": "tests/fixtures/software_m5_eval_tasks.jsonl",
   "tasks_sha256": "8341487931c930d257d96e8b755b080386902a8f58b45bdb1781fbd4799c309c",
   "task_count": 60,
@@ -44,5 +44,5 @@
   "max_budget_usd": 150.0,
   "permissions": "read-only/no-tools",
   "failures": [],
-  "plan_sha256": "b16fa3f07933615db9e666e9c531f2ec1e7ea80fc2f4a1f960c04255e6dc155f"
+  "plan_sha256": "fc29c906e6e674759b13ae0fa05cf7547fe091a7628366a18159b1572eed6406"
 }

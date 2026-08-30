@@ -4,17 +4,17 @@
 - status_semantics: last-verified-product-baseline
 - last_verified_at: 2026-08-30
 - root_product_commit: 048793deb838029e98073d51083e01d8a29f1f48
-- agent_dev_kit_commit: c9a28b2e5afd9f30634a7215730539323895236e
-- agent_dev_kit_release_commit: c9a28b2e5afd9f30634a7215730539323895236e
+- agent_dev_kit_commit: 12bfeaf1f85b297628b57ac15d12eedc849e3919
+- agent_dev_kit_release_commit: 12bfeaf1f85b297628b57ac15d12eedc849e3919
 - adk_previous_commit: 792a4cb91965d1150fea61d474787072a4cae248
-- adk_version: 5.0.0-rc.1
+- adk_version: 5.0.0-rc.2
 - product_maturity: M3
-- software_m5_readiness: m5-ready
+- software_m5_readiness: not-ready
 - software_m5_certified: false
 - terminal_mature: false
 - field_status: self_pilot_active
 - root_gate_status: pass
-- runtime_eval_status: codex-smoke-pass-claude-owner-attested
+- runtime_eval_status: codex-current-smoke-pass-claude-owner-attested-v2
 - m5_campaign_status: blocked-full-campaign-and-field-pending
 - live_refresh_status: required-pending-owner-authorization
 - knowledge_candidate_status: captured-reviewing
@@ -22,28 +22,32 @@
 
 ## Summary
 
-本基线记录 ADK `5.0.0-rc.1` 平台收敛候选。ADK `c9a28b2` 已推送至 `origin/main`；
-`4.0.0 -> 5.0.0-rc.1` checksum-bound upgrade/rollback rehearsal 通过并恢复 34 项资产。
-映射目录在 `792a4cb..c9a28b2` 间有变化，因此 source-to-live 保持
+本基线记录 ADK `5.0.0-rc.2` 平台收敛候选。ADK `12bfeaf1` 已推送至 `origin/main`，
+候选制品绑定 clean commit/tree 且 `release_eligible=true`。原 `4.0.0 -> 5.0.0-rc.1` rehearsal
+已被全面复审判定无效：previous artifact
+`1241d345...` 混入 5.x working-tree 内容，既不等于历史正式制品 `4c1e9b3c...`，也不等于
+`792a4cb` exact rebuild `8eb5253d...`。正式 4.0 artifact 当前不可用，release readiness fail-closed。
+`792a4cb` exact rebuild 到 `12bfeaf1` 的诊断 transition 通过，但不替代官方制品连续性。
+映射目录在 `792a4cb..12bfeaf1` 间有变化，因此 source-to-live 保持
 `required-pending-owner-authorization`，本轮没有写入 `~/codex` 或 `~/.codex`。
 
 Claude Code 由 repository owner 显式裁决为默认通过，证据层为 `owner-attested`、
 `runtime_measured=false`；这关闭默认使用决策，不替代 native conformance receipt 或正式 campaign。
-软件控制面保持 M3 / M5-ready，M5 certified 仍为 false。双 runtime measured campaign、独立仓、
+软件控制面保持 M3 / source-ready，Software M5 readiness 为 not-ready、certified 为 false。除 release rehearsal 外，双 runtime measured campaign、独立仓、
 第二位 human operator、30 天现场周期和必需 field events 未补齐，不能提升到 final 5.1.0。
 
 ## Verified Evidence
 
 | Area | Result | Evidence |
 |---|---|---|
-| ADK source | PASS | `c9a28b2` pushed，product `5.0.0-rc.1` / manifest schema `4.0.0` |
+| ADK source | PASS | `12bfeaf1` pushed，product `5.0.0-rc.2` / manifest schema `4.0.0` |
 | ADK full | PASS | `68/68` |
-| Supported parity | PASS | Python 3.11/3.12 quick 各 `29/29`，routing `30/30`，wheel/audit pass |
-| Upgrade/rollback | PASS | `4.0.0 -> 5.0.0-rc.1`，34 项安装、34 项恢复 |
+| Supported parity | PASS | Python 3.11.15/3.12.13 full 各 `68/68`，routing `30/30`，wheel/audit pass |
+| Upgrade/rollback | BLOCKED | 正式 4.0 artifact 不可用；污染 previous artifact 的 pass 已失效 |
 | Claude default decision | PASS | owner-attested；不冒充 runtime-measured campaign |
 | Source-to-live | PENDING | mapped content changed；等待独立 owner authorization |
 | Root release metadata | PASS | `048793d` pushed；gitlink/lock/current-status/M5 SSOT synchronized |
-| Software M5 certification | BLOCKED | readiness pass；field/runtime campaign blockers retained |
+| Software M5 certification | BLOCKED | release readiness、field/runtime campaign blockers retained |
 
 ## Delivery Boundaries
 

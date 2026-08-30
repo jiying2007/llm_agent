@@ -47,7 +47,7 @@
         "metric": "file_count",
         "scope_paths": ["reports"],
         "include_patterns": ["*.md", "*.json", "*.jsonl"],
-        "exclude_prefixes": [],
+        "exclude_prefixes": ["reports/runtime-evidence"],
         "baseline": 284,
         "warning_limit": 320,
         "hard_limit": 400,

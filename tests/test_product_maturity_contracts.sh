@@ -41,6 +41,9 @@ import subprocess
 import sys
 
 root = pathlib.Path(sys.argv[1])
+root_agents = (root / "AGENTS.md").read_text(encoding="utf-8")
+assert "goal_status=idle" in root_agents and "not-applicable" in root_agents, root_agents
+assert "tools.codex_assets.validation_plan" in root_agents, root_agents
 policy = json.loads((root / "manifests/software_m5_policy.json").read_text(encoding="utf-8"))
 release_policy = policy["release"]
 candidate_version = release_policy["candidate_version"]
@@ -55,7 +58,7 @@ assert scorecard["overall"]["field_status"] == "self_pilot_active"
 assert scorecard["release_gates"]["status"] == "conditional-pass", scorecard
 software_m5 = scorecard["software_m5"]
 assert software_m5 == {
-    "readiness_status": "m5-ready",
+    "readiness_status": "not-ready",
     "eligibility_status": "blocked",
     "certification_status": "blocked",
     "certified": False,
@@ -67,6 +70,7 @@ assert software_m5 == {
         "operator_count",
         "pilot_duration",
         "real_repository_count",
+        "release_rehearsal",
         "repository_runtime_campaign",
         "required_field_events",
         "runtime_campaign",
@@ -76,9 +80,9 @@ working_candidate = scorecard["working_candidate"]
 assert working_candidate["version"] == candidate_version, working_candidate
 assert working_candidate["overall_level"] == "M3", working_candidate
 assert working_candidate["target_status"] == "experimental", working_candidate
-assert working_candidate["status"] == "source-committed-pushed-local-rehearsed-root-integrated-pushed", working_candidate
+assert working_candidate["status"] == "source-pushed-release-continuity-blocked", working_candidate
 assert working_candidate["lock_state"] == "synchronized", working_candidate
-assert working_candidate["runtime_certification"] == "claude-owner-attested-default-pass-measured-campaign-not-run", working_candidate
+assert working_candidate["runtime_certification"] == "codex-current-smoke-pass-claude-owner-attested-v2-measured-campaign-not-run", working_candidate
 levels = {f"M{i}" for i in range(6)}
 assessment_model = scorecard["assessment_model"]
 assert assessment_model["effective_level"].startswith("minimum of "), assessment_model
@@ -146,7 +150,7 @@ for task in task_pack["tasks"]:
         assert commands, task
 assert next(item for item in task_pack["tasks"] if item["id"] == "PM-09")["status"] == "in_progress"
 
-assert policy["schema"] == "llm-agent-software-m5-policy/v1", policy
+assert policy["schema"] == "llm-agent-software-m5-policy/v2", policy
 assert re.fullmatch(r"\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?", policy["release"]["previous_version"]), policy
 assert policy["release"]["previous_version"] != candidate_version, policy
 assert policy["release"]["evaluation_version"] == candidate_version, policy
@@ -159,6 +163,16 @@ assert policy["runtime_campaign"]["required_runtimes"] == ["codex", "claude"], p
 assert policy["runtime_campaign"]["minimum_tasks"] >= 60, policy
 assert policy["runtime_campaign"]["minimum_trials"] >= 3, policy
 assert policy["runtime_campaign"]["max_budget_usd"] <= 150, policy
+assert policy["release"]["previous_artifact_status"] == "unavailable", policy
+assert policy["release"]["candidate_artifact_status"] == "available", policy
+assert policy["release"]["candidate_release_eligible"] is True, policy
+assert policy["release"]["candidate_commit"] == subprocess.check_output(
+    ["git", "-C", str(root / "agent-dev-kit"), "rev-parse", "HEAD"], text=True
+).strip(), policy
+assert re.fullmatch(r"[0-9a-f]{40}", policy["release"]["candidate_tree"]), policy
+assert re.fullmatch(r"[0-9a-f]{64}", policy["release"]["candidate_source_distribution_sha256"]), policy
+assert policy["release"]["release_continuity_required"] is True, policy
+assert policy["runtime_campaign"]["contract"] == "agent-dev-kit/manifests/software_m5_eval_contract_v5.json", policy
 assert policy["field_certification"]["minimum_calendar_days"] >= 30, policy
 assert policy["field_certification"]["minimum_independent_repositories"] >= 1, policy
 assert policy["field_certification"]["minimum_human_operators"] >= 2, policy
@@ -174,6 +188,8 @@ assert all(set(item) == {"id", "operator_type", "role", "independent_reviewer"} 
 history_policy = json.loads((root / "manifests/history/software_m5_policy-4.0.0.json").read_text(encoding="utf-8"))
 history_ledger = json.loads((root / "manifests/history/software_m5_pilot_ledger-4.0.0.json").read_text(encoding="utf-8"))
 assert history_policy["release"]["candidate_version"] == "4.0.0", history_policy
+assert policy["release"]["previous_sha256"] == history_policy["release"]["candidate_sha256"], policy
+assert len(policy["release"]["previous_evidence_sha256"]) == 64, policy
 assert history_ledger["candidate_version"] == "4.0.0", history_ledger
 assert policy["release"]["previous_version"] == history_policy["release"]["candidate_version"], policy
 assert policy["runtime_campaign"]["plan"] == "reports/runtime-evidence/adk-v5-software-m5-campaign-plan.json", policy
@@ -216,6 +232,10 @@ for action in re.findall(r"(?m)^\s*uses:\s*([^\s#]+)", workflow):
     if action.startswith("./"):
         continue
     assert re.fullmatch(r"[^@]+@[0-9a-f]{40}", action), action
+
+harden = (root / "scripts/check-adk-harden-readiness.sh").read_text(encoding="utf-8")
+assert 'ADK_REQUIRE_SUPPORTED_PYTHON=1 bash "${ADK_DIR}/scripts/devkit.sh" validate --quick' in harden, harden
+assert 'ADK_REQUIRE_SUPPORTED_PYTHON=1 bash "${ADK_SUITE_DIR}/tests/run_all.sh"' in harden, harden
 
 index = subprocess.run(
     ["git", "-C", str(root), "ls-files", "-s", "agent-dev-kit"],

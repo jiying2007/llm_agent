@@ -21,6 +21,7 @@ from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
 
 
 POLICY_SCHEMA = "llm-agent-software-m5-policy/v1"
+POLICY_SCHEMA_V2 = "llm-agent-software-m5-policy/v2"
 LEDGER_SCHEMA = "llm-agent-software-m5-pilot-ledger/v1"
 EVENT_SCHEMA = "llm-agent-software-field-event/v1"
 STATUS_SCHEMA = "llm-agent-software-m5-status/v1"
@@ -229,7 +230,8 @@ def _ids(items: Any, label: str) -> Dict[str, Mapping[str, Any]]:
 
 
 def _validate_policy(policy: Mapping[str, Any]) -> None:
-    if policy.get("schema") != POLICY_SCHEMA:
+    policy_schema = policy.get("schema")
+    if policy_schema not in {POLICY_SCHEMA, POLICY_SCHEMA_V2}:
         raise M5Error("unsupported software M5 policy schema")
     if policy.get("scope") != "software-only":
         raise M5Error("software M5 policy scope must be software-only")
@@ -259,6 +261,34 @@ def _validate_policy(policy: Mapping[str, Any]) -> None:
             raise M5Error("release.{} must be a repository-relative path".format(name))
     if not HEX64_RE.fullmatch(str(release.get("candidate_sha256", ""))):
         raise M5Error("release.candidate_sha256 must be a SHA256 digest")
+    if policy_schema == POLICY_SCHEMA_V2:
+        for name in ("previous_commit", "previous_sha256", "previous_manifest_sha256", "previous_evidence_sha256"):
+            value = release.get(name)
+            pattern = r"[0-9a-f]{40}" if name == "previous_commit" else r"[0-9a-f]{64}"
+            if not isinstance(value, str) or re.fullmatch(pattern, value) is None:
+                raise M5Error("release.{} has an invalid immutable identity".format(name))
+        previous_evidence = release.get("previous_evidence_report")
+        if not isinstance(previous_evidence, str) or not previous_evidence:
+            raise M5Error("release.previous_evidence_report must be repository-relative")
+        previous_evidence_path = Path(previous_evidence)
+        if previous_evidence_path.is_absolute() or ".." in previous_evidence_path.parts:
+            raise M5Error("release.previous_evidence_report must be repository-relative")
+        if release.get("previous_artifact_status") not in {"available", "unavailable"}:
+            raise M5Error("release.previous_artifact_status is invalid")
+        if release.get("candidate_artifact_status") not in {"available", "superseded"}:
+            raise M5Error("release.candidate_artifact_status is invalid")
+        if release.get("candidate_release_eligible") is not (release.get("candidate_artifact_status") == "available"):
+            raise M5Error("release candidate eligibility does not match artifact status")
+        if release.get("candidate_artifact_status") == "available":
+            for name, pattern in (
+                ("candidate_commit", r"[0-9a-f]{40}"),
+                ("candidate_tree", r"[0-9a-f]{40}"),
+                ("candidate_source_distribution_sha256", r"[0-9a-f]{64}"),
+            ):
+                if re.fullmatch(pattern, str(release.get(name, ""))) is None:
+                    raise M5Error("release.{} is required for an eligible candidate".format(name))
+        if release.get("release_continuity_required") is not True:
+            raise M5Error("release continuity must remain required")
     budget = campaign.get("max_budget_usd")
     if isinstance(budget, bool) or not isinstance(budget, (int, float)) or not (0 < float(budget) <= 150):
         raise M5Error("runtime campaign budget must be within $150")
@@ -616,6 +646,28 @@ def _validate_release(root: Path, policy: Mapping[str, Any]) -> Tuple[bool, str]
     if manifest.get("version") != release["candidate_version"]:
         raise M5Error("candidate manifest version does not match policy")
     manifest_sha256 = _adk_manifest_digest(manifest)
+    if policy.get("schema") == POLICY_SCHEMA_V2:
+        previous_evidence_path = _repo_path(
+            root, release.get("previous_evidence_report"), "previous release evidence"
+        )
+        if _sha256_file(previous_evidence_path) != release.get("previous_evidence_sha256"):
+            raise M5Error("previous release evidence file digest does not match continuity policy")
+        previous_evidence = _load_object(previous_evidence_path, "previous release evidence")
+        previous_adk = previous_evidence.get("agent_dev_kit")
+        previous_artifacts = previous_evidence.get("artifacts")
+        if not isinstance(previous_adk, dict) or not isinstance(previous_artifacts, dict):
+            raise M5Error("previous release evidence identity is incomplete")
+        if (
+            previous_adk.get("version") != release["previous_version"]
+            or previous_adk.get("commit") != release["previous_commit"]
+            or previous_artifacts.get("source_sha256") != release["previous_sha256"]
+            or previous_artifacts.get("candidate_manifest_sha256") != release["previous_manifest_sha256"]
+        ):
+            raise M5Error("previous release evidence does not match the continuity policy")
+        if release.get("previous_artifact_status") != "available":
+            return False, "previous official release artifact is unavailable"
+        if release.get("candidate_artifact_status") != "available":
+            return False, "candidate release artifact is superseded or unavailable"
     path = _repo_path(root, release.get("rehearsal_report"), "release rehearsal", must_exist=False)
     if not path.is_file():
         return False, "release rehearsal report is missing"
@@ -626,8 +678,10 @@ def _validate_release(root: Path, policy: Mapping[str, Any]) -> Tuple[bool, str]
     if not isinstance(stored_digest, str) or stored_digest != _digest(unsigned):
         raise M5Error("release rehearsal report hash does not match content")
     schema_version = report.get("schema_version")
-    if schema_version not in {1, 2} or report.get("status") != "pass":
-        raise M5Error("release rehearsal report is not a supported passing report")
+    if schema_version not in {1, 2}:
+        raise M5Error("release rehearsal report schema is unsupported")
+    if report.get("status") != "pass":
+        return False, "release rehearsal report is not passing"
     if report.get("previous_version") != release["previous_version"]:
         raise M5Error("release rehearsal previous version does not match policy")
     if report.get("candidate_version") != release["candidate_version"]:
@@ -663,6 +717,12 @@ def _validate_release(root: Path, policy: Mapping[str, Any]) -> Tuple[bool, str]
         raise M5Error("release rehearsal candidate manifest digest does not match checkout")
     if not HEX64_RE.fullmatch(str(report.get("previous_sha256", ""))):
         raise M5Error("release rehearsal previous checksum is invalid")
+    if policy.get("schema") == POLICY_SCHEMA_V2 and (
+        report.get("previous_sha256") != release["previous_sha256"]
+        or report.get("previous_manifest_sha256") != release["previous_manifest_sha256"]
+        or report.get("release_continuity") is not True
+    ):
+        raise M5Error("release rehearsal does not preserve previous release continuity")
     return True, "pass"
 
 
@@ -1509,11 +1569,14 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(prog="software-m5.sh")
     parser.add_argument("--root", default=str(Path.cwd()))
     sub = parser.add_subparsers(dest="command", required=True)
+    commands = {}
     for name in ("status", "check", "certify"):
         command = sub.add_parser(name)
+        commands[name] = command
         command.add_argument("--as-of")
         command.add_argument("--output")
         command.add_argument("--summary-json", action="store_true")
+    commands["check"].add_argument("--allow-not-ready", action="store_true")
     append = sub.add_parser("append")
     append.add_argument("--event-id", required=True)
     append.add_argument("--pilot-id", required=True)
@@ -1563,7 +1626,10 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             return 0 if (
                 value.get("integrity_status") == "pass"
                 and value.get("declaration_status") == "pass"
-                and value.get("readiness_status") == "m5-ready"
+                and (
+                    value.get("readiness_status") == "m5-ready"
+                    or args.allow_not_ready and value.get("readiness_status") == "not-ready"
+                )
             ) else 1
         return 0 if value.get("integrity_status") == "pass" else 1
     except M5Error as exc:

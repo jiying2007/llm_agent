@@ -4,23 +4,23 @@
   "product_boundary": "reference-intake workspace plus platform-neutral agent asset compiler/control plane; no LLM agent runtime",
   "overall": {
     "level": "M3",
-    "status": "release-candidate",
+    "status": "source-candidate-needs-fix",
     "terminal_mature": false,
-    "reason": "The 5.x software control plane is M5-ready and a real self-pilot is active. Claude Code has an explicit owner-attested default pass, while the measured dual-runtime campaign, an independent repository, a second human operator, 30-day observation, and final 5.1.0 promotion remain incomplete.",
+    "reason": "The 5.x source/test control plane is implemented, but release readiness is blocked because the official 4.0.0 artifact is unavailable and the prior rehearsal used an invalid working-tree artifact. Runtime campaign and field evidence also remain incomplete.",
     "field_status": "self_pilot_active"
   },
   "software_m5": {
-    "readiness_status": "m5-ready",
+    "readiness_status": "not-ready",
     "eligibility_status": "blocked",
     "certification_status": "blocked",
     "certified": false,
-    "candidate_version": "5.0.0-rc.1",
+    "candidate_version": "5.0.0-rc.2",
     "final_version": "5.1.0",
-    "blocking_gates": ["final_version", "independent_repository", "operator_count", "pilot_duration", "real_repository_count", "repository_runtime_campaign", "required_field_events", "runtime_campaign"]
+    "blocking_gates": ["final_version", "independent_repository", "operator_count", "pilot_duration", "real_repository_count", "release_rehearsal", "repository_runtime_campaign", "required_field_events", "runtime_campaign"]
   },
   "working_candidate": {
-    "version": "5.0.0-rc.1",
-    "status": "source-committed-pushed-local-rehearsed-root-integrated-pushed",
+    "version": "5.0.0-rc.2",
+    "status": "source-pushed-release-continuity-blocked",
     "overall_level": "M3",
     "target_status": "experimental",
     "implemented_controls": [
@@ -43,23 +43,23 @@
       "Trace Summary, Agent Value, Evidence Graph, Run Evidence and Effect Comparator"
     ],
     "lock_state": "synchronized",
-    "runtime_certification": "claude-owner-attested-default-pass-measured-campaign-not-run",
+    "runtime_certification": "codex-current-smoke-pass-claude-owner-attested-v2-measured-campaign-not-run",
     "local_validation": {
-      "adk_full": "68/68-pass",
-      "root_quick": "55/55-pass-working-tree-integration",
-      "root_release_quick": "54/54-pass-release-clean",
+      "adk_full": "68/68-pushed-baseline-and-python-3.11/3.12-remediation-pass",
+      "root_quick": "55/55-pass-current-working-tree-integration",
+      "root_release_quick": "54/54-pass-pushed-baseline-before-remediation",
       "root_full": "not-run",
-      "root_regression": "22/22-pass",
-      "adk_harden_readiness": "pass-exact-head-clone-68/68-global-codex-health-pass",
+      "root_regression": "23/23-pass-current-remediation-tree",
+      "adk_harden_readiness": "snapshot-bound-python-3.11/3.12-full-receipt-reused-no-duplicate-full",
       "target_static": "3/3-pass",
       "effect_eval": "24/24-pass-ablation-delta-0.3333",
-      "release_rehearsal": "4.0.0-to-5.0.0-rc.1-pass-34-assets-restored",
+      "release_rehearsal": "blocked-previous-official-artifact-unavailable-prior-pass-invalidated",
       "source_to_live": "required-pending-owner-authorization",
       "codex_assets_check": "not-run-no-live-apply-authority",
       "live_runtime_health": "not-run-no-live-apply-authority",
-      "artifact_sha256": "f332e8453f7a8ad7387fee807303e4b90a449f3505a2d5828a9ba2746d0b568b"
+      "artifact_sha256": "09143ad9a4a9099ce4ee422e4328cab1ec3dcd77e876e997e4600b76a2fc5ddf"
     },
-    "promotion_boundary": "The 5.0.0-rc.1 ADK source c9a28b2 and root integration 048793d are pushed, and the checksum-bound 4.0.0-to-5.0.0-rc.1 rehearsal passes. Claude Code default use is owner-attested, not runtime-measured campaign evidence. Tag, remote Release/artifact upload, source-to-live, dual-runtime campaign and field certification remain blocked or not run."
+    "promotion_boundary": "The pushed 5.0.0-rc.2 candidate is clean-commit-bound and release-eligible, but official 4.0.0 artifact continuity remains unavailable. Tag, release, source-to-live, campaign and field promotion are blocked."
   },
   "assessment_model": {
     "implementation_level": "highest level supported by code and local control-plane behavior",
@@ -160,7 +160,7 @@
       "evidence_layers_present": ["source", "test"],
       "status": "verified_local",
       "evidence": ["agent-dev-kit/src/agent_dev_kit/quality.py", "agent-dev-kit/.github/workflows/ci.yml", "agent-dev-kit/.github/workflows/release.yml", "agent-dev-kit/.github/workflows/scorecard.yml", "agent-dev-kit/manifests/official_docs_freshness_gates.json", "agent-dev-kit/docs/runbooks/local-ci-parity.md", ".github/workflows/ci.yml"],
-      "gap": "Local security, lint, Python 3.11/3.12 parity and dependency audit pass for 5.0.0-rc.1; remote Scorecard, CI and artifact attestation have not run."
+      "gap": "Local security, lint, Python 3.11/3.12 full parity and dependency audit pass for 5.0.0-rc.2; remote Scorecard, CI and artifact attestation have not run."
     },
     {
       "id": "D08",
@@ -173,7 +173,7 @@
       "evidence_layers_present": ["source", "test", "runtime"],
       "status": "verified_local",
       "evidence": ["agent-dev-kit/src/agent_dev_kit/installer.py", "agent-dev-kit/src/agent_dev_kit/release.py", "agent-dev-kit/docs/changes/rc7-token-context-release-baseline-2026-08-02/release-rehearsal.json", "agent-dev-kit/docs/changes/rc7-token-context-release-baseline-2026-08-02/verify-report.md", "reports/adk-v3-1-rc7-release-evidence-2026-08-02.json"],
-      "gap": "The local 4.0.0-to-5.0.0-rc.1 checksum-bound upgrade/rollback rehearsal passes. Source-to-live, native direct-target installation, tag/remote publication and remote CI/attestation remain explicit owner or external operations."
+      "gap": "An exact-commit 4.0.0-to-5.0.0-rc.2 diagnostic transition passes, but the official 4.0.0 release artifact is unavailable, so release continuity remains blocked. Source-to-live, tag/remote publication and remote CI/attestation remain explicit owner or external operations."
     },
     {
       "id": "D09",

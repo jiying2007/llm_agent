@@ -18,10 +18,14 @@ release = policy["release"]
 print(release["candidate_version"])
 print(release["rehearsal_report"])
 print(release["evidence_report"])
+print(release["previous_evidence_report"])
 evidence = json.load(open(root / release["evidence_report"], encoding="utf-8"))
 print(str(evidence["source_to_live"]["mapped_content_changed"]).lower())
 print(policy["runtime_campaign"]["plan"])
 print(release["runtime_attestation"])
+attestation = json.load(open(root / release["runtime_attestation"], encoding="utf-8"))
+print(attestation["supersedes"]["path"])
+print(release["codex_runtime_evidence"])
 ledger = json.load(open(root / "manifests/software_m5_pilot_ledger.json", encoding="utf-8"))
 print(ledger["event_log"])
 registry = json.load(open(root / "manifests/report_registry.json", encoding="utf-8"))
@@ -33,11 +37,14 @@ PY
 CANDIDATE_VERSION="${POLICY_VALUES[0]}"
 REHEARSAL_REPO_PATH="${POLICY_VALUES[1]}"
 RELEASE_EVIDENCE_PATH="${POLICY_VALUES[2]}"
-MAPPED_CONTENT_CHANGED="${POLICY_VALUES[3]}"
-CAMPAIGN_PLAN_PATH="${POLICY_VALUES[4]}"
-RUNTIME_ATTESTATION_PATH="${POLICY_VALUES[5]}"
-M5_EVENT_LOG_PATH="${POLICY_VALUES[6]}"
-CURRENT_REPORT_PATH="${POLICY_VALUES[7]}"
+PREVIOUS_RELEASE_EVIDENCE_PATH="${POLICY_VALUES[3]}"
+MAPPED_CONTENT_CHANGED="${POLICY_VALUES[4]}"
+CAMPAIGN_PLAN_PATH="${POLICY_VALUES[5]}"
+RUNTIME_ATTESTATION_PATH="${POLICY_VALUES[6]}"
+SUPERSEDED_ATTESTATION_PATH="${POLICY_VALUES[7]}"
+CODEX_RUNTIME_EVIDENCE_PATH="${POLICY_VALUES[8]}"
+M5_EVENT_LOG_PATH="${POLICY_VALUES[9]}"
+CURRENT_REPORT_PATH="${POLICY_VALUES[10]}"
 
 make_fixture() {
   local dest="$1"
@@ -50,6 +57,8 @@ make_fixture() {
   campaign_plan_dir="$(dirname "${CAMPAIGN_PLAN_PATH}")"
   local runtime_attestation_dir
   runtime_attestation_dir="$(dirname "${RUNTIME_ATTESTATION_PATH}")"
+  local codex_runtime_evidence_dir
+  codex_runtime_evidence_dir="$(dirname "${CODEX_RUNTIME_EVIDENCE_PATH}")"
   local m5_event_log_dir
   m5_event_log_dir="$(dirname "${M5_EVENT_LOG_PATH}")"
   mkdir -p \
@@ -63,6 +72,7 @@ make_fixture() {
     "${dest}/${rehearsal_dir}" \
     "${dest}/${campaign_plan_dir}" \
     "${dest}/${runtime_attestation_dir}" \
+    "${dest}/${codex_runtime_evidence_dir}" \
     "${dest}/${m5_event_log_dir}" \
     "${dest}/agent-dev-kit/agents/example" \
     "${dest}/agent-dev-kit/${legacy_change_path}"
@@ -70,9 +80,13 @@ make_fixture() {
   cp "${ROOT}/reports/current-status.md" "${dest}/reports/current-status.md"
   cp "${ROOT}/${CURRENT_REPORT_PATH}" "${dest}/${CURRENT_REPORT_PATH}"
   cp "${ROOT}/${RELEASE_EVIDENCE_PATH}" "${dest}/${RELEASE_EVIDENCE_PATH}"
+  mkdir -p "${dest}/$(dirname "${PREVIOUS_RELEASE_EVIDENCE_PATH}")"
+  cp "${ROOT}/${PREVIOUS_RELEASE_EVIDENCE_PATH}" "${dest}/${PREVIOUS_RELEASE_EVIDENCE_PATH}"
   cp "${ROOT}/${REHEARSAL_REPO_PATH}" "${dest}/${REHEARSAL_REPO_PATH}"
   cp "${ROOT}/${CAMPAIGN_PLAN_PATH}" "${dest}/${CAMPAIGN_PLAN_PATH}"
   cp "${ROOT}/${RUNTIME_ATTESTATION_PATH}" "${dest}/${RUNTIME_ATTESTATION_PATH}"
+  cp "${ROOT}/${SUPERSEDED_ATTESTATION_PATH}" "${dest}/${SUPERSEDED_ATTESTATION_PATH}"
+  cp "${ROOT}/${CODEX_RUNTIME_EVIDENCE_PATH}" "${dest}/${CODEX_RUNTIME_EVIDENCE_PATH}"
   cp "${ROOT}/${M5_EVENT_LOG_PATH}" "${dest}/${M5_EVENT_LOG_PATH}"
   cp "${ROOT}/manifests/product_maturity_scorecard.json" "${dest}/manifests/"
   cp "${ROOT}/manifests/product_maturity_task_pack.json" "${dest}/manifests/"
@@ -121,6 +135,8 @@ CSV
     "${dest}/reports/current-status.md" \
     "${dest}/${RELEASE_EVIDENCE_PATH}" \
     "${dest}/adk.lock" \
+    "${dest}/${RUNTIME_ATTESTATION_PATH}" \
+    "${dest}/${CODEX_RUNTIME_EVIDENCE_PATH}" \
     "${previous_adk}" \
     "${release_adk}" \
     "${current_adk}" \
@@ -130,7 +146,7 @@ import pathlib
 import re
 import sys
 
-status_path, release_path, lock_path, previous_adk, release_adk, current_adk, candidate_version = sys.argv[1:]
+status_path, release_path, lock_path, attestation_path, codex_path, previous_adk, release_adk, current_adk, candidate_version = sys.argv[1:]
 status = pathlib.Path(status_path).read_text(encoding="utf-8")
 status = re.sub(r"^- agent_dev_kit_commit: .+$", f"- agent_dev_kit_commit: {current_adk}", status, flags=re.MULTILINE)
 status = re.sub(r"^- agent_dev_kit_release_commit: .+$", f"- agent_dev_kit_release_commit: {release_adk}", status, flags=re.MULTILINE)
@@ -142,6 +158,25 @@ release["agent_dev_kit"]["commit"] = release_adk
 release["agent_dev_kit"]["previous_commit"] = previous_adk
 release["source_to_live"]["comparison"] = f"{previous_adk}..{release_adk}"
 pathlib.Path(release_path).write_text(json.dumps(release, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+attestation = json.loads(pathlib.Path(attestation_path).read_text(encoding="utf-8"))
+attestation["adk_commit"] = release_adk
+unsigned_attestation = dict(attestation)
+unsigned_attestation.pop("evidence_sha256", None)
+import hashlib
+attestation["evidence_sha256"] = hashlib.sha256(
+    json.dumps(unsigned_attestation, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+).hexdigest()
+pathlib.Path(attestation_path).write_text(json.dumps(attestation, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+codex = json.loads(pathlib.Path(codex_path).read_text(encoding="utf-8"))
+codex["adk_commit"] = release_adk
+unsigned = dict(codex)
+unsigned.pop("evidence_sha256", None)
+codex["evidence_sha256"] = hashlib.sha256(
+    json.dumps(unsigned, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+).hexdigest()
+pathlib.Path(codex_path).write_text(json.dumps(codex, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 lock = pathlib.Path(lock_path).read_text(encoding="utf-8")
 lock = re.sub(r"agent-dev-kit.version=.*", f"agent-dev-kit.version={candidate_version}", lock)
@@ -199,6 +234,38 @@ if ! "${CHECKER}" "${pass_root}" --summary-json >"${pass_output}" 2>&1; then
   sed -n '1,160p' "${pass_output}" >&2 || true
   exit 1
 fi
+
+codex_identity_root="${TMP_DIR}/codex-identity-root"
+cp -a "${pass_root}" "${codex_identity_root}"
+python3 - "${codex_identity_root}/${CODEX_RUNTIME_EVIDENCE_PATH}" <<'PY'
+import hashlib
+import json
+import pathlib
+import sys
+path = pathlib.Path(sys.argv[1])
+value = json.loads(path.read_text(encoding="utf-8"))
+value["manifest_version"] = "0.0.0"
+unsigned = dict(value)
+unsigned.pop("evidence_sha256", None)
+value["evidence_sha256"] = hashlib.sha256(
+    json.dumps(unsigned, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+).hexdigest()
+path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+PY
+expect_fail_contains "${codex_identity_root}" "Codex runtime smoke identity/result is invalid or stale"
+
+stale_attestation_root="${TMP_DIR}/stale-attestation-root"
+cp -a "${pass_root}" "${stale_attestation_root}"
+python3 - "${stale_attestation_root}/${RUNTIME_ATTESTATION_PATH}" <<'PY'
+import json
+import pathlib
+import sys
+path = pathlib.Path(sys.argv[1])
+value = json.loads(path.read_text(encoding="utf-8"))
+value["review_after"] = "2000-01-01"
+path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+PY
+expect_fail_contains "${stale_attestation_root}" "Claude Code owner attestation is stale"
 
 mismatch_root="${TMP_DIR}/mismatch-root"
 cp -a "${pass_root}" "${mismatch_root}"
@@ -327,4 +394,4 @@ assert payload["subrepo_state"]["agent_dev_kit_change_count"] == 1
 assert len(payload["subrepo_state"]["agent_dev_kit_fingerprint"]) == 64
 PY
 
-echo "[PASS] current M5-ready product status consistency checks behave as expected"
+echo "[PASS] current product status consistency checks behave as expected"

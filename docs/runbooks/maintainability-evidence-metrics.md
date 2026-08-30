@@ -12,6 +12,8 @@
 
 没有受审查输入时，三项必须输出 `status=not-available`、`observed=null`，不能用 0 代替缺失数据。当前根仓没有 pinned git-history、ownership 或 invocation snapshot，因此三项都保持 report-only/not-available；strict gate 不因数据缺失失败，也不声称指标健康。
 
+`reports/runtime-evidence/` 保存 schema-bound runtime evidence 与 campaign plan，不计入面向人类的 root report 数量预算；这些文件仍由 policy、SHA-256、freshness 和 current-status checker 治理。该语义排除不适用于普通报告目录，也不放宽 report warning/hard limit。
+
 ## Evidence contract
 
 配置中的 evidence source 必须绑定：

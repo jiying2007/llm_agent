@@ -1,24 +1,18 @@
 {
   "schema_version": 2,
-  "status": "pass",
+  "status": "blocked",
   "previous_version": "4.0.0",
-  "candidate_version": "5.0.0-rc.1",
-  "previous_sha256": "1241d345841d635bf3b42743263767712cbf1c3772d9b9b88a8b7bc5a7ed095e",
-  "candidate_sha256": "f332e8453f7a8ad7387fee807303e4b90a449f3505a2d5828a9ba2746d0b568b",
-  "previous_manifest_sha256": "6cc94b8c8bf7d90e6fe476e2c8b5bb3a03dcc6fe74ec7c767eb08f9abb403d30",
-  "candidate_manifest_sha256": "895e42fa38566f1071d0b7632a851ff3c61922dff71e49bb37dbaa1f0431be9c",
-  "previous_installed": 34,
-  "candidate_installed": 34,
-  "migration_mode": "in-place-replacement",
-  "previous_install_migration": null,
-  "legacy_rollback": null,
-  "fallback_restore": null,
-  "rollback": {
-    "status": "pass",
-    "removed": 34,
-    "restored": 34
-  },
-  "restored_assets": 34,
+  "candidate_version": "5.0.0-rc.2",
+  "previous_sha256": "4c1e9b3c906024b0dff8fded2df5c3212b1fc8c4a46bf7381dffba1ef301648d",
+  "candidate_sha256": "09143ad9a4a9099ce4ee422e4328cab1ec3dcd77e876e997e4600b76a2fc5ddf",
+  "previous_manifest_sha256": "cdc70010c8bf1722c2d0a8f562030b45b2105aced0f7b0e76df35cf8de815656",
+  "candidate_manifest_sha256": "50d24127667b235947d731271d6977cb362e962ff43c2f17b0d077c88fde9590",
+  "previous_artifact_status": "unavailable",
+  "release_continuity": false,
+  "blocker_id": "previous_official_artifact_unavailable",
+  "invalidated_report_sha256": "ee6d1d4340817a02e3bb3750e4e2fd32c3749d8af549856ee92500549e195d34",
+  "invalidated_previous_sha256": "1241d345841d635bf3b42743263767712cbf1c3772d9b9b88a8b7bc5a7ed095e",
+  "source_transition_status": "pass-diagnostic-exact-commit-candidate",
   "remote_publish": "not-in-scope",
-  "report_sha256": "ee6d1d4340817a02e3bb3750e4e2fd32c3749d8af549856ee92500549e195d34"
+  "report_sha256": "ad92fa6502c0c71660cbc7eb2de18a648de30f230c753c92abd3fc6b685aa587"
 }

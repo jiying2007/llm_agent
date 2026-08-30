@@ -157,6 +157,8 @@ scripts/check-official-docs-adoption-review.sh .
 ```
 
 release-clean 模式校验 `adk.lock`、`agent-dev-kit/manifest.yaml`、ADK worktree 和根仓 gitlink commit 完全一致；working-tree integration 模式允许父仓 gitlink 暂未提交，但要求 lock 匹配 ADK worktree，且新 commit 必须继承已记录 gitlink，防止把分叉历史伪装成待集成状态。
+
+`check-adk-harden-readiness.sh` 的完整 ADK suite 只接受 Python 3.11+；旧解释器必须 fail-fast，不能产生 release-grade harden pass。旧环境只可显式使用 `--skip-full-suite` 执行非发布治理检查，并另行提供受控 Python 3.11/3.12 full parity。
 子仓状态检查脚本：
 
 ```bash
@@ -474,11 +476,7 @@ scripts/generate-weekly-report.sh [WORKSPACE_ROOT]
 - 运行质量门禁快速检查（health-check / matrix-status / agents-coverage）。
 - 输出报告到 `reports/weekly-report-YYYY-MM-DD.md`。
 
-建议配合 cron 定时执行：
-```bash
-# 每周五下午 6 点自动生成周报
-0 18 * * 5 cd /path/to/llm_agent && rtk scripts/generate-weekly-report.sh .
-```
+可按需由外部 cron 调用；仓库不自动安装定时任务。
 
 ## 12. 清理归档旧报告
 
@@ -492,14 +490,7 @@ scripts/cleanup-reports.sh [WORKSPACE_ROOT] [--dry-run] [--days N]
 - `--dry-run`：只显示会移动的文件，不实际执行。
 - `--days N`：自定义天数阈值，默认 30 天。
 
-示例：
-```bash
-# 模拟清理（查看哪些文件会被归档）
-scripts/cleanup-reports.sh . --dry-run
-
-# 清理 60 天前的报告
-scripts/cleanup-reports.sh . --days 60
-```
+示例：`scripts/cleanup-reports.sh . --dry-run`；确认后可加 `--days 60`。
 
 ## 13. 安装 Pre-commit Hook
 

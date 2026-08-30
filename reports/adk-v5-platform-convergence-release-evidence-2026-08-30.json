@@ -1,25 +1,30 @@
 {
   "schema": "llm-agent-adk-software-m5-ready-release-evidence/v1",
   "generated_at": "2026-08-30",
-  "release_scope": "source-pushed-local-rehearsed-root-product-pushed",
+  "release_scope": "source-pushed-provenance-v2-fixed-official-continuity-blocked",
   "agent_dev_kit": {
-    "version": "5.0.0-rc.1",
-    "commit": "c9a28b2e5afd9f30634a7215730539323895236e",
-    "evidence_commit": "c9a28b2e5afd9f30634a7215730539323895236e",
+    "version": "5.0.0-rc.2",
+    "commit": "12bfeaf1f85b297628b57ac15d12eedc849e3919",
+    "evidence_commit": "12bfeaf1f85b297628b57ac15d12eedc849e3919",
     "previous_version": "4.0.0",
     "previous_commit": "792a4cb91965d1150fea61d474787072a4cae248",
     "previous_release_commit": "792a4cb91965d1150fea61d474787072a4cae248"
   },
   "artifacts": {
-    "source_sha256": "f332e8453f7a8ad7387fee807303e4b90a449f3505a2d5828a9ba2746d0b568b",
+    "source_sha256": "09143ad9a4a9099ce4ee422e4328cab1ec3dcd77e876e997e4600b76a2fc5ddf",
+    "candidate_artifact_status": "available-clean-commit-bound",
+    "release_eligible": true,
     "source_reproducible_builds": 1,
-    "source_file_count": 954,
-    "wheel_sha256": "98a635adf4e1180a7f1a8a3c5442b4ad4668866e4151012020437ec892a5e3dc",
-    "wheel_status": "built-isolated-python-3.11",
-    "previous_source_sha256": "1241d345841d635bf3b42743263767712cbf1c3772d9b9b88a8b7bc5a7ed095e",
-    "previous_source_provenance": "checksum-sidecar-verified-local-artifact",
-    "candidate_manifest_sha256": "895e42fa38566f1071d0b7632a851ff3c61922dff71e49bb37dbaa1f0431be9c",
-    "release_rehearsal_report_sha256": "ee6d1d4340817a02e3bb3750e4e2fd32c3749d8af549856ee92500549e195d34"
+    "source_file_count": 957,
+    "source_commit": "12bfeaf1f85b297628b57ac15d12eedc849e3919",
+    "source_tree": "7adda3716846f3ba8bbfbd0c28110a0431211684",
+    "source_distribution_sha256": "d0418ba900ffb6fef0e9e5e2ea93db1ac4f75f2b64d4d7f324e586ec7325e722",
+    "wheel_sha256": "ffaf1039296a32905360c93395b49034fcc23afe1df6c211106934a75450a362",
+    "wheel_status": "built-isolated-python-3.12-supported-parity",
+    "previous_source_sha256": "4c1e9b3c906024b0dff8fded2df5c3212b1fc8c4a46bf7381dffba1ef301648d",
+    "previous_source_provenance": "historical-release-evidence-artifact-currently-unavailable",
+    "candidate_manifest_sha256": "50d24127667b235947d731271d6977cb362e962ff43c2f17b0d077c88fde9590",
+    "release_rehearsal_report_sha256": "ad92fa6502c0c71660cbc7eb2de18a648de30f230c753c92abd3fc6b685aa587"
   },
   "validation": {
     "strict": "pass",
@@ -29,24 +34,28 @@
     "shellcheck": "pass-in-supported-parity",
     "ruff": "pass-in-supported-parity",
     "dependency_audit": "pass-python-3.11-and-3.12",
-    "full": {"total": 68, "pass": 68, "fail": 0, "elapsed_ms": null},
-    "root_quick": "55/55-pass-working-tree-integration",
-    "root_release_quick": "54/54-pass-release-clean",
-    "root_regression": "22/22-pass",
-    "adk_harden_readiness": "pass-exact-head-clone-68/68-global-codex-health-pass",
+    "full": {"total": 68, "pass": 68, "fail": 0, "elapsed_ms": null, "scope": "pushed-rc.2-clean-commit"},
+    "remediation_full": "python-3.11.15-and-3.12.13-each-68/68-pass-source-snapshot-8a5b486c",
+    "root_quick": "55/55-pass-current-working-tree-integration",
+    "root_release_quick": "54/54-pass-pushed-baseline-before-remediation",
+    "root_regression": "23/23-pass-current-remediation-tree",
+    "adk_harden_readiness": "snapshot-bound-supported-full-receipt-reused; duplicate-full-skipped",
+    "token_budget": "pass-root-active-doc-512/520-cumulative-agents-estimated-2520",
+    "validation_plan": "L1-L4-diff-classifier-pass",
     "root_full": "not-run",
     "target_static": "3/3-pass",
-    "target_runtime": "claude-owner-attested-default-pass-runtime-measured-false",
+    "target_runtime": "codex-current-one-task-pass; claude-owner-attested-v2-runtime-measured-false",
     "effect_eval": "30/30-deterministic-routing-pass",
-    "upgrade_rollback_rehearsal": "pass",
-    "previous_installed": 34,
-    "candidate_installed": 34,
-    "restored_assets": 34,
-    "local_ci_parity": "python-3.11-and-3.12-quick-29/29",
+    "upgrade_rollback_rehearsal": "blocked-prior-pass-invalidated",
+    "diagnostic_source_transition": "pass-reports/runtime-evidence/adk-v5-exact-source-transition-2026-08-30.json",
+    "previous_installed": null,
+    "candidate_installed": null,
+    "restored_assets": null,
+    "local_ci_parity": "python-3.11.15-and-3.12.13-full-68/68-routing-30/30-wheel-audit-pass",
     "remote_ci": "not-run"
   },
   "source_to_live": {
-    "comparison": "792a4cb91965d1150fea61d474787072a4cae248..c9a28b2e5afd9f30634a7215730539323895236e",
+    "comparison": "792a4cb91965d1150fea61d474787072a4cae248..12bfeaf1f85b297628b57ac15d12eedc849e3919",
     "mapped_paths": ["agents", "skills", "optional-skills", "workflows", "templates"],
     "mapped_content_changed": true,
     "decision": "required-pending-owner-authorization",
@@ -55,15 +64,17 @@
     "plan_status": "not-run-no-live-authority",
     "dry_run_status": "not-run-no-live-authority",
     "apply_status": "not-run-no-live-authority",
-    "rollback_anchor": "4.0.0 source artifact plus existing Codex apply receipts",
+    "rollback_anchor": "blocked-official-4.0.0-artifact-unavailable; exact commit rebuild is diagnostic only",
     "post_apply": null
   },
   "software_m5": {
-    "readiness_status": "m5-ready",
+    "readiness_status": "not-ready",
     "certified": false,
     "field_status": "self_pilot_active",
     "runtime_campaign": "blocked-measured-result-matrix-missing",
     "claude_runtime_decision": "owner-attested-default-pass"
+    ,"codex_runtime_evidence": "reports/runtime-evidence/codex-v5-runtime-smoke-2026-08-30.json"
+    ,"claude_runtime_attestation": "reports/runtime-evidence/claude-code-owner-attestation-v2-2026-08-30.json"
   },
   "knowledge_hub": {
     "new_candidate": false,
@@ -82,7 +93,7 @@
     "tag_created": false,
     "remote_release_created": false,
     "remote_artifact_uploaded": false,
-    "reason": "ADK c9a28b2 and root product integration 048793d are pushed; rehearsal passes. Tag/release and live apply remain separate operations."
+    "reason": "ADK 12bfeaf1 is pushed and its rc.2 artifact is clean-commit-bound, but the official 4.0.0 artifact is unavailable. Release continuity and live apply remain blocked."
   },
   "compatibility_boundary": {
     "removed_contracts": ["target-contract-v1", "routing-parallel-semantics", "runtime-control-v1-active-path"],

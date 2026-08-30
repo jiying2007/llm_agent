@@ -43,6 +43,7 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -103,6 +104,11 @@ def canonical_digest(value):
     ).hexdigest()
 
 
+def adk_manifest_digest(value):
+    payload = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n"
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
 def git(*args, cwd=None, check=True):
     completed = subprocess.run(
         ["git", "-C", cwd or root, *args],
@@ -145,7 +151,7 @@ required = {
     "lock": path("adk.lock"),
     "manifest": path("agent-dev-kit", "manifest.json"),
     "rehearsal": policy_file("rehearsal_report", "release-rehearsal"),
-    "codex_smoke": path("agent-dev-kit", "docs", "changes", "adk-v3-1-software-m5-ready", "codex-runtime-smoke.json"),
+    "codex_smoke": policy_file("codex_runtime_evidence", "codex-runtime-evidence"),
     "runtime_attestation": policy_file("runtime_attestation", "runtime-attestation"),
     "m5_policy": policy_path,
     "m5_ledger": path("manifests", "software_m5_pilot_ledger.json"),
@@ -182,12 +188,12 @@ candidate_version = release_policy.get("candidate_version")
 expected_fields = {
     "status_semantics": "last-verified-product-baseline",
     "product_maturity": "M3",
-    "software_m5_readiness": "m5-ready",
+    "software_m5_readiness": "not-ready",
     "software_m5_certified": "false",
     "terminal_mature": "false",
     "field_status": "self_pilot_active",
     "root_gate_status": "pass",
-    "runtime_eval_status": "codex-smoke-pass-claude-owner-attested",
+    "runtime_eval_status": "codex-current-smoke-pass-claude-owner-attested-v2",
     "m5_campaign_status": "blocked-full-campaign-and-field-pending",
 }
 for name, expected in expected_fields.items():
@@ -290,8 +296,8 @@ if overall.get("terminal_mature") is not False:
     failures.append("product scorecard must keep terminal_mature=false")
 if overall.get("field_status") != "self_pilot_active":
     failures.append("product scorecard must keep self_pilot_active")
-if not isinstance(software_m5, dict) or software_m5.get("readiness_status") != "m5-ready":
-    failures.append("product scorecard software M5 readiness must be m5-ready")
+if not isinstance(software_m5, dict) or software_m5.get("readiness_status") != "not-ready":
+    failures.append("product scorecard software M5 readiness must remain not-ready while release continuity is blocked")
 if software_m5.get("certified") is not False or software_m5.get("certification_status") != "blocked":
     failures.append("product scorecard must keep software M5 certification blocked")
 if software_m5.get("candidate_version") != candidate_version:
@@ -331,28 +337,122 @@ else:
         elif not os.path.isfile(path(*current_relative.parts)):
             failures.append("report registry current report is missing: {}".format(current_report))
 
-if codex_smoke.get("suite") != "runtime-routing" or codex_smoke.get("runtime") != "codex":
-    failures.append("Codex runtime smoke has an invalid identity")
-if codex_smoke.get("status") != "pass" or codex_smoke.get("total") != 1 or codex_smoke.get("passed") != 1:
-    failures.append("Codex runtime smoke is not a one-task pass")
-if codex_smoke.get("requested_model") != "gpt-5.5":
-    failures.append("Codex runtime smoke must request gpt-5.5")
-if not all(codex_smoke.get("quality_gate", {}).values()):
-    failures.append("Codex runtime smoke quality gates are not all passing")
+release_artifacts_for_runtime = release.get("artifacts", {}) if isinstance(release, dict) else {}
+
+
+def file_sha256(file_path):
+    digest = hashlib.sha256()
+    with open(file_path, "rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def runtime_readback(executable_name, expected_version, expected_sha256, label):
+    executable = shutil.which(executable_name)
+    if not executable or file_sha256(executable) != expected_sha256:
+        failures.append("{} runtime binary identity does not match evidence".format(label))
+        return
+    try:
+        completed = subprocess.run(
+            [executable, "--version"], check=False, text=True,
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=15,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        failures.append("{} runtime version readback failed or timed out".format(label))
+        return
+    if completed.returncode != 0 or expected_version not in completed.stdout:
+        failures.append("{} runtime version readback does not match evidence".format(label))
+
+
+def validate_evidence_time(value, label):
+    try:
+        parsed = dt.datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    except ValueError:
+        failures.append("{} timestamp is invalid".format(label))
+        return
+    if parsed.tzinfo is None or parsed > dt.datetime.now(dt.timezone.utc) + dt.timedelta(minutes=5):
+        failures.append("{} timestamp is timezone-less or in the future".format(label))
+
+
+codex_result = codex_smoke.get("result", {}) if isinstance(codex_smoke, dict) else {}
+unsigned_codex = dict(codex_smoke)
+stored_codex_digest = unsigned_codex.pop("evidence_sha256", None)
+if stored_codex_digest != canonical_digest(unsigned_codex):
+    failures.append("Codex runtime evidence hash does not match content")
+if (
+    codex_smoke.get("schema") != "llm-agent-runtime-smoke-evidence/v1"
+    or codex_smoke.get("runtime") != "codex"
+    or codex_smoke.get("manifest_version") != candidate_version
+    or codex_smoke.get("manifest_sha256") != adk_manifest_digest(manifest)
+    or codex_smoke.get("adk_commit") != adk_release_commit
+    or codex_smoke.get("bundle_sha256") != release_artifacts_for_runtime.get("source_sha256")
+    or codex_result.get("suite") != "runtime-routing"
+    or codex_result.get("runtime") != "codex"
+    or codex_result.get("status") != "pass"
+    or codex_result.get("total") != 1
+    or codex_result.get("passed") != 1
+    or codex_result.get("requested_model") != "gpt-5.5"
+    or not all(codex_result.get("quality_gate", {}).values())
+):
+    failures.append("Codex runtime smoke identity/result is invalid or stale")
+runtime_readback(
+    "codex", str(codex_smoke.get("runtime_version", "")),
+    str(codex_smoke.get("runtime_binary_sha256", "")), "Codex",
+)
+validate_evidence_time(codex_smoke.get("generated_at"), "Codex runtime evidence generated_at")
+try:
+    codex_review_after = dt.date.fromisoformat(str(codex_smoke.get("review_after")))
+except ValueError:
+    failures.append("Codex runtime evidence review_after is invalid")
+else:
+    if codex_review_after < dt.date.today():
+        failures.append("Codex runtime evidence is stale")
 
 if (
-    runtime_attestation.get("schema") != "llm-agent-runtime-owner-attestation/v1"
+    runtime_attestation.get("schema") != "llm-agent-runtime-owner-attestation/v2"
     or runtime_attestation.get("runtime") != "claude-code"
     or runtime_attestation.get("decision") != "default-pass"
     or runtime_attestation.get("status") != "pass"
     or runtime_attestation.get("trust_layer") != "owner-attested"
     or runtime_attestation.get("runtime_measured") is not False
+    or runtime_attestation.get("manifest_version") != candidate_version
+    or runtime_attestation.get("manifest_sha256") != adk_manifest_digest(manifest)
+    or runtime_attestation.get("adk_commit") != adk_release_commit
+    or runtime_attestation.get("bundle_sha256") != release_artifacts_for_runtime.get("source_sha256")
 ):
     failures.append("Claude Code owner attestation is missing or invalid")
+unsigned_attestation = dict(runtime_attestation)
+stored_attestation_digest = unsigned_attestation.pop("evidence_sha256", None)
+if stored_attestation_digest != canonical_digest(unsigned_attestation):
+    failures.append("Claude Code owner attestation hash does not match content")
 does_not_satisfy = runtime_attestation.get("does_not_satisfy", [])
 for boundary in ("native runtime conformance receipt", "60-task three-trial dual-runtime campaign", "field certification"):
     if boundary not in does_not_satisfy:
         failures.append("Claude Code owner attestation weakens evidence boundary: {}".format(boundary))
+try:
+    review_after = dt.date.fromisoformat(str(runtime_attestation.get("review_after")))
+except ValueError:
+    failures.append("Claude Code owner attestation review_after is invalid")
+else:
+    if review_after < dt.date.today():
+        failures.append("Claude Code owner attestation is stale")
+runtime_readback(
+    "claude", str(runtime_attestation.get("runtime_version", "")),
+    str(runtime_attestation.get("runtime_binary_sha256", "")), "Claude Code",
+)
+validate_evidence_time(runtime_attestation.get("attested_at"), "Claude Code owner attestation attested_at")
+supersedes = runtime_attestation.get("supersedes")
+if not isinstance(supersedes, dict):
+    failures.append("Claude Code owner attestation supersession evidence is missing")
+else:
+    superseded_relative = Path(str(supersedes.get("path", "")))
+    if superseded_relative.is_absolute() or ".." in superseded_relative.parts:
+        failures.append("Claude Code owner attestation supersedes path is unsafe")
+    else:
+        superseded_path = path(*superseded_relative.parts)
+        if not os.path.isfile(superseded_path) or file_sha256(superseded_path) != supersedes.get("sha256"):
+            failures.append("Claude Code owner attestation superseded record does not match immutable hash")
 
 stored_plan_digest = campaign_plan.get("plan_sha256")
 unsigned_plan = dict(campaign_plan)
@@ -378,23 +478,28 @@ if claude_entry.get("requested_model") != "claude-sonnet-4-6":
 if any("executable" in item and item.get("executable") for item in runtime_entries.values()):
     failures.append("software M5 campaign plan must not persist absolute executable paths")
 
-if rehearsal.get("status") != "pass" or rehearsal.get("candidate_version") != candidate_version:
-    failures.append("release rehearsal is not a passing current-candidate rehearsal")
-if (
-    rehearsal.get("rollback", {}).get("status") != "pass"
-    or not isinstance(rehearsal.get("restored_assets"), int)
-    or rehearsal.get("restored_assets", 0) < 1
-):
-    failures.append("release rehearsal rollback did not restore managed assets")
-if rehearsal.get("schema_version") == 2 and rehearsal.get("migration_mode") == "rollback-before-install":
-    fallback = rehearsal.get("fallback_restore", {})
+unsigned_rehearsal = dict(rehearsal)
+stored_rehearsal_digest = unsigned_rehearsal.pop("report_sha256", None)
+if stored_rehearsal_digest != canonical_digest(unsigned_rehearsal):
+    failures.append("release rehearsal report hash does not match content")
+if release_policy.get("previous_artifact_status") == "unavailable":
     if (
-        rehearsal.get("legacy_rollback", {}).get("status") != "pass"
-        or fallback.get("status") != "pass"
-        or fallback.get("strategy") != "reinstall-previous-artifact"
-        or fallback.get("cleanup_removed") != fallback.get("installed")
+        rehearsal.get("status") != "blocked"
+        or rehearsal.get("blocker_id") != "previous_official_artifact_unavailable"
+        or rehearsal.get("release_continuity") is not False
+        or rehearsal.get("previous_sha256") != release_policy.get("previous_sha256")
+        or rehearsal.get("previous_manifest_sha256") != release_policy.get("previous_manifest_sha256")
     ):
-        failures.append("release rehearsal rc.1 fallback restoration is incomplete")
+        failures.append("release rehearsal must fail closed on the unavailable previous official artifact")
+else:
+    if rehearsal.get("status") != "pass" or rehearsal.get("candidate_version") != candidate_version:
+        failures.append("release rehearsal is not a passing current-candidate rehearsal")
+    if (
+        rehearsal.get("rollback", {}).get("status") != "pass"
+        or not isinstance(rehearsal.get("restored_assets"), int)
+        or rehearsal.get("restored_assets", 0) < 1
+    ):
+        failures.append("release rehearsal rollback did not restore managed assets")
 
 release_adk = release.get("agent_dev_kit", {})
 release_artifacts = release.get("artifacts", {})
@@ -422,7 +527,7 @@ elif not mapped_content_changed and live_refresh_status not in {
     failures.append("unchanged mapped ADK assets require a no-op or not-required live-refresh decision")
 if release_mapping.get("decision") != live_refresh_status:
     failures.append("software M5 release evidence source-to-live decision does not match current-status")
-if release_m5.get("readiness_status") != "m5-ready" or release_m5.get("certified") is not False:
+if release_m5.get("readiness_status") != "not-ready" or release_m5.get("certified") is not False:
     failures.append("software M5 release evidence has an invalid maturity boundary")
 release_full = release.get("validation", {}).get("full", {})
 release_full_total = release_full.get("total")
@@ -435,7 +540,13 @@ if (
 ):
     failures.append("software M5 release evidence does not record a complete passing ADK full gate")
 working_candidate = scorecard.get("working_candidate", {})
-expected_full_summary = "{0}/{0}-pass".format(release_full_total) if isinstance(release_full_total, int) else ""
+expected_full_summary = (
+    "{0}/{0}-pushed-baseline-pass-remediation-full-pending".format(release_full_total)
+    if isinstance(release_full_total, int) and release.get("validation", {}).get("remediation_full", "").startswith("pending-")
+    else "{0}/{0}-pushed-baseline-and-python-3.11/3.12-remediation-pass".format(release_full_total)
+    if isinstance(release_full_total, int) and release.get("validation", {}).get("remediation_full", "").startswith("python-3.11.15-")
+    else "{0}/{0}-pass".format(release_full_total) if isinstance(release_full_total, int) else ""
+)
 if working_candidate.get("local_validation", {}).get("adk_full") != expected_full_summary:
     failures.append("product scorecard ADK full summary does not match release evidence")
 
@@ -481,14 +592,15 @@ expected_blockers = [
     "operator_count",
     "pilot_duration",
     "real_repository_count",
+    "release_rehearsal",
     "repository_runtime_campaign",
     "required_field_events",
     "runtime_campaign",
 ]
 if m5_status.get("integrity_status") != "pass" or m5_status.get("declaration_status") != "pass":
     failures.append("software M5 evidence integrity or scorecard declaration is not pass")
-if m5_status.get("readiness_status") != "m5-ready" or m5_status.get("software_m5_certified") is not False:
-    failures.append("software M5 certifier boundary is not m5-ready/blocked")
+if m5_status.get("readiness_status") != "not-ready" or m5_status.get("software_m5_certified") is not False:
+    failures.append("software M5 certifier boundary is not not-ready/blocked")
 if m5_status.get("blocker_ids") != expected_blockers:
     failures.append("software M5 certifier blocker set has drifted")
 
@@ -545,7 +657,7 @@ elif failures:
         print("[FAIL] {}".format(failure), file=sys.stderr)
 else:
     print(
-        "[PASS] product status consistent: root={} adk={} release={} m5=m5-ready/blocked".format(
+        "[PASS] product status consistent: root={} adk={} release={} m5=not-ready/blocked".format(
             root_head, adk_status_commit[:7], adk_release_commit[:7]
         )
     )

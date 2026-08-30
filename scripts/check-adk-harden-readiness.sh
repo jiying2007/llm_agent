@@ -19,6 +19,7 @@ CHECK_PILOT_COVERAGE=1
 CHECK_UPSTREAM_INTAKE=1
 CHECK_CODEX_HANDOFF=1
 ADK_SUITE_TMP=""
+PARITY_RECEIPT_REUSED=0
 
 cleanup_adk_suite_tmp() {
   if [[ -n "${ADK_SUITE_TMP}" && -d "${ADK_SUITE_TMP}" ]]; then
@@ -124,6 +125,18 @@ echo "[INFO] check adk harden readiness"
 echo "[INFO] adk=${ADK_DIR}"
 echo "[INFO] gate=${GATE_FILE}"
 
+if [[ "${CHECK_FULL_SUITE}" -eq 1 ]]; then
+  receipt_check_output=""
+  if receipt_check_output="$(bash "${ADK_DIR}/scripts/run-local-ci-parity.sh" \
+    --python all --mode full --check-receipt 2>&1)"; then
+    PARITY_RECEIPT_REUSED=1
+    echo "[PASS] reuse snapshot-bound Python 3.11/3.12 full parity receipt"
+  else
+    echo "[INFO] no reusable supported-full parity receipt; require supported host Python"
+    ADK_REQUIRE_SUPPORTED_PYTHON=1 bash "${ADK_DIR}/scripts/devkit.sh" validate --quick --summary-json >/dev/null
+  fi
+fi
+
 bash "${ADK_DIR}/scripts/validate-assets.sh" --strict
 bash "${ADK_DIR}/tests/test_optional_skills.sh"
 bash "${ADK_DIR}/tests/test_no_external_repo_refs.sh"
@@ -165,7 +178,7 @@ if [[ "${CHECK_RUNTIME_ROUTING}" -eq 1 ]]; then
   bash "${ROOT}/scripts/check-runtime-routing.sh" "${ROOT}"
 fi
 
-bash "${ADK_DIR}/scripts/check-fallback-sunset.sh"
+bash "${ADK_DIR}/scripts/check-fallback-sunset.sh" --summary-json
 
 if [[ "${CHECK_UPSTREAM_INTAKE}" -eq 1 ]]; then
   bash "${ROOT}/scripts/check-upstream-intake-readiness.sh" "${ROOT}"
@@ -180,7 +193,7 @@ if [[ "${CHECK_CODEX_HANDOFF}" -eq 1 ]]; then
   fi
 fi
 
-if [[ "${CHECK_FULL_SUITE}" -eq 1 ]]; then
+if [[ "${CHECK_FULL_SUITE}" -eq 1 && "${PARITY_RECEIPT_REUSED}" -eq 0 ]]; then
   ADK_SUITE_TMP="$(mktemp -d)"
   ADK_SUITE_DIR="${ADK_SUITE_TMP}/agent-dev-kit"
   ADK_EXPECTED_HEAD="$(git -C "${ADK_DIR}" rev-parse HEAD)"
@@ -199,7 +212,7 @@ if [[ "${CHECK_FULL_SUITE}" -eq 1 ]]; then
     ln -s "${WORKSPACE_TOP}/${sibling}" "${ADK_SUITE_TMP}/${sibling}"
   done
   echo "[INFO] run ADK full suite from isolated exact-HEAD clone: ${ADK_CLONED_HEAD}"
-  bash "${ADK_SUITE_DIR}/tests/run_all.sh"
+  ADK_REQUIRE_SUPPORTED_PYTHON=1 bash "${ADK_SUITE_DIR}/tests/run_all.sh"
   cleanup_adk_suite_tmp
   ADK_SUITE_TMP=""
   echo "[PASS] adk full regression suite passed"

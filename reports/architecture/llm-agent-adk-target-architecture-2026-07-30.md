@@ -5,7 +5,7 @@
 - Current projection updated_at：2026-08-30
 - Machine state remains authoritative：`manifests/product_maturity_scorecard.json`、
   `manifests/comprehensive_optimization_backlog.json`
-- Current release status：`5.0.0-rc.1 local-candidate / ADK-source-pushed / rehearsed / root-integration-pushed`
+- Current release status：`5.0.0-rc.2 source-pushed / clean-commit-bound / official-continuity-blocked`
 
 本报告对 `llm_agent` 与 `agent-dev-kit` 的存在意义、目标、架构、功能、性能、可靠性、安全、可维护性、扩展性、资产体验和长期知识价值进行当前态复核。结论分为三层：
 
@@ -30,12 +30,15 @@
 - 28 条到期官方来源已逐条复核，freshness 使用固定 Asia/Hong_Kong 治理日且 future 继续 fail-closed。
 - 当前 ADK full 为 68/68；Python 3.11.15/3.12.13 隔离 quick parity 各 29/29，含 wheel、dependency、
   static targets、30/30 deterministic routing；两个 runtime executable 在容器中均明确 not-run。
-- `4.0.0 -> 5.0.0-rc.1` checksum-bound rehearsal 通过，34 项安装并恢复 34 项；根仓 quick
-  working-tree gate 为 55/55，5.x lock/current-status/M5 policy/ledger/scorecard 已同步。
+- 原 `4.0.0 -> 5.0.0-rc.1` rehearsal 使用了混入 5.x 内容的 previous artifact，已判定无效；`rc.2` exact-commit diagnostic transition 通过，但官方 4.0.0 artifact 仍不可用；
+  正式 4.0 artifact `4c1e9b3c...` 当前不可用，Software M5 readiness 保持 not-ready。
+- release build 已改为绑定 clean Git commit/tree，dirty/unbound snapshot 标记 `release_eligible=false`；
+  exact `792a4cb` source transition 已修复 target-contract hard-cut 路径，但不能替代正式制品连续性。
 - Claude Code 由 owner 显式裁决为默认通过；证据层保持 `owner-attested`、`runtime_measured=false`，
   不把默认接受升级成 native conformance 或正式 campaign 结果。
-- native target conformance、Trace/Agent Value 的真实 runtime adapter/receipt、双 runtime campaign、独立仓、
+- 当前 Codex smoke 已绑定 manifest/commit/binary/bundle，Claude owner attestation v2 增加 version readback、review_after 和 immutable supersession；native target conformance、Trace/Agent Value 的真实 runtime adapter/receipt、双 runtime campaign、独立仓、
   第二操作者和 30 天 field 仍未完成；G20-G22/R6-R10 的真实 evidence 边界保持 in_progress/open。
+- Validation orchestration新增L1-L4 diff plan；local-CI以稳定content-tree receipt复用supported full，成功日志压成摘要、失败日志只展开有界窗口；Runtime Control idle不再触发无效final gate。
 
 2026-07-30 基线已经落地的低风险优化：
 

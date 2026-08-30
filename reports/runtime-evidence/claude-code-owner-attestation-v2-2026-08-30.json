@@ -1,0 +1,36 @@
+{
+  "schema": "llm-agent-runtime-owner-attestation/v2",
+  "attestation_id": "claude-code-default-pass-v2-20260830",
+  "supersedes": {
+    "path": "reports/runtime-evidence/claude-code-owner-attestation-2026-08-30.json",
+    "sha256": "d5df402e967b8eae2b9094a6b4000e151924c76a3a6d9f901d655aa9e7944516"
+  },
+  "attested_at": "2026-08-30T02:45:00Z",
+  "review_after": "2026-09-29",
+  "attested_by": "repository-owner",
+  "runtime": "claude-code",
+  "runtime_version": "2.1.138",
+  "runtime_binary_sha256": "c3c56ffbc12cf16e40c33687c9fe6361ed250c35a9e1718d0c38d49049f5f8c3",
+  "adk_commit": "12bfeaf1f85b297628b57ac15d12eedc849e3919",
+  "manifest_version": "5.0.0-rc.2",
+  "manifest_sha256": "50d24127667b235947d731271d6977cb362e962ff43c2f17b0d077c88fde9590",
+  "bundle_sha256": "09143ad9a4a9099ce4ee422e4328cab1ec3dcd77e876e997e4600b76a2fc5ddf",
+  "decision": "default-pass",
+  "status": "pass",
+  "trust_layer": "owner-attested",
+  "runtime_measured": false,
+  "scope": [
+    "default runtime acceptance for the 5.0.0-rc.2 parent integration",
+    "current-status runtime decision"
+  ],
+  "does_not_satisfy": [
+    "native runtime conformance receipt",
+    "60-task three-trial dual-runtime campaign",
+    "independent repository evidence",
+    "field certification"
+  ],
+  "basis": "Explicit owner decision recorded on 2026-08-30; binary/version and source identities were read back during review.",
+  "redaction_status": "sanitized",
+  "rollback": "Supersede this attestation with a new immutable record; do not rewrite either predecessor.",
+  "evidence_sha256": "eb5cb29eea7288f3419abe5b85f6c48cec23493403681a73378825317ca3d9de"
+}

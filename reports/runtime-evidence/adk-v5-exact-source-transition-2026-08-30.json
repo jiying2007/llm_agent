@@ -1,0 +1,42 @@
+{
+  "schema": "llm-agent-adk-source-transition-evidence/v1",
+  "status": "pass",
+  "authority": "diagnostic-source-transition-only",
+  "generated_at": "2026-08-30T09:10:00Z",
+  "working_tree_snapshot_sha256": "8a5b486c98309ca552da27a599d5b2c0208898ec2e0f8e8d287f3bf0932ee9ab",
+  "previous": {
+    "version": "4.0.0",
+    "commit": "792a4cb91965d1150fea61d474787072a4cae248",
+    "artifact_sha256": "8eb5253da2518fd493695a4561beb523cdfaba1623606433d9f8ec67eafd4f85",
+    "manifest_sha256": "cdc70010c8bf1722c2d0a8f562030b45b2105aced0f7b0e76df35cf8de815656",
+    "provenance": "exact-commit-rebuild-not-official-release-artifact"
+  },
+  "candidate": {
+    "version": "5.0.0-rc.2",
+    "commit": "12bfeaf1f85b297628b57ac15d12eedc849e3919",
+    "tree": "7adda3716846f3ba8bbfbd0c28110a0431211684",
+    "artifact_sha256": "09143ad9a4a9099ce4ee422e4328cab1ec3dcd77e876e997e4600b76a2fc5ddf",
+    "manifest_sha256": "50d24127667b235947d731271d6977cb362e962ff43c2f17b0d077c88fde9590",
+    "source_distribution_sha256": "d0418ba900ffb6fef0e9e5e2ea93db1ac4f75f2b64d4d7f324e586ec7325e722",
+    "artifact_release_eligible": true,
+    "product_release_authority": false,
+    "product_release_authority_reason": "official 4.0.0 release artifact is unavailable; exact commit rebuild is diagnostic only"
+  },
+  "migration": {
+    "mode": "rollback-before-install",
+    "previous_install_migration": "target-contract-hard-cut",
+    "previous_installed": 65,
+    "candidate_installed": 34,
+    "legacy_rollback_removed": 65,
+    "candidate_rollback_removed": 34,
+    "fallback_restore_installed": 65,
+    "fallback_cleanup_removed": 65,
+    "restored_assets": 65
+  },
+  "limitations": [
+    "does not prove continuity with the unavailable official 4.0.0 artifact 4c1e9b3c...",
+    "does not authorize release, publish, source-to-live or M5 readiness"
+  ],
+  "raw_content_stored": false,
+  "evidence_sha256": "2789d71290552a8c8759beba4770256be54710e861bbbefb21658b17aa0e9095"
+}

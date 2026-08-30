@@ -34,11 +34,11 @@ rtk bash ~/knowledge-hub/tools/knowledge-context.sh --cwd "$PWD" --query "<任�
 ```
 
 - 已知项目加 `--project`；仅歧义/高风险回退 `--json` 与原文。耐久结论写 reviewing candidate，或声明无可归档结论；不得静默写 memory。
-- final/apply/目标切换前运行 `rtk bash ~/codex/scripts/runtime-control.sh snapshot`；按 `checkpoint`、`compact`、`replan`、`stop` 决策优先收口接力。
+- final/apply/目标切换前先 snapshot；`goal_status=idle` 记 `not-applicable` 并跳过 final gate，仅 active goal 按 Runtime Control 决策收口。
 
 ## 5. 验证与并行
 
 - 仅 2–4 个边界独立任务并行；shared contract/schema/根配置/依赖/CI/lockfile 串行，由主 Agent 整合。
 - 外部参考只作输入；生产资产由 ADK manifest/handoff 声明。公众号仅 metadata，不保存正文、不自动吸收。
 - 轻量门禁：`rtk scripts/check-doc-sync.sh .`、`rtk scripts/check-agents-coverage.sh .`、`rtk scripts/check-token-budget.sh . --summary-json`。
-- ADK/治理改动运行 `check-adk-harden-readiness.sh` 与 `check-all.sh --quick`；Codex 刷新按维护指南执行完整 source-to-live。
+- 非平凡验证先运行 `rtk python3 -m tools.codex_assets.validation_plan --root . --summary-json`；按L1-L4执行，harden优先复用同snapshot supported-full receipt，Codex刷新仍走完整source-to-live。

@@ -1,6 +1,6 @@
 # llm_agent / agent-dev-kit 全面设计评估归档（2026-08-30）
 
-- 状态：`review-required / implementation-applied / adk-source-pushed / root-integration-pushed`
+- 状态：`reviewed-needs-fix / provenance-remediation-applied / release-not-ready`
 - Topic：`llm-agent-adk-comprehensive-design-assessment`
 - Source：2026-08-30 当前会话的只读仓库评估、命令验证与官方/开源一手资料复核
 - Captured at：2026-08-30（Asia/Hong_Kong）
@@ -15,15 +15,19 @@
 
 Owner 随后批准把平台收敛变更定义为 `5.0.0-rc.1` 本地候选并创建 ADK 子仓本地提交。当前结果：
 
-- ADK commit：`c9a28b2e5afd9f30634a7215730539323895236e`（`feat(adk): 发布5.0候选控制面`），已推送至 `origin/main`。
+- 当前 ADK commit：`12bfeaf1f85b297628b57ac15d12eedc849e3919`（`fix(release): 收紧候选溯源与验证调度`），已推送至 `origin/main`。
 - 已落地 routing IR v2、平台中立 core、Workflow IR、Runtime Control V2、target contract v2、Trace/Agent Value/Evidence Graph/Run Evidence/Effect Comparator 和维护性 evidence candidate。
 - ADK host full suite：68/68；受控 Python 3.11.15/3.12.13 quick：各 29/29，routing：30/30，wheel 与 dependency audit 通过。
-- 本地 `5.0.0-rc.1` source distribution build/check 通过；未执行 tag、push、远端 release 或 source-to-live。
+- 本地 `5.0.0-rc.2` clean-commit-bound source distribution build/check 通过；ADK source 已 push，未执行 tag、远端 release 或 source-to-live。
 - Claude Code 2.1.138 由 repository owner 显式裁决为默认通过；机器证据标为 `owner-attested`、`runtime_measured=false`，不冒充 native conformance 或双 runtime campaign。
-- `4.0.0 -> 5.0.0-rc.1` checksum-bound rehearsal 已通过，34 项安装并完整恢复 34 项；5.x policy/ledger/scorecard、独立 event chain 和父仓 lock 已完成 working-tree 集成。
+- 原 `4.0.0 -> 5.0.0-rc.1` rehearsal 已被全面复审判定无效：previous artifact 混入 5.x working-tree 内容，正式 4.0 artifact 当前不可用。
 - 根仓 quick working-tree gate 为 55/55；父仓集成提交 `048793d` 已推送。tag、release 和 source-to-live 仍需独立授权。
-- 根仓 regression 为 22/22；ADK harden readiness 从 `c9a28b2` 隔离 exact-HEAD clone 完成 68/68，并通过 global Codex health。
+- ADK Python 3.11.15/3.12.13 full parity 各 68/68、routing 30/30、wheel/audit 通过；根仓最终回归结果以 release evidence 为准。
 - 父仓 gitlink 提交后 release-clean quick gate 为 54/54，lock/gitlink/current-status/M5 declaration 全部一致。
+- 复审整改已落地：release build 绑定 clean commit/tree，dirty/unbound snapshot 不可发布；M5 policy v2 校验 previous release continuity；exact 4.0 target-contract hard-cut source transition 通过；Codex/Claude evidence 增加当前身份和 freshness；5.x campaign 使用独立 identity；release harden 强制 Python 3.11+。
+- 最终 supported full parity：Python 3.11.15、3.12.13 各68/68，routing30/30、wheel、security、performance和dependency audit通过；稳定content snapshot `96dd21e4...`。
+- Token/流程优化已落地：active-doc budget恢复pass；local-CI成功只输出摘要、失败展开120行；full parity生成content-tree receipt并连续复验两次；harden复用receipt跳过重复full；diff classifier输出L1-L4并延迟clean-commit-only release动作；Runtime Control idle在repo规则中为not-applicable。
+- 最终门禁：Token budget pass（active doc 512/520，累计AGENTS估算2520）；root regression 23/23、working-tree quick55/55；harden消费receipt并跳过第二次双Python full。
 
 下文第 3 节的门禁与规模数据保留为评估开始时的证据快照；本节和 ADK 内 `docs/changes/adk-platform-convergence-v1/verification-evidence.md` 是实施后的新鲜边界。
 
@@ -44,7 +48,7 @@ Owner 随后批准把平台收敛变更定义为 `5.0.0-rc.1` 本地候选并创
 综合判断：
 
 - 当前 `M3` 仍是合理产品等级。
-- `5.0.0-rc.1` 已形成 source-committed、local-rehearsed、root-working-tree-verified 候选；这仍不等于发布、live 或 M5 certified。
+- `5.0.0-rc.2` 已形成 source-committed、source-pushed、clean-artifact-built、diagnostic-transition-verified 候选；这仍不等于正式 release continuity、live 或 M5 certified。
 - 下一阶段不应优先增加 Agent、Skill、Manifest、Checker 或报告，而应优先统一 IR、瘦身 core、补齐真实运行证据和删除冗余资产。
 
 ## 2. 评估范围和方法

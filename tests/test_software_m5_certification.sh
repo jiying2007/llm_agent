@@ -668,6 +668,55 @@ assert positive["blocker_ids"] == [], positive
 assert positive["repository_runtime_campaign"] == "pass", positive
 assert positive["field_progress"]["best_independent_pilot_observed_days"] == 31
 
+v2_policy = json.loads(json.dumps(policy))
+v2_policy["schema"] = "llm-agent-software-m5-policy/v2"
+v2_policy["release"].update({
+    "previous_commit": "b" * 40,
+    "previous_evidence_report": "evidence/previous-release-evidence.json",
+    "previous_sha256": "c" * 64,
+    "previous_manifest_sha256": "d" * 64,
+    "previous_artifact_status": "available",
+    "release_continuity_required": True,
+    "candidate_artifact_status": "available",
+    "candidate_release_eligible": True,
+    "candidate_commit": "e" * 40,
+    "candidate_tree": "f" * 40,
+    "candidate_source_distribution_sha256": "1" * 64,
+})
+previous_release_evidence = {
+    "agent_dev_kit": {"version": "3.0.0", "commit": "b" * 40},
+    "artifacts": {"source_sha256": "c" * 64, "candidate_manifest_sha256": "d" * 64},
+}
+(root / "evidence/previous-release-evidence.json").write_text(
+    json.dumps(previous_release_evidence) + "\n", encoding="utf-8"
+)
+v2_policy["release"]["previous_evidence_sha256"] = hashlib.sha256(
+    (root / "evidence/previous-release-evidence.json").read_bytes()
+).hexdigest()
+v2_release = json.loads((root / "evidence/release.json").read_text(encoding="utf-8"))
+v2_release.update({"previous_manifest_sha256": "d" * 64, "release_continuity": True})
+v2_release.pop("report_sha256", None)
+v2_release["report_sha256"] = _digest(v2_release)
+(root / "evidence/release.json").write_text(json.dumps(v2_release) + "\n", encoding="utf-8")
+(root / "manifests/software_m5_policy.json").write_text(
+    json.dumps(v2_policy, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+)
+v2_positive = assess(root, recorded_at)
+assert v2_positive["integrity_status"] == "pass", v2_positive
+assert v2_positive["software_m5_certified"] is True, v2_positive
+v2_release["previous_sha256"] = "2" * 64
+v2_release.pop("report_sha256", None)
+v2_release["report_sha256"] = _digest(v2_release)
+(root / "evidence/release.json").write_text(json.dumps(v2_release) + "\n", encoding="utf-8")
+broken_continuity = assess(root, recorded_at)
+assert broken_continuity["integrity_status"] == "fail", broken_continuity
+assert "continuity" in broken_continuity["readiness_failures"][0]["message"], broken_continuity
+(root / "manifests/software_m5_policy.json").write_text(
+    json.dumps(policy, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+)
+release["report_sha256"] = _digest({key: value for key, value in release.items() if key != "report_sha256"})
+(root / "evidence/release.json").write_text(json.dumps(release) + "\n", encoding="utf-8")
+
 trusted_package = sys.modules["agent_dev_kit"]
 trusted_model = sys.modules["agent_dev_kit.model"]
 trusted_repository_evaluation = sys.modules["agent_dev_kit.repository_evaluation"]
@@ -963,7 +1012,14 @@ else:
 PY
 
 if [[ -f "${ROOT}/agent-dev-kit/manifest.json" ]]; then
-  "${ROOT}/scripts/check-software-m5-readiness.sh" "${ROOT}" --summary-json >"${TMP_DIR}/live-status.json"
+  live_status_rc=0
+  "${ROOT}/scripts/check-software-m5-readiness.sh" "${ROOT}" --summary-json >"${TMP_DIR}/live-status.json" || live_status_rc=$?
+  [[ "${live_status_rc}" -eq 1 ]] || {
+    echo "[FAIL] live not-ready status returned unexpected code ${live_status_rc}" >&2
+    exit 1
+  }
+  "${ROOT}/scripts/check-software-m5-readiness.sh" "${ROOT}" --allow-not-ready --summary-json \
+    >"${TMP_DIR}/live-status-allowed.json"
   if "${ROOT}/scripts/software-m5.sh" certify --summary-json >"${TMP_DIR}/live-certify.json"; then
     echo "[FAIL] live workspace was prematurely certified as software M5" >&2
     exit 1
@@ -980,13 +1036,14 @@ expected = [
     "operator_count",
     "pilot_duration",
     "real_repository_count",
+    "release_rehearsal",
     "repository_runtime_campaign",
     "required_field_events",
     "runtime_campaign",
 ]
 assert status["integrity_status"] == "pass", status
 assert status["declaration_status"] == "pass", status
-assert status["readiness_status"] == "m5-ready", status
+assert status["readiness_status"] == "not-ready", status
 assert status["software_m5_certified"] is False, status
 assert status["blocker_ids"] == expected, status
 assert certify["blocker_ids"] == expected, certify
