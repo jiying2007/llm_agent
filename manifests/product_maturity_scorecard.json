@@ -20,7 +20,7 @@
   },
   "working_candidate": {
     "version": "5.0.0-rc.1",
-    "status": "source-committed-pushed-local-rehearsed-root-integration-pending",
+    "status": "source-committed-pushed-local-rehearsed-root-integrated-pushed",
     "overall_level": "M3",
     "target_status": "experimental",
     "implemented_controls": [
@@ -42,11 +42,12 @@
       "routing IR v2, Workflow IR, Runtime Control V2 and target contract v2",
       "Trace Summary, Agent Value, Evidence Graph, Run Evidence and Effect Comparator"
     ],
-    "lock_state": "working-tree-synchronized-parent-commit-pending",
+    "lock_state": "synchronized",
     "runtime_certification": "claude-owner-attested-default-pass-measured-campaign-not-run",
     "local_validation": {
       "adk_full": "68/68-pass",
       "root_quick": "55/55-pass-working-tree-integration",
+      "root_release_quick": "54/54-pass-release-clean",
       "root_full": "not-run",
       "root_regression": "22/22-pass",
       "adk_harden_readiness": "pass-exact-head-clone-68/68-global-codex-health-pass",
@@ -58,7 +59,7 @@
       "live_runtime_health": "not-run-no-live-apply-authority",
       "artifact_sha256": "f332e8453f7a8ad7387fee807303e4b90a449f3505a2d5828a9ba2746d0b568b"
     },
-    "promotion_boundary": "The 5.0.0-rc.1 ADK source commit c9a28b2 is pushed and the checksum-bound 4.0.0-to-5.0.0-rc.1 rehearsal passes. Claude Code default use is owner-attested, not runtime-measured campaign evidence. Parent commit/push, tag, remote Release/artifact upload, source-to-live, dual-runtime campaign and field certification remain blocked or not run."
+    "promotion_boundary": "The 5.0.0-rc.1 ADK source c9a28b2 and root integration 048793d are pushed, and the checksum-bound 4.0.0-to-5.0.0-rc.1 rehearsal passes. Claude Code default use is owner-attested, not runtime-measured campaign evidence. Tag, remote Release/artifact upload, source-to-live, dual-runtime campaign and field certification remain blocked or not run."
   },
   "assessment_model": {
     "implementation_level": "highest level supported by code and local control-plane behavior",

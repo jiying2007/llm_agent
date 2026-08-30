@@ -1,6 +1,6 @@
 # llm_agent / agent-dev-kit 全面设计评估归档（2026-08-30）
 
-- 状态：`review-required / implementation-applied / adk-source-committed / root-integration-pending`
+- 状态：`review-required / implementation-applied / adk-source-pushed / root-integration-pushed`
 - Topic：`llm-agent-adk-comprehensive-design-assessment`
 - Source：2026-08-30 当前会话的只读仓库评估、命令验证与官方/开源一手资料复核
 - Captured at：2026-08-30（Asia/Hong_Kong）
@@ -21,8 +21,9 @@ Owner 随后批准把平台收敛变更定义为 `5.0.0-rc.1` 本地候选并创
 - 本地 `5.0.0-rc.1` source distribution build/check 通过；未执行 tag、push、远端 release 或 source-to-live。
 - Claude Code 2.1.138 由 repository owner 显式裁决为默认通过；机器证据标为 `owner-attested`、`runtime_measured=false`，不冒充 native conformance 或双 runtime campaign。
 - `4.0.0 -> 5.0.0-rc.1` checksum-bound rehearsal 已通过，34 项安装并完整恢复 34 项；5.x policy/ledger/scorecard、独立 event chain 和父仓 lock 已完成 working-tree 集成。
-- 根仓 quick working-tree gate 为 55/55；父仓 gitlink commit、push、tag、release 和 source-to-live 仍需独立授权。
+- 根仓 quick working-tree gate 为 55/55；父仓集成提交 `048793d` 已推送。tag、release 和 source-to-live 仍需独立授权。
 - 根仓 regression 为 22/22；ADK harden readiness 从 `c9a28b2` 隔离 exact-HEAD clone 完成 68/68，并通过 global Codex health。
+- 父仓 gitlink 提交后 release-clean quick gate 为 54/54，lock/gitlink/current-status/M5 declaration 全部一致。
 
 下文第 3 节的门禁与规模数据保留为评估开始时的证据快照；本节和 ADK 内 `docs/changes/adk-platform-convergence-v1/verification-evidence.md` 是实施后的新鲜边界。
 

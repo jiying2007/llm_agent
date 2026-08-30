@@ -3,7 +3,7 @@
 - updated_at: 2026-08-30
 - status_semantics: last-verified-product-baseline
 - last_verified_at: 2026-08-30
-- root_product_commit: e136a9f7b310282ee20b867adb2e2894991c157b
+- root_product_commit: 048793deb838029e98073d51083e01d8a29f1f48
 - agent_dev_kit_commit: c9a28b2e5afd9f30634a7215730539323895236e
 - agent_dev_kit_release_commit: c9a28b2e5afd9f30634a7215730539323895236e
 - adk_previous_commit: 792a4cb91965d1150fea61d474787072a4cae248
@@ -42,7 +42,7 @@ Claude Code 由 repository owner 显式裁决为默认通过，证据层为 `own
 | Upgrade/rollback | PASS | `4.0.0 -> 5.0.0-rc.1`，34 项安装、34 项恢复 |
 | Claude default decision | PASS | owner-attested；不冒充 runtime-measured campaign |
 | Source-to-live | PENDING | mapped content changed；等待独立 owner authorization |
-| Root release metadata | INTEGRATING | working-tree SSOT 已更新；父仓 commit 尚未授权 |
+| Root release metadata | PASS | `048793d` pushed；gitlink/lock/current-status/M5 SSOT synchronized |
 | Software M5 certification | BLOCKED | readiness pass；field/runtime campaign blockers retained |
 
 ## Delivery Boundaries

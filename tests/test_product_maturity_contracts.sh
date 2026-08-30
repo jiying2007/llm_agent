@@ -76,8 +76,8 @@ working_candidate = scorecard["working_candidate"]
 assert working_candidate["version"] == candidate_version, working_candidate
 assert working_candidate["overall_level"] == "M3", working_candidate
 assert working_candidate["target_status"] == "experimental", working_candidate
-assert working_candidate["status"] == "source-committed-pushed-local-rehearsed-root-integration-pending", working_candidate
-assert working_candidate["lock_state"] == "working-tree-synchronized-parent-commit-pending", working_candidate
+assert working_candidate["status"] == "source-committed-pushed-local-rehearsed-root-integrated-pushed", working_candidate
+assert working_candidate["lock_state"] == "synchronized", working_candidate
 assert working_candidate["runtime_certification"] == "claude-owner-attested-default-pass-measured-campaign-not-run", working_candidate
 levels = {f"M{i}" for i in range(6)}
 assessment_model = scorecard["assessment_model"]

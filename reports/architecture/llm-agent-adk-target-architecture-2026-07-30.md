@@ -5,7 +5,7 @@
 - Current projection updated_at：2026-08-30
 - Machine state remains authoritative：`manifests/product_maturity_scorecard.json`、
   `manifests/comprehensive_optimization_backlog.json`
-- Current release status：`5.0.0-rc.1 local-candidate / ADK-source-pushed / rehearsed / root-working-tree-verified`
+- Current release status：`5.0.0-rc.1 local-candidate / ADK-source-pushed / rehearsed / root-integration-pushed`
 
 本报告对 `llm_agent` 与 `agent-dev-kit` 的存在意义、目标、架构、功能、性能、可靠性、安全、可维护性、扩展性、资产体验和长期知识价值进行当前态复核。结论分为三层：
 
