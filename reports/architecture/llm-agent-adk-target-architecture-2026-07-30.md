@@ -2,13 +2,42 @@
 
 ## Summary
 
+- Current projection updated_at：2026-08-30
+- Machine state remains authoritative：`manifests/product_maturity_scorecard.json`、
+  `manifests/comprehensive_optimization_backlog.json`
+- Current release status：`5.0.0-rc.1 local-candidate / ADK-source-pushed / rehearsed / root-working-tree-verified`
+
 本报告对 `llm_agent` 与 `agent-dev-kit` 的存在意义、目标、架构、功能、性能、可靠性、安全、可维护性、扩展性、资产体验和长期知识价值进行当前态复核。结论分为三层：
 
 1. 产品边界是正确的：`llm_agent` 是 reference intake、采纳决策、证据和成熟度治理工作区；`agent-dev-kit` 是平台中立的 Agent/Skill/Workflow/Profile 编译、安装、评测与发布控制面。两者都不应演变为 LLM runtime。
 2. 软件控制面已具备较强的 source/test/runtime-local 能力，但总体仍是 `M3 / release-candidate`。真实多 runtime、独立仓库、第二操作者、30 天现场周期和正式版本证据不足，不能用更多 fixture 或状态字段替代。
 3. 本轮已把治理面熵、current report/backlog 演进、官方来源 freshness 和受支持工具链压成可执行门禁；剩余终态差距集中在真实 effectiveness、独立仓、第二操作者和 30 天 field evidence。
 
-本轮已经落地的低风险优化：
+2026-08-30 增量实现已经完成或进入验证：
+
+- backlog 已扩展到 G17-G22：统一 routing IR、平台中立 core、Workflow/Runtime completion、
+  Evidence/Trace、Runtime Adapter 和 Agent value lifecycle。
+- routing-ir/v2、Runtime Control policy/decision v2、Workflow IR v2、target-contract v2、Evidence Graph v1、
+  Trace Summary v2 和 Agent value contract v1 已形成严格 schema/typed validator/正负测试。
+- Trace 已提供 explicit per-run emitter；Agent Value 已提供 receipt-driven measurement API；两者都把缺失指标
+  显式保留为 unavailable/not-measured，不宣称 automatic runtime integration。
+- maintainability contract v2 已把 churn、owner concentration、inactive assets 升级为可重算 evidence metrics；
+  当前没有 reviewed source，因此三项保持 not-available/null，而不是伪造为 0。
+- Run Evidence composition 已连接 Trace 与 Agent Value；Effect Comparator 强制完整 task population、独立 run、
+  不同 bundle、同 runtime/model 和 coverage-aware delta。Git candidate generator 已对当前仓两个 commit 做
+  512-record dry-run，保持 review-required、未落盘、未修改 backlog。
+- core 已移出 driver/C-C++/HIL 等嵌入式专属资产；通用 test strategy 与 embedded matrix 已分离。
+- 28 条到期官方来源已逐条复核，freshness 使用固定 Asia/Hong_Kong 治理日且 future 继续 fail-closed。
+- 当前 ADK full 为 68/68；Python 3.11.15/3.12.13 隔离 quick parity 各 29/29，含 wheel、dependency、
+  static targets、30/30 deterministic routing；两个 runtime executable 在容器中均明确 not-run。
+- `4.0.0 -> 5.0.0-rc.1` checksum-bound rehearsal 通过，34 项安装并恢复 34 项；根仓 quick
+  working-tree gate 为 55/55，5.x lock/current-status/M5 policy/ledger/scorecard 已同步。
+- Claude Code 由 owner 显式裁决为默认通过；证据层保持 `owner-attested`、`runtime_measured=false`，
+  不把默认接受升级成 native conformance 或正式 campaign 结果。
+- native target conformance、Trace/Agent Value 的真实 runtime adapter/receipt、双 runtime campaign、独立仓、
+  第二操作者和 30 天 field 仍未完成；G20-G22/R6-R10 的真实 evidence 边界保持 in_progress/open。
+
+2026-07-30 基线已经落地的低风险优化：
 
 - `manifests/comprehensive_optimization_backlog.json` 升级为可演进的 v2 SSOT，保留 G1-G10 基线并增加 G11-G16。
 - `scripts/check-architecture-reports.sh` 改为验证连续动态 ID，不再把 backlog 冻结为固定十项；历史报告不再因当前 backlog 扩展而被迫重写。
@@ -19,7 +48,7 @@
 - G16 经 OpenAI 官方来源复核完成 `update`，恢复 official docs governance/strict gate。
 - G14/G15 已形成不伪造现场证据的可执行 handoff；外部 owner、runtime、独立仓和时间门禁仍保持 blocked。
 
-本轮没有执行 commit、push、merge、外部 runtime 调用、模型消费、source-to-live apply、Knowledge Hub promotion 或 `~/.codex` 写入。
+本轮 ADK 已形成本地 commit；没有执行父仓 commit、push、merge、tag、远端 release、source-to-live apply、Knowledge Hub promotion 或 `~/.codex` 写入。
 
 ## Scope
 
@@ -46,9 +75,9 @@
   -> current-status + maturity scorecard + Knowledge Hub candidate
 ```
 
-2026-07-30 审计快照：
+2026-07-30 历史审计快照（不代表 2026-08-30 当前工作树）：
 
-| Surface | Current Evidence | Interpretation |
+| Surface | Historical Evidence | Interpretation |
 |---|---:|---|
 | root scripts | 88 个，其中 check scripts 60 个 | 治理覆盖广，但控制面存在分散和重复入口风险 |
 | root manifests | 15 个 | 已有较强机器契约，新增 manifest 应先评估能否扩展现有 SSOT |
@@ -230,7 +259,9 @@ current 报告的具体路径必须由 `manifests/report_registry.json` 驱动�
 
 ## Comprehensive Optimization Backlog
 
-机器可读 SSOT 是 `manifests/comprehensive_optimization_backlog.json`。G1-G10 是长期基线；G11-G16 是本轮审计新增项。设计状态与实现状态分离，blocked 项必须写清不能由本地代码替代的 blocking condition。
+机器可读 SSOT 是 `manifests/comprehensive_optimization_backlog.json`。G1-G10 是长期基线；G11-G16 是
+2026-07-30 审计新增项；G17-G22 是 2026-08-30 综合设计评估进入实现后的增量。设计状态与实现状态分离，
+blocked 项必须写清不能由本地代码替代的 blocking condition。
 
 | ID | Priority | Optimization Area | Terminal Outcome | Implementation Target | Verification |
 |---|---|---|---|---|---|
@@ -250,13 +281,19 @@ current 报告的具体路径必须由 `manifests/report_registry.json` 驱动�
 | G14 | P0 | Runtime and field effectiveness | 真实多 runtime 与独立长期证据支持结论 | campaign/field ledger | M5/target gates |
 | G15 | P1 | Maintainer scalability and succession | ownership、复审继任和多操作者证据完整 | owner contract/rehearsal | readiness/M5 |
 | G16 | P1 | External source freshness and provenance | 官方来源有当前检索、到期和复审决策证据 | freshness manifest/review | official-docs/strict |
+| G17 | P0 | Unified routing intent and permission IR | task mode、否定、权限和 abstain 由单一 fail-closed IR 裁决 | routing-ir/v2 + cross-mode mapping | routing contrastive/negative |
+| G18 | P0 | Platform-neutral core profile | core 不导出嵌入式专属 Agent/Skill/参考矩阵 | core/embedded capability closure | profile/target/taxonomy |
+| G19 | P0 | Workflow and runtime completion semantics | typed Workflow IR 与 task-mode artifact gate 不允许旁路完成证据 | workflow-ir/v2 + runtime-control/v2 | workflow/runtime tests |
+| G20 | P0 | Typed evidence graph and outcome traces | provenance DAG 和 outcome trace 脱敏、类型化、可寻址 | Evidence Graph + trace schema | graph/trace/security tests |
+| G21 | P0 | Runtime adapter conformance | static 声明与 native runtime 证据分离，至少一个 target 完成真实 conformance | target-contract/v2 adapter | target/native campaign |
+| G22 | P1 | Agent, skill and profile value lifecycle | 角色权限、调用、误路由、abstain、outcome 和退役信号可验证 | typed role/value contract | capability/routing/field |
 
 ## Verification Gates
 
 | Command | Expected |
 |---|---|
-| `rtk scripts/check-architecture-reports.sh . --summary-json` | current report、G1-G15、registry 和模板一致 |
-| `rtk scripts/check-maintainability-budgets.sh --strict --summary-json` | 7 项增长预算、hotspot 和 drift 无 warning/failure |
+| `rtk scripts/check-architecture-reports.sh . --summary-json` | current report、G1-G22、registry 和模板一致 |
+| `rtk scripts/check-maintainability-budgets.sh --strict --summary-json` | 11 项数量、行数、import fan-out、exact duplication 预算和 drift 无 warning/failure |
 | `rtk tests/test_architecture_reports.sh` | 当前、fixture 和负例通过 |
 | `rtk tests/test_current_status_consistency.sh` | registry-driven current 与状态负例通过 |
 | `rtk tests/test_product_maturity_contracts.sh` | current report 不依赖固定日期路径 |
@@ -280,6 +317,22 @@ current 报告的具体路径必须由 `manifests/report_registry.json` 驱动�
 
 | Command | Exit Code | Result Summary | Layer |
 |---|---:|---|---|
+| `rtk bash agent-dev-kit/tests/run_all.sh --fail-fast --timing-json /tmp/adk-comparator-full-final.json` | 0 | CR9 最终整合树 68/68 | regression-current |
+| `rtk bash agent-dev-kit/tests/run_all.sh --quick --fail-fast --timing-json /tmp/adk-comparator-quick-final.json` | 0 | CR9 最终整合树 30/30 | regression-current |
+| `rtk bash agent-dev-kit/scripts/run-local-ci-parity.sh --python all --mode quick` | 0 | source snapshot `eaa47e8f59eeb232532efacb17117d062349aa5f3c578c8d0d131587b2a99827`；Python 3.11.15/3.12.13 各 30/30；wheel 独立 venv 安装后 Trace/Evidence schema smoke、dependency audit、strict/security/eval/release check pass | supported-toolchain-current |
+| `rtk bash agent-dev-kit/scripts/devkit.sh validate --strict` | 0 | official freshness、manifest/schema、target v2 和新 typed contracts pass；宿主 Python 3.8 仅 development | governance-current |
+| `rtk bash agent-dev-kit/scripts/devkit.sh benchmark run --iterations 5 ...` | 0 | development-only P95：validate 128.864ms、profile 5.23ms、plan 68.544ms、target 204.599ms、cold start 674.87ms、10x I/O 832.499ms；peak 261.547KiB，全部预算 pass | performance-current |
+| `rtk scripts/check-all.sh --quick --working-tree` | 1 | 53/55；仅 current-status/Software M5 因 release rehearsal manifest digest stale fail-closed | workspace-current-negative |
+| `rtk scripts/check-architecture-reports.sh . --summary-json` | 0 | current report、22 个连续 backlog 项和 registry 结构一致 | governance-current |
+| `rtk scripts/check-maintainability-budgets.sh --strict --summary-json` | 0 | 11 个 static budget pass；3 个 evidence metric evaluator 可用，当前 source 均 not-available/null；不宣称健康 | maintainability-current |
+
+## Appendix A：Superseded 2026-07-30 Provenance（不属于 Current Evidence Index）
+
+以下仅保留当时的负结果和 provenance，不参与 2026-08-30 当前状态判定，也不得与上方 current rows
+合并计数或用于 release/completion 声明。
+
+| Command | Exit Code | Historical Result Summary | Layer |
+|---|---:|---|---|
 | `rtk scripts/health-check.sh --summary-json` | 0 | `status=needs-fix`；root 88 scripts/284 reports，ADK 13 Agents/65 Skills/80 tests | workspace |
 | `rtk scripts/check-subrepo-state.sh . --summary-json` | 1 | 3 known dirty + 1 unexpected strict dirty (`agent-dev-kit`) | negative |
 | `rtk scripts/check-current-status-consistency.sh . --summary-json` | 1 | verification stale 11 days；ADK commit/lock/gitlink/worktree 不一致 | negative |
@@ -302,12 +355,16 @@ current 报告的具体路径必须由 `manifests/report_registry.json` 驱动�
 ## Goal Closure State
 
 - goal_statement: 全面评估并优化 llm_agent 与 agent-dev-kit 的存在意义、目标、架构、功能、性能、可维护性和长期资产
-- completion_claim: 架构治理、熵预算、受支持工具链和官方来源 freshness 已 source-staged 并通过定向/双版本 full 门禁；整体 terminal gate 仅因真实 runtime、独立仓、第二操作者、30 天 field evidence 和既有 dirty 状态保持 needs-fix
+- completion_claim: G17-G22 的 source/test 控制面、R7-R9 emitter/evaluator 与 test-only Run Evidence composition 已形成并通过 ADK full 与双 Python quick；
+  当前不是 release-ready，release rehearsal digest、native conformance、真实 runtime/field receipt/campaign 和
+  reviewed maintainability source 保持 open
 - required_evidence: backlog/report/checker/template diff；定向测试；root/ADK 回归；状态和环境负证据
 - claimant: current Codex implementation session
 - verifier: repository gates plus owner review
-- open_items: G3、G9、G10、G14、G15；用户 dirty；真实 runtime/field/independent-repository/second-operator evidence
+- open_items: G9、G10、G13-G15、G17-G22；新版本与 release rehearsal；用户 dirty；native conformance、
+  automatic runtime adapter、真实 value receipt/maintainability source、双 runtime、independent repository、
+  second operator、30-day field evidence
 - retry_budget: 同一验证失败最多 2 次，第二次后 replan
-- staleness_threshold: 2026-08-30 前复核本报告与 backlog
+- staleness_threshold: 任一目标仓 HEAD/相关 working-tree fingerprint 变化或 45 分钟无新证据时重新复核
 - heartbeat: implementation and scoped verification complete; overall product closure remains needs-fix on documented blockers
 - stop_condition: pass / replan / split / blocked / abort

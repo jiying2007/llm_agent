@@ -1,48 +1,48 @@
 # Last Verified Product Baseline
 
-- updated_at: 2026-08-24
+- updated_at: 2026-08-30
 - status_semantics: last-verified-product-baseline
-- last_verified_at: 2026-08-24
+- last_verified_at: 2026-08-30
 - root_product_commit: e136a9f7b310282ee20b867adb2e2894991c157b
-- agent_dev_kit_commit: 792a4cb91965d1150fea61d474787072a4cae248
-- agent_dev_kit_release_commit: 792a4cb91965d1150fea61d474787072a4cae248
-- adk_previous_commit: 6d11503d54c8e9f661d039652549a1d6cefb6b35
-- adk_version: 4.0.0
+- agent_dev_kit_commit: c9a28b2e5afd9f30634a7215730539323895236e
+- agent_dev_kit_release_commit: c9a28b2e5afd9f30634a7215730539323895236e
+- adk_previous_commit: 792a4cb91965d1150fea61d474787072a4cae248
+- adk_version: 5.0.0-rc.1
 - product_maturity: M3
 - software_m5_readiness: m5-ready
 - software_m5_certified: false
 - terminal_mature: false
 - field_status: self_pilot_active
 - root_gate_status: pass
-- runtime_eval_status: codex-smoke-pass-claude-blocked
-- m5_campaign_status: blocked-claude-unauthenticated
-- live_refresh_status: applied-declarative-no-op
+- runtime_eval_status: codex-smoke-pass-claude-owner-attested
+- m5_campaign_status: blocked-full-campaign-and-field-pending
+- live_refresh_status: required-pending-owner-authorization
 - knowledge_candidate_status: captured-reviewing
 - working_tree_scope: product commits exclude registered dirty reference worktrees
 
 ## Summary
 
-本基线记录 ADK 4.0.0 Runtime Control 的破坏式单轨切换。ADK `792a4cb` 与 Codex `c846a8e`
-已推送；Codex source-to-live 已执行 build、doctor、plan、dry-run、apply 和 post-apply check，
-live drift 为零。ADK 映射目录 `agents/skills/optional-skills/workflows/templates` 在
-`6d11503..792a4cb` 间无内容变化，因此 ADK handoff 决策为 `applied-declarative-no-op`；
-Runtime Control wheel 由 Codex manifest 独立锁定版本与 SHA-256。
+本基线记录 ADK `5.0.0-rc.1` 平台收敛候选。ADK `c9a28b2` 已推送至 `origin/main`；
+`4.0.0 -> 5.0.0-rc.1` checksum-bound upgrade/rollback rehearsal 通过并恢复 34 项资产。
+映射目录在 `792a4cb..c9a28b2` 间有变化，因此 source-to-live 保持
+`required-pending-owner-authorization`，本轮没有写入 `~/codex` 或 `~/.codex`。
 
-软件控制面保持 M3 / M5-ready，M5 certified 仍为 false。历史 Codex/Claude campaign、独立仓、
-第二位 human operator、30 天现场周期和必需 field events 未补齐，不能提升到 final 4.1.0。
+Claude Code 由 repository owner 显式裁决为默认通过，证据层为 `owner-attested`、
+`runtime_measured=false`；这关闭默认使用决策，不替代 native conformance receipt 或正式 campaign。
+软件控制面保持 M3 / M5-ready，M5 certified 仍为 false。双 runtime measured campaign、独立仓、
+第二位 human operator、30 天现场周期和必需 field events 未补齐，不能提升到 final 5.1.0。
 
 ## Verified Evidence
 
 | Area | Result | Evidence |
 |---|---|---|
-| ADK source | PASS | `792a4cb` pushed，version/schema `4.0.0` |
-| ADK full | PASS | `62/62` |
-| Runtime Control | PASS | Engine 8/8；wheel SHA-256 `dd64702c...b5a79a6` |
-| Upgrade/rollback | PASS | `3.1.0-rc.7 -> 4.0.0`，40 项安装、40 项恢复 |
-| Codex full | PASS | `154/154`，五 profile smoke |
-| Source-to-live | PASS | plan already-applied，effective changes 0 |
-| Live health | PASS | `changed=0 stale=0 unmanaged=0` |
-| Root release metadata | PASS | lock/current-status/M5/phase-gate synchronized |
+| ADK source | PASS | `c9a28b2` pushed，product `5.0.0-rc.1` / manifest schema `4.0.0` |
+| ADK full | PASS | `68/68` |
+| Supported parity | PASS | Python 3.11/3.12 quick 各 `29/29`，routing `30/30`，wheel/audit pass |
+| Upgrade/rollback | PASS | `4.0.0 -> 5.0.0-rc.1`，34 项安装、34 项恢复 |
+| Claude default decision | PASS | owner-attested；不冒充 runtime-measured campaign |
+| Source-to-live | PENDING | mapped content changed；等待独立 owner authorization |
+| Root release metadata | INTEGRATING | working-tree SSOT 已更新；父仓 commit 尚未授权 |
 | Software M5 certification | BLOCKED | readiness pass；field/runtime campaign blockers retained |
 
 ## Delivery Boundaries
@@ -55,6 +55,6 @@ Runtime Control wheel 由 Codex manifest 独立锁定版本与 SHA-256。
 
 ## Remaining Evidence
 
-1. 完成 Claude 认证与冻结的双 runtime campaign。
+1. 执行冻结的双 runtime measured campaign；owner attestation 不替代结果矩阵。
 2. 补齐独立真实软件仓、第二位 human operator 和不少于 30 天的 field evidence。
-3. 由独立 reviewer 记录最终 pilot review 后，才评估 final 4.1.0 promotion。
+3. 由独立 reviewer 记录最终 pilot review 后，才评估 final 5.1.0 promotion。

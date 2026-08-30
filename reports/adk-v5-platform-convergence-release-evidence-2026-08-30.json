@@ -1,0 +1,91 @@
+{
+  "schema": "llm-agent-adk-software-m5-ready-release-evidence/v1",
+  "generated_at": "2026-08-30",
+  "release_scope": "source-pushed-local-rehearsed-root-worktree-integration",
+  "agent_dev_kit": {
+    "version": "5.0.0-rc.1",
+    "commit": "c9a28b2e5afd9f30634a7215730539323895236e",
+    "evidence_commit": "c9a28b2e5afd9f30634a7215730539323895236e",
+    "previous_version": "4.0.0",
+    "previous_commit": "792a4cb91965d1150fea61d474787072a4cae248",
+    "previous_release_commit": "792a4cb91965d1150fea61d474787072a4cae248"
+  },
+  "artifacts": {
+    "source_sha256": "f332e8453f7a8ad7387fee807303e4b90a449f3505a2d5828a9ba2746d0b568b",
+    "source_reproducible_builds": 1,
+    "source_file_count": 954,
+    "wheel_sha256": "98a635adf4e1180a7f1a8a3c5442b4ad4668866e4151012020437ec892a5e3dc",
+    "wheel_status": "built-isolated-python-3.11",
+    "previous_source_sha256": "1241d345841d635bf3b42743263767712cbf1c3772d9b9b88a8b7bc5a7ed095e",
+    "previous_source_provenance": "checksum-sidecar-verified-local-artifact",
+    "candidate_manifest_sha256": "895e42fa38566f1071d0b7632a851ff3c61922dff71e49bb37dbaa1f0431be9c",
+    "release_rehearsal_report_sha256": "ee6d1d4340817a02e3bb3750e4e2fd32c3749d8af549856ee92500549e195d34"
+  },
+  "validation": {
+    "strict": "pass",
+    "format": "pass",
+    "security": "pass-in-supported-parity",
+    "release_check": "pass",
+    "shellcheck": "pass-in-supported-parity",
+    "ruff": "pass-in-supported-parity",
+    "dependency_audit": "pass-python-3.11-and-3.12",
+    "full": {"total": 68, "pass": 68, "fail": 0, "elapsed_ms": null},
+    "root_quick": "55/55-pass-working-tree-integration",
+    "root_regression": "22/22-pass",
+    "adk_harden_readiness": "pass-exact-head-clone-68/68-global-codex-health-pass",
+    "root_full": "not-run",
+    "target_static": "3/3-pass",
+    "target_runtime": "claude-owner-attested-default-pass-runtime-measured-false",
+    "effect_eval": "30/30-deterministic-routing-pass",
+    "upgrade_rollback_rehearsal": "pass",
+    "previous_installed": 34,
+    "candidate_installed": 34,
+    "restored_assets": 34,
+    "local_ci_parity": "python-3.11-and-3.12-quick-29/29",
+    "remote_ci": "not-run"
+  },
+  "source_to_live": {
+    "comparison": "792a4cb91965d1150fea61d474787072a4cae248..c9a28b2e5afd9f30634a7215730539323895236e",
+    "mapped_paths": ["agents", "skills", "optional-skills", "workflows", "templates"],
+    "mapped_content_changed": true,
+    "decision": "required-pending-owner-authorization",
+    "profile": "token-lean",
+    "managed_files": null,
+    "plan_status": "not-run-no-live-authority",
+    "dry_run_status": "not-run-no-live-authority",
+    "apply_status": "not-run-no-live-authority",
+    "rollback_anchor": "4.0.0 source artifact plus existing Codex apply receipts",
+    "post_apply": null
+  },
+  "software_m5": {
+    "readiness_status": "m5-ready",
+    "certified": false,
+    "field_status": "self_pilot_active",
+    "runtime_campaign": "blocked-measured-result-matrix-missing",
+    "claude_runtime_decision": "owner-attested-default-pass"
+  },
+  "knowledge_hub": {
+    "new_candidate": false,
+    "status": "repository-evidence-current",
+    "candidates": [],
+    "commit": null,
+    "memory_write": false
+  },
+  "publication": {
+    "adk_source_commit_pushed": true,
+    "adk_evidence_commit_pushed": true,
+    "codex_commit_pushed": false,
+    "knowledge_hub_commit_pushed": false,
+    "root_product_commit": "e136a9f7b310282ee20b867adb2e2894991c157b",
+    "root_product_commit_pushed": true,
+    "tag_created": false,
+    "remote_release_created": false,
+    "remote_artifact_uploaded": false,
+    "reason": "ADK source commit c9a28b2 is pushed and rehearsal passes; parent integration commit, tag/release and live apply remain separate operations."
+  },
+  "compatibility_boundary": {
+    "removed_contracts": ["target-contract-v1", "routing-parallel-semantics", "runtime-control-v1-active-path"],
+    "compatibility_alias": false,
+    "rollback": "restore the complete 4.0.0 artifact/receipt/managed hashes; do not mix 4.x contracts or state into 5.x"
+  }
+}

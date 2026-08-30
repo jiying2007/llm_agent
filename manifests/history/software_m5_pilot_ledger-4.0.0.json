@@ -1,8 +1,8 @@
 {
   "schema": "llm-agent-software-m5-pilot-ledger/v1",
-  "updated_at": "2026-08-30",
-  "candidate_version": "5.0.0-rc.1",
-  "event_log": "reports/field-evidence/software-m5-v5-events.jsonl",
+  "updated_at": "2026-08-24",
+  "candidate_version": "4.0.0",
+  "event_log": "reports/field-evidence/software-m5-events.jsonl",
   "repositories": [
     {
       "id": "llm-agent",
@@ -27,10 +27,10 @@
   ],
   "pilots": [
     {
-      "id": "software-m5-v5-self-pilot-20260830",
+      "id": "software-m5-self-pilot-20260713",
       "environment_class": "self",
       "status": "active",
-      "started_at": "2026-08-30T02:45:00Z",
+      "started_at": "2026-07-13T09:26:55Z",
       "ended_at": null,
       "repositories": [
         "llm-agent",
@@ -39,7 +39,7 @@
       "operators": [
         "operator-primary"
       ],
-      "objective": "Operate the 5.x platform-convergence candidate without treating owner attestation or self evidence as independent field certification."
+      "objective": "Operate the M5-ready control plane without treating self evidence as independent field certification."
     }
   ]
 }

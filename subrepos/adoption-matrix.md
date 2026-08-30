@@ -19,7 +19,7 @@
 | 2026-05-02 | agent-skills | agent-ecosystem | 技能触发路由与生命周期映射（流程完备，保留方法论参考） | 中 | 中 | 中 | adopt | done | agent-dev-kit | agent-dev-kit/docs/agent-skill-catalog.md |
 | 2026-05-02 | skills | agent-ecosystem | skills CLI 目录约定与安装入口（安装机制已吸收为兼容性约束） | 中 | 低 | 中 | adopt | done | agent-dev-kit | agent-dev-kit/docs/runbooks/feature-delivery.md |
 | 2026-05-02 | mattpocock-skills | agent-ecosystem | 小技能组合范式与 deprecated 分层治理 | 中 | 中 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/docs/runbooks/skill-curation-delivery.md |
-| 2026-05-02 | hermes-collaboration-skill | agent-ecosystem | 多人协作文档模板与 runbook 化结构（文档范式已吸收，以 runbook 方式落地） | 中 | 低 | 中 | adopt | done | agent-dev-kit | agent-dev-kit/optional-skills/adk-cross-team-handoff/SKILL.md |
+| 2026-05-02 | hermes-collaboration-skill | agent-ecosystem | 多人协作文档模板与 runbook 化结构（文档范式已吸收，以 runbook 方式落地） | 中 | 低 | 中 | adopt | done | agent-dev-kit | agent-dev-kit/skills/adk-cross-team-handoff/SKILL.md |
 | 2026-05-02 | Migrationed_skills | skill-pool | 历史技能池候选筛选机制（资产池价值高，保留为按需提取来源） | 中 | 中 | 中 | adopt | done | agent-dev-kit | agent-dev-kit/docs/runbooks/skill-curation-delivery.md |
 | 2026-05-02 | hermes-agent | delivery | 大型 Agent 工程目录职责与发布脚本治理（已吸收为大仓交付触点模板与收口约束） | 中 | 中 | 中 | adopt | done | agent-dev-kit | agent-dev-kit/docs/runbooks/large-platform-delivery.md |
 | 2026-05-02 | AUBB-Server | delivery | 业务闭环中的验证证据写法（已吸收为命令级 Evidence Index 交付标准） | 中 | 中 | 低 | adopt | done | agent-dev-kit | agent-dev-kit/docs/runbooks/evidence-index-delivery.md |

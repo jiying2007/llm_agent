@@ -20,6 +20,10 @@ print(release["rehearsal_report"])
 print(release["evidence_report"])
 evidence = json.load(open(root / release["evidence_report"], encoding="utf-8"))
 print(str(evidence["source_to_live"]["mapped_content_changed"]).lower())
+print(policy["runtime_campaign"]["plan"])
+print(release["runtime_attestation"])
+ledger = json.load(open(root / "manifests/software_m5_pilot_ledger.json", encoding="utf-8"))
+print(ledger["event_log"])
 registry = json.load(open(root / "manifests/report_registry.json", encoding="utf-8"))
 current = [item for item in registry["reports"] if item["status"] == "current"]
 assert len(current) == 1, registry
@@ -30,7 +34,10 @@ CANDIDATE_VERSION="${POLICY_VALUES[0]}"
 REHEARSAL_REPO_PATH="${POLICY_VALUES[1]}"
 RELEASE_EVIDENCE_PATH="${POLICY_VALUES[2]}"
 MAPPED_CONTENT_CHANGED="${POLICY_VALUES[3]}"
-CURRENT_REPORT_PATH="${POLICY_VALUES[4]}"
+CAMPAIGN_PLAN_PATH="${POLICY_VALUES[4]}"
+RUNTIME_ATTESTATION_PATH="${POLICY_VALUES[5]}"
+M5_EVENT_LOG_PATH="${POLICY_VALUES[6]}"
+CURRENT_REPORT_PATH="${POLICY_VALUES[7]}"
 
 make_fixture() {
   local dest="$1"
@@ -39,6 +46,12 @@ make_fixture() {
   rehearsal_dir="$(dirname "${REHEARSAL_REPO_PATH}")"
   local release_evidence_dir
   release_evidence_dir="$(dirname "${RELEASE_EVIDENCE_PATH}")"
+  local campaign_plan_dir
+  campaign_plan_dir="$(dirname "${CAMPAIGN_PLAN_PATH}")"
+  local runtime_attestation_dir
+  runtime_attestation_dir="$(dirname "${RUNTIME_ATTESTATION_PATH}")"
+  local m5_event_log_dir
+  m5_event_log_dir="$(dirname "${M5_EVENT_LOG_PATH}")"
   mkdir -p \
     "${dest}/reports/architecture" \
     "${dest}/reports/field-evidence" \
@@ -48,6 +61,9 @@ make_fixture() {
     "${dest}/docs" \
     "${dest}/${release_evidence_dir}" \
     "${dest}/${rehearsal_dir}" \
+    "${dest}/${campaign_plan_dir}" \
+    "${dest}/${runtime_attestation_dir}" \
+    "${dest}/${m5_event_log_dir}" \
     "${dest}/agent-dev-kit/agents/example" \
     "${dest}/agent-dev-kit/${legacy_change_path}"
 
@@ -55,8 +71,9 @@ make_fixture() {
   cp "${ROOT}/${CURRENT_REPORT_PATH}" "${dest}/${CURRENT_REPORT_PATH}"
   cp "${ROOT}/${RELEASE_EVIDENCE_PATH}" "${dest}/${RELEASE_EVIDENCE_PATH}"
   cp "${ROOT}/${REHEARSAL_REPO_PATH}" "${dest}/${REHEARSAL_REPO_PATH}"
-  cp "${ROOT}/reports/field-evidence/software-m5-events.jsonl" "${dest}/reports/field-evidence/"
-  cp "${ROOT}/reports/field-evidence/software-m5-self-pilot-start-2026-07-13.json" "${dest}/reports/field-evidence/"
+  cp "${ROOT}/${CAMPAIGN_PLAN_PATH}" "${dest}/${CAMPAIGN_PLAN_PATH}"
+  cp "${ROOT}/${RUNTIME_ATTESTATION_PATH}" "${dest}/${RUNTIME_ATTESTATION_PATH}"
+  cp "${ROOT}/${M5_EVENT_LOG_PATH}" "${dest}/${M5_EVENT_LOG_PATH}"
   cp "${ROOT}/manifests/product_maturity_scorecard.json" "${dest}/manifests/"
   cp "${ROOT}/manifests/product_maturity_task_pack.json" "${dest}/manifests/"
   cp "${ROOT}/manifests/report_registry.json" "${dest}/manifests/"
@@ -85,7 +102,6 @@ CSV
 
   cp "${ROOT}/agent-dev-kit/manifest.json" "${dest}/agent-dev-kit/manifest.json"
   cp "${ROOT}/agent-dev-kit/${legacy_change_path}/release-rehearsal.json" "${dest}/agent-dev-kit/${legacy_change_path}/"
-  cp "${ROOT}/agent-dev-kit/${legacy_change_path}/software-m5-campaign-plan.json" "${dest}/agent-dev-kit/${legacy_change_path}/"
   cp "${ROOT}/agent-dev-kit/${legacy_change_path}/codex-runtime-smoke.json" "${dest}/agent-dev-kit/${legacy_change_path}/"
   if [[ "${MAPPED_CONTENT_CHANGED}" == "true" ]]; then
     printf 'candidate mapped asset\n' >"${dest}/agent-dev-kit/agents/example/AGENTS.md"
@@ -232,7 +248,7 @@ expect_fail_contains "${terminal_root}" "product scorecard must keep terminal_ma
 
 campaign_root="${TMP_DIR}/campaign-root"
 cp -a "${pass_root}" "${campaign_root}"
-python3 - "${campaign_root}/agent-dev-kit/docs/changes/adk-v3-1-software-m5-ready/software-m5-campaign-plan.json" <<'PY'
+python3 - "${campaign_root}/${CAMPAIGN_PLAN_PATH}" <<'PY'
 import json
 import pathlib
 import sys
@@ -256,7 +272,7 @@ expect_fail_contains "${knowledge_root}" "knowledge_candidate_status is invalid 
 
 events_root="${TMP_DIR}/events-root"
 cp -a "${pass_root}" "${events_root}"
-python3 - "${events_root}/reports/field-evidence/software-m5-events.jsonl" <<'PY'
+python3 - "${events_root}/${M5_EVENT_LOG_PATH}" <<'PY'
 import json
 import pathlib
 import sys

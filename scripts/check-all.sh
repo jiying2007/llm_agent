@@ -275,7 +275,7 @@ while IFS= read -r script_path; do
   if [[ "${GATE_MODE}" == "working-tree" ]]; then
     case "${script_name}" in
       check-subrepo-state.sh) check_args+=(--allow-agent-dev-kit-dirty) ;;
-      check-current-status-consistency.sh|check-evidence-bundle.sh|check-workspace-entrypoints.sh) check_args+=(--worktree-integration) ;;
+      check-adk-lock.sh|check-current-status-consistency.sh|check-evidence-bundle.sh|check-workspace-entrypoints.sh) check_args+=(--worktree-integration) ;;
     esac
   fi
   check_command=(bash "${script_path}" "${check_args[@]}")

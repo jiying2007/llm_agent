@@ -1,12 +1,12 @@
 {
   "schema": "llm-agent-product-maturity-scorecard/v1",
-  "updated_at": "2026-08-24",
+  "updated_at": "2026-08-30",
   "product_boundary": "reference-intake workspace plus platform-neutral agent asset compiler/control plane; no LLM agent runtime",
   "overall": {
     "level": "M3",
     "status": "release-candidate",
     "terminal_mature": false,
-    "reason": "The software control plane is M5-ready and a real self-pilot is active, but Claude campaign evidence, an independent repository, a second human operator, 30-day observation, and final 4.1.0 promotion are incomplete.",
+    "reason": "The 5.x software control plane is M5-ready and a real self-pilot is active. Claude Code has an explicit owner-attested default pass, while the measured dual-runtime campaign, an independent repository, a second human operator, 30-day observation, and final 5.1.0 promotion remain incomplete.",
     "field_status": "self_pilot_active"
   },
   "software_m5": {
@@ -14,13 +14,13 @@
     "eligibility_status": "blocked",
     "certification_status": "blocked",
     "certified": false,
-    "candidate_version": "4.0.0",
-    "final_version": "4.1.0",
+    "candidate_version": "5.0.0-rc.1",
+    "final_version": "5.1.0",
     "blocking_gates": ["final_version", "independent_repository", "operator_count", "pilot_duration", "real_repository_count", "repository_runtime_campaign", "required_field_events", "runtime_campaign"]
   },
   "working_candidate": {
-    "version": "4.0.0",
-    "status": "source-committed-pushed-local-rehearsed-live-applied",
+    "version": "5.0.0-rc.1",
+    "status": "source-committed-pushed-local-rehearsed-root-integration-pending",
     "overall_level": "M3",
     "target_status": "experimental",
     "implemented_controls": [
@@ -38,23 +38,27 @@
       "platform-neutral skill invocation intent with fail-closed target mappings",
       "task-package v2 work-item permission boundaries and prototype provenance",
       "completed-checklist archive governance with exact-label validation",
-      "bounded task-cost estimation, context receipts and release-clean versus working-tree gate separation"
+      "bounded task-cost estimation, context receipts and release-clean versus working-tree gate separation",
+      "routing IR v2, Workflow IR, Runtime Control V2 and target contract v2",
+      "Trace Summary, Agent Value, Evidence Graph, Run Evidence and Effect Comparator"
     ],
-    "lock_state": "synchronized",
-    "runtime_certification": "not-run",
+    "lock_state": "working-tree-synchronized-parent-commit-pending",
+    "runtime_certification": "claude-owner-attested-default-pass-measured-campaign-not-run",
     "local_validation": {
-      "adk_full": "62/62-pass",
-      "root_quick": "not-run-rc7-full-used",
-      "root_full": "60/60-pass",
+      "adk_full": "68/68-pass",
+      "root_quick": "55/55-pass-working-tree-integration",
+      "root_full": "not-run",
+      "root_regression": "22/22-pass",
+      "adk_harden_readiness": "pass-exact-head-clone-68/68-global-codex-health-pass",
       "target_static": "3/3-pass",
       "effect_eval": "24/24-pass-ablation-delta-0.3333",
-      "release_rehearsal": "pass",
-      "source_to_live": "applied-declarative-changed",
-      "codex_assets_check": "126/126-pass-five-profiles",
-      "live_runtime_health": "post-apply-live-diff-zero-native-target-runtime-not-run",
-      "artifact_sha256": "a46d26d79be3ee0bed02cde9c5fa031a5c0cd6e533793edc906b01f753ec48e0"
+      "release_rehearsal": "4.0.0-to-5.0.0-rc.1-pass-34-assets-restored",
+      "source_to_live": "required-pending-owner-authorization",
+      "codex_assets_check": "not-run-no-live-apply-authority",
+      "live_runtime_health": "not-run-no-live-apply-authority",
+      "artifact_sha256": "f332e8453f7a8ad7387fee807303e4b90a449f3505a2d5828a9ba2746d0b568b"
     },
-    "promotion_boundary": "The rc.7 release source commit is pushed; exact-commit deterministic build, rc.6-to-rc.7 rollback rehearsal and authorized Codex source-to-live pass locally. Tag, remote Release/artifact upload, remote CI/attestation, native runtime smoke, dual-runtime campaign and field certification remain blocked or not run."
+    "promotion_boundary": "The 5.0.0-rc.1 ADK source commit c9a28b2 is pushed and the checksum-bound 4.0.0-to-5.0.0-rc.1 rehearsal passes. Claude Code default use is owner-attested, not runtime-measured campaign evidence. Parent commit/push, tag, remote Release/artifact upload, source-to-live, dual-runtime campaign and field certification remain blocked or not run."
   },
   "assessment_model": {
     "implementation_level": "highest level supported by code and local control-plane behavior",
@@ -104,7 +108,7 @@
       "evidence_layers_present": ["source", "test"],
       "status": "partially_verified",
       "evidence": ["agent-dev-kit/src/agent_dev_kit/cli.py", "agent-dev-kit/src/agent_dev_kit/compiler.py", "agent-dev-kit/src/agent_dev_kit/installer.py", "agent-dev-kit/src/agent_dev_kit/release.py", "agent-dev-kit/tests/test_target_contracts.sh", "agent-dev-kit/docs/changes/adk-terminal-contract-hardening/verify-report.md"],
-      "gap": "Native target trees and static discovery contracts pass, but real Claude Code/OpenCode/Hermes discovery, load and trigger smoke is not yet recorded."
+      "gap": "Native target trees and static discovery contracts pass. Claude Code is owner-attested as default pass, but a runtime-measured native conformance receipt and OpenCode/Hermes smoke are not recorded."
     },
     {
       "id": "D04",
@@ -117,7 +121,7 @@
       "evidence_layers_present": ["source", "test", "runtime"],
       "status": "partially_verified",
       "evidence": ["agent-dev-kit/tests/fixtures/software_m5_eval_tasks.jsonl", "agent-dev-kit/manifests/effect_eval_contract.json", "agent-dev-kit/tests/test_effect_eval.sh", "agent-dev-kit/src/agent_dev_kit/evaluation.py", "agent-dev-kit/src/agent_dev_kit/campaign.py", "agent-dev-kit/docs/changes/adk-v3-1-rc2-target-conformance/effect-eval.json", "agent-dev-kit/docs/changes/adk-v3-1-software-m5-ready/software-m5-campaign-plan.json"],
-      "gap": "The 60-task, three-trial dual-runtime campaign is frozen at a worst-case $144 budget, but Claude is installed and unauthenticated, so cross-runtime effectiveness remains unverified."
+      "gap": "The 60-task, three-trial dual-runtime campaign plan is ready at a worst-case $144 budget. Owner attestation does not replace the measured result matrix, so cross-runtime effectiveness remains unverified."
     },
     {
       "id": "D05",
@@ -155,7 +159,7 @@
       "evidence_layers_present": ["source", "test"],
       "status": "verified_local",
       "evidence": ["agent-dev-kit/src/agent_dev_kit/quality.py", "agent-dev-kit/.github/workflows/ci.yml", "agent-dev-kit/.github/workflows/release.yml", "agent-dev-kit/.github/workflows/scorecard.yml", "agent-dev-kit/manifests/official_docs_freshness_gates.json", "agent-dev-kit/docs/runbooks/local-ci-parity.md", ".github/workflows/ci.yml"],
-      "gap": "Local security, lint, Python 3.11/3.12 parity and dependency audit pass for rc.7; remote Scorecard, CI and artifact attestation have not run."
+      "gap": "Local security, lint, Python 3.11/3.12 parity and dependency audit pass for 5.0.0-rc.1; remote Scorecard, CI and artifact attestation have not run."
     },
     {
       "id": "D08",
@@ -168,7 +172,7 @@
       "evidence_layers_present": ["source", "test", "runtime"],
       "status": "verified_local",
       "evidence": ["agent-dev-kit/src/agent_dev_kit/installer.py", "agent-dev-kit/src/agent_dev_kit/release.py", "agent-dev-kit/docs/changes/rc7-token-context-release-baseline-2026-08-02/release-rehearsal.json", "agent-dev-kit/docs/changes/rc7-token-context-release-baseline-2026-08-02/verify-report.md", "reports/adk-v3-1-rc7-release-evidence-2026-08-02.json"],
-      "gap": "The local rc.6-to-rc.7 exact-commit build, rollback rehearsal and authorized Codex source-to-live pass. Native direct-target installation, tag/remote artifact publication and remote CI/attestation remain explicit owner or external operations."
+      "gap": "The local 4.0.0-to-5.0.0-rc.1 checksum-bound upgrade/rollback rehearsal passes. Source-to-live, native direct-target installation, tag/remote publication and remote CI/attestation remain explicit owner or external operations."
     },
     {
       "id": "D09",

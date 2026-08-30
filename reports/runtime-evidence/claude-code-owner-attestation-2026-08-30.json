@@ -1,0 +1,25 @@
+{
+  "schema": "llm-agent-runtime-owner-attestation/v1",
+  "attestation_id": "claude-code-default-pass-20260830",
+  "attested_at": "2026-08-30T02:45:00Z",
+  "attested_by": "repository-owner",
+  "runtime": "claude-code",
+  "runtime_version": "2.1.138",
+  "decision": "default-pass",
+  "status": "pass",
+  "trust_layer": "owner-attested",
+  "runtime_measured": false,
+  "scope": [
+    "default runtime acceptance for the 5.0.0-rc.1 parent integration",
+    "current-status runtime decision"
+  ],
+  "does_not_satisfy": [
+    "native runtime conformance receipt",
+    "60-task three-trial dual-runtime campaign",
+    "independent repository evidence",
+    "field certification"
+  ],
+  "basis": "Explicit owner decision recorded on 2026-08-30; raw conversation content is not stored.",
+  "redaction_status": "sanitized",
+  "rollback": "Supersede this attestation with a new owner decision; do not rewrite this record."
+}

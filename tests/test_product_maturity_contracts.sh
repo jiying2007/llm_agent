@@ -60,7 +60,7 @@ assert software_m5 == {
     "certification_status": "blocked",
     "certified": False,
     "candidate_version": candidate_version,
-    "final_version": "4.1.0",
+    "final_version": release_policy["final_version"],
     "blocking_gates": [
         "final_version",
         "independent_repository",
@@ -76,9 +76,9 @@ working_candidate = scorecard["working_candidate"]
 assert working_candidate["version"] == candidate_version, working_candidate
 assert working_candidate["overall_level"] == "M3", working_candidate
 assert working_candidate["target_status"] == "experimental", working_candidate
-assert working_candidate["status"] == "source-committed-pushed-local-rehearsed-live-applied", working_candidate
-assert working_candidate["lock_state"] == "synchronized", working_candidate
-assert working_candidate["runtime_certification"] == "not-run", working_candidate
+assert working_candidate["status"] == "source-committed-pushed-local-rehearsed-root-integration-pending", working_candidate
+assert working_candidate["lock_state"] == "working-tree-synchronized-parent-commit-pending", working_candidate
+assert working_candidate["runtime_certification"] == "claude-owner-attested-default-pass-measured-campaign-not-run", working_candidate
 levels = {f"M{i}" for i in range(6)}
 assessment_model = scorecard["assessment_model"]
 assert assessment_model["effective_level"].startswith("minimum of "), assessment_model
@@ -154,7 +154,7 @@ assert (root / policy["release"]["evidence_report"]).is_file(), policy
 contract_path = root / policy["runtime_campaign"]["contract"]
 contract = json.loads(contract_path.read_text(encoding="utf-8"))
 assert contract["campaign_id"].startswith("software-m5-"), contract
-assert policy["release"]["final_version"] == "4.1.0", policy
+assert policy["release"]["final_version"] == scorecard["software_m5"]["final_version"], policy
 assert policy["runtime_campaign"]["required_runtimes"] == ["codex", "claude"], policy
 assert policy["runtime_campaign"]["minimum_tasks"] >= 60, policy
 assert policy["runtime_campaign"]["minimum_trials"] >= 3, policy
@@ -170,6 +170,18 @@ assert ledger["candidate_version"] == policy["release"]["candidate_version"], le
 assert (root / ledger["event_log"]).is_file(), ledger
 assert any(item["status"] == "active" and item["environment_class"] == "self" for item in ledger["pilots"])
 assert all(set(item) == {"id", "operator_type", "role", "independent_reviewer"} for item in ledger["operators"])
+
+history_policy = json.loads((root / "manifests/history/software_m5_policy-4.0.0.json").read_text(encoding="utf-8"))
+history_ledger = json.loads((root / "manifests/history/software_m5_pilot_ledger-4.0.0.json").read_text(encoding="utf-8"))
+assert history_policy["release"]["candidate_version"] == "4.0.0", history_policy
+assert history_ledger["candidate_version"] == "4.0.0", history_ledger
+assert policy["release"]["previous_version"] == history_policy["release"]["candidate_version"], policy
+assert policy["runtime_campaign"]["plan"] == "reports/runtime-evidence/adk-v5-software-m5-campaign-plan.json", policy
+assert (root / policy["runtime_campaign"]["plan"]).is_file(), policy
+attestation_path = root / policy["release"]["runtime_attestation"]
+attestation = json.loads(attestation_path.read_text(encoding="utf-8"))
+assert attestation["trust_layer"] == "owner-attested", attestation
+assert attestation["runtime_measured"] is False, attestation
 
 registry = json.loads((root / "manifests/report_registry.json").read_text(encoding="utf-8"))
 assert registry["schema"] == "llm-agent-report-registry/v1", registry
@@ -217,7 +229,17 @@ for line in (root / "adk.lock").read_text(encoding="utf-8").splitlines():
     if "=" in line:
         key, value = line.split("=", 1)
         lock[key] = value
-assert lock.get("agent-dev-kit.commit") == index[1], (lock, index)
+worktree_commit = subprocess.run(
+    ["git", "-C", str(root / "agent-dev-kit"), "rev-parse", "HEAD"],
+    check=True,
+    text=True,
+    stdout=subprocess.PIPE,
+).stdout.strip()
+assert lock.get("agent-dev-kit.commit") == worktree_commit, (lock, worktree_commit)
+assert subprocess.run(
+    ["git", "-C", str(root / "agent-dev-kit"), "merge-base", "--is-ancestor", index[1], worktree_commit],
+    check=False,
+).returncode == 0, (index[1], worktree_commit)
 PY
 
 if rg -q 'auto-absorb\.sh' "$ROOT/scripts/pipeline-subrepo-update.sh"; then

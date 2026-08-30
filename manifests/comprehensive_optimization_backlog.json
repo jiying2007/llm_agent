@@ -20,7 +20,7 @@
   },
   "adk_template": "agent-dev-kit/templates/artifacts/target-architecture-report-template.md",
   "maintainability_budgets": {
-    "schema": "llm-agent-maintainability-budgets/v1",
+    "schema": "llm-agent-maintainability-budgets/v2",
     "baseline_date": "2026-07-30",
     "policy": {
       "warnings_are_review_required": true,
@@ -113,6 +113,98 @@
         "hard_limit": 1400,
         "owner": "agent-dev-kit",
         "next_action": "Split the hotspot only along an owned domain boundary and preserve CLI/API compatibility tests."
+      },
+      {
+        "id": "root-python-import-fan-out",
+        "metric": "max_import_fan_out",
+        "scope_paths": ["tools/codex_assets"],
+        "include_patterns": ["*.py"],
+        "exclude_prefixes": [],
+        "baseline": 17,
+        "warning_limit": 20,
+        "hard_limit": 25,
+        "owner": "llm-agent-governance",
+        "next_action": "Split high fan-out typed modules at stable domain ports before adding another dependency."
+      },
+      {
+        "id": "adk-python-import-fan-out",
+        "metric": "max_import_fan_out",
+        "scope_paths": ["agent-dev-kit/src/agent_dev_kit"],
+        "include_patterns": ["*.py"],
+        "exclude_prefixes": [],
+        "baseline": 24,
+        "warning_limit": 28,
+        "hard_limit": 35,
+        "owner": "agent-dev-kit",
+        "next_action": "Introduce typed internal ports when a module crosses the reviewed import fan-out budget."
+      },
+      {
+        "id": "root-exact-code-duplication",
+        "metric": "duplicate_content_groups",
+        "scope_paths": ["scripts", "tools/codex_assets"],
+        "include_patterns": ["*.sh", "*.py"],
+        "exclude_prefixes": [],
+        "baseline": 0,
+        "warning_limit": 1,
+        "hard_limit": 3,
+        "owner": "llm-agent-governance",
+        "next_action": "Replace exact duplicate implementation files with one typed implementation and thin entrypoints."
+      },
+      {
+        "id": "adk-exact-code-duplication",
+        "metric": "duplicate_content_groups",
+        "scope_paths": ["agent-dev-kit/src/agent_dev_kit", "agent-dev-kit/scripts", "agent-dev-kit/tests"],
+        "include_patterns": ["*.py", "*.sh"],
+        "exclude_prefixes": [],
+        "baseline": 0,
+        "warning_limit": 2,
+        "hard_limit": 5,
+        "owner": "agent-dev-kit",
+        "next_action": "Consolidate exact duplicate checker or test logic without weakening target-specific assertions."
+      }
+    ],
+    "evidence_metrics": [
+      {
+        "id": "repository-churn",
+        "metric": "churn",
+        "risk": "medium",
+        "enforcement": "report-only",
+        "enforcement_rationale": "A reviewed version-history window and stable churn baseline are not yet available, so a hard threshold would create false precision.",
+        "source": null,
+        "expected_repository_id": "llm-agent",
+        "expected_population": null,
+        "max_age_days": 45,
+        "unavailable_reason": "No reviewed git-history numstat snapshot is pinned by path, repository identity, revision window and SHA-256.",
+        "owner": "llm-agent-governance",
+        "next_action": "Generate a reviewed git-history numstat snapshot for a fixed revision and time window before proposing a churn budget."
+      },
+      {
+        "id": "owner-concentration",
+        "metric": "owner_concentration",
+        "risk": "high",
+        "enforcement": "report-only",
+        "enforcement_rationale": "Ownership concentration is high-risk, but enforcing a threshold without a reviewed scope-to-owner snapshot would treat missing owners as measured zero.",
+        "source": null,
+        "expected_repository_id": "llm-agent",
+        "expected_population": null,
+        "max_age_days": 90,
+        "unavailable_reason": "No reviewed ownership snapshot is pinned by repository identity, revision window and SHA-256.",
+        "owner": "llm-agent-governance",
+        "next_action": "Review critical scopes and primary owners, then pin the ownership snapshot before setting a basis-point budget."
+      },
+      {
+        "id": "inactive-assets",
+        "metric": "inactive_assets",
+        "risk": "high",
+        "enforcement": "report-only",
+        "enforcement_rationale": "Asset retirement decisions require a sanitized invocation window; absent telemetry must not be interpreted as zero activity.",
+        "source": null,
+        "expected_repository_id": "llm-agent",
+        "expected_population": null,
+        "max_age_days": 30,
+        "unavailable_reason": "No sanitized invocation ledger is pinned by repository identity, revision window and SHA-256.",
+        "owner": "llm-agent-governance",
+        "next_action": "Produce a privacy-reviewed invocation ledger for a fixed window before proposing an inactive-asset threshold."
       }
     ]
   },
@@ -454,7 +546,152 @@
         "agent-dev-kit/docs/changes/official-model-catalog-freshness-2026-07-30/proposal.md",
         "reports/external-practice-targeted-decisions-2026-07-30.jsonl",
         "agent-dev-kit/manifests/external_agent_pattern_contracts.json",
-        "agent-dev-kit/docs/changes/mcp-2026-final-metadata-refresh-2026-07-30/proposal.md"
+        "agent-dev-kit/docs/changes/mcp-2026-final-metadata-refresh-2026-07-30/proposal.md",
+        "agent-dev-kit/docs/changes/official-source-toolchain-refresh-20260830/source-review.md"
+      ]
+    },
+    {
+      "id": "G17",
+      "priority": "P0",
+      "optimization_area": "Unified routing intent and permission IR",
+      "terminal_outcome": "Task mode, negation, mutation permission, risk, profile availability and abstention are resolved from one fail-closed routing IR without unsafe permission escalation.",
+      "design_status": "landed",
+      "implementation_status": "in_progress",
+      "implementation_targets": [
+        "routing-ir/v2",
+        "contrastive negation and abstain regression",
+        "routing to Runtime Control artifact-mode mapping"
+      ],
+      "verification": [
+        "rtk bash agent-dev-kit/tests/test_match_effectiveness.sh",
+        "rtk bash agent-dev-kit/tests/test_boundary_conditions_match.sh",
+        "rtk bash agent-dev-kit/tests/test_product_maturity_v4.sh"
+      ],
+      "implementation_evidence": [
+        "agent-dev-kit/src/agent_dev_kit/matcher.py",
+        "agent-dev-kit/docs/changes/routing-ir-v2/",
+        "agent-dev-kit/manifests/manifest.schema.json"
+      ]
+    },
+    {
+      "id": "G18",
+      "priority": "P0",
+      "optimization_area": "Platform-neutral core profile",
+      "terminal_outcome": "Core exports only platform-neutral agents, skills and workflows while embedded-fullstack owns every driver, BSP, RTOS, C/C++, SIL/HIL and field-only asset.",
+      "design_status": "landed",
+      "implementation_status": "in_progress",
+      "implementation_targets": [
+        "core and embedded capability closure",
+        "platform-neutral test strategy",
+        "embedded-only matrix and target export boundary"
+      ],
+      "verification": [
+        "rtk bash agent-dev-kit/tests/test_profile_coherence.sh",
+        "rtk bash agent-dev-kit/tests/test_target_contracts.sh",
+        "rtk bash agent-dev-kit/tests/test_asset_taxonomy.sh"
+      ],
+      "implementation_evidence": [
+        "agent-dev-kit/manifest.json",
+        "agent-dev-kit/scripts/check-profile-coherence.sh",
+        "agent-dev-kit/skills/adk-test-strategy/SKILL.md",
+        "agent-dev-kit/skills/adk-unit-test-embedded/references/embedded-tdd-matrix.md"
+      ]
+    },
+    {
+      "id": "G19",
+      "priority": "P0",
+      "optimization_area": "Workflow and runtime completion semantics",
+      "terminal_outcome": "Workflow nodes, I/O, transitions, failure, cancellation, rollback and evidence are compiled into a strict IR, and Runtime Control applies task-mode-specific artifact gates without bypassing completion evidence.",
+      "design_status": "landed",
+      "implementation_status": "in_progress",
+      "implementation_targets": [
+        "adk-workflow-ir/v2",
+        "runtime_control.policy/v2",
+        "body projection and completion guard regression"
+      ],
+      "verification": [
+        "rtk bash agent-dev-kit/tests/test_workflow_ir.sh",
+        "rtk bash agent-dev-kit/tests/test_runtime_control.sh",
+        "rtk bash agent-dev-kit/tests/test_workflow_closure.sh"
+      ],
+      "implementation_evidence": [
+        "agent-dev-kit/src/agent_dev_kit/workflow_ir.py",
+        "agent-dev-kit/manifests/workflow_ir_policy.json",
+        "agent-dev-kit/src/agent_dev_kit/runtime_control/engine.py",
+        "agent-dev-kit/docs/changes/runtime-control-task-mode-applicability-v2/"
+      ]
+    },
+    {
+      "id": "G20",
+      "priority": "P0",
+      "optimization_area": "Typed evidence graph and outcome traces",
+      "terminal_outcome": "Sanitized source-to-retirement provenance and run outcome metrics are type-checked, content-addressed, acyclic, connected and usable without storing prompts, messages, raw logs or tool payloads.",
+      "design_status": "landed",
+      "implementation_status": "in_progress",
+      "implementation_targets": [
+        "adk-evidence-graph/v1",
+        "strict workflow trace summary",
+        "outcome metrics and privacy validation"
+      ],
+      "verification": [
+        "rtk bash agent-dev-kit/tests/test_evidence_graph.sh",
+        "rtk bash agent-dev-kit/tests/test_trace_summary.sh",
+        "rtk bash agent-dev-kit/tests/test_agent_ecosystem_standards.sh"
+      ],
+      "implementation_evidence": [
+        "agent-dev-kit/src/agent_dev_kit/evidence_graph.py",
+        "agent-dev-kit/manifests/evidence_graph_contracts.json",
+        "agent-dev-kit/manifests/trace_eval_contracts.json",
+        "agent-dev-kit/docs/runbooks/evidence-graph.md"
+      ]
+    },
+    {
+      "id": "G21",
+      "priority": "P0",
+      "optimization_area": "Runtime adapter conformance",
+      "terminal_outcome": "Every direct target separates static declarations from native discovery, load, trigger, permission, resume, cancel, rollback and trace evidence, with at least one version-pinned native conformance pass.",
+      "design_status": "landed",
+      "implementation_status": "in_progress",
+      "implementation_targets": [
+        "target-contract/v2 adapter SPI",
+        "static versus native conformance branches",
+        "one native target campaign"
+      ],
+      "verification": [
+        "rtk bash agent-dev-kit/tests/test_target_contracts.sh",
+        "rtk bash agent-dev-kit/scripts/devkit.sh target check --all --level static --summary-json",
+        "rtk bash agent-dev-kit/scripts/devkit.sh target smoke --target <target> --stage discovery --runtime-command <native-command>"
+      ],
+      "implementation_evidence": [
+        "agent-dev-kit/manifests/target-contract.schema.json",
+        "agent-dev-kit/manifests/target-contracts/",
+        "agent-dev-kit/src/agent_dev_kit/targets.py"
+      ]
+    },
+    {
+      "id": "G22",
+      "priority": "P1",
+      "optimization_area": "Agent, skill and profile value lifecycle",
+      "terminal_outcome": "Agents, skills and profiles have typed authority, permission, handoff, assumption and eval contracts plus real invocation, wrong-route, abstain, outcome and retirement signals.",
+      "design_status": "landed",
+      "implementation_status": "in_progress",
+      "implementation_targets": [
+        "typed agent role contract",
+        "asset invocation and outcome receipt",
+        "evidence-led consolidation and retirement"
+      ],
+      "verification": [
+        "rtk bash agent-dev-kit/scripts/devkit.sh capability health --summary-json",
+        "rtk bash agent-dev-kit/tests/test_skill_trigger_matrix.sh",
+        "rtk bash agent-dev-kit/tests/test_harness_readiness.sh"
+      ],
+      "implementation_evidence": [
+        "agent-dev-kit/manifests/agent_value_contracts.json",
+        "agent-dev-kit/schemas/agent-value-contracts-v1.schema.json",
+        "agent-dev-kit/schemas/asset-invocation-receipt-v1.schema.json",
+        "agent-dev-kit/src/agent_dev_kit/agent_value.py",
+        "agent-dev-kit/tests/test_agent_value.sh",
+        "agent-dev-kit/docs/runbooks/agent-value-lifecycle.md"
       ]
     }
   ]

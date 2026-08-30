@@ -11,6 +11,18 @@ fail() {
   exit 1
 }
 
+WORKTREE_INTEGRATION=0
+if [[ $# -gt 0 && "$1" != --* ]]; then
+  shift
+fi
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --worktree-integration) WORKTREE_INTEGRATION=1 ;;
+    *) fail "unknown arg: $1" ;;
+  esac
+  shift
+done
+
 lock_value() {
   local key="$1"
   awk -F'=' -v key="$key" '$1 == key {print $2; exit}' "${LOCK}"
@@ -54,15 +66,26 @@ manifest_version="$(awk -F': ' '$1=="version"{print $2; exit}' "${MANIFEST}")"
 
 index_commit="$(git -C "${ROOT}" ls-files -s agent-dev-kit | awk '$1=="160000"{print $2; exit}')"
 [[ -n "${index_commit}" ]] || fail "agent-dev-kit is not tracked as a gitlink"
-[[ "${index_commit}" == "${locked_commit}" ]] || {
-  fail "agent-dev-kit gitlink ${index_commit} != adk.lock ${locked_commit}"
-}
+if [[ "${WORKTREE_INTEGRATION}" -eq 0 ]]; then
+  [[ "${index_commit}" == "${locked_commit}" ]] || {
+    fail "agent-dev-kit gitlink ${index_commit} != adk.lock ${locked_commit}"
+  }
+fi
 
 if [[ -d "${ROOT}/agent-dev-kit/.git" || -f "${ROOT}/agent-dev-kit/.git" ]]; then
   worktree_commit="$(git -C "${ROOT}/agent-dev-kit" rev-parse HEAD)"
   [[ "${worktree_commit}" == "${locked_commit}" ]] || {
     fail "agent-dev-kit worktree ${worktree_commit} != adk.lock ${locked_commit}"
   }
+  if [[ "${WORKTREE_INTEGRATION}" -eq 1 ]]; then
+    git -C "${ROOT}/agent-dev-kit" merge-base --is-ancestor "${index_commit}" "${worktree_commit}" || {
+      fail "agent-dev-kit worktree must descend from recorded gitlink ${index_commit}"
+    }
+  fi
 fi
 
-echo "[PASS] adk lock matches manifest and gitlink"
+if [[ "${WORKTREE_INTEGRATION}" -eq 1 ]]; then
+  echo "[PASS] adk lock matches manifest/worktree; recorded gitlink is an ancestor"
+else
+  echo "[PASS] adk lock matches manifest and gitlink"
+fi

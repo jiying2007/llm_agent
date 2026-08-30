@@ -121,6 +121,7 @@ policy_path = path("manifests", "software_m5_policy.json")
 status_text = read_text(status_path)
 m5_policy = read_json(policy_path)
 release_policy = m5_policy.get("release", {}) if isinstance(m5_policy, dict) else {}
+campaign_policy = m5_policy.get("runtime_campaign", {}) if isinstance(m5_policy, dict) else {}
 
 
 def policy_file(name, label):
@@ -144,12 +145,24 @@ required = {
     "lock": path("adk.lock"),
     "manifest": path("agent-dev-kit", "manifest.json"),
     "rehearsal": policy_file("rehearsal_report", "release-rehearsal"),
-    "campaign_plan": path("agent-dev-kit", "docs", "changes", "adk-v3-1-software-m5-ready", "software-m5-campaign-plan.json"),
     "codex_smoke": path("agent-dev-kit", "docs", "changes", "adk-v3-1-software-m5-ready", "codex-runtime-smoke.json"),
+    "runtime_attestation": policy_file("runtime_attestation", "runtime-attestation"),
     "m5_policy": policy_path,
     "m5_ledger": path("manifests", "software_m5_pilot_ledger.json"),
-    "m5_events": path("reports", "field-evidence", "software-m5-events.jsonl"),
 }
+campaign_plan_value = campaign_policy.get("plan") if isinstance(campaign_policy, dict) else None
+campaign_plan_relative = Path(campaign_plan_value) if isinstance(campaign_plan_value, str) else Path("__invalid__/campaign-plan")
+if campaign_plan_relative.is_absolute() or ".." in campaign_plan_relative.parts:
+    failures.append("software M5 runtime_campaign.plan is not repository-relative")
+    campaign_plan_relative = Path("__invalid__/campaign-plan")
+required["campaign_plan"] = path(*campaign_plan_relative.parts)
+ledger_preview = read_json(required["m5_ledger"])
+event_log_value = ledger_preview.get("event_log") if isinstance(ledger_preview, dict) else None
+event_log_relative = Path(event_log_value) if isinstance(event_log_value, str) else Path("__invalid__/m5-events")
+if event_log_relative.is_absolute() or ".." in event_log_relative.parts:
+    failures.append("software M5 ledger event_log is not repository-relative")
+    event_log_relative = Path("__invalid__/m5-events")
+required["m5_events"] = path(*event_log_relative.parts)
 for label, file_path in required.items():
     if not os.path.isfile(file_path):
         failures.append("missing required {} file: {}".format(label, os.path.relpath(file_path, root)))
@@ -163,6 +176,7 @@ release = read_json(required["release_evidence"])
 rehearsal = read_json(required["rehearsal"])
 campaign_plan = read_json(required["campaign_plan"])
 codex_smoke = read_json(required["codex_smoke"])
+runtime_attestation = read_json(required["runtime_attestation"])
 candidate_version = release_policy.get("candidate_version")
 
 expected_fields = {
@@ -173,8 +187,8 @@ expected_fields = {
     "terminal_mature": "false",
     "field_status": "self_pilot_active",
     "root_gate_status": "pass",
-    "runtime_eval_status": "codex-smoke-pass-claude-blocked",
-    "m5_campaign_status": "blocked-claude-unauthenticated",
+    "runtime_eval_status": "codex-smoke-pass-claude-owner-attested",
+    "m5_campaign_status": "blocked-full-campaign-and-field-pending",
 }
 for name, expected in expected_fields.items():
     actual = field(status_text, name)
@@ -224,14 +238,29 @@ adk_worktree = git("rev-parse", "HEAD", cwd=path("agent-dev-kit"), check=False).
 adk_lock_commit = lock.get("agent-dev-kit.commit", "")
 adk_status_commit = field(status_text, "agent_dev_kit_commit")
 adk_release_commit = field(status_text, "agent_dev_kit_release_commit") or adk_status_commit
-for label, value in (
-    ("gitlink", gitlink_commit),
+identity_values = [
     ("adk.lock", adk_lock_commit),
     ("ADK worktree", adk_worktree),
     ("current-status", adk_status_commit),
-):
+]
+if not worktree_integration:
+    identity_values.insert(0, ("gitlink", gitlink_commit))
+for label, value in identity_values:
     if value != adk_status_commit or not value:
         failures.append("{} ADK commit does not match current-status: {}".format(label, value or "<missing>"))
+if worktree_integration and (
+    not gitlink_commit
+    or git(
+        "merge-base",
+        "--is-ancestor",
+        gitlink_commit,
+        adk_status_commit,
+        cwd=path("agent-dev-kit"),
+        check=False,
+    ).returncode
+    != 0
+):
+    failures.append("working-tree ADK commit must descend from the recorded gitlink")
 if (
     not adk_release_commit
     or git(
@@ -311,13 +340,27 @@ if codex_smoke.get("requested_model") != "gpt-5.5":
 if not all(codex_smoke.get("quality_gate", {}).values()):
     failures.append("Codex runtime smoke quality gates are not all passing")
 
+if (
+    runtime_attestation.get("schema") != "llm-agent-runtime-owner-attestation/v1"
+    or runtime_attestation.get("runtime") != "claude-code"
+    or runtime_attestation.get("decision") != "default-pass"
+    or runtime_attestation.get("status") != "pass"
+    or runtime_attestation.get("trust_layer") != "owner-attested"
+    or runtime_attestation.get("runtime_measured") is not False
+):
+    failures.append("Claude Code owner attestation is missing or invalid")
+does_not_satisfy = runtime_attestation.get("does_not_satisfy", [])
+for boundary in ("native runtime conformance receipt", "60-task three-trial dual-runtime campaign", "field certification"):
+    if boundary not in does_not_satisfy:
+        failures.append("Claude Code owner attestation weakens evidence boundary: {}".format(boundary))
+
 stored_plan_digest = campaign_plan.get("plan_sha256")
 unsigned_plan = dict(campaign_plan)
 unsigned_plan.pop("plan_sha256", None)
 if stored_plan_digest != canonical_digest(unsigned_plan):
     failures.append("software M5 campaign plan hash does not match content")
-if campaign_plan.get("status") != "blocked" or campaign_plan.get("task_count") != 60 or campaign_plan.get("trials") != 3:
-    failures.append("software M5 campaign plan must remain the frozen blocked 60-task/3-trial plan")
+if campaign_plan.get("status") != "ready" or campaign_plan.get("task_count") != 60 or campaign_plan.get("trials") != 3:
+    failures.append("software M5 campaign plan must be the ready frozen 60-task/3-trial plan")
 if campaign_plan.get("maximum_worst_cost_usd") != 144.0:
     failures.append("software M5 campaign worst-case cost must be $144")
 runtime_entries = {
@@ -328,8 +371,8 @@ if runtime_entries.get("codex", {}).get("status") != "planned":
 if runtime_entries.get("codex", {}).get("requested_model") != "gpt-5.5":
     failures.append("software M5 Codex campaign model mismatch")
 claude_entry = runtime_entries.get("claude", {})
-if claude_entry.get("status") != "not-run" or "not authenticated" not in str(claude_entry.get("reason", "")):
-    failures.append("software M5 Claude campaign must remain blocked by authentication")
+if claude_entry.get("status") != "planned" or claude_entry.get("reason") is not None:
+    failures.append("software M5 Claude campaign runtime must be planned after owner default acceptance")
 if claude_entry.get("requested_model") != "claude-sonnet-4-6":
     failures.append("software M5 Claude campaign model mismatch")
 if any("executable" in item and item.get("executable") for item in runtime_entries.values()):

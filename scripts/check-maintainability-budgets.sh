@@ -14,4 +14,5 @@ if [[ $# -gt 0 && "${1}" != -* ]]; then
 fi
 
 export PYTHONPATH="${ROOT_DIR}${PYTHONPATH:+:${PYTHONPATH}}"
-exec python3 -m tools.codex_assets.maintainability_budget --root "${ROOT_DIR}" "$@"
+exec python3 -m tools.codex_assets.maintainability_budget \
+  --root "${ROOT_DIR}" --repository-id llm-agent "$@"

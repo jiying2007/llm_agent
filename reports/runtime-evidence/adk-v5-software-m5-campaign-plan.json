@@ -1,0 +1,48 @@
+{
+  "schema": "adk-runtime-eval-campaign-plan/v1",
+  "status": "ready",
+  "campaign_id": "software-m5-3.1.0-rc.7",
+  "manifest_version": "5.0.0-rc.1",
+  "manifest_sha256": "895e42fa38566f1071d0b7632a851ff3c61922dff71e49bb37dbaa1f0431be9c",
+  "contract_sha256": "76e2471d655676b697e67a103c94a0439e5ba0a5547e51e09dd92ef4e4d47a19",
+  "tasks": "tests/fixtures/software_m5_eval_tasks.jsonl",
+  "tasks_sha256": "8341487931c930d257d96e8b755b080386902a8f58b45bdb1781fbd4799c309c",
+  "task_count": 60,
+  "runtimes": [
+    {
+      "schema_version": 1,
+      "status": "planned",
+      "runtime": "codex",
+      "runtime_version": "codex-cli 0.144.1",
+      "condition": "adk",
+      "tasks": 60,
+      "permissions": "read-only/no-tools",
+      "reason": null,
+      "executable_name": "codex",
+      "requested_model": "gpt-5.5"
+    },
+    {
+      "schema_version": 1,
+      "status": "planned",
+      "runtime": "claude",
+      "runtime_version": "2.1.138 (Claude Code)",
+      "condition": "adk",
+      "tasks": 60,
+      "permissions": "read-only/no-tools",
+      "reason": null,
+      "executable_name": "claude",
+      "requested_model": "claude-sonnet-4-6"
+    }
+  ],
+  "conditions": ["baseline", "adk"],
+  "trials": 3,
+  "primary_claude_calls": 360,
+  "primary_worst_cost_usd": 72.0,
+  "maximum_claude_calls": 720,
+  "maximum_worst_cost_usd": 144.0,
+  "max_claude_call_usd": 0.2,
+  "max_budget_usd": 150.0,
+  "permissions": "read-only/no-tools",
+  "failures": [],
+  "plan_sha256": "b16fa3f07933615db9e666e9c531f2ec1e7ea80fc2f4a1f960c04255e6dc155f"
+}

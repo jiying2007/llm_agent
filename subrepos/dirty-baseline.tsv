@@ -1,4 +1,4 @@
 repo	expected_state	baseline_ref	status_fingerprint	change_count	expected_classification	analysis_policy	last_scanned_at	expires_on	owner	reason
-OpenSpec	dirty	observe-baseline	385f220663e442f93e150c5b1397cb334f3c99c0dbc83a44e0b7a9c475f99d23	655	mode+content	commit-snapshot-only	2026-07-31	2026-08-07	adk-maintainer	reference-repo-local-state
-superpowers	dirty	observe-baseline	de009e378c682c59be9ee534ac63bcfbcda952068b0ff1186cff0404f2f109a2	115	mode+content+type	commit-snapshot-only	2026-07-31	2026-08-07	adk-maintainer	reference-repo-local-state
-vibeflow	dirty	observe-baseline	d5c55b29c57e876243e20868252b49e13ec7cd06759bef596f87e03d067260cd	216	mode	commit-snapshot-only	2026-07-31	2026-08-07	adk-maintainer	reference-repo-local-state
+OpenSpec	dirty	observe-baseline	385f220663e442f93e150c5b1397cb334f3c99c0dbc83a44e0b7a9c475f99d23	655	mode+content	commit-snapshot-only	2026-08-24	2026-08-31	adk-maintainer	reference-repo-local-state
+superpowers	dirty	observe-baseline	de009e378c682c59be9ee534ac63bcfbcda952068b0ff1186cff0404f2f109a2	115	mode+content+type	commit-snapshot-only	2026-08-24	2026-08-31	adk-maintainer	reference-repo-local-state
+vibeflow	dirty	observe-baseline	d5c55b29c57e876243e20868252b49e13ec7cd06759bef596f87e03d067260cd	216	mode	commit-snapshot-only	2026-08-24	2026-08-31	adk-maintainer	reference-repo-local-state
