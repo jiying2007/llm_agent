@@ -37,7 +37,7 @@
     "full": {"total": 68, "pass": 68, "fail": 0, "elapsed_ms": null, "scope": "pushed-rc.2-clean-commit"},
     "remediation_full": "python-3.11.15-and-3.12.13-each-68/68-pass-source-snapshot-8a5b486c",
     "root_quick": "55/55-pass-current-working-tree-integration",
-    "root_release_quick": "54/54-pass-pushed-baseline-before-remediation",
+    "root_release_quick": "53/54-pass; only-software-m5-readiness-fail-closed-on-official-4.0-artifact-and-field-blockers",
     "root_regression": "23/23-pass-current-remediation-tree",
     "adk_harden_readiness": "snapshot-bound-supported-full-receipt-reused; duplicate-full-skipped",
     "token_budget": "pass-root-active-doc-512/520-cumulative-agents-estimated-2520",
