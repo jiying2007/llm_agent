@@ -47,6 +47,11 @@ targets = {
             "health_adapter": "codex-global-health",
             "footprint_check": "scripts/check-runtime-live-footprint.sh",
             "target_policy_check": "scripts/check-global-codex-target-policy.sh",
+            "runtime_footprint": {
+                "required_skills": ["adk-runtime-router"],
+                "forbidden_skills": ["using-superpowers"],
+                "forbidden_paths": ["vendor/plugins/superpowers"],
+            },
             "required_evidence": [
                 "~/codex build",
                 "~/codex doctor",
@@ -191,6 +196,11 @@ def enable_second_target():
         "health_adapter": "claude-code-health",
         "footprint_check": "scripts/check-runtime-live-footprint.sh",
         "target_policy_check": "scripts/check-global-codex-target-policy.sh",
+        "runtime_footprint": {
+            "required_skills": ["adk-runtime-router"],
+            "forbidden_skills": ["using-superpowers"],
+            "forbidden_paths": ["vendor/plugins/superpowers"],
+        },
         "required_evidence": [
             "declared source repo",
             "declared live root",
@@ -238,6 +248,8 @@ elif case == "second_enabled_missing_adapter":
 elif case == "second_enabled_empty_chain":
     second_target, _second_adapter = enable_second_target()
     second_target["source_to_live_chain"] = []
+elif case == "missing_runtime_footprint":
+    target.pop("runtime_footprint")
 else:
     raise SystemExit(f"unknown case: {case}")
 
@@ -376,6 +388,7 @@ expect_fail "second_enabled_runtime_mismatch" "enabled runtime target health_ada
 expect_fail "second_enabled_missing_binding" "enabled runtime target health_adapter missing target binding: claude-code-home -> claude-code-health"
 expect_fail "second_enabled_missing_adapter" "enabled runtime target health_adapter not declared: claude-code-home -> missing-claude-health"
 expect_fail "second_enabled_empty_chain" "enabled runtime target source_to_live_chain must be non-empty: claude-code-home"
+expect_fail "missing_runtime_footprint" "enabled runtime target missing runtime_footprint: codex-home"
 expect_health_fail "runtime_mismatch" "runtime health adapter runtime mismatch"
 expect_health_fail "disabled_adapter" "runtime health adapter is not enabled"
 expect_health_fail "missing_profile" "runtime health adapter does not support profile=strict" "strict"

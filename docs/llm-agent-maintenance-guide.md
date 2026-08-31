@@ -121,7 +121,7 @@ rtk scripts/check-adk-harden-readiness.sh . --require-pilot
 
 ### 3.3.1 治理产品化复核规则
 
-每次复核 `fallback-sunset`、upstream intake 或 `~/codex -> ~/.codex` live 状态时，必须产出可审查报告，不只更新 `subrepos/phase-gate.env`。报告默认写入 `reports/`，至少包含：
+每次复核 ADK 原生运行 footprint、upstream intake 或 `~/codex -> ~/.codex` live 状态时，必须产出可审查报告，不只更新 `subrepos/phase-gate.env`。报告默认写入 `reports/`，至少包含：
 
 - Summary：本轮目标、非目标和结论。
 - Baseline：父仓状态、`agent-dev-kit` 状态、`known_dirty/unexpected_dirty/stale_baseline`、phase gate 原状态。
@@ -333,7 +333,7 @@ $HOME/.codex/.adk-backups/YYYYMMDDTHHMMSSZ
 - adk 资产更新必须先在 `llm_agent/agent-dev-kit` 通过回归，再交给 `~/codex` 注册、build、doctor 和 apply。
 - 任务开始前如需判定技能、fallback 或跳过条件，优先使用 `adk-runtime-router`。
 - 测试策略、代码审查、并行 agent、worktree 和分支收尾分别优先使用 `adk-test-strategy`、`adk-code-review-loop`、`adk-parallel-agent-governance`、`adk-worktree-governance`、`adk-branch-closeout`。
-- 兼容 fallback 状态以 `agent-dev-kit/docs/reference/fallback-sunset-matrix.md` 为准，不做无证据下线；candidate-sunset 只能在 routing/profile/pilot/handoff/live 证据满足后进入观察。
+- 外部参考仓只作 intake/provenance，不进入 ADK runtime fallback；运行 footprint 以 `manifests/runtime_targets.json` 的 required/forbidden 声明为准。
 - 长任务优先使用 `adk-planning-execution-loop`。
 - 多技能冲突时以 `adk-runtime-router` 先做 primary/supporting/fallback 裁决；需要组合治理时再叠加 `adk-skill-composition-governance`。
 - 第三方技能、脚本或参考资产进入全局环境前必须使用 `adk-security-supply-chain`。
@@ -367,7 +367,7 @@ rtk scripts/evidence-bundle.sh . --out reports/evidence-bundle.md
 rtk scripts/evidence-bundle.sh . --format json
 ```
 
-证据包会汇总 `adk.lock`、runtime target registry、phase gate、subrepo state、reference dirty triage、runtime pilot、runtime health、runtime live 实装态、pilot readiness 和 fallback sunset 结果。它不替代完整回归，但适合提交说明、PR 描述和发布记录附证。
+证据包会汇总 `adk.lock`、runtime target registry、phase gate、subrepo state、reference dirty triage、runtime pilot、runtime health、runtime live required/forbidden footprint 和 pilot readiness。它不替代完整回归，但适合提交说明、PR 描述和发布记录附证。
 
 runtime live 实装态单独使用：
 

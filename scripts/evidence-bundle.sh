@@ -150,24 +150,21 @@ subrepo_args=("${ROOT}" --summary-json)
 capture_or_run subrepo_state check-subrepo-state.sh "${ROOT}/scripts/check-subrepo-state.sh" "${subrepo_args[@]}"
 capture_or_run reference_dirty_triage check-reference-dirty-triage.sh "${ROOT}/scripts/check-reference-dirty-triage.sh" "${ROOT}" --summary-json
 capture_or_run runtime_health check-runtime-health.sh "${ROOT}/scripts/check-runtime-health.sh" "${ROOT}" --profile minimal --summary-json
-capture_or_run runtime_live check-runtime-live-footprint.sh "${ROOT}/scripts/check-runtime-live-footprint.sh" "${ROOT}" --summary-json
-# These three checks are read-only, have disjoint temporary outputs and do not
+capture_or_run runtime_live check-runtime-live-footprint.sh "${ROOT}/scripts/check-runtime-live-footprint.sh" "${ROOT}" --summary-json --strict
+# These two checks are read-only, have disjoint temporary outputs and do not
 # consume one another. Run them as one bounded wave after all reusable checks.
 run_capture runtime_pilot "${ROOT}/scripts/check-runtime-pilot.sh" "${ROOT}" evidence &
 runtime_pilot_pid=$!
 run_capture pilot_readiness "${ADK_DIR}/scripts/pilot-readiness.sh" --summary-json &
 pilot_readiness_pid=$!
-run_capture fallback_sunset "${ADK_DIR}/scripts/check-fallback-sunset.sh" --summary-json &
-fallback_sunset_pid=$!
 wait "${runtime_pilot_pid}"
 wait "${pilot_readiness_pid}"
-wait "${fallback_sunset_pid}"
 
 root_head="$(rtk git -C "${ROOT}" rev-parse --short HEAD)"
 adk_head="$(rtk git -C "${ADK_DIR}" rev-parse --short HEAD)"
 generated_at="$(date -Iseconds)"
 overall_status="pass"
-for check_name in adk_lock runtime_targets phase_gate subrepo_state reference_dirty_triage runtime_pilot runtime_health runtime_live pilot_readiness fallback_sunset; do
+for check_name in adk_lock runtime_targets phase_gate subrepo_state reference_dirty_triage runtime_pilot runtime_health runtime_live pilot_readiness; do
   if [[ "$(cat "${TMP_DIR}/${check_name}.rc")" -ne 0 ]]; then
     overall_status="needs-fix"
   fi
@@ -203,7 +200,6 @@ write_markdown() {
 | runtime_health | $(cat "${TMP_DIR}/runtime_health.rc") | $(compact_file "${TMP_DIR}/runtime_health.out") |
 | runtime_live_footprint | $(cat "${TMP_DIR}/runtime_live.rc") | $(compact_file "${TMP_DIR}/runtime_live.out") |
 | pilot_readiness | $(cat "${TMP_DIR}/pilot_readiness.rc") | $(compact_file "${TMP_DIR}/pilot_readiness.out") |
-| fallback_sunset | $(cat "${TMP_DIR}/fallback_sunset.rc") | $(compact_file "${TMP_DIR}/fallback_sunset.out") |
 MD
 }
 
@@ -217,7 +213,7 @@ write_json() {
   printf '  "checks": [\n'
   local first=1
   local name
-  for name in adk_lock runtime_targets phase_gate subrepo_state reference_dirty_triage runtime_pilot runtime_health runtime_live pilot_readiness fallback_sunset; do
+  for name in adk_lock runtime_targets phase_gate subrepo_state reference_dirty_triage runtime_pilot runtime_health runtime_live pilot_readiness; do
     [[ "${first}" -eq 1 ]] || printf ',\n'
     first=0
     printf '    {"name": %s, "exit_code": %s, "summary": %s}' \

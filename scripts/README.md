@@ -23,7 +23,7 @@ repo,group,priority,sync_mode,branch,enabled,notes,status,owner,last_reviewed_on
 
 - 版本锁: `agent-dev-kit.version=2.9.0`
 - Pilot readiness: 10/10 ready，planned=0，`device_needs_fix=0`，`device_simulated_pass=1`
-- Fallback replacement score: 70/70
+- Runtime footprint: ADK required Skill 必须存在，外部兼容 Skill/vendor 路径必须不存在
 - Codex 交接: `agent-dev-kit -> ~/codex -> ~/.codex` 只通过 handoff/build/plan/apply 链路进入运行目录
 - Runtime boundary: 禁止 adk 绕过 `~/codex` 直接写入 `~/.codex`
 - Production-field: 已有模拟设备状态机闭环；真实 production-ready 仍需实机烧录/readback、boot log、HIL/产测、OTA 回滚和现场包证据
@@ -35,7 +35,6 @@ repo,group,priority,sync_mode,branch,enabled,notes,status,owner,last_reviewed_on
 
 - `harden-adk`：压实 adk 基线
 - `live-refresh`：刷新 `~/codex -> ~/.codex` 运行态证据
-- `fallback-sunset`：推进 Superpowers fallback 候选下线
 - `upstream-intake-cycle`：恢复参考子仓增量吸收周期
 - `post-harden`：压实完成后的常规维护
 
@@ -186,7 +185,7 @@ scripts/evidence-bundle.sh . --format json --fail-on-needs-fix
 scripts/evidence-bundle.sh . --format json --max-summary-chars 240
 ```
 
-该脚本汇总 `adk.lock`、runtime target registry、runtime health adapter contract、phase gate、subrepo state、reference dirty triage、runtime pilot、runtime health、runtime live 实装态、pilot readiness 和 fallback sunset 结果，用于提交前或发布前附证；默认会截断单项 summary，避免证据摘要本身消耗过多上下文。
+该脚本汇总 `adk.lock`、runtime target registry、runtime health adapter contract、phase gate、subrepo state、reference dirty triage、runtime pilot、runtime health、runtime live required/forbidden footprint 和 pilot readiness，用于提交前或发布前附证；默认会截断单项 summary，避免证据摘要本身消耗过多上下文。
 
 治理健康与复核报告脚本：
 
@@ -216,7 +215,7 @@ rtk bash ~/codex/scripts/runtime-control.sh snapshot  # 唯一任务、Token、�
 rtk bash ~/codex/scripts/runtime-control.sh watch     # 动态实时观察同一状态与决策
 ```
 
-未传 `--runtime-root` 时，`check-runtime-live-footprint.sh` 从 `manifests/runtime_targets.json` 读取默认 target 的 `live_root`，并检查 fallback 矩阵中的 adk 等价 skill 是否已在目标 direct/system/vendor 路径实装；任务、Token、上下文和动作建议只读取 `~/codex/scripts/runtime-control.sh` 的版本化输出。
+未传 `--runtime-root` 时，`check-runtime-live-footprint.sh` 从 `manifests/runtime_targets.json` 读取默认 target 的 `live_root` 和 `runtime_footprint`，检查 required ADK Skill 已在 direct/system/vendor 路径实装，并拒绝 forbidden compatibility Skill/vendor 路径；任务、Token、上下文和动作建议只读取 `~/codex/scripts/runtime-control.sh` 的版本化输出。
 
 Token budget 检查脚本：
 ```bash

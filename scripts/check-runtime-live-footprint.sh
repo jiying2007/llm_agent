@@ -31,9 +31,9 @@ while [[ $# -gt 0 ]]; do
       cat <<USAGE
 usage: scripts/check-runtime-live-footprint.sh [root] [--runtime-root <path>] [--summary-json] [--strict]
 
-Checks whether adk equivalents from the fallback sunset matrix are present in
-the configured live runtime. Direct skills, system skills and versioned vendor skills
-are all treated as live.
+Checks the default target's declared runtime footprint: required ADK skills
+must be live, while forbidden compatibility skills and paths must be absent.
+Direct skills, system skills and versioned vendor skills are all inspected.
 USAGE
       exit 0
       ;;
@@ -44,11 +44,9 @@ USAGE
   esac
 done
 
-ADK_DIR="${ROOT}/agent-dev-kit"
-MATRIX="${ADK_DIR}/docs/reference/fallback-sunset-matrix.tsv"
 TARGETS="${ROOT}/manifests/runtime_targets.json"
-[[ -f "${MATRIX}" ]] || {
-  echo "[FAIL] fallback matrix missing: ${MATRIX}" >&2
+[[ -f "${TARGETS}" ]] || {
+  echo "[FAIL] runtime targets missing: ${TARGETS}" >&2
   exit 1
 }
 
@@ -81,6 +79,32 @@ json_string() {
   printf '"%s"' "${value}"
 }
 
+manifest_values() {
+  local field="$1"
+  python3 - "${TARGETS}" "${field}" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], "r", encoding="utf-8") as handle:
+    manifest = json.load(handle)
+
+target_id = manifest.get("default_target")
+target = next((item for item in manifest.get("targets", []) if item.get("id") == target_id), None)
+if not target:
+    raise SystemExit("runtime default target missing")
+footprint = target.get("runtime_footprint")
+if not isinstance(footprint, dict):
+    raise SystemExit("runtime default target footprint missing")
+values = footprint.get(sys.argv[2])
+if not isinstance(values, list):
+    raise SystemExit("runtime footprint field must be an array")
+for value in values:
+    if not isinstance(value, str) or not value:
+        raise SystemExit("runtime footprint values must be non-empty strings")
+    print(value)
+PY
+}
+
 skill_live_path() {
   local skill="$1"
   local found=""
@@ -111,77 +135,79 @@ skill_live_path() {
   return 1
 }
 
-extract_matched_skill() {
-  awk '
-    {
-      for (i = 1; i <= NF; i++) {
-        if ($i ~ /^skill=/) {
-          value=$i
-          sub(/^skill=/, "", value)
-          print value
-          exit
-        }
-      }
-    }
-  ' <<< "$1"
-}
-
-rows=0
 required=0
 live=0
 missing_required=0
-missing_optional=0
 first_missing="-"
+forbidden_skills=0
+forbidden_paths=0
+first_forbidden="-"
+required_values="$(manifest_values required_skills)" || exit 1
+forbidden_skill_values="$(manifest_values forbidden_skills)" || exit 1
+forbidden_path_values="$(manifest_values forbidden_paths)" || exit 1
 
-while IFS=$'\t' read -r fallback_skill adk_equivalent status owner review_by live_requirement next_step match_text pilot_refs; do
-  [[ -n "${fallback_skill}" ]] || continue
-  rows=$((rows + 1))
-
-  match_output="$(bash "${ADK_DIR}/scripts/devkit.sh" match --text "${match_text}" 2>/dev/null || true)"
-  matched_skill="$(extract_matched_skill "${match_output}")"
-  [[ -n "${matched_skill}" ]] || matched_skill="${adk_equivalent%%+*}"
-
-  path="$(skill_live_path "${matched_skill}" || true)"
+while IFS= read -r required_skill; do
+  [[ -n "${required_skill}" ]] || continue
+  required=$((required + 1))
+  path="$(skill_live_path "${required_skill}" || true)"
   if [[ -n "${path}" ]]; then
     live=$((live + 1))
     continue
   fi
+  missing_required=$((missing_required + 1))
+  [[ "${first_missing}" == "-" ]] && first_missing="${required_skill}"
+done <<< "${required_values}"
 
-  case "${live_requirement}" in
-    core-live-required)
-      required=$((required + 1))
-      missing_required=$((missing_required + 1))
-      [[ "${first_missing}" == "-" ]] && first_missing="${matched_skill}"
-      ;;
-    optional-live-allowed|handoff-ready-only)
-      missing_optional=$((missing_optional + 1))
-      ;;
-  esac
-done < <(tail -n +2 "${MATRIX}")
+while IFS= read -r forbidden_skill; do
+  [[ -n "${forbidden_skill}" ]] || continue
+  path="$(skill_live_path "${forbidden_skill}" || true)"
+  if [[ -n "${path}" ]]; then
+    forbidden_skills=$((forbidden_skills + 1))
+    [[ "${first_forbidden}" == "-" ]] && first_forbidden="${forbidden_skill}"
+  fi
+done <<< "${forbidden_skill_values}"
+
+while IFS= read -r forbidden_path; do
+  [[ -n "${forbidden_path}" ]] || continue
+  if [[ -e "${RUNTIME_ROOT}/${forbidden_path}" || -L "${RUNTIME_ROOT}/${forbidden_path}" ]]; then
+    forbidden_paths=$((forbidden_paths + 1))
+    [[ "${first_forbidden}" == "-" ]] && first_forbidden="${forbidden_path}"
+  fi
+done <<< "${forbidden_path_values}"
+
+[[ "${required}" -gt 0 ]] || {
+  echo "[FAIL] runtime footprint required_skills is empty" >&2
+  exit 1
+}
 
 status="pass"
-if [[ "${missing_required}" -gt 0 ]]; then
+if [[ "${missing_required}" -gt 0 || "${forbidden_skills}" -gt 0 || "${forbidden_paths}" -gt 0 ]]; then
   status="needs-fix"
 fi
 
 if [[ "${SUMMARY_JSON}" -eq 1 ]]; then
-  printf '{"status":"%s","runtime_root":%s,"rows":%s,"live":%s,"missing_required":%s,"missing_optional":%s,"first_missing":%s}\n' \
+  printf '{"status":"%s","runtime_root":%s,"required":%s,"live":%s,"missing_required":%s,"forbidden_skills":%s,"forbidden_paths":%s,"first_missing":%s,"first_forbidden":%s}\n' \
     "${status}" \
     "$(json_string "${RUNTIME_ROOT}")" \
-    "${rows}" \
+    "${required}" \
     "${live}" \
     "${missing_required}" \
-    "${missing_optional}" \
-    "$(json_string "${first_missing}")"
+    "${forbidden_skills}" \
+    "${forbidden_paths}" \
+    "$(json_string "${first_missing}")" \
+    "$(json_string "${first_forbidden}")"
 else
   echo "[INFO] runtime_root=${RUNTIME_ROOT}"
-  echo "[INFO] fallback_rows=${rows} live_matched=${live} missing_required=${missing_required} missing_optional=${missing_optional}"
+  echo "[INFO] required=${required} live_matched=${live} missing_required=${missing_required} forbidden_skills=${forbidden_skills} forbidden_paths=${forbidden_paths}"
   if [[ "${missing_required}" -gt 0 ]]; then
     echo "[WARN] first_missing_required=${first_missing}"
+  fi
+  if [[ "${forbidden_skills}" -gt 0 || "${forbidden_paths}" -gt 0 ]]; then
+    echo "[WARN] first_forbidden=${first_forbidden}"
   fi
   echo "[${status}] runtime live footprint checked"
 fi
 
-if [[ "${STRICT}" -eq 1 && "${missing_required}" -gt 0 ]]; then
+if [[ "${STRICT}" -eq 1 && ( "${missing_required}" -gt 0 || "${forbidden_skills}" -gt 0 || "${forbidden_paths}" -gt 0 ) ]]; then
   exit 1
 fi

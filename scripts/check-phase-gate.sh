@@ -56,7 +56,7 @@ last_live_refresh="$(value_for last_live_refresh)"
 next_review_by="$(value_for next_review_by)"
 
 case "${phase}" in
-  harden-adk|live-refresh|fallback-sunset|upstream-intake-cycle|post-harden)
+  harden-adk|live-refresh|upstream-intake-cycle|post-harden)
     ;;
   *)
     fail "invalid phase: ${phase}"
@@ -77,7 +77,7 @@ if [[ "${allow_upstream_sync}" == "yes" ]]; then
   [[ "${opened_on}" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]] || fail "opened_on required when upstream sync is allowed"
 fi
 
-if [[ "${phase}" == "fallback-sunset" || "${phase}" == "live-refresh" ]]; then
+if [[ "${phase}" == "live-refresh" ]]; then
   [[ "${last_live_refresh}" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]] || fail "last_live_refresh required for ${phase}"
   [[ "${next_review_by}" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]] || fail "next_review_by required for ${phase}"
   date_ge_today "${next_review_by}" || fail "next_review_by expired: ${next_review_by}"

@@ -178,8 +178,6 @@ if [[ "${CHECK_RUNTIME_ROUTING}" -eq 1 ]]; then
   bash "${ROOT}/scripts/check-runtime-routing.sh" "${ROOT}"
 fi
 
-bash "${ADK_DIR}/scripts/check-fallback-sunset.sh" --summary-json
-
 if [[ "${CHECK_UPSTREAM_INTAKE}" -eq 1 ]]; then
   bash "${ROOT}/scripts/check-upstream-intake-readiness.sh" "${ROOT}"
 fi
@@ -188,7 +186,7 @@ if [[ "${CHECK_CODEX_HANDOFF}" -eq 1 ]]; then
   if [[ -x "${ADK_DIR}/scripts/check-codex-handoff.sh" ]]; then
     bash "${ADK_DIR}/scripts/check-codex-handoff.sh" --codex-root "$HOME/codex"
   else
-    bash "${ROOT}/scripts/check-runtime-live-footprint.sh" "${ROOT}" --summary-json
+    bash "${ROOT}/scripts/check-runtime-live-footprint.sh" "${ROOT}" --summary-json --strict
     echo "[PASS] runtime live handoff evidence ready"
   fi
 fi

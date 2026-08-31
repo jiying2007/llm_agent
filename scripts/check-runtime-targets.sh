@@ -410,6 +410,29 @@ if manifest:
                     fail(f"enabled runtime target missing {field}: {target_id}")
                 else:
                     script_must_exist(script)
+            footprint = item.get("runtime_footprint")
+            if not isinstance(footprint, dict):
+                fail(f"enabled runtime target missing runtime_footprint: {target_id}")
+            else:
+                required_skills = footprint.get("required_skills")
+                forbidden_skills = footprint.get("forbidden_skills")
+                forbidden_paths = footprint.get("forbidden_paths")
+                if not isinstance(required_skills, list) or not required_skills or not all(isinstance(value, str) and value for value in required_skills):
+                    fail(f"enabled runtime target runtime_footprint.required_skills must be a non-empty string array: {target_id}")
+                    required_skills = []
+                if not isinstance(forbidden_skills, list) or not forbidden_skills or not all(isinstance(value, str) and value for value in forbidden_skills):
+                    fail(f"enabled runtime target runtime_footprint.forbidden_skills must be a non-empty string array: {target_id}")
+                    forbidden_skills = []
+                if not isinstance(forbidden_paths, list) or not forbidden_paths or not all(isinstance(value, str) and value and not os.path.isabs(value) and ".." not in value.split("/") for value in forbidden_paths):
+                    fail(f"enabled runtime target runtime_footprint.forbidden_paths must contain safe relative paths: {target_id}")
+                    forbidden_paths = []
+                if len(required_skills) != len(set(required_skills)):
+                    fail(f"enabled runtime target runtime_footprint.required_skills must be unique: {target_id}")
+                if len(forbidden_skills) != len(set(forbidden_skills)):
+                    fail(f"enabled runtime target runtime_footprint.forbidden_skills must be unique: {target_id}")
+                overlap = set(required_skills) & set(forbidden_skills)
+                if overlap:
+                    fail(f"enabled runtime target runtime_footprint skill overlap: {target_id} -> {', '.join(sorted(overlap))}")
             evidence = set(item.get("required_evidence") or [])
             required_evidence_classes = {
                 "dry-run apply evidence": ("dry-run",),
@@ -426,7 +449,7 @@ if manifest:
                 fail(f"disabled runtime target must use role=target-candidate: {item.get('id')}")
             if item.get("write_policy") != "not-enabled":
                 fail(f"disabled runtime target must use write_policy=not-enabled: {item.get('id')}")
-            for field in ("source_repo", "live_root", "registry_repo", "health_adapter", "footprint_check", "target_policy_check"):
+            for field in ("source_repo", "live_root", "registry_repo", "health_adapter", "footprint_check", "target_policy_check", "runtime_footprint"):
                 if item.get(field) is not None:
                     fail(f"disabled runtime target must not declare active {field}: {item.get('id')}")
             if item.get("source_to_live_chain") != []:

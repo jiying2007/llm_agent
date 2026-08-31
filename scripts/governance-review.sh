@@ -104,7 +104,7 @@ run_capture phase_gate "${ROOT}/scripts/check-phase-gate.sh" "${ROOT}" --summary
 run_capture subrepo_state "${ROOT}/scripts/check-subrepo-state.sh" "${ROOT}" --summary-json
 run_capture governance_health "${ROOT}/scripts/governance-health.sh" "${ROOT}" --format json --max-summary-chars 180
 run_capture evidence_bundle "${ROOT}/scripts/evidence-bundle.sh" "${ROOT}" --format json --max-summary-chars 240
-run_capture runtime_live "${ROOT}/scripts/check-runtime-live-footprint.sh" "${ROOT}" --summary-json
+run_capture runtime_live "${ROOT}/scripts/check-runtime-live-footprint.sh" "${ROOT}" --summary-json --strict
 
 generated_at="$(date -Iseconds)"
 root_head="$(git -C "${ROOT}" rev-parse --short HEAD 2>/dev/null || printf '-')"

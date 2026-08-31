@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "active",
-  "last_updated": "2026-07-09",
+  "last_updated": "2026-08-31",
   "default_target": "codex-home",
   "supported_runtime_kinds": [
     "codex",
@@ -33,6 +33,40 @@
       "health_adapter": "codex-global-health",
       "footprint_check": "scripts/check-runtime-live-footprint.sh",
       "target_policy_check": "scripts/check-global-codex-target-policy.sh",
+      "runtime_footprint": {
+        "required_skills": [
+          "adk-runtime-router",
+          "adk-requirements-triage",
+          "adk-task-breakdown",
+          "adk-test-strategy",
+          "adk-systematic-debugging",
+          "adk-code-review-loop",
+          "adk-commit-pr-quality-gate",
+          "adk-verification-before-completion",
+          "adk-parallel-agent-governance",
+          "adk-worktree-governance",
+          "adk-branch-closeout"
+        ],
+        "forbidden_skills": [
+          "brainstorming",
+          "dispatching-parallel-agents",
+          "executing-plans",
+          "finishing-a-development-branch",
+          "receiving-code-review",
+          "requesting-code-review",
+          "subagent-driven-development",
+          "systematic-debugging",
+          "test-driven-development",
+          "using-git-worktrees",
+          "using-superpowers",
+          "verification-before-completion",
+          "writing-plans",
+          "writing-skills"
+        ],
+        "forbidden_paths": [
+          "vendor/plugins/superpowers"
+        ]
+      },
       "required_evidence": [
         "~/codex build",
         "~/codex doctor",

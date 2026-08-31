@@ -25,7 +25,7 @@ while [[ $# -gt 0 ]]; do
 usage: scripts/governance-health.sh [root] [--format markdown|json] [--max-summary-chars <n>]
 
 Prints a compact governance health view across goal drift, evidence, subrepo
-state, pilot readiness, fallback sunset and runtime boundary checks.
+state, pilot readiness, native runtime footprint and runtime boundary checks.
 USAGE
       exit 0
       ;;
@@ -78,9 +78,8 @@ run_capture stale_refs "${ROOT}/scripts/check-stale-references.sh" "${ROOT}"
 run_capture subrepo_state "${ROOT}/scripts/check-subrepo-state.sh" "${ROOT}" --summary-json
 run_capture evidence_bundle "${ROOT}/scripts/evidence-bundle.sh" "${ROOT}" --format json
 run_capture pilot_readiness "${ADK_DIR}/scripts/pilot-readiness.sh" --summary-json
-run_capture fallback_sunset "${ADK_DIR}/scripts/check-fallback-sunset.sh" --summary-json
 run_capture runtime_boundary "${ADK_DIR}/scripts/check-runtime-boundary.sh" --summary-json
-run_capture runtime_live "${ROOT}/scripts/check-runtime-live-footprint.sh" "${ROOT}" --summary-json
+run_capture runtime_live "${ROOT}/scripts/check-runtime-live-footprint.sh" "${ROOT}" --summary-json --strict
 run_capture runtime_control rtk bash "${RUNTIME_CONTROL}" snapshot
 
 compact_summary() {
@@ -94,7 +93,7 @@ compact_summary() {
 }
 
 overall="pass"
-for name in stale_refs subrepo_state evidence_bundle pilot_readiness fallback_sunset runtime_boundary runtime_live runtime_control; do
+for name in stale_refs subrepo_state evidence_bundle pilot_readiness runtime_boundary runtime_live runtime_control; do
   if [[ "$(cat "${TMP_DIR}/${name}.rc")" -ne 0 ]]; then
     overall="needs-fix"
   fi
@@ -113,11 +112,11 @@ fi
 if rg -q '"device_simulated_pass":[1-9]' "${TMP_DIR}/pilot_readiness.out"; then
   top_actions+=("production-field 已有模拟设备闭环；生产放行前仍需真实烧录、HIL、OTA 回滚和现场证据")
 fi
-if rg -q '"replacement_score":6[0-9]' "${TMP_DIR}/fallback_sunset.out"; then
-  top_actions+=("补 runtime live gap，已满分能力先推进 candidate-sunset 观察")
-fi
 if rg -q '"missing_required":[1-9]' "${TMP_DIR}/runtime_live.out"; then
   top_actions+=("将缺失的 adk 等价 skill 经 ~/codex apply 到 ~/.codex")
+fi
+if rg -q '"forbidden_(skills|paths)":[1-9]' "${TMP_DIR}/runtime_live.out"; then
+  top_actions+=("通过 source-to-live 清理运行态外部兼容 Skill 与 vendor 路径")
 fi
 if rg -q '"recommended_action": *"(checkpoint|compact|replan|stop)"' "${TMP_DIR}/runtime_control.out"; then
   top_actions+=("按 Runtime Control 决策执行 checkpoint、上下文压缩、重规划或停止")
@@ -131,7 +130,7 @@ if [[ "${FORMAT}" == "json" ]]; then
   printf '  "status": %s,\n' "$(json_string "${overall}")"
   printf '  "checks": [\n'
   first=1
-  for name in stale_refs subrepo_state evidence_bundle pilot_readiness fallback_sunset runtime_boundary runtime_live runtime_control; do
+  for name in stale_refs subrepo_state evidence_bundle pilot_readiness runtime_boundary runtime_live runtime_control; do
     [[ "${first}" -eq 1 ]] || printf ',\n'
     first=0
     printf '    {"name": %s, "exit_code": %s, "summary": %s}' \
@@ -156,7 +155,7 @@ else
   echo
   echo "| Check | Exit Code | Summary |"
   echo "|---|---:|---|"
-  for name in stale_refs subrepo_state evidence_bundle pilot_readiness fallback_sunset runtime_boundary runtime_live runtime_control; do
+  for name in stale_refs subrepo_state evidence_bundle pilot_readiness runtime_boundary runtime_live runtime_control; do
     summary="$(compact_summary "${TMP_DIR}/${name}.out")"
     printf '| %s | %s | %s |\n' "${name}" "$(cat "${TMP_DIR}/${name}.rc")" "${summary}"
   done
