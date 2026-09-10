@@ -1,0 +1,89 @@
+{
+  "schema": "llm-agent-gitlinks/v1",
+  "policy": {
+    "recursive_checkout_forbidden": true,
+    "unknown_gitlink_forbidden": true,
+    "submodule_path_must_be_registered": true,
+    "managed_dependency_requires_lock": true
+  },
+  "gitlinks": [
+    {
+      "path": "agent-dev-kit",
+      "kind": "managed-dependency",
+      "submodule": true,
+      "required": true,
+      "url": "https://github.com/jiying2007/agent-dev-kit.git",
+      "lock": "adk.lock"
+    },
+    {
+      "path": "OpenSpec",
+      "kind": "reference-repo",
+      "submodule": true,
+      "required": false,
+      "url": "https://github.com/Fission-AI/OpenSpec"
+    },
+    {
+      "path": "scale-engine",
+      "kind": "reference-repo",
+      "submodule": true,
+      "required": false,
+      "url": "https://gitee.com/hongmaple/scale-engine.git"
+    },
+    {
+      "path": "superpowers",
+      "kind": "reference-repo",
+      "submodule": true,
+      "required": false,
+      "url": "https://github.com/obra/superpowers"
+    },
+    {
+      "path": "vibeflow",
+      "kind": "reference-repo",
+      "submodule": true,
+      "required": false,
+      "url": "https://github.com/ttttstc/vibeflow.git"
+    },
+    {
+      "path": "oh-my-codex",
+      "kind": "reference-repo",
+      "submodule": true,
+      "required": false,
+      "url": "https://github.com/Yeachan-Heo/oh-my-codex.git"
+    },
+    {
+      "path": "planning-with-files",
+      "kind": "reference-repo",
+      "submodule": true,
+      "required": false,
+      "url": "https://github.com/OthmanAdi/planning-with-files.git"
+    },
+    {
+      "path": "mattpocock-skills",
+      "kind": "reference-repo",
+      "submodule": true,
+      "required": false,
+      "url": "https://github.com/mattpocock/skills"
+    },
+    {
+      "path": "hermes",
+      "kind": "opaque-reference-pin",
+      "submodule": false,
+      "required": false,
+      "notes": "Gitlink-only historical/reference pin; never traversed by CI."
+    },
+    {
+      "path": "hermes_data",
+      "kind": "opaque-reference-pin",
+      "submodule": false,
+      "required": false,
+      "notes": "Gitlink-only external data/reference pin; never traversed by CI."
+    },
+    {
+      "path": "team-codex-assets",
+      "kind": "opaque-reference-pin",
+      "submodule": false,
+      "required": false,
+      "notes": "Gitlink-only external asset pin; source-to-live is governed separately."
+    }
+  ]
+}
