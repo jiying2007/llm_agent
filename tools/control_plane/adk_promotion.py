@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import datetime as dt
 import json
 import os
 import subprocess
@@ -10,6 +11,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 
 from tools.control_plane.receipts import bind_receipt, write_receipt
+from tools.control_plane.status_projection import project, refresh_current_status
 
 LOCK_SCHEMA = "llm-agent-adk-lock/v2"
 PROMOTION_SCHEMA = "llm-agent-adk-promotion/v2"
@@ -107,11 +109,14 @@ def apply_promotion(root: Path, identity: CandidateIdentity, lock_text: str) -> 
         raise RuntimeError("root worktree contains unrelated changes; promotion requires an isolated worktree")
 
     lock_path = root / "adk.lock"
+    status_path = root / "reports" / "current-status.md"
     previous_lock = lock_path.read_text(encoding="utf-8") if lock_path.exists() else None
+    previous_status = status_path.read_text(encoding="utf-8") if status_path.exists() else None
     previous_gitlink = _current_gitlink(root)
     try:
         _atomic_write(lock_path, lock_text)
         _git(root, "update-index", "--add", "--cacheinfo", f"160000,{identity.commit},agent-dev-kit")
+        refresh_current_status(root)
         completed = subprocess.run(
             ["bash", "scripts/check-adk-lock.sh", ".", "--pin-only"],
             cwd=root,
@@ -122,11 +127,18 @@ def apply_promotion(root: Path, identity: CandidateIdentity, lock_text: str) -> 
         )
         if completed.returncode != 0:
             raise RuntimeError("post-apply pin validation failed: " + completed.stdout.strip())
+        projection = project(root, dt.date.today())
+        if projection.get("status") != "pass":
+            raise RuntimeError("post-apply status projection validation failed")
     except Exception:
         if previous_lock is None:
             lock_path.unlink(missing_ok=True)
         else:
             _atomic_write(lock_path, previous_lock)
+        if previous_status is None:
+            status_path.unlink(missing_ok=True)
+        else:
+            _atomic_write(status_path, previous_status)
         _git(
             root,
             "update-index",
@@ -165,12 +177,12 @@ def promotion_receipt(
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Plan or apply an atomic ADK gitlink+lock promotion")
+    parser = argparse.ArgumentParser(description="Plan or apply an atomic ADK gitlink+lock+status promotion")
     parser.add_argument("--root", default=".")
     parser.add_argument("--candidate-dir", default="agent-dev-kit")
     parser.add_argument("--ref", default="HEAD")
     parser.add_argument("--updated-at", required=True, help="Explicit YYYY-MM-DD provenance date")
-    parser.add_argument("--apply", action="store_true", help="Mutate adk.lock and staged gitlink; default is dry-run")
+    parser.add_argument("--apply", action="store_true", help="Mutate adk.lock, staged gitlink and generated current-status projection; default is dry-run")
     parser.add_argument("--receipt-out", help="Atomically write the content-addressed promotion receipt")
     parser.add_argument("--summary-json", action="store_true")
     args = parser.parse_args(argv)
