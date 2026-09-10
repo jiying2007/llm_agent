@@ -43,6 +43,13 @@
       "timeout_seconds": 30,
       "evidence_class": "test"
     },
+    "adk-promotion-transaction": {
+      "owner": "llm_agent",
+      "side_effect": "none",
+      "argv": ["bash", "tests/test_adk_promotion_transaction.sh"],
+      "timeout_seconds": 60,
+      "evidence_class": "test"
+    },
     "fresh-status": {
       "owner": "llm_agent",
       "side_effect": "none",
@@ -97,7 +104,8 @@
       "reference-pins",
       "source-hygiene",
       "status-projection",
-      "status-projection-regression"
+      "status-projection-regression",
+      "adk-promotion-transaction"
     ],
     "pr-fast": [
       "contract",
