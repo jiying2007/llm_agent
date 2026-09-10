@@ -36,6 +36,13 @@
       "timeout_seconds": 30,
       "evidence_class": "source"
     },
+    "status-projection-regression": {
+      "owner": "llm_agent",
+      "side_effect": "none",
+      "argv": ["bash", "tests/test_status_projection.sh"],
+      "timeout_seconds": 30,
+      "evidence_class": "test"
+    },
     "fresh-status": {
       "owner": "llm_agent",
       "side_effect": "none",
@@ -89,7 +96,8 @@
       "gitlink-registry",
       "reference-pins",
       "source-hygiene",
-      "status-projection"
+      "status-projection",
+      "status-projection-regression"
     ],
     "pr-fast": [
       "contract",
