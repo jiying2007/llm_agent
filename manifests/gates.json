@@ -19,6 +19,18 @@
       "argv": ["python3", "-m", "tools.control_plane.source_hygiene", "--root", "."],
       "evidence_class": "source"
     },
+    "status-projection": {
+      "owner": "llm_agent",
+      "side_effect": "none",
+      "argv": ["python3", "-m", "tools.control_plane.status_projection", "--root", "."],
+      "evidence_class": "source"
+    },
+    "fresh-status": {
+      "owner": "llm_agent",
+      "side_effect": "none",
+      "argv": ["python3", "-m", "tools.control_plane.status_projection", "--root", ".", "--require-fresh"],
+      "evidence_class": "release"
+    },
     "doc-sync": {
       "owner": "llm_agent",
       "side_effect": "none",
@@ -58,7 +70,8 @@
     "contract": [
       "adk-pin",
       "gitlink-registry",
-      "source-hygiene"
+      "source-hygiene",
+      "status-projection"
     ],
     "pr-fast": [
       "contract",
@@ -73,6 +86,7 @@
     ],
     "release": [
       "integration",
+      "fresh-status",
       "harden-readiness"
     ]
   }
