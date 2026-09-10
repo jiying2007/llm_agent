@@ -13,6 +13,12 @@
       "argv": ["python3", "-m", "tools.control_plane.gitlink_registry", "--root", "."],
       "evidence_class": "source"
     },
+    "reference-pins": {
+      "owner": "llm_agent",
+      "side_effect": "none",
+      "argv": ["python3", "-m", "tools.control_plane.reference_pins", "--root", "."],
+      "evidence_class": "source"
+    },
     "source-hygiene": {
       "owner": "llm_agent",
       "side_effect": "none",
@@ -70,6 +76,7 @@
     "contract": [
       "adk-pin",
       "gitlink-registry",
+      "reference-pins",
       "source-hygiene",
       "status-projection"
     ],
