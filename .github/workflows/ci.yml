@@ -34,7 +34,19 @@ jobs:
           python-version: '3.11'
 
       - name: Run immutable source contracts
-        run: python -m tools.control_plane.gate_runner --profile contract
+        run: >-
+          python -m tools.control_plane.gate_runner
+          --profile contract
+          --output-json /tmp/llm-agent-contract-receipt.json
+
+      - name: Upload contract receipt
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4
+        with:
+          name: llm-agent-contract-receipt
+          path: /tmp/llm-agent-contract-receipt.json
+          if-no-files-found: error
+          retention-days: 14
 
   integration-capability:
     name: integration-capability
@@ -112,4 +124,17 @@ jobs:
           python -m pip install ./agent-dev-kit
 
       - name: Run shared integration gate profile
-        run: python -m tools.control_plane.gate_runner --profile integration --capability adk-checkout
+        run: >-
+          python -m tools.control_plane.gate_runner
+          --profile integration
+          --capability adk-checkout
+          --output-json /tmp/llm-agent-integration-receipt.json
+
+      - name: Upload integration receipt
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4
+        with:
+          name: llm-agent-integration-receipt
+          path: /tmp/llm-agent-integration-receipt.json
+          if-no-files-found: error
+          retention-days: 14
