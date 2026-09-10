@@ -146,16 +146,17 @@ def promotion_receipt(
     updated_at: str,
     mode: str,
     status: str,
+    lock_lines: list[str],
 ) -> dict[str, object]:
-    source = _root_identity(root)
     payload: dict[str, object] = {
         "schema": PROMOTION_SCHEMA,
         "mode": mode,
         "status": status,
-        "source": source,
+        "source": _root_identity(root),
         "before_gitlink": before_gitlink,
         "candidate": asdict(identity),
         "lock_schema": LOCK_SCHEMA,
+        "lock": lock_lines,
         "updated_at": updated_at,
         "requires_fresh_cross_repo_verification": True,
         "release_authorized": False,
@@ -182,6 +183,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         identity = candidate_identity(candidate_dir, args.ref)
         lock_text = render_lock(identity, args.updated_at)
+        lock_lines = lock_text.splitlines()
         before = _current_gitlink(root)
         mode = "apply" if args.apply else "dry-run"
         status = "planned"
@@ -195,8 +197,8 @@ def main(argv: list[str] | None = None) -> int:
             updated_at=args.updated_at,
             mode=mode,
             status=status,
+            lock_lines=lock_lines,
         )
-        result["lock"] = lock_text.splitlines()
         if args.receipt_out:
             write_receipt(Path(args.receipt_out), result)
     except (OSError, RuntimeError, ValueError, json.JSONDecodeError) as exc:
