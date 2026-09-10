@@ -36,9 +36,40 @@ jobs:
       - name: Run immutable source contracts
         run: python -m tools.control_plane.gate_runner --profile contract
 
-  integration:
-    name: integration-when-authorized
+  integration-capability:
+    name: integration-capability
     needs: contract
+    runs-on: ubuntu-24.04
+    outputs:
+      available: ${{ steps.probe.outputs.available }}
+    env:
+      ADK_REPO_TOKEN: ${{ secrets.ADK_REPO_TOKEN }}
+    steps:
+      - name: Probe private ADK checkout capability
+        id: probe
+        shell: bash
+        run: |
+          if [[ -n "$ADK_REPO_TOKEN" ]]; then
+            echo 'available=true' >> "$GITHUB_OUTPUT"
+            echo '### ADK integration capability: available' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'available=false' >> "$GITHUB_OUTPUT"
+            echo '### ADK integration capability: unavailable' >> "$GITHUB_STEP_SUMMARY"
+            echo 'ADK_REPO_TOKEN is not configured. The actual integration job will be skipped, not reported as passed.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Enforce explicitly requested integration
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.require_adk_integration && steps.probe.outputs.available != 'true' }}
+        run: |
+          echo '[FAIL] ADK_REPO_TOKEN is required for requested integration run' >&2
+          exit 1
+
+  integration:
+    name: integration
+    needs:
+      - contract
+      - integration-capability
+    if: ${{ needs.integration-capability.outputs.available == 'true' }}
     runs-on: ubuntu-24.04
     env:
       ADK_REPO_TOKEN: ${{ secrets.ADK_REPO_TOKEN }}
@@ -56,6 +87,7 @@ jobs:
 
       - name: Resolve exact ADK pin from lock
         id: adk_pin
+        shell: bash
         run: |
           commit="$(awk -F= '$1=="agent-dev-kit.commit"{print $2; exit}' adk.lock)"
           if [[ ! "$commit" =~ ^[0-9a-f]{40}$ ]]; then
@@ -64,21 +96,7 @@ jobs:
           fi
           echo "commit=$commit" >> "$GITHUB_OUTPUT"
 
-      - name: Report unavailable private ADK credential
-        if: ${{ env.ADK_REPO_TOKEN == '' && !(github.event_name == 'workflow_dispatch' && inputs.require_adk_integration) }}
-        run: |
-          echo '### ADK integration unavailable' >> "$GITHUB_STEP_SUMMARY"
-          echo 'Static pin/registry contracts passed, but ADK_REPO_TOKEN is not configured for cross-private-repository checkout.' >> "$GITHUB_STEP_SUMMARY"
-          echo 'This job is not runtime/release evidence.' >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Require ADK credential when explicitly requested
-        if: ${{ env.ADK_REPO_TOKEN == '' && github.event_name == 'workflow_dispatch' && inputs.require_adk_integration }}
-        run: |
-          echo '[FAIL] ADK_REPO_TOKEN is required for requested integration run' >&2
-          exit 1
-
       - name: Checkout exact locked ADK source
-        if: ${{ env.ADK_REPO_TOKEN != '' }}
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
         with:
           repository: jiying2007/agent-dev-kit
@@ -88,12 +106,10 @@ jobs:
           persist-credentials: false
 
       - name: Install integration dependencies
-        if: ${{ env.ADK_REPO_TOKEN != '' }}
         run: |
           sudo apt-get update
           sudo apt-get install -y ripgrep shellcheck
           python -m pip install ./agent-dev-kit
 
       - name: Run shared integration gate profile
-        if: ${{ env.ADK_REPO_TOKEN != '' }}
         run: python -m tools.control_plane.gate_runner --profile integration --capability adk-checkout
