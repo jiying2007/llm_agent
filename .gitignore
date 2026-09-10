@@ -1,3 +1,5 @@
+.cache/
+.state/
 .worktrees/
 scratch/
 wechat-articles/

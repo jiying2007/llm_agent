@@ -1,10 +1,12 @@
 stages:
-  - validate
+  - contract
   - test
   - report
 
 variables:
-  GIT_SUBMODULE_STRATEGY: recursive
+  # Reference gitlinks are immutable observation inputs; CI must never recursively
+  # traverse every reference repository as part of the product gate.
+  GIT_SUBMODULE_STRATEGY: none
 
 default:
   image: ubuntu:24.04
@@ -12,42 +14,22 @@ default:
     - apt-get update
     - DEBIAN_FRONTEND=noninteractive apt-get install -y bash git python3 python3-yaml ripgrep
 
-validate-scripts:
-  stage: validate
+contract:
+  stage: contract
   script:
-    - bash -n scripts/*.sh
-    - python3 -m py_compile tools/codex_assets/*.py
+    - python3 -m tools.control_plane.gate_runner --profile contract
 
-validate-registry:
-  stage: validate
-  script:
-    - bash scripts/check-subrepo-state.sh .
-    - bash scripts/check-adoption-matrix-status.sh .
-
-validate-product-contracts:
-  stage: validate
-  script:
-    - bash tests/test_product_maturity_contracts.sh
-    - bash tests/test_reference_source_integrity.sh
-    - bash tests/test_software_m5_certification.sh
-
-check-coverage:
+pr-fast:
   stage: test
+  needs:
+    - contract
   script:
-    - bash scripts/check-agents-coverage.sh .
-
-check-docs:
-  stage: test
-  script:
-    - bash scripts/check-doc-sync.sh .
-
-full-check:
-  stage: test
-  script:
-    - bash scripts/check-all.sh --quick
+    - python3 -m tools.control_plane.gate_runner --profile pr-fast
 
 weekly-report:
   stage: report
+  needs:
+    - pr-fast
   script:
     - bash scripts/generate-weekly-report.sh
   artifacts:

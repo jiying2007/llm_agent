@@ -1,0 +1,13 @@
+# Cross-repository identity, release and governance contracts require owner review.
+/adk.lock @jiying2007
+/agent-dev-kit @jiying2007
+/manifests/gates.json @jiying2007
+/manifests/gitlinks.json @jiying2007
+/manifests/runtime_targets.json @jiying2007
+/manifests/software_m5_policy.json @jiying2007
+/.github/workflows/ @jiying2007
+/.gitlab-ci.yml @jiying2007
+/tools/control_plane/ @jiying2007
+/scripts/check-adk-lock.sh @jiying2007
+/scripts/check-adk-harden-readiness.sh @jiying2007
+/reports/current-status.md @jiying2007

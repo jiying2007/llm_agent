@@ -7,49 +7,138 @@ on:
       - master
   pull_request:
   workflow_dispatch:
+    inputs:
+      require_adk_integration:
+        description: Fail if the private ADK checkout credential is unavailable
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
 
+concurrency:
+  group: llm-agent-ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  product-gate:
+  contract:
+    name: contract
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout root source
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
         with:
           submodules: false
-
-      - name: Initialize only the locked ADK submodule
-        run: |
-          git submodule sync -- agent-dev-kit
-          git submodule update --init agent-dev-kit
+          persist-credentials: false
 
       - name: Set up Python
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: '3.11'
 
-      - name: Install gate dependencies
+      - name: Run immutable source contracts
+        run: >-
+          python -m tools.control_plane.gate_runner
+          --profile contract
+          --output-json /tmp/llm-agent-contract-receipt.json
+
+      - name: Upload contract receipt
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4
+        with:
+          name: llm-agent-contract-receipt
+          path: /tmp/llm-agent-contract-receipt.json
+          if-no-files-found: error
+          retention-days: 14
+
+  integration-capability:
+    name: integration-capability
+    needs: contract
+    runs-on: ubuntu-24.04
+    outputs:
+      available: ${{ steps.probe.outputs.available }}
+    env:
+      ADK_REPO_TOKEN: ${{ secrets.ADK_REPO_TOKEN }}
+    steps:
+      - name: Probe private ADK checkout capability
+        id: probe
+        shell: bash
+        run: |
+          if [[ -n "$ADK_REPO_TOKEN" ]]; then
+            echo 'available=true' >> "$GITHUB_OUTPUT"
+            echo '### ADK integration capability: available' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'available=false' >> "$GITHUB_OUTPUT"
+            echo '### ADK integration capability: unavailable' >> "$GITHUB_STEP_SUMMARY"
+            echo 'ADK_REPO_TOKEN is not configured. The actual integration job will be skipped, not reported as passed.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Enforce explicitly requested integration
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.require_adk_integration && steps.probe.outputs.available != 'true' }}
+        run: |
+          echo '[FAIL] ADK_REPO_TOKEN is required for requested integration run' >&2
+          exit 1
+
+  integration:
+    name: integration
+    needs:
+      - contract
+      - integration-capability
+    if: ${{ needs.integration-capability.outputs.available == 'true' }}
+    runs-on: ubuntu-24.04
+    env:
+      ADK_REPO_TOKEN: ${{ secrets.ADK_REPO_TOKEN }}
+    steps:
+      - name: Checkout root source
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          submodules: false
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.11'
+
+      - name: Resolve exact ADK pin from lock
+        id: adk_pin
+        shell: bash
+        run: |
+          commit="$(awk -F= '$1=="agent-dev-kit.commit"{print $2; exit}' adk.lock)"
+          if [[ ! "$commit" =~ ^[0-9a-f]{40}$ ]]; then
+            echo '[FAIL] invalid ADK commit in adk.lock' >&2
+            exit 1
+          fi
+          echo "commit=$commit" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout exact locked ADK source
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          repository: jiying2007/agent-dev-kit
+          ref: ${{ steps.adk_pin.outputs.commit }}
+          token: ${{ env.ADK_REPO_TOKEN }}
+          path: agent-dev-kit
+          persist-credentials: false
+
+      - name: Install integration dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y ripgrep shellcheck
           python -m pip install ./agent-dev-kit
 
-      - name: Validate entry points
-        run: |
-          bash -n scripts/*.sh
-          shellcheck -S error -x -P scripts scripts/*.sh tests/*.sh
-          python -m py_compile tools/codex_assets/*.py
+      - name: Run shared integration gate profile
+        run: >-
+          python -m tools.control_plane.gate_runner
+          --profile integration
+          --capability adk-checkout
+          --output-json /tmp/llm-agent-integration-receipt.json
 
-      - name: Validate clean-clone ADK integration
-        run: |
-          bash scripts/check-adk-lock.sh .
-          bash agent-dev-kit/scripts/devkit.sh validate --strict
-          bash agent-dev-kit/tests/run_all.sh --quick
-
-      - name: Run root regression suite
-        run: bash tests/run_all.sh --fail-fast --timing-json /tmp/llm-agent-root-tests.json
-
-      - name: Run self-contained documentation gate
-        run: bash scripts/check-doc-sync.sh .
+      - name: Upload integration receipt
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4
+        with:
+          name: llm-agent-integration-receipt
+          path: /tmp/llm-agent-integration-receipt.json
+          if-no-files-found: error
+          retention-days: 14

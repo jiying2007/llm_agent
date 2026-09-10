@@ -3,20 +3,21 @@ set -euo pipefail
 
 ROOT="${1:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 LOCK="${ROOT}/adk.lock"
-MANIFEST="${ROOT}/agent-dev-kit/manifest.yaml"
-RUNTIME_TARGETS="${ROOT}/manifests/runtime_targets.json"
+MANIFEST_JSON="${ROOT}/agent-dev-kit/manifest.json"
 
 fail() {
   echo "[FAIL] $*" >&2
   exit 1
 }
 
+PIN_ONLY=0
 WORKTREE_INTEGRATION=0
 if [[ $# -gt 0 && "$1" != --* ]]; then
   shift
 fi
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    --pin-only) PIN_ONLY=1 ;;
     --worktree-integration) WORKTREE_INTEGRATION=1 ;;
     *) fail "unknown arg: $1" ;;
   esac
@@ -29,40 +30,18 @@ lock_value() {
 }
 
 [[ -f "${LOCK}" ]] || fail "missing adk.lock"
-[[ -f "${MANIFEST}" ]] || fail "missing agent-dev-kit manifest"
 
+schema="$(lock_value "schema")"
 locked_version="$(lock_value "agent-dev-kit.version")"
 locked_commit="$(lock_value "agent-dev-kit.commit")"
-codex_source="$(lock_value "codex.source")"
-codex_target="$(lock_value "codex.target")"
+locked_tree="$(lock_value "agent-dev-kit.tree")"
+locked_manifest_blob="$(lock_value "agent-dev-kit.manifest_blob")"
 
+[[ "${schema}" == "llm-agent-adk-lock/v2" ]] || fail "unsupported adk.lock schema: ${schema:-missing}"
 [[ -n "${locked_version}" ]] || fail "adk.lock missing agent-dev-kit.version"
-[[ -n "${locked_commit}" ]] || fail "adk.lock missing agent-dev-kit.commit"
-[[ "${codex_source}" == "~/codex" ]] || fail "adk.lock codex.source must be ~/codex"
-[[ "${codex_target}" == "~/.codex" ]] || fail "adk.lock codex.target must be ~/.codex"
-
-if [[ -f "${RUNTIME_TARGETS}" ]]; then
-  python3 - "${RUNTIME_TARGETS}" "${codex_source}" "${codex_target}" <<'PY'
-import json
-import sys
-
-manifest_path, expected_source, expected_target = sys.argv[1:4]
-with open(manifest_path, "r", encoding="utf-8") as handle:
-    manifest = json.load(handle)
-target = next((item for item in manifest.get("targets", []) if item.get("id") == manifest.get("default_target")), None)
-if not target:
-    raise SystemExit("[FAIL] runtime_targets default target missing")
-if target.get("source_repo") != expected_source:
-    raise SystemExit("[FAIL] runtime_targets default source_repo != adk.lock codex.source")
-if target.get("live_root") != expected_target:
-    raise SystemExit("[FAIL] runtime_targets default live_root != adk.lock codex.target")
-PY
-fi
-
-manifest_version="$(awk -F': ' '$1=="version"{print $2; exit}' "${MANIFEST}")"
-[[ "${manifest_version}" == "${locked_version}" ]] || {
-  fail "manifest version ${manifest_version} != adk.lock ${locked_version}"
-}
+[[ "${locked_commit}" =~ ^[0-9a-f]{40}$ ]] || fail "adk.lock agent-dev-kit.commit must be a full SHA"
+[[ "${locked_tree}" =~ ^[0-9a-f]{40}$ ]] || fail "adk.lock agent-dev-kit.tree must be a full SHA"
+[[ "${locked_manifest_blob}" =~ ^[0-9a-f]{40}$ ]] || fail "adk.lock agent-dev-kit.manifest_blob must be a full Git blob SHA"
 
 index_commit="$(git -C "${ROOT}" ls-files -s agent-dev-kit | awk '$1=="160000"{print $2; exit}')"
 [[ -n "${index_commit}" ]] || fail "agent-dev-kit is not tracked as a gitlink"
@@ -72,10 +51,37 @@ if [[ "${WORKTREE_INTEGRATION}" -eq 0 ]]; then
   }
 fi
 
+if [[ "${PIN_ONLY}" -eq 1 ]]; then
+  echo "[PASS] ADK immutable pin matches gitlink (schema=${schema}, commit=${locked_commit})"
+  exit 0
+fi
+
+[[ -f "${MANIFEST_JSON}" ]] || fail "agent-dev-kit manifest.json unavailable; initialize the locked ADK checkout or use --pin-only"
+
+manifest_version="$(python3 - "${MANIFEST_JSON}" <<'PY'
+import json
+import sys
+with open(sys.argv[1], encoding="utf-8") as handle:
+    print(json.load(handle)["version"])
+PY
+)"
+[[ "${manifest_version}" == "${locked_version}" ]] || {
+  fail "manifest.json version ${manifest_version} != adk.lock ${locked_version}"
+}
+
+manifest_blob="$(git -C "${ROOT}/agent-dev-kit" hash-object manifest.json)"
+[[ "${manifest_blob}" == "${locked_manifest_blob}" ]] || {
+  fail "manifest.json blob ${manifest_blob} != adk.lock ${locked_manifest_blob}"
+}
+
 if [[ -d "${ROOT}/agent-dev-kit/.git" || -f "${ROOT}/agent-dev-kit/.git" ]]; then
   worktree_commit="$(git -C "${ROOT}/agent-dev-kit" rev-parse HEAD)"
+  worktree_tree="$(git -C "${ROOT}/agent-dev-kit" rev-parse 'HEAD^{tree}')"
   [[ "${worktree_commit}" == "${locked_commit}" ]] || {
     fail "agent-dev-kit worktree ${worktree_commit} != adk.lock ${locked_commit}"
+  }
+  [[ "${worktree_tree}" == "${locked_tree}" ]] || {
+    fail "agent-dev-kit tree ${worktree_tree} != adk.lock ${locked_tree}"
   }
   if [[ "${WORKTREE_INTEGRATION}" -eq 1 ]]; then
     git -C "${ROOT}/agent-dev-kit" merge-base --is-ancestor "${index_commit}" "${worktree_commit}" || {
@@ -85,7 +91,7 @@ if [[ -d "${ROOT}/agent-dev-kit/.git" || -f "${ROOT}/agent-dev-kit/.git" ]]; the
 fi
 
 if [[ "${WORKTREE_INTEGRATION}" -eq 1 ]]; then
-  echo "[PASS] adk lock matches manifest/worktree; recorded gitlink is an ancestor"
+  echo "[PASS] ADK lock matches manifest.json/worktree; recorded gitlink is an ancestor"
 else
-  echo "[PASS] adk lock matches manifest and gitlink"
+  echo "[PASS] ADK lock matches gitlink, tree and manifest.json"
 fi

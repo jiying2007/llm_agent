@@ -1,0 +1,29 @@
+{
+  "schema": "llm-agent-reference-pins/v1",
+  "policy": {
+    "tracked_gitlink_forbidden": true,
+    "submodule_entry_forbidden": true,
+    "runtime_enablement": false,
+    "pin_is_evidence_not_source": true
+  },
+  "pins": [
+    {
+      "id": "hermes",
+      "kind": "historical-reference",
+      "commit": "0b0275feeb040bcbff88c42a16b2c825494f3b1b",
+      "notes": "Historical/reference identity only; fetched explicitly when evidence review requires it."
+    },
+    {
+      "id": "hermes_data",
+      "kind": "external-data-reference",
+      "commit": "cd980cfc9c2e53269fbbf80c862c394b4178acbf",
+      "notes": "External data/reference identity only; never traversed by source checkout."
+    },
+    {
+      "id": "team-codex-assets",
+      "kind": "external-asset-reference",
+      "commit": "9b63769d886dd5384a4fd070f514215c7d631d6c",
+      "notes": "External asset identity only; source-to-live delivery is governed separately."
+    }
+  ]
+}
