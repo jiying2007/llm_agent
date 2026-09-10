@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import subprocess
 import sys
@@ -8,6 +9,8 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+
+_ALLOWED_EVIDENCE_CLASSES = {"source", "test", "runtime", "field", "release"}
 
 
 @dataclass(frozen=True)
@@ -18,13 +21,19 @@ class GateResult:
     elapsed_ms: int
     owner: str
     evidence_class: str
+    argv: list[str]
+    timeout_seconds: int
     output_tail: list[str]
     missing_capabilities: list[str]
+    failure_reason: str | None
+
+
+def _manifest_path(root: Path) -> Path:
+    return root / "manifests" / "gates.json"
 
 
 def _load(root: Path) -> dict[str, Any]:
-    path = root / "manifests" / "gates.json"
-    data = json.loads(path.read_text(encoding="utf-8"))
+    data = json.loads(_manifest_path(root).read_text(encoding="utf-8"))
     if data.get("schema") != "llm-agent-gates/v1":
         raise ValueError("unsupported gate manifest schema")
     if not isinstance(data.get("gates"), dict) or not isinstance(data.get("profiles"), dict):
@@ -64,8 +73,53 @@ def _expand_profile(manifest: dict[str, Any], profile: str) -> list[str]:
 
 
 def _tail(text: str, limit: int) -> list[str]:
-    lines = text.splitlines()
-    return lines[-limit:]
+    if limit == 0:
+        return []
+    return text.splitlines()[-limit:]
+
+
+def _source_identity(root: Path) -> dict[str, str]:
+    completed = subprocess.run(
+        ["git", "-C", str(root), "rev-parse", "HEAD", "HEAD^{tree}"],
+        check=False,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    if completed.returncode != 0:
+        raise ValueError(completed.stderr.strip() or "unable to resolve source identity")
+    lines = completed.stdout.splitlines()
+    if len(lines) != 2:
+        raise ValueError("unexpected git source identity output")
+    manifest_bytes = _manifest_path(root).read_bytes()
+    return {
+        "head": lines[0],
+        "tree": lines[1],
+        "gate_manifest_sha256": hashlib.sha256(manifest_bytes).hexdigest(),
+    }
+
+
+def _validated_spec(name: str, raw: Any) -> tuple[list[str], list[str], str, str, int]:
+    if not isinstance(raw, dict):
+        raise ValueError(f"gate {name} must be an object")
+    if raw.get("side_effect") != "none":
+        raise ValueError(f"gate {name} must be side_effect=none")
+    argv = raw.get("argv")
+    if not isinstance(argv, list) or not argv or not all(isinstance(item, str) and item for item in argv):
+        raise ValueError(f"gate {name} requires non-empty string argv list")
+    required = raw.get("requires", [])
+    if not isinstance(required, list) or not all(isinstance(item, str) and item for item in required):
+        raise ValueError(f"gate {name} requires must be a string list")
+    owner = raw.get("owner")
+    if not isinstance(owner, str) or not owner:
+        raise ValueError(f"gate {name} requires owner")
+    evidence_class = raw.get("evidence_class")
+    if evidence_class not in _ALLOWED_EVIDENCE_CLASSES:
+        raise ValueError(f"gate {name} has invalid evidence_class: {evidence_class}")
+    timeout_seconds = raw.get("timeout_seconds")
+    if not isinstance(timeout_seconds, int) or isinstance(timeout_seconds, bool) or timeout_seconds <= 0:
+        raise ValueError(f"gate {name} requires positive integer timeout_seconds")
+    return argv, required, owner, evidence_class, timeout_seconds
 
 
 def run_profile(
@@ -74,20 +128,17 @@ def run_profile(
     capabilities: set[str],
     failure_lines: int,
 ) -> dict[str, Any]:
+    root = root.resolve()
     manifest = _load(root)
+    source = _source_identity(root)
     order = _expand_profile(manifest, profile)
     results: list[GateResult] = []
+    run_started = time.monotonic_ns()
 
     for name in order:
-        spec = manifest["gates"][name]
-        if spec.get("side_effect") != "none":
-            raise ValueError(f"gate {name} must be side_effect=none")
-        argv = spec.get("argv")
-        if not isinstance(argv, list) or not argv or not all(isinstance(item, str) for item in argv):
-            raise ValueError(f"gate {name} requires string argv list")
-        required = spec.get("requires", [])
-        if not isinstance(required, list) or not all(isinstance(item, str) for item in required):
-            raise ValueError(f"gate {name} requires must be a string list")
+        argv, required, owner, evidence_class, timeout_seconds = _validated_spec(
+            name, manifest["gates"][name]
+        )
         missing = sorted(set(required) - capabilities)
         if missing:
             results.append(
@@ -96,48 +147,84 @@ def run_profile(
                     status="blocked",
                     exit_code=None,
                     elapsed_ms=0,
-                    owner=str(spec.get("owner", "unknown")),
-                    evidence_class=str(spec.get("evidence_class", "unknown")),
+                    owner=owner,
+                    evidence_class=evidence_class,
+                    argv=argv,
+                    timeout_seconds=timeout_seconds,
                     output_tail=[],
                     missing_capabilities=missing,
+                    failure_reason="missing-capability",
                 )
             )
             continue
 
         started = time.monotonic_ns()
-        completed = subprocess.run(
-            argv,
-            cwd=root,
-            check=False,
-            text=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-        )
-        elapsed_ms = (time.monotonic_ns() - started) // 1_000_000
-        results.append(
-            GateResult(
-                name=name,
-                status="pass" if completed.returncode == 0 else "fail",
-                exit_code=completed.returncode,
-                elapsed_ms=int(elapsed_ms),
-                owner=str(spec.get("owner", "unknown")),
-                evidence_class=str(spec.get("evidence_class", "unknown")),
-                output_tail=_tail(completed.stdout, failure_lines),
-                missing_capabilities=[],
+        try:
+            completed = subprocess.run(
+                argv,
+                cwd=root,
+                check=False,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                timeout=timeout_seconds,
             )
-        )
+            elapsed_ms = (time.monotonic_ns() - started) // 1_000_000
+            passed = completed.returncode == 0
+            results.append(
+                GateResult(
+                    name=name,
+                    status="pass" if passed else "fail",
+                    exit_code=completed.returncode,
+                    elapsed_ms=int(elapsed_ms),
+                    owner=owner,
+                    evidence_class=evidence_class,
+                    argv=argv,
+                    timeout_seconds=timeout_seconds,
+                    output_tail=_tail(completed.stdout, failure_lines),
+                    missing_capabilities=[],
+                    failure_reason=None if passed else "nonzero-exit",
+                )
+            )
+        except subprocess.TimeoutExpired as exc:
+            elapsed_ms = (time.monotonic_ns() - started) // 1_000_000
+            captured = exc.stdout or ""
+            if isinstance(captured, bytes):
+                captured = captured.decode(errors="replace")
+            results.append(
+                GateResult(
+                    name=name,
+                    status="fail",
+                    exit_code=None,
+                    elapsed_ms=int(elapsed_ms),
+                    owner=owner,
+                    evidence_class=evidence_class,
+                    argv=argv,
+                    timeout_seconds=timeout_seconds,
+                    output_tail=_tail(captured, failure_lines),
+                    missing_capabilities=[],
+                    failure_reason="timeout",
+                )
+            )
 
+    total_elapsed_ms = int((time.monotonic_ns() - run_started) // 1_000_000)
     status = "pass"
     if any(item.status == "fail" for item in results):
         status = "fail"
     elif any(item.status == "blocked" for item in results):
         status = "blocked"
+    blocked_capabilities = sorted(
+        {capability for item in results for capability in item.missing_capabilities}
+    )
 
     return {
-        "schema": "llm-agent-gate-run/v1",
+        "schema": "llm-agent-gate-run/v2",
         "profile": profile,
         "status": status,
+        "source": source,
         "capabilities": sorted(capabilities),
+        "blocked_capabilities": blocked_capabilities,
+        "total_elapsed_ms": total_elapsed_ms,
         "gates": [
             {
                 "name": item.name,
@@ -146,7 +233,10 @@ def run_profile(
                 "elapsed_ms": item.elapsed_ms,
                 "owner": item.owner,
                 "evidence_class": item.evidence_class,
+                "argv": item.argv,
+                "timeout_seconds": item.timeout_seconds,
                 "missing_capabilities": item.missing_capabilities,
+                "failure_reason": item.failure_reason,
                 "output_tail": item.output_tail,
             }
             for item in results
@@ -155,11 +245,16 @@ def run_profile(
 
 
 def _render(result: dict[str, Any]) -> None:
-    print(f"Gate profile: {result['profile']} status={result['status']}")
+    print(
+        f"Gate profile: {result['profile']} status={result['status']} "
+        f"head={result['source']['head'][:12]} elapsed={result['total_elapsed_ms']}ms"
+    )
     for item in result["gates"]:
         suffix = ""
         if item["missing_capabilities"]:
             suffix = " missing=" + ",".join(item["missing_capabilities"])
+        if item["failure_reason"]:
+            suffix += " reason=" + item["failure_reason"]
         print(f"[{item['status'].upper()}] {item['name']} ({item['elapsed_ms']} ms){suffix}")
         if item["status"] == "fail":
             for line in item["output_tail"]:
