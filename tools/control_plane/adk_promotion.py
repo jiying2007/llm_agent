@@ -6,10 +6,13 @@ import os
 import subprocess
 import sys
 import tempfile
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from pathlib import Path
 
+from tools.control_plane.receipts import bind_receipt, write_receipt
+
 LOCK_SCHEMA = "llm-agent-adk-lock/v2"
+PROMOTION_SCHEMA = "llm-agent-adk-promotion/v2"
 
 
 @dataclass(frozen=True)
@@ -31,6 +34,13 @@ def _git(cwd: Path, *args: str, check: bool = True) -> str:
     if check and completed.returncode != 0:
         raise RuntimeError(completed.stderr.strip() or f"git {' '.join(args)} failed")
     return completed.stdout.strip()
+
+
+def _root_identity(root: Path) -> dict[str, str]:
+    values = _git(root, "rev-parse", "HEAD", "HEAD^{tree}").splitlines()
+    if len(values) != 2:
+        raise RuntimeError("unable to resolve root source identity")
+    return {"head": values[0], "tree": values[1]}
 
 
 def candidate_identity(candidate_dir: Path, ref: str) -> CandidateIdentity:
@@ -57,8 +67,6 @@ def render_lock(identity: CandidateIdentity, updated_at: str) -> str:
 
 
 def _root_clean_for_promotion(root: Path) -> bool:
-    # Promotion itself owns only agent-dev-kit gitlink and adk.lock. Existing changes
-    # elsewhere make an atomic integration receipt ambiguous, so fail closed.
     status = _git(root, "status", "--porcelain=v1", "--untracked-files=all")
     allowed = {"agent-dev-kit", "adk.lock"}
     for line in status.splitlines():
@@ -104,7 +112,6 @@ def apply_promotion(root: Path, identity: CandidateIdentity, lock_text: str) -> 
     try:
         _atomic_write(lock_path, lock_text)
         _git(root, "update-index", "--add", "--cacheinfo", f"160000,{identity.commit},agent-dev-kit")
-        # Validate the staged transaction without requiring candidate checkout at the gitlink path.
         completed = subprocess.run(
             ["bash", "scripts/check-adk-lock.sh", ".", "--pin-only"],
             cwd=root,
@@ -120,8 +127,40 @@ def apply_promotion(root: Path, identity: CandidateIdentity, lock_text: str) -> 
             lock_path.unlink(missing_ok=True)
         else:
             _atomic_write(lock_path, previous_lock)
-        _git(root, "update-index", "--add", "--cacheinfo", f"160000,{previous_gitlink},agent-dev-kit", check=False)
+        _git(
+            root,
+            "update-index",
+            "--add",
+            "--cacheinfo",
+            f"160000,{previous_gitlink},agent-dev-kit",
+            check=False,
+        )
         raise
+
+
+def promotion_receipt(
+    *,
+    root: Path,
+    before_gitlink: str,
+    identity: CandidateIdentity,
+    updated_at: str,
+    mode: str,
+    status: str,
+) -> dict[str, object]:
+    source = _root_identity(root)
+    payload: dict[str, object] = {
+        "schema": PROMOTION_SCHEMA,
+        "mode": mode,
+        "status": status,
+        "source": source,
+        "before_gitlink": before_gitlink,
+        "candidate": asdict(identity),
+        "lock_schema": LOCK_SCHEMA,
+        "updated_at": updated_at,
+        "requires_fresh_cross_repo_verification": True,
+        "release_authorized": False,
+    }
+    return bind_receipt(payload)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -131,6 +170,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--ref", default="HEAD")
     parser.add_argument("--updated-at", required=True, help="Explicit YYYY-MM-DD provenance date")
     parser.add_argument("--apply", action="store_true", help="Mutate adk.lock and staged gitlink; default is dry-run")
+    parser.add_argument("--receipt-out", help="Atomically write the content-addressed promotion receipt")
     parser.add_argument("--summary-json", action="store_true")
     args = parser.parse_args(argv)
 
@@ -143,22 +183,26 @@ def main(argv: list[str] | None = None) -> int:
         identity = candidate_identity(candidate_dir, args.ref)
         lock_text = render_lock(identity, args.updated_at)
         before = _current_gitlink(root)
-        result = {
-            "schema": "llm-agent-adk-promotion/v1",
-            "mode": "apply" if args.apply else "dry-run",
-            "status": "planned",
-            "before_gitlink": before,
-            "candidate": identity.__dict__,
-            "lock": lock_text.splitlines(),
-            "requires_fresh_cross_repo_verification": True,
-            "release_authorized": False,
-        }
+        mode = "apply" if args.apply else "dry-run"
+        status = "planned"
         if args.apply:
             apply_promotion(root, identity, lock_text)
-            result["status"] = "applied-not-verified"
+            status = "applied-not-verified"
+        result = promotion_receipt(
+            root=root,
+            before_gitlink=before,
+            identity=identity,
+            updated_at=args.updated_at,
+            mode=mode,
+            status=status,
+        )
+        result["lock"] = lock_text.splitlines()
+        if args.receipt_out:
+            write_receipt(Path(args.receipt_out), result)
     except (OSError, RuntimeError, ValueError, json.JSONDecodeError) as exc:
+        failure = bind_receipt({"schema": PROMOTION_SCHEMA, "status": "fail", "error": str(exc)})
         if args.summary_json:
-            print(json.dumps({"schema": "llm-agent-adk-promotion/v1", "status": "fail", "error": str(exc)}, ensure_ascii=False))
+            print(json.dumps(failure, ensure_ascii=False, sort_keys=True))
         else:
             print(f"[FAIL] {exc}", file=sys.stderr)
         return 1
