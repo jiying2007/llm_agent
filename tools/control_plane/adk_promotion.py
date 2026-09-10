@@ -255,10 +255,9 @@ def main(argv: list[str] | None = None) -> int:
             write_receipt(Path(args.receipt_out), result)
     except (OSError, RuntimeError, ValueError, json.JSONDecodeError) as exc:
         failure = bind_receipt({"schema": PROMOTION_SCHEMA, "status": "fail", "error": str(exc)})
+        print(f"[FAIL] {exc}", file=sys.stderr)
         if args.summary_json:
             print(json.dumps(failure, ensure_ascii=False, sort_keys=True))
-        else:
-            print(f"[FAIL] {exc}", file=sys.stderr)
         return 1
 
     if args.summary_json:
