@@ -16,7 +16,7 @@
 - root_gate_status: pass
 - runtime_eval_status: codex-current-smoke-pass-claude-owner-attested-v2
 - m5_campaign_status: blocked-full-campaign-and-field-pending
-- live_refresh_status: required-pending-owner-authorization
+- live_refresh_status: applied-declarative-changed
 - knowledge_candidate_status: captured-reviewing
 - working_tree_scope: product commits exclude registered dirty reference worktrees
 
@@ -28,8 +28,9 @@
 `1241d345...` 混入 5.x working-tree 内容，既不等于历史正式制品 `4c1e9b3c...`，也不等于
 `792a4cb` exact rebuild `8eb5253d...`。正式 4.0 artifact 当前不可用，release readiness fail-closed。
 `792a4cb` exact rebuild 到 `12bfeaf1` 的诊断 transition 通过，但不替代官方制品连续性。
-映射目录在 `792a4cb..12bfeaf1` 间有变化，因此 source-to-live 保持
-`required-pending-owner-authorization`，本轮没有写入 `~/codex` 或 `~/.codex`。
+映射目录在 `792a4cb..12bfeaf1` 间的两个升版 Skill 已导入 `~/codex`，并经 build、doctor、
+plan、dry-run、apply 和 post-apply check 写入 `~/.codex`。live diff 与 drift 均为 0；
+`~/codex` 声明式源改动尚未提交，因此运行态已应用但跨机器复现仍待独立提交。
 
 Claude Code 由 repository owner 显式裁决为默认通过，证据层为 `owner-attested`、
 `runtime_measured=false`；这关闭默认使用决策，不替代 native conformance receipt 或正式 campaign。
@@ -45,7 +46,7 @@ Claude Code 由 repository owner 显式裁决为默认通过，证据层为 `own
 | Supported parity | PASS | Python 3.11.15/3.12.13 full 各 `68/68`，routing `30/30`，wheel/audit pass |
 | Upgrade/rollback | BLOCKED | 正式 4.0 artifact 不可用；污染 previous artifact 的 pass 已失效 |
 | Claude default decision | PASS | owner-attested；不冒充 runtime-measured campaign |
-| Source-to-live | PENDING | mapped content changed；等待独立 owner authorization |
+| Source-to-live | PASS / SOURCE COMMIT PENDING | `adk-test-strategy 2.0.0`、`adk-unit-test-embedded 1.1.0` 已应用；154/154、5 profile smoke、diff/drift/health pass |
 | Root release metadata | PASS | `1a047de` integration commit；gitlink/lock/current-status/M5 SSOT synchronized，随本证据提交一并推送 |
 | Software M5 certification | BLOCKED | release readiness、field/runtime campaign blockers retained |
 

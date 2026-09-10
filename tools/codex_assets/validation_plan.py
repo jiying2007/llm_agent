@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -62,7 +63,7 @@ SSOT_EVIDENCE = (
 
 def _git(root: Path, *args: str, check: bool = True) -> str:
     result = subprocess.run(
-        ["git", "-C", str(root), *args], check=False, text=True,
+        ["git", "--literal-pathspecs", "-C", str(root), *args], check=False, text=True,
         stdout=subprocess.PIPE, stderr=subprocess.PIPE,
     )
     if check and result.returncode != 0:
@@ -70,24 +71,71 @@ def _git(root: Path, *args: str, check: bool = True) -> str:
     return result.stdout
 
 
-def _changed_paths(root: Path, base: str, staged: bool) -> Tuple[List[str], str]:
+def _changed_paths(root: Path, base: str, staged: bool, *, workspace_exclusions: bool = True) -> Tuple[List[str], str]:
+    diff_args = ["diff", "--no-ext-diff", "--no-textconv", "--ignore-submodules=none"]
+    untracked: List[str] = []
     if staged:
-        names = _git(root, "diff", "--cached", "--name-only", "--diff-filter=ACDMRTUXB").splitlines()
-        payload = _git(root, "diff", "--cached", "--binary")
+        diff_args.append("--cached")
         scope = "staged"
+        baseline = "HEAD"
     else:
-        names = _git(root, "diff", "--name-only", "--diff-filter=ACDMRTUXB", base).splitlines()
-        untracked = _git(root, "ls-files", "--others", "--exclude-standard").splitlines()
-        names.extend(untracked)
-        payload = _git(root, "diff", "--binary", base)
-        for relative in sorted(set(untracked)):
-            path = root / relative
-            if path.is_file() and not path.is_symlink():
-                payload += "\nUNTRACKED {} {}".format(relative, hashlib.sha256(path.read_bytes()).hexdigest())
         scope = "working-tree"
-    paths = sorted({Path(item).as_posix() for item in names if item.strip()})
-    digest = hashlib.sha256((scope + "\n" + "\n".join(paths) + "\n" + payload).encode("utf-8")).hexdigest()
-    return paths, digest
+        baseline = base
+        untracked = _git(root, "ls-files", "--others", "--exclude-standard", "-z").split("\0")
+    revision = [] if staged else [base]
+    names = _git(root, *diff_args, "--name-only", "-z", "--diff-filter=ACDMRTUXB", *revision, "--").split("\0")
+    paths = sorted(set(item for item in names + untracked if item))
+    managed = [path for path in paths if not workspace_exclusions or not _excluded(path)]
+    # Bind the baseline as well as the diff. A clean tree is not a universal snapshot.
+    baseline_tree = _git(root, "rev-parse", "--verify", baseline + "^{tree}").strip()
+    digest = hashlib.sha256()
+
+    def bind(*parts: str) -> None:
+        digest.update(json.dumps(parts, ensure_ascii=True, separators=(",", ":")).encode("ascii"))
+        digest.update(b"\n")
+
+    bind("managed-diff-v2", scope, baseline_tree, *managed)
+    if managed:
+        # Exclusions apply before reading or hashing content, not just to tier selection.
+        bind(_git(root, *diff_args, "--binary", *revision, "--", *managed))
+    if not staged:
+        for relative in sorted(set(untracked) & set(managed)):
+            path = root / relative
+            if path.is_symlink():
+                bind("symlink", relative, os.readlink(path))
+            elif path.is_file():
+                file_digest = hashlib.sha256()
+                with path.open("rb") as stream:
+                    for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+                        file_digest.update(chunk)
+                bind("file", relative, str(path.stat().st_mode & 0o111), file_digest.hexdigest())
+            else:
+                raise ValueError("untracked managed path cannot be fingerprinted: " + relative)
+        # A parent's patch represents dirty submodules only as '<commit>-dirty'.
+        # Hash each changed managed gitlink in its own repository; staged mode
+        # intentionally binds the indexed gitlink only, never unstaged child data.
+        for entry in _git(root, "ls-files", "--stage", "-z").split("\0"):
+            if not entry:
+                continue
+            metadata, relative = entry.split("\t", 1)
+            if metadata.split()[0] != "160000" or relative not in managed:
+                continue
+            child = root / relative
+            if not child.exists():
+                bind("gitlink-worktree-absent", relative)
+                continue
+            if child.is_symlink() or root.resolve() not in child.resolve().parents:
+                raise ValueError("managed gitlink escapes repository: " + relative)
+            child_root = Path(_git(child, "rev-parse", "--show-toplevel").strip()).resolve()
+            if child_root != child.resolve():
+                raise ValueError("managed gitlink is not an initialized repository: " + relative)
+            _, child_digest = _changed_paths(child, "HEAD", False, workspace_exclusions=False)
+            bind("gitlink-worktree", relative, child_digest)
+    return paths, digest.hexdigest()
+
+
+def _excluded(path: str) -> bool:
+    return path.split("/", 1)[0] in REFERENCE_ROOTS | RUNTIME_OUTPUT_ROOTS or path.startswith(".cache/")
 
 
 def _matches(path: str, patterns: Sequence[str]) -> bool:
@@ -95,10 +143,7 @@ def _matches(path: str, patterns: Sequence[str]) -> bool:
 
 
 def classify(paths: Sequence[str], snapshot_sha256: str, scope: str) -> Dict[str, object]:
-    excluded = [
-        path for path in paths
-        if path.split("/", 1)[0] in REFERENCE_ROOTS | RUNTIME_OUTPUT_ROOTS or path.startswith(".cache/")
-    ]
+    excluded = [path for path in paths if _excluded(path)]
     managed = [path for path in paths if path not in excluded]
     release = [path for path in managed if _matches(path, RELEASE_CRITICAL)]
     contracts = [path for path in managed if _matches(path, SHARED_CONTRACT)]
@@ -135,6 +180,7 @@ def classify(paths: Sequence[str], snapshot_sha256: str, scope: str) -> Dict[str
         "status": "planned",
         "scope": scope,
         "snapshot_sha256": snapshot_sha256,
+        "snapshot_contract": "managed-diff-v2",
         "tier": tier,
         "reason": reason,
         "managed_paths": managed,

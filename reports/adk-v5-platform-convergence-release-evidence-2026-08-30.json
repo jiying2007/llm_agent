@@ -58,14 +58,25 @@
     "comparison": "792a4cb91965d1150fea61d474787072a4cae248..12bfeaf1f85b297628b57ac15d12eedc849e3919",
     "mapped_paths": ["agents", "skills", "optional-skills", "workflows", "templates"],
     "mapped_content_changed": true,
-    "decision": "required-pending-owner-authorization",
+    "decision": "applied-declarative-changed",
     "profile": "token-lean",
-    "managed_files": null,
-    "plan_status": "not-run-no-live-authority",
-    "dry_run_status": "not-run-no-live-authority",
-    "apply_status": "not-run-no-live-authority",
-    "rollback_anchor": "blocked-official-4.0.0-artifact-unavailable; exact commit rebuild is diagnostic only",
-    "post_apply": null
+    "managed_files": 787,
+    "codex_source_status": "working-tree-uncommitted",
+    "imported_skills": [
+      {"name": "adk-test-strategy", "version": "2.0.0", "source_ref": "12bfeaf1f85b297628b57ac15d12eedc849e3919"},
+      {"name": "adk-unit-test-embedded", "version": "1.1.0", "source_ref": "12bfeaf1f85b297628b57ac15d12eedc849e3919"}
+    ],
+    "plan_status": "pass-schema-v3-build-tree-690e8f06-target-precondition-eab9e7ed",
+    "dry_run_status": "pass-copy-0-overwrite-1-delete-9-backup-bound",
+    "apply_status": "pass-plan-state-applied",
+    "rollback_anchor": "/home/leiwenjun/codex/.backups/apply/20260830-204448; official 4.0.0 release continuity remains independently blocked",
+    "post_apply": {
+      "check_no_build_plan": "pass-154/154-five-profile-smoke",
+      "routing_precedence": "pass-token-lean-no-superpowers",
+      "build_live_diff": "same-469-diff-0-missing-0",
+      "managed_drift": "ok-changed-0-stale-0-unmanaged-0",
+      "runtime_health": "pass-codex-home-minimal-errors-0-warnings-0"
+    }
   },
   "software_m5": {
     "readiness_status": "not-ready",

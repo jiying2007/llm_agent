@@ -86,6 +86,8 @@ rtk scripts/check-runtime-health.sh . --profile minimal
 
 适用场景：只确认当前状态是否健康，不同步参考仓，不部署。
 
+跨会话优化先按 [历史与知识复用](runbooks/history-knowledge-reuse.md) 核对覆盖和现有能力；向团队交付按 [试点验收](runbooks/team-pilot-acceptance.md) 记录真实上手、失败恢复和任务收益。
+
 ### 3.2 adk 压实检查
 
 ```bash

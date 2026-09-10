@@ -54,7 +54,7 @@
       "target_static": "3/3-pass",
       "effect_eval": "24/24-pass-ablation-delta-0.3333",
       "release_rehearsal": "blocked-previous-official-artifact-unavailable-prior-pass-invalidated",
-      "source_to_live": "required-pending-owner-authorization",
+      "source_to_live": "applied-declarative-changed-local-codex-source-uncommitted",
       "codex_assets_check": "not-run-no-live-apply-authority",
       "live_runtime_health": "not-run-no-live-apply-authority",
       "artifact_sha256": "09143ad9a4a9099ce4ee422e4328cab1ec3dcd77e876e997e4600b76a2fc5ddf"

@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "kind": "knowledge-retrieval-review-baseline",
+  "status": "reviewing",
+  "observed_on": "2026-09-05",
+  "source": "knowledge-hub knowledge-search --limit 3 --summary-json --no-telemetry",
+  "sampling": "four registry-seeded positive cases and two exploratory queries; not a representative accuracy benchmark",
+  "read_only": true,
+  "raw_content_stored": false,
+  "authority": "none-evidence-only",
+  "cases": [
+    {
+      "id": "retrieval-01",
+      "query": "ADK Token 上下文 工作流",
+      "expected_item_id": "agent-dev-kit-token-context-workflow-optimization-20260801",
+      "observed_first_item_id": "agent-dev-kit-token-context-workflow-optimization-20260801",
+      "observed_rank": 1,
+      "exit_code": 0,
+      "observed_status": "pass",
+      "item_status": "reviewing"
+    },
+    {
+      "id": "retrieval-02",
+      "query": "ADK Codex Hub Token 门禁",
+      "expected_item_id": "agent-dev-kit-token-context-governance-v2-20260801",
+      "observed_first_item_id": "agent-dev-kit-token-context-governance-v2-20260801",
+      "observed_rank": 1,
+      "exit_code": 0,
+      "observed_status": "pass",
+      "item_status": "reviewing"
+    },
+    {
+      "id": "retrieval-03",
+      "query": "团队 Codex Runtime Bundle",
+      "expected_item_id": "agent-dev-kit-codex-team-runtime-distribution-v1",
+      "observed_first_item_id": "agent-dev-kit-codex-team-runtime-distribution-v1",
+      "observed_rank": 1,
+      "exit_code": 0,
+      "observed_status": "pass",
+      "item_status": "reviewing"
+    },
+    {
+      "id": "retrieval-04",
+      "query": "Harness Readiness",
+      "expected_item_id": "agent-dev-kit-harness-readiness-decision-20260717",
+      "observed_first_item_id": "agent-dev-kit-harness-readiness-decision-20260717",
+      "observed_rank": 1,
+      "exit_code": 0,
+      "observed_status": "pass",
+      "item_status": "reviewing"
+    },
+    {
+      "id": "retrieval-05",
+      "query": "回执 持久化",
+      "expected_item_id": null,
+      "observed_first_item_id": null,
+      "observed_rank": null,
+      "exit_code": 1,
+      "observed_status": "zero-hit",
+      "decision": "investigate-receipt-to-knowledge-handoff-gap; not a successful retrieval"
+    },
+    {
+      "id": "retrieval-06",
+      "query": "温控",
+      "expected_item_id": null,
+      "observed_first_item_id": "gd32l235-charge-temperature-configurable-soft-hard-protection-20260812",
+      "observed_rank": null,
+      "exit_code": 0,
+      "observed_status": "pass",
+      "item_status": "reviewing",
+      "decision": "registered-body-search-can-find-terms-absent-from-registry-metadata; current-firmware-facts-not-verified"
+    }
+  ],
+  "summary": {
+    "positive_cases": 4,
+    "positive_expected_rank_one": 4,
+    "exploratory_cases": 2,
+    "exploratory_zero_hit": 1,
+    "overall_accuracy": null,
+    "runtime_improvement": "not-measured"
+  }
+}

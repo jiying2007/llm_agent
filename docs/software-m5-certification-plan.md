@@ -4,8 +4,8 @@
 
 ## 目标状态
 
-- RC 版本：`agent-dev-kit 3.1.0-rc.7`。
-- 最终版本：`agent-dev-kit 3.1.0`，只在现场 eligibility 通过后提升。
+- 版本与制品身份：以 `manifests/software_m5_policy.json:release` 为准，本文不复制可漂移的版本/commit/hash。
+- 最终版本：只在现场 eligibility 通过后按同一 policy 的 `final_version` 提升。
 - 机器策略：`manifests/software_m5_policy.json`。
 - 试点账本：`manifests/software_m5_pilot_ledger.json`。
 - append-only 事件链：`reports/field-evidence/software-m5-events.jsonl`。
@@ -16,13 +16,15 @@
 
 | 阶段 | 状态 | 退出条件 | 主要证据 |
 |---|---|---|---|
-| P0 软件控制面 | implemented | doctor、writer lock、campaign resume、证据 hash、release rehearsal 均有负向测试 | ADK 3.1 change artifact |
-| P1 M5-ready RC | implemented | rc.6 升级到 rc.7 后可回退；exact-commit 双构建一致；Codex source-to-live 应用后零漂移；自试点保持 active | `release-rehearsal.json`、source-to-live evidence、事件链 |
+| P0 软件控制面 | implemented / 当前验证另查 | doctor、writer lock、campaign resume、证据 hash、release rehearsal 均有负向测试 | 当前 change artifact 与 fresh validation |
+| P1 M5-ready RC | evidence-pending | policy 指定 previous/candidate 制品连续性和回退；exact-commit 双构建一致；Codex source-to-live 零漂移 | policy 指定 rehearsal、source-to-live evidence、事件链 |
 | P2 双 runtime campaign | blocked_external | Codex/Claude 各 60 任务、baseline/adk、3 trials；720 条 raw result 与 frozen plan 完整保留；所有统计门禁通过；总预算不超过 `$150` | `software-m5-campaign-state/` |
 | P2.5 真实仓库 campaign | blocked_external | 至少两个 runtime、5 个冻结任务、至少 2 个 owner-approved 真实仓库任务、baseline/adk 各 3 trials；功能/安全/过程/trace/token/cost 门禁全部通过 | `repository_runtime_eval_contract.json` 与 owner-approved report |
 | P3 独立现场试点 | active | 至少一个独立真实软件仓、至少两个 human operator、账本和观测跨度均不少于 30 天 | field 事件链和逐事件证据 |
 | P4 eligibility | blocked | P2/P3 全部通过，故障、恢复、升级、回退、维护成本和复审事件完整 | `software-m5.sh certify` 的非版本 blocker 清零 |
-| P5 最终发布 | blocked | 只做必要的 RC 到 `3.1.0` 提升，重建制品并复跑完整门禁；认证器返回 pass | final release 与 M5 status evidence |
+| P5 最终发布 | blocked | 只做必要的 RC 到 policy `final_version` 提升，重建制品并复跑完整门禁；认证器返回 pass | final release 与 M5 status evidence |
+
+2026-09-05 复核：旧 3.1 RC rehearsal 不能证明当前 v5 release continuity。当前状态必须由 policy、候选身份和新鲜门禁共同判定；根仓 dirty、官方 previous artifact 缺失、第二操作者和现场周期未闭环时继续保留 blocked。小规模试点入口见 [团队试点](runbooks/team-pilot-acceptance.md)。
 
 ## 双运行时执行
 
@@ -30,21 +32,23 @@
 
 ```bash
 rtk bash agent-dev-kit/scripts/devkit.sh eval campaign plan \
-  --contract agent-dev-kit/manifests/software_m5_eval_contract_rc7.json \
-  --output agent-dev-kit/docs/changes/adk-v3-1-software-m5-ready/software-m5-campaign-plan.json
+  --contract agent-dev-kit/manifests/software_m5_eval_contract_v5.json \
+  --output /tmp/software-m5-campaign-plan.json
 
 rtk bash agent-dev-kit/scripts/devkit.sh eval campaign run \
-  --contract agent-dev-kit/manifests/software_m5_eval_contract_rc7.json \
-  --state-dir agent-dev-kit/docs/changes/archive/20260719-intent-boundary-governance-v2/software-m5-campaign-state \
+  --contract agent-dev-kit/manifests/software_m5_eval_contract_v5.json \
+  --state-dir agent-dev-kit/docs/changes/adk-platform-convergence-v1/software-m5-campaign-state \
   --approve-budget-usd 150 --execute --resume
 
 rtk bash agent-dev-kit/scripts/devkit.sh eval campaign check \
-  --contract agent-dev-kit/manifests/software_m5_eval_contract_rc7.json \
-  --state-dir agent-dev-kit/docs/changes/archive/20260719-intent-boundary-governance-v2/software-m5-campaign-state \
+  --contract agent-dev-kit/manifests/software_m5_eval_contract_v5.json \
+  --state-dir agent-dev-kit/docs/changes/adk-platform-convergence-v1/software-m5-campaign-state \
   --certify --summary-json
 ```
 
-`state-dir` 保存 frozen plan、逐任务原始结果和 campaign report，必须进入受 Git 管理的证据目录。根仓 certifier 会重算 manifest/contract/tasks/plan/record/report 哈希并校验 720 项矩阵；只有汇总 report、没有 raw result 的结果固定阻断。
+上述路径在 2026-09-05 与 policy 的 `runtime_campaign.contract/state_dir` 对齐；执行前重新读取 policy，漂移则先更新计划。第一条命令仅在 `/tmp` 生成可审查计划，不登记为正式 campaign。`run --execute` 涉及付费/外部执行，必须已有显式预算与执行授权。
+
+`state-dir` 保存 frozen plan、逐任务结构化结果和 campaign report，必须进入受 Git 管理的证据目录。这里的 raw result 指合同允许的逐任务结构化观测，不是聊天正文、工具 payload 或原始日志。根仓 certifier 会重算 manifest/contract/tasks/plan/record/report 哈希并校验 720 项矩阵；只有汇总 report、没有逐任务结果的结果固定阻断。
 
 ## 真实仓库执行证据
 

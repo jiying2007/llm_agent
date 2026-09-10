@@ -1,0 +1,55 @@
+{
+  "fingerprints": {
+    "b0629e53960b7700": {
+      "last_seen": 1784448084,
+      "count": 1,
+      "code": "THREAD_LONG"
+    },
+    "3ceecc60311dc15c": {
+      "last_seen": 1785463466,
+      "count": 2,
+      "code": "CTX_PRESSURE"
+    },
+    "60ce88566d8f9c17": {
+      "last_seen": 1785463466,
+      "count": 2,
+      "code": "LARGE_DELTA"
+    },
+    "baace30d6b06b126": {
+      "last_seen": 1785575868,
+      "count": 4,
+      "code": "FINAL_DIRTY_WORKTREE"
+    },
+    "c92611164c265e4b": {
+      "last_seen": 1784448084,
+      "count": 1,
+      "code": "REMOTE_AHEAD"
+    },
+    "8822e4abe57a1c7d": {
+      "last_seen": 1785463466,
+      "count": 2,
+      "code": "THREAD_LONG"
+    },
+    "f5ef4d56d2f13ba8": {
+      "last_seen": 1785575868,
+      "count": 3,
+      "code": "SCRIPT_CHANGED"
+    },
+    "f72447fc62c993b0": {
+      "last_seen": 1785463466,
+      "count": 2,
+      "code": "GOVERNANCE_CHANGED"
+    },
+    "0a9f386d85d46cd2": {
+      "last_seen": 1785575868,
+      "count": 3,
+      "code": "DELIVERY_LOOP"
+    },
+    "02e984d35f010faf": {
+      "last_seen": 1785575868,
+      "count": 1,
+      "code": "AGENTS_SYNC"
+    }
+  },
+  "acks": {}
+}
