@@ -68,12 +68,9 @@ def _submodules(root: Path) -> dict[str, str]:
 
 def check(root: Path) -> dict[str, Any]:
     registry_path = root / "manifests" / "gitlinks.json"
-    if not registry_path.exists():
-        raise RuntimeError(f"missing gitlink registry: {registry_path}")
     registry = json.loads(registry_path.read_text(encoding="utf-8"))
-    if registry.get("schema") != "llm-agent-gitlinks/v1":
+    if registry.get("schema") != "llm-agent-gitlinks/v2":
         raise RuntimeError("unsupported gitlink registry schema")
-
     entries = registry.get("gitlinks")
     if not isinstance(entries, list) or not entries:
         raise RuntimeError("gitlink registry must contain non-empty gitlinks")
@@ -89,57 +86,44 @@ def check(root: Path) -> dict[str, Any]:
 
     tracked = _tracked_gitlinks(root)
     submodules = _submodules(root)
-    registry_paths = set(by_path)
+    expected = set(by_path)
     tracked_paths = set(tracked)
     submodule_paths = set(submodules)
 
-    unknown_gitlinks = sorted(tracked_paths - registry_paths)
-    missing_gitlinks = sorted(registry_paths - tracked_paths)
-    unknown_submodules = sorted(submodule_paths - registry_paths)
-    if unknown_gitlinks:
-        raise RuntimeError(f"unregistered gitlinks: {', '.join(unknown_gitlinks)}")
-    if missing_gitlinks:
-        raise RuntimeError(f"registry paths not tracked as gitlinks: {', '.join(missing_gitlinks)}")
-    if unknown_submodules:
-        raise RuntimeError(f".gitmodules paths missing from registry: {', '.join(unknown_submodules)}")
+    if tracked_paths != expected:
+        missing = sorted(expected - tracked_paths)
+        unknown = sorted(tracked_paths - expected)
+        raise RuntimeError(f"gitlink registry drift: missing={missing}, unknown={unknown}")
+    if submodule_paths != expected:
+        missing = sorted(expected - submodule_paths)
+        unknown = sorted(submodule_paths - expected)
+        raise RuntimeError(f".gitmodules registry drift: missing={missing}, unknown={unknown}")
 
     for path, entry in by_path.items():
-        expects_submodule = bool(entry.get("submodule"))
-        if expects_submodule and path not in submodules:
-            raise RuntimeError(f"registered submodule path missing from .gitmodules: {path}")
-        if not expects_submodule and path in submodules:
-            raise RuntimeError(f"opaque gitlink must not be traversed as submodule: {path}")
-        if expects_submodule:
-            expected_url = entry.get("url")
-            if expected_url and submodules[path] != expected_url:
-                raise RuntimeError(
-                    f"submodule URL drift for {path}: {submodules[path]} != {expected_url}"
-                )
+        expected_url = entry.get("url")
+        if not isinstance(expected_url, str) or not expected_url:
+            raise RuntimeError(f"gitlink {path} requires url")
+        if submodules[path] != expected_url:
+            raise RuntimeError(f"submodule URL drift for {path}: {submodules[path]} != {expected_url}")
         if entry.get("kind") == "managed-dependency":
             lock_name = entry.get("lock")
             if not isinstance(lock_name, str) or not (root / lock_name).is_file():
                 raise RuntimeError(f"managed dependency {path} requires an existing lock file")
 
     return {
-        "schema": "llm-agent-gitlink-check/v1",
+        "schema": "llm-agent-gitlink-check/v2",
         "status": "pass",
         "tracked_count": len(tracked),
         "submodule_count": len(submodules),
-        "opaque_count": sum(1 for entry in entries if not entry.get("submodule")),
         "gitlinks": [
-            {
-                "path": path,
-                "sha": tracked[path],
-                "kind": by_path[path].get("kind"),
-                "submodule": bool(by_path[path].get("submodule")),
-            }
+            {"path": path, "sha": tracked[path], "kind": by_path[path].get("kind")}
             for path in sorted(tracked)
         ],
     }
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Validate tracked gitlinks against the explicit registry")
+    parser = argparse.ArgumentParser(description="Validate that every Git gitlink is a real registered submodule")
     parser.add_argument("--root", default=".")
     parser.add_argument("--summary-json", action="store_true")
     args = parser.parse_args(argv)
@@ -147,17 +131,14 @@ def main(argv: list[str] | None = None) -> int:
         result = check(Path(args.root).resolve())
     except (OSError, ValueError, RuntimeError, json.JSONDecodeError) as exc:
         if args.summary_json:
-            print(json.dumps({"schema": "llm-agent-gitlink-check/v1", "status": "fail", "error": str(exc)}, ensure_ascii=False))
+            print(json.dumps({"schema": "llm-agent-gitlink-check/v2", "status": "fail", "error": str(exc)}, ensure_ascii=False))
         else:
             print(f"[FAIL] {exc}", file=sys.stderr)
         return 1
     if args.summary_json:
         print(json.dumps(result, ensure_ascii=False, sort_keys=True))
     else:
-        print(
-            "[PASS] gitlink registry matches tracked pins "
-            f"(gitlinks={result['tracked_count']}, submodules={result['submodule_count']}, opaque={result['opaque_count']})"
-        )
+        print(f"[PASS] all tracked gitlinks are registered submodules (count={result['tracked_count']})")
     return 0
 
 
