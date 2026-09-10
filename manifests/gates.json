@@ -1,0 +1,79 @@
+{
+  "schema": "llm-agent-gates/v1",
+  "gates": {
+    "adk-pin": {
+      "owner": "llm_agent",
+      "side_effect": "none",
+      "argv": ["bash", "scripts/check-adk-lock.sh", ".", "--pin-only"],
+      "evidence_class": "source"
+    },
+    "gitlink-registry": {
+      "owner": "llm_agent",
+      "side_effect": "none",
+      "argv": ["python3", "-m", "tools.control_plane.gitlink_registry", "--root", "."],
+      "evidence_class": "source"
+    },
+    "source-hygiene": {
+      "owner": "llm_agent",
+      "side_effect": "none",
+      "argv": ["python3", "-m", "tools.control_plane.source_hygiene", "--root", "."],
+      "evidence_class": "source"
+    },
+    "doc-sync": {
+      "owner": "llm_agent",
+      "side_effect": "none",
+      "argv": ["bash", "scripts/check-doc-sync.sh", "."],
+      "evidence_class": "test"
+    },
+    "root-regression": {
+      "owner": "llm_agent",
+      "side_effect": "none",
+      "requires": ["adk-checkout"],
+      "argv": ["bash", "tests/run_all.sh", "--fail-fast"],
+      "evidence_class": "test"
+    },
+    "adk-integration": {
+      "owner": "agent-dev-kit",
+      "side_effect": "none",
+      "requires": ["adk-checkout"],
+      "argv": ["bash", "scripts/check-adk-lock.sh", "."],
+      "evidence_class": "test"
+    },
+    "adk-quick": {
+      "owner": "agent-dev-kit",
+      "side_effect": "none",
+      "requires": ["adk-checkout"],
+      "argv": ["bash", "agent-dev-kit/tests/run_all.sh", "--quick", "--fail-fast"],
+      "evidence_class": "test"
+    },
+    "harden-readiness": {
+      "owner": "llm_agent",
+      "side_effect": "none",
+      "requires": ["adk-checkout", "runtime-source"],
+      "argv": ["bash", "scripts/check-adk-harden-readiness.sh", ".", "--require-pilot"],
+      "evidence_class": "runtime"
+    }
+  },
+  "profiles": {
+    "contract": [
+      "adk-pin",
+      "gitlink-registry",
+      "source-hygiene"
+    ],
+    "pr-fast": [
+      "contract",
+      "doc-sync"
+    ],
+    "integration": [
+      "contract",
+      "adk-integration",
+      "adk-quick",
+      "root-regression",
+      "doc-sync"
+    ],
+    "release": [
+      "integration",
+      "harden-readiness"
+    ]
+  }
+}
