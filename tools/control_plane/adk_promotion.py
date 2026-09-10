@@ -15,6 +15,11 @@ from tools.control_plane.status_projection import project, refresh_current_statu
 
 LOCK_SCHEMA = "llm-agent-adk-lock/v2"
 PROMOTION_SCHEMA = "llm-agent-adk-promotion/v2"
+PROMOTION_PATHS = (
+    "agent-dev-kit",
+    "adk.lock",
+    "reports/current-status.md",
+)
 
 
 @dataclass(frozen=True)
@@ -36,6 +41,19 @@ def _git(cwd: Path, *args: str, check: bool = True) -> str:
     if check and completed.returncode != 0:
         raise RuntimeError(completed.stderr.strip() or f"git {' '.join(args)} failed")
     return completed.stdout.strip()
+
+
+def _git_stdout_preserve(cwd: Path, *args: str) -> str:
+    completed = subprocess.run(
+        ["git", "-C", str(cwd), *args],
+        check=False,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    if completed.returncode != 0:
+        raise RuntimeError(completed.stderr.strip() or f"git {' '.join(args)} failed")
+    return completed.stdout
 
 
 def _root_identity(root: Path) -> dict[str, str]:
@@ -68,9 +86,19 @@ def render_lock(identity: CandidateIdentity, updated_at: str) -> str:
     )
 
 
+def _staged_paths(root: Path) -> list[str]:
+    output = _git(root, "diff", "--cached", "--name-only", "--diff-filter=ACDMRTUXB")
+    return sorted(line for line in output.splitlines() if line)
+
+
 def _root_clean_for_promotion(root: Path) -> bool:
-    status = _git(root, "status", "--porcelain=v1", "--untracked-files=all")
-    allowed = {"agent-dev-kit", "adk.lock"}
+    if _staged_paths(root):
+        return False
+    # Porcelain v1 has two fixed status columns. Do not use _git() here because
+    # its strip() would remove a leading space from the first status entry and
+    # corrupt the XY/path boundary (for example, " M agent-dev-kit").
+    status = _git_stdout_preserve(root, "status", "--porcelain=v1", "--untracked-files=all")
+    allowed = {"agent-dev-kit"}
     for line in status.splitlines():
         if not line:
             continue
@@ -104,19 +132,52 @@ def _atomic_write(path: Path, text: str) -> None:
             os.unlink(tmp_name)
 
 
-def apply_promotion(root: Path, identity: CandidateIdentity, lock_text: str) -> None:
+def _rollback_transaction(
+    root: Path,
+    lock_path: Path,
+    status_path: Path,
+    previous_lock: str | None,
+    previous_status: str | None,
+) -> None:
+    if previous_lock is None:
+        lock_path.unlink(missing_ok=True)
+    else:
+        _atomic_write(lock_path, previous_lock)
+    if previous_status is None:
+        status_path.unlink(missing_ok=True)
+    else:
+        _atomic_write(status_path, previous_status)
+    _git(root, "reset", "-q", "HEAD", "--", *PROMOTION_PATHS, check=False)
+
+
+def apply_promotion(root: Path, identity: CandidateIdentity, lock_text: str) -> list[str]:
     if not _root_clean_for_promotion(root):
-        raise RuntimeError("root worktree contains unrelated changes; promotion requires an isolated worktree")
+        raise RuntimeError(
+            "promotion requires a clean index and an isolated worktree; only the agent-dev-kit worktree may differ"
+        )
 
     lock_path = root / "adk.lock"
     status_path = root / "reports" / "current-status.md"
     previous_lock = lock_path.read_text(encoding="utf-8") if lock_path.exists() else None
     previous_status = status_path.read_text(encoding="utf-8") if status_path.exists() else None
     previous_gitlink = _current_gitlink(root)
+    if identity.commit == previous_gitlink:
+        raise RuntimeError("candidate ADK commit is already pinned; promotion requires a new commit")
+
     try:
         _atomic_write(lock_path, lock_text)
         _git(root, "update-index", "--add", "--cacheinfo", f"160000,{identity.commit},agent-dev-kit")
         refresh_current_status(root)
+        _git(root, "add", "--", "adk.lock", "reports/current-status.md")
+
+        staged_paths = _staged_paths(root)
+        expected_paths = sorted(PROMOTION_PATHS)
+        if staged_paths != expected_paths:
+            raise RuntimeError(
+                "promotion staged transaction is incomplete: "
+                f"expected={expected_paths}, actual={staged_paths}"
+            )
+
         completed = subprocess.run(
             ["bash", "scripts/check-adk-lock.sh", ".", "--pin-only"],
             cwd=root,
@@ -130,23 +191,9 @@ def apply_promotion(root: Path, identity: CandidateIdentity, lock_text: str) -> 
         projection = project(root, dt.date.today())
         if projection.get("status") != "pass":
             raise RuntimeError("post-apply status projection validation failed")
+        return staged_paths
     except Exception:
-        if previous_lock is None:
-            lock_path.unlink(missing_ok=True)
-        else:
-            _atomic_write(lock_path, previous_lock)
-        if previous_status is None:
-            status_path.unlink(missing_ok=True)
-        else:
-            _atomic_write(status_path, previous_status)
-        _git(
-            root,
-            "update-index",
-            "--add",
-            "--cacheinfo",
-            f"160000,{previous_gitlink},agent-dev-kit",
-            check=False,
-        )
+        _rollback_transaction(root, lock_path, status_path, previous_lock, previous_status)
         raise
 
 
@@ -159,6 +206,7 @@ def promotion_receipt(
     mode: str,
     status: str,
     lock_lines: list[str],
+    staged_paths: list[str],
 ) -> dict[str, object]:
     payload: dict[str, object] = {
         "schema": PROMOTION_SCHEMA,
@@ -169,6 +217,8 @@ def promotion_receipt(
         "candidate": asdict(identity),
         "lock_schema": LOCK_SCHEMA,
         "lock": lock_lines,
+        "staged_paths": staged_paths,
+        "staged_transaction_complete": staged_paths == sorted(PROMOTION_PATHS),
         "updated_at": updated_at,
         "requires_fresh_cross_repo_verification": True,
         "release_authorized": False,
@@ -182,7 +232,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--candidate-dir", default="agent-dev-kit")
     parser.add_argument("--ref", default="HEAD")
     parser.add_argument("--updated-at", required=True, help="Explicit YYYY-MM-DD provenance date")
-    parser.add_argument("--apply", action="store_true", help="Mutate adk.lock, staged gitlink and generated current-status projection; default is dry-run")
+    parser.add_argument(
+        "--apply",
+        action="store_true",
+        help="Stage agent-dev-kit gitlink, adk.lock and generated current-status as one transaction; default is dry-run",
+    )
     parser.add_argument("--receipt-out", help="Atomically write the content-addressed promotion receipt")
     parser.add_argument("--summary-json", action="store_true")
     args = parser.parse_args(argv)
@@ -199,8 +253,9 @@ def main(argv: list[str] | None = None) -> int:
         before = _current_gitlink(root)
         mode = "apply" if args.apply else "dry-run"
         status = "planned"
+        staged_paths: list[str] = []
         if args.apply:
-            apply_promotion(root, identity, lock_text)
+            staged_paths = apply_promotion(root, identity, lock_text)
             status = "applied-not-verified"
         result = promotion_receipt(
             root=root,
@@ -210,15 +265,15 @@ def main(argv: list[str] | None = None) -> int:
             mode=mode,
             status=status,
             lock_lines=lock_lines,
+            staged_paths=staged_paths,
         )
         if args.receipt_out:
             write_receipt(Path(args.receipt_out), result)
     except (OSError, RuntimeError, ValueError, json.JSONDecodeError) as exc:
         failure = bind_receipt({"schema": PROMOTION_SCHEMA, "status": "fail", "error": str(exc)})
+        print(f"[FAIL] {exc}", file=sys.stderr)
         if args.summary_json:
             print(json.dumps(failure, ensure_ascii=False, sort_keys=True))
-        else:
-            print(f"[FAIL] {exc}", file=sys.stderr)
         return 1
 
     if args.summary_json:
