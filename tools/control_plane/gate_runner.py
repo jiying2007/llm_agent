@@ -10,6 +10,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from tools.control_plane.receipts import bind_receipt
+
 _ALLOWED_EVIDENCE_CLASSES = {"source", "test", "runtime", "field", "release"}
 
 
@@ -217,7 +219,7 @@ def run_profile(
         {capability for item in results for capability in item.missing_capabilities}
     )
 
-    return {
+    receipt = {
         "schema": "llm-agent-gate-run/v2",
         "profile": profile,
         "status": status,
@@ -242,12 +244,14 @@ def run_profile(
             for item in results
         ],
     }
+    return bind_receipt(receipt)
 
 
 def _render(result: dict[str, Any]) -> None:
     print(
         f"Gate profile: {result['profile']} status={result['status']} "
-        f"head={result['source']['head'][:12]} elapsed={result['total_elapsed_ms']}ms"
+        f"head={result['source']['head'][:12]} elapsed={result['total_elapsed_ms']}ms "
+        f"receipt={result['receipt_sha256'][:12]}"
     )
     for item in result["gates"]:
         suffix = ""
