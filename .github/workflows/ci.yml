@@ -7,49 +7,83 @@ on:
       - master
   pull_request:
   workflow_dispatch:
+    inputs:
+      require_adk_integration:
+        description: Fail if the private ADK checkout credential is unavailable
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
 
 jobs:
-  product-gate:
+  contract:
+    name: contract
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout root source
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
         with:
           submodules: false
-
-      - name: Initialize only the locked ADK submodule
-        run: |
-          git submodule sync -- agent-dev-kit
-          git submodule update --init agent-dev-kit
+          persist-credentials: false
 
       - name: Set up Python
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: '3.11'
 
-      - name: Install gate dependencies
+      - name: Run immutable source contracts
+        run: python -m tools.control_plane.gate_runner --profile contract
+
+  integration:
+    name: integration-when-authorized
+    needs: contract
+    runs-on: ubuntu-24.04
+    env:
+      ADK_REPO_TOKEN: ${{ secrets.ADK_REPO_TOKEN }}
+    steps:
+      - name: Checkout root source
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          submodules: false
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.11'
+
+      - name: Report unavailable private ADK credential
+        if: ${{ env.ADK_REPO_TOKEN == '' && !(github.event_name == 'workflow_dispatch' && inputs.require_adk_integration) }}
+        run: |
+          echo '### ADK integration unavailable' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Static pin/registry contracts passed, but ADK_REPO_TOKEN is not configured for cross-private-repository checkout.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'This job is not runtime/release evidence.' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Require ADK credential when explicitly requested
+        if: ${{ env.ADK_REPO_TOKEN == '' && github.event_name == 'workflow_dispatch' && inputs.require_adk_integration }}
+        run: |
+          echo '[FAIL] ADK_REPO_TOKEN is required for requested integration run' >&2
+          exit 1
+
+      - name: Checkout exact locked ADK source
+        if: ${{ env.ADK_REPO_TOKEN != '' }}
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          repository: jiying2007/agent-dev-kit
+          ref: fef691688053d7dab39fee60b94cbfe7ccbe5e52
+          token: ${{ env.ADK_REPO_TOKEN }}
+          path: agent-dev-kit
+          persist-credentials: false
+
+      - name: Install integration dependencies
+        if: ${{ env.ADK_REPO_TOKEN != '' }}
         run: |
           sudo apt-get update
           sudo apt-get install -y ripgrep shellcheck
           python -m pip install ./agent-dev-kit
 
-      - name: Validate entry points
-        run: |
-          bash -n scripts/*.sh
-          shellcheck -S error -x -P scripts scripts/*.sh tests/*.sh
-          python -m py_compile tools/codex_assets/*.py
-
-      - name: Validate clean-clone ADK integration
-        run: |
-          bash scripts/check-adk-lock.sh .
-          bash agent-dev-kit/scripts/devkit.sh validate --strict
-          bash agent-dev-kit/tests/run_all.sh --quick
-
-      - name: Run root regression suite
-        run: bash tests/run_all.sh --fail-fast --timing-json /tmp/llm-agent-root-tests.json
-
-      - name: Run self-contained documentation gate
-        run: bash scripts/check-doc-sync.sh .
+      - name: Run shared integration gate profile
+        if: ${{ env.ADK_REPO_TOKEN != '' }}
+        run: python -m tools.control_plane.gate_runner --profile integration --capability adk-checkout
