@@ -44,6 +44,34 @@ def _md_fields(path: Path) -> dict[str, str]:
     return fields
 
 
+def _commit_known(root: Path, commit: str) -> bool:
+    if not commit:
+        return False
+    return (
+        subprocess.run(
+            ["git", "-C", str(root), "cat-file", "-e", f"{commit}^{{commit}}"],
+            check=False,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        ).returncode
+        == 0
+    )
+
+
+def _ancestry(root: Path, ancestor: str, descendant: str) -> bool | None:
+    if not _commit_known(root, ancestor):
+        return None
+    return (
+        subprocess.run(
+            ["git", "-C", str(root), "merge-base", "--is-ancestor", ancestor, descendant],
+            check=False,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        ).returncode
+        == 0
+    )
+
+
 def project(root: Path, today: dt.date) -> dict[str, Any]:
     root = root.resolve()
     head = _git(root, "rev-parse", "HEAD")
@@ -58,38 +86,41 @@ def project(root: Path, today: dt.date) -> dict[str, Any]:
 
     baseline_path = root / "reports" / "current-status.md"
     baseline = _md_fields(baseline_path)
-    baseline_commit = baseline.get("root_product_commit")
-    baseline_date_text = baseline.get("last_verified_at")
+    baseline_commit = baseline.get("root_product_commit", "")
+    baseline_date_text = baseline.get("last_verified_at", "")
     baseline_age_days: int | None = None
-    baseline_ancestor = False
-    if baseline_commit:
-        baseline_ancestor = (
-            subprocess.run(
-                ["git", "-C", str(root), "merge-base", "--is-ancestor", baseline_commit, "HEAD"],
-                check=False,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-            ).returncode
-            == 0
-        )
+    baseline_date_valid = False
     if baseline_date_text:
         try:
             baseline_date = dt.date.fromisoformat(baseline_date_text)
             baseline_age_days = (today - baseline_date).days
+            baseline_date_valid = baseline_age_days >= 0
         except ValueError:
-            baseline_age_days = None
+            pass
+
+    baseline_ancestor = _ancestry(root, baseline_commit, head) if baseline_commit else None
+    if baseline_ancestor is True:
+        relationship = "ancestor"
+    elif baseline_ancestor is False:
+        relationship = "not-ancestor"
+    else:
+        relationship = "history-unavailable"
 
     baseline_fresh = (
-        baseline_ancestor
+        baseline_ancestor is True
+        and baseline_date_valid
         and baseline_age_days is not None
-        and 0 <= baseline_age_days <= 7
+        and baseline_age_days <= 7
         and baseline_commit == head
     )
     evidence_state = "fresh" if baseline_fresh else "stale-or-historical"
 
+    baseline_integrity = bool(baseline_commit) and baseline_date_valid and baseline_ancestor is not False
+    status = "pass" if pin_consistent and baseline_integrity else "fail"
+
     return {
-        "schema": "llm-agent-status-projection/v1",
-        "status": "pass" if pin_consistent and baseline_ancestor else "fail",
+        "schema": "llm-agent-status-projection/v2",
+        "status": status,
         "source": {
             "head": head,
             "adk_gitlink": gitlink,
@@ -99,9 +130,11 @@ def project(root: Path, today: dt.date) -> dict[str, Any]:
         },
         "last_verified_baseline": {
             "path": "reports/current-status.md",
-            "root_product_commit": baseline_commit,
-            "last_verified_at": baseline_date_text,
+            "root_product_commit": baseline_commit or None,
+            "last_verified_at": baseline_date_text or None,
             "age_days": baseline_age_days,
+            "history_available": baseline_ancestor is not None,
+            "relationship_to_head": relationship,
             "is_ancestor": baseline_ancestor,
             "fresh_for_current_head": baseline_fresh,
         },
@@ -122,9 +155,10 @@ def main(argv: list[str] | None = None) -> int:
         result = project(Path(args.root), today)
         if args.require_fresh and not result["last_verified_baseline"]["fresh_for_current_head"]:
             result["status"] = "fail"
-            result["error"] = "current HEAD lacks a fresh last-verified baseline"
+            relationship = result["last_verified_baseline"]["relationship_to_head"]
+            result["error"] = f"current HEAD lacks a fresh last-verified baseline ({relationship})"
     except (OSError, RuntimeError, ValueError) as exc:
-        result = {"schema": "llm-agent-status-projection/v1", "status": "fail", "error": str(exc)}
+        result = {"schema": "llm-agent-status-projection/v2", "status": "fail", "error": str(exc)}
 
     if args.summary_json:
         print(json.dumps(result, ensure_ascii=False, sort_keys=True))
