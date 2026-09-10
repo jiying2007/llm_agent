@@ -43,6 +43,19 @@ def _git(cwd: Path, *args: str, check: bool = True) -> str:
     return completed.stdout.strip()
 
 
+def _git_stdout_preserve(cwd: Path, *args: str) -> str:
+    completed = subprocess.run(
+        ["git", "-C", str(cwd), *args],
+        check=False,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    if completed.returncode != 0:
+        raise RuntimeError(completed.stderr.strip() or f"git {' '.join(args)} failed")
+    return completed.stdout
+
+
 def _root_identity(root: Path) -> dict[str, str]:
     values = _git(root, "rev-parse", "HEAD", "HEAD^{tree}").splitlines()
     if len(values) != 2:
@@ -81,7 +94,10 @@ def _staged_paths(root: Path) -> list[str]:
 def _root_clean_for_promotion(root: Path) -> bool:
     if _staged_paths(root):
         return False
-    status = _git(root, "status", "--porcelain=v1", "--untracked-files=all")
+    # Porcelain v1 has two fixed status columns. Do not use _git() here because
+    # its strip() would remove a leading space from the first status entry and
+    # corrupt the XY/path boundary (for example, " M agent-dev-kit").
+    status = _git_stdout_preserve(root, "status", "--porcelain=v1", "--untracked-files=all")
     allowed = {"agent-dev-kit"}
     for line in status.splitlines():
         if not line:
