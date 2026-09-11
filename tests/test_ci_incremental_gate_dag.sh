@@ -15,18 +15,27 @@ profiles = gates["profiles"]
 github = (root / ".github/workflows/ci.yml").read_text(encoding="utf-8")
 gitlab = (root / ".gitlab-ci.yml").read_text(encoding="utf-8")
 
+gate_specs = gates["gates"]
 assert gates["schema"] == "llm-agent-gates/v2", gates["schema"]
 assert "adk-interface" in profiles["contract"], profiles["contract"]
 assert "active-contracts" in profiles["contract"], profiles["contract"]
 assert profiles["pr-fast"] == ["contract", "doc-sync"], profiles["pr-fast"]
+assert profiles["integration-extra"] == ["adk-promotion-evidence", "root-regression"], profiles["integration-extra"]
 assert profiles["integration"] == ["pr-fast", "integration-extra"], profiles["integration"]
 assert profiles["release-extra"] == ["fresh-status", "harden-readiness"], profiles["release-extra"]
 assert profiles["release"] == ["integration", "release-extra"], profiles["release"]
 
-# Gate Graph v2 must carry actual dependency and content identity metadata.
-assert gates["gates"]["adk-interface"]["depends_on"] == ["adk-pin"]
-assert gates["gates"]["active-contracts"]["depends_on"] == ["adk-interface"]
-for name, spec in gates["gates"].items():
+# Gate Graph v2 must carry actual dependency and content identity metadata, and
+# the private-checkout capability must not survive in SSOT after migration.
+assert gate_specs["adk-interface"]["depends_on"] == ["adk-pin"]
+assert gate_specs["active-contracts"]["depends_on"] == ["adk-interface"]
+assert gate_specs["adk-promotion-evidence"]["depends_on"] == ["adk-interface"]
+assert gate_specs["root-regression"]["depends_on"] == ["adk-promotion-evidence"]
+assert gate_specs["harden-readiness"].get("requires") == ["runtime-source"]
+assert "adk-integration" not in gate_specs
+assert "adk-quick" not in gate_specs
+assert "adk-checkout" not in json.dumps(gates, sort_keys=True)
+for name, spec in gate_specs.items():
     assert isinstance(spec.get("depends_on"), list), name
     assert isinstance(spec.get("inputs"), list), name
     assert isinstance(spec.get("outputs"), list), name
@@ -80,4 +89,4 @@ assert re.search(r"^doc-sync:\s*$", gitlab, re.MULTILINE), gitlab
 assert re.search(r"weekly-report:\n(?:.|\n)*?needs:\n\s+- doc-sync", gitlab), gitlab
 PY
 
-echo '[PASS] GitHub/GitLab CI consume Gate Graph v2 with evidence-gated integration semantics'
+echo '[PASS] GitHub/GitLab CI consume Gate Graph v2 with portable evidence integration semantics'
