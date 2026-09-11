@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       require_adk_integration:
-        description: Fail if the private ADK checkout credential is unavailable
+        description: Require private ADK deep integration even when the diff would not normally require it
         required: false
         type: boolean
         default: false
@@ -88,14 +88,76 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-  integration-capability:
-    name: integration-capability
+  integration-impact:
+    name: integration-impact
     needs:
       - contract
       - doc-sync
     runs-on: ubuntu-24.04
     outputs:
+      required: ${{ steps.impact.outputs.required }}
+      reason: ${{ steps.impact.outputs.reason }}
+    steps:
+      - name: Checkout root source with comparison history
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          submodules: false
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Classify whether private ADK deep integration is required
+        id: impact
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PUSH_BEFORE_SHA: ${{ github.event.before }}
+          FORCE_REQUIRED: ${{ github.event_name == 'workflow_dispatch' && inputs.require_adk_integration || false }}
+        run: |
+          set -euo pipefail
+          required=false
+          reason=not-required
+          if [[ "$FORCE_REQUIRED" == "true" ]]; then
+            required=true
+            reason=workflow-dispatch
+          else
+            base=""
+            mode="two-dot"
+            if [[ "$EVENT_NAME" == "pull_request" ]]; then
+              base="$PR_BASE_SHA"
+              mode="three-dot"
+            elif [[ "$EVENT_NAME" == "push" ]]; then
+              base="$PUSH_BEFORE_SHA"
+            fi
+            if [[ -n "$base" && ! "$base" =~ ^0+$ ]] && git cat-file -e "${base}^{commit}" 2>/dev/null; then
+              if [[ "$mode" == "three-dot" ]]; then
+                changed="$(git diff --name-only "$base"...HEAD)"
+              else
+                changed="$(git diff --name-only "$base"..HEAD)"
+              fi
+              printf '%s\n' "$changed" > /tmp/llm-agent-changed-paths.txt
+              if grep -Eq '^(adk\.lock|agent-dev-kit|manifests/(runtime_targets|runtime_health_adapters|product_maturity_scorecard|software_m5_policy)\.json)$' /tmp/llm-agent-changed-paths.txt; then
+                required=true
+                reason=cross-repo-contract-change
+              fi
+            fi
+          fi
+          echo "required=$required" >> "$GITHUB_OUTPUT"
+          echo "reason=$reason" >> "$GITHUB_OUTPUT"
+          {
+            echo "### ADK deep integration impact"
+            echo "- required: $required"
+            echo "- reason: $reason"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  integration-capability:
+    name: integration-capability
+    needs:
+      - integration-impact
+    runs-on: ubuntu-24.04
+    outputs:
       available: ${{ steps.probe.outputs.available }}
+      required: ${{ needs.integration-impact.outputs.required }}
     env:
       ADK_REPO_TOKEN: ${{ secrets.ADK_REPO_TOKEN }}
     steps:
@@ -105,24 +167,24 @@ jobs:
         run: |
           if [[ -n "$ADK_REPO_TOKEN" ]]; then
             echo 'available=true' >> "$GITHUB_OUTPUT"
-            echo '### ADK integration capability: available' >> "$GITHUB_STEP_SUMMARY"
+            echo '### ADK deep integration capability: available' >> "$GITHUB_STEP_SUMMARY"
           else
             echo 'available=false' >> "$GITHUB_OUTPUT"
-            echo '### ADK integration capability: unavailable' >> "$GITHUB_STEP_SUMMARY"
-            echo 'ADK_REPO_TOKEN is not configured. The actual integration job will be skipped, not reported as passed.' >> "$GITHUB_STEP_SUMMARY"
+            echo '### ADK deep integration capability: unavailable' >> "$GITHUB_STEP_SUMMARY"
           fi
 
-      - name: Enforce explicitly requested integration
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.require_adk_integration && steps.probe.outputs.available != 'true' }}
+      - name: Enforce required integration capability
+        if: ${{ needs.integration-impact.outputs.required == 'true' && steps.probe.outputs.available != 'true' }}
         run: |
-          echo '[FAIL] ADK_REPO_TOKEN is required for requested integration run' >&2
+          echo '[FAIL] ADK_REPO_TOKEN is required because this diff changes a cross-repository contract boundary' >&2
           exit 1
 
   integration:
-    name: integration
+    name: integration-deep
     needs:
       - contract
       - doc-sync
+      - integration-impact
       - integration-capability
     if: ${{ needs.integration-capability.outputs.available == 'true' }}
     runs-on: ubuntu-24.04
@@ -166,7 +228,7 @@ jobs:
           sudo apt-get install -y ripgrep shellcheck
           python -m pip install ./agent-dev-kit
 
-      - name: Run incremental integration gate profile
+      - name: Run incremental deep integration gate profile
         run: >-
           python -m tools.control_plane.gate_runner
           --profile integration-extra
@@ -181,3 +243,44 @@ jobs:
           path: /tmp/llm-agent-integration-receipt.json
           if-no-files-found: error
           retention-days: 14
+
+  integration-summary:
+    name: integration-summary
+    if: ${{ always() }}
+    needs:
+      - integration-impact
+      - integration-capability
+      - integration
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Enforce explicit PASS / NOT_REQUIRED / BLOCKED semantics
+        shell: bash
+        env:
+          IMPACT_RESULT: ${{ needs.integration-impact.result }}
+          CAPABILITY_RESULT: ${{ needs.integration-capability.result }}
+          INTEGRATION_RESULT: ${{ needs.integration.result }}
+          REQUIRED: ${{ needs.integration-impact.outputs.required }}
+          REASON: ${{ needs.integration-impact.outputs.reason }}
+        run: |
+          set -euo pipefail
+          if [[ "$IMPACT_RESULT" != "success" ]]; then
+            echo "[FAIL] integration impact classification did not succeed: $IMPACT_RESULT" >&2
+            exit 1
+          fi
+          if [[ "$REQUIRED" == "true" ]]; then
+            if [[ "$CAPABILITY_RESULT" != "success" || "$INTEGRATION_RESULT" != "success" ]]; then
+              echo "[FAIL] deep integration was REQUIRED but did not pass (capability=$CAPABILITY_RESULT integration=$INTEGRATION_RESULT)" >&2
+              exit 1
+            fi
+            echo "### ADK deep integration: PASS ($REASON)" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          if [[ "$INTEGRATION_RESULT" == "failure" || "$INTEGRATION_RESULT" == "cancelled" ]]; then
+            echo "[FAIL] optional deep integration ran but did not pass: $INTEGRATION_RESULT" >&2
+            exit 1
+          fi
+          if [[ "$INTEGRATION_RESULT" == "success" ]]; then
+            echo '### ADK deep integration: PASS (optional capability available)' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo '### ADK deep integration: NOT_REQUIRED (private checkout unavailable or unnecessary for this diff)' >> "$GITHUB_STEP_SUMMARY"
+          fi

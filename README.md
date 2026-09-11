@@ -31,6 +31,7 @@ rtk scripts/check-upstream-intake-readiness.sh .
 - `docs/product-maturity-model.md`：M0-M5、十二维和 source/test/runtime/field 证据模型。
 - `manifests/product_maturity_scorecard.json`：当前产品成熟度机器 SSOT。
 - `manifests/product_maturity_task_pack.json`：剩余门禁与可执行任务包。
+- `manifests/adk_interface.lock.json`：当前 ADK 跨仓接口身份与 active/deprecated surface contract。
 - `scripts/README.md`：子仓治理、门禁和同步脚本说明。
 - `AGENTS.md`：本工作区代理执行规则与维护记录。
 - `subrepos/registry.csv`：参考子仓单一清单。
@@ -48,10 +49,11 @@ rtk scripts/check-upstream-intake-readiness.sh .
 
 - 先压实 adk，再追踪参考子仓更新。
 - 不把第三方参考资产或 adk 导出资产直接复制进 `~/.codex`；必须先进入 `~/codex` 的源资产与 manifest 治理链路。
-- `agent-dev-kit/manifest.json` 是 ADK 3.0 Agent/Skill/Profile/Target 的结构化 SSOT；`manifest.yaml` 仅是受同步门禁约束的兼容镜像。
+- `agent-dev-kit/manifest.json` 是 ADK 唯一结构化 Manifest SSOT；当前跨仓身份由 `adk.lock` 与 `manifests/adk_interface.lock.json` 原子绑定，不维护平行 Manifest 镜像。
 - direct target 安装必须先生成 plan，再 apply 并保留 receipt；回滚拒绝已漂移的托管资产。
 - 仓库不提供自动吸收写入口；静态分析不能直接修改 adoption matrix 或 ADK。
 - 没有命令证据，不声明“完成”“可发布”“可在生产使用”。
+- 私有 ADK checkout 不可用时，CI 只能声明 deep integration `NOT_REQUIRED` 或 `BLOCKED`；不得把 skipped job 表述为跨仓兼容已通过。
 
 ## 生产放行标准
 
