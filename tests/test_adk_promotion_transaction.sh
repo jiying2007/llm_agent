@@ -61,6 +61,23 @@ agent-dev-kit.tree=$OLD_TREE
 agent-dev-kit.manifest_blob=$OLD_MANIFEST
 updated_at=2026-09-10
 LOCK
+python3 - "$ROOT" "$FIXTURE" "$OLD_ADK" "$OLD_TREE" "$OLD_MANIFEST" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+root, fixture, commit, tree, manifest_blob = sys.argv[1:]
+sys.path.insert(0, root)
+from tools.control_plane.adk_interface import interface_payload
+
+payload = interface_payload(
+    {"version": "5.0.0-rc.2", "commit": commit, "tree": tree, "manifest_blob": manifest_blob},
+    "2026-09-10",
+)
+Path(fixture, "manifests", "adk_interface.lock.json").write_text(
+    json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+)
+PY
 cat >"$FIXTURE/reports/current-status.md" <<'STATUS'
 # Current Product Status
 
@@ -115,10 +132,17 @@ from pathlib import Path
 summary_path, root_text, expected_commit = sys.argv[1:]
 root = Path(root_text)
 result = json.loads(Path(summary_path).read_text(encoding="utf-8"))
-expected_paths = ["adk.lock", "agent-dev-kit", "reports/current-status.md"]
+expected_paths = [
+    "adk.lock",
+    "agent-dev-kit",
+    "manifests/adk_interface.lock.json",
+    "reports/current-status.md",
+]
 assert result["status"] == "applied-not-verified", result
+assert result["schema"] == "llm-agent-adk-promotion/v3", result
 assert result["staged_paths"] == expected_paths, result
 assert result["staged_transaction_complete"] is True, result
+assert len(result["interface_sha256"]) == 64, result
 staged = subprocess.check_output(
     ["git", "-C", str(root), "diff", "--cached", "--name-only"], text=True
 ).splitlines()
@@ -133,11 +157,15 @@ lock = dict(
     if "=" in line
 )
 assert lock["agent-dev-kit.commit"] == expected_commit, lock
+interface = json.loads((root / "manifests/adk_interface.lock.json").read_text(encoding="utf-8"))
+assert interface["commit"] == expected_commit, interface
+assert interface["manifest_mode"] == "json-only", interface
+assert interface["maturity_contract"] == "v5", interface
 status = (root / "reports/current-status.md").read_text(encoding="utf-8")
 assert f"- current_adk_commit: {expected_commit}" in status, status
 PY
 
-# A failure after mutation must restore both worktree files and the index.
+# A failure after mutation must restore worktree files and the index.
 git -C "$FIXTURE" reset --hard -q "$PARENT_HEAD"
 if PROMOTION_TEST_FORCE_FAIL=1 python3 -m tools.control_plane.adk_promotion \
   --root "$FIXTURE" \
@@ -152,8 +180,8 @@ fi
   git -C "$FIXTURE" diff --cached --name-status >&2
   exit 1
 }
-git -C "$FIXTURE" diff --quiet -- adk.lock reports/current-status.md || {
-  echo '[FAIL] rollback did not restore lock/status worktree content' >&2
+git -C "$FIXTURE" diff --quiet -- adk.lock manifests/adk_interface.lock.json reports/current-status.md || {
+  echo '[FAIL] rollback did not restore lock/interface/status worktree content' >&2
   exit 1
 }
 ROLLED_BACK_PIN="$(git -C "$FIXTURE" ls-files -s agent-dev-kit | awk '{print $2; exit}')"
@@ -179,23 +207,41 @@ mapfile -t PRESTAGED < <(git -C "$FIXTURE" diff --cached --name-only)
   printf 'staged: %s\n' "${PRESTAGED[*]}" >&2
   exit 1
 }
-git -C "$FIXTURE" diff --quiet -- adk.lock reports/current-status.md || {
-  echo '[FAIL] preflight rejection mutated lock/status' >&2
+git -C "$FIXTURE" diff --quiet -- adk.lock manifests/adk_interface.lock.json reports/current-status.md || {
+  echo '[FAIL] preflight rejection mutated lock/interface/status' >&2
   exit 1
 }
 
 # Re-promoting an already pinned candidate is not a transaction and must fail.
 git -C "$FIXTURE" reset --hard -q "$PARENT_HEAD"
 git -C "$FIXTURE" update-index --add --cacheinfo "160000,$NEW_ADK,agent-dev-kit"
+NEW_TREE="$(git -C "$CANDIDATE" rev-parse HEAD^{tree})"
+NEW_MANIFEST="$(git -C "$CANDIDATE" rev-parse HEAD:manifest.json)"
 cat >"$FIXTURE/adk.lock" <<LOCK
 schema=llm-agent-adk-lock/v2
 agent-dev-kit.version=5.0.0-rc.2
 agent-dev-kit.commit=$NEW_ADK
-agent-dev-kit.tree=$(git -C "$CANDIDATE" rev-parse HEAD^{tree})
-agent-dev-kit.manifest_blob=$(git -C "$CANDIDATE" rev-parse HEAD:manifest.json)
+agent-dev-kit.tree=$NEW_TREE
+agent-dev-kit.manifest_blob=$NEW_MANIFEST
 updated_at=2026-09-11
 LOCK
-git -C "$FIXTURE" add adk.lock
+python3 - "$ROOT" "$FIXTURE" "$NEW_ADK" "$NEW_TREE" "$NEW_MANIFEST" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+root, fixture, commit, tree, manifest_blob = sys.argv[1:]
+sys.path.insert(0, root)
+from tools.control_plane.adk_interface import interface_payload
+payload = interface_payload(
+    {"version": "5.0.0-rc.2", "commit": commit, "tree": tree, "manifest_blob": manifest_blob},
+    "2026-09-11",
+)
+Path(fixture, "manifests", "adk_interface.lock.json").write_text(
+    json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+)
+PY
+git -C "$FIXTURE" add adk.lock manifests/adk_interface.lock.json
 # Commit the already-pinned state so the index is clean before the no-op attempt.
 git -C "$FIXTURE" commit -q -m 'already pinned candidate'
 if python3 -m tools.control_plane.adk_promotion \
@@ -207,4 +253,4 @@ if python3 -m tools.control_plane.adk_promotion \
   exit 1
 fi
 
-echo '[PASS] ADK promotion stages exactly one three-path transaction and rolls back atomically'
+echo '[PASS] ADK promotion stages exactly one four-path transaction and rolls back atomically'
