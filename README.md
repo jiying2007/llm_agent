@@ -32,6 +32,7 @@ rtk scripts/check-upstream-intake-readiness.sh .
 - `manifests/product_maturity_scorecard.json`：当前产品成熟度机器 SSOT。
 - `manifests/product_maturity_task_pack.json`：剩余门禁与可执行任务包。
 - `manifests/adk_interface.lock.json`：当前 ADK 跨仓接口身份与 active/deprecated surface contract。
+- `manifests/digital_worker_runtime_pilot.json`：`digital-worker + agent-dev-kit + llm_agent` 联合 Runtime Pilot 的 report-only 证据合同；Runtime 输出不得替代 Verification PASS。
 - `scripts/README.md`：子仓治理、门禁和同步脚本说明。
 - `AGENTS.md`：本工作区代理执行规则与维护记录。
 - `subrepos/registry.csv`：参考子仓单一清单。
