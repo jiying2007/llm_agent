@@ -119,17 +119,22 @@
       "contract",
       "doc-sync"
     ],
-    "integration": [
-      "contract",
+    "integration-extra": [
       "adk-integration",
       "adk-quick",
-      "root-regression",
-      "doc-sync"
+      "root-regression"
+    ],
+    "integration": [
+      "pr-fast",
+      "integration-extra"
+    ],
+    "release-extra": [
+      "fresh-status",
+      "harden-readiness"
     ],
     "release": [
       "integration",
-      "fresh-status",
-      "harden-readiness"
+      "release-extra"
     ]
   }
 }
