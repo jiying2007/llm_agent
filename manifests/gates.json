@@ -93,7 +93,7 @@
       "owner": "llm_agent",
       "side_effect": "none",
       "depends_on": ["adk-interface"],
-      "inputs": ["tests/test_adk_promotion_transaction.sh", "tools/control_plane/adk_promotion.py", "tools/control_plane/adk_interface.py"],
+      "inputs": ["tests/test_adk_promotion_transaction.sh", "tools/control_plane/adk_promotion.py", "tools/control_plane/adk_interface.py", "tools/control_plane/adk_promotion_evidence.py"],
       "outputs": [],
       "cache_policy": "disabled",
       "argv": ["bash", "tests/test_adk_promotion_transaction.sh"],
@@ -144,36 +144,22 @@
       "timeout_seconds": 180,
       "evidence_class": "test"
     },
-    "adk-integration": {
+    "adk-promotion-evidence": {
       "owner": "agent-dev-kit",
       "side_effect": "none",
       "depends_on": ["adk-interface"],
-      "requires": ["adk-checkout"],
-      "inputs": ["adk.lock", "manifests/adk_interface.lock.json", "agent-dev-kit/manifest.json", "scripts/check-adk-lock.sh"],
+      "inputs": ["adk.lock", "manifests/adk_interface.lock.json", "reports/promotion/agent-dev-kit/promotion-evidence.json", "reports/promotion/agent-dev-kit/promotion-attestation.json", "tools/control_plane/adk_promotion_evidence.py", "scripts/check-adk-promotion-evidence.sh"],
       "outputs": [],
       "cache_policy": "disabled",
-      "argv": ["bash", "scripts/check-adk-lock.sh", "."],
-      "timeout_seconds": 60,
-      "evidence_class": "test"
-    },
-    "adk-quick": {
-      "owner": "agent-dev-kit",
-      "side_effect": "none",
-      "depends_on": ["adk-integration"],
-      "requires": ["adk-checkout"],
-      "inputs": ["agent-dev-kit/manifest.json", "agent-dev-kit/tests/run_all.sh"],
-      "outputs": [],
-      "cache_policy": "disabled",
-      "argv": ["bash", "agent-dev-kit/tests/run_all.sh", "--quick", "--fail-fast"],
-      "timeout_seconds": 900,
-      "evidence_class": "test"
+      "argv": ["bash", "scripts/check-adk-promotion-evidence.sh", "."],
+      "timeout_seconds": 120,
+      "evidence_class": "release"
     },
     "root-regression": {
       "owner": "llm_agent",
       "side_effect": "none",
-      "depends_on": ["adk-quick"],
-      "requires": ["adk-checkout"],
-      "inputs": ["tests", "scripts", "tools", "manifests", "agent-dev-kit/manifest.json"],
+      "depends_on": ["adk-promotion-evidence"],
+      "inputs": ["tests", "scripts", "tools", "manifests"],
       "outputs": [],
       "cache_policy": "disabled",
       "argv": ["bash", "tests/run_all.sh", "--fail-fast"],
@@ -184,7 +170,7 @@
       "owner": "llm_agent",
       "side_effect": "none",
       "depends_on": ["root-regression", "fresh-status"],
-      "requires": ["adk-checkout", "runtime-source"],
+      "requires": ["runtime-source"],
       "inputs": ["scripts/check-adk-harden-readiness.sh", "manifests/runtime_targets.json", "manifests/runtime_health_adapters.json", "reports/runtime-evidence"],
       "outputs": [],
       "cache_policy": "disabled",
@@ -208,7 +194,7 @@
       "ci-incremental-dag"
     ],
     "pr-fast": ["contract", "doc-sync"],
-    "integration-extra": ["adk-integration", "adk-quick", "root-regression"],
+    "integration-extra": ["adk-promotion-evidence", "root-regression"],
     "integration": ["pr-fast", "integration-extra"],
     "release-extra": ["fresh-status", "harden-readiness"],
     "release": ["integration", "release-extra"]
