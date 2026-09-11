@@ -57,6 +57,13 @@
       "timeout_seconds": 60,
       "evidence_class": "test"
     },
+    "ci-incremental-dag": {
+      "owner": "llm_agent",
+      "side_effect": "none",
+      "argv": ["bash", "tests/test_ci_incremental_gate_dag.sh"],
+      "timeout_seconds": 30,
+      "evidence_class": "test"
+    },
     "fresh-status": {
       "owner": "llm_agent",
       "side_effect": "none",
@@ -113,7 +120,8 @@
       "status-projection",
       "status-projection-regression",
       "adk-promotion-transaction",
-      "current-status-source-split"
+      "current-status-source-split",
+      "ci-incremental-dag"
     ],
     "pr-fast": [
       "contract",
