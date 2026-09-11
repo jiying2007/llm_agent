@@ -187,9 +187,10 @@ jobs:
           --summary-json
           > /tmp/llm-agent-integration-receipt.json
 
-      - name: Verify keyless ADK Sigstore bundle
+      - name: Verify keyless ADK Sigstore bundle offline
         run: >-
           cosign verify-blob
+          --offline
           --bundle reports/promotion/agent-dev-kit/promotion-attestation.json
           --certificate-identity https://github.com/jiying2007/agent-dev-kit/.github/workflows/ci.yml@refs/heads/main
           --certificate-oidc-issuer https://token.actions.githubusercontent.com

@@ -16,9 +16,10 @@ python3 -m tools.control_plane.adk_promotion_evidence \
   --summary-json
 
 cosign verify-blob \
+  --offline \
   --bundle "$ATTESTATION" \
   --certificate-identity 'https://github.com/jiying2007/agent-dev-kit/.github/workflows/ci.yml@refs/heads/main' \
   --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
   "$EVIDENCE"
 
-echo '[PASS] ADK promotion evidence claims and keyless Sigstore provenance verified'
+echo '[PASS] ADK promotion evidence claims and offline keyless Sigstore provenance verified'
