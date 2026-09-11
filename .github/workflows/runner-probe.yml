@@ -1,0 +1,18 @@
+name: runner-allocation-probe
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    name: ubuntu-latest-probe
+    runs-on: ubuntu-latest
+    steps:
+      - name: Confirm hosted runner allocation
+        run: |
+          echo "runner allocated"
+          uname -a
