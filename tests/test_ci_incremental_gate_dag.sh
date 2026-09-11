@@ -25,8 +25,6 @@ assert profiles["integration"] == ["pr-fast", "integration-extra"], profiles["in
 assert profiles["release-extra"] == ["fresh-status", "harden-readiness"], profiles["release-extra"]
 assert profiles["release"] == ["integration", "release-extra"], profiles["release"]
 
-# Gate Graph v2 must carry actual dependency and content identity metadata, and
-# the private-checkout capability must not survive in SSOT after migration.
 assert gate_specs["adk-interface"]["depends_on"] == ["adk-pin"]
 assert gate_specs["active-contracts"]["depends_on"] == ["adk-interface"]
 assert gate_specs["adk-promotion-evidence"]["depends_on"] == ["adk-interface"]
@@ -41,8 +39,6 @@ for name, spec in gate_specs.items():
     assert isinstance(spec.get("outputs"), list), name
     assert spec.get("cache_policy") in {"disabled", "content-addressed"}, name
 
-# GitHub CI preserves impact-aware REQUIRED semantics but no longer couples
-# cross-repo verification to a long-lived private checkout credential.
 for job in (
     "contract",
     "doc-sync",
@@ -63,6 +59,8 @@ assert "promotion-attestation" in github and "promotion-evidence" in github, git
 assert "sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6" in github, github
 assert "cosign-release: v3.0.6" in github, github
 assert "cosign verify-blob" in github, github
+assert "--offline" in github, github
+assert "--insecure-ignore-tlog" not in github, github
 assert "--certificate-identity https://github.com/jiying2007/agent-dev-kit/.github/workflows/ci.yml@refs/heads/main" in github, github
 assert "--certificate-oidc-issuer https://token.actions.githubusercontent.com" in github, github
 assert "gh attestation" not in github, github
@@ -78,9 +76,6 @@ assert re.search(
 ), github
 assert "adk\\.lock" in github and "product_maturity_scorecard" in github and "software_m5_policy" in github
 
-# GitLab continues consuming the shared source/interface contract profile. The
-# portable Sigstore policy is GitHub-specific and does not require a private
-# sibling-repository credential in either CI system.
 assert len(re.findall(r"--profile\s+contract(?:\s|$)", gitlab)) == 1, gitlab
 assert len(re.findall(r"--profile\s+doc-sync(?:\s|$)", gitlab)) == 1, gitlab
 assert not re.search(r"--profile\s+pr-fast(?:\s|$)", gitlab), gitlab
@@ -88,4 +83,4 @@ assert re.search(r"^doc-sync:\s*$", gitlab, re.MULTILINE), gitlab
 assert re.search(r"weekly-report:\n(?:.|\n)*?needs:\n\s+- doc-sync", gitlab), gitlab
 PY
 
-echo '[PASS] GitHub/GitLab CI consume Gate Graph v2 with keyless Cosign evidence semantics'
+echo '[PASS] GitHub/GitLab CI consume Gate Graph v2 with offline keyless Cosign evidence semantics'
