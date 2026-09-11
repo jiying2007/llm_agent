@@ -174,9 +174,9 @@ jobs:
           python-version: '3.11'
 
       - name: Install Cosign
-        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2 / cosign v3.0.6
+        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
         with:
-          cosign-release: v3.0.6
+          cosign-release: v3.1.3
 
       - name: Verify portable promotion evidence claims
         run: >-
@@ -197,9 +197,10 @@ jobs:
           [[ -n "$trusted_root" && -f "$trusted_root" ]] || { echo '[FAIL] Sigstore trusted_root.json was not initialized' >&2; exit 1; }
           echo "path=$trusted_root" >> "$GITHUB_OUTPUT"
 
-      - name: Verify keyless ADK Sigstore bundle with trusted root
+      - name: Verify keyless ADK Sigstore bundle with Rekor v2 trust time
         run: >-
           cosign verify-blob
+          --use-signed-timestamps
           --trusted-root '${{ steps.sigstore_root.outputs.path }}'
           --bundle reports/promotion/agent-dev-kit/promotion-attestation.json
           --certificate-identity https://github.com/jiying2007/agent-dev-kit/.github/workflows/ci.yml@refs/heads/main
