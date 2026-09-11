@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       require_adk_integration:
-        description: Require private ADK deep integration even when the diff would not normally require it
+        description: Require portable ADK promotion evidence verification even when the diff would not normally require it
         required: false
         type: boolean
         default: false
@@ -42,6 +42,9 @@ jobs:
           python -m tools.control_plane.gate_runner
           --profile contract
           --output-json /tmp/llm-agent-contract-receipt.json
+
+      - name: Validate portable ADK promotion evidence verifier
+        run: bash tests/test_adk_promotion_evidence.sh
 
       - name: Upload contract receipt
         if: ${{ always() }}
@@ -105,7 +108,7 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
-      - name: Classify whether private ADK deep integration is required
+      - name: Classify whether ADK promotion evidence verification is required
         id: impact
         shell: bash
         env:
@@ -136,7 +139,7 @@ jobs:
                 changed="$(git diff --name-only "$base"..HEAD)"
               fi
               printf '%s\n' "$changed" > /tmp/llm-agent-changed-paths.txt
-              if grep -Eq '^(adk\.lock|agent-dev-kit|manifests/(runtime_targets|runtime_health_adapters|product_maturity_scorecard|software_m5_policy)\.json)$' /tmp/llm-agent-changed-paths.txt; then
+              if grep -Eq '^(adk\.lock|agent-dev-kit|manifests/(adk_interface\.lock|runtime_targets|runtime_health_adapters|product_maturity_scorecard|software_m5_policy)\.json|reports/promotion/agent-dev-kit/(promotion-evidence|promotion-attestation)\.json)$' /tmp/llm-agent-changed-paths.txt; then
                 required=true
                 reason=cross-repo-contract-change
               fi
@@ -145,39 +148,10 @@ jobs:
           echo "required=$required" >> "$GITHUB_OUTPUT"
           echo "reason=$reason" >> "$GITHUB_OUTPUT"
           {
-            echo "### ADK deep integration impact"
+            echo "### ADK promotion evidence impact"
             echo "- required: $required"
             echo "- reason: $reason"
           } >> "$GITHUB_STEP_SUMMARY"
-
-  integration-capability:
-    name: integration-capability
-    needs:
-      - integration-impact
-    runs-on: ubuntu-24.04
-    outputs:
-      available: ${{ steps.probe.outputs.available }}
-      required: ${{ needs.integration-impact.outputs.required }}
-    env:
-      ADK_REPO_TOKEN: ${{ secrets.ADK_REPO_TOKEN }}
-    steps:
-      - name: Probe private ADK checkout capability
-        id: probe
-        shell: bash
-        run: |
-          if [[ -n "$ADK_REPO_TOKEN" ]]; then
-            echo 'available=true' >> "$GITHUB_OUTPUT"
-            echo '### ADK deep integration capability: available' >> "$GITHUB_STEP_SUMMARY"
-          else
-            echo 'available=false' >> "$GITHUB_OUTPUT"
-            echo '### ADK deep integration capability: unavailable' >> "$GITHUB_STEP_SUMMARY"
-          fi
-
-      - name: Enforce required integration capability
-        if: ${{ needs.integration-impact.outputs.required == 'true' && steps.probe.outputs.available != 'true' }}
-        run: |
-          echo '[FAIL] ADK_REPO_TOKEN is required because this diff changes a cross-repository contract boundary' >&2
-          exit 1
 
   integration:
     name: integration-deep
@@ -185,11 +159,8 @@ jobs:
       - contract
       - doc-sync
       - integration-impact
-      - integration-capability
-    if: ${{ needs.integration-capability.outputs.available == 'true' }}
+    if: ${{ needs.integration-impact.outputs.required == 'true' }}
     runs-on: ubuntu-24.04
-    env:
-      ADK_REPO_TOKEN: ${{ secrets.ADK_REPO_TOKEN }}
     steps:
       - name: Checkout root source
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
@@ -202,7 +173,16 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Resolve exact ADK pin from lock
+      - name: Verify portable promotion evidence claims
+        run: >-
+          python -m tools.control_plane.adk_promotion_evidence
+          --evidence reports/promotion/agent-dev-kit/promotion-evidence.json
+          --lock adk.lock
+          --interface manifests/adk_interface.lock.json
+          --summary-json
+          > /tmp/llm-agent-integration-receipt.json
+
+      - name: Resolve exact ADK source commit
         id: adk_pin
         shell: bash
         run: |
@@ -213,35 +193,39 @@ jobs:
           fi
           echo "commit=$commit" >> "$GITHUB_OUTPUT"
 
-      - name: Checkout exact locked ADK source
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
-        with:
-          repository: jiying2007/agent-dev-kit
-          ref: ${{ steps.adk_pin.outputs.commit }}
-          token: ${{ env.ADK_REPO_TOKEN }}
-          path: agent-dev-kit
-          persist-credentials: false
+      - name: Fetch GitHub Sigstore trusted roots
+        run: gh attestation trusted-root > /tmp/github-trusted-root.jsonl
 
-      - name: Install integration dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ripgrep shellcheck
-          python -m pip install ./agent-dev-kit
-
-      - name: Run incremental deep integration gate profile
+      - name: Verify keyless ADK attestation offline
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: >-
-          python -m tools.control_plane.gate_runner
-          --profile integration-extra
-          --capability adk-checkout
-          --output-json /tmp/llm-agent-integration-receipt.json
+          gh attestation verify
+          reports/promotion/agent-dev-kit/promotion-evidence.json
+          --repo jiying2007/agent-dev-kit
+          --bundle reports/promotion/agent-dev-kit/promotion-attestation.json
+          --custom-trusted-root /tmp/github-trusted-root.jsonl
+          --signer-workflow jiying2007/agent-dev-kit/.github/workflows/ci.yml
+          --source-ref refs/heads/main
+          --source-digest '${{ steps.adk_pin.outputs.commit }}'
+          --deny-self-hosted-runners
+          --format json
+          > /tmp/adk-attestation-verification.json
 
-      - name: Upload integration receipt
+      - name: Re-run root-side exact interface contracts
+        run: |
+          bash scripts/check-adk-lock.sh . --pin-only
+          bash tests/test_adk_interface_lock.sh
+
+      - name: Upload integration evidence
         if: ${{ always() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4
         with:
-          name: llm-agent-integration-receipt
-          path: /tmp/llm-agent-integration-receipt.json
-          if-no-files-found: error
+          name: llm-agent-integration-evidence
+          path: |
+            /tmp/llm-agent-integration-receipt.json
+            /tmp/adk-attestation-verification.json
+          if-no-files-found: warn
           retention-days: 14
 
   integration-summary:
@@ -249,7 +233,6 @@ jobs:
     if: ${{ always() }}
     needs:
       - integration-impact
-      - integration-capability
       - integration
     runs-on: ubuntu-24.04
     steps:
@@ -257,7 +240,6 @@ jobs:
         shell: bash
         env:
           IMPACT_RESULT: ${{ needs.integration-impact.result }}
-          CAPABILITY_RESULT: ${{ needs.integration-capability.result }}
           INTEGRATION_RESULT: ${{ needs.integration.result }}
           REQUIRED: ${{ needs.integration-impact.outputs.required }}
           REASON: ${{ needs.integration-impact.outputs.reason }}
@@ -268,19 +250,15 @@ jobs:
             exit 1
           fi
           if [[ "$REQUIRED" == "true" ]]; then
-            if [[ "$CAPABILITY_RESULT" != "success" || "$INTEGRATION_RESULT" != "success" ]]; then
-              echo "[FAIL] deep integration was REQUIRED but did not pass (capability=$CAPABILITY_RESULT integration=$INTEGRATION_RESULT)" >&2
+            if [[ "$INTEGRATION_RESULT" != "success" ]]; then
+              echo "[FAIL] promotion evidence verification was REQUIRED but did not pass (integration=$INTEGRATION_RESULT)" >&2
               exit 1
             fi
-            echo "### ADK deep integration: PASS ($REASON)" >> "$GITHUB_STEP_SUMMARY"
+            echo "### ADK promotion evidence: PASS ($REASON)" >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
           if [[ "$INTEGRATION_RESULT" == "failure" || "$INTEGRATION_RESULT" == "cancelled" ]]; then
-            echo "[FAIL] optional deep integration ran but did not pass: $INTEGRATION_RESULT" >&2
+            echo "[FAIL] optional promotion evidence verification ran but did not pass: $INTEGRATION_RESULT" >&2
             exit 1
           fi
-          if [[ "$INTEGRATION_RESULT" == "success" ]]; then
-            echo '### ADK deep integration: PASS (optional capability available)' >> "$GITHUB_STEP_SUMMARY"
-          else
-            echo '### ADK deep integration: NOT_REQUIRED (private checkout unavailable or unnecessary for this diff)' >> "$GITHUB_STEP_SUMMARY"
-          fi
+          echo '### ADK promotion evidence: NOT_REQUIRED' >> "$GITHUB_STEP_SUMMARY"
