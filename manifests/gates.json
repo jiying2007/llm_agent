@@ -1,16 +1,35 @@
 {
-  "schema": "llm-agent-gates/v1",
+  "schema": "llm-agent-gates/v2",
   "gates": {
     "adk-pin": {
       "owner": "llm_agent",
       "side_effect": "none",
+      "depends_on": [],
+      "inputs": ["adk.lock", ".gitmodules", "scripts/check-adk-lock.sh"],
+      "outputs": [],
+      "cache_policy": "content-addressed",
       "argv": ["bash", "scripts/check-adk-lock.sh", ".", "--pin-only"],
+      "timeout_seconds": 30,
+      "evidence_class": "source"
+    },
+    "adk-interface": {
+      "owner": "llm_agent",
+      "side_effect": "none",
+      "depends_on": ["adk-pin"],
+      "inputs": ["adk.lock", "manifests/adk_interface.lock.json", "tools/control_plane/adk_interface.py"],
+      "outputs": [],
+      "cache_policy": "content-addressed",
+      "argv": ["python3", "-m", "tools.control_plane.adk_interface", "--root", "."],
       "timeout_seconds": 30,
       "evidence_class": "source"
     },
     "gitlink-registry": {
       "owner": "llm_agent",
       "side_effect": "none",
+      "depends_on": ["adk-pin"],
+      "inputs": [".gitmodules", "manifests/gitlinks.json", "tools/control_plane/gitlink_registry.py"],
+      "outputs": [],
+      "cache_policy": "content-addressed",
       "argv": ["python3", "-m", "tools.control_plane.gitlink_registry", "--root", "."],
       "timeout_seconds": 30,
       "evidence_class": "source"
@@ -18,6 +37,10 @@
     "reference-pins": {
       "owner": "llm_agent",
       "side_effect": "none",
+      "depends_on": ["gitlink-registry"],
+      "inputs": ["manifests/reference_pins.json", "tools/control_plane/reference_pins.py"],
+      "outputs": [],
+      "cache_policy": "content-addressed",
       "argv": ["python3", "-m", "tools.control_plane.reference_pins", "--root", "."],
       "timeout_seconds": 30,
       "evidence_class": "source"
@@ -25,6 +48,10 @@
     "source-hygiene": {
       "owner": "llm_agent",
       "side_effect": "none",
+      "depends_on": ["gitlink-registry"],
+      "inputs": ["tools/control_plane/source_hygiene.py", ".gitignore"],
+      "outputs": [],
+      "cache_policy": "content-addressed",
       "argv": ["python3", "-m", "tools.control_plane.source_hygiene", "--root", "."],
       "timeout_seconds": 30,
       "evidence_class": "source"
@@ -32,13 +59,32 @@
     "status-projection": {
       "owner": "llm_agent",
       "side_effect": "none",
+      "depends_on": ["adk-interface"],
+      "inputs": ["adk.lock", "manifests/gates.json", "manifests/product_maturity_scorecard.json", "manifests/software_m5_policy.json", "reports/current-status.md", "tools/control_plane/status_projection.py"],
+      "outputs": [],
+      "cache_policy": "content-addressed",
       "argv": ["python3", "-m", "tools.control_plane.status_projection", "--root", "."],
+      "timeout_seconds": 30,
+      "evidence_class": "source"
+    },
+    "active-contracts": {
+      "owner": "llm_agent",
+      "side_effect": "none",
+      "depends_on": ["adk-interface"],
+      "inputs": ["README.md", "manifests/adk_interface.lock.json", "manifests/comprehensive_optimization_backlog.json", "manifests/report_registry.json", "tools/control_plane/active_contracts.py"],
+      "outputs": [],
+      "cache_policy": "content-addressed",
+      "argv": ["python3", "-m", "tools.control_plane.active_contracts", "--root", "."],
       "timeout_seconds": 30,
       "evidence_class": "source"
     },
     "status-projection-regression": {
       "owner": "llm_agent",
       "side_effect": "none",
+      "depends_on": ["status-projection"],
+      "inputs": ["tests/test_status_projection.sh", "tools/control_plane/status_projection.py"],
+      "outputs": [],
+      "cache_policy": "disabled",
       "argv": ["bash", "tests/test_status_projection.sh"],
       "timeout_seconds": 30,
       "evidence_class": "test"
@@ -46,6 +92,10 @@
     "adk-promotion-transaction": {
       "owner": "llm_agent",
       "side_effect": "none",
+      "depends_on": ["adk-interface"],
+      "inputs": ["tests/test_adk_promotion_transaction.sh", "tools/control_plane/adk_promotion.py", "tools/control_plane/adk_interface.py"],
+      "outputs": [],
+      "cache_policy": "disabled",
       "argv": ["bash", "tests/test_adk_promotion_transaction.sh"],
       "timeout_seconds": 60,
       "evidence_class": "test"
@@ -53,6 +103,10 @@
     "current-status-source-split": {
       "owner": "llm_agent",
       "side_effect": "none",
+      "depends_on": ["status-projection-regression"],
+      "inputs": ["tests/test_current_status_source_split.sh", "reports/current-status.md"],
+      "outputs": [],
+      "cache_policy": "disabled",
       "argv": ["bash", "tests/test_current_status_source_split.sh"],
       "timeout_seconds": 60,
       "evidence_class": "test"
@@ -60,6 +114,10 @@
     "ci-incremental-dag": {
       "owner": "llm_agent",
       "side_effect": "none",
+      "depends_on": ["active-contracts"],
+      "inputs": ["tests/test_ci_incremental_gate_dag.sh", ".github/workflows/ci.yml", ".gitlab-ci.yml", "manifests/gates.json"],
+      "outputs": [],
+      "cache_policy": "disabled",
       "argv": ["bash", "tests/test_ci_incremental_gate_dag.sh"],
       "timeout_seconds": 30,
       "evidence_class": "test"
@@ -67,6 +125,10 @@
     "fresh-status": {
       "owner": "llm_agent",
       "side_effect": "none",
+      "depends_on": ["status-projection"],
+      "inputs": ["reports/current-status.md", "tools/control_plane/status_projection.py"],
+      "outputs": [],
+      "cache_policy": "disabled",
       "argv": ["python3", "-m", "tools.control_plane.status_projection", "--root", ".", "--require-fresh"],
       "timeout_seconds": 30,
       "evidence_class": "release"
@@ -74,22 +136,22 @@
     "doc-sync": {
       "owner": "llm_agent",
       "side_effect": "none",
+      "depends_on": [],
+      "inputs": ["scripts/check-doc-sync.sh", "scripts/README.md", "AGENTS.md", "docs"],
+      "outputs": [],
+      "cache_policy": "disabled",
       "argv": ["bash", "scripts/check-doc-sync.sh", "."],
       "timeout_seconds": 180,
-      "evidence_class": "test"
-    },
-    "root-regression": {
-      "owner": "llm_agent",
-      "side_effect": "none",
-      "requires": ["adk-checkout"],
-      "argv": ["bash", "tests/run_all.sh", "--fail-fast"],
-      "timeout_seconds": 1800,
       "evidence_class": "test"
     },
     "adk-integration": {
       "owner": "agent-dev-kit",
       "side_effect": "none",
+      "depends_on": ["adk-interface"],
       "requires": ["adk-checkout"],
+      "inputs": ["adk.lock", "manifests/adk_interface.lock.json", "agent-dev-kit/manifest.json", "scripts/check-adk-lock.sh"],
+      "outputs": [],
+      "cache_policy": "disabled",
       "argv": ["bash", "scripts/check-adk-lock.sh", "."],
       "timeout_seconds": 60,
       "evidence_class": "test"
@@ -97,15 +159,35 @@
     "adk-quick": {
       "owner": "agent-dev-kit",
       "side_effect": "none",
+      "depends_on": ["adk-integration"],
       "requires": ["adk-checkout"],
+      "inputs": ["agent-dev-kit/manifest.json", "agent-dev-kit/tests/run_all.sh"],
+      "outputs": [],
+      "cache_policy": "disabled",
       "argv": ["bash", "agent-dev-kit/tests/run_all.sh", "--quick", "--fail-fast"],
       "timeout_seconds": 900,
+      "evidence_class": "test"
+    },
+    "root-regression": {
+      "owner": "llm_agent",
+      "side_effect": "none",
+      "depends_on": ["adk-quick"],
+      "requires": ["adk-checkout"],
+      "inputs": ["tests", "scripts", "tools", "manifests", "agent-dev-kit/manifest.json"],
+      "outputs": [],
+      "cache_policy": "disabled",
+      "argv": ["bash", "tests/run_all.sh", "--fail-fast"],
+      "timeout_seconds": 1800,
       "evidence_class": "test"
     },
     "harden-readiness": {
       "owner": "llm_agent",
       "side_effect": "none",
+      "depends_on": ["root-regression", "fresh-status"],
       "requires": ["adk-checkout", "runtime-source"],
+      "inputs": ["scripts/check-adk-harden-readiness.sh", "manifests/runtime_targets.json", "manifests/runtime_health_adapters.json", "reports/runtime-evidence"],
+      "outputs": [],
+      "cache_policy": "disabled",
       "argv": ["bash", "scripts/check-adk-harden-readiness.sh", ".", "--require-pilot"],
       "timeout_seconds": 1800,
       "evidence_class": "runtime"
@@ -114,35 +196,21 @@
   "profiles": {
     "contract": [
       "adk-pin",
+      "adk-interface",
       "gitlink-registry",
       "reference-pins",
       "source-hygiene",
       "status-projection",
+      "active-contracts",
       "status-projection-regression",
       "adk-promotion-transaction",
       "current-status-source-split",
       "ci-incremental-dag"
     ],
-    "pr-fast": [
-      "contract",
-      "doc-sync"
-    ],
-    "integration-extra": [
-      "adk-integration",
-      "adk-quick",
-      "root-regression"
-    ],
-    "integration": [
-      "pr-fast",
-      "integration-extra"
-    ],
-    "release-extra": [
-      "fresh-status",
-      "harden-readiness"
-    ],
-    "release": [
-      "integration",
-      "release-extra"
-    ]
+    "pr-fast": ["contract", "doc-sync"],
+    "integration-extra": ["adk-integration", "adk-quick", "root-regression"],
+    "integration": ["pr-fast", "integration-extra"],
+    "release-extra": ["fresh-status", "harden-readiness"],
+    "release": ["integration", "release-extra"]
   }
 }
