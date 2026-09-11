@@ -57,12 +57,12 @@ assert not re.search(r"--profile\s+integration(?:\s|$)", github), github
 assert "cross-repo-contract-change" in github, github
 assert "promotion-attestation" in github and "promotion-evidence" in github, github
 assert "sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6" in github, github
-assert "cosign-release: v3.0.6" in github, github
+assert "cosign-release: v3.1.3" in github, github
 assert "cosign initialize" in github, github
 assert "trusted_root.json" in github, github
 assert "cosign verify-blob" in github, github
 assert "--trusted-root" in github, github
-assert "--offline" not in github, github
+assert "--use-signed-timestamps" in github, github
 assert "--insecure-ignore-tlog" not in github, github
 assert "--certificate-identity https://github.com/jiying2007/agent-dev-kit/.github/workflows/ci.yml@refs/heads/main" in github, github
 assert "--certificate-oidc-issuer https://token.actions.githubusercontent.com" in github, github
@@ -86,4 +86,4 @@ assert re.search(r"^doc-sync:\s*$", gitlab, re.MULTILINE), gitlab
 assert re.search(r"weekly-report:\n(?:.|\n)*?needs:\n\s+- doc-sync", gitlab), gitlab
 PY
 
-echo '[PASS] GitHub/GitLab CI consume Gate Graph v2 with trusted-root Cosign evidence semantics'
+echo '[PASS] GitHub/GitLab CI consume Gate Graph v2 with Cosign 3.1.3 Rekor v2 evidence semantics'
