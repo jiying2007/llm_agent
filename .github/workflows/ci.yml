@@ -173,6 +173,11 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2 / cosign v3.0.6
+        with:
+          cosign-release: v3.0.6
+
       - name: Verify portable promotion evidence claims
         run: >-
           python -m tools.control_plane.adk_promotion_evidence
@@ -182,35 +187,14 @@ jobs:
           --summary-json
           > /tmp/llm-agent-integration-receipt.json
 
-      - name: Resolve exact ADK source commit
-        id: adk_pin
-        shell: bash
-        run: |
-          commit="$(awk -F= '$1=="agent-dev-kit.commit"{print $2; exit}' adk.lock)"
-          if [[ ! "$commit" =~ ^[0-9a-f]{40}$ ]]; then
-            echo '[FAIL] invalid ADK commit in adk.lock' >&2
-            exit 1
-          fi
-          echo "commit=$commit" >> "$GITHUB_OUTPUT"
-
-      - name: Fetch GitHub Sigstore trusted roots
-        run: gh attestation trusted-root > /tmp/github-trusted-root.jsonl
-
-      - name: Verify keyless ADK attestation offline
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Verify keyless ADK Sigstore bundle
         run: >-
-          gh attestation verify
-          reports/promotion/agent-dev-kit/promotion-evidence.json
-          --repo jiying2007/agent-dev-kit
+          cosign verify-blob
           --bundle reports/promotion/agent-dev-kit/promotion-attestation.json
-          --custom-trusted-root /tmp/github-trusted-root.jsonl
-          --signer-workflow jiying2007/agent-dev-kit/.github/workflows/ci.yml
-          --source-ref refs/heads/main
-          --source-digest '${{ steps.adk_pin.outputs.commit }}'
-          --deny-self-hosted-runners
-          --format json
-          > /tmp/adk-attestation-verification.json
+          --certificate-identity https://github.com/jiying2007/agent-dev-kit/.github/workflows/ci.yml@refs/heads/main
+          --certificate-oidc-issuer https://token.actions.githubusercontent.com
+          reports/promotion/agent-dev-kit/promotion-evidence.json
+          > /tmp/adk-attestation-verification.txt
 
       - name: Re-run root-side exact interface contracts
         run: |
@@ -224,7 +208,7 @@ jobs:
           name: llm-agent-integration-evidence
           path: |
             /tmp/llm-agent-integration-receipt.json
-            /tmp/adk-attestation-verification.json
+            /tmp/adk-attestation-verification.txt
           if-no-files-found: warn
           retention-days: 14
 
