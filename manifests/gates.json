@@ -50,6 +50,13 @@
       "timeout_seconds": 60,
       "evidence_class": "test"
     },
+    "current-status-source-split": {
+      "owner": "llm_agent",
+      "side_effect": "none",
+      "argv": ["bash", "tests/test_current_status_source_split.sh"],
+      "timeout_seconds": 60,
+      "evidence_class": "test"
+    },
     "fresh-status": {
       "owner": "llm_agent",
       "side_effect": "none",
@@ -105,7 +112,8 @@
       "source-hygiene",
       "status-projection",
       "status-projection-regression",
-      "adk-promotion-transaction"
+      "adk-promotion-transaction",
+      "current-status-source-split"
     ],
     "pr-fast": [
       "contract",

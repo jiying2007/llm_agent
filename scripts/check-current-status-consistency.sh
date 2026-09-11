@@ -23,9 +23,11 @@ while [[ $# -gt 0 ]]; do
       cat <<USAGE
 usage: scripts/check-current-status-consistency.sh [root] [--summary-json] [--worktree-integration]
 
-Checks the last verified 3.1 M5-ready baseline against root/adk commits,
-release rehearsal, runtime campaign boundary, software M5 certifier,
-source-to-live applicability, report registry and current subrepo state.
+Checks current source identity separately from the last verified release/runtime
+baseline, plus release rehearsal, runtime campaign boundary, software M5
+certifier, source-to-live applicability, report registry and subrepo state.
+Historical baseline age is not a general consistency failure; release freshness
+is enforced by the release-profile status projection gate.
 USAGE
       exit 0
       ;;
@@ -122,6 +124,25 @@ def git(*args, cwd=None, check=True):
     return completed
 
 
+def manifest_at(commit):
+    if not commit:
+        failures.append("historical release ADK commit is missing")
+        return {}
+    completed = git("show", "{}:manifest.json".format(commit), cwd=path("agent-dev-kit"), check=False)
+    if completed.returncode != 0:
+        failures.append("cannot read historical release manifest at {}".format(commit))
+        return {}
+    try:
+        value = json.loads(completed.stdout)
+    except json.JSONDecodeError:
+        failures.append("historical release manifest is invalid JSON at {}".format(commit))
+        return {}
+    if not isinstance(value, dict):
+        failures.append("historical release manifest root must be an object")
+        return {}
+    return value
+
+
 status_path = path("reports", "current-status.md")
 policy_path = path("manifests", "software_m5_policy.json")
 status_text = read_text(status_path)
@@ -199,10 +220,10 @@ expected_fields = {
 for name, expected in expected_fields.items():
     actual = field(status_text, name)
     if actual != expected:
-        failures.append("current-status {} must be {}, got {}".format(name, expected, actual or "<missing>"))
+        failures.append("historical current-status {} must be {}, got {}".format(name, expected, actual or "<missing>"))
 
 if field(status_text, "adk_version") != candidate_version:
-    failures.append("current-status adk_version does not match software M5 candidate_version")
+    failures.append("historical current-status adk_version does not match software M5 candidate_version")
 live_refresh_status = field(status_text, "live_refresh_status")
 if live_refresh_status not in {
     "required-pending-owner-authorization",
@@ -211,82 +232,114 @@ if live_refresh_status not in {
     "applied-declarative-no-op",
     "not-required-mapped-no-change",
 }:
-    failures.append("current-status live_refresh_status is invalid for the current delivery")
+    failures.append("historical current-status live_refresh_status is invalid for the recorded delivery")
 knowledge_candidate_status = field(status_text, "knowledge_candidate_status")
 if knowledge_candidate_status not in {
     "required-pending-capture",
     "captured-reviewing",
     "not-captured-outside-write-scope",
 }:
-    failures.append("current-status knowledge_candidate_status is invalid for the current delivery")
+    failures.append("historical current-status knowledge_candidate_status is invalid for the recorded delivery")
 
 last_verified_at = field(status_text, "last_verified_at")
+baseline_age_days = None
 try:
     verified_date = dt.date.fromisoformat(last_verified_at)
 except ValueError:
     failures.append("current-status last_verified_at must be an ISO date")
 else:
-    age_days = (dt.date.today() - verified_date).days
-    if age_days < 0:
+    baseline_age_days = (dt.date.today() - verified_date).days
+    if baseline_age_days < 0:
         failures.append("current-status last_verified_at must not be in the future")
-    elif age_days > 7:
-        failures.append("current-status verification is stale: age_days={}".format(age_days))
 
 root_product_commit = field(status_text, "root_product_commit")
 if not root_product_commit:
     failures.append("current-status missing root_product_commit")
 elif git("merge-base", "--is-ancestor", root_product_commit, "HEAD", check=False).returncode != 0:
-    failures.append("current-status root_product_commit is not an ancestor of HEAD: {}".format(root_product_commit))
+    failures.append("historical current-status root_product_commit is not an ancestor of HEAD: {}".format(root_product_commit))
 
+# Current source identity comes from the lock/gitlink/current ADK checkout. The
+# historical baseline fields below are release/runtime evidence and must not be
+# promoted merely because source moved forward.
 index = git("ls-files", "-s", "agent-dev-kit").stdout.strip().split()
 gitlink_commit = index[1] if len(index) >= 2 and index[0] == "160000" else ""
 adk_worktree = git("rev-parse", "HEAD", cwd=path("agent-dev-kit"), check=False).stdout.strip()
 adk_lock_commit = lock.get("agent-dev-kit.commit", "")
-adk_status_commit = field(status_text, "agent_dev_kit_commit")
-adk_release_commit = field(status_text, "agent_dev_kit_release_commit") or adk_status_commit
-identity_values = [
-    ("adk.lock", adk_lock_commit),
-    ("ADK worktree", adk_worktree),
-    ("current-status", adk_status_commit),
-]
+current_adk_commit = adk_lock_commit
+current_adk_version = lock.get("agent-dev-kit.version", "")
+current_adk_tree = lock.get("agent-dev-kit.tree", "")
+current_adk_manifest_blob = lock.get("agent-dev-kit.manifest_blob", "")
+adk_release_commit = field(status_text, "agent_dev_kit_release_commit") or field(status_text, "agent_dev_kit_commit")
+release_manifest = manifest_at(adk_release_commit)
+release_manifest_version = release_manifest.get("version") if isinstance(release_manifest, dict) else None
+
+if not current_adk_commit:
+    failures.append("adk.lock current ADK commit is missing")
+if not current_adk_version:
+    failures.append("adk.lock current ADK version is missing")
 if not worktree_integration:
-    identity_values.insert(0, ("gitlink", gitlink_commit))
-for label, value in identity_values:
-    if value != adk_status_commit or not value:
-        failures.append("{} ADK commit does not match current-status: {}".format(label, value or "<missing>"))
-if worktree_integration and (
-    not gitlink_commit
-    or git(
-        "merge-base",
-        "--is-ancestor",
-        gitlink_commit,
-        adk_status_commit,
-        cwd=path("agent-dev-kit"),
-        check=False,
-    ).returncode
-    != 0
-):
-    failures.append("working-tree ADK commit must descend from the recorded gitlink")
+    if gitlink_commit != current_adk_commit or not gitlink_commit:
+        failures.append("gitlink ADK commit does not match adk.lock current source: {}".format(gitlink_commit or "<missing>"))
+    if adk_worktree != current_adk_commit or not adk_worktree:
+        failures.append("ADK worktree does not match adk.lock current source: {}".format(adk_worktree or "<missing>"))
+else:
+    if (
+        not gitlink_commit
+        or gitlink_commit != current_adk_commit
+        or not adk_worktree
+        or git(
+            "merge-base",
+            "--is-ancestor",
+            current_adk_commit,
+            adk_worktree,
+            cwd=path("agent-dev-kit"),
+            check=False,
+        ).returncode
+        != 0
+    ):
+        failures.append("working-tree ADK commit must descend from the locked gitlink/current source")
+
+effective_current_adk_commit = adk_worktree if worktree_integration and adk_worktree else current_adk_commit
 if (
     not adk_release_commit
+    or not effective_current_adk_commit
     or git(
         "merge-base",
         "--is-ancestor",
         adk_release_commit,
-        adk_status_commit,
+        effective_current_adk_commit,
         cwd=path("agent-dev-kit"),
         check=False,
     ).returncode
     != 0
 ):
-    failures.append("current-status ADK release commit must be an ancestor of the current ADK commit")
+    failures.append("historical ADK release commit must be an ancestor of the current ADK source")
 
-if (
-    not isinstance(candidate_version, str)
-    or lock.get("agent-dev-kit.version") != candidate_version
-    or manifest.get("version") != candidate_version
-):
-    failures.append("ADK version is not synchronized across lock and manifest")
+locked_tree = git("rev-parse", "{}^{{tree}}".format(current_adk_commit), cwd=path("agent-dev-kit"), check=False).stdout.strip()
+locked_manifest_blob = git("rev-parse", "{}:manifest.json".format(current_adk_commit), cwd=path("agent-dev-kit"), check=False).stdout.strip()
+if not current_adk_tree or locked_tree != current_adk_tree:
+    failures.append("adk.lock current tree does not match the locked ADK commit")
+if not current_adk_manifest_blob or locked_manifest_blob != current_adk_manifest_blob:
+    failures.append("adk.lock current manifest blob does not match the locked ADK commit")
+if not current_adk_version or manifest.get("version") != current_adk_version:
+    failures.append("current ADK manifest version does not match adk.lock")
+if not isinstance(candidate_version, str) or not candidate_version:
+    failures.append("software M5 policy candidate_version is missing")
+elif release_manifest_version != candidate_version:
+    failures.append("historical release manifest version does not match software M5 candidate_version")
+
+# The historical baseline may be older than current source. It must retain the
+# release identity rather than being rewritten to the current lock.
+historical_status_commit = field(status_text, "agent_dev_kit_commit")
+if historical_status_commit and historical_status_commit != adk_release_commit:
+    failures.append("historical current-status ADK commit must remain bound to the release baseline")
+
+release_relation = "current" if adk_release_commit == current_adk_commit else "historical"
+recorded_release_relation = field(status_text, "release_evidence_relation")
+if recorded_release_relation and recorded_release_relation != release_relation:
+    failures.append("generated release_evidence_relation does not match current/release source identity")
+if field(status_text, "release_authorized") not in {"", "false"}:
+    failures.append("current status must not authorize release from historical evidence")
 
 overall = scorecard.get("overall", {})
 software_m5 = scorecard.get("software_m5", {})
@@ -375,6 +428,7 @@ def validate_evidence_time(value, label):
         failures.append("{} timestamp is timezone-less or in the future".format(label))
 
 
+release_manifest_sha256 = adk_manifest_digest(release_manifest) if release_manifest else ""
 codex_result = codex_smoke.get("result", {}) if isinstance(codex_smoke, dict) else {}
 unsigned_codex = dict(codex_smoke)
 stored_codex_digest = unsigned_codex.pop("evidence_sha256", None)
@@ -384,7 +438,7 @@ if (
     codex_smoke.get("schema") != "llm-agent-runtime-smoke-evidence/v1"
     or codex_smoke.get("runtime") != "codex"
     or codex_smoke.get("manifest_version") != candidate_version
-    or codex_smoke.get("manifest_sha256") != adk_manifest_digest(manifest)
+    or codex_smoke.get("manifest_sha256") != release_manifest_sha256
     or codex_smoke.get("adk_commit") != adk_release_commit
     or codex_smoke.get("bundle_sha256") != release_artifacts_for_runtime.get("source_sha256")
     or codex_result.get("suite") != "runtime-routing"
@@ -395,19 +449,16 @@ if (
     or codex_result.get("requested_model") != "gpt-5.5"
     or not all(codex_result.get("quality_gate", {}).values())
 ):
-    failures.append("Codex runtime smoke identity/result is invalid or stale")
+    failures.append("Codex runtime smoke identity/result is invalid")
 runtime_readback(
     "codex", str(codex_smoke.get("runtime_version", "")),
     str(codex_smoke.get("runtime_binary_sha256", "")), "Codex",
 )
 validate_evidence_time(codex_smoke.get("generated_at"), "Codex runtime evidence generated_at")
 try:
-    codex_review_after = dt.date.fromisoformat(str(codex_smoke.get("review_after")))
+    dt.date.fromisoformat(str(codex_smoke.get("review_after")))
 except ValueError:
     failures.append("Codex runtime evidence review_after is invalid")
-else:
-    if codex_review_after < dt.date.today():
-        failures.append("Codex runtime evidence is stale")
 
 if (
     runtime_attestation.get("schema") != "llm-agent-runtime-owner-attestation/v2"
@@ -417,7 +468,7 @@ if (
     or runtime_attestation.get("trust_layer") != "owner-attested"
     or runtime_attestation.get("runtime_measured") is not False
     or runtime_attestation.get("manifest_version") != candidate_version
-    or runtime_attestation.get("manifest_sha256") != adk_manifest_digest(manifest)
+    or runtime_attestation.get("manifest_sha256") != release_manifest_sha256
     or runtime_attestation.get("adk_commit") != adk_release_commit
     or runtime_attestation.get("bundle_sha256") != release_artifacts_for_runtime.get("source_sha256")
 ):
@@ -431,12 +482,9 @@ for boundary in ("native runtime conformance receipt", "60-task three-trial dual
     if boundary not in does_not_satisfy:
         failures.append("Claude Code owner attestation weakens evidence boundary: {}".format(boundary))
 try:
-    review_after = dt.date.fromisoformat(str(runtime_attestation.get("review_after")))
+    dt.date.fromisoformat(str(runtime_attestation.get("review_after")))
 except ValueError:
     failures.append("Claude Code owner attestation review_after is invalid")
-else:
-    if review_after < dt.date.today():
-        failures.append("Claude Code owner attestation is stale")
 runtime_readback(
     "claude", str(runtime_attestation.get("runtime_version", "")),
     str(runtime_attestation.get("runtime_binary_sha256", "")), "Claude Code",
@@ -493,7 +541,7 @@ if release_policy.get("previous_artifact_status") == "unavailable":
         failures.append("release rehearsal must fail closed on the unavailable previous official artifact")
 else:
     if rehearsal.get("status") != "pass" or rehearsal.get("candidate_version") != candidate_version:
-        failures.append("release rehearsal is not a passing current-candidate rehearsal")
+        failures.append("release rehearsal is not a passing release-baseline rehearsal")
     if (
         rehearsal.get("rollback", {}).get("status") != "pass"
         or not isinstance(rehearsal.get("restored_assets"), int)
@@ -508,7 +556,7 @@ release_m5 = release.get("software_m5", {})
 if release.get("schema") != "llm-agent-adk-software-m5-ready-release-evidence/v1":
     failures.append("software M5 release evidence schema is invalid")
 if release_adk.get("commit") != adk_release_commit or release_adk.get("version") != candidate_version:
-    failures.append("software M5 release evidence ADK identity does not match current-status")
+    failures.append("software M5 release evidence ADK identity does not match historical release baseline")
 if release_artifacts.get("source_sha256") != rehearsal.get("candidate_sha256"):
     failures.append("software M5 release artifact SHA does not match rehearsal")
 mapped_content_changed = release_mapping.get("mapped_content_changed")
@@ -526,7 +574,7 @@ elif not mapped_content_changed and live_refresh_status not in {
 }:
     failures.append("unchanged mapped ADK assets require a no-op or not-required live-refresh decision")
 if release_mapping.get("decision") != live_refresh_status:
-    failures.append("software M5 release evidence source-to-live decision does not match current-status")
+    failures.append("software M5 release evidence source-to-live decision does not match historical current-status")
 if release_m5.get("readiness_status") != "not-ready" or release_m5.get("certified") is not False:
     failures.append("software M5 release evidence has an invalid maturity boundary")
 release_full = release.get("validation", {}).get("full", {})
@@ -554,7 +602,7 @@ previous_adk_commit = field(status_text, "adk_previous_commit")
 mapping_paths = ["agents", "skills", "optional-skills", "workflows", "templates"]
 expected_comparison = "{}..{}".format(previous_adk_commit, adk_release_commit)
 if release_mapping.get("comparison") != expected_comparison:
-    failures.append("software M5 release evidence comparison does not match current-status commits")
+    failures.append("software M5 release evidence comparison does not match historical release commits")
 mapping_diff = git(
     "diff",
     "--quiet",
@@ -572,14 +620,14 @@ post_release_mapping_diff = git(
     "diff",
     "--quiet",
     adk_release_commit,
-    adk_status_commit,
+    effective_current_adk_commit,
     "--",
     *mapping_paths,
     cwd=path("agent-dev-kit"),
     check=False,
 )
 if post_release_mapping_diff.returncode != 0:
-    failures.append("mapped ADK asset paths changed after release baseline; current no-live-write decision is invalid")
+    failures.append("mapped ADK asset paths changed after release baseline; historical no-live-write decision is invalid")
 
 try:
     m5_status = check_software_m5(Path(root), dt.datetime.now(dt.timezone.utc))
@@ -634,9 +682,15 @@ payload = {
     "failures": failures,
     "root_head": root_head,
     "root_product_commit": root_product_commit,
-    "agent_dev_kit_commit": adk_status_commit,
+    "current_adk_commit": current_adk_commit,
+    "current_adk_version": current_adk_version,
+    "current_adk_tree": current_adk_tree,
+    "current_adk_manifest_blob": current_adk_manifest_blob,
+    "agent_dev_kit_commit": current_adk_commit,
     "agent_dev_kit_release_commit": adk_release_commit,
-    "adk_version": field(status_text, "adk_version"),
+    "release_candidate_version": candidate_version,
+    "release_evidence_relation": release_relation,
+    "historical_baseline_age_days": baseline_age_days,
     "product_maturity": field(status_text, "product_maturity"),
     "software_m5_readiness": field(status_text, "software_m5_readiness"),
     "software_m5_certified": field(status_text, "software_m5_certified"),
@@ -657,8 +711,11 @@ elif failures:
         print("[FAIL] {}".format(failure), file=sys.stderr)
 else:
     print(
-        "[PASS] product status consistent: root={} adk={} release={} m5=not-ready/blocked".format(
-            root_head, adk_status_commit[:7], adk_release_commit[:7]
+        "[PASS] product status consistent: root={} current_adk={} release={} relation={} m5=not-ready/blocked".format(
+            root_head,
+            current_adk_commit[:7],
+            adk_release_commit[:7],
+            release_relation,
         )
     )
 
