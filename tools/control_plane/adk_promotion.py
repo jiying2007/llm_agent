@@ -8,6 +8,7 @@ import os
 import subprocess
 import sys
 import tempfile
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
@@ -16,13 +17,17 @@ from tools.control_plane.receipts import bind_receipt, write_receipt
 from tools.control_plane.status_projection import project, refresh_current_status
 
 LOCK_SCHEMA = "llm-agent-adk-lock/v2"
-PROMOTION_SCHEMA = "llm-agent-adk-promotion/v3"
+PROMOTION_SCHEMA = "llm-agent-adk-promotion/v4"
 INTERFACE_PATH = "manifests/adk_interface.lock.json"
+EVIDENCE_PATH = "reports/promotion/agent-dev-kit/promotion-evidence.json"
+ATTESTATION_PATH = "reports/promotion/agent-dev-kit/promotion-attestation.json"
 PROMOTION_PATHS = (
     "agent-dev-kit",
     "adk.lock",
     INTERFACE_PATH,
     "reports/current-status.md",
+    EVIDENCE_PATH,
+    ATTESTATION_PATH,
 )
 
 
@@ -98,9 +103,6 @@ def _staged_paths(root: Path) -> list[str]:
 def _root_clean_for_promotion(root: Path) -> bool:
     if _staged_paths(root):
         return False
-    # Porcelain v1 has two fixed status columns. Do not use _git() here because
-    # its strip() would remove a leading space from the first status entry and
-    # corrupt the XY/path boundary (for example, " M agent-dev-kit").
     status = _git_stdout_preserve(root, "status", "--porcelain=v1", "--untracked-files=all")
     allowed = {"agent-dev-kit"}
     for line in status.splitlines():
@@ -143,18 +145,59 @@ def _restore(path: Path, previous: str | None) -> None:
         _atomic_write(path, previous)
 
 
+def _read_json_text(path: Path, label: str) -> tuple[str, Mapping[str, object]]:
+    text = path.read_text(encoding="utf-8")
+    value = json.loads(text)
+    if not isinstance(value, Mapping):
+        raise RuntimeError(f"{label} root must be a JSON object")
+    return text, value
+
+
+def _validate_portable_inputs(
+    identity: CandidateIdentity,
+    evidence_path: Path,
+    attestation_path: Path,
+) -> tuple[str, str]:
+    evidence_text, evidence = _read_json_text(evidence_path, "promotion evidence")
+    source = evidence.get("source")
+    provenance = evidence.get("provenance")
+    if evidence.get("schema") != "adk-promotion-evidence/v1":
+        raise RuntimeError("promotion evidence schema must be adk-promotion-evidence/v1")
+    if not isinstance(source, Mapping):
+        raise RuntimeError("promotion evidence source must be an object")
+    expected = asdict(identity)
+    for key, value in expected.items():
+        if source.get(key) != value:
+            raise RuntimeError(f"promotion evidence source.{key} does not match candidate identity")
+    if not isinstance(provenance, Mapping):
+        raise RuntimeError("promotion evidence provenance must be an object")
+    if provenance.get("subject") != "promotion-evidence.json" or provenance.get("format") != "sigstore-bundle/v1":
+        raise RuntimeError("promotion evidence provenance contract is invalid")
+
+    attestation_text, attestation = _read_json_text(attestation_path, "promotion attestation")
+    if not attestation:
+        raise RuntimeError("promotion attestation bundle must not be empty")
+    return evidence_text, attestation_text
+
+
 def _rollback_transaction(
     root: Path,
     lock_path: Path,
     interface_path: Path,
     status_path: Path,
+    evidence_path: Path,
+    attestation_path: Path,
     previous_lock: str | None,
     previous_interface: str | None,
     previous_status: str | None,
+    previous_evidence: str | None,
+    previous_attestation: str | None,
 ) -> None:
     _restore(lock_path, previous_lock)
     _restore(interface_path, previous_interface)
     _restore(status_path, previous_status)
+    _restore(evidence_path, previous_evidence)
+    _restore(attestation_path, previous_attestation)
     _git(root, "reset", "-q", "HEAD", "--", *PROMOTION_PATHS, check=False)
 
 
@@ -163,6 +206,8 @@ def apply_promotion(
     identity: CandidateIdentity,
     lock_text: str,
     interface_text: str,
+    evidence_text: str,
+    attestation_text: str,
 ) -> list[str]:
     if not _root_clean_for_promotion(root):
         raise RuntimeError(
@@ -172,9 +217,13 @@ def apply_promotion(
     lock_path = root / "adk.lock"
     interface_path = root / INTERFACE_PATH
     status_path = root / "reports" / "current-status.md"
+    evidence_path = root / EVIDENCE_PATH
+    attestation_path = root / ATTESTATION_PATH
     previous_lock = lock_path.read_text(encoding="utf-8") if lock_path.exists() else None
     previous_interface = interface_path.read_text(encoding="utf-8") if interface_path.exists() else None
     previous_status = status_path.read_text(encoding="utf-8") if status_path.exists() else None
+    previous_evidence = evidence_path.read_text(encoding="utf-8") if evidence_path.exists() else None
+    previous_attestation = attestation_path.read_text(encoding="utf-8") if attestation_path.exists() else None
     previous_gitlink = _current_gitlink(root)
     if identity.commit == previous_gitlink:
         raise RuntimeError("candidate ADK commit is already pinned; promotion requires a new commit")
@@ -182,9 +231,20 @@ def apply_promotion(
     try:
         _atomic_write(lock_path, lock_text)
         _atomic_write(interface_path, interface_text)
+        _atomic_write(evidence_path, evidence_text)
+        _atomic_write(attestation_path, attestation_text)
         _git(root, "update-index", "--add", "--cacheinfo", f"160000,{identity.commit},agent-dev-kit")
         refresh_current_status(root)
-        _git(root, "add", "--", "adk.lock", INTERFACE_PATH, "reports/current-status.md")
+        _git(
+            root,
+            "add",
+            "--",
+            "adk.lock",
+            INTERFACE_PATH,
+            "reports/current-status.md",
+            EVIDENCE_PATH,
+            ATTESTATION_PATH,
+        )
 
         staged_paths = _staged_paths(root)
         expected_paths = sorted(PROMOTION_PATHS)
@@ -214,9 +274,13 @@ def apply_promotion(
             lock_path,
             interface_path,
             status_path,
+            evidence_path,
+            attestation_path,
             previous_lock,
             previous_interface,
             previous_status,
+            previous_evidence,
+            previous_attestation,
         )
         raise
 
@@ -231,6 +295,8 @@ def promotion_receipt(
     status: str,
     lock_lines: list[str],
     interface_sha256: str,
+    evidence_sha256: str | None,
+    attestation_sha256: str | None,
     staged_paths: list[str],
 ) -> dict[str, object]:
     payload: dict[str, object] = {
@@ -244,26 +310,33 @@ def promotion_receipt(
         "lock": lock_lines,
         "interface_schema": "llm-agent-adk-interface-lock/v1",
         "interface_sha256": interface_sha256,
+        "promotion_evidence_sha256": evidence_sha256,
+        "promotion_attestation_sha256": attestation_sha256,
         "staged_paths": staged_paths,
         "staged_transaction_complete": staged_paths == sorted(PROMOTION_PATHS),
         "updated_at": updated_at,
         "requires_fresh_cross_repo_verification": True,
+        "verification_model": "portable-attested-evidence",
         "release_authorized": False,
     }
     return bind_receipt(payload)
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Plan or apply an atomic ADK gitlink+lock+interface+status promotion")
+    parser = argparse.ArgumentParser(
+        description="Plan or apply an atomic ADK source+portable-evidence promotion"
+    )
     parser.add_argument("--root", default=".")
     parser.add_argument("--candidate-dir", default="agent-dev-kit")
     parser.add_argument("--ref", default="HEAD")
     parser.add_argument("--updated-at", required=True, help="Explicit YYYY-MM-DD provenance date")
+    parser.add_argument("--promotion-evidence", help="Portable ADK promotion-evidence.json")
+    parser.add_argument("--promotion-attestation", help="Detached Sigstore promotion attestation bundle")
     parser.add_argument(
         "--apply",
         action="store_true",
         help=(
-            "Stage agent-dev-kit gitlink, adk.lock, ADK interface lock and generated current-status "
+            "Stage gitlink, lock, interface, generated current-status, promotion evidence and attestation "
             "as one transaction; default is dry-run"
         ),
     )
@@ -285,8 +358,26 @@ def main(argv: list[str] | None = None) -> int:
         mode = "apply" if args.apply else "dry-run"
         status = "planned"
         staged_paths: list[str] = []
+        evidence_text: str | None = None
+        attestation_text: str | None = None
+        if args.promotion_evidence or args.promotion_attestation or args.apply:
+            if not args.promotion_evidence or not args.promotion_attestation:
+                raise RuntimeError("promotion evidence and attestation are both required for an applied promotion")
+            evidence_text, attestation_text = _validate_portable_inputs(
+                identity,
+                Path(args.promotion_evidence),
+                Path(args.promotion_attestation),
+            )
         if args.apply:
-            staged_paths = apply_promotion(root, identity, lock_text, interface_text)
+            assert evidence_text is not None and attestation_text is not None
+            staged_paths = apply_promotion(
+                root,
+                identity,
+                lock_text,
+                interface_text,
+                evidence_text,
+                attestation_text,
+            )
             status = "applied-not-verified"
         result = promotion_receipt(
             root=root,
@@ -297,6 +388,10 @@ def main(argv: list[str] | None = None) -> int:
             status=status,
             lock_lines=lock_lines,
             interface_sha256=hashlib.sha256(interface_text.encode("utf-8")).hexdigest(),
+            evidence_sha256=hashlib.sha256(evidence_text.encode("utf-8")).hexdigest() if evidence_text else None,
+            attestation_sha256=(
+                hashlib.sha256(attestation_text.encode("utf-8")).hexdigest() if attestation_text else None
+            ),
             staged_paths=staged_paths,
         )
         if args.receipt_out:
