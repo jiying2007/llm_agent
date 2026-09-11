@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import hashlib
 import json
 import os
 import subprocess
@@ -10,14 +11,17 @@ import tempfile
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
+from tools.control_plane.adk_interface import render_interface_lock
 from tools.control_plane.receipts import bind_receipt, write_receipt
 from tools.control_plane.status_projection import project, refresh_current_status
 
 LOCK_SCHEMA = "llm-agent-adk-lock/v2"
-PROMOTION_SCHEMA = "llm-agent-adk-promotion/v2"
+PROMOTION_SCHEMA = "llm-agent-adk-promotion/v3"
+INTERFACE_PATH = "manifests/adk_interface.lock.json"
 PROMOTION_PATHS = (
     "agent-dev-kit",
     "adk.lock",
+    INTERFACE_PATH,
     "reports/current-status.md",
 )
 
@@ -132,33 +136,44 @@ def _atomic_write(path: Path, text: str) -> None:
             os.unlink(tmp_name)
 
 
+def _restore(path: Path, previous: str | None) -> None:
+    if previous is None:
+        path.unlink(missing_ok=True)
+    else:
+        _atomic_write(path, previous)
+
+
 def _rollback_transaction(
     root: Path,
     lock_path: Path,
+    interface_path: Path,
     status_path: Path,
     previous_lock: str | None,
+    previous_interface: str | None,
     previous_status: str | None,
 ) -> None:
-    if previous_lock is None:
-        lock_path.unlink(missing_ok=True)
-    else:
-        _atomic_write(lock_path, previous_lock)
-    if previous_status is None:
-        status_path.unlink(missing_ok=True)
-    else:
-        _atomic_write(status_path, previous_status)
+    _restore(lock_path, previous_lock)
+    _restore(interface_path, previous_interface)
+    _restore(status_path, previous_status)
     _git(root, "reset", "-q", "HEAD", "--", *PROMOTION_PATHS, check=False)
 
 
-def apply_promotion(root: Path, identity: CandidateIdentity, lock_text: str) -> list[str]:
+def apply_promotion(
+    root: Path,
+    identity: CandidateIdentity,
+    lock_text: str,
+    interface_text: str,
+) -> list[str]:
     if not _root_clean_for_promotion(root):
         raise RuntimeError(
             "promotion requires a clean index and an isolated worktree; only the agent-dev-kit worktree may differ"
         )
 
     lock_path = root / "adk.lock"
+    interface_path = root / INTERFACE_PATH
     status_path = root / "reports" / "current-status.md"
     previous_lock = lock_path.read_text(encoding="utf-8") if lock_path.exists() else None
+    previous_interface = interface_path.read_text(encoding="utf-8") if interface_path.exists() else None
     previous_status = status_path.read_text(encoding="utf-8") if status_path.exists() else None
     previous_gitlink = _current_gitlink(root)
     if identity.commit == previous_gitlink:
@@ -166,9 +181,10 @@ def apply_promotion(root: Path, identity: CandidateIdentity, lock_text: str) -> 
 
     try:
         _atomic_write(lock_path, lock_text)
+        _atomic_write(interface_path, interface_text)
         _git(root, "update-index", "--add", "--cacheinfo", f"160000,{identity.commit},agent-dev-kit")
         refresh_current_status(root)
-        _git(root, "add", "--", "adk.lock", "reports/current-status.md")
+        _git(root, "add", "--", "adk.lock", INTERFACE_PATH, "reports/current-status.md")
 
         staged_paths = _staged_paths(root)
         expected_paths = sorted(PROMOTION_PATHS)
@@ -193,7 +209,15 @@ def apply_promotion(root: Path, identity: CandidateIdentity, lock_text: str) -> 
             raise RuntimeError("post-apply status projection validation failed")
         return staged_paths
     except Exception:
-        _rollback_transaction(root, lock_path, status_path, previous_lock, previous_status)
+        _rollback_transaction(
+            root,
+            lock_path,
+            interface_path,
+            status_path,
+            previous_lock,
+            previous_interface,
+            previous_status,
+        )
         raise
 
 
@@ -206,6 +230,7 @@ def promotion_receipt(
     mode: str,
     status: str,
     lock_lines: list[str],
+    interface_sha256: str,
     staged_paths: list[str],
 ) -> dict[str, object]:
     payload: dict[str, object] = {
@@ -217,6 +242,8 @@ def promotion_receipt(
         "candidate": asdict(identity),
         "lock_schema": LOCK_SCHEMA,
         "lock": lock_lines,
+        "interface_schema": "llm-agent-adk-interface-lock/v1",
+        "interface_sha256": interface_sha256,
         "staged_paths": staged_paths,
         "staged_transaction_complete": staged_paths == sorted(PROMOTION_PATHS),
         "updated_at": updated_at,
@@ -227,7 +254,7 @@ def promotion_receipt(
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Plan or apply an atomic ADK gitlink+lock+status promotion")
+    parser = argparse.ArgumentParser(description="Plan or apply an atomic ADK gitlink+lock+interface+status promotion")
     parser.add_argument("--root", default=".")
     parser.add_argument("--candidate-dir", default="agent-dev-kit")
     parser.add_argument("--ref", default="HEAD")
@@ -235,7 +262,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--apply",
         action="store_true",
-        help="Stage agent-dev-kit gitlink, adk.lock and generated current-status as one transaction; default is dry-run",
+        help=(
+            "Stage agent-dev-kit gitlink, adk.lock, ADK interface lock and generated current-status "
+            "as one transaction; default is dry-run"
+        ),
     )
     parser.add_argument("--receipt-out", help="Atomically write the content-addressed promotion receipt")
     parser.add_argument("--summary-json", action="store_true")
@@ -249,13 +279,14 @@ def main(argv: list[str] | None = None) -> int:
     try:
         identity = candidate_identity(candidate_dir, args.ref)
         lock_text = render_lock(identity, args.updated_at)
+        interface_text = render_interface_lock(asdict(identity), args.updated_at)
         lock_lines = lock_text.splitlines()
         before = _current_gitlink(root)
         mode = "apply" if args.apply else "dry-run"
         status = "planned"
         staged_paths: list[str] = []
         if args.apply:
-            staged_paths = apply_promotion(root, identity, lock_text)
+            staged_paths = apply_promotion(root, identity, lock_text, interface_text)
             status = "applied-not-verified"
         result = promotion_receipt(
             root=root,
@@ -265,6 +296,7 @@ def main(argv: list[str] | None = None) -> int:
             mode=mode,
             status=status,
             lock_lines=lock_lines,
+            interface_sha256=hashlib.sha256(interface_text.encode("utf-8")).hexdigest(),
             staged_paths=staged_paths,
         )
         if args.receipt_out:
