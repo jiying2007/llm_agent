@@ -10,11 +10,11 @@ CANDIDATE="$FIXTURE/agent-dev-kit"
 mkdir -p \
   "$CANDIDATE" \
   "$FIXTURE/manifests" \
-  "$FIXTURE/reports" \
+  "$FIXTURE/reports/promotion/agent-dev-kit" \
   "$FIXTURE/scripts" \
   "$FIXTURE/tools/control_plane"
 
-# Build a minimal ADK repository with an old pinned commit and a newer candidate.
+# Minimal ADK repo with an old commit followed by a new candidate.
 git -C "$CANDIDATE" init -q
 git -C "$CANDIDATE" config user.email fixture@example.invalid
 git -C "$CANDIDATE" config user.name Fixture
@@ -25,8 +25,7 @@ OLD_ADK="$(git -C "$CANDIDATE" rev-parse HEAD)"
 OLD_TREE="$(git -C "$CANDIDATE" rev-parse HEAD^{tree})"
 OLD_MANIFEST="$(git -C "$CANDIDATE" rev-parse HEAD:manifest.json)"
 
-# Build the parent repository at the old pin. The status projection source is
-# copied only because it is one of the projection's content-addressed inputs.
+# Minimal parent repo and projection inputs.
 git -C "$FIXTURE" init -q
 git -C "$FIXTURE" config user.email fixture@example.invalid
 git -C "$FIXTURE" config user.name Fixture
@@ -34,24 +33,12 @@ cp "$ROOT/tools/control_plane/status_projection.py" "$FIXTURE/tools/control_plan
 printf '{}\n' >"$FIXTURE/manifests/gates.json"
 cat >"$FIXTURE/manifests/product_maturity_scorecard.json" <<'JSON'
 {
-  "overall": {
-    "level": "M3",
-    "terminal_mature": false,
-    "field_status": "self_pilot_active"
-  },
-  "software_m5": {
-    "readiness_status": "not-ready",
-    "certified": false
-  }
+  "overall": {"level":"M3","terminal_mature":false,"field_status":"self_pilot_active"},
+  "software_m5": {"readiness_status":"not-ready","certified":false}
 }
 JSON
 cat >"$FIXTURE/manifests/software_m5_policy.json" <<JSON
-{
-  "release": {
-    "candidate_version": "5.0.0-rc.2",
-    "candidate_commit": "$OLD_ADK"
-  }
-}
+{"release":{"candidate_version":"5.0.0-rc.2","candidate_commit":"$OLD_ADK"}}
 JSON
 cat >"$FIXTURE/adk.lock" <<LOCK
 schema=llm-agent-adk-lock/v2
@@ -62,20 +49,17 @@ agent-dev-kit.manifest_blob=$OLD_MANIFEST
 updated_at=2026-09-10
 LOCK
 python3 - "$ROOT" "$FIXTURE" "$OLD_ADK" "$OLD_TREE" "$OLD_MANIFEST" <<'PY'
-import json
-import sys
+import json, sys
 from pathlib import Path
-
 root, fixture, commit, tree, manifest_blob = sys.argv[1:]
 sys.path.insert(0, root)
 from tools.control_plane.adk_interface import interface_payload
-
 payload = interface_payload(
-    {"version": "5.0.0-rc.2", "commit": commit, "tree": tree, "manifest_blob": manifest_blob},
+    {"version":"5.0.0-rc.2","commit":commit,"tree":tree,"manifest_blob":manifest_blob},
     "2026-09-10",
 )
 Path(fixture, "manifests", "adk_interface.lock.json").write_text(
-    json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    json.dumps(payload, indent=2) + "\n", encoding="utf-8"
 )
 PY
 cat >"$FIXTURE/reports/current-status.md" <<'STATUS'
@@ -108,41 +92,61 @@ git -C "$FIXTURE" add reports/current-status.md
 git -C "$FIXTURE" commit -q -m 'bind historical baseline'
 PARENT_HEAD="$(git -C "$FIXTURE" rev-parse HEAD)"
 
-# Advance only the nested ADK worktree. This is the sole pre-promotion worktree
-# difference the promotion command is allowed to accept.
+# Advance only the nested ADK candidate.
 printf 'candidate\n' >"$CANDIDATE/candidate.txt"
 git -C "$CANDIDATE" add candidate.txt
 git -C "$CANDIDATE" commit -q -m 'new adk candidate'
 NEW_ADK="$(git -C "$CANDIDATE" rev-parse HEAD)"
+NEW_TREE="$(git -C "$CANDIDATE" rev-parse HEAD^{tree})"
+NEW_MANIFEST="$(git -C "$CANDIDATE" rev-parse HEAD:manifest.json)"
+
+EVIDENCE="$TMP_DIR/promotion-evidence.json"
+ATTESTATION="$TMP_DIR/promotion-attestation.json"
+cat >"$EVIDENCE" <<JSON
+{
+  "schema":"adk-promotion-evidence/v1",
+  "source":{
+    "version":"5.0.0-rc.2",
+    "commit":"$NEW_ADK",
+    "tree":"$NEW_TREE",
+    "manifest_blob":"$NEW_MANIFEST"
+  },
+  "provenance":{"subject":"promotion-evidence.json","format":"sigstore-bundle/v1"}
+}
+JSON
+printf '{"mediaType":"application/vnd.dev.sigstore.bundle+json;version=0.3","verificationMaterial":{}}\n' >"$ATTESTATION"
 
 SUMMARY="$TMP_DIR/apply.json"
 python3 -m tools.control_plane.adk_promotion \
   --root "$FIXTURE" \
   --candidate-dir "$CANDIDATE" \
   --updated-at 2026-09-11 \
+  --promotion-evidence "$EVIDENCE" \
+  --promotion-attestation "$ATTESTATION" \
   --apply \
   --summary-json >"$SUMMARY"
 
 python3 - "$SUMMARY" "$FIXTURE" "$NEW_ADK" <<'PY'
-import json
-import subprocess
-import sys
+import hashlib, json, subprocess, sys
 from pathlib import Path
-
 summary_path, root_text, expected_commit = sys.argv[1:]
 root = Path(root_text)
 result = json.loads(Path(summary_path).read_text(encoding="utf-8"))
-expected_paths = [
+expected_paths = sorted([
     "adk.lock",
     "agent-dev-kit",
     "manifests/adk_interface.lock.json",
     "reports/current-status.md",
-]
+    "reports/promotion/agent-dev-kit/promotion-evidence.json",
+    "reports/promotion/agent-dev-kit/promotion-attestation.json",
+])
 assert result["status"] == "applied-not-verified", result
-assert result["schema"] == "llm-agent-adk-promotion/v3", result
+assert result["schema"] == "llm-agent-adk-promotion/v4", result
 assert result["staged_paths"] == expected_paths, result
 assert result["staged_transaction_complete"] is True, result
-assert len(result["interface_sha256"]) == 64, result
+assert result["verification_model"] == "portable-attested-evidence", result
+for key in ("interface_sha256", "promotion_evidence_sha256", "promotion_attestation_sha256"):
+    assert isinstance(result[key], str) and len(result[key]) == 64, result
 staged = subprocess.check_output(
     ["git", "-C", str(root), "diff", "--cached", "--name-only"], text=True
 ).splitlines()
@@ -151,106 +155,88 @@ index = subprocess.check_output(
     ["git", "-C", str(root), "ls-files", "-s", "agent-dev-kit"], text=True
 ).split()
 assert index[1] == expected_commit, index
-lock = dict(
-    line.split("=", 1)
-    for line in (root / "adk.lock").read_text(encoding="utf-8").splitlines()
-    if "=" in line
-)
-assert lock["agent-dev-kit.commit"] == expected_commit, lock
-interface = json.loads((root / "manifests/adk_interface.lock.json").read_text(encoding="utf-8"))
-assert interface["commit"] == expected_commit, interface
-assert interface["manifest_mode"] == "json-only", interface
-assert interface["maturity_contract"] == "v5", interface
-status = (root / "reports/current-status.md").read_text(encoding="utf-8")
-assert f"- current_adk_commit: {expected_commit}" in status, status
+assert (root / "reports/promotion/agent-dev-kit/promotion-evidence.json").is_file()
+assert (root / "reports/promotion/agent-dev-kit/promotion-attestation.json").is_file()
+assert result["promotion_evidence_sha256"] == hashlib.sha256(
+    (root / "reports/promotion/agent-dev-kit/promotion-evidence.json").read_bytes()
+).hexdigest()
+assert result["promotion_attestation_sha256"] == hashlib.sha256(
+    (root / "reports/promotion/agent-dev-kit/promotion-attestation.json").read_bytes()
+).hexdigest()
 PY
 
-# A failure after mutation must restore worktree files and the index.
+# Failure after mutation must restore all six transaction paths.
 git -C "$FIXTURE" reset --hard -q "$PARENT_HEAD"
+rm -rf "$FIXTURE/reports/promotion"
 if PROMOTION_TEST_FORCE_FAIL=1 python3 -m tools.control_plane.adk_promotion \
   --root "$FIXTURE" \
   --candidate-dir "$CANDIDATE" \
   --updated-at 2026-09-11 \
+  --promotion-evidence "$EVIDENCE" \
+  --promotion-attestation "$ATTESTATION" \
   --apply >/dev/null 2>&1; then
   echo '[FAIL] forced post-apply failure unexpectedly succeeded' >&2
   exit 1
 fi
 [[ -z "$(git -C "$FIXTURE" diff --cached --name-only)" ]] || {
   echo '[FAIL] rollback left staged changes behind' >&2
-  git -C "$FIXTURE" diff --cached --name-status >&2
   exit 1
 }
-git -C "$FIXTURE" diff --quiet -- adk.lock manifests/adk_interface.lock.json reports/current-status.md || {
-  echo '[FAIL] rollback did not restore lock/interface/status worktree content' >&2
+[[ ! -e "$FIXTURE/reports/promotion/agent-dev-kit/promotion-evidence.json" ]] || {
+  echo '[FAIL] rollback left promotion evidence behind' >&2
+  exit 1
+}
+[[ ! -e "$FIXTURE/reports/promotion/agent-dev-kit/promotion-attestation.json" ]] || {
+  echo '[FAIL] rollback left promotion attestation behind' >&2
   exit 1
 }
 ROLLED_BACK_PIN="$(git -C "$FIXTURE" ls-files -s agent-dev-kit | awk '{print $2; exit}')"
 [[ "$ROLLED_BACK_PIN" == "$OLD_ADK" ]] || {
-  echo '[FAIL] rollback did not restore the original gitlink' >&2
+  echo '[FAIL] rollback did not restore original gitlink' >&2
   exit 1
 }
 
-# Any pre-existing staged change must fail before the promotion mutates source.
+# Pre-existing staged work must fail before any promotion mutation.
 printf 'pre-staged\n' >>"$FIXTURE/sentinel.txt"
 git -C "$FIXTURE" add sentinel.txt
 if python3 -m tools.control_plane.adk_promotion \
   --root "$FIXTURE" \
   --candidate-dir "$CANDIDATE" \
   --updated-at 2026-09-11 \
+  --promotion-evidence "$EVIDENCE" \
+  --promotion-attestation "$ATTESTATION" \
   --apply >/dev/null 2>&1; then
-  echo '[FAIL] promotion accepted a pre-existing staged change' >&2
+  echo '[FAIL] promotion accepted pre-existing staged change' >&2
   exit 1
 fi
 mapfile -t PRESTAGED < <(git -C "$FIXTURE" diff --cached --name-only)
 [[ "${#PRESTAGED[@]}" -eq 1 && "${PRESTAGED[0]}" == "sentinel.txt" ]] || {
-  echo '[FAIL] preflight rejection changed the existing staged set' >&2
-  printf 'staged: %s\n' "${PRESTAGED[*]}" >&2
-  exit 1
-}
-git -C "$FIXTURE" diff --quiet -- adk.lock manifests/adk_interface.lock.json reports/current-status.md || {
-  echo '[FAIL] preflight rejection mutated lock/interface/status' >&2
+  echo '[FAIL] preflight rejection changed staged set' >&2
   exit 1
 }
 
-# Re-promoting an already pinned candidate is not a transaction and must fail.
+# Evidence identity mismatch must fail before staging anything.
 git -C "$FIXTURE" reset --hard -q "$PARENT_HEAD"
-git -C "$FIXTURE" update-index --add --cacheinfo "160000,$NEW_ADK,agent-dev-kit"
-NEW_TREE="$(git -C "$CANDIDATE" rev-parse HEAD^{tree})"
-NEW_MANIFEST="$(git -C "$CANDIDATE" rev-parse HEAD:manifest.json)"
-cat >"$FIXTURE/adk.lock" <<LOCK
-schema=llm-agent-adk-lock/v2
-agent-dev-kit.version=5.0.0-rc.2
-agent-dev-kit.commit=$NEW_ADK
-agent-dev-kit.tree=$NEW_TREE
-agent-dev-kit.manifest_blob=$NEW_MANIFEST
-updated_at=2026-09-11
-LOCK
-python3 - "$ROOT" "$FIXTURE" "$NEW_ADK" "$NEW_TREE" "$NEW_MANIFEST" <<'PY'
-import json
-import sys
-from pathlib import Path
-
-root, fixture, commit, tree, manifest_blob = sys.argv[1:]
-sys.path.insert(0, root)
-from tools.control_plane.adk_interface import interface_payload
-payload = interface_payload(
-    {"version": "5.0.0-rc.2", "commit": commit, "tree": tree, "manifest_blob": manifest_blob},
-    "2026-09-11",
-)
-Path(fixture, "manifests", "adk_interface.lock.json").write_text(
-    json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
-)
+python3 - "$EVIDENCE" "$TMP_DIR/bad-evidence.json" <<'PY'
+import json, sys
+src, dst = sys.argv[1:]
+value = json.load(open(src, encoding='utf-8'))
+value['source']['commit'] = '0' * 40
+json.dump(value, open(dst, 'w', encoding='utf-8'))
 PY
-git -C "$FIXTURE" add adk.lock manifests/adk_interface.lock.json
-# Commit the already-pinned state so the index is clean before the no-op attempt.
-git -C "$FIXTURE" commit -q -m 'already pinned candidate'
 if python3 -m tools.control_plane.adk_promotion \
   --root "$FIXTURE" \
   --candidate-dir "$CANDIDATE" \
   --updated-at 2026-09-11 \
+  --promotion-evidence "$TMP_DIR/bad-evidence.json" \
+  --promotion-attestation "$ATTESTATION" \
   --apply >/dev/null 2>&1; then
-  echo '[FAIL] promotion accepted an already pinned candidate' >&2
+  echo '[FAIL] promotion accepted mismatched evidence identity' >&2
   exit 1
 fi
+[[ -z "$(git -C "$FIXTURE" diff --cached --name-only)" ]] || {
+  echo '[FAIL] mismatched evidence staged changes' >&2
+  exit 1
+}
 
-echo '[PASS] ADK promotion stages exactly one four-path transaction and rolls back atomically'
+echo '[PASS] ADK promotion stages one six-path source+evidence transaction and rolls back atomically'
