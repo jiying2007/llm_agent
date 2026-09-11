@@ -60,13 +60,12 @@ assert not re.search(r"--profile\s+integration-extra(?:\s|$)", github), github
 assert not re.search(r"--profile\s+integration(?:\s|$)", github), github
 assert "cross-repo-contract-change" in github, github
 assert "promotion-attestation" in github and "promotion-evidence" in github, github
-assert "gh attestation trusted-root" in github, github
-assert "gh attestation verify" in github, github
-assert "--custom-trusted-root" in github, github
-assert "--signer-workflow jiying2007/agent-dev-kit/.github/workflows/ci.yml" in github, github
-assert "--source-ref refs/heads/main" in github, github
-assert "--source-digest" in github, github
-assert "--deny-self-hosted-runners" in github, github
+assert "sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6" in github, github
+assert "cosign-release: v3.0.6" in github, github
+assert "cosign verify-blob" in github, github
+assert "--certificate-identity https://github.com/jiying2007/agent-dev-kit/.github/workflows/ci.yml@refs/heads/main" in github, github
+assert "--certificate-oidc-issuer https://token.actions.githubusercontent.com" in github, github
+assert "gh attestation" not in github, github
 assert "promotion evidence verification was REQUIRED but did not pass" in github, github
 assert "ADK promotion evidence: NOT_REQUIRED" in github, github
 assert re.search(
@@ -80,8 +79,8 @@ assert re.search(
 assert "adk\\.lock" in github and "product_maturity_scorecard" in github and "software_m5_policy" in github
 
 # GitLab continues consuming the shared source/interface contract profile. The
-# portable GitHub attestation policy is GitHub-specific and does not require a
-# private sibling-repository credential in either CI system.
+# portable Sigstore policy is GitHub-specific and does not require a private
+# sibling-repository credential in either CI system.
 assert len(re.findall(r"--profile\s+contract(?:\s|$)", gitlab)) == 1, gitlab
 assert len(re.findall(r"--profile\s+doc-sync(?:\s|$)", gitlab)) == 1, gitlab
 assert not re.search(r"--profile\s+pr-fast(?:\s|$)", gitlab), gitlab
@@ -89,4 +88,4 @@ assert re.search(r"^doc-sync:\s*$", gitlab, re.MULTILINE), gitlab
 assert re.search(r"weekly-report:\n(?:.|\n)*?needs:\n\s+- doc-sync", gitlab), gitlab
 PY
 
-echo '[PASS] GitHub/GitLab CI consume Gate Graph v2 with portable evidence integration semantics'
+echo '[PASS] GitHub/GitLab CI consume Gate Graph v2 with keyless Cosign evidence semantics'
