@@ -52,6 +52,7 @@ def validate(root: Path, as_of: dt.date) -> dict[str, Any]:
     backlog = json.loads(backlog_path.read_text(encoding="utf-8"))
     interface = json.loads((root / "manifests" / "adk_interface.lock.json").read_text(encoding="utf-8"))
     failures: list[str] = []
+    adk_checkout_available = (root / "agent-dev-kit" / "manifest.json").is_file()
 
     try:
         last_updated = _date(backlog.get("last_updated"), "last_updated")
@@ -105,9 +106,11 @@ def validate(root: Path, as_of: dt.date) -> dict[str, Any]:
                 continue
             for path_text in _command_paths(command):
                 path = root / path_text
-                if path_text.startswith("agent-dev-kit/") and not (root / "agent-dev-kit").is_dir():
-                    # Private ADK checkout is an optional deep-integration capability.
-                    # Deprecated cross-repo paths are still rejected above from the pinned interface lock.
+                if path_text.startswith("agent-dev-kit/") and not adk_checkout_available:
+                    # A shallow root checkout can materialize the gitlink path as an
+                    # empty directory. Treat ADK as available only when its canonical
+                    # manifest is present. Deprecated cross-repo paths are still
+                    # rejected above from the pinned interface lock.
                     continue
                 if not path.exists():
                     failures.append(f"{item_id} verification references missing path: {path_text}")
@@ -119,6 +122,7 @@ def validate(root: Path, as_of: dt.date) -> dict[str, Any]:
         "backlog": str(backlog_path.relative_to(root)),
         "source_report": backlog.get("source_report"),
         "item_count": len(backlog.get("items", [])) if isinstance(backlog.get("items"), list) else 0,
+        "adk_checkout_available": adk_checkout_available,
         "failures": failures,
     }
 
