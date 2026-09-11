@@ -19,17 +19,17 @@ contract:
   script:
     - python3 -m tools.control_plane.gate_runner --profile contract
 
-pr-fast:
+doc-sync:
   stage: test
   needs:
     - contract
   script:
-    - python3 -m tools.control_plane.gate_runner --profile pr-fast
+    - python3 -m tools.control_plane.gate_runner --profile doc-sync
 
 weekly-report:
   stage: report
   needs:
-    - pr-fast
+    - doc-sync
   script:
     - bash scripts/generate-weekly-report.sh
   artifacts:
