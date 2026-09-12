@@ -18,33 +18,33 @@
     "static_security": "success"
   },
   "contracts": {
-    "contract_registry_sha256": "7e7dae2d9b157ee4ad98ed4a90e2a3aea44010201106ec55cae8748825fec9d9",
-    "release_manifest_sha256": "35013bf3d93be5a810676b99fb38c7e83b9926c1f4b18b9f6c4b620e4a6cb095",
-    "schema_set_sha256": "54b628cc009842b40e026f60bef7d88bc8ca70efdfd92eeb63eada422828bd44"
+    "contract_registry_sha256": "d6054789e8d7acaa9977b20567a2790bc29e4cea88eef22ba50d0cbbf426db70",
+    "release_manifest_sha256": "f379ffa75eaa4c562c864b303b1066a0e9f77e8c7e1f9602e32891751e857eaa",
+    "schema_set_sha256": "d0f8cf9e9d77dbf95e1db710c4717df455dfe1170c2b78719d6b372e09acfa7b"
   },
-  "issued_at": "2026-09-12T03:49:26.029195Z",
+  "issued_at": "2026-09-12T10:56:04.069235Z",
   "provenance": {
     "format": "sigstore-bundle/v1",
     "subject": "promotion-evidence.json"
   },
   "release": {
-    "artifact_sha256": "844dd6b3d14cc8a505206473d9af6a39a3b585aae3928bf2f9327f60e657a0c8",
+    "artifact_sha256": "d4684fe5888203b4a25e7dda9ab51b83fb900cae2d09adb6e5179a775748c965",
     "release_eligible": true
   },
   "schema": "adk-promotion-evidence/v1",
   "source": {
-    "commit": "251edf2b6654cf8719ad1d8a1b7c81ffd64ffe1c",
+    "commit": "59cbd5cb40ca7077ee5407636bfc617e295ec7e5",
     "event": "push",
-    "manifest_blob": "823ee268e16116b1ec56aa9033c41c49efb11bd0",
-    "manifest_sha256": "1156e63b4fe7877eaa4cf86714ca90548ead3413a47dc929bfa170f79e9076eb",
+    "manifest_blob": "bc349b0dc003c553059cdddbc368ae8ea6ffda89",
+    "manifest_sha256": "41116f941f507491130c65bae3c7d406bb88fe7ee8cc21184fe71acb2c908bfb",
     "ref": "refs/heads/main",
     "repository": "jiying2007/agent-dev-kit",
     "run_attempt": 1,
-    "run_id": 34671247658,
-    "tree": "6fc560322a64c9660e75cc568fded98927954283",
-    "version": "5.0.0-rc.2",
+    "run_id": 34689589669,
+    "tree": "16d3c99d4dac8c41c09509b82c536a11cc058ca9",
+    "version": "5.1.0",
     "workflow": "agent-dev-kit-ci",
     "workflow_ref": "jiying2007/agent-dev-kit/.github/workflows/ci.yml@refs/heads/main",
-    "workflow_sha": "251edf2b6654cf8719ad1d8a1b7c81ffd64ffe1c"
+    "workflow_sha": "59cbd5cb40ca7077ee5407636bfc617e295ec7e5"
   }
 }
