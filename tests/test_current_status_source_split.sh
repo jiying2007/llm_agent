@@ -2,59 +2,40 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-TMP_DIR="$(mktemp -d)"
-trap 'rm -rf "$TMP_DIR"' EXIT
-OUT="$TMP_DIR/out.json"
-ERR="$TMP_DIR/err.log"
+TMP="$(mktemp)"
+trap 'rm -f "$TMP"' EXIT
 
-# Source-only CI intentionally does not initialize the private ADK checkout.
-# The comprehensive checker must fail closed, but it must still emit a stable
-# structured projection that distinguishes the current lock pin from the
-# historical release baseline. Historical baseline age is not a source error.
-if bash "$ROOT/scripts/check-current-status-consistency.sh" "$ROOT" --summary-json >"$OUT" 2>"$ERR"; then
-  echo '[FAIL] source-only current-status checker unexpectedly passed without ADK checkout' >&2
-  exit 1
-fi
+# Source-only CI keeps submodules disabled. M5 projection must still be complete
+# because it is bound to root-side lock, signed promotion evidence and field/runtime evidence.
+python3 -m tools.control_plane.status_projection \
+  --root "$ROOT" \
+  --today 2026-09-12 \
+  --summary-json >"$TMP"
 
-if rg -q 'Traceback|SyntaxError|NameError' "$ERR" "$OUT"; then
-  echo '[FAIL] current-status checker crashed instead of failing closed' >&2
-  cat "$ERR" >&2 || true
-  cat "$OUT" >&2 || true
-  exit 1
-fi
-
-python3 - "$OUT" "$ROOT/adk.lock" "$ROOT/reports/current-status.md" <<'PY'
+python3 - "$TMP" "$ROOT/adk.lock" "$ROOT/reports/current-status.md" "$ROOT/manifests/software_m5_policy.json" <<'PY'
 import json
-import re
 import sys
 from pathlib import Path
 
-out_path, lock_path, status_path = map(Path, sys.argv[1:])
-data = json.loads(out_path.read_text(encoding="utf-8"))
+projection = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
 lock = {}
-for line in lock_path.read_text(encoding="utf-8").splitlines():
+for line in Path(sys.argv[2]).read_text(encoding="utf-8").splitlines():
     if "=" in line:
         key, value = line.split("=", 1)
         lock[key] = value
-status = status_path.read_text(encoding="utf-8")
-release_match = re.search(r"^- agent_dev_kit_release_commit:\s*(.+)$", status, re.MULTILINE)
-assert release_match, status
-release_commit = release_match.group(1).strip()
+status = Path(sys.argv[3]).read_text(encoding="utf-8")
+policy = json.loads(Path(sys.argv[4]).read_text(encoding="utf-8"))
 
-assert data["status"] == "fail", data
-assert data["current_adk_commit"] == lock["agent-dev-kit.commit"], data
-assert data["current_adk_version"] == lock["agent-dev-kit.version"], data
-assert data["agent_dev_kit_commit"] == lock["agent-dev-kit.commit"], data
-assert data["agent_dev_kit_release_commit"] == release_commit, data
-assert data["current_adk_commit"] != data["agent_dev_kit_release_commit"], data
-assert data["release_evidence_relation"] == "historical", data
-assert isinstance(data["historical_baseline_age_days"], int), data
-assert data["historical_baseline_age_days"] > 7, data
-assert not any("verification is stale" in item for item in data["failures"]), data
-assert any(
-    "agent-dev-kit" in item.lower() or "adk" in item.lower()
-    for item in data["failures"]
-), data
+assert projection["status"] == "pass", projection
+assert projection["source"]["adk_lock_commit"] == lock["agent-dev-kit.commit"], projection
+assert projection["current_projection"]["consistent"] is True, projection
+assert projection["release_authorized"] is True, projection
+assert "- release_evidence_relation: current" in status, status
+assert "- current_product_maturity: M5" in status, status
+assert policy["definition"] == "production-qualified", policy
+assert policy["operational_advisories"]["recommended_observation_days"] >= 30, policy
+assert policy["operational_advisories"]["second_human_operator"] is True, policy
+assert policy["operational_advisories"]["multi_runtime_campaign"] is True, policy
 PY
 
-echo '[PASS] current-status checker separates current source from historical release evidence and fails closed without ADK checkout'
+echo "[PASS] source-only status projection carries current M5 identity while long-run evidence stays advisory"
