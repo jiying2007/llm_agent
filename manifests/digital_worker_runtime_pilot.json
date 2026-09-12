@@ -1,15 +1,17 @@
 {
-  "schema_version": 1,
-  "contract_version": "1.0",
+  "schema_version": 2,
+  "contract_version": "1.1",
   "status": "report-only",
-  "purpose": "Joint runtime comparison contract for digital-worker, agent-dev-kit and llm_agent without changing verification semantics.",
+  "purpose": "Joint runtime comparison contract for digital-worker, agent-dev-kit, replaceable Runtime Bindings and llm_agent without changing domain verification semantics.",
   "roles": {
     "digital-worker": ["work_item", "system_context", "acceptance", "action_policy", "engineering_result", "verification", "independent_review"],
-    "agent-dev-kit": ["profile", "skill_assets", "asset_bundle_identity", "target_export_and_install_contract"],
-    "llm_agent": ["runtime_target_health", "runtime_comparison_evidence", "loop_readiness_mapping", "adoption_recommendation"]
+    "agent-dev-kit": ["asset_profile", "skill_assets", "asset_bundle_identity", "target_export_contract"],
+    "runtime-binding": ["runtime_target_mapping", "runtime_profile", "host_integration", "runtime_execution_receipt", "runtime_local_conformance"],
+    "llm_agent": ["runtime_target_health", "cross_runtime_comparison_evidence", "loop_readiness_mapping", "adoption_recommendation"]
   },
   "frozen_inputs": [
     "work_item_id",
+    "run_id",
     "task_type",
     "workflow_mode",
     "repo_root",
@@ -19,22 +21,53 @@
     "knowledge_context_fingerprint",
     "engineering_task_package",
     "acceptance_criteria",
-    "required_verification"
+    "required_verification",
+    "adk_provider_commit",
+    "adk_asset_profile",
+    "adk_asset_bundle_hash"
   ],
+  "runtime_identity_required": [
+    "runtime_binding_repository",
+    "runtime_binding_commit",
+    "runtime_target",
+    "runtime_profile",
+    "runtime_host",
+    "runtime_provider",
+    "runtime_version",
+    "execution_receipt_ref"
+  ],
+  "profile_semantics": {
+    "asset_profile_owner": "agent-dev-kit",
+    "runtime_profile_owner": "runtime-binding",
+    "asset_profile_must_not_equal_runtime_profile_by_semantic_assumption": true
+  },
   "isolation": {
     "share_previous_runtime_final_answer": false,
     "share_previous_runtime_patch": false,
     "shared_pre_run_context_only": true
   },
   "loop_readiness_mapping": {
-    "tool_execution_evidence": "digital-worker:evidence-bundle",
+    "tool_execution_evidence": "runtime-binding:execution-receipt+digital-worker:evidence-bundle",
     "loop_recovery_evidence": "digital-worker:team-run-state.blockers/recovery",
     "guardrail_coverage": "digital-worker:A0-A7+gate-policy",
     "budget_control_evidence": "digital-worker:context-and-action-scope",
     "handoff_or_delegation_evidence": "digital-worker:engineering-handoff+delivery-receipt",
-    "termination_evidence": "digital-worker:completed/blocked/review-gate"
+    "termination_evidence": "runtime-binding:runtime-local-gates+digital-worker:completed/blocked/review-gate"
   },
-  "candidate_runtime_targets": ["codex-home", "claude-code"],
+  "candidate_runtime_bindings": [
+    {
+      "runtime": "codex",
+      "repository": "jiying2007/codex",
+      "target": "codex-cli",
+      "status": "candidate"
+    },
+    {
+      "runtime": "claude-code",
+      "repository": null,
+      "target": "claude-code",
+      "status": "future-binding"
+    }
+  ],
   "required_metrics": [
     "contract_adherence",
     "correctness",
@@ -52,10 +85,14 @@
   ],
   "hard_rules": {
     "runtime_output_is_not_verification_pass": true,
+    "runtime_local_conformance_is_not_domain_verification": true,
+    "execution_receipt_must_not_contain_verification_pass": true,
     "same_verifier_and_reviewer_standard": true,
     "a0_a7_unchanged_by_runtime": true,
     "a6_a7_human_gate": true,
-    "missing_runtime_health_is_blocked_not_pass": true
+    "missing_runtime_health_is_blocked_not_pass": true,
+    "missing_runtime_binding_identity_is_blocked_not_pass": true,
+    "missing_asset_bundle_identity_is_blocked_not_pass": true
   },
-  "completion": "at least two healthy runtimes complete the same controlled real task with independent verification and review"
+  "completion": "at least two healthy runtime bindings complete the same controlled real task with exact binding/asset identity, separate execution receipts, and independent digital-worker verification/review"
 }
