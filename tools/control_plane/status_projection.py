@@ -53,16 +53,31 @@ def _json_object(path: Path) -> dict[str, Any]:
     return value
 
 
-def _md_fields(path: Path) -> dict[str, str]:
+def _parse_md_fields(text: str) -> dict[str, str]:
     fields: dict[str, str] = {}
-    if not path.exists():
-        return fields
     pattern = re.compile(r"^- ([A-Za-z0-9_]+):\s*(.+)$")
-    for line in path.read_text(encoding="utf-8").splitlines():
+    for line in text.splitlines():
         match = pattern.match(line)
         if match:
             fields[match.group(1)] = match.group(2).strip()
     return fields
+
+
+def _md_fields(path: Path) -> dict[str, str]:
+    if not path.exists():
+        return {}
+    return _parse_md_fields(path.read_text(encoding="utf-8"))
+
+
+def _generated_md_fields(path: Path) -> dict[str, str]:
+    if not path.exists():
+        return {}
+    text = path.read_text(encoding="utf-8")
+    if text.count(BEGIN_MARKER) != 1 or text.count(END_MARKER) != 1:
+        raise RuntimeError("current-status generated projection markers are malformed")
+    _, remainder = text.split(BEGIN_MARKER, 1)
+    generated, _ = remainder.split(END_MARKER, 1)
+    return _parse_md_fields(generated)
 
 
 def _commit_known(root: Path, commit: str) -> bool:
@@ -213,13 +228,15 @@ def project(root: Path, today: dt.date) -> dict[str, Any]:
     lock = _kv(root / "adk.lock")
     lock_commit = lock.get("agent-dev-kit.commit", "")
     pin_consistent = lock.get("schema") == "llm-agent-adk-lock/v2" and bool(lock_commit) and gitlink == lock_commit
-    status_fields = _md_fields(root / "reports/current-status.md")
+    status_path = root / "reports/current-status.md"
+    status_fields = _md_fields(status_path)
+    current_fields = _generated_md_fields(status_path)
     inputs = _projection_inputs(root)
     digest = _projection_digest(inputs)
     expected = _expected_current_fields(root, lock, digest)
     mismatches = {
-        key: {"expected": value, "actual": status_fields.get(key)}
-        for key, value in expected.items() if status_fields.get(key) != value
+        key: {"expected": value, "actual": current_fields.get(key)}
+        for key, value in expected.items() if current_fields.get(key) != value
     }
     projection_consistent = not mismatches
 

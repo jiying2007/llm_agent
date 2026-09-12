@@ -38,4 +38,38 @@ assert policy["operational_advisories"]["second_human_operator"] is True, policy
 assert policy["operational_advisories"]["multi_runtime_campaign"] is True, policy
 PY
 
+# A source rollover may legitimately make the generated current projection
+# release_authorized=false while the historical verified baseline remains true.
+# Those namespaces must not overwrite each other during projection validation.
+PYTHONPATH="$ROOT" python3 - <<'PY'
+from pathlib import Path
+from tempfile import TemporaryDirectory
+
+from tools.control_plane.status_projection import (
+    BEGIN_MARKER,
+    END_MARKER,
+    _generated_md_fields,
+    _md_fields,
+)
+
+with TemporaryDirectory() as tmp:
+    path = Path(tmp) / "current-status.md"
+    path.write_text(
+        "# Current Product Status\n\n"
+        f"{BEGIN_MARKER}\n"
+        "- projection_schema: llm-agent-current-status/v1\n"
+        "- release_evidence_relation: historical\n"
+        "- release_authorized: false\n"
+        f"{END_MARKER}\n\n"
+        "## Last Verified Product Baseline\n\n"
+        "- last_verified_at: 2026-09-12\n"
+        "- root_product_commit: deadbeef\n"
+        "- release_authorized: true\n",
+        encoding="utf-8",
+    )
+    assert _generated_md_fields(path)["release_authorized"] == "false"
+    assert _generated_md_fields(path)["release_evidence_relation"] == "historical"
+    assert _md_fields(path)["release_authorized"] == "true"
+PY
+
 echo "[PASS] source-only status projection carries current M5 identity while long-run evidence stays advisory"
