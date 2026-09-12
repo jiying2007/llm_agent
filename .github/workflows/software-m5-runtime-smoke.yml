@@ -18,6 +18,11 @@ on:
         required: true
         type: string
         default: 'gpt-5.5'
+      root_integration_run_id:
+        description: Successful fresh-main Root run that integrated the current ADK source
+        required: true
+        type: string
+        default: '34703075857'
 
 permissions:
   contents: read
@@ -47,7 +52,7 @@ jobs:
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
         with:
           persist-credentials: false
-          fetch-depth: 1
+          fetch-depth: 0
           submodules: false
 
       - name: Materialize pinned agent-dev-kit gitlink
@@ -105,7 +110,71 @@ jobs:
             --summary-json \
             | tee "$RUNNER_TEMP/software-m5-runtime-smoke/collector-summary.json"
 
-      - name: Publish immutable runtime-smoke artifact
+      - name: Build transactional 5.1 qualification candidate
+        shell: bash
+        env:
+          ROOT_INTEGRATION_RUN_ID: ${{ inputs.root_integration_run_id }}
+        run: |
+          set -euo pipefail
+          [[ "$ROOT_INTEGRATION_RUN_ID" =~ ^[1-9][0-9]*$ ]] || {
+            echo '[FAIL] root_integration_run_id must be a positive integer' >&2
+            exit 2
+          }
+          python3 -m tools.codex_assets.software_m5_rollover \
+            --root . \
+            --runtime-evidence "$RUNNER_TEMP/software-m5-runtime-smoke/runtime-smoke-evidence.json" \
+            --root-integration-run-id "$ROOT_INTEGRATION_RUN_ID" \
+            --apply \
+            --summary-json \
+            | tee "$RUNNER_TEMP/software-m5-runtime-smoke/rollover-summary.json"
+
+          bash scripts/software-m5.sh certify --summary-json \
+            | tee "$RUNNER_TEMP/software-m5-runtime-smoke/software-m5-certification.json"
+          python3 -m tools.control_plane.status_projection \
+            --root . \
+            --require-fresh \
+            --summary-json \
+            | tee "$RUNNER_TEMP/software-m5-runtime-smoke/status-projection.json"
+
+      - name: Assemble reviewable rollover bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          BUNDLE="$RUNNER_TEMP/software-m5-runtime-smoke/rollover-candidate"
+          mkdir -p "$BUNDLE"
+          python3 - "$RUNNER_TEMP/software-m5-runtime-smoke/rollover-summary.json" "$BUNDLE" <<'PY'
+          import json
+          import shutil
+          import sys
+          from pathlib import Path
+
+          summary = json.loads(Path(sys.argv[1]).read_text(encoding='utf-8'))
+          bundle = Path(sys.argv[2])
+          for relative in summary['changed_paths']:
+              src = Path(relative)
+              dst = bundle / relative
+              dst.parent.mkdir(parents=True, exist_ok=True)
+              shutil.copyfile(src, dst)
+          PY
+          mapfile -t CHANGED_PATHS < <(python3 - "$RUNNER_TEMP/software-m5-runtime-smoke/rollover-summary.json" <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+
+          for relative in json.loads(Path(sys.argv[1]).read_text(encoding='utf-8'))['changed_paths']:
+              print(relative)
+          PY
+          )
+          [[ "${#CHANGED_PATHS[@]}" -eq 5 ]] || {
+            echo "[FAIL] rollover candidate must contain exactly five paths; got ${#CHANGED_PATHS[@]}" >&2
+            exit 4
+          }
+          git add -N -- "${CHANGED_PATHS[@]}"
+          git diff --binary > "$RUNNER_TEMP/software-m5-runtime-smoke/rollover.patch"
+          git reset --mixed HEAD >/dev/null
+          git status --short | tee "$RUNNER_TEMP/software-m5-runtime-smoke/rollover-status.txt"
+
+      - name: Publish immutable runtime + rollover artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4
         with:
           name: software-m5-runtime-smoke-${{ github.sha }}
@@ -117,8 +186,11 @@ jobs:
         shell: bash
         run: |
           {
-            echo '### Software M5 measured runtime smoke'
+            echo '### Software M5 measured runtime + rollover candidate'
             echo "- root_sha: $GITHUB_SHA"
             echo "- artifact: software-m5-runtime-smoke-$GITHUB_SHA"
-            echo '- next: validate artifact, commit evidence, roll current candidate policy to the same ADK identity, then run Software M5 certify'
+            echo '- model calls: exactly one measured Codex smoke task'
+            echo '- remote writes: none'
+            echo '- candidate: certifier PASS + fresh status projection PASS required before artifact publication'
+            echo '- next: review/import rollover-candidate into a PR, run exact-head CI, merge, then verify fresh-main'
           } >> "$GITHUB_STEP_SUMMARY"
