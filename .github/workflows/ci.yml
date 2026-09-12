@@ -49,6 +49,7 @@ jobs:
       - name: Validate Software M5 qualification tooling
         run: |
           bash tests/test_runtime_smoke_evidence.sh
+          bash tests/test_runtime_smoke_trigger.sh
           bash tests/test_software_m5_rollover.sh
 
       - name: Upload contract receipt
