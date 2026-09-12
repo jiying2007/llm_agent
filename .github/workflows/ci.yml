@@ -259,3 +259,38 @@ jobs:
             exit 1
           fi
           echo '### ADK promotion evidence: NOT_REQUIRED' >> "$GITHUB_STEP_SUMMARY"
+
+  software-m5:
+    name: software-m5-certify
+    if: ${{ always() && needs.contract.result == 'success' && needs.doc-sync.result == 'success' && needs.integration-summary.result == 'success' }}
+    needs:
+      - contract
+      - doc-sync
+      - integration-summary
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout root source
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          submodules: false
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.11'
+
+      - name: Certify production-qualified Software M5
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash scripts/software-m5.sh certify --summary-json | tee /tmp/software-m5-certification.json
+
+      - name: Upload Software M5 certification receipt
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4
+        with:
+          name: software-m5-certification
+          path: /tmp/software-m5-certification.json
+          if-no-files-found: error
+          retention-days: 30

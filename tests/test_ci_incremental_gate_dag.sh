@@ -45,6 +45,7 @@ for job in (
     "integration-impact",
     "integration",
     "integration-summary",
+    "software-m5",
 ):
     assert re.search(rf"^  {re.escape(job)}:\s*$", github, re.MULTILINE), job
 assert not re.search(r"^  integration-capability:\s*$", github, re.MULTILINE), github
@@ -77,6 +78,15 @@ assert re.search(
     r"integration:\n(?:.|\n)*?needs:\n\s+- contract\n\s+- doc-sync\n\s+- integration-impact",
     github,
 ), github
+assert re.search(
+    r"software-m5:\n(?:.|\n)*?name: software-m5-certify\n(?:.|\n)*?needs:\n\s+- contract\n\s+- doc-sync\n\s+- integration-summary",
+    github,
+), github
+assert "needs.integration-summary.result == 'success'" in github, github
+assert "bash scripts/software-m5.sh certify --summary-json" in github, github
+assert "set -euo pipefail" in github, github
+assert "software-m5-certification.json" in github, github
+assert "name: software-m5-certification" in github, github
 assert "adk\\.lock" in github and "product_maturity_scorecard" in github and "software_m5_policy" in github
 
 assert len(re.findall(r"--profile\s+contract(?:\s|$)", gitlab)) == 1, gitlab
@@ -86,4 +96,4 @@ assert re.search(r"^doc-sync:\s*$", gitlab, re.MULTILINE), gitlab
 assert re.search(r"weekly-report:\n(?:.|\n)*?needs:\n\s+- doc-sync", gitlab), gitlab
 PY
 
-echo '[PASS] GitHub/GitLab CI consume Gate Graph v2 with Cosign 3.1.3 Rekor v2 evidence semantics'
+echo '[PASS] GitHub/GitLab CI consume Gate Graph v2 with Cosign 3.1.3 Rekor v2 and Software M5 certification semantics'
