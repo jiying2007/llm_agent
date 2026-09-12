@@ -69,6 +69,7 @@ jobs:
             --prefix 'codex/'
             --protected main
             --protected master
+            --retired-registry manifests/branch_gc_retired.json
             --report /tmp/branch-gc-report.json
           )
           if [[ "$APPLY" == "true" ]]; then
@@ -85,10 +86,12 @@ jobs:
           print(f"- deleted: {len(report.get('deleted', []))}")
           print(f"- revalidation_skips: {len(report.get('revalidation_skips', []))}")
           for item in report.get("deleted", []):
-              print(f"- deleted `{item['branch']}` @ `{item['sha'][:12]}` via PR #{item['merged_pr']}")
+              proof = f"PR #{item['merged_pr']}" if "merged_pr" in item else item.get("basis", "explicit-retired")
+              print(f"- deleted `{item['branch']}` @ `{item['sha'][:12]}` via {proof}")
           if report["mode"] == "dry-run":
               for item in report.get("candidates", []):
-                  print(f"- candidate `{item['branch']}` @ `{item['sha'][:12]}` via PR #{item['merged_pr']}")
+                  proof = f"PR #{item['merged_pr']}" if "merged_pr" in item else item.get("basis", "explicit-retired")
+                  print(f"- candidate `{item['branch']}` @ `{item['sha'][:12]}` via {proof}")
           PY
 
       - name: Upload Branch GC report
