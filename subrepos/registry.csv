@@ -33,3 +33,4 @@ Trellis,reference,P2,pull,main,no,知识图谱与状态上下文边界已吸收�
 vibeflow,workflow-core,P0,fetch,main,yes,SDD+Harness交付编排层; 36 skills覆盖全流程; Claude Code/Codex/OpenCode,active,aiot03,2026-07-23,observe-first,S
 agent-browser,tooling,P1,fetch,main,no,浏览器快照与 ref 交互模式已吸收，移除本地参考仓,disabled,aiot03,2026-06-25,observe-first,A
 scale-engine,workflow-core,P1,fetch,master,yes,AI Agent治理运行时参考; gates/evidence/context/queue; Gitee submodule持续跟踪,active,adk-team,2026-06-25,observe-first,A
+digital-worker,pilot-repo,P0,fetch,main,yes,Software M5独立真实软件仓现场试点；pilot-first；不自动吸收能力,active,llm-agent-governance-owner,2026-09-12,pilot-first,B
