@@ -32,6 +32,8 @@ assert projection["current_projection"]["consistent"] is True, projection
 assert projection["release_authorized"] is True, projection
 assert "- release_evidence_relation: current" in status, status
 assert "- current_product_maturity: M5" in status, status
+assert status.count("- release_authorized: ") == 1, status
+assert "- baseline_release_authorized: true" in status, status
 assert policy["definition"] == "production-qualified", policy
 assert policy["operational_advisories"]["recommended_observation_days"] >= 30, policy
 assert policy["operational_advisories"]["second_human_operator"] is True, policy

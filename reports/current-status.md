@@ -36,7 +36,7 @@
 - software_m5_certified: true
 - terminal_mature: true
 - field_status: production_qualified
-- release_authorized: true
+- baseline_release_authorized: true
 
 ### Qualification Evidence
 
