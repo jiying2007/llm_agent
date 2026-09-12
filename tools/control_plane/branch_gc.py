@@ -105,6 +105,12 @@ class GitHubClient:
             raise BranchGCError(f"invalid content response for {path}@{ref}")
         return value["sha"]
 
+    def workflow_run(self, run_id: int) -> dict[str, Any]:
+        value = self.request("GET", f"/actions/runs/{run_id}")
+        if not isinstance(value, dict):
+            raise BranchGCError(f"invalid workflow run response: {run_id}")
+        return value
+
     def delete_branch(self, branch: str) -> None:
         self.request("DELETE", "/git/refs/heads/" + urllib.parse.quote(branch, safe="/"))
 
@@ -114,6 +120,32 @@ def branch_sha(branch: dict[str, Any]) -> str:
     if not isinstance(sha, str) or len(sha) != 40:
         raise BranchGCError("branch SHA is missing or invalid")
     return sha
+
+def valid_repo_path(file_path: Any) -> bool:
+    return isinstance(file_path, str) and bool(file_path) and not file_path.startswith("/") and ".." not in Path(file_path).parts
+
+def valid_sha(value: Any) -> bool:
+    return isinstance(value, str) and len(value) == 40
+
+def validate_run_contract(branch: str, label: str, value: Any) -> None:
+    if not isinstance(value, dict):
+        raise BranchGCError(f"terminal-probe {label} is missing: {branch}")
+    if not isinstance(value.get("id"), int) or value["id"] < 1:
+        raise BranchGCError(f"terminal-probe {label} id is invalid: {branch}")
+    if not isinstance(value.get("name"), str) or not value["name"]:
+        raise BranchGCError(f"terminal-probe {label} name is invalid: {branch}")
+    if not valid_repo_path(value.get("path")) or not str(value["path"]).startswith(".github/workflows/"):
+        raise BranchGCError(f"terminal-probe {label} path is invalid: {branch}")
+    if not isinstance(value.get("head_branch"), str) or not value["head_branch"]:
+        raise BranchGCError(f"terminal-probe {label} head_branch is invalid: {branch}")
+    if not valid_sha(value.get("head_sha")):
+        raise BranchGCError(f"terminal-probe {label} head_sha is invalid: {branch}")
+    if value.get("status") != "completed":
+        raise BranchGCError(f"terminal-probe {label} status must be completed: {branch}")
+    if not isinstance(value.get("conclusion"), str) or not value["conclusion"]:
+        raise BranchGCError(f"terminal-probe {label} conclusion is invalid: {branch}")
+    if not isinstance(value.get("event"), str) or not value["event"]:
+        raise BranchGCError(f"terminal-probe {label} event is invalid: {branch}")
 
 def load_retired_registry(path: Path | None) -> dict[str, dict[str, Any]]:
     if path is None:
@@ -134,12 +166,12 @@ def load_retired_registry(path: Path | None) -> dict[str, dict[str, Any]]:
         branch, sha = item.get("branch"), item.get("sha")
         if not isinstance(branch, str) or not branch or branch in {"main", "master"}:
             raise BranchGCError("retired registry branch is invalid")
-        if not isinstance(sha, str) or len(sha) != 40:
+        if not valid_sha(sha):
             raise BranchGCError(f"retired registry SHA is invalid: {branch}")
         if item.get("disposition") != "delete":
             raise BranchGCError(f"retired registry disposition is invalid: {branch}")
         proof = item.get("proof")
-        if proof not in {"ancestor-of-main", "absorbed-path-blobs"}:
+        if proof not in {"ancestor-of-main", "absorbed-path-blobs", "terminal-probe"}:
             raise BranchGCError(f"retired registry proof is invalid: {branch}")
         reason = item.get("reason")
         if not isinstance(reason, str) or not reason:
@@ -152,10 +184,29 @@ def load_retired_registry(path: Path | None) -> dict[str, dict[str, Any]]:
             if not isinstance(paths, dict) or not paths:
                 raise BranchGCError(f"absorbed-path-blobs paths are missing: {branch}")
             for file_path, blob_sha in paths.items():
-                if not isinstance(file_path, str) or not file_path or file_path.startswith("/") or ".." in Path(file_path).parts:
+                if not valid_repo_path(file_path):
                     raise BranchGCError(f"absorbed-path-blobs path is invalid: {branch}")
-                if not isinstance(blob_sha, str) or len(blob_sha) != 40:
+                if not valid_sha(blob_sha):
                     raise BranchGCError(f"absorbed-path-blobs SHA is invalid: {branch}:{file_path}")
+        if proof == "terminal-probe":
+            if item.get("unique_commit_count") != 1:
+                raise BranchGCError(f"terminal-probe unique_commit_count must be 1: {branch}")
+            file_path = item.get("path")
+            if not valid_repo_path(file_path) or not str(file_path).startswith(".github/workflows/"):
+                raise BranchGCError(f"terminal-probe path is invalid: {branch}")
+            name = Path(str(file_path)).name.lower()
+            if "probe" not in name or Path(str(file_path)).suffix not in {".yml", ".yaml"}:
+                raise BranchGCError(f"terminal-probe path is outside probe workflow namespace: {branch}")
+            if not valid_sha(item.get("blob_sha")):
+                raise BranchGCError(f"terminal-probe blob_sha is invalid: {branch}")
+            validate_run_contract(branch, "probe_run", item.get("probe_run"))
+            validate_run_contract(branch, "superseding_run", item.get("superseding_run"))
+            probe_run = item["probe_run"]
+            superseding_run = item["superseding_run"]
+            if probe_run["head_branch"] != branch or probe_run["head_sha"] != sha or probe_run["path"] != file_path:
+                raise BranchGCError(f"terminal-probe probe_run identity is invalid: {branch}")
+            if superseding_run["head_branch"] not in {"main", "master"} or superseding_run["conclusion"] != "success":
+                raise BranchGCError(f"terminal-probe superseding_run must be successful main/master evidence: {branch}")
         if branch in result:
             raise BranchGCError(f"duplicate retired registry branch: {branch}")
         result[branch] = item
@@ -203,12 +254,52 @@ def absorbed_paths_match(client: GitHubClient, sha: str, base: str, retirement: 
             return False
     return True
 
+def workflow_run_matches(client: GitHubClient, expected: dict[str, Any]) -> tuple[bool, dict[str, Any]]:
+    actual = client.workflow_run(expected["id"])
+    for key in ("name", "path", "head_branch", "head_sha", "status", "conclusion", "event"):
+        if actual.get(key) != expected[key]:
+            return False, actual
+    return True, actual
+
+def terminal_probe_match(client: GitHubClient, sha: str, base: str, retirement: dict[str, Any]) -> bool:
+    comparison = client.compare_base_to_sha(base, sha)
+    if comparison.get("ahead_by") != 1:
+        return False
+    commits = comparison.get("commits")
+    if not isinstance(commits, list) or len(commits) != 1 or not isinstance(commits[0], dict) or commits[0].get("sha") != sha:
+        return False
+    files = comparison.get("files")
+    if not isinstance(files, list):
+        return False
+    actual_paths = {item.get("filename") for item in files if isinstance(item, dict) and isinstance(item.get("filename"), str)}
+    expected_path = retirement["path"]
+    if actual_paths != {expected_path}:
+        return False
+    if client.content_sha(expected_path, sha) != retirement["blob_sha"]:
+        return False
+    probe_ok, probe = workflow_run_matches(client, retirement["probe_run"])
+    if not probe_ok:
+        return False
+    superseding_ok, superseding = workflow_run_matches(client, retirement["superseding_run"])
+    if not superseding_ok:
+        return False
+    probe_time = probe.get("updated_at") or probe.get("created_at")
+    superseding_time = superseding.get("created_at")
+    if not isinstance(probe_time, str) or not isinstance(superseding_time, str) or superseding_time <= probe_time:
+        return False
+    superseding_sha = retirement["superseding_run"]["head_sha"]
+    if not contained_in_base(client, superseding_sha, base):
+        return False
+    return True
+
 def retirement_safe(client: GitHubClient, sha: str, base: str, retirement: dict[str, Any]) -> bool:
     proof = retirement["proof"]
     if proof == "ancestor-of-main":
         return contained_in_base(client, sha, base)
     if proof == "absorbed-path-blobs":
         return absorbed_paths_match(client, sha, base, retirement)
+    if proof == "terminal-probe":
+        return terminal_probe_match(client, sha, base, retirement)
     return False
 
 def eligible(client: GitHubClient, branch: dict[str, Any], base: str, prefixes: tuple[str, ...], protected: set[str], retired: dict[str, dict[str, Any]]) -> tuple[Candidate | None, str]:
