@@ -17,6 +17,12 @@
       "lock": "adk.lock"
     },
     {
+      "path": "digital-worker",
+      "kind": "reference-repo",
+      "required": false,
+      "url": "https://github.com/jiying2007/digital-worker.git"
+    },
+    {
       "path": "OpenSpec",
       "kind": "reference-repo",
       "required": false,

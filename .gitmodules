@@ -4,6 +4,9 @@
 [submodule "agent-dev-kit"]
 	path = agent-dev-kit
 	url = https://github.com/jiying2007/agent-dev-kit.git
+[submodule "digital-worker"]
+	path = digital-worker
+	url = https://github.com/jiying2007/digital-worker.git
 [submodule "scale-engine"]
 	path = scale-engine
 	url = https://gitee.com/hongmaple/scale-engine.git
