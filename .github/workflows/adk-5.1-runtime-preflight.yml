@@ -1,0 +1,64 @@
+name: ADK 5.1 Runtime Preflight
+
+on:
+  push:
+    branches:
+      - codex/adk-5.1-runtime-preflight
+
+permissions:
+  contents: read
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install runtime CLIs
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install -g @openai/codex@latest @anthropic-ai/claude-code@latest
+          codex --version
+          claude --version
+
+      - name: Probe authentication without model calls
+        shell: bash
+        run: |
+          set -euo pipefail
+          openai_secret=false
+          anthropic_secret=false
+          [[ -n "${OPENAI_API_KEY:-}" ]] && openai_secret=true
+          [[ -n "${ANTHROPIC_API_KEY:-}" ]] && anthropic_secret=true
+
+          set +e
+          codex login status >/dev/null 2>&1
+          codex_auth_rc=$?
+          claude auth status >/dev/null 2>&1
+          claude_auth_rc=$?
+          set -e
+
+          codex_ready=false
+          claude_ready=false
+          [[ "$codex_auth_rc" -eq 0 || "$openai_secret" == true ]] && codex_ready=true
+          [[ "$claude_auth_rc" -eq 0 || "$anthropic_secret" == true ]] && claude_ready=true
+
+          printf '{"schema":"adk-5.1-runtime-preflight/v1","openai_api_key_present":%s,"anthropic_api_key_present":%s,"codex_auth_status_exit":%s,"claude_auth_status_exit":%s,"codex_ready":%s,"claude_ready":%s}\n' \
+            "$openai_secret" "$anthropic_secret" "$codex_auth_rc" "$claude_auth_rc" "$codex_ready" "$claude_ready" \
+            | tee "$RUNNER_TEMP/runtime-preflight.json"
+
+      - name: Upload preflight receipt
+        uses: actions/upload-artifact@v4
+        with:
+          name: adk-5.1-runtime-preflight
+          path: ${{ runner.temp }}/runtime-preflight.json
+          if-no-files-found: error
+          retention-days: 7
