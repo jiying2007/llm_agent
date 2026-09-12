@@ -1,0 +1,13 @@
+{
+  "schema": "llm-agent-branch-gc-retired/v1",
+  "entries": [
+    {
+      "branch": "codex/reconstruct-attestation-20260912",
+      "sha": "ba121135d710f9c1a7281a5bdf0a951e4b811a7b",
+      "disposition": "delete",
+      "proof": "ancestor-of-main",
+      "reviewed_against_main": "8bc6b290ab55af8069c6779dc5d93b2885c0cad8",
+      "reason": "Temporary attestation reconstruction branch has no unique commits; its exact head is fully contained in main."
+    }
+  ]
+}

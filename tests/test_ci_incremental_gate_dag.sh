@@ -15,6 +15,7 @@ profiles = gates["profiles"]
 github = (root / ".github/workflows/ci.yml").read_text(encoding="utf-8")
 branch_gc = (root / ".github/workflows/branch-gc.yml").read_text(encoding="utf-8")
 branch_gc_code = (root / "tools/control_plane/branch_gc.py").read_text(encoding="utf-8")
+retired_gc = json.loads((root / "manifests/branch_gc_retired.json").read_text(encoding="utf-8"))
 gitlab = (root / ".gitlab-ci.yml").read_text(encoding="utf-8")
 
 gate_specs = gates["gates"]
@@ -72,18 +73,9 @@ assert "--certificate-oidc-issuer https://token.actions.githubusercontent.com" i
 assert "gh attestation" not in github, github
 assert "promotion evidence verification was REQUIRED but did not pass" in github, github
 assert "ADK promotion evidence: NOT_REQUIRED" in github, github
-assert re.search(
-    r"integration-impact:\n(?:.|\n)*?needs:\n\s+- contract\n\s+- doc-sync",
-    github,
-), github
-assert re.search(
-    r"integration:\n(?:.|\n)*?needs:\n\s+- contract\n\s+- doc-sync\n\s+- integration-impact",
-    github,
-), github
-assert re.search(
-    r"software-m5:\n(?:.|\n)*?name: software-m5-certify\n(?:.|\n)*?needs:\n\s+- contract\n\s+- doc-sync\n\s+- integration-summary",
-    github,
-), github
+assert re.search(r"integration-impact:\n(?:.|\n)*?needs:\n\s+- contract\n\s+- doc-sync", github), github
+assert re.search(r"integration:\n(?:.|\n)*?needs:\n\s+- contract\n\s+- doc-sync\n\s+- integration-impact", github), github
+assert re.search(r"software-m5:\n(?:.|\n)*?name: software-m5-certify\n(?:.|\n)*?needs:\n\s+- contract\n\s+- doc-sync\n\s+- integration-summary", github), github
 assert "needs.integration-summary.result == 'success'" in github, github
 assert "bash scripts/software-m5.sh certify --summary-json" in github, github
 assert "set -euo pipefail" in github, github
@@ -100,19 +92,33 @@ assert "contents: write" in branch_gc and "pull-requests: read" in branch_gc, br
 assert "cancel-in-progress: false" in branch_gc, branch_gc
 assert "--prefix 'codex/'" in branch_gc, branch_gc
 assert "--protected main" in branch_gc and "--protected master" in branch_gc, branch_gc
+assert "--retired-registry manifests/branch_gc_retired.json" in branch_gc, branch_gc
 assert 'EVENT_NAME" == "push" && "$REF_NAME" == "main"' in branch_gc, branch_gc
 assert 'EVENT_NAME" == "workflow_dispatch" && "$DISPATCH_APPLY" == "true"' in branch_gc, branch_gc
 assert 'args+=(--apply)' in branch_gc, branch_gc
 assert "name: branch-gc-report" in branch_gc, branch_gc
 
-# Deletion code must require exact merged-PR head identity and revalidate immediately before DELETE.
+# Automatic deletion requires exact merged-PR head identity. Explicit retirement is exact-SHA and must still be contained in main.
 assert 'head.get("sha") != sha' in branch_gc_code, branch_gc_code
 assert 'base_obj.get("ref") != base' in branch_gc_code, branch_gc_code
 assert 'client.pulls(branch, base, "open")' in branch_gc_code, branch_gc_code
 assert 'if branch_sha(current) != c.sha' in branch_gc_code, branch_gc_code
 assert 'exact_merged_pr(client, c.branch, c.sha, base)' in branch_gc_code, branch_gc_code
+assert 'compare_sha_to_base' in branch_gc_code, branch_gc_code
+assert 'merge_sha == sha' in branch_gc_code, branch_gc_code
+assert 'comparison.get("behind_by") == 0' in branch_gc_code, branch_gc_code
+assert 'retirement["sha"] != sha' in branch_gc_code, branch_gc_code
+assert 'retired-no-longer-contained-in-base' in branch_gc_code, branch_gc_code
 assert 'client.delete_branch(c.branch)' in branch_gc_code, branch_gc_code
 assert 'urllib.parse.quote(branch, safe="/")' in branch_gc_code, branch_gc_code
+
+assert retired_gc["schema"] == "llm-agent-branch-gc-retired/v1"
+assert len(retired_gc["entries"]) == 1
+retired = retired_gc["entries"][0]
+assert retired["branch"] == "codex/reconstruct-attestation-20260912"
+assert retired["sha"] == "ba121135d710f9c1a7281a5bdf0a951e4b811a7b"
+assert retired["disposition"] == "delete"
+assert retired["proof"] == "ancestor-of-main"
 
 assert len(re.findall(r"--profile\s+contract(?:\s|$)", gitlab)) == 1, gitlab
 assert len(re.findall(r"--profile\s+doc-sync(?:\s|$)", gitlab)) == 1, gitlab
@@ -121,4 +127,4 @@ assert re.search(r"^doc-sync:\s*$", gitlab, re.MULTILINE), gitlab
 assert re.search(r"weekly-report:\n(?:.|\n)*?needs:\n\s+- doc-sync", gitlab), gitlab
 PY
 
-echo '[PASS] CI semantics include Cosign/Rekor v2, Software M5 certification, and fail-closed merged-branch GC'
+echo '[PASS] CI semantics include Cosign/Rekor v2, Software M5 certification, and fail-closed merged/retired branch GC'
