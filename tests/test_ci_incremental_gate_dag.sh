@@ -97,12 +97,21 @@ assert 'base_obj.get("ref") != base' in branch_gc_code, branch_gc_code
 assert 'client.pulls(branch, base, "open")' in branch_gc_code, branch_gc_code
 assert 'if branch_sha(current) != c.sha' in branch_gc_code, branch_gc_code
 assert 'exact_merged_pr(client, c.branch, c.sha, base)' in branch_gc_code, branch_gc_code
-assert 'proof not in {"ancestor-of-main", "absorbed-path-blobs"}' in branch_gc_code, branch_gc_code
+assert 'proof not in {"ancestor-of-main", "absorbed-path-blobs", "terminal-probe"}' in branch_gc_code, branch_gc_code
 assert 'compare_sha_to_base' in branch_gc_code and 'compare_base_to_sha' in branch_gc_code, branch_gc_code
 assert 'merge_sha == sha' in branch_gc_code and 'comparison.get("behind_by") == 0' in branch_gc_code, branch_gc_code
 assert 'actual_paths != expected_paths' in branch_gc_code, branch_gc_code
 assert 'client.content_sha(path, sha) != expected_blob' in branch_gc_code, branch_gc_code
 assert 'client.content_sha(path, base) != expected_blob' in branch_gc_code, branch_gc_code
+assert 'workflow_run(self, run_id: int)' in branch_gc_code, branch_gc_code
+assert 'terminal_probe_match' in branch_gc_code, branch_gc_code
+assert 'comparison.get("ahead_by") != 1' in branch_gc_code, branch_gc_code
+assert 'actual_paths != {expected_path}' in branch_gc_code, branch_gc_code
+assert 'client.content_sha(expected_path, sha) != retirement["blob_sha"]' in branch_gc_code, branch_gc_code
+assert 'workflow_run_matches(client, retirement["probe_run"])' in branch_gc_code, branch_gc_code
+assert 'workflow_run_matches(client, retirement["superseding_run"])' in branch_gc_code, branch_gc_code
+assert 'superseding_time <= probe_time' in branch_gc_code, branch_gc_code
+assert 'contained_in_base(client, superseding_sha, base)' in branch_gc_code, branch_gc_code
 assert 'retirement["sha"] != sha' in branch_gc_code, branch_gc_code
 assert 'retired-proof-no-longer-valid' in branch_gc_code, branch_gc_code
 assert 'client.delete_branch(c.branch)' in branch_gc_code, branch_gc_code
@@ -116,6 +125,32 @@ assert arch["sha"] == "4fb361247dfe6f6bf196f1a532dc1abc4b1c72ed"
 assert arch["proof"] == "absorbed-path-blobs"
 assert arch["unique_commit_count"] == 1
 assert arch["paths"] == {"manifests/digital_worker_runtime_pilot.json": "fc975dcc332d04297eccad5504396edaf2c2fde1"}
+probe = entries["codex/runner-allocation-probe-20260912"]
+assert probe["sha"] == "eac43874b8ce8f630f196d7b936a497f7927e894"
+assert probe["proof"] == "terminal-probe"
+assert probe["unique_commit_count"] == 1
+assert probe["path"] == ".github/workflows/runner-probe.yml"
+assert probe["blob_sha"] == "8d228a8dda5ad80111853cae32395fce03cdcb57"
+assert probe["probe_run"] == {
+    "id": 34658015398,
+    "name": "runner-allocation-probe",
+    "path": ".github/workflows/runner-probe.yml",
+    "head_branch": "codex/runner-allocation-probe-20260912",
+    "head_sha": "eac43874b8ce8f630f196d7b936a497f7927e894",
+    "status": "completed",
+    "conclusion": "failure",
+    "event": "pull_request",
+}
+assert probe["superseding_run"] == {
+    "id": 34678812343,
+    "name": "llm-agent-ci",
+    "path": ".github/workflows/ci.yml",
+    "head_branch": "main",
+    "head_sha": "7e3f7790f5eacf67a7d93c20ed7c8288126a7063",
+    "status": "completed",
+    "conclusion": "success",
+    "event": "push",
+}
 
 assert len(re.findall(r"--profile\s+contract(?:\s|$)", gitlab)) == 1, gitlab
 assert len(re.findall(r"--profile\s+doc-sync(?:\s|$)", gitlab)) == 1, gitlab
@@ -124,4 +159,4 @@ assert re.search(r"^doc-sync:\s*$", gitlab, re.MULTILINE), gitlab
 assert re.search(r"weekly-report:\n(?:.|\n)*?needs:\n\s+- doc-sync", gitlab), gitlab
 PY
 
-echo '[PASS] CI semantics include Cosign/Rekor v2, Software M5 certification, and fail-closed merged/retired branch GC with absorbed-content proof'
+echo '[PASS] CI semantics include Cosign/Rekor v2, Software M5 certification, and fail-closed merged/retired branch GC with absorbed-content and terminal-probe proof'
