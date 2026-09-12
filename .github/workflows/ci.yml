@@ -280,11 +280,65 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Certify production-qualified Software M5
+      - name: Enforce Software M5 current-or-historical qualification state
         shell: bash
         run: |
           set -euo pipefail
-          bash scripts/software-m5.sh certify --summary-json | tee /tmp/software-m5-certification.json
+          python3 -m tools.control_plane.status_projection --root . --summary-json > /tmp/software-m5-projection.json
+          mode="$(
+            python3 - <<'PYMODE'
+          import json
+          import re
+          from pathlib import Path
+
+          projection = json.loads(Path('/tmp/software-m5-projection.json').read_text(encoding='utf-8'))
+          assert projection['status'] == 'pass', projection
+          assert projection['source']['pin_consistent'] is True, projection
+          assert projection['current_projection']['consistent'] is True, projection
+          if projection['release_authorized'] is True:
+              print('CERTIFIED')
+          else:
+              assert projection['current_evidence_state'] == 'source-current-evidence-historical', projection
+              baseline = projection['last_verified_baseline']
+              assert baseline['fresh_for_current_source'] is False, projection
+              assert baseline['source_inputs_match'] is False, projection
+              status = Path('reports/current-status.md').read_text(encoding='utf-8')
+              begin = '<!-- BEGIN GENERATED CURRENT SOURCE PROJECTION -->'
+              end = '<!-- END GENERATED CURRENT SOURCE PROJECTION -->'
+              assert status.count(begin) == 1 and status.count(end) == 1, status
+              block = status.split(begin, 1)[1].split(end, 1)[0]
+              assert re.search(r'^- release_evidence_relation:\s*historical$', block, re.MULTILINE), block
+              assert re.search(r'^- release_authorized:\s*false$', block, re.MULTILINE), block
+              print('HISTORICAL_NOT_AUTHORIZED')
+          PYMODE
+          )"
+          if [[ "$mode" == "CERTIFIED" ]]; then
+            bash scripts/software-m5.sh certify --summary-json | tee /tmp/software-m5-certification.json
+            echo '### Software M5: CERTIFIED' >> "$GITHUB_STEP_SUMMARY"
+          elif [[ "$mode" == "HISTORICAL_NOT_AUTHORIZED" ]]; then
+            python3 - <<'PYRECEIPT' > /tmp/software-m5-certification.json
+          import json
+          from pathlib import Path
+
+          projection = json.loads(Path('/tmp/software-m5-projection.json').read_text(encoding='utf-8'))
+          receipt = {
+              'schema': 'llm-agent-software-m5-ci-state/v1',
+              'status': 'pass',
+              'qualification_state': 'HISTORICAL_NOT_AUTHORIZED',
+              'release_authorized': False,
+              'current_evidence_state': projection['current_evidence_state'],
+              'current_adk_commit': projection['source']['adk_lock_commit'],
+              'projection_inputs_sha256': projection['current_projection']['inputs_sha256'],
+              'last_verified_baseline': projection['last_verified_baseline'],
+          }
+          print(json.dumps(receipt, ensure_ascii=False, sort_keys=True))
+          PYRECEIPT
+            cat /tmp/software-m5-certification.json
+            echo '### Software M5: HISTORICAL_NOT_AUTHORIZED' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "[FAIL] unexpected Software M5 qualification mode: $mode" >&2
+            exit 1
+          fi
 
       - name: Upload Software M5 certification receipt
         if: ${{ always() }}
