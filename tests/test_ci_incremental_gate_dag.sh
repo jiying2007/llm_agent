@@ -13,6 +13,8 @@ root = Path(sys.argv[1])
 gates = json.loads((root / "manifests/gates.json").read_text(encoding="utf-8"))
 profiles = gates["profiles"]
 github = (root / ".github/workflows/ci.yml").read_text(encoding="utf-8")
+branch_gc = (root / ".github/workflows/branch-gc.yml").read_text(encoding="utf-8")
+branch_gc_code = (root / "tools/control_plane/branch_gc.py").read_text(encoding="utf-8")
 gitlab = (root / ".gitlab-ci.yml").read_text(encoding="utf-8")
 
 gate_specs = gates["gates"]
@@ -89,6 +91,29 @@ assert "software-m5-certification.json" in github, github
 assert "name: software-m5-certification" in github, github
 assert "adk\\.lock" in github and "product_maturity_scorecard" in github and "software_m5_policy" in github
 
+# Branch GC must be dry-run on PRs and apply only on main push or explicit dispatch.
+assert "name: Branch GC" in branch_gc
+assert re.search(r"^  pull_request:\s*$", branch_gc, re.MULTILINE), branch_gc
+assert re.search(r"^  push:\n\s+branches:\n\s+- main", branch_gc, re.MULTILINE), branch_gc
+assert "workflow_dispatch:" in branch_gc and "apply:" in branch_gc, branch_gc
+assert "contents: write" in branch_gc and "pull-requests: read" in branch_gc, branch_gc
+assert "cancel-in-progress: false" in branch_gc, branch_gc
+assert "--prefix 'codex/'" in branch_gc, branch_gc
+assert "--protected main" in branch_gc and "--protected master" in branch_gc, branch_gc
+assert 'EVENT_NAME" == "push" && "$REF_NAME" == "main"' in branch_gc, branch_gc
+assert 'EVENT_NAME" == "workflow_dispatch" && "$DISPATCH_APPLY" == "true"' in branch_gc, branch_gc
+assert 'args+=(--apply)' in branch_gc, branch_gc
+assert "name: branch-gc-report" in branch_gc, branch_gc
+
+# Deletion code must require exact merged-PR head identity and revalidate immediately before DELETE.
+assert 'head.get("sha") != sha' in branch_gc_code, branch_gc_code
+assert 'base_obj.get("ref") != base' in branch_gc_code, branch_gc_code
+assert 'client.pulls(branch, base, "open")' in branch_gc_code, branch_gc_code
+assert 'if branch_sha(current) != c.sha' in branch_gc_code, branch_gc_code
+assert 'exact_merged_pr(client, c.branch, c.sha, base)' in branch_gc_code, branch_gc_code
+assert 'client.delete_branch(c.branch)' in branch_gc_code, branch_gc_code
+assert 'urllib.parse.quote(branch, safe="/")' in branch_gc_code, branch_gc_code
+
 assert len(re.findall(r"--profile\s+contract(?:\s|$)", gitlab)) == 1, gitlab
 assert len(re.findall(r"--profile\s+doc-sync(?:\s|$)", gitlab)) == 1, gitlab
 assert not re.search(r"--profile\s+pr-fast(?:\s|$)", gitlab), gitlab
@@ -96,4 +121,4 @@ assert re.search(r"^doc-sync:\s*$", gitlab, re.MULTILINE), gitlab
 assert re.search(r"weekly-report:\n(?:.|\n)*?needs:\n\s+- doc-sync", gitlab), gitlab
 PY
 
-echo '[PASS] GitHub/GitLab CI consume Gate Graph v2 with Cosign 3.1.3 Rekor v2 and Software M5 certification semantics'
+echo '[PASS] CI semantics include Cosign/Rekor v2, Software M5 certification, and fail-closed merged-branch GC'
