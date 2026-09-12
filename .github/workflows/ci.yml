@@ -139,7 +139,7 @@ jobs:
                 changed="$(git diff --name-only "$base"..HEAD)"
               fi
               printf '%s\n' "$changed" > /tmp/llm-agent-changed-paths.txt
-              if grep -Eq '^(adk\.lock|agent-dev-kit|manifests/(adk_interface\.lock|runtime_targets|runtime_health_adapters|product_maturity_scorecard|software_m5_policy)\.json|reports/promotion/agent-dev-kit/(promotion-evidence|promotion-attestation)\.json)$' /tmp/llm-agent-changed-paths.txt; then
+              if grep -Eq '^(\.github/workflows/ci\.yml|adk\.lock|agent-dev-kit|manifests/(adk_interface\.lock|runtime_targets|runtime_health_adapters|product_maturity_scorecard|software_m5_policy)\.json|reports/promotion/agent-dev-kit/(promotion-evidence|promotion-attestation)\.json)$' /tmp/llm-agent-changed-paths.txt; then
                 required=true
                 reason=cross-repo-contract-change
               fi
@@ -200,6 +200,7 @@ jobs:
       - name: Verify keyless ADK Sigstore bundle with Rekor v2 trust time
         run: >-
           cosign verify-blob
+          --new-bundle-format
           --use-signed-timestamps
           --trusted-root '${{ steps.sigstore_root.outputs.path }}'
           --bundle reports/promotion/agent-dev-kit/promotion-attestation.json
