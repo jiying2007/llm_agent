@@ -71,6 +71,13 @@ assert re.search(r"integration:\n(?:.|\n)*?needs:\n\s+- contract\n\s+- doc-sync\
 assert re.search(r"software-m5:\n(?:.|\n)*?name: software-m5-certify\n(?:.|\n)*?needs:\n\s+- contract\n\s+- doc-sync\n\s+- integration-summary", github), github
 assert "needs.integration-summary.result == 'success'" in github, github
 assert "bash scripts/software-m5.sh certify --summary-json" in github, github
+assert "Enforce Software M5 current-or-historical qualification state" in github, github
+assert "HISTORICAL_NOT_AUTHORIZED" in github, github
+assert "source-current-evidence-historical" in github, github
+assert "fresh_for_current_source'] is False" in github, github
+assert "source_inputs_match'] is False" in github, github
+assert "release_evidence_relation:\\s*historical" in github, github
+assert "release_authorized:\\s*false" in github, github
 assert "set -euo pipefail" in github, github
 assert "software-m5-certification.json" in github, github
 assert "name: software-m5-certification" in github, github
