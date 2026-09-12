@@ -1,0 +1,39 @@
+{
+  "schema": "llm-agent-m5-independent-pilot-start/v1",
+  "status": "started",
+  "pilot_id": "software-m5-v5-independent-pilot-20260912",
+  "occurred_at": "2026-09-12T04:19:00Z",
+  "root_source": {
+    "repository": "jiying2007/llm_agent",
+    "commit": "8ad04d96e916a352d738cff5e7892a7d7c55e527"
+  },
+  "adk_source": {
+    "repository": "jiying2007/agent-dev-kit",
+    "commit": "251edf2b6654cf8719ad1d8a1b7c81ffd64ffe1c"
+  },
+  "pilot_repository": {
+    "id": "digital-worker",
+    "repository": "jiying2007/digital-worker",
+    "path": "digital-worker",
+    "commit": "4a94231d26df1aeaeba336e6a4e2327db5a3bd44",
+    "tree": "40afb376faa58c4cd754b5eb8e7d08c8659b8f91",
+    "classification": "independent",
+    "real_software": true
+  },
+  "operator": {
+    "id": "operator-primary",
+    "operator_type": "human",
+    "independent_reviewer": false
+  },
+  "qualification_claim": false,
+  "remaining_requirements": [
+    "second human operator",
+    "independent reviewer authored pilot_reviewed event",
+    "minimum 30-day ledger and observed event spans",
+    "all required field event types and metric contracts",
+    "runtime campaign",
+    "repository runtime campaign",
+    "release continuity rehearsal",
+    "final 5.1.0 version promotion after eligibility"
+  ]
+}

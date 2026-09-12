@@ -1,6 +1,6 @@
 {
   "schema": "llm-agent-product-maturity-scorecard/v1",
-  "updated_at": "2026-08-30",
+  "updated_at": "2026-09-12",
   "product_boundary": "reference-intake workspace plus platform-neutral agent asset compiler/control plane; no LLM agent runtime",
   "overall": {
     "level": "M3",
@@ -16,7 +16,7 @@
     "certified": false,
     "candidate_version": "5.0.0-rc.2",
     "final_version": "5.1.0",
-    "blocking_gates": ["final_version", "independent_repository", "operator_count", "pilot_duration", "real_repository_count", "release_rehearsal", "repository_runtime_campaign", "required_field_events", "runtime_campaign"]
+    "blocking_gates": ["final_version", "operator_count", "pilot_duration", "release_rehearsal", "repository_runtime_campaign", "required_field_events", "runtime_campaign"]
   },
   "working_candidate": {
     "version": "5.0.0-rc.2",
@@ -225,7 +225,7 @@
       "evidence_layers_present": ["source", "test", "field"],
       "status": "partially_verified",
       "evidence": ["docs/product-maturity-model.md", "docs/software-m5-certification-plan.md", "manifests/software_m5_policy.json", "manifests/software_m5_pilot_ledger.json", "reports/field-evidence/software-m5-events.jsonl"],
-      "gap": "A real self-pilot and append-only evidence chain are active, but no completed 30-day independent pilot, second human operator, maintenance trend, or reviewed field cycle exists."
+      "gap": "A real independent pilot has started on digital-worker, but it is not yet completed; a second human operator, 30-day observed span, required field events, maintenance trend, and independent review remain open."
     }
   ],
   "release_gates": {

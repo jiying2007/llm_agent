@@ -1,6 +1,6 @@
 {
   "schema": "llm-agent-software-m5-pilot-ledger/v1",
-  "updated_at": "2026-08-30",
+  "updated_at": "2026-09-12",
   "candidate_version": "5.0.0-rc.2",
   "event_log": "reports/field-evidence/software-m5-v5-events.jsonl",
   "repositories": [
@@ -14,6 +14,12 @@
       "id": "agent-dev-kit",
       "path": "agent-dev-kit",
       "classification": "self",
+      "real_software": true
+    },
+    {
+      "id": "digital-worker",
+      "path": "digital-worker",
+      "classification": "independent",
       "real_software": true
     }
   ],
@@ -40,6 +46,20 @@
         "operator-primary"
       ],
       "objective": "Operate the 5.x platform-convergence candidate without treating owner attestation or self evidence as independent field certification."
+    },
+    {
+      "id": "software-m5-v5-independent-pilot-20260912",
+      "environment_class": "independent",
+      "status": "active",
+      "started_at": "2026-09-12T04:19:00Z",
+      "ended_at": null,
+      "repositories": [
+        "digital-worker"
+      ],
+      "operators": [
+        "operator-primary"
+      ],
+      "objective": "Run a real 30-day independent-repository field pilot without weakening second-human, reviewer, event, metric, or campaign requirements."
     }
   ]
 }
