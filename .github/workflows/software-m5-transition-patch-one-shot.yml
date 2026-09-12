@@ -1,0 +1,124 @@
+name: Patch Software M5 Transition CI
+
+on:
+  push:
+    branches:
+      - codex/software-m5-transition-aware
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout patch branch
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          ref: codex/software-m5-transition-aware
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Apply transition-aware Software M5 semantics
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          workflow = Path('.github/workflows/ci.yml')
+          text = workflow.read_text(encoding='utf-8')
+          old = '''      - name: Certify production-qualified Software M5
+                shell: bash
+                run: |
+                  set -euo pipefail
+                  bash scripts/software-m5.sh certify --summary-json | tee /tmp/software-m5-certification.json
+          '''
+          new = '''      - name: Enforce Software M5 current-or-historical qualification state
+                shell: bash
+                run: |
+                  set -euo pipefail
+                  python3 -m tools.control_plane.status_projection --root . --summary-json > /tmp/software-m5-projection.json
+                  mode="$(
+                    python3 - <<'PYMODE'
+                  import json
+                  import re
+                  from pathlib import Path
+
+                  projection = json.loads(Path('/tmp/software-m5-projection.json').read_text(encoding='utf-8'))
+                  assert projection['status'] == 'pass', projection
+                  assert projection['source']['pin_consistent'] is True, projection
+                  assert projection['current_projection']['consistent'] is True, projection
+                  if projection['release_authorized'] is True:
+                      print('CERTIFIED')
+                  else:
+                      assert projection['current_evidence_state'] == 'source-current-evidence-historical', projection
+                      baseline = projection['last_verified_baseline']
+                      assert baseline['fresh_for_current_source'] is False, projection
+                      assert baseline['source_inputs_match'] is False, projection
+                      status = Path('reports/current-status.md').read_text(encoding='utf-8')
+                      begin = '<!-- BEGIN GENERATED CURRENT SOURCE PROJECTION -->'
+                      end = '<!-- END GENERATED CURRENT SOURCE PROJECTION -->'
+                      assert status.count(begin) == 1 and status.count(end) == 1, status
+                      block = status.split(begin, 1)[1].split(end, 1)[0]
+                      assert re.search(r'^- release_evidence_relation:\\s*historical$', block, re.MULTILINE), block
+                      assert re.search(r'^- release_authorized:\\s*false$', block, re.MULTILINE), block
+                      print('HISTORICAL_NOT_AUTHORIZED')
+                  PYMODE
+                  )"
+                  if [[ "$mode" == "CERTIFIED" ]]; then
+                    bash scripts/software-m5.sh certify --summary-json | tee /tmp/software-m5-certification.json
+                    echo '### Software M5: CERTIFIED' >> "$GITHUB_STEP_SUMMARY"
+                  elif [[ "$mode" == "HISTORICAL_NOT_AUTHORIZED" ]]; then
+                    python3 - <<'PYRECEIPT' > /tmp/software-m5-certification.json
+                  import json
+                  from pathlib import Path
+
+                  projection = json.loads(Path('/tmp/software-m5-projection.json').read_text(encoding='utf-8'))
+                  receipt = {
+                      'schema': 'llm-agent-software-m5-ci-state/v1',
+                      'status': 'pass',
+                      'qualification_state': 'HISTORICAL_NOT_AUTHORIZED',
+                      'release_authorized': False,
+                      'current_evidence_state': projection['current_evidence_state'],
+                      'current_adk_commit': projection['source']['adk_lock_commit'],
+                      'projection_inputs_sha256': projection['current_projection']['inputs_sha256'],
+                      'last_verified_baseline': projection['last_verified_baseline'],
+                  }
+                  print(json.dumps(receipt, ensure_ascii=False, sort_keys=True))
+                  PYRECEIPT
+                    cat /tmp/software-m5-certification.json
+                    echo '### Software M5: HISTORICAL_NOT_AUTHORIZED' >> "$GITHUB_STEP_SUMMARY"
+                  else
+                    echo "[FAIL] unexpected Software M5 qualification mode: $mode" >&2
+                    exit 1
+                  fi
+          '''
+          if old not in text:
+              raise SystemExit('expected Software M5 certification step not found')
+          workflow.write_text(text.replace(old, new, 1), encoding='utf-8')
+
+          test = Path('tests/test_ci_incremental_gate_dag.sh')
+          test_text = test.read_text(encoding='utf-8')
+          marker = 'assert "bash scripts/software-m5.sh certify --summary-json" in github, github\n'
+          additions = '''assert "Enforce Software M5 current-or-historical qualification state" in github, github
+          assert "HISTORICAL_NOT_AUTHORIZED" in github, github
+          assert "source-current-evidence-historical" in github, github
+          assert "fresh_for_current_source'] is False" in github, github
+          assert "source_inputs_match'] is False" in github, github
+          assert "release_evidence_relation:\\\\s*historical" in github, github
+          assert "release_authorized:\\\\s*false" in github, github
+          '''
+          if marker not in test_text:
+              raise SystemExit('expected CI contract marker not found')
+          test.write_text(test_text.replace(marker, marker + additions, 1), encoding='utf-8')
+          PY
+
+          git rm .github/workflows/software-m5-transition-patch-one-shot.yml
+          git diff --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/workflows/ci.yml tests/test_ci_incremental_gate_dag.sh
+          git commit -m 'ci(m5): preserve historical source transition state'
+          git push origin HEAD:codex/software-m5-transition-aware
