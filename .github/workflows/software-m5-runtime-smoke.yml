@@ -1,0 +1,124 @@
+name: Software M5 Runtime Smoke
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_paid_runtime:
+        description: Confirm one paid external Codex runtime smoke call
+        required: true
+        type: boolean
+        default: false
+      codex_cli_version:
+        description: Exact @openai/codex npm version to install
+        required: true
+        type: string
+        default: '0.154.0'
+      model:
+        description: Model required by the Software M5 runtime evidence contract
+        required: true
+        type: string
+        default: 'gpt-5.5'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: software-m5-runtime-smoke
+  cancel-in-progress: false
+
+jobs:
+  measured-runtime:
+    name: measured-runtime
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Require explicit paid-runtime confirmation
+        shell: bash
+        env:
+          CONFIRM_PAID_RUNTIME: ${{ inputs.confirm_paid_runtime }}
+        run: |
+          set -euo pipefail
+          [[ "$CONFIRM_PAID_RUNTIME" == "true" ]] || {
+            echo '[FAIL] confirm_paid_runtime=true is required' >&2
+            exit 2
+          }
+
+      - name: Checkout exact Root source
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+          submodules: false
+
+      - name: Materialize pinned agent-dev-kit gitlink
+        shell: bash
+        run: |
+          set -euo pipefail
+          git -c protocol.version=2 submodule update --init --depth 1 agent-dev-kit
+          bash scripts/check-adk-lock.sh . --pin-only
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+
+      - name: Install exact Codex CLI
+        shell: bash
+        env:
+          CODEX_CLI_VERSION: ${{ inputs.codex_cli_version }}
+        run: |
+          set -euo pipefail
+          [[ "$CODEX_CLI_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || {
+            echo '[FAIL] codex_cli_version must be an exact numeric version' >&2
+            exit 2
+          }
+          npm install -g "@openai/codex@${CODEX_CLI_VERSION}"
+          codex --version
+
+      - name: Require hosted Codex authentication
+        shell: bash
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          set -euo pipefail
+          [[ -n "${OPENAI_API_KEY:-}" ]] || {
+            echo '[FAIL] repository secret OPENAI_API_KEY is not configured; no model call was made' >&2
+            exit 3
+          }
+          echo '[PASS] OPENAI_API_KEY is configured (value not printed)'
+
+      - name: Execute one measured ADK runtime smoke
+        shell: bash
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          MODEL: ${{ inputs.model }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/software-m5-runtime-smoke"
+          python3 -m tools.codex_assets.runtime_smoke_evidence \
+            --root . \
+            --execute \
+            --model "$MODEL" \
+            --limit 1 \
+            --raw-output "$RUNNER_TEMP/software-m5-runtime-smoke/raw-result.json" \
+            --output "$RUNNER_TEMP/software-m5-runtime-smoke/runtime-smoke-evidence.json" \
+            --summary-json \
+            | tee "$RUNNER_TEMP/software-m5-runtime-smoke/collector-summary.json"
+
+      - name: Publish immutable runtime-smoke artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4
+        with:
+          name: software-m5-runtime-smoke-${{ github.sha }}
+          path: ${{ runner.temp }}/software-m5-runtime-smoke
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Record qualification handoff
+        shell: bash
+        run: |
+          {
+            echo '### Software M5 measured runtime smoke'
+            echo "- root_sha: $GITHUB_SHA"
+            echo "- artifact: software-m5-runtime-smoke-$GITHUB_SHA"
+            echo '- next: validate artifact, commit evidence, roll current candidate policy to the same ADK identity, then run Software M5 certify'
+          } >> "$GITHUB_STEP_SUMMARY"
