@@ -93,6 +93,18 @@ class GitHubClient:
             raise BranchGCError(f"invalid compare response for {sha}...{base}")
         return value
 
+    def compare_base_to_sha(self, base: str, sha: str) -> dict[str, Any]:
+        value = self.request("GET", f"/compare/{urllib.parse.quote(base, safe='')}...{sha}")
+        if not isinstance(value, dict):
+            raise BranchGCError(f"invalid compare response for {base}...{sha}")
+        return value
+
+    def content_sha(self, path: str, ref: str) -> str:
+        value = self.request("GET", "/contents/" + urllib.parse.quote(path, safe="/"), {"ref": ref})
+        if not isinstance(value, dict) or not isinstance(value.get("sha"), str):
+            raise BranchGCError(f"invalid content response for {path}@{ref}")
+        return value["sha"]
+
     def delete_branch(self, branch: str) -> None:
         self.request("DELETE", "/git/refs/heads/" + urllib.parse.quote(branch, safe="/"))
 
@@ -103,7 +115,7 @@ def branch_sha(branch: dict[str, Any]) -> str:
         raise BranchGCError("branch SHA is missing or invalid")
     return sha
 
-def load_retired_registry(path: Path | None) -> dict[str, dict[str, str]]:
+def load_retired_registry(path: Path | None) -> dict[str, dict[str, Any]]:
     if path is None:
         return {}
     try:
@@ -115,30 +127,42 @@ def load_retired_registry(path: Path | None) -> dict[str, dict[str, str]]:
     entries = payload.get("entries")
     if not isinstance(entries, list):
         raise BranchGCError("retired registry entries must be a list")
-    result: dict[str, dict[str, str]] = {}
+    result: dict[str, dict[str, Any]] = {}
     for item in entries:
         if not isinstance(item, dict):
             raise BranchGCError("retired registry entry must be an object")
         branch, sha = item.get("branch"), item.get("sha")
-        if not isinstance(branch, str) or not branch.startswith("codex/"):
-            raise BranchGCError("retired registry branch must use codex/*")
+        if not isinstance(branch, str) or not branch or branch in {"main", "master"}:
+            raise BranchGCError("retired registry branch is invalid")
         if not isinstance(sha, str) or len(sha) != 40:
             raise BranchGCError(f"retired registry SHA is invalid: {branch}")
-        if item.get("disposition") != "delete" or item.get("proof") != "ancestor-of-main":
-            raise BranchGCError(f"retired registry disposition/proof is invalid: {branch}")
+        if item.get("disposition") != "delete":
+            raise BranchGCError(f"retired registry disposition is invalid: {branch}")
+        proof = item.get("proof")
+        if proof not in {"ancestor-of-main", "absorbed-path-blobs"}:
+            raise BranchGCError(f"retired registry proof is invalid: {branch}")
         reason = item.get("reason")
         if not isinstance(reason, str) or not reason:
             raise BranchGCError(f"retired registry reason is missing: {branch}")
+        if proof == "absorbed-path-blobs":
+            count = item.get("unique_commit_count")
+            paths = item.get("paths")
+            if not isinstance(count, int) or count < 1:
+                raise BranchGCError(f"absorbed-path-blobs unique_commit_count is invalid: {branch}")
+            if not isinstance(paths, dict) or not paths:
+                raise BranchGCError(f"absorbed-path-blobs paths are missing: {branch}")
+            for file_path, blob_sha in paths.items():
+                if not isinstance(file_path, str) or not file_path or file_path.startswith("/") or ".." in Path(file_path).parts:
+                    raise BranchGCError(f"absorbed-path-blobs path is invalid: {branch}")
+                if not isinstance(blob_sha, str) or len(blob_sha) != 40:
+                    raise BranchGCError(f"absorbed-path-blobs SHA is invalid: {branch}:{file_path}")
         if branch in result:
             raise BranchGCError(f"duplicate retired registry branch: {branch}")
-        result[branch] = {"sha": sha, "reason": reason}
+        result[branch] = item
     return result
 
 def open_prs(client: GitHubClient, branch: str, base: str) -> list[int]:
-    return sorted(
-        pr["number"] for pr in client.pulls(branch, base, "open")
-        if isinstance(pr.get("number"), int)
-    )
+    return sorted(pr["number"] for pr in client.pulls(branch, base, "open") if isinstance(pr.get("number"), int))
 
 def exact_merged_pr(client: GitHubClient, branch: str, sha: str, base: str) -> Candidate | None:
     matches: list[Candidate] = []
@@ -160,7 +184,34 @@ def contained_in_base(client: GitHubClient, sha: str, base: str) -> bool:
     merge_sha = merge_base.get("sha") if isinstance(merge_base, dict) else None
     return merge_sha == sha and comparison.get("behind_by") == 0 and comparison.get("status") in {"ahead", "identical"}
 
-def eligible(client: GitHubClient, branch: dict[str, Any], base: str, prefixes: tuple[str, ...], protected: set[str], retired: dict[str, dict[str, str]]) -> tuple[Candidate | None, str]:
+def absorbed_paths_match(client: GitHubClient, sha: str, base: str, retirement: dict[str, Any]) -> bool:
+    comparison = client.compare_base_to_sha(base, sha)
+    expected_count = retirement["unique_commit_count"]
+    if comparison.get("ahead_by") != expected_count:
+        return False
+    files = comparison.get("files")
+    if not isinstance(files, list):
+        return False
+    actual_paths = {item.get("filename") for item in files if isinstance(item, dict) and isinstance(item.get("filename"), str)}
+    expected_paths = set(retirement["paths"])
+    if actual_paths != expected_paths:
+        return False
+    for path, expected_blob in retirement["paths"].items():
+        if client.content_sha(path, sha) != expected_blob:
+            return False
+        if client.content_sha(path, base) != expected_blob:
+            return False
+    return True
+
+def retirement_safe(client: GitHubClient, sha: str, base: str, retirement: dict[str, Any]) -> bool:
+    proof = retirement["proof"]
+    if proof == "ancestor-of-main":
+        return contained_in_base(client, sha, base)
+    if proof == "absorbed-path-blobs":
+        return absorbed_paths_match(client, sha, base, retirement)
+    return False
+
+def eligible(client: GitHubClient, branch: dict[str, Any], base: str, prefixes: tuple[str, ...], protected: set[str], retired: dict[str, dict[str, Any]]) -> tuple[Candidate | None, str]:
     name = branch.get("name")
     if not isinstance(name, str) or not name:
         return None, "invalid-name"
@@ -182,11 +233,11 @@ def eligible(client: GitHubClient, branch: dict[str, Any], base: str, prefixes: 
         return None, "no-exact-merged-pr"
     if retirement["sha"] != sha:
         return None, "retired-sha-mismatch"
-    if not contained_in_base(client, sha, base):
-        return None, "retired-not-contained-in-base"
-    return Candidate(name, sha, "explicit-retired-ancestor", registry_reason=retirement["reason"]), "eligible"
+    if not retirement_safe(client, sha, base, retirement):
+        return None, "retired-proof-no-longer-valid"
+    return Candidate(name, sha, "explicit-retired-" + retirement["proof"], registry_reason=retirement["reason"]), "eligible"
 
-def revalidate(client: GitHubClient, c: Candidate, base: str, retired: dict[str, dict[str, str]]) -> tuple[bool, str]:
+def revalidate(client: GitHubClient, c: Candidate, base: str, retired: dict[str, dict[str, Any]]) -> tuple[bool, str]:
     current = client.get_branch(c.branch)
     if current.get("protected") is True:
         return False, "github-protected"
@@ -199,16 +250,16 @@ def revalidate(client: GitHubClient, c: Candidate, base: str, retired: dict[str,
         if exact_merged_pr(client, c.branch, c.sha, base) is None:
             return False, "merged-pr-no-longer-exact"
         return True, "eligible"
-    if c.basis == "explicit-retired-ancestor":
+    if c.basis.startswith("explicit-retired-"):
         retirement = retired.get(c.branch)
         if retirement is None or retirement.get("sha") != c.sha:
             return False, "retired-registry-changed"
-        if not contained_in_base(client, c.sha, base):
-            return False, "retired-no-longer-contained-in-base"
+        if not retirement_safe(client, c.sha, base, retirement):
+            return False, "retired-proof-no-longer-valid"
         return True, "eligible"
     return False, "unknown-candidate-basis"
 
-def run(client: GitHubClient, apply: bool, base: str, prefixes: tuple[str, ...], protected: set[str], retired: dict[str, dict[str, str]]) -> dict[str, Any]:
+def run(client: GitHubClient, apply: bool, base: str, prefixes: tuple[str, ...], protected: set[str], retired: dict[str, dict[str, Any]]) -> dict[str, Any]:
     if not prefixes or any(not p for p in prefixes):
         raise BranchGCError("at least one non-empty prefix is required")
     candidates: list[Candidate] = []
