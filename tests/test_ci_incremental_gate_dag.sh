@@ -42,14 +42,7 @@ for name, spec in gate_specs.items():
     assert isinstance(spec.get("outputs"), list), name
     assert spec.get("cache_policy") in {"disabled", "content-addressed"}, name
 
-for job in (
-    "contract",
-    "doc-sync",
-    "integration-impact",
-    "integration",
-    "integration-summary",
-    "software-m5",
-):
+for job in ("contract", "doc-sync", "integration-impact", "integration", "integration-summary", "software-m5"):
     assert re.search(rf"^  {re.escape(job)}:\s*$", github, re.MULTILINE), job
 assert not re.search(r"^  integration-capability:\s*$", github, re.MULTILINE), github
 assert "ADK_REPO_TOKEN" not in github, github
@@ -83,14 +76,14 @@ assert "software-m5-certification.json" in github, github
 assert "name: software-m5-certification" in github, github
 assert "adk\\.lock" in github and "product_maturity_scorecard" in github and "software_m5_policy" in github
 
-# Branch GC must be dry-run on PRs and apply only on main push or explicit dispatch.
+# Branch GC: PR=dry-run; main push/explicit dispatch=apply; only approved namespace prefixes are scanned.
 assert "name: Branch GC" in branch_gc
 assert re.search(r"^  pull_request:\s*$", branch_gc, re.MULTILINE), branch_gc
 assert re.search(r"^  push:\n\s+branches:\n\s+- main", branch_gc, re.MULTILINE), branch_gc
 assert "workflow_dispatch:" in branch_gc and "apply:" in branch_gc, branch_gc
 assert "contents: write" in branch_gc and "pull-requests: read" in branch_gc, branch_gc
 assert "cancel-in-progress: false" in branch_gc, branch_gc
-assert "--prefix 'codex/'" in branch_gc, branch_gc
+assert "--prefix 'codex/'" in branch_gc and "--prefix 'arch/'" in branch_gc, branch_gc
 assert "--protected main" in branch_gc and "--protected master" in branch_gc, branch_gc
 assert "--retired-registry manifests/branch_gc_retired.json" in branch_gc, branch_gc
 assert 'EVENT_NAME" == "push" && "$REF_NAME" == "main"' in branch_gc, branch_gc
@@ -98,27 +91,31 @@ assert 'EVENT_NAME" == "workflow_dispatch" && "$DISPATCH_APPLY" == "true"' in br
 assert 'args+=(--apply)' in branch_gc, branch_gc
 assert "name: branch-gc-report" in branch_gc, branch_gc
 
-# Automatic deletion requires exact merged-PR head identity. Explicit retirement is exact-SHA and must still be contained in main.
+# Automatic cleanup requires exact merged-PR identity. Explicit retirement remains exact-SHA and supports only verified proof modes.
 assert 'head.get("sha") != sha' in branch_gc_code, branch_gc_code
 assert 'base_obj.get("ref") != base' in branch_gc_code, branch_gc_code
 assert 'client.pulls(branch, base, "open")' in branch_gc_code, branch_gc_code
 assert 'if branch_sha(current) != c.sha' in branch_gc_code, branch_gc_code
 assert 'exact_merged_pr(client, c.branch, c.sha, base)' in branch_gc_code, branch_gc_code
-assert 'compare_sha_to_base' in branch_gc_code, branch_gc_code
-assert 'merge_sha == sha' in branch_gc_code, branch_gc_code
-assert 'comparison.get("behind_by") == 0' in branch_gc_code, branch_gc_code
+assert 'proof not in {"ancestor-of-main", "absorbed-path-blobs"}' in branch_gc_code, branch_gc_code
+assert 'compare_sha_to_base' in branch_gc_code and 'compare_base_to_sha' in branch_gc_code, branch_gc_code
+assert 'merge_sha == sha' in branch_gc_code and 'comparison.get("behind_by") == 0' in branch_gc_code, branch_gc_code
+assert 'actual_paths != expected_paths' in branch_gc_code, branch_gc_code
+assert 'client.content_sha(path, sha) != expected_blob' in branch_gc_code, branch_gc_code
+assert 'client.content_sha(path, base) != expected_blob' in branch_gc_code, branch_gc_code
 assert 'retirement["sha"] != sha' in branch_gc_code, branch_gc_code
-assert 'retired-no-longer-contained-in-base' in branch_gc_code, branch_gc_code
+assert 'retired-proof-no-longer-valid' in branch_gc_code, branch_gc_code
 assert 'client.delete_branch(c.branch)' in branch_gc_code, branch_gc_code
 assert 'urllib.parse.quote(branch, safe="/")' in branch_gc_code, branch_gc_code
 
 assert retired_gc["schema"] == "llm-agent-branch-gc-retired/v1"
-assert len(retired_gc["entries"]) == 1
-retired = retired_gc["entries"][0]
-assert retired["branch"] == "codex/reconstruct-attestation-20260912"
-assert retired["sha"] == "ba121135d710f9c1a7281a5bdf0a951e4b811a7b"
-assert retired["disposition"] == "delete"
-assert retired["proof"] == "ancestor-of-main"
+entries = {item["branch"]: item for item in retired_gc["entries"]}
+assert entries["codex/reconstruct-attestation-20260912"]["proof"] == "ancestor-of-main"
+arch = entries["arch/runtime-binding-receipt-v1"]
+assert arch["sha"] == "4fb361247dfe6f6bf196f1a532dc1abc4b1c72ed"
+assert arch["proof"] == "absorbed-path-blobs"
+assert arch["unique_commit_count"] == 1
+assert arch["paths"] == {"manifests/digital_worker_runtime_pilot.json": "fc975dcc332d04297eccad5504396edaf2c2fde1"}
 
 assert len(re.findall(r"--profile\s+contract(?:\s|$)", gitlab)) == 1, gitlab
 assert len(re.findall(r"--profile\s+doc-sync(?:\s|$)", gitlab)) == 1, gitlab
@@ -127,4 +124,4 @@ assert re.search(r"^doc-sync:\s*$", gitlab, re.MULTILINE), gitlab
 assert re.search(r"weekly-report:\n(?:.|\n)*?needs:\n\s+- doc-sync", gitlab), gitlab
 PY
 
-echo '[PASS] CI semantics include Cosign/Rekor v2, Software M5 certification, and fail-closed merged/retired branch GC'
+echo '[PASS] CI semantics include Cosign/Rekor v2, Software M5 certification, and fail-closed merged/retired branch GC with absorbed-content proof'

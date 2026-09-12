@@ -8,6 +8,18 @@
       "proof": "ancestor-of-main",
       "reviewed_against_main": "8bc6b290ab55af8069c6779dc5d93b2885c0cad8",
       "reason": "Temporary attestation reconstruction branch has no unique commits; its exact head is fully contained in main."
+    },
+    {
+      "branch": "arch/runtime-binding-receipt-v1",
+      "sha": "4fb361247dfe6f6bf196f1a532dc1abc4b1c72ed",
+      "disposition": "delete",
+      "proof": "absorbed-path-blobs",
+      "reviewed_against_main": "951106bc8879c2a679914797a79ca46438288564",
+      "unique_commit_count": 1,
+      "paths": {
+        "manifests/digital_worker_runtime_pilot.json": "fc975dcc332d04297eccad5504396edaf2c2fde1"
+      },
+      "reason": "The branch's only unique commit updates the runtime-pilot contract, and the exact resulting blob is already present on current main."
     }
   ]
 }

@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       apply:
-        description: Delete eligible merged codex/* branches after revalidation
+        description: Delete eligible terminal branches after exact revalidation
         required: false
         type: boolean
         default: false
@@ -67,6 +67,7 @@ jobs:
             --token "$GITHUB_TOKEN"
             --base main
             --prefix 'codex/'
+            --prefix 'arch/'
             --protected main
             --protected master
             --retired-registry manifests/branch_gc_retired.json
