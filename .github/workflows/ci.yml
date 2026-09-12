@@ -46,6 +46,11 @@ jobs:
       - name: Validate portable ADK promotion evidence verifier
         run: bash tests/test_adk_promotion_evidence.sh
 
+      - name: Validate Software M5 qualification tooling
+        run: |
+          bash tests/test_runtime_smoke_evidence.sh
+          bash tests/test_software_m5_rollover.sh
+
       - name: Upload contract receipt
         if: ${{ always() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4
