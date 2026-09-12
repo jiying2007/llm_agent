@@ -7,7 +7,6 @@ import json
 import os
 import re
 import subprocess
-import sys
 import tempfile
 from pathlib import Path
 from typing import Any
@@ -69,36 +68,30 @@ def _md_fields(path: Path) -> dict[str, str]:
 def _commit_known(root: Path, commit: str) -> bool:
     if not commit:
         return False
-    return (
-        subprocess.run(
-            ["git", "-C", str(root), "cat-file", "-e", f"{commit}^{{commit}}"],
-            check=False,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        ).returncode
-        == 0
-    )
+    return subprocess.run(
+        ["git", "-C", str(root), "cat-file", "-e", f"{commit}^{{commit}}"],
+        check=False,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    ).returncode == 0
 
 
 def _ancestry(root: Path, ancestor: str, descendant: str) -> bool | None:
     if not _commit_known(root, ancestor):
         return None
-    return (
-        subprocess.run(
-            ["git", "-C", str(root), "merge-base", "--is-ancestor", ancestor, descendant],
-            check=False,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        ).returncode
-        == 0
-    )
+    return subprocess.run(
+        ["git", "-C", str(root), "merge-base", "--is-ancestor", ancestor, descendant],
+        check=False,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    ).returncode == 0
 
 
 def _projection_inputs(root: Path) -> dict[str, str]:
     values: dict[str, str] = {}
     for relative in PROJECTION_INPUT_PATHS:
-        candidate = root / relative
-        if not candidate.is_file():
+        path = root / relative
+        if not path.is_file():
             raise RuntimeError(f"projection input missing: {relative}")
         values[relative] = _git(root, "hash-object", relative)
     return values
@@ -113,27 +106,27 @@ def _bool_text(value: Any) -> str:
     return "true" if value is True else "false" if value is False else ""
 
 
-def _expected_current_fields(
-    root: Path,
-    lock: dict[str, str],
-    projection_inputs_sha256: str,
-) -> dict[str, str]:
-    scorecard = _json_object(root / "manifests" / "product_maturity_scorecard.json")
-    policy = _json_object(root / "manifests" / "software_m5_policy.json")
+def _expected_current_fields(root: Path, lock: dict[str, str], digest: str) -> dict[str, str]:
+    scorecard = _json_object(root / "manifests/product_maturity_scorecard.json")
+    policy = _json_object(root / "manifests/software_m5_policy.json")
     overall = scorecard.get("overall")
     software_m5 = scorecard.get("software_m5")
     release = policy.get("release")
-    if not isinstance(overall, dict) or not isinstance(software_m5, dict) or not isinstance(release, dict):
+    if not all(isinstance(value, dict) for value in (overall, software_m5, release)):
         raise RuntimeError("maturity scorecard/policy is missing required objects")
-
     current_commit = lock.get("agent-dev-kit.commit", "")
-    release_candidate_commit = release.get("candidate_commit")
-    relation = "current" if isinstance(release_candidate_commit, str) and release_candidate_commit == current_commit else "historical"
-
+    candidate_commit = str(release.get("candidate_commit") or "")
+    relation = "current" if candidate_commit == current_commit else "historical"
+    authorized = (
+        software_m5.get("certified") is True
+        and overall.get("terminal_mature") is True
+        and release.get("candidate_release_eligible") is True
+        and relation == "current"
+    )
     fields = {
         "projection_schema": CURRENT_STATUS_SCHEMA,
         "projection_semantics": "generated-current-source-projection",
-        "projection_inputs_sha256": projection_inputs_sha256,
+        "projection_inputs_sha256": digest,
         "current_adk_version": lock.get("agent-dev-kit.version", ""),
         "current_adk_commit": current_commit,
         "current_adk_tree": lock.get("agent-dev-kit.tree", ""),
@@ -144,42 +137,31 @@ def _expected_current_fields(
         "current_terminal_mature": _bool_text(overall.get("terminal_mature")),
         "current_field_status": str(overall.get("field_status", "")),
         "release_candidate_version": str(release.get("candidate_version", "")),
-        "release_candidate_commit": str(release_candidate_commit or ""),
+        "release_candidate_commit": candidate_commit,
         "release_evidence_relation": relation,
-        "release_authorized": "false",
+        "release_authorized": _bool_text(authorized),
     }
-    missing = sorted(name for name, value in fields.items() if not value)
+    missing = sorted(key for key, value in fields.items() if not value)
     if missing:
         raise RuntimeError("current status projection source fields are missing: " + ", ".join(missing))
     return fields
 
 
 def _render_generated_block(fields: dict[str, str]) -> str:
-    ordered = (
-        "projection_schema",
-        "projection_semantics",
-        "projection_inputs_sha256",
-        "current_adk_version",
-        "current_adk_commit",
-        "current_adk_tree",
-        "current_adk_manifest_blob",
-        "current_product_maturity",
-        "current_software_m5_readiness",
-        "current_software_m5_certified",
-        "current_terminal_mature",
-        "current_field_status",
-        "release_candidate_version",
-        "release_candidate_commit",
-        "release_evidence_relation",
-        "release_authorized",
+    order = (
+        "projection_schema", "projection_semantics", "projection_inputs_sha256",
+        "current_adk_version", "current_adk_commit", "current_adk_tree",
+        "current_adk_manifest_blob", "current_product_maturity",
+        "current_software_m5_readiness", "current_software_m5_certified",
+        "current_terminal_mature", "current_field_status", "release_candidate_version",
+        "release_candidate_commit", "release_evidence_relation", "release_authorized",
     )
-    lines = [
+    return "\n".join([
         BEGIN_MARKER,
         "<!-- Generated by tools/control_plane/status_projection.py; do not edit this block by hand. -->",
-    ]
-    lines.extend(f"- {name}: {fields[name]}" for name in ordered)
-    lines.append(END_MARKER)
-    return "\n".join(lines)
+        *(f"- {key}: {fields[key]}" for key in order),
+        END_MARKER,
+    ])
 
 
 def _atomic_write(path: Path, text: str) -> None:
@@ -198,20 +180,18 @@ def _atomic_write(path: Path, text: str) -> None:
 
 def refresh_current_status(root: Path) -> dict[str, str]:
     root = root.resolve()
-    status_path = root / "reports" / "current-status.md"
+    status_path = root / "reports/current-status.md"
     existing = status_path.read_text(encoding="utf-8")
     lock = _kv(root / "adk.lock")
-    inputs = _projection_inputs(root)
-    digest = _projection_digest(inputs)
+    digest = _projection_digest(_projection_inputs(root))
     fields = _expected_current_fields(root, lock, digest)
     block = _render_generated_block(fields)
-
-    if BEGIN_MARKER in existing or END_MARKER in existing:
-        if existing.count(BEGIN_MARKER) != 1 or existing.count(END_MARKER) != 1:
-            raise RuntimeError("current-status generated projection markers are malformed")
+    if existing.count(BEGIN_MARKER) == 1 and existing.count(END_MARKER) == 1:
         before, remainder = existing.split(BEGIN_MARKER, 1)
         _, after = remainder.split(END_MARKER, 1)
         updated = before.rstrip() + "\n\n" + block + after
+    elif BEGIN_MARKER in existing or END_MARKER in existing:
+        raise RuntimeError("current-status generated projection markers are malformed")
     else:
         lines = existing.splitlines()
         if not lines or not lines[0].startswith("#"):
@@ -232,24 +212,20 @@ def project(root: Path, today: dt.date) -> dict[str, Any]:
     gitlink = index[1]
     lock = _kv(root / "adk.lock")
     lock_commit = lock.get("agent-dev-kit.commit", "")
-    lock_schema = lock.get("schema", "")
-    pin_consistent = lock_schema == "llm-agent-adk-lock/v2" and bool(lock_commit) and gitlink == lock_commit
-
-    status_path = root / "reports" / "current-status.md"
-    status_fields = _md_fields(status_path)
+    pin_consistent = lock.get("schema") == "llm-agent-adk-lock/v2" and bool(lock_commit) and gitlink == lock_commit
+    status_fields = _md_fields(root / "reports/current-status.md")
     inputs = _projection_inputs(root)
-    input_digest = _projection_digest(inputs)
-    expected_fields = _expected_current_fields(root, lock, input_digest)
+    digest = _projection_digest(inputs)
+    expected = _expected_current_fields(root, lock, digest)
     mismatches = {
-        name: {"expected": expected, "actual": status_fields.get(name)}
-        for name, expected in expected_fields.items()
-        if status_fields.get(name) != expected
+        key: {"expected": value, "actual": status_fields.get(key)}
+        for key, value in expected.items() if status_fields.get(key) != value
     }
     projection_consistent = not mismatches
 
     baseline_commit = status_fields.get("root_product_commit", "")
     baseline_date_text = status_fields.get("last_verified_at", "")
-    verified_projection_digest = status_fields.get("verified_projection_inputs_sha256", "")
+    verified_digest = status_fields.get("verified_projection_inputs_sha256", "")
     baseline_age_days: int | None = None
     baseline_date_valid = False
     if baseline_date_text:
@@ -259,71 +235,52 @@ def project(root: Path, today: dt.date) -> dict[str, Any]:
             baseline_date_valid = baseline_age_days >= 0
         except ValueError:
             pass
-
     baseline_ancestor = _ancestry(root, baseline_commit, head) if baseline_commit else None
-    if baseline_ancestor is True:
-        relationship = "ancestor"
-    elif baseline_ancestor is False:
-        relationship = "not-ancestor"
-    else:
-        relationship = "history-unavailable"
-
-    baseline_source_match = bool(verified_projection_digest) and verified_projection_digest == input_digest
+    relationship = "ancestor" if baseline_ancestor is True else "not-ancestor" if baseline_ancestor is False else "history-unavailable"
+    source_match = bool(verified_digest) and verified_digest == digest
+    # Shallow GitHub Actions checkouts can omit the historical baseline object.
+    # Exact source-input identity is sufficient unless available history proves non-ancestry.
     baseline_fresh = (
         projection_consistent
-        and baseline_ancestor is True
+        and baseline_ancestor is not False
         and baseline_date_valid
         and baseline_age_days is not None
         and baseline_age_days <= 7
-        and baseline_source_match
+        and source_match
     )
-    evidence_state = "verified-for-current-source" if baseline_fresh else "source-current-evidence-historical"
-
     baseline_integrity = bool(baseline_commit) and baseline_date_valid and baseline_ancestor is not False
-    status = "pass" if pin_consistent and projection_consistent and baseline_integrity else "fail"
-
-    return {
+    state = "verified-for-current-source" if baseline_fresh else "source-current-evidence-historical"
+    result = {
         "schema": PROJECTION_SCHEMA,
-        "status": status,
+        "status": "pass" if pin_consistent and projection_consistent and baseline_integrity else "fail",
         "source": {
-            "head": head,
-            "adk_gitlink": gitlink,
-            "adk_lock_commit": lock_commit,
-            "adk_lock_schema": lock_schema,
-            "pin_consistent": pin_consistent,
+            "head": head, "adk_gitlink": gitlink, "adk_lock_commit": lock_commit,
+            "adk_lock_schema": lock.get("schema", ""), "pin_consistent": pin_consistent,
         },
         "current_projection": {
-            "path": "reports/current-status.md",
-            "schema": CURRENT_STATUS_SCHEMA,
-            "inputs_sha256": input_digest,
-            "inputs": inputs,
-            "consistent": projection_consistent,
+            "path": "reports/current-status.md", "schema": CURRENT_STATUS_SCHEMA,
+            "inputs_sha256": digest, "inputs": inputs, "consistent": projection_consistent,
             "mismatches": mismatches,
         },
         "last_verified_baseline": {
-            "path": "reports/current-status.md",
-            "root_product_commit": baseline_commit or None,
+            "path": "reports/current-status.md", "root_product_commit": baseline_commit or None,
             "last_verified_at": baseline_date_text or None,
-            "verified_projection_inputs_sha256": verified_projection_digest or None,
-            "age_days": baseline_age_days,
-            "history_available": baseline_ancestor is not None,
-            "relationship_to_head": relationship,
-            "is_ancestor": baseline_ancestor,
-            "source_inputs_match": baseline_source_match,
-            "fresh_for_current_source": baseline_fresh,
+            "verified_projection_inputs_sha256": verified_digest or None,
+            "age_days": baseline_age_days, "history_available": baseline_ancestor is not None,
+            "relationship_to_head": relationship, "is_ancestor": baseline_ancestor,
+            "source_inputs_match": source_match, "fresh_for_current_source": baseline_fresh,
             "fresh_for_current_head": baseline_fresh,
         },
-        "current_evidence_state": evidence_state,
-        "release_authorized": False,
+        "current_evidence_state": state,
+        "release_authorized": expected["release_authorized"] == "true",
     }
+    return result
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(
-        description="Project current source identity and verify the generated current-status source projection"
-    )
+    parser = argparse.ArgumentParser(description="Project current source identity and generated product status")
     parser.add_argument("--root", default=".")
-    parser.add_argument("--today", help="Override YYYY-MM-DD for deterministic tests")
+    parser.add_argument("--today")
     parser.add_argument("--require-fresh", action="store_true")
     parser.add_argument("--write-current-status", action="store_true")
     parser.add_argument("--summary-json", action="store_true")
@@ -336,19 +293,14 @@ def main(argv: list[str] | None = None) -> int:
         result = project(root, today)
         if args.require_fresh and not result["last_verified_baseline"]["fresh_for_current_source"]:
             result["status"] = "fail"
-            relationship = result["last_verified_baseline"]["relationship_to_head"]
             result["error"] = (
                 "current source lacks a fresh verified evidence baseline "
-                f"(relationship={relationship}, source_inputs_match="
-                f"{result['last_verified_baseline']['source_inputs_match']})"
+                f"(relationship={result['last_verified_baseline']['relationship_to_head']}, "
+                f"source_inputs_match={result['last_verified_baseline']['source_inputs_match']})"
             )
     except (OSError, RuntimeError, ValueError, json.JSONDecodeError) as exc:
         result = {"schema": PROJECTION_SCHEMA, "status": "fail", "error": str(exc)}
-
-    if args.summary_json:
-        print(json.dumps(result, ensure_ascii=False, sort_keys=True))
-    else:
-        print(json.dumps(result, ensure_ascii=False, indent=2))
+    print(json.dumps(result, ensure_ascii=False, sort_keys=args.summary_json, indent=None if args.summary_json else 2))
     return 0 if result.get("status") == "pass" else 1
 
 

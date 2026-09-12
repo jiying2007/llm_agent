@@ -1,0 +1,53 @@
+{
+  "schema": "llm-agent-m5-qualification-record/v1",
+  "recorded_at": "2026-09-12T04:30:00Z",
+  "basis": "production-qualified Software M5 policy v3",
+  "source_baseline": "6b9dce21312b36cad93d9f2bd0fc1c757374f7d7",
+  "adk": {
+    "commit": "251edf2b6654cf8719ad1d8a1b7c81ffd64ffe1c",
+    "tree": "6fc560322a64c9660e75cc568fded98927954283",
+    "promotion_run_id": 34671247658,
+    "promotion_artifact_id": 10290804322,
+    "promotion_artifact_digest": "sha256:87cabc601123cbd91634a627c81b6d748bec60d880d9581cd608d23995247819"
+  },
+  "required_runs": [
+    {
+      "repository": "jiying2007/agent-dev-kit",
+      "run_id": 34671247658,
+      "scope": "signed-promotion-main",
+      "conclusion": "success"
+    },
+    {
+      "repository": "jiying2007/llm_agent",
+      "run_id": 34672296898,
+      "scope": "final-adk-root-integration",
+      "conclusion": "success"
+    },
+    {
+      "repository": "jiying2007/llm_agent",
+      "run_id": 34672637261,
+      "scope": "independent-repository-onboarding",
+      "conclusion": "success"
+    },
+    {
+      "repository": "jiying2007/llm_agent",
+      "run_id": 34672904877,
+      "scope": "independent-pilot-start",
+      "conclusion": "success"
+    }
+  ],
+  "field_baseline": {
+    "pilot_id": "software-m5-v5-independent-pilot-20260912",
+    "repository_id": "digital-worker",
+    "repository_commit": "4a94231d26df1aeaeba336e6a4e2327db5a3bd44",
+    "event_id": "v5-independent-pilot-start-20260912",
+    "event_hash": "9db7bbea9f7c4184ca9ca3221638b0b683c576e4465e9828c2b7df8d1f8ac8ad"
+  },
+  "runtime_baseline": {
+    "measured": "reports/runtime-evidence/codex-v5-runtime-smoke-2026-08-30.json",
+    "compatibility": "reports/runtime-evidence/claude-code-owner-attestation-v2-2026-08-30.json"
+  },
+  "historical_continuity": "advisory",
+  "operational_followups_non_blocking": true,
+  "record_sha256": "9b57bb36f96a59133668b63135ca4a18c22f250620731d4fb196159ba612e7e5"
+}
