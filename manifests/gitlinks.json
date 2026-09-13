@@ -6,6 +6,7 @@
     "all_gitlinks_must_be_submodules": true,
     "submodule_path_must_be_registered": true,
     "managed_dependency_requires_lock": true,
+    "reference_repositories_must_use_reference_pins": true,
     "opaque_pins_registry": "manifests/reference_pins.json"
   },
   "gitlinks": [
@@ -22,54 +23,6 @@
       "required": true,
       "url": "https://github.com/jiying2007/codex.git",
       "lock": "codex.lock"
-    },
-    {
-      "path": "digital-worker",
-      "kind": "reference-repo",
-      "required": false,
-      "url": "https://github.com/jiying2007/digital-worker.git"
-    },
-    {
-      "path": "OpenSpec",
-      "kind": "reference-repo",
-      "required": false,
-      "url": "https://github.com/Fission-AI/OpenSpec"
-    },
-    {
-      "path": "scale-engine",
-      "kind": "reference-repo",
-      "required": false,
-      "url": "https://gitee.com/hongmaple/scale-engine.git"
-    },
-    {
-      "path": "superpowers",
-      "kind": "reference-repo",
-      "required": false,
-      "url": "https://github.com/obra/superpowers"
-    },
-    {
-      "path": "vibeflow",
-      "kind": "reference-repo",
-      "required": false,
-      "url": "https://github.com/ttttstc/vibeflow.git"
-    },
-    {
-      "path": "oh-my-codex",
-      "kind": "reference-repo",
-      "required": false,
-      "url": "https://github.com/Yeachan-Heo/oh-my-codex.git"
-    },
-    {
-      "path": "planning-with-files",
-      "kind": "reference-repo",
-      "required": false,
-      "url": "https://github.com/OthmanAdi/planning-with-files.git"
-    },
-    {
-      "path": "mattpocock-skills",
-      "kind": "reference-repo",
-      "required": false,
-      "url": "https://github.com/mattpocock/skills"
     }
   ]
 }

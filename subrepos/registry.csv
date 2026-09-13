@@ -1,7 +1,7 @@
 repo,group,priority,sync_mode,branch,enabled,notes,status,owner,last_reviewed_on,intake_policy,grade
 AUBB-Server,delivery,P2,fetch,main,no,业务闭环证据写法已吸收，移除本地参考仓,disabled,adk-team,2026-06-25,selective-adopt,A
 Migrationed_skills,skill-pool,P1,fetch,main,no,方法已吸收，模板化严重，移除本地参考仓,disabled,adk-team,2026-06-25,observe-first,C
-OpenSpec,workflow-core,P0,fetch,main,yes,Spec 工件体系,active,adk-team,2026-07-23,adopt-first,S
+OpenSpec,workflow-core,P0,fetch,main,yes,Spec 工件体系；exact-pin cache 按需物化,active,adk-team,2026-07-23,adopt-first,S
 agency-agents-zh,agent-ecosystem,P1,fetch,main,no,角色职责矩阵与术语体系已吸收，移除本地参考仓,disabled,adk-team,2026-06-25,observe-first,S
 agent-skills,agent-ecosystem,P1,fetch,main,no,技能触发路由与生命周期映射已吸收；2026-07-11 继续 observe-light watch 新增质量门禁,disabled,adk-team,2026-07-11,observe-first,S
 ai-coding-guide,knowledge,P1,fetch,main,no,场景化工作流导览与风险提示已吸收，移除本地参考仓,disabled,adk-team,2026-06-25,observe-first,A
@@ -10,10 +10,10 @@ auto-research,knowledge,P2,fetch,main,no,方法已吸收，旧分级禁用，移
 codex-cookbook,knowledge,P1,fetch,main,no,Codex 协作模板已吸收，移除本地参考仓,disabled,adk-team,2026-06-25,observe-first,C
 codex,runtime-target,P0,manual,main,no,外部声明式资产仓库 ~/codex -> ~/.codex apply,disabled,adk-team,2026-05-17,pilot-first,S
 dotfiles,config,P2,fetch,master,no,最小变更与基线校验策略已吸收，移除本地参考仓,disabled,adk-team,2026-06-25,selective-adopt,B
-agent-dev-kit,adk-core,P0,pull,main,yes,主落地仓库,active,adk-team,2026-05-02,adopt-first,S
+agent-dev-kit,adk-core,P0,pull,main,yes,主落地仓库；Root managed gitlink + adk.lock,active,adk-team,2026-05-02,adopt-first,S
 hermes-agent,delivery,P1,fetch,main,no,大型 Agent 工程目录职责与测试入口已吸收，移除本地参考仓,disabled,adk-team,2026-06-25,observe-first,A
 hermes-collaboration-skill,agent-ecosystem,P1,fetch,main,no,协作 runbook 范式已吸收，移除本地参考仓,disabled,adk-team,2026-06-25,observe-first,B
-mattpocock-skills,agent-ecosystem,P1,fetch,main,yes,approved external-practice active reference; candidate=epc-43e82b2e69e37e419c3f,active,llm-agent-governance-owner,2026-07-22,adopt-first,A
+mattpocock-skills,agent-ecosystem,P1,fetch,main,yes,approved external-practice active reference；candidate=epc-43e82b2e69e37e419c3f；exact-pin cache 按需物化,active,llm-agent-governance-owner,2026-07-22,adopt-first,A
 andrej-karpathy-skills,agent-ecosystem,P2,fetch,main,no,Karpathy四原则已被全局规则覆盖；2026-07-11 复核仍保持archive-only,disabled,adk-team,2026-07-11,observe-first,B
 awesome-agent-skills,skill-index,P2,fetch,main,no,跨平台skill索引仅作discovery feed；2026-07-11 继续 watch 元数据,disabled,adk-team,2026-07-11,observe-first,B
 claude-skills,skill-pool,P2,fetch,main,no,大型skill池按域候选抽样；2026-07-11 继续 selective-only watch,disabled,adk-team,2026-07-11,selective-adopt,B
@@ -23,14 +23,14 @@ claude-code-plugins-plus-skills,knowledge,P2,fetch,main,no,Claude Code plugin/sk
 awesome-claude-code,knowledge,P2,fetch,main,no,Claude Code 资源导航；owner-requested watch，license需复核,disabled,adk-team,2026-07-11,observe-first,B
 awesome-claude-skills,knowledge,P2,fetch,master,no,Claude Skills curated list；discovery feed，单项skill需另审,disabled,adk-team,2026-07-11,observe-first,B
 awesome-claude-code-toolkit,knowledge,P2,fetch,main,no,综合toolkit含hooks/MCP/apps；owner-requested watch，不启用runtime,disabled,adk-team,2026-07-11,observe-first,C
-oh-my-codex,codex-runtime,P1,fetch,main,yes,Codex工作流运行层submodule观察，不启用runtime,active,adk-team,2026-06-29,observe-first,A
-planning-with-files,workflow-quality,P1,fetch,master,yes,文件化长任务计划与恢复submodule观察，不启用hooks,active,adk-team,2026-06-29,observe-first,A
+oh-my-codex,codex-runtime,P1,fetch,main,yes,Codex工作流运行层 exact-pin cache 观察，不启用runtime,active,adk-team,2026-06-29,observe-first,A
+planning-with-files,workflow-quality,P1,fetch,master,yes,文件化长任务计划与恢复 exact-pin cache 观察，不启用hooks,active,adk-team,2026-06-29,observe-first,A
 prompts,knowledge,P2,fetch,main,no,提示词资产轻量演进机制已吸收，移除本地参考仓,disabled,adk-team,2026-06-25,selective-adopt,A
 skills,agent-ecosystem,P1,fetch,main,no,skills CLI 目录约定与安装入口已吸收，移除本地参考仓,disabled,adk-team,2026-06-25,observe-first,A
-superpowers,workflow-core,P0,fetch,main,yes,流程主干来源,active,adk-team,2026-07-23,adopt-first,S
+superpowers,workflow-core,P0,fetch,main,yes,流程主干来源；exact-pin cache 按需物化,active,adk-team,2026-07-23,adopt-first,S
 superpowers-zh,workflow-core,P0,fetch,main,no,中文触发词与流程表达已吸收，保留 superpowers 主仓即可,disabled,adk-team,2026-06-25,adopt-first,A
 Trellis,reference,P2,pull,main,no,知识图谱与状态上下文边界已吸收，移除本地参考仓,disabled,aiot03,2026-06-25,observe-first,B
-vibeflow,workflow-core,P0,fetch,main,yes,SDD+Harness交付编排层; 36 skills覆盖全流程; Claude Code/Codex/OpenCode,active,aiot03,2026-07-23,observe-first,S
+vibeflow,workflow-core,P0,fetch,main,yes,SDD+Harness交付编排层；36 skills覆盖全流程；Claude Code/Codex/OpenCode；exact-pin cache 按需物化,active,aiot03,2026-07-23,observe-first,S
 agent-browser,tooling,P1,fetch,main,no,浏览器快照与 ref 交互模式已吸收，移除本地参考仓,disabled,aiot03,2026-06-25,observe-first,A
-scale-engine,workflow-core,P1,fetch,master,yes,AI Agent治理运行时参考; gates/evidence/context/queue; Gitee submodule持续跟踪,active,adk-team,2026-06-25,observe-first,A
-digital-worker,pilot-repo,P0,fetch,main,yes,Software M5独立真实软件仓现场试点；pilot-first；不自动吸收能力,active,llm-agent-governance-owner,2026-09-12,pilot-first,B
+scale-engine,workflow-core,P1,fetch,master,yes,AI Agent治理运行时参考；gates/evidence/context/queue；Gitee exact-pin cache 按需物化,active,adk-team,2026-06-25,observe-first,A
+digital-worker,pilot-repo,P0,fetch,main,yes,Software M5独立真实软件仓现场试点；pilot-first；exact-pin cache；不自动吸收能力,active,llm-agent-governance-owner,2026-09-12,pilot-first,B

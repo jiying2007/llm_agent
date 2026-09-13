@@ -10,13 +10,13 @@ import sys
 with open(sys.argv[1], encoding="utf-8") as handle:
     data = json.load(handle)
 assert data["status"] == "pass", data
-paths = {item["path"] for item in data["gitlinks"]}
-assert "agent-dev-kit" in paths
-assert "hermes" in paths
-assert "hermes_data" in paths
-assert "team-codex-assets" in paths
-assert data["opaque_count"] >= 3
+assert data["tracked_count"] == 2, data
+assert data["submodule_count"] == 2, data
+items = {item["path"]: item for item in data["gitlinks"]}
+assert set(items) == {"agent-dev-kit", "codex"}, items
+assert items["agent-dev-kit"]["kind"] == "managed-dependency", items
+assert items["codex"]["kind"] == "managed-dependency", items
 PY
 rm -f /tmp/llm-agent-gitlink-check.json
 
-echo "[PASS] gitlink registry contract"
+echo "[PASS] only managed dependencies remain as tracked gitlinks"
