@@ -23,8 +23,6 @@ on:
         required: true
         type: string
         default: '34707461578'
-  issue_comment:
-    types: [created]
 
 permissions:
   contents: read
@@ -36,19 +34,13 @@ concurrency:
 jobs:
   measured-runtime:
     name: measured-runtime
-    if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'issue_comment' &&
-       github.event.issue.number == 41 &&
-       github.actor == github.repository_owner &&
-       github.event.comment.body == '/run-m5-5.1-smoke')
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - name: Require explicit paid-runtime confirmation
         shell: bash
         env:
-          CONFIRM_PAID_RUNTIME: ${{ github.event_name == 'issue_comment' && 'true' || inputs.confirm_paid_runtime }}
+          CONFIRM_PAID_RUNTIME: ${{ inputs.confirm_paid_runtime }}
         run: |
           set -euo pipefail
           [[ "$CONFIRM_PAID_RUNTIME" == "true" ]] || {
@@ -78,7 +70,7 @@ jobs:
       - name: Install exact Codex CLI
         shell: bash
         env:
-          CODEX_CLI_VERSION: ${{ github.event_name == 'issue_comment' && '0.154.0' || inputs.codex_cli_version }}
+          CODEX_CLI_VERSION: ${{ inputs.codex_cli_version }}
         run: |
           set -euo pipefail
           [[ "$CODEX_CLI_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || {
@@ -104,7 +96,7 @@ jobs:
         shell: bash
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          MODEL: ${{ github.event_name == 'issue_comment' && 'gpt-5.5' || inputs.model }}
+          MODEL: ${{ inputs.model }}
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/software-m5-runtime-smoke"
@@ -121,7 +113,7 @@ jobs:
       - name: Build transactional 5.1 qualification candidate
         shell: bash
         env:
-          ROOT_INTEGRATION_RUN_ID: ${{ github.event_name == 'issue_comment' && '34707461578' || inputs.root_integration_run_id }}
+          ROOT_INTEGRATION_RUN_ID: ${{ inputs.root_integration_run_id }}
         run: |
           set -euo pipefail
           [[ "$ROOT_INTEGRATION_RUN_ID" =~ ^[1-9][0-9]*$ ]] || {
@@ -196,7 +188,6 @@ jobs:
           {
             echo '### Software M5 measured runtime + rollover candidate'
             echo "- root_sha: $GITHUB_SHA"
-            echo "- trigger: $GITHUB_EVENT_NAME"
             echo "- artifact: software-m5-runtime-smoke-$GITHUB_SHA"
             echo '- model calls: exactly one measured Codex smoke task'
             echo '- remote writes: none'
