@@ -9,6 +9,7 @@ _COMMAND_MODULES = {
     "status": "tools.control_plane.status_projection",
     "impact": "tools.control_plane.impact",
     "runtime-chain": "tools.control_plane.runtime_chain",
+    "consumer-chain": "tools.control_plane.consumer_chain",
     "promotion-evidence": "tools.control_plane.adk_promotion_evidence",
 }
 
