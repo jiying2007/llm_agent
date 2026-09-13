@@ -56,4 +56,31 @@ if [[ -e "$TMP/cache/OpenSpec" ]]; then
   exit 1
 fi
 
-echo '[PASS] reference repositories are exact-pin, cache-only, explicit materialization inputs'
+# Repository-governance identity must remain exact after physical gitlink removal.
+TAMPERED="$TMP/tampered"
+cp -a "$ROOT" "$TAMPERED"
+python3 - "$TAMPERED/manifests/reference_pins.json" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+data = json.loads(path.read_text(encoding="utf-8"))
+for pin in data["pins"]:
+    if pin.get("id") == "digital-worker":
+        pin["commit"] = "0" * 40
+        break
+else:
+    raise SystemExit("digital-worker reference pin missing")
+path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+PY
+
+if (
+  cd "$TAMPERED"
+  bash scripts/software-m5.sh check --summary-json >/dev/null 2>&1
+); then
+  echo '[FAIL] Software M5 accepted a digital-worker reference pin that no longer matches hash-bound pilot evidence' >&2
+  exit 1
+fi
+
+echo '[PASS] reference repositories are exact-pin, cache-only, explicit materialization inputs and M5 field identity stays fail-closed'
