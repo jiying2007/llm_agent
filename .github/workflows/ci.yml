@@ -202,7 +202,6 @@ jobs:
       - name: Verify keyless ADK Sigstore bundle with Rekor v2 trust time
         run: >-
           cosign verify-blob
-          --new-bundle-format
           --use-signed-timestamps
           --trusted-root '${{ steps.sigstore_root.outputs.path }}'
           --bundle reports/promotion/agent-dev-kit/promotion-attestation.json
