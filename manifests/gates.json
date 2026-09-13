@@ -10,6 +10,12 @@
         ".gitmodules",
         "scripts/check-adk-lock.sh"
       ],
+      "impact_inputs": [
+        "agent-dev-kit"
+      ],
+      "impact_groups": [
+        "integration-deep"
+      ],
       "outputs": [],
       "cache_policy": "content-addressed",
       "argv": [
@@ -31,6 +37,9 @@
         "adk.lock",
         "manifests/adk_interface.lock.json",
         "tools/control_plane/adk_interface.py"
+      ],
+      "impact_groups": [
+        "integration-deep"
       ],
       "outputs": [],
       "cache_policy": "content-addressed",
@@ -55,6 +64,9 @@
         ".gitmodules",
         "manifests/gitlinks.json",
         "tools/control_plane/gitlink_registry.py"
+      ],
+      "impact_groups": [
+        "integration-deep"
       ],
       "outputs": [],
       "cache_policy": "content-addressed",
@@ -125,6 +137,9 @@
         "manifests/software_m5_policy.json",
         "reports/current-status.md",
         "tools/control_plane/status_projection.py"
+      ],
+      "impact_groups": [
+        "integration-deep"
       ],
       "outputs": [],
       "cache_policy": "content-addressed",
@@ -232,7 +247,11 @@
         "tests/test_ci_incremental_gate_dag.sh",
         ".github/workflows/ci.yml",
         ".gitlab-ci.yml",
-        "manifests/gates.json"
+        "manifests/gates.json",
+        "tools/control_plane/impact.py"
+      ],
+      "impact_groups": [
+        "integration-deep"
       ],
       "outputs": [],
       "cache_policy": "disabled",
@@ -300,6 +319,9 @@
         "tools/control_plane/adk_promotion_evidence.py",
         "scripts/check-adk-promotion-evidence.sh"
       ],
+      "impact_groups": [
+        "integration-deep"
+      ],
       "outputs": [],
       "cache_policy": "disabled",
       "argv": [
@@ -348,6 +370,9 @@
         "manifests/runtime_health_adapters.json",
         "reports/runtime-evidence"
       ],
+      "impact_groups": [
+        "integration-deep"
+      ],
       "outputs": [],
       "cache_policy": "disabled",
       "argv": [
@@ -367,6 +392,12 @@
         "codex.lock",
         ".gitmodules",
         "scripts/check-codex-lock.sh"
+      ],
+      "impact_inputs": [
+        "codex"
+      ],
+      "impact_groups": [
+        "integration-deep"
       ],
       "outputs": [],
       "cache_policy": "content-addressed",
@@ -391,6 +422,9 @@
         "codex.lock",
         "reports/promotion/agent-dev-kit/promotion-evidence.json",
         "tools/control_plane/runtime_chain.py"
+      ],
+      "impact_groups": [
+        "integration-deep"
       ],
       "outputs": [],
       "cache_policy": "content-addressed",
