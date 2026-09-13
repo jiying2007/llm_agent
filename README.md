@@ -4,7 +4,7 @@
 
 当前生产目标不是把参考仓内容直接混装进 `~/.codex`，而是走固定闭环：
 
-1. 参考子仓：以不可变 commit 快照同步、扫描和生成静态证据。
+1. 参考仓：身份以 `manifests/reference_pins.json` 的不可变 commit 快照保存；默认**不作为 Root submodule/source checkout**，需要源码取证时才显式 materialize 到用户 cache。
 2. `reports/repo-analysis/`：保存 `analysis.json`、`review-required` 决策候选和 task pack。
 3. `subrepos/adoption-matrix.md`：只在语义、重复、架构、许可证、安全和效果复核后记录 `adopt/observe/reject`。
 4. `agent-dev-kit`：把批准项实现为 Agent/Skill/Workflow/Profile/runbook/script/test，并导出可交接资产。
@@ -23,7 +23,18 @@ rtk scripts/check-runtime-targets.sh .
 rtk scripts/check-runtime-health.sh .
 rtk scripts/check-runtime-routing.sh .
 rtk scripts/check-upstream-intake-readiness.sh .
+
+# reference repo 默认只校验 exact pins，不拉取源码
+rtk python -m tools.control_plane.reference_pins --root . --summary-json
+
+# 查看某个参考仓将被物化到哪个用户 cache 目录（无网络写入）
+rtk python -m tools.control_plane.reference_pins --root . --plan OpenSpec --summary-json
+
+# 只有显式指定 ID 时才按 exact commit 拉到用户 cache
+rtk python -m tools.control_plane.reference_pins --root . --materialize OpenSpec --summary-json
 ```
+
+Root 控制面的统一 Python 入口是 `llm-ctl`（`pyproject.toml`）；GitHub Actions 和本地脚本逐步收敛到同一组 `tools.control_plane` 实现。Reference materialization 永远不把第三方仓重新写回 Root working tree。
 
 ## 常用文档
 
@@ -32,29 +43,33 @@ rtk scripts/check-upstream-intake-readiness.sh .
 - `manifests/product_maturity_scorecard.json`：当前产品成熟度机器 SSOT。
 - `manifests/product_maturity_task_pack.json`：剩余门禁与可执行任务包。
 - `manifests/adk_interface.lock.json`：当前 ADK 跨仓接口身份与 active/deprecated surface contract。
+- `manifests/reference_pins.json`：非 source reference repository 的 exact commit / URL SSOT。
+- `manifests/gitlinks.json`：Root managed dependency gitlink registry；终态仅保留 ADK 与 Codex。
 - `manifests/digital_worker_runtime_pilot.json`：`digital-worker + agent-dev-kit + llm_agent` 联合 Runtime Pilot 的 report-only 证据合同；Runtime 输出不得替代 Verification PASS。
 - `scripts/README.md`：子仓治理、门禁和同步脚本说明。
 - `AGENTS.md`：本工作区代理执行规则与维护记录。
-- `subrepos/registry.csv`：参考子仓单一清单。
+- `subrepos/registry.csv`：参考仓 intake/生命周期清单。
 - `subrepos/adoption-matrix.md`：参考仓吸收决策矩阵。
 - `manifests/runtime_targets.json`：运行态 target registry。
 - `manifests/runtime_health_adapters.json`：运行态健康检查 adapter contract。
 - `docs/runbooks/runtime-target-activation.md`：新增或启用 runtime target 的 checklist。
-- `reports/reference-dirty-triage-YYYY-MM-DD.md`：参考子仓 dirty 分流报告。
+- `reports/reference-dirty-triage-YYYY-MM-DD.md`：参考仓 dirty 分流报告。
 - `reports/codex-pilot-report.md`：`~/codex -> ~/.codex` pilot 证据。
-- `reports/adk-production-landing-implementation-2026-05-02.md`：adk 生产级落地记录。
-- `agent-dev-kit/README.md`：adk 使用指南。
-- `agent-dev-kit/docs/codex-agents-integration.md`：`~/.codex/AGENTS.md` 与 adk 配合指南。
+- `reports/adk-production-landing-implementation-2026-05-02.md`：ADK 生产级落地记录。
+- `agent-dev-kit/README.md`：ADK 使用指南。
+- `agent-dev-kit/docs/codex-agents-integration.md`：`~/.codex/AGENTS.md` 与 ADK 配合指南。
 
 ## 维护原则
 
-- 先压实 adk，再追踪参考子仓更新。
-- 不把第三方参考资产或 adk 导出资产直接复制进 `~/.codex`；必须先进入 `~/codex` 的源资产与 manifest 治理链路。
+- 先压实 ADK，再追踪参考仓更新。
+- **只有 `agent-dev-kit` 与 `codex` 是 Root managed gitlink/source dependency。** OpenSpec、digital-worker、superpowers、vibeflow 等研究/试点仓只保留 exact reference pin，并按需物化到用户 cache。
+- reference pin 是 evidence identity，不是 runtime enablement，也不允许递归 checkout 重新引入 Root source dependency。
+- 不把第三方参考资产或 ADK 导出资产直接复制进 `~/.codex`；必须先进入 `~/codex` 的源资产与 manifest 治理链路。
 - `agent-dev-kit/manifest.json` 是 ADK 唯一结构化 Manifest SSOT；当前跨仓身份由 `adk.lock` 与 `manifests/adk_interface.lock.json` 原子绑定，不维护平行 Manifest 镜像。
 - direct target 安装必须先生成 plan，再 apply 并保留 receipt；回滚拒绝已漂移的托管资产。
 - 仓库不提供自动吸收写入口；静态分析不能直接修改 adoption matrix 或 ADK。
 - 没有命令证据，不声明“完成”“可发布”“可在生产使用”。
-- 私有 ADK checkout 不可用时，CI 只能声明 deep integration `NOT_REQUIRED` 或 `BLOCKED`；不得把 skipped job 表述为跨仓兼容已通过。
+- 深度跨仓验证按 `manifests/gates.json` 的输入/依赖图计算，不再在 workflow 中维护平行路径正则。
 
 ## 生产放行标准
 
@@ -66,7 +81,7 @@ rtk scripts/check-adk-harden-readiness.sh . --require-pilot
 
 该命令覆盖软件与模拟 pilot 门禁，但不替代真实现场证据。它覆盖：
 
-- adk strict validate
+- ADK strict validate
 - optional skill 回归
 - 外部引用检查
 - skill metadata
@@ -76,15 +91,15 @@ rtk scripts/check-adk-harden-readiness.sh . --require-pilot
 - observe/delivery 吸收深度
 - runtime routing
 - upstream intake
-- adk 全量测试
+- ADK 全量测试
 - runtime pilot evidence
 - runtime pilot coverage
 - `~/codex` build/apply 链路与全局 `~/.codex` health
 
 ## 下一步维护
 
-1. 若只修改 adk 文档：至少运行 `rtk scripts/check-doc-sync.sh .` 与相关 adk 测试。
+1. 若只修改 ADK 文档：至少运行 `rtk scripts/check-doc-sync.sh .` 与相关 ADK 测试。
 2. 若修改 Agent/Skill/Profile/Target：运行 `rtk bash agent-dev-kit/scripts/devkit.sh validate --strict` 与 `rtk bash agent-dev-kit/tests/run_all.sh`。
 3. 若修改根仓脚本、契约或治理资产：运行 `rtk tests/run_all.sh`；全量门禁使用 `rtk scripts/check-all.sh --full --result-json <artifact>` 留存逐项状态和耗时。
 4. 若影响生产部署、`~/codex` 分发或 `~/.codex`：运行 `rtk scripts/check-adk-harden-readiness.sh . --require-pilot`，并在 `~/codex` 侧执行 build/apply dry-run。
-5. 若评估参考仓更新：先运行 `rtk scripts/analyze-repo.sh <repo> --ref HEAD --all`，审查结构化 decision/task pack 后再决定是否创建 ADK change artifact。
+5. 若评估 reference repo 更新：先更新/审查 `manifests/reference_pins.json` 的 exact commit，再显式 materialize 到 cache 执行分析；审查结构化 decision/task pack 后才允许创建 ADK change artifact。

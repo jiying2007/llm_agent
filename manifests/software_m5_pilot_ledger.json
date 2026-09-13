@@ -1,6 +1,6 @@
 {
   "schema": "llm-agent-software-m5-pilot-ledger/v1",
-  "updated_at": "2026-09-12",
+  "updated_at": "2026-09-13",
   "candidate_version": "5.0.0-rc.2",
   "event_log": "reports/field-evidence/software-m5-v5-events.jsonl",
   "repositories": [
@@ -20,7 +20,8 @@
       "id": "digital-worker",
       "path": "digital-worker",
       "classification": "independent",
-      "real_software": true
+      "real_software": true,
+      "reference_pin": "digital-worker"
     }
   ],
   "operators": [

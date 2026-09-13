@@ -1,10 +1,12 @@
 {
-  "schema": "llm-agent-reference-pins/v1",
+  "schema": "llm-agent-reference-pins/v2",
   "policy": {
     "tracked_gitlink_forbidden": true,
     "submodule_entry_forbidden": true,
     "runtime_enablement": false,
-    "pin_is_evidence_not_source": true
+    "pin_is_evidence_not_source": true,
+    "materialization_root": "user-cache-only",
+    "materialization_requires_explicit_id": true
   },
   "pins": [
     {
@@ -24,6 +26,70 @@
       "kind": "external-asset-reference",
       "commit": "9b63769d886dd5384a4fd070f514215c7d631d6c",
       "notes": "External asset identity only; source-to-live delivery is governed separately."
+    },
+    {
+      "id": "OpenSpec",
+      "kind": "reference-repo",
+      "path": "OpenSpec",
+      "url": "https://github.com/Fission-AI/OpenSpec",
+      "commit": "3c7a05c5dc88b2397c478805890b55ed392b19e8",
+      "notes": "Research/intake snapshot; materialize explicitly into user cache when review requires source bytes."
+    },
+    {
+      "id": "digital-worker",
+      "kind": "reference-repo",
+      "path": "digital-worker",
+      "url": "https://github.com/jiying2007/digital-worker.git",
+      "commit": "4a94231d26df1aeaeba336e6a4e2327db5a3bd44",
+      "notes": "Independent pilot repository identity; not a Root source dependency and not recursively checked out."
+    },
+    {
+      "id": "mattpocock-skills",
+      "kind": "reference-repo",
+      "path": "mattpocock-skills",
+      "url": "https://github.com/mattpocock/skills",
+      "commit": "ed37663cc5fbef691ddfecd080dff42f7e7e350d",
+      "notes": "Approved external-practice reference; exact snapshot is evidence, not executable source."
+    },
+    {
+      "id": "oh-my-codex",
+      "kind": "reference-repo",
+      "path": "oh-my-codex",
+      "url": "https://github.com/Yeachan-Heo/oh-my-codex.git",
+      "commit": "f947e3a41c062c25fd107686862b68ee5d1b66a5",
+      "notes": "Codex workflow reference only; runtime enablement remains forbidden by this registry."
+    },
+    {
+      "id": "planning-with-files",
+      "kind": "reference-repo",
+      "path": "planning-with-files",
+      "url": "https://github.com/OthmanAdi/planning-with-files.git",
+      "commit": "d71b3be47b62fe49d60fb2ede800e1907ebea3d9",
+      "notes": "Planning-method reference only; materialize on demand into cache."
+    },
+    {
+      "id": "scale-engine",
+      "kind": "reference-repo",
+      "path": "scale-engine",
+      "url": "https://gitee.com/hongmaple/scale-engine.git",
+      "commit": "ace49169c4191db656989b738f31edb19a380a63",
+      "notes": "Governance-engine reference snapshot; no Root runtime enablement."
+    },
+    {
+      "id": "superpowers",
+      "kind": "reference-repo",
+      "path": "superpowers",
+      "url": "https://github.com/obra/superpowers",
+      "commit": "6efe32c9e2dd002d0c394e861e0529675d1ab32e",
+      "notes": "Workflow-practice reference snapshot; no persistent working-tree coupling."
+    },
+    {
+      "id": "vibeflow",
+      "kind": "reference-repo",
+      "path": "vibeflow",
+      "url": "https://github.com/ttttstc/vibeflow.git",
+      "commit": "0df764eff5e7b034611540da8d9f8367dfae55b2",
+      "notes": "SDD/harness reference snapshot; materialize explicitly for intake review."
     }
   ]
 }
