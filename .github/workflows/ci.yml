@@ -144,7 +144,7 @@ jobs:
                 changed="$(git diff --name-only "$base"..HEAD)"
               fi
               printf '%s\n' "$changed" > /tmp/llm-agent-changed-paths.txt
-              if grep -Eq '^(\.github/workflows/ci\.yml|adk\.lock|agent-dev-kit|manifests/(adk_interface\.lock|runtime_targets|runtime_health_adapters|product_maturity_scorecard|software_m5_policy)\.json|reports/promotion/agent-dev-kit/(promotion-evidence|promotion-attestation)\.json)$' /tmp/llm-agent-changed-paths.txt; then
+              if grep -Eq '^(\.github/workflows/ci\.yml|\.gitmodules|adk\.lock|codex\.lock|agent-dev-kit|codex|scripts/check-codex-lock\.sh|tools/control_plane/runtime_chain\.py|manifests/(adk_interface\.lock|gitlinks|gates|runtime_targets|runtime_health_adapters|product_maturity_scorecard|software_m5_policy)\.json|reports/promotion/agent-dev-kit/(promotion-evidence|promotion-attestation)\.json)$' /tmp/llm-agent-changed-paths.txt; then
                 required=true
                 reason=cross-repo-contract-change
               fi
@@ -217,7 +217,15 @@ jobs:
       - name: Re-run root-side exact interface contracts
         run: |
           bash scripts/check-adk-lock.sh . --pin-only
+          bash scripts/check-codex-lock.sh . --pin-only
           bash tests/test_adk_interface_lock.sh
+
+      - name: Verify terminal ADK to Codex runtime chain
+        run: |
+          set -euo pipefail
+          git submodule update --init --depth=1 codex
+          bash scripts/check-codex-lock.sh .
+          python -m tools.control_plane.runtime_chain --root . --require-codex-worktree --summary-json > /tmp/runtime-chain-receipt.json
 
       - name: Upload integration evidence
         if: ${{ always() }}
@@ -227,6 +235,7 @@ jobs:
           path: |
             /tmp/llm-agent-integration-receipt.json
             /tmp/adk-attestation-verification.txt
+            /tmp/runtime-chain-receipt.json
           if-no-files-found: warn
           retention-days: 14
 

@@ -17,7 +17,7 @@ FORBIDDEN_PREFIXES = (
     "dist/",
 )
 FORBIDDEN_SUFFIXES = (".pyc", ".pyo", ".lock")
-ALLOW_LOCKS = {"adk.lock"}
+ALLOW_LOCKS = {"adk.lock", "codex.lock"}
 
 
 def tracked_paths(root: Path) -> list[str]:

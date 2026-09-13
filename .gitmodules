@@ -25,3 +25,6 @@
 [submodule "mattpocock-skills"]
 	path = mattpocock-skills
 	url = https://github.com/mattpocock/skills
+[submodule "codex"]
+	path = codex
+	url = https://github.com/jiying2007/codex.git

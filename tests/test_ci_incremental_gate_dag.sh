@@ -21,6 +21,8 @@ gitlab = (root / ".gitlab-ci.yml").read_text(encoding="utf-8")
 gate_specs = gates["gates"]
 assert gates["schema"] == "llm-agent-gates/v2", gates["schema"]
 assert "adk-interface" in profiles["contract"], profiles["contract"]
+assert "codex-pin" in profiles["contract"], profiles["contract"]
+assert "runtime-chain-pin" in profiles["contract"], profiles["contract"]
 assert "active-contracts" in profiles["contract"], profiles["contract"]
 assert profiles["pr-fast"] == ["contract", "doc-sync"], profiles["pr-fast"]
 assert profiles["integration-extra"] == ["adk-promotion-evidence", "root-regression"], profiles["integration-extra"]
@@ -29,6 +31,9 @@ assert profiles["release-extra"] == ["fresh-status", "harden-readiness"], profil
 assert profiles["release"] == ["integration", "release-extra"], profiles["release"]
 
 assert gate_specs["adk-interface"]["depends_on"] == ["adk-pin"]
+assert gate_specs["codex-pin"]["depends_on"] == []
+assert gate_specs["runtime-chain-pin"]["depends_on"] == ["adk-interface", "codex-pin"]
+assert gate_specs["gitlink-registry"]["depends_on"] == ["adk-pin", "codex-pin"]
 assert gate_specs["active-contracts"]["depends_on"] == ["adk-interface"]
 assert gate_specs["adk-promotion-evidence"]["depends_on"] == ["adk-interface"]
 assert gate_specs["root-regression"]["depends_on"] == ["adk-promotion-evidence"]
@@ -52,6 +57,9 @@ assert len(re.findall(r"--profile\s+doc-sync(?:\s|$)", github)) == 1, github
 assert not re.search(r"--profile\s+integration-extra(?:\s|$)", github), github
 assert not re.search(r"--profile\s+integration(?:\s|$)", github), github
 assert "cross-repo-contract-change" in github, github
+assert "codex\\.lock" in github and "runtime-chain" in github, github
+assert "git submodule update --init --depth=1 codex" in github, github
+assert "/tmp/runtime-chain-receipt.json" in github, github
 assert "promotion-attestation" in github and "promotion-evidence" in github, github
 assert "sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6" in github, github
 assert "cosign-release: v3.1.3" in github, github
