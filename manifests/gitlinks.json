@@ -17,6 +17,13 @@
       "lock": "adk.lock"
     },
     {
+      "path": "codex",
+      "kind": "managed-dependency",
+      "required": true,
+      "url": "https://github.com/jiying2007/codex.git",
+      "lock": "codex.lock"
+    },
+    {
       "path": "digital-worker",
       "kind": "reference-repo",
       "required": false,
