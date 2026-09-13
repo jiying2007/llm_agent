@@ -40,6 +40,9 @@ jobs:
       - name: Validate pinned workflow action runtime compatibility
         run: bash tests/test_workflow_action_compatibility.sh
 
+      - name: Validate terminal consumer pin chain
+        run: bash tests/test_consumer_chain.sh
+
       - name: Run immutable source contracts through typed control plane
         run: >-
           python -m tools.control_plane.cli gate
@@ -221,6 +224,14 @@ jobs:
           bash scripts/check-codex-lock.sh .
           python -m tools.control_plane.cli runtime-chain --root . --require-codex-worktree --summary-json > /tmp/runtime-chain-receipt.json
 
+      - name: Verify terminal digital-worker consumer evidence binding
+        run: >-
+          python -m tools.control_plane.cli consumer-chain
+          --root .
+          --require-codex-worktree
+          --summary-json
+          > /tmp/consumer-chain-receipt.json
+
       - name: Upload integration evidence
         if: ${{ always() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -230,6 +241,7 @@ jobs:
             /tmp/llm-agent-integration-receipt.json
             /tmp/adk-attestation-verification.txt
             /tmp/runtime-chain-receipt.json
+            /tmp/consumer-chain-receipt.json
           if-no-files-found: warn
           retention-days: 14
 
