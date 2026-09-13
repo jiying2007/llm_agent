@@ -17,6 +17,7 @@ FORBIDDEN_PREFIXES = (
     "dist/",
 )
 FORBIDDEN_SUFFIXES = (".pyc", ".pyo", ".lock")
+FORBIDDEN_PATHS = {".github/workflows/software-m5-runtime-smoke.yml"}
 ALLOW_LOCKS = {"adk.lock", "codex.lock"}
 
 
@@ -36,6 +37,9 @@ def violations(paths: list[str]) -> list[str]:
     bad: list[str] = []
     for path in paths:
         if path in ALLOW_LOCKS:
+            continue
+        if path in FORBIDDEN_PATHS:
+            bad.append(path)
             continue
         if any(path.startswith(prefix) for prefix in FORBIDDEN_PREFIXES):
             bad.append(path)
