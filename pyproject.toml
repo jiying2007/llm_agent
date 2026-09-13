@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "llm-agent-control-plane"
+version = "0.1.0"
+description = "Evidence and composition control plane for llm_agent"
+requires-python = ">=3.11"
+license = "MIT"
+readme = "README.md"
+dependencies = []
+
+[project.optional-dependencies]
+quality = [
+  "mypy==2.3.1",
+  "ruff==0.16.6",
+]
+
+[project.scripts]
+llm-ctl = "tools.control_plane.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["tools", "tools.*"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "UP", "B", "SIM"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_unreachable = true
+show_error_codes = true
+files = [
+  "tools/control_plane/cli.py",
+  "tools/control_plane/impact.py",
+]

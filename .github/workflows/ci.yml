@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       require_adk_integration:
-        description: Require portable ADK promotion evidence verification even when the diff would not normally require it
+        description: Require portable ADK promotion evidence verification even when the gate graph would not normally require it
         required: false
         type: boolean
         default: false
@@ -37,9 +37,9 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Run immutable source contracts
+      - name: Run immutable source contracts through typed control plane
         run: >-
-          python -m tools.control_plane.gate_runner
+          python -m tools.control_plane.cli gate
           --profile contract
           --output-json /tmp/llm-agent-contract-receipt.json
 
@@ -81,9 +81,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y ripgrep
 
-      - name: Run document synchronization gate
+      - name: Run document synchronization gate through typed control plane
         run: >-
-          python -m tools.control_plane.gate_runner
+          python -m tools.control_plane.cli gate
           --profile doc-sync
           --output-json /tmp/llm-agent-doc-sync-receipt.json
 
@@ -113,7 +113,7 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
-      - name: Classify whether ADK promotion evidence verification is required
+      - name: Calculate integration impact from gate dependency graph
         id: impact
         shell: bash
         env:
@@ -123,40 +123,31 @@ jobs:
           FORCE_REQUIRED: ${{ github.event_name == 'workflow_dispatch' && inputs.require_adk_integration || false }}
         run: |
           set -euo pipefail
-          required=false
-          reason=not-required
-          if [[ "$FORCE_REQUIRED" == "true" ]]; then
-            required=true
-            reason=workflow-dispatch
-          else
-            base=""
-            mode="two-dot"
-            if [[ "$EVENT_NAME" == "pull_request" ]]; then
-              base="$PR_BASE_SHA"
-              mode="three-dot"
-            elif [[ "$EVENT_NAME" == "push" ]]; then
-              base="$PUSH_BEFORE_SHA"
-            fi
-            if [[ -n "$base" && ! "$base" =~ ^0+$ ]] && git cat-file -e "${base}^{commit}" 2>/dev/null; then
-              if [[ "$mode" == "three-dot" ]]; then
-                changed="$(git diff --name-only "$base"...HEAD)"
-              else
-                changed="$(git diff --name-only "$base"..HEAD)"
-              fi
-              printf '%s\n' "$changed" > /tmp/llm-agent-changed-paths.txt
-              if grep -Eq '^(\.github/workflows/ci\.yml|\.gitmodules|adk\.lock|codex\.lock|agent-dev-kit|codex|scripts/check-codex-lock\.sh|tools/control_plane/runtime_chain\.py|manifests/(adk_interface\.lock|gitlinks|gates|runtime_targets|runtime_health_adapters|product_maturity_scorecard|software_m5_policy)\.json|reports/promotion/agent-dev-kit/(promotion-evidence|promotion-attestation)\.json)$' /tmp/llm-agent-changed-paths.txt; then
-                required=true
-                reason=cross-repo-contract-change
-              fi
-            fi
+          base=""
+          mode="two-dot"
+          if [[ "$EVENT_NAME" == "pull_request" ]]; then
+            base="$PR_BASE_SHA"
+            mode="three-dot"
+          elif [[ "$EVENT_NAME" == "push" ]]; then
+            base="$PUSH_BEFORE_SHA"
           fi
-          echo "required=$required" >> "$GITHUB_OUTPUT"
-          echo "reason=$reason" >> "$GITHUB_OUTPUT"
-          {
-            echo "### ADK promotion evidence impact"
-            echo "- required: $required"
-            echo "- reason: $reason"
-          } >> "$GITHUB_STEP_SUMMARY"
+
+          args=(
+            python -m tools.control_plane.cli impact
+            --root .
+            --group integration-deep
+            --head HEAD
+            --mode "$mode"
+            --github-output "$GITHUB_OUTPUT"
+            --step-summary "$GITHUB_STEP_SUMMARY"
+          )
+          if [[ "$FORCE_REQUIRED" == "true" ]]; then
+            args+=(--force)
+          fi
+          if [[ -n "$base" && ! "$base" =~ ^0+$ ]] && git cat-file -e "${base}^{commit}" 2>/dev/null; then
+            args+=(--base "$base")
+          fi
+          "${args[@]}"
 
   integration:
     name: integration-deep
@@ -185,7 +176,7 @@ jobs:
 
       - name: Verify portable promotion evidence claims
         run: >-
-          python -m tools.control_plane.adk_promotion_evidence
+          python -m tools.control_plane.cli promotion-evidence
           --evidence reports/promotion/agent-dev-kit/promotion-evidence.json
           --lock adk.lock
           --interface manifests/adk_interface.lock.json
@@ -225,7 +216,7 @@ jobs:
           set -euo pipefail
           git submodule update --init --depth=1 codex
           bash scripts/check-codex-lock.sh .
-          python -m tools.control_plane.runtime_chain --root . --require-codex-worktree --summary-json > /tmp/runtime-chain-receipt.json
+          python -m tools.control_plane.cli runtime-chain --root . --require-codex-worktree --summary-json > /tmp/runtime-chain-receipt.json
 
       - name: Upload integration evidence
         if: ${{ always() }}
@@ -298,7 +289,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python3 -m tools.control_plane.status_projection --root . --summary-json > /tmp/software-m5-projection.json
+          python3 -m tools.control_plane.cli status --root . --summary-json > /tmp/software-m5-projection.json
           mode="$(
             python3 - <<'PYMODE'
           import json
