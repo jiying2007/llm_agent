@@ -1,12 +1,12 @@
 {
-  "schema_version": 2,
-  "contract_version": "1.1",
+  "schema_version": 3,
+  "contract_version": "1.2",
   "status": "report-only",
   "purpose": "Joint runtime comparison contract for digital-worker, agent-dev-kit, replaceable Runtime Bindings and llm_agent without changing domain verification semantics.",
   "roles": {
     "digital-worker": ["work_item", "system_context", "acceptance", "action_policy", "engineering_result", "verification", "independent_review"],
-    "agent-dev-kit": ["asset_profile", "skill_assets", "asset_bundle_identity", "target_export_contract"],
-    "runtime-binding": ["runtime_target_mapping", "runtime_profile", "host_integration", "runtime_execution_receipt", "runtime_local_conformance"],
+    "agent-dev-kit": ["asset_profile", "skill_assets", "immutable_release_identity", "source_set_handoff_contract"],
+    "runtime-binding": ["runtime_target_mapping", "runtime_profile", "host_integration", "exact_source_set_identity", "runtime_distribution_identity", "runtime_execution_receipt", "runtime_local_conformance"],
     "llm_agent": ["runtime_target_health", "cross_runtime_comparison_evidence", "loop_readiness_mapping", "adoption_recommendation"]
   },
   "frozen_inputs": [
@@ -22,9 +22,9 @@
     "engineering_task_package",
     "acceptance_criteria",
     "required_verification",
-    "adk_provider_commit",
+    "adk_release_identity_ref",
     "adk_asset_profile",
-    "adk_asset_bundle_hash"
+    "runtime_source_set_identity_ref"
   ],
   "runtime_identity_required": [
     "runtime_binding_repository",
@@ -34,12 +34,21 @@
     "runtime_host",
     "runtime_provider",
     "runtime_version",
+    "runtime_source_set_identity_ref",
+    "runtime_distribution_identity_ref",
     "execution_receipt_ref"
   ],
   "profile_semantics": {
     "asset_profile_owner": "agent-dev-kit",
     "runtime_profile_owner": "runtime-binding",
     "asset_profile_must_not_equal_runtime_profile_by_semantic_assumption": true
+  },
+  "asset_identity_semantics": {
+    "provider_release_is_immutable": true,
+    "runtime_binding_selects_exact_source_set": true,
+    "runtime_binding_assembles_runtime_distribution": true,
+    "monolithic_runtime_bundle_is_not_required_identity": true,
+    "source_of_truth_stays_at_source": true
   },
   "isolation": {
     "share_previous_runtime_final_answer": false,
@@ -59,12 +68,14 @@
       "runtime": "codex",
       "repository": "jiying2007/codex",
       "target": "codex-cli",
-      "status": "candidate"
+      "source_identity_mode": "exact-release-source-blobs",
+      "status": "source-set-bound"
     },
     {
       "runtime": "claude-code",
       "repository": null,
       "target": "claude-code",
+      "source_identity_mode": null,
       "status": "future-binding"
     }
   ],
@@ -92,7 +103,9 @@
     "a6_a7_human_gate": true,
     "missing_runtime_health_is_blocked_not_pass": true,
     "missing_runtime_binding_identity_is_blocked_not_pass": true,
-    "missing_asset_bundle_identity_is_blocked_not_pass": true
+    "missing_adk_release_identity_is_blocked_not_pass": true,
+    "missing_runtime_source_set_identity_is_blocked_not_pass": true,
+    "missing_runtime_distribution_identity_is_blocked_not_pass": true
   },
-  "completion": "at least two healthy runtime bindings complete the same controlled real task with exact binding/asset identity, separate execution receipts, and independent digital-worker verification/review"
+  "completion": "at least two healthy runtime bindings complete the same controlled real task with exact ADK release/source-set/runtime-distribution identity, separate execution receipts, and independent digital-worker verification/review"
 }
