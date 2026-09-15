@@ -13,6 +13,13 @@ lta = json.loads((root / "manifests/long_term_asset_qualification.json").read_te
 scorecard = json.loads((root / "manifests/product_maturity_scorecard.json").read_text())
 tasks = json.loads((root / "manifests/product_maturity_task_pack.json").read_text())
 lock = json.loads((root / "manifests/adk_interface.lock.json").read_text())
+runbook = root / "docs/runbooks/solo-maintainer-continuity.md"
+
+assert runbook.is_file()
+runbook_text = runbook.read_text()
+assert "clean-room recovery drill" in runbook_text.lower()
+assert "issue #50" in runbook_text
+assert "second-human approval" in runbook_text.lower()
 
 assert lta["schema"] == "llm-agent-long-term-asset-qualification/v1"
 assert lta["rules"]["fail_closed"] is True
