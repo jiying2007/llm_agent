@@ -53,12 +53,25 @@ For an ADK release or promotion:
 
 ## 5. GitHub administration continuity
 
-Native repository settings are part of the operating system of the asset, not documentation-only state. For `llm_agent`, issue #50 remains the authority until the following are proven:
+Native repository settings are part of the operating system of the asset, not documentation-only state. LTA-01 is currently **partially proven but still blocked**.
 
-- `delete_branch_on_merge=true`;
-- a native ruleset covers `main` and preserves required automated checks;
-- a real merged PR demonstrates native branch cleanup;
-- generic custom branch cleanup is subtracted only after native proof exists.
+Already proven and durably recorded in `reports/long-term-assets/native-repository-governance-2026-09-15.json`:
+
+- repository metadata reports `delete_branch_on_merge=true`;
+- PR #55 merged normally;
+- its merged head branch disappeared before the fresh-main custom Branch GC could delete it;
+- Branch GC run `34954493446` reported `candidates=[]` and `deleted=[]`, proving the custom GC did not perform that merged-branch deletion.
+
+Still required before LTA-01 may become PASS:
+
+- a native repository ruleset covers `main`;
+- the ruleset requires PR-mediated normal mainline changes;
+- the ruleset preserves required automated CI/security checks;
+- the ruleset prevents destructive/non-fast-forward main updates;
+- the ruleset requires zero human approvals for the explicit solo-maintainer model;
+- the ruleset has no unconditional bypass that can silently skip automated gates.
+
+After the ruleset is directly observed, retire generic merged-PR deletion responsibility from custom Branch GC while retaining exceptional exact-SHA retirement proof paths, then require exact-head and fresh-main CI before closing issue #50.
 
 Because the repository is solo-maintained, the ruleset must not require an impossible second-human approval. Compensating automated controls must remain mandatory instead.
 
@@ -77,4 +90,4 @@ Secrets themselves must never be stored in this repository or in recovery receip
 
 ## 7. Terminal qualification rule
 
-Long-term asset qualification is separate from Product M5. `manifests/long_term_asset_qualification.json` is the canonical status contract. It may become terminal only when every blocking requirement has real evidence. LTA-03 clean-room recovery/rollback is qualified; native repository governance, multi-runtime portability, and the required longitudinal operating evidence remain independently fail-closed until their own acceptance criteria are met.
+Long-term asset qualification is separate from Product M5. `manifests/long_term_asset_qualification.json` is the canonical status contract. It may become terminal only when every blocking requirement has real evidence. LTA-03 clean-room recovery/rollback is qualified. LTA-01 is narrowed to the native main ruleset plus subsequent custom-GC subtraction; LTA-02 multi-runtime portability and LTA-04 longitudinal operating evidence remain independently fail-closed until their own acceptance criteria are met.

@@ -1,0 +1,44 @@
+{
+  "schema": "llm-agent-native-repository-governance-evidence/v1",
+  "status": "partial",
+  "observed_at": "2026-09-15T09:50:41Z",
+  "qualification": "LTA-01",
+  "repository": "jiying2007/llm_agent",
+  "repository_metadata": {
+    "default_branch": "main",
+    "delete_branch_on_merge": true,
+    "allow_squash_merge": true,
+    "admin_permission_observed": true
+  },
+  "native_branch_deletion_proof": {
+    "pull_request": 55,
+    "merged_main_commit": "3e065f5d957a5d1c8bc64775163ae53512b7d2e5",
+    "merged_branch": "governance/ratchet-lta03-recovery",
+    "merged_branch_absent_after_merge": true,
+    "branch_lookup_result": "404",
+    "custom_branch_gc_run_id": 34954493446,
+    "custom_branch_gc_conclusion": "success",
+    "custom_branch_gc_candidates": 0,
+    "custom_branch_gc_deleted": 0,
+    "proof": "The merged PR branch was absent while the fresh-main custom Branch GC report contained no candidate and no deletion, so the custom GC did not perform the merged-branch deletion."
+  },
+  "native_ruleset": {
+    "observed_ruleset_count": 0,
+    "main_ruleset_observed": false,
+    "collection": []
+  },
+  "completed_requirements": [
+    "delete_branch_on_merge=true",
+    "normal merged PR branch deletion observed without custom GC deletion"
+  ],
+  "remaining_requirements": [
+    "create and enable a native repository ruleset covering main",
+    "ruleset requires PR-mediated normal mainline changes",
+    "ruleset preserves required automated CI/security checks",
+    "ruleset prevents destructive/non-fast-forward main updates",
+    "ruleset requires zero human approvals for the explicit solo-maintainer model",
+    "ruleset has no unconditional bypass that can silently skip automated gates"
+  ],
+  "remaining_blocker": "native-main-ruleset-only",
+  "qualification_boundary": "This record proves native merged-branch cleanup but does not prove a main ruleset. LTA-01 remains blocked_external_admin until a relevant non-empty native ruleset is directly observed and the subsequent generic custom GC subtraction is merged with fresh-main evidence."
+}
