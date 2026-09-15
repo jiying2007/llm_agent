@@ -24,6 +24,9 @@ rtk scripts/check-runtime-health.sh .
 rtk scripts/check-runtime-routing.sh .
 rtk scripts/check-upstream-intake-readiness.sh .
 
+# LTA-02 跨运行时可移植性只读认证；真实双运行时证据缺失时必须返回 BLOCKED
+rtk python -m tools.control_plane.cli runtime-portability --root . --summary-json
+
 # reference repo 默认只校验 exact pins，不拉取源码
 rtk python -m tools.control_plane.reference_pins --root . --summary-json
 
@@ -36,16 +39,20 @@ rtk python -m tools.control_plane.reference_pins --root . --materialize OpenSpec
 
 Root 控制面的统一 Python 入口是 `llm-ctl`（`pyproject.toml`）；GitHub Actions 和本地脚本逐步收敛到同一组 `tools.control_plane` 实现。Reference materialization 永远不把第三方仓重新写回 Root working tree。
 
+`runtime-portability` 只认证已经存在的真实 comparison evidence，不启动模型、不执行第二运行时，也不生成外部证据。它要求至少两个不同且健康的 runtime binding 共享同一 frozen task 与精确 ADK release identity，各自拥有独立 execution receipt，并由 `digital-worker` 提供绑定同一 receipt 集的 domain verification 与 independent review。缺少第二运行时、binding 仍为 future-only、或证据缺失时均为 `BLOCKED`，不能升级成 PASS。
+
 ## 常用文档
 
 - `docs/llm-agent-maintenance-guide.md`：工作区持续维护和生产验证详细指南。
 - `docs/product-maturity-model.md`：M0-M5、十二维和 source/test/runtime/field 证据模型。
 - `manifests/product_maturity_scorecard.json`：当前产品成熟度机器 SSOT。
 - `manifests/product_maturity_task_pack.json`：剩余门禁与可执行任务包。
+- `manifests/long_term_asset_qualification.json`：Product M5 之上的长期资产终态资格 SSOT；单人维护、LTA-01～LTA-04 与 terminal blocker 均在此 fail-closed 判定。
 - `manifests/adk_interface.lock.json`：当前 ADK 跨仓接口身份与 active/deprecated surface contract。
 - `manifests/reference_pins.json`：非 source reference repository 的 exact commit / URL SSOT。
 - `manifests/gitlinks.json`：Root managed dependency gitlink registry；终态仅保留 ADK 与 Codex。
 - `manifests/digital_worker_runtime_pilot.json`：`digital-worker + agent-dev-kit + llm_agent` 联合 Runtime Pilot 的 report-only 证据合同；Runtime 输出不得替代 Verification PASS。
+- `tools/control_plane/runtime_portability.py`：LTA-02 双运行时真实 comparison evidence 的只读、fail-closed 认证器。
 - `scripts/README.md`：子仓治理、门禁和同步脚本说明。
 - `AGENTS.md`：本工作区代理执行规则与维护记录。
 - `subrepos/registry.csv`：参考仓 intake/生命周期清单。
@@ -103,3 +110,4 @@ rtk scripts/check-adk-harden-readiness.sh . --require-pilot
 3. 若修改根仓脚本、契约或治理资产：运行 `rtk tests/run_all.sh`；全量门禁使用 `rtk scripts/check-all.sh --full --result-json <artifact>` 留存逐项状态和耗时。
 4. 若影响生产部署、`~/codex` 分发或 `~/.codex`：运行 `rtk scripts/check-adk-harden-readiness.sh . --require-pilot`，并在 `~/codex` 侧执行 build/apply dry-run。
 5. 若评估 reference repo 更新：先更新/审查 `manifests/reference_pins.json` 的 exact commit，再显式 materialize 到 cache 执行分析；审查结构化 decision/task pack 后才允许创建 ADK change artifact。
+6. 若推进 LTA-02：先完成第二 runtime binding 的 source/live/health 治理，再对同一 frozen real task 产出两份独立 execution receipt 与 `digital-worker` verification/review，最后用 `llm-ctl runtime-portability` 认证；在此之前 LTA-02 必须保持 `blocked_external_evidence`。
