@@ -1,10 +1,10 @@
 {
-  "schema_version": 3,
-  "contract_version": "1.2",
+  "schema_version": 4,
+  "contract_version": "1.3",
   "status": "report-only",
   "purpose": "Joint runtime comparison contract for digital-worker, agent-dev-kit, replaceable Runtime Bindings and llm_agent without changing domain verification semantics.",
   "roles": {
-    "digital-worker": ["work_item", "system_context", "acceptance", "action_policy", "engineering_result", "verification", "independent_review"],
+    "digital-worker": ["work_item", "system_context", "governance_identity", "acceptance", "action_policy", "engineering_result", "verification", "independent_review"],
     "agent-dev-kit": ["asset_profile", "skill_assets", "immutable_release_identity", "source_set_handoff_contract"],
     "runtime-binding": ["runtime_target_mapping", "runtime_profile", "host_integration", "exact_source_set_identity", "runtime_distribution_identity", "runtime_execution_receipt", "runtime_local_conformance"],
     "llm_agent": ["runtime_target_health", "cross_runtime_comparison_evidence", "loop_readiness_mapping", "adoption_recommendation"]
@@ -17,6 +17,7 @@
     "repo_root",
     "exact_base_commit",
     "dirty_baseline",
+    "digital_worker_governance_identity_ref",
     "material_manifest",
     "knowledge_context_fingerprint",
     "engineering_task_package",
@@ -50,6 +51,11 @@
     "monolithic_runtime_bundle_is_not_required_identity": true,
     "source_of_truth_stays_at_source": true
   },
+  "replaceability_evidence_levels": {
+    "R1-binding-conformance": "Controlled/fake adapters may prove contract shape, exact identity handling, failure semantics and rollback only; R1 never qualifies terminal portability.",
+    "R2-real-provider-substitution": "A second real Runtime/Provider Binding executes the same frozen real task with independent execution receipt and shared Digital Worker verification/review semantics; R2 is required for terminal portability."
+  },
+  "terminal_replaceability_evidence_level": "R2-real-provider-substitution",
   "isolation": {
     "share_previous_runtime_final_answer": false,
     "share_previous_runtime_patch": false,
@@ -103,9 +109,12 @@
     "a6_a7_human_gate": true,
     "missing_runtime_health_is_blocked_not_pass": true,
     "missing_runtime_binding_identity_is_blocked_not_pass": true,
+    "missing_digital_worker_governance_identity_is_blocked_not_pass": true,
     "missing_adk_release_identity_is_blocked_not_pass": true,
     "missing_runtime_source_set_identity_is_blocked_not_pass": true,
-    "missing_runtime_distribution_identity_is_blocked_not_pass": true
+    "missing_runtime_distribution_identity_is_blocked_not_pass": true,
+    "r1_binding_conformance_is_not_r2_real_provider_substitution": true,
+    "terminal_replaceability_requires_r2_real_provider_substitution": true
   },
-  "completion": "at least two healthy runtime bindings complete the same controlled real task with exact ADK release/source-set/runtime-distribution identity, separate execution receipts, and independent digital-worker verification/review"
+  "completion": "R2 only: at least two healthy real runtime/provider bindings complete the same controlled real task under one frozen Digital Worker governance identity and exact ADK release/source-set/runtime-distribution identity, with separate execution receipts and independent digital-worker verification/review"
 }

@@ -15,14 +15,19 @@ cli_path = Path(sys.argv[4])
 data = json.loads(path.read_text(encoding="utf-8"))
 lta = json.loads(lta_path.read_text(encoding="utf-8"))
 
-assert data["schema_version"] == 3, data
-assert data["contract_version"] == "1.2", data
+assert data["schema_version"] == 4, data
+assert data["contract_version"] == "1.3", data
 assert data["status"] == "report-only", data
+assert "governance_identity" in data["roles"]["digital-worker"], data
 assert data["roles"]["agent-dev-kit"] == [
     "asset_profile", "skill_assets", "immutable_release_identity", "source_set_handoff_contract"
 ], data
-assert "runtime_source_set_identity_ref" in data["frozen_inputs"], data
-assert "adk_release_identity_ref" in data["frozen_inputs"], data
+for field in (
+    "digital_worker_governance_identity_ref",
+    "runtime_source_set_identity_ref",
+    "adk_release_identity_ref",
+):
+    assert field in data["frozen_inputs"], (field, data)
 assert "runtime_distribution_identity_ref" in data["runtime_identity_required"], data
 assert data["asset_identity_semantics"] == {
     "provider_release_is_immutable": True,
@@ -31,6 +36,10 @@ assert data["asset_identity_semantics"] == {
     "monolithic_runtime_bundle_is_not_required_identity": True,
     "source_of_truth_stays_at_source": True,
 }, data
+assert set(data["replaceability_evidence_levels"]) == {
+    "R1-binding-conformance", "R2-real-provider-substitution"
+}, data
+assert data["terminal_replaceability_evidence_level"] == "R2-real-provider-substitution", data
 codex = data["candidate_runtime_bindings"][0]
 assert codex["runtime"] == "codex", data
 assert codex["repository"] == "jiying2007/codex", data
@@ -46,9 +55,12 @@ for key in (
     "execution_receipt_must_not_contain_verification_pass",
     "same_verifier_and_reviewer_standard",
     "missing_runtime_binding_identity_is_blocked_not_pass",
+    "missing_digital_worker_governance_identity_is_blocked_not_pass",
     "missing_adk_release_identity_is_blocked_not_pass",
     "missing_runtime_source_set_identity_is_blocked_not_pass",
     "missing_runtime_distribution_identity_is_blocked_not_pass",
+    "r1_binding_conformance_is_not_r2_real_provider_substitution",
+    "terminal_replaceability_requires_r2_real_provider_substitution",
 ):
     assert rules[key] is True, (key, data)
 
@@ -57,9 +69,11 @@ lta02 = requirements["LTA-02"]
 assert lta02["status"] == "blocked_external_evidence", lta02
 assert lta02["implementation_status"] == "certifier-ready", lta02
 assert lta02["required_healthy_runtime_bindings"] >= 2, lta02
+assert lta02["required_evidence_level"] == "R2-real-provider-substitution", lta02
+assert lta02["r1_binding_conformance_is_terminal_evidence"] is False, lta02
 assert lta02["certifier"] == "tools.control_plane.runtime_portability", lta02
 assert lta02["default_evidence_path"] == "reports/long-term-assets/runtime-portability-current.json", lta02
-assert lta02["remaining_external_blocker"] == "second-runtime-binding-and-real-comparison-evidence", lta02
+assert lta02["remaining_external_blocker"] == "second-real-runtime-provider-binding-and-R2-comparison-evidence", lta02
 assert certifier_path.is_file()
 assert '"runtime-portability": "tools.control_plane.runtime_portability"' in cli_path.read_text(encoding="utf-8")
 
@@ -74,4 +88,4 @@ for retired in (
     assert retired not in text, retired
 PY
 
-echo '[PASS] digital-worker runtime pilot uses exact ADK release/source-set/runtime-distribution identity and has a fail-closed LTA-02 certifier'
+echo '[PASS] digital-worker runtime pilot freezes DW governance identity and keeps terminal portability R2-only'

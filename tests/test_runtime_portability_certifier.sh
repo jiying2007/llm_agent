@@ -25,8 +25,8 @@ assert value["qualification"] == "LTA-02", value
 assert "real comparison evidence is not available" in value["reason"], value
 PY
 
-# Build a self-test-only two-runtime fixture. It proves the certifier semantics;
-# it is never copied into reports/long-term-assets and cannot qualify LTA-02.
+# Build a self-test-only two-runtime fixture. It proves certifier semantics only;
+# it is never copied into reports/long-term-assets and cannot by itself qualify LTA-02.
 python3 - "$FIXTURE" <<'PY'
 import hashlib
 import json
@@ -69,6 +69,7 @@ controlled = {
     "repo_root": "digital-worker",
     "exact_base_commit": "3" * 40,
     "dirty_baseline": False,
+    "digital_worker_governance_identity_ref": "sha256:" + "d" * 64,
     "material_manifest": {"digest": "material-selftest"},
     "knowledge_context_fingerprint": "knowledge-selftest",
     "engineering_task_package": {"digest": "task-package-selftest"},
@@ -134,6 +135,7 @@ write(root / review_ref, {"schema": "digital-worker-independent-review/selftest-
 
 evidence = {
     "schema": "llm-agent-runtime-portability-evidence/v1",
+    "evidence_level": "R2-real-provider-substitution",
     "comparison_id": "selftest-comparison",
     "controlled_task": controlled,
     "frozen_inputs_sha256": frozen,
@@ -163,9 +165,31 @@ import json, sys
 value = json.load(open(sys.argv[1], encoding="utf-8"))
 assert value["status"] == "pass", value
 assert value["qualification"] == "LTA-02", value
+assert value["evidence_level"] == "R2-real-provider-substitution", value
+assert value["digital_worker_governance_identity_ref"].startswith("sha256:"), value
 assert value["runtimes"] == ["claude-code", "codex"], value
 assert set(value["execution_receipts"]) == {"codex", "claude-code"}, value
 assert value["digital_worker_commit"] == "4" * 40, value
+PY
+
+# R1 binding conformance must never qualify terminal portability.
+python3 - "$FIXTURE/reports/portability/comparison.json" "$FIXTURE/reports/portability/r1.json" <<'PY'
+import json, sys
+from pathlib import Path
+value = json.loads(Path(sys.argv[1]).read_text())
+value["evidence_level"] = "R1-binding-conformance"
+Path(sys.argv[2]).write_text(json.dumps(value, indent=2, sort_keys=True) + "\n")
+PY
+set +e
+python3 -m tools.control_plane.runtime_portability --root "$FIXTURE" --evidence "$FIXTURE/reports/portability/r1.json" --summary-json >"$TMP/r1.json"
+rc=$?
+set -e
+[[ "$rc" -eq 2 ]]
+python3 - "$TMP/r1.json" <<'PY'
+import json, sys
+value = json.load(open(sys.argv[1], encoding="utf-8"))
+assert value["status"] == "blocked", value
+assert "requires R2-real-provider-substitution" in value["reason"], value
 PY
 
 # A real evidence file cannot pass while a compared binding remains future-only.
@@ -232,4 +256,4 @@ assert value["status"] == "fail", value
 assert "forbidden verification PASS claim" in value["error"], value
 PY
 
-echo "[PASS] LTA-02 portability certifier is fail-closed and keeps missing real second-runtime evidence BLOCKED"
+echo "[PASS] LTA-02 certifier requires frozen DW governance identity, R2 evidence, and keeps missing real second-runtime evidence BLOCKED"
