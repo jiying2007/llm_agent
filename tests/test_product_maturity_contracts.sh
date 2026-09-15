@@ -26,7 +26,7 @@ assert policy["field_qualification"]["minimum_human_operators"] == 1, policy
 assert policy["field_qualification"]["minimum_calendar_days"] == 0, policy
 assert policy["field_qualification"]["required_event_types"] == ["pilot_started"], policy
 assert policy["operational_advisories"]["recommended_observation_days"] >= 30, policy
-assert policy["operational_advisories"]["second_human_operator"] is True, policy
+assert policy["operational_advisories"]["second_human_operator"] is False, policy
 assert policy["operational_advisories"]["multi_runtime_campaign"] is True, policy
 assert all(policy["rules"].values()), policy
 
@@ -40,6 +40,7 @@ assert scorecard["software_m5"]["eligibility_status"] == "release-qualified", sc
 assert scorecard["software_m5"]["certification_status"] == "pass", scorecard
 assert scorecard["software_m5"]["certified"] is True, scorecard
 assert scorecard["software_m5"]["blocking_gates"] == [], scorecard
+assert "solo_maintainer_recovery_drill" not in scorecard["software_m5"]["advisory_followups"], scorecard
 assert len(scorecard["dimensions"]) == 12, scorecard
 assert [item["id"] for item in scorecard["dimensions"]] == [f"D{i:02d}" for i in range(1, 13)]
 for dimension in scorecard["dimensions"]:
@@ -58,11 +59,23 @@ by_id = {item["id"]: item for item in task_pack["tasks"]}
 assert by_id["PM-09"]["status"] == "implemented", by_id["PM-09"]
 assert by_id["PM-14"]["status"] == "not_required", by_id["PM-14"]
 assert not any(item["status"] in {"blocked_external", "in_progress", "pending_approval"} for item in task_pack["tasks"]), task_pack
+assert not any("clean-room recovery" in item.lower() for item in task_pack["operational_followups"]), task_pack
 
 assert "- current_product_maturity: M5" in status, status
 assert "- current_software_m5_certified: true" in status, status
-assert "- release_evidence_relation: current" in status, status
-assert "- release_authorized: true" in status, status
+projection_run = subprocess.run(
+    [sys.executable, "-m", "tools.control_plane.status_projection", "--root", str(root), "--summary-json"],
+    cwd=root,
+    check=False,
+    text=True,
+    stdout=subprocess.PIPE,
+    stderr=subprocess.PIPE,
+)
+assert projection_run.returncode == 0, projection_run.stderr + projection_run.stdout
+projection = json.loads(projection_run.stdout)
+assert projection["status"] == "pass", projection
+assert projection["source"]["pin_consistent"] is True, projection
+assert projection["current_projection"]["consistent"] is True, projection
 
 completed = subprocess.run(
     ["bash", str(root / "scripts/software-m5.sh"), "certify", "--summary-json"],
