@@ -39,13 +39,14 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Evaluate native repository governance
+      - name: Evaluate hosted-authoritative native repository governance
         env:
           GH_TOKEN: ${{ github.token }}
         run: >-
           python -m tools.control_plane.cli native-governance
           --repo "$GITHUB_REPOSITORY"
           --branch main
+          --scope hosted-ruleset
           --out "$RUNNER_TEMP/native-governance-report.json"
           --summary-json
 
