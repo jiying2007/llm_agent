@@ -8,6 +8,8 @@ python3 - <<'PY'
 from __future__ import annotations
 
 import copy
+import json
+from pathlib import Path
 
 from tools.control_plane import native_repository_governance as governance
 from tools.control_plane import native_repository_governance_admin as admin
@@ -138,11 +140,20 @@ post_apply = governance.evaluate_state(
 assert post_apply["status"] == "pass", post_apply
 assert admin.TOKEN_ENV == "LLM_AGENT_GITHUB_ADMIN_TOKEN"
 
-source = open("tools/control_plane/native_repository_governance_admin.py", encoding="utf-8").read()
+source = Path("tools/control_plane/native_repository_governance_admin.py").read_text(encoding="utf-8")
 assert "--apply refuses to run inside GitHub Actions" in source
 assert "Administration read/write is required" in source
 assert 'scope="full"' in source
 assert "delete_branch_on_merge=true" in source
 
-print("[PASS] local LTA-01 governance admin planner/apply is fail-closed and checkout-bound")
+lta = json.loads(Path("manifests/long_term_asset_qualification.json").read_text(encoding="utf-8"))
+lta01 = {item["id"]: item for item in lta["blocking_requirements"]}["LTA-01"]
+assert lta01["status"] == "blocked_external_admin"
+assert lta01["remaining_admin_blocker"] == "native-main-ruleset-only"
+assert "native-governance-admin" in lta01["admin_apply_command"]
+assert "--apply" in lta01["admin_apply_command"]
+assert lta01["admin_token_env"] == admin.TOKEN_ENV
+assert lta01["admin_apply_environment"] == "trusted-local-clean-main-only"
+
+print("[PASS] local LTA-01 governance admin planner/apply is fail-closed and manifest-bound")
 PY
