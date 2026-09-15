@@ -21,6 +21,20 @@
     "conclusion": "success",
     "job": "solo-recovery-drill"
   },
+  "fresh_main_sibling_checks": [
+    {
+      "name": "llm-agent-ci",
+      "run_id": 34951483437,
+      "head_sha": "b3de8e4e57874aaa4fd28cebb9cfcc657cad220b",
+      "conclusion": "success"
+    },
+    {
+      "name": "Branch GC",
+      "run_id": 34951483414,
+      "head_sha": "b3de8e4e57874aaa4fd28cebb9cfcc657cad220b",
+      "conclusion": "success"
+    }
+  ],
   "artifact": {
     "name": "solo-maintainer-recovery-receipt",
     "artifact_id": 10389661319,
