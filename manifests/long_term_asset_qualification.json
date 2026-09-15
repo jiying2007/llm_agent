@@ -99,6 +99,9 @@
       ],
       "certifier": "tools.control_plane.native_repository_governance",
       "certifier_command": "python3 -m tools.control_plane.cli native-governance --repo jiying2007/llm_agent --branch main --summary-json",
+      "admin_apply_command": "python3 -m tools.control_plane.cli native-governance-admin --repo jiying2007/llm_agent --branch main --apply --out reports/long-term-assets/native-repository-governance-admin-apply.json",
+      "admin_token_env": "LLM_AGENT_GITHUB_ADMIN_TOKEN",
+      "admin_apply_environment": "trusted-local-clean-main-only",
       "hosted_verifier_workflow": ".github/workflows/native-governance-control-plane.yml",
       "evidence": [
         "reports/long-term-assets/native-repository-governance-2026-09-15.json",
