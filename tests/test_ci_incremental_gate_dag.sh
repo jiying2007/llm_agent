@@ -35,6 +35,7 @@ assert profiles["contract"] == [
     "source-hygiene",
     "status-projection",
     "active-contracts",
+    "native-governance-contract",
     "status-projection-regression",
     "adk-promotion-transaction",
     "current-status-source-split",
@@ -51,6 +52,13 @@ assert gates["codex-pin"]["depends_on"] == []
 assert gates["runtime-chain-pin"]["depends_on"] == ["adk-interface", "codex-pin"]
 assert gates["gitlink-registry"]["depends_on"] == ["adk-pin", "codex-pin"]
 assert gates["adk-promotion-evidence"]["depends_on"] == ["adk-interface"]
+assert gates["native-governance-contract"]["depends_on"] == ["active-contracts"]
+assert gates["native-governance-contract"]["argv"] == [
+    "bash",
+    "tests/test_native_repository_governance_certifier.sh",
+]
+assert "tools/control_plane/native_repository_governance.py" in gates["native-governance-contract"]["inputs"]
+assert ".github/workflows/native-governance-control-plane.yml" in gates["native-governance-contract"]["inputs"]
 assert gates["root-regression"]["depends_on"] == ["adk-promotion-evidence"]
 assert gates["harden-readiness"].get("requires") == ["runtime-source"]
 assert gates["adk-pin"]["impact_inputs"] == ["agent-dev-kit"]
