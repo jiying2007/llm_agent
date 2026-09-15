@@ -87,10 +87,16 @@
       "id": "LTA-01",
       "name": "native-repository-governance",
       "status": "blocked_external_admin",
-      "acceptance": "Native main ruleset and delete-branch-on-merge are enabled, required automated policy is preserved, and one merged PR proves native branch deletion before generic custom GC responsibility is retired.",
+      "acceptance": "A native repository ruleset covers main, preserves required automated policy, prevents destructive/non-fast-forward updates, and uses zero required human approvals for the solo-maintainer model. Native delete-branch-on-merge and one merged-branch deletion are already proven; after the ruleset is observed, generic merged-PR custom GC responsibility must be retired and fresh-main verified.",
       "evidence": [
+        "reports/long-term-assets/native-repository-governance-2026-09-15.json",
         "https://github.com/jiying2007/llm_agent/issues/50"
-      ]
+      ],
+      "completed_subrequirements": [
+        "delete_branch_on_merge=true",
+        "merged PR branch deletion observed before custom GC deletion"
+      ],
+      "remaining_admin_blocker": "native-main-ruleset-only"
     },
     {
       "id": "LTA-02",
