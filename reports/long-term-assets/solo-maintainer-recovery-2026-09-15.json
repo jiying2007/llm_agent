@@ -1,0 +1,65 @@
+{
+  "schema": "llm-agent-solo-recovery-evidence/v1",
+  "status": "pass",
+  "observed_at": "2026-09-15T09:15:08Z",
+  "qualification": "LTA-03",
+  "source": {
+    "llm_agent_commit": "b3de8e4e57874aaa4fd28cebb9cfcc657cad220b",
+    "agent_dev_kit_version": "5.1.0",
+    "agent_dev_kit_commit": "59cbd5cb40ca7077ee5407636bfc617e295ec7e5",
+    "agent_dev_kit_tree": "16d3c99d4dac8c41c09509b82c536a11cc058ca9",
+    "lock_identity_match": true
+  },
+  "workflow": {
+    "name": "solo-maintainer-recovery-drill",
+    "run_id": 34951483463,
+    "run_number": 6,
+    "run_attempt": 1,
+    "event": "push",
+    "branch": "main",
+    "head_sha": "b3de8e4e57874aaa4fd28cebb9cfcc657cad220b",
+    "conclusion": "success",
+    "job": "solo-recovery-drill"
+  },
+  "artifact": {
+    "name": "solo-maintainer-recovery-receipt",
+    "artifact_id": 10389661319,
+    "sha256": "b8a9b818290bb6a532510b62fbe4050f4e5e7bf9674c50a3e1398448a67715b3",
+    "size_bytes": 996,
+    "expires_at": "2026-10-15T09:15:08Z",
+    "durability_note": "The repository evidence record preserves qualification facts after the transient Actions artifact expires; the artifact remains the original run-bound transport receipt."
+  },
+  "receipt": {
+    "schema": "llm-agent-solo-recovery-receipt/v1",
+    "status": "pass",
+    "generated_at": "2026-09-15T09:15:08Z",
+    "environment": {
+      "runner_os": "Linux",
+      "python": "3.11.16",
+      "github_run_id": "34951483463",
+      "github_run_attempt": "1",
+      "github_sha": "b3de8e4e57874aaa4fd28cebb9cfcc657cad220b"
+    },
+    "drill": {
+      "fresh_dependency_materialization": true,
+      "isolated_virtual_environment": true,
+      "isolated_target": true,
+      "release_surface_compatible": true,
+      "recovery_validation": {
+        "typed_quick_validation": "pass",
+        "static_target_contracts": "pass"
+      },
+      "full_release_governance_reclassified": false,
+      "transaction_target_contract": "claude-code",
+      "runtime_invoked": false,
+      "first_receipt_sha256": "7e03f6d7d91d53f75a17ce3d3636db7274d97b610dd6fcc022d972849ffe3b2f",
+      "managed_asset_count": 30,
+      "replace_managed_apply": "pass",
+      "previous_receipt_restore": "pass",
+      "restored_asset_digest_check": "pass",
+      "final_rollback": "pass",
+      "final_target_managed_assets_absent": true
+    }
+  },
+  "qualification_boundary": "This evidence proves LTA-03 clean-source reconstruction and transactional install/rollback recovery against the immutable ADK 5.1.0 release surface. It does not reclassify full ADK release governance, does not prove native runtime execution, and cannot satisfy LTA-02 multi-runtime portability."
+}
