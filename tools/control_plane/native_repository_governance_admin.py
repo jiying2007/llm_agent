@@ -21,7 +21,7 @@ from tools.control_plane.native_repository_governance import (
 
 API_VERSION = "2022-11-28"
 RECEIPT_SCHEMA = "llm-agent-native-repository-governance-admin/v1"
-TOKEN_ENV = "LLM_AGENT_GITHUB_ADMIN_TOKEN"
+TOKEN_ENV = "ADK_GITHUB_ADMIN_TOKEN"
 
 
 class AdminError(RuntimeError):
