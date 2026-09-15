@@ -1,12 +1,15 @@
 {
   "schema": "llm-agent-product-maturity-scorecard/v1",
-  "updated_at": "2026-09-12",
+  "updated_at": "2026-09-15",
   "product_boundary": "reference-intake workspace plus platform-neutral agent asset compiler/control plane; no LLM agent runtime",
   "overall": {
     "level": "M5",
     "status": "production-qualified",
     "terminal_mature": true,
-    "reason": "Current ADK identity is signed and release-eligible, root integration is fresh, one measured runtime smoke passes, and a governed independent real-software pilot has started with hash-bound field evidence.",
+    "terminal_scope": "product_maturity_v5",
+    "long_term_asset_status": "blocked",
+    "long_term_asset_contract": "manifests/long_term_asset_qualification.json",
+    "reason": "Current ADK identity is signed and release-qualified, root integration is fresh, one measured runtime smoke passes, and a governed independent real-software pilot has started with hash-bound field evidence. This terminal flag is scoped to Product M5 and does not imply long-term asset terminal qualification.",
     "field_status": "production_qualified"
   },
   "software_m5": {
@@ -19,12 +22,12 @@
     "blocking_gates": [],
     "advisory_followups": [
       "30_day_operational_observation",
-      "second_human_operator_review",
+      "solo_maintainer_recovery_drill",
+      "native_repository_governance",
       "multi_runtime_campaign",
       "repository_runtime_campaign",
       "historical_4_0_artifact_continuity",
-      "native_target_runtime_expansion",
-      "5_1_0_release_train"
+      "native_target_runtime_expansion"
     ]
   },
   "working_candidate": {
@@ -34,12 +37,13 @@
     "target_status": "certified",
     "lock_state": "synchronized",
     "runtime_certification": "representative-measured-runtime-pass-plus-compatibility-attestation",
-    "promotion_boundary": "M5 certification is bound to current signed ADK promotion evidence and representative real-repository field use. Longer operational campaigns remain non-blocking follow-up evidence."
+    "promotion_boundary": "M5 certification is bound to current signed ADK promotion evidence and representative real-repository field use. Long-term asset qualification remains a separate fail-closed layer."
   },
   "assessment_model": {
     "implementation_level": "highest level supported by current product implementation",
     "evidence_level": "highest level supported by source/test/runtime/representative-field evidence",
     "effective_level": "policy-computed production qualification; operational advisories do not lower initial M5",
+    "long_term_asset_model": "separate qualification in manifests/long_term_asset_qualification.json",
     "status_semantics": {
       "verified": "required production-qualification evidence exists and is internally consistent",
       "verified_local": "implementation passes but required production-qualification evidence is local-only",
@@ -203,6 +207,7 @@
       "effective_level": "M5",
       "evidence_layers_present": ["source", "test", "field"],
       "status": "verified",
+      "scope": "product_maturity_v5",
       "evidence": ["reports/field-evidence/software-m5-independent-pilot-start-2026-09-12.json", "reports/field-evidence/software-m5-v5-events.jsonl"]
     }
   ],
