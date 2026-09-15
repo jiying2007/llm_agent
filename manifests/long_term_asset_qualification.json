@@ -64,7 +64,7 @@
         "reports/runtime-evidence/codex-v5-runtime-smoke-2026-08-30.json",
         "manifests/digital_worker_runtime_pilot.json"
       ],
-      "note": "Representative runtime evidence is sufficient for Product M5 but long-term terminal portability requires the comparative multi-runtime requirement below."
+      "note": "Representative runtime evidence is sufficient for Product M5 but long-term terminal portability requires R2 real-provider substitution evidence below."
     },
     {
       "id": "product-qualified",
@@ -119,11 +119,13 @@
       "status": "blocked_external_evidence",
       "implementation_status": "certifier-ready",
       "required_healthy_runtime_bindings": 2,
-      "acceptance": "At least two healthy runtime bindings complete the same controlled real task with exact ADK release/source-set/distribution identity, separate execution receipts, and independent machine-verifiable domain verification/review under one shared frozen task and verifier/reviewer standard.",
+      "required_evidence_level": "R2-real-provider-substitution",
+      "r1_binding_conformance_is_terminal_evidence": false,
+      "acceptance": "R2 only: at least two healthy real runtime/provider bindings complete the same controlled real task under one exact Digital Worker governance identity with exact ADK release/source-set/distribution identity, separate execution receipts, and independent machine-verifiable domain verification/review under one shared frozen task and verifier/reviewer standard. Fake or controlled alternate bindings may prove R1 contract conformance but cannot satisfy LTA-02.",
       "certifier": "tools.control_plane.runtime_portability",
       "certifier_command": "python3 -m tools.control_plane.cli runtime-portability --root . --summary-json",
       "default_evidence_path": "reports/long-term-assets/runtime-portability-current.json",
-      "remaining_external_blocker": "second-runtime-binding-and-real-comparison-evidence",
+      "remaining_external_blocker": "second-real-runtime-provider-binding-and-R2-comparison-evidence",
       "evidence": [
         "manifests/digital_worker_runtime_pilot.json"
       ]
