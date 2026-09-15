@@ -135,4 +135,9 @@ if python3 -m tools.codex_assets.runtime_smoke_evidence \
   exit 1
 fi
 
-echo "[PASS] runtime smoke evidence collector"
+# Runtime evidence qualification also owns the LTA-02 comparison certifier
+# regression. This keeps the certifier on the Product-M5 CI path without
+# introducing a parallel workflow or treating its synthetic fixtures as evidence.
+bash "$ROOT/tests/test_runtime_portability_certifier.sh"
+
+echo "[PASS] runtime smoke and portability evidence contracts"

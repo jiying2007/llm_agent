@@ -10,6 +10,7 @@ _COMMAND_MODULES = {
     "impact": "tools.control_plane.impact",
     "runtime-chain": "tools.control_plane.runtime_chain",
     "consumer-chain": "tools.control_plane.consumer_chain",
+    "runtime-portability": "tools.control_plane.runtime_portability",
     "promotion-evidence": "tools.control_plane.adk_promotion_evidence",
 }
 
