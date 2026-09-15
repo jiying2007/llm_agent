@@ -105,9 +105,14 @@
     {
       "id": "LTA-03",
       "name": "solo-maintainer-recovery-drill",
-      "status": "blocked_evidence",
+      "status": "pass",
       "acceptance": "A clean environment reconstructs the control plane from authoritative source, verifies current identities, exercises rollback/recovery, and emits a machine-readable receipt without relying on untracked local state.",
-      "evidence": []
+      "evidence": [
+        "reports/long-term-assets/solo-maintainer-recovery-2026-09-15.json"
+      ],
+      "verified_main_commit": "b3de8e4e57874aaa4fd28cebb9cfcc657cad220b",
+      "workflow_run_id": 34951483463,
+      "artifact_sha256": "b8a9b818290bb6a532510b62fbe4050f4e5e7bf9674c50a3e1398448a67715b3"
     },
     {
       "id": "LTA-04",
@@ -125,7 +130,6 @@
     "blockers": [
       "LTA-01",
       "LTA-02",
-      "LTA-03",
       "LTA-04"
     ]
   }
