@@ -178,6 +178,28 @@
       "timeout_seconds": 30,
       "evidence_class": "source"
     },
+    "native-governance-contract": {
+      "owner": "llm_agent",
+      "side_effect": "none",
+      "depends_on": [
+        "active-contracts"
+      ],
+      "inputs": [
+        "manifests/long_term_asset_qualification.json",
+        "tools/control_plane/native_repository_governance.py",
+        "tools/control_plane/cli.py",
+        "tests/test_native_repository_governance_certifier.sh",
+        ".github/workflows/native-governance-control-plane.yml"
+      ],
+      "outputs": [],
+      "cache_policy": "disabled",
+      "argv": [
+        "bash",
+        "tests/test_native_repository_governance_certifier.sh"
+      ],
+      "timeout_seconds": 30,
+      "evidence_class": "test"
+    },
     "status-projection-regression": {
       "owner": "llm_agent",
       "side_effect": "none",
@@ -452,6 +474,7 @@
       "source-hygiene",
       "status-projection",
       "active-contracts",
+      "native-governance-contract",
       "status-projection-regression",
       "adk-promotion-transaction",
       "current-status-source-split",
