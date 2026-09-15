@@ -20,19 +20,22 @@ for marker in (
     'bash scripts/check-adk-lock.sh .',
     'python3 -m venv',
     'validate --quick --summary-json',
-    'manifest composition-check --summary-json',
     'target check --all --level static --summary-json',
     'install plan',
     'install apply',
     'install rollback',
     'adk-install-receipt/v3',
     'llm-agent-solo-recovery-receipt/v1',
+    'release_surface_compatible',
     'full_release_governance_reclassified',
     'runtime_invoked',
     'multi-runtime portability',
 ):
     assert marker in s, marker
 
+# Recovery must remain bound to the immutable 5.1.0 public surface. Do not
+# introduce commands that only exist on a newer ADK main checkout.
+assert 'manifest composition-check' not in s
 assert 'validate --strict --summary-json' not in s
 assert s.count('install rollback') >= 2
 assert '--tool claude-code' in s
