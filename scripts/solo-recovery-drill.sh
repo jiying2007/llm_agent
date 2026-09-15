@@ -45,12 +45,11 @@ PYTHON="$VENV/bin/python"
 export ADK_PYTHON_BIN="$PYTHON"
 export ADK_REQUIRE_SUPPORTED_PYTHON=1
 
-# Recovery qualification intentionally validates only contracts required to
-# reconstruct and transact the pinned component. Full strict release governance
+# Recovery qualification intentionally uses only commands that exist in the
+# immutable ADK release pinned by adk.lock. Full strict release governance
 # (official-source freshness, ecosystem standards and workflow closure) remains
 # owned by ADK release/CI and is not weakened or reclassified by this drill.
 bash "$ADK_DIR/scripts/devkit.sh" validate --quick --summary-json > "$RUN_ROOT/adk-quick-validate.json"
-bash "$ADK_DIR/scripts/devkit.sh" manifest composition-check --summary-json > "$RUN_ROOT/adk-composition.json"
 bash "$ADK_DIR/scripts/devkit.sh" target check --all --level static --summary-json > "$RUN_ROOT/adk-targets.json"
 
 install_plan() {
@@ -158,22 +157,22 @@ receipt = {
         "agent_dev_kit_version": adk_version,
         "agent_dev_kit_commit": adk_commit,
         "agent_dev_kit_tree": adk_tree,
-        "lock_identity_match": True,
+        "lock_identity_match": True
     },
     "environment": {
         "runner_os": os.environ.get("RUNNER_OS", platform.system()),
         "python": platform.python_version(),
         "github_run_id": os.environ.get("GITHUB_RUN_ID"),
         "github_run_attempt": os.environ.get("GITHUB_RUN_ATTEMPT"),
-        "github_sha": os.environ.get("GITHUB_SHA"),
+        "github_sha": os.environ.get("GITHUB_SHA")
     },
     "drill": {
         "fresh_dependency_materialization": True,
         "isolated_virtual_environment": True,
         "isolated_target": True,
+        "release_surface_compatible": True,
         "recovery_validation": {
             "typed_quick_validation": "pass",
-            "manifest_composition": "pass",
             "static_target_contracts": "pass"
         },
         "full_release_governance_reclassified": False,
@@ -187,7 +186,7 @@ receipt = {
         "final_rollback": "pass",
         "final_target_managed_assets_absent": True
     },
-    "qualification_boundary": "This receipt proves clean-source reconstruction and transactional install/rollback recovery only; full ADK release governance remains independently fail-closed, this is not native runtime evidence, and it does not satisfy multi-runtime portability."
+    "qualification_boundary": "This receipt proves clean-source reconstruction and transactional install/rollback recovery against the immutable ADK release surface only; full ADK release governance remains independently fail-closed, this is not native runtime evidence, and it does not satisfy multi-runtime portability."
 }
 Path(out).write_text(json.dumps(receipt, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 PY
