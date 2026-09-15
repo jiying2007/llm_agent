@@ -1,0 +1,132 @@
+{
+  "schema": "llm-agent-long-term-asset-qualification/v1",
+  "updated_at": "2026-09-15",
+  "qualification_scope": "llm_agent control plane plus pinned agent-dev-kit component",
+  "purpose": "Separate product M5 qualification from long-term asset terminal qualification without weakening fail-closed evidence semantics.",
+  "rules": {
+    "fail_closed": true,
+    "no_simulated_external_evidence": true,
+    "terminal_requires_all_blocking_requirements": true,
+    "product_maturity_does_not_imply_long_term_terminal": true
+  },
+  "maintainer_model": {
+    "type": "solo",
+    "required_human_approvals": 0,
+    "minimum_codeowners": 1,
+    "human_redundancy_required": false,
+    "compensating_controls": [
+      "pull-request-mediated-main-changes",
+      "mandatory-automated-regression-and-security-gates",
+      "fail-closed-machine-readable-evidence",
+      "exact-source-and-release-identity",
+      "immutable-signed-component-release",
+      "clean-room-recovery-and-rollback-drill",
+      "explicit-continuity-runbook"
+    ],
+    "policy": "Solo maintenance is an explicit operating model, not a waiver of automated governance, recovery, portability, or evidence requirements."
+  },
+  "lifecycle": {
+    "llm_agent": {
+      "model": "non-release-workspace",
+      "identity": "exact-git-commit",
+      "component_release_required": false,
+      "policy": "The root repository is an operational control-plane workspace; durable component releases belong to versioned components such as agent-dev-kit."
+    },
+    "agent_dev_kit": {
+      "model": "versioned-component",
+      "identity": "signed-release-plus-exact-source",
+      "component_release_required": true,
+      "current_release": "5.1.0"
+    }
+  },
+  "qualification_layers": [
+    {
+      "id": "source-valid",
+      "status": "pass",
+      "evidence": [
+        "manifests/adk_interface.lock.json",
+        "manifests/gitlinks.json",
+        "tests/test_adk_interface_lock.sh"
+      ]
+    },
+    {
+      "id": "release-qualified",
+      "status": "pass",
+      "evidence": [
+        "reports/promotion/agent-dev-kit/promotion-evidence.json",
+        "reports/promotion/agent-dev-kit/promotion-attestation.json"
+      ]
+    },
+    {
+      "id": "runtime-conformant",
+      "status": "partial",
+      "evidence": [
+        "reports/runtime-evidence/codex-v5-runtime-smoke-2026-08-30.json",
+        "manifests/digital_worker_runtime_pilot.json"
+      ],
+      "note": "Representative runtime evidence is sufficient for Product M5 but long-term terminal portability requires the comparative multi-runtime requirement below."
+    },
+    {
+      "id": "product-qualified",
+      "status": "pass",
+      "evidence": [
+        "manifests/product_maturity_scorecard.json",
+        "reports/runtime-evidence/software-m5-production-qualification-2026-09-12.json"
+      ]
+    },
+    {
+      "id": "long-term-asset-qualified",
+      "status": "blocked",
+      "evidence": [
+        "manifests/long_term_asset_qualification.json"
+      ]
+    }
+  ],
+  "blocking_requirements": [
+    {
+      "id": "LTA-01",
+      "name": "native-repository-governance",
+      "status": "blocked_external_admin",
+      "acceptance": "Native main ruleset and delete-branch-on-merge are enabled, required automated policy is preserved, and one merged PR proves native branch deletion before generic custom GC responsibility is retired.",
+      "evidence": [
+        "https://github.com/jiying2007/llm_agent/issues/50"
+      ]
+    },
+    {
+      "id": "LTA-02",
+      "name": "multi-runtime-portability",
+      "status": "blocked_external_evidence",
+      "required_healthy_runtime_bindings": 2,
+      "acceptance": "At least two healthy runtime bindings complete the same controlled real task with exact ADK release/source-set/distribution identity, separate execution receipts, and independent machine-verifiable domain verification.",
+      "evidence": [
+        "manifests/digital_worker_runtime_pilot.json"
+      ]
+    },
+    {
+      "id": "LTA-03",
+      "name": "solo-maintainer-recovery-drill",
+      "status": "blocked_evidence",
+      "acceptance": "A clean environment reconstructs the control plane from authoritative source, verifies current identities, exercises rollback/recovery, and emits a machine-readable receipt without relying on untracked local state.",
+      "evidence": []
+    },
+    {
+      "id": "LTA-04",
+      "name": "longitudinal-operation",
+      "status": "blocked_time_evidence",
+      "acceptance": "At least 30 days of independent pilot observation are summarized with incidents, regressions, recovery events, and unresolved risks represented explicitly.",
+      "evidence": [
+        "reports/field-evidence/software-m5-v5-events.jsonl"
+      ]
+    }
+  ],
+  "terminal": {
+    "qualified": false,
+    "status": "blocked",
+    "blockers": [
+      "LTA-01",
+      "LTA-02",
+      "LTA-03",
+      "LTA-04"
+    ]
+  }
+}
