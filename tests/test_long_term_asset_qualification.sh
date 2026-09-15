@@ -18,6 +18,8 @@ lock = json.loads((root / "manifests/adk_interface.lock.json").read_text())
 runbook = root / "docs/runbooks/solo-maintainer-continuity.md"
 recovery_path = root / "reports/long-term-assets/solo-maintainer-recovery-2026-09-15.json"
 recovery = json.loads(recovery_path.read_text())
+governance_path = root / "reports/long-term-assets/native-repository-governance-2026-09-15.json"
+governance = json.loads(governance_path.read_text())
 
 assert runbook.is_file()
 runbook_text = runbook.read_text()
@@ -64,11 +66,34 @@ assert layers["long-term-asset-qualified"]["status"] == "blocked"
 requirements = {item["id"]: item for item in lta["blocking_requirements"]}
 assert set(requirements) == {"LTA-01", "LTA-02", "LTA-03", "LTA-04"}
 assert requirements["LTA-01"]["status"] == "blocked_external_admin"
+assert requirements["LTA-01"]["remaining_admin_blocker"] == "native-main-ruleset-only"
+assert requirements["LTA-01"]["evidence"][0] == governance_path.as_posix()
+assert set(requirements["LTA-01"]["completed_subrequirements"]) == {
+    "delete_branch_on_merge=true",
+    "merged PR branch deletion observed before custom GC deletion",
+}
 assert requirements["LTA-02"]["status"] == "blocked_external_evidence"
 assert requirements["LTA-02"]["required_healthy_runtime_bindings"] >= 2
 assert requirements["LTA-03"]["status"] == "pass"
 assert requirements["LTA-03"]["evidence"] == [recovery_path.as_posix()]
 assert requirements["LTA-04"]["status"] == "blocked_time_evidence"
+
+assert governance["schema"] == "llm-agent-native-repository-governance-evidence/v1"
+assert governance["status"] == "partial"
+assert governance["qualification"] == "LTA-01"
+assert governance["repository"] == "jiying2007/llm_agent"
+assert governance["repository_metadata"]["default_branch"] == "main"
+assert governance["repository_metadata"]["delete_branch_on_merge"] is True
+assert governance["native_branch_deletion_proof"]["pull_request"] == 55
+assert governance["native_branch_deletion_proof"]["merged_branch_absent_after_merge"] is True
+assert governance["native_branch_deletion_proof"]["custom_branch_gc_run_id"] == 34954493446
+assert governance["native_branch_deletion_proof"]["custom_branch_gc_conclusion"] == "success"
+assert governance["native_branch_deletion_proof"]["custom_branch_gc_candidates"] == 0
+assert governance["native_branch_deletion_proof"]["custom_branch_gc_deleted"] == 0
+assert governance["native_ruleset"]["observed_ruleset_count"] == 0
+assert governance["native_ruleset"]["main_ruleset_observed"] is False
+assert governance["native_ruleset"]["collection"] == []
+assert governance["remaining_blocker"] == "native-main-ruleset-only"
 
 assert recovery["schema"] == "llm-agent-solo-recovery-evidence/v1"
 assert recovery["status"] == "pass"
