@@ -11,6 +11,7 @@ from typing import Any, Mapping
 EVIDENCE_SCHEMA = "llm-agent-runtime-portability-evidence/v1"
 CHECK_SCHEMA = "llm-agent-runtime-portability-check/v1"
 DEFAULT_EVIDENCE = "reports/long-term-assets/runtime-portability-current.json"
+TERMINAL_EVIDENCE_LEVEL = "R2-real-provider-substitution"
 FULL_SHA = re.compile(r"^[0-9a-f]{40}$")
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
 READY_BINDING_STATUSES = {"source-set-bound", "ready", "active"}
@@ -114,10 +115,12 @@ def _contains_verification_pass_claim(value: Any) -> bool:
 
 def _contract(root: Path) -> dict[str, Any]:
     contract = _load_object(root / "manifests/digital_worker_runtime_pilot.json", "runtime pilot contract")
-    if contract.get("schema_version") != 3 or contract.get("contract_version") != "1.2":
+    if contract.get("schema_version") != 4 or contract.get("contract_version") != "1.3":
         raise PortabilityError("runtime pilot contract version is unsupported")
     if contract.get("status") != "report-only":
         raise PortabilityError("runtime pilot contract must remain report-only")
+    if contract.get("terminal_replaceability_evidence_level") != TERMINAL_EVIDENCE_LEVEL:
+        raise PortabilityError("runtime pilot terminal replaceability evidence level drift")
     rules = contract.get("hard_rules")
     if not isinstance(rules, dict):
         raise PortabilityError("runtime pilot hard rules are missing")
@@ -128,12 +131,18 @@ def _contract(root: Path) -> dict[str, Any]:
         "same_verifier_and_reviewer_standard",
         "missing_runtime_health_is_blocked_not_pass",
         "missing_runtime_binding_identity_is_blocked_not_pass",
+        "missing_digital_worker_governance_identity_is_blocked_not_pass",
         "missing_adk_release_identity_is_blocked_not_pass",
         "missing_runtime_source_set_identity_is_blocked_not_pass",
         "missing_runtime_distribution_identity_is_blocked_not_pass",
+        "r1_binding_conformance_is_not_r2_real_provider_substitution",
+        "terminal_replaceability_requires_r2_real_provider_substitution",
     )
     if any(rules.get(key) is not True for key in required_rules):
         raise PortabilityError("runtime pilot hard rules are incomplete or weakened")
+    frozen_inputs = contract.get("frozen_inputs")
+    if not isinstance(frozen_inputs, list) or "digital_worker_governance_identity_ref" not in frozen_inputs:
+        raise PortabilityError("runtime pilot must freeze exact digital-worker governance identity")
     return contract
 
 
@@ -261,6 +270,11 @@ def check(root: Path, evidence_path: Path | None = None) -> dict[str, Any]:
     data = _load_object(evidence, "runtime portability evidence")
     if data.get("schema") != EVIDENCE_SCHEMA:
         raise PortabilityError("runtime portability evidence schema is unsupported")
+    evidence_level = _require_text(data.get("evidence_level"), "evidence_level")
+    if evidence_level != TERMINAL_EVIDENCE_LEVEL:
+        raise PortabilityBlocked(
+            f"LTA-02 terminal portability requires {TERMINAL_EVIDENCE_LEVEL}, got {evidence_level}"
+        )
     comparison_id = _require_text(data.get("comparison_id"), "comparison_id")
     controlled_task = data.get("controlled_task")
     if not isinstance(controlled_task, dict):
@@ -273,6 +287,7 @@ def check(root: Path, evidence_path: Path | None = None) -> dict[str, Any]:
         raise PortabilityError("controlled_task is missing frozen inputs: " + ", ".join(missing_frozen))
     if controlled_task.get("adk_release_identity_ref") != "manifests/adk_interface.lock.json":
         raise PortabilityError("controlled_task.adk_release_identity_ref must bind the canonical ADK interface lock")
+    _require_text(controlled_task.get("digital_worker_governance_identity_ref"), "controlled_task.digital_worker_governance_identity_ref")
     frozen_digest = _digest(controlled_task)
     if data.get("frozen_inputs_sha256") != frozen_digest:
         raise PortabilityError("frozen_inputs_sha256 does not match controlled_task")
@@ -360,8 +375,10 @@ def check(root: Path, evidence_path: Path | None = None) -> dict[str, Any]:
         "schema": CHECK_SCHEMA,
         "status": "pass",
         "qualification": "LTA-02",
+        "evidence_level": evidence_level,
         "comparison_id": comparison_id,
         "work_item_id": controlled_task.get("work_item_id"),
+        "digital_worker_governance_identity_ref": controlled_task.get("digital_worker_governance_identity_ref"),
         "frozen_inputs_sha256": frozen_digest,
         "agent_dev_kit": expected_adk,
         "runtimes": sorted(seen),
