@@ -11,6 +11,7 @@ _COMMAND_MODULES = {
     "runtime-chain": "tools.control_plane.runtime_chain",
     "consumer-chain": "tools.control_plane.consumer_chain",
     "runtime-portability": "tools.control_plane.runtime_portability",
+    "longitudinal-operation": "tools.control_plane.longitudinal_operation",
     "promotion-evidence": "tools.control_plane.adk_promotion_evidence",
 }
 
