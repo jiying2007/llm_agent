@@ -27,7 +27,6 @@
   ],
   "operational_followups": [
     "30-day independent pilot observation",
-    "solo-maintainer clean-room recovery and rollback drill",
     "native repository governance closure for issue #50",
     "full Codex/second-runtime comparative campaign",
     "real-repository runtime campaign",
