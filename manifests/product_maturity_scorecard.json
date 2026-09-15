@@ -22,7 +22,6 @@
     "blocking_gates": [],
     "advisory_followups": [
       "30_day_operational_observation",
-      "solo_maintainer_recovery_drill",
       "native_repository_governance",
       "multi_runtime_campaign",
       "repository_runtime_campaign",

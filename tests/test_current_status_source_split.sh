@@ -56,7 +56,7 @@ else:
 
 assert policy["definition"] == "production-qualified", policy
 assert policy["operational_advisories"]["recommended_observation_days"] >= 30, policy
-assert policy["operational_advisories"]["second_human_operator"] is True, policy
+assert policy["operational_advisories"]["second_human_operator"] is False, policy
 assert policy["operational_advisories"]["multi_runtime_campaign"] is True, policy
 PY
 

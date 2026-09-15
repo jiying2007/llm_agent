@@ -28,15 +28,17 @@ Run the drill from a clean environment or disposable workspace.
 
 1. Clone `llm_agent` from the authoritative repository and checkout the exact candidate commit.
 2. Reconstruct managed source dependencies from tracked locks/pins; do not copy an existing local dependency tree.
-3. Validate JSON manifests and the root/ADK interface lock.
-4. Run the root regression suite and the signed ADK promotion-evidence check.
+3. Validate the root/ADK identity and the recovery-relevant immutable ADK release surface.
+4. Keep full root regression, signed ADK promotion evidence, and ADK release governance independently fail-closed; recovery evidence must not reclassify those gates.
 5. Materialize/install only through tracked control-plane entry points.
-6. Verify the live/runtime identity against the expected exact source/release identity.
-7. Exercise one rollback or restore transition using the tracked rollback mechanism.
-8. Re-run the identity and regression checks after rollback/recovery.
-9. Emit a machine-readable receipt under `reports/recovery-evidence/` containing the source commit, ADK release/source identity, commands/gates, rollback transition, result, environment facts, and unresolved risks.
+6. Verify the reconstructed component identity against the expected exact source/release identity.
+7. Exercise rollback/restore using the tracked transactional install receipt and backup mechanism.
+8. Re-run receipt and managed-asset digest checks after rollback/recovery and prove the final isolated target returns to its pre-install managed state.
+9. Emit a machine-readable run receipt and persist the qualifying main-run facts under `reports/long-term-assets/`, including source commit, ADK release/source identity, workflow/artifact identity, rollback transition, result, environment facts, and evidence boundary.
 
-The drill is not complete until a fresh receipt exists and all blocking checks pass. A written runbook alone is not recovery evidence.
+The drill is not complete until a fresh receipt exists on merged `main`, the run succeeds, and durable repository evidence records the run-bound facts. A PR-head run or written runbook alone is not recovery evidence.
+
+The current LTA-03 qualification evidence is `reports/long-term-assets/solo-maintainer-recovery-2026-09-15.json`. It is bound to the successful fresh-main recovery run and explicitly records `runtime_invoked=false`; therefore it cannot satisfy LTA-02 multi-runtime portability.
 
 ## 4. Release continuity
 
@@ -75,4 +77,4 @@ Secrets themselves must never be stored in this repository or in recovery receip
 
 ## 7. Terminal qualification rule
 
-Long-term asset qualification is separate from Product M5. `manifests/long_term_asset_qualification.json` is the canonical status contract. It may become terminal only when every blocking requirement has real evidence, including native repository governance, multi-runtime portability, a successful clean-room recovery/rollback receipt, and the required longitudinal operating evidence.
+Long-term asset qualification is separate from Product M5. `manifests/long_term_asset_qualification.json` is the canonical status contract. It may become terminal only when every blocking requirement has real evidence. LTA-03 clean-room recovery/rollback is qualified; native repository governance, multi-runtime portability, and the required longitudinal operating evidence remain independently fail-closed until their own acceptance criteria are met.

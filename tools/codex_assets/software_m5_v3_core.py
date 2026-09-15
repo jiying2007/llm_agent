@@ -3,10 +3,10 @@
 
 Policy v3 separates initial M5 qualification from long-duration operational
 maturity. M5 requires current signed supply-chain evidence, at least one
-measured runtime smoke, and a real independent-repository pilot start. Longer
-multi-runtime campaigns, second-operator review, 30-day observation, and
-historical release-continuity recovery remain tracked advisories instead of
-initial certification blockers.
+measured runtime smoke, one real independent-repository pilot start, and the
+explicit solo-maintainer operating model. Multi-runtime campaigns, 30-day
+observation, and historical release-continuity recovery remain tracked
+advisories instead of initial certification blockers.
 """
 
 from __future__ import annotations
@@ -146,7 +146,7 @@ def _validate_policy(policy: Mapping[str, Any]) -> None:
     if field.get("minimum_independent_repositories") != 1:
         raise M5Error("M5 v3 requires one independent repository")
     if field.get("minimum_human_operators") != 1:
-        raise M5Error("M5 v3 requires one human operator")
+        raise M5Error("M5 v3 requires exactly one human-operator minimum baseline")
     if field.get("minimum_calendar_days") != 0:
         raise M5Error("initial M5 qualification must not be time-gated")
     if field.get("required_event_types") != ["pilot_started"]:
@@ -154,8 +154,8 @@ def _validate_policy(policy: Mapping[str, Any]) -> None:
 
     if int(advisories.get("recommended_observation_days", 0)) < 30:
         raise M5Error("long-duration operational follow-up must retain a 30-day recommendation")
-    if advisories.get("second_human_operator") is not True:
-        raise M5Error("second-human operational review must remain an advisory")
+    if advisories.get("second_human_operator") is not False:
+        raise M5Error("second-human advisory must be disabled for the solo-maintainer model")
     if advisories.get("multi_runtime_campaign") is not True:
         raise M5Error("multi-runtime campaign must remain an advisory")
 
