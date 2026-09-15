@@ -72,11 +72,33 @@ assert set(requirements["LTA-01"]["completed_subrequirements"]) == {
     "delete_branch_on_merge=true",
     "merged PR branch deletion observed before custom GC deletion",
 }
-assert requirements["LTA-02"]["status"] == "blocked_external_evidence"
-assert requirements["LTA-02"]["required_healthy_runtime_bindings"] >= 2
+
+lta02 = requirements["LTA-02"]
+assert lta02["status"] == "blocked_external_evidence"
+assert lta02["implementation_status"] == "certifier-ready"
+assert lta02["required_healthy_runtime_bindings"] >= 2
+assert lta02["certifier"] == "tools.control_plane.runtime_portability"
+assert "runtime-portability" in lta02["certifier_command"]
+assert lta02["default_evidence_path"] == "reports/long-term-assets/runtime-portability-current.json"
+assert lta02["remaining_external_blocker"] == "second-runtime-binding-and-real-comparison-evidence"
+
 assert requirements["LTA-03"]["status"] == "pass"
 assert requirements["LTA-03"]["evidence"] == [recovery_path.as_posix()]
-assert requirements["LTA-04"]["status"] == "blocked_time_evidence"
+
+lta04 = requirements["LTA-04"]
+assert lta04["status"] == "blocked_time_evidence"
+assert lta04["implementation_status"] == "certifier-ready"
+assert lta04["pilot_id"] == "software-m5-v5-independent-pilot-20260912"
+assert lta04["repository_id"] == "digital-worker"
+assert lta04["minimum_calendar_days"] == 30
+assert lta04["certifier"] == "tools.control_plane.longitudinal_operation"
+assert "longitudinal-operation" in lta04["certifier_command"]
+assert lta04["default_evidence_path"] == "reports/long-term-assets/longitudinal-operation-current.json"
+assert lta04["remaining_external_blocker"] == "observation-window-and-real-summary-evidence"
+assert lta04["evidence"] == [
+    "manifests/software_m5_pilot_ledger.json",
+    "reports/field-evidence/software-m5-v5-events.jsonl",
+]
 
 assert governance["schema"] == "llm-agent-native-repository-governance-evidence/v1"
 assert governance["status"] == "partial"
@@ -146,6 +168,7 @@ assert scorecard["software_m5"]["certified"] is True
 assert "second_human_operator_review" not in scorecard["software_m5"]["advisory_followups"]
 assert "solo_maintainer_recovery_drill" not in scorecard["software_m5"]["advisory_followups"]
 assert policy["operational_advisories"]["second_human_operator"] is False
+assert policy["operational_advisories"]["recommended_observation_days"] >= 30
 
 assert tasks["rules"]["product_m5_does_not_imply_long_term_asset_terminal"] is True
 assert tasks["long_term_asset_contract"] == "manifests/long_term_asset_qualification.json"
