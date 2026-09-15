@@ -3,14 +3,13 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import sys
 import urllib.error
 import urllib.request
 from pathlib import Path
 from typing import Any
 
 API_VERSION = "2022-11-28"
-CHECK_SCHEMA = "llm-agent-native-repository-governance-check/v1"
+CHECK_SCHEMA = "llm-agent-native-repository-governance-check/v2"
 DEFAULT_REPOSITORY = "jiying2007/llm_agent"
 DEFAULT_RULESET_NAME = "llm_agent main governance"
 DEFAULT_REQUIRED_CHECKS = (
@@ -21,6 +20,7 @@ DEFAULT_REQUIRED_CHECKS = (
     "software-m5-certify",
     "branch-gc",
 )
+VALID_SCOPES = ("full", "hosted-ruleset")
 
 
 class GovernanceError(RuntimeError):
@@ -200,7 +200,11 @@ def evaluate_state(
     *,
     branch_name: str = "main",
     required_checks: tuple[str, ...] = DEFAULT_REQUIRED_CHECKS,
+    scope: str = "full",
 ) -> dict[str, Any]:
+    if scope not in VALID_SCOPES:
+        raise GovernanceError(f"unsupported governance evidence scope: {scope!r}")
+
     default_branch = str(repository.get("default_branch") or "main")
     evidence = _ruleset_evidence(rulesets, branch_name, default_branch)
     applicable = evidence["applicable"]
@@ -236,9 +240,8 @@ def evaluate_state(
         not ruleset.get("bypass_actors") for ruleset in applicable
     )
 
-    checks = {
+    hosted_checks = {
         "default_branch_is_main": default_branch == branch_name == "main",
-        "delete_branch_on_merge": repository.get("delete_branch_on_merge") is True,
         "main_protected": bool(branch_state.get("protected")),
         "active_main_ruleset": active_ruleset,
         "pull_request_required": pull_request_required,
@@ -251,58 +254,69 @@ def evaluate_state(
         "force_push_blocked": "non_fast_forward" in rule_types,
         "branch_deletion_blocked": "deletion" in rule_types,
     }
+    full_checks = {
+        **hosted_checks,
+        "delete_branch_on_merge": repository.get("delete_branch_on_merge") is True,
+    }
+    checks = full_checks if scope == "full" else hosted_checks
 
     violations: list[str] = []
     remediation: list[str] = []
-    if not checks["default_branch_is_main"]:
+    if not hosted_checks["default_branch_is_main"]:
         violations.append("default/main branch identity does not match the LTA-01 contract")
         remediation.append("keep main as the protected default branch")
-    if not checks["delete_branch_on_merge"]:
-        violations.append("native delete_branch_on_merge is not enabled")
-        remediation.append("enable delete_branch_on_merge")
-    if not checks["main_protected"]:
+    if not hosted_checks["main_protected"]:
         violations.append("main is not protected by native GitHub governance")
         remediation.append("create or enable an active native ruleset covering main")
-    if not checks["active_main_ruleset"]:
+    if not hosted_checks["active_main_ruleset"]:
         violations.append("no active native repository ruleset covers main")
         remediation.append("create the canonical solo-maintainer main ruleset")
-    if not checks["pull_request_required"]:
+    if not hosted_checks["pull_request_required"]:
         violations.append("native ruleset does not require pull requests")
         remediation.append("add a pull_request rule")
-    if not checks["solo_zero_required_approvals"]:
+    if not hosted_checks["solo_zero_required_approvals"]:
         violations.append("native ruleset does not preserve zero required human approvals")
         remediation.append("set required_approving_review_count to 0")
-    if not checks["no_ruleset_bypass"]:
+    if not hosted_checks["no_ruleset_bypass"]:
         violations.append("native ruleset has a bypass actor")
         remediation.append("remove unconditional ruleset bypass actors")
-    if not checks["ruleset_squash_only"]:
+    if not hosted_checks["ruleset_squash_only"]:
         violations.append("native ruleset does not restrict merge methods to squash")
         remediation.append("set allowed merge methods to squash only")
-    if not checks["required_status_checks_present"]:
+    if not hosted_checks["required_status_checks_present"]:
         violations.append("native ruleset does not require status checks")
         remediation.append("add a required_status_checks rule")
-    if not checks["strict_required_status_checks"]:
+    if not hosted_checks["strict_required_status_checks"]:
         violations.append("required status checks do not require an up-to-date branch")
         remediation.append("enable strict_required_status_checks_policy")
     if missing_contexts:
         violations.append("required status checks missing: " + ", ".join(missing_contexts))
         remediation.append("require every canonical llm_agent PR qualification context")
-    if not checks["force_push_blocked"]:
+    if not hosted_checks["force_push_blocked"]:
         violations.append("native ruleset does not block non-fast-forward updates")
         remediation.append("add a non_fast_forward rule")
-    if not checks["branch_deletion_blocked"]:
+    if not hosted_checks["branch_deletion_blocked"]:
         violations.append("native ruleset does not block main branch deletion")
         remediation.append("add a deletion rule")
+    if scope == "full" and not full_checks["delete_branch_on_merge"]:
+        violations.append("native delete_branch_on_merge is not enabled")
+        remediation.append("enable delete_branch_on_merge")
 
     status = "pass" if all(checks.values()) else "blocked_external_admin"
+    full_compliant: bool | None = all(full_checks.values()) if scope == "full" else None
     return {
         "schema": CHECK_SCHEMA,
+        "scope": scope,
         "status": status,
         "qualification": "LTA-01",
         "implementation_status": "certifier-ready",
         "repository": repository.get("full_name"),
         "branch": branch_name,
         "checks": checks,
+        "hosted_checks": hosted_checks,
+        "full_checks": full_checks,
+        "full_compliant": full_compliant,
+        "repository_admin_settings_authoritative": scope == "full",
         "required_status_checks": list(required_checks),
         "observed_status_checks": sorted(required_contexts),
         "missing_status_checks": missing_contexts,
@@ -388,7 +402,10 @@ def _render(result: dict[str, Any], *, summary_json: bool, out: Path | None) -> 
     )
     if out:
         out.parent.mkdir(parents=True, exist_ok=True)
-        out.write_text(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        out.write_text(
+            json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
     print(rendered)
 
 
@@ -396,10 +413,14 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Fail-closed LTA-01 native repository governance certifier"
     )
-    parser.add_argument("--repo", default=os.environ.get("GITHUB_REPOSITORY", DEFAULT_REPOSITORY))
+    parser.add_argument(
+        "--repo",
+        default=os.environ.get("GITHUB_REPOSITORY", DEFAULT_REPOSITORY),
+    )
     parser.add_argument("--branch", default="main")
     parser.add_argument("--fixture", type=Path)
     parser.add_argument("--required-check", action="append", dest="required_checks")
+    parser.add_argument("--scope", choices=VALID_SCOPES, default="full")
     parser.add_argument("--out", type=Path)
     parser.add_argument("--summary-json", action="store_true")
     args = parser.parse_args(argv)
@@ -417,11 +438,13 @@ def main(argv: list[str] | None = None) -> int:
             rulesets,
             branch_name=args.branch,
             required_checks=required_checks,
+            scope=args.scope,
         )
         exit_code = 0 if result["status"] == "pass" else 2
     except (GovernanceError, OSError, ValueError) as exc:
         result = {
             "schema": CHECK_SCHEMA,
+            "scope": args.scope,
             "status": "fail",
             "qualification": "LTA-01",
             "error": str(exc),
