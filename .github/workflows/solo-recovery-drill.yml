@@ -1,0 +1,74 @@
+name: solo-maintainer-recovery-drill
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/solo-recovery-drill.yml'
+      - '.gitmodules'
+      - 'adk.lock'
+      - 'agent-dev-kit'
+      - 'manifests/adk_interface.lock.json'
+      - 'manifests/long_term_asset_qualification.json'
+      - 'scripts/check-adk-lock.sh'
+      - 'scripts/solo-recovery-drill.sh'
+      - 'tests/test_solo_recovery_drill_contract.sh'
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - '.github/workflows/solo-recovery-drill.yml'
+      - '.gitmodules'
+      - 'adk.lock'
+      - 'agent-dev-kit'
+      - 'manifests/adk_interface.lock.json'
+      - 'manifests/long_term_asset_qualification.json'
+      - 'scripts/check-adk-lock.sh'
+      - 'scripts/solo-recovery-drill.sh'
+      - 'tests/test_solo_recovery_drill_contract.sh'
+  schedule:
+    - cron: '17 3 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: solo-maintainer-recovery-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  recovery-drill:
+    name: solo-recovery-drill
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout authoritative root source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: false
+          persist-credentials: false
+
+      - name: Set up supported Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.11'
+
+      - name: Ratchet recovery contract
+        run: bash tests/test_solo_recovery_drill_contract.sh
+
+      - name: Reconstruct, apply, rollback, and emit receipt
+        shell: bash
+        run: |
+          set -euo pipefail
+          receipt="$RUNNER_TEMP/solo-maintainer-recovery-receipt.json"
+          bash scripts/solo-recovery-drill.sh --output "$receipt"
+          python3 -m json.tool "$receipt"
+
+      - name: Upload recovery evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: solo-maintainer-recovery-receipt
+          path: ${{ runner.temp }}/solo-maintainer-recovery-receipt.json
+          if-no-files-found: error
+          retention-days: 30
