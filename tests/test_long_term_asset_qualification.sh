@@ -65,10 +65,27 @@ assert layers["long-term-asset-qualified"]["status"] == "blocked"
 
 requirements = {item["id"]: item for item in lta["blocking_requirements"]}
 assert set(requirements) == {"LTA-01", "LTA-02", "LTA-03", "LTA-04"}
-assert requirements["LTA-01"]["status"] == "blocked_external_admin"
-assert requirements["LTA-01"]["remaining_admin_blocker"] == "native-main-ruleset-only"
-assert requirements["LTA-01"]["evidence"][0] == governance_path.as_posix()
-assert set(requirements["LTA-01"]["completed_subrequirements"]) == {
+
+lta01 = requirements["LTA-01"]
+assert lta01["status"] == "blocked_external_admin"
+assert lta01["implementation_status"] == "certifier-ready"
+assert lta01["remaining_admin_blocker"] == "native-main-ruleset-only"
+assert lta01["evidence"][0] == governance_path.as_posix()
+assert lta01["certifier"] == "tools.control_plane.native_repository_governance"
+assert "native-governance" in lta01["certifier_command"]
+assert lta01["hosted_verifier_workflow"] == ".github/workflows/native-governance-control-plane.yml"
+assert (root / lta01["hosted_verifier_workflow"]).is_file()
+assert lta01["required_status_checks"] == [
+    "contract",
+    "doc-sync",
+    "integration-impact",
+    "integration-summary",
+    "software-m5-certify",
+    "branch-gc",
+]
+assert "strict/up-to-date" in lta01["acceptance"]
+assert "zero-approval" in lta01["acceptance"]
+assert set(lta01["completed_subrequirements"]) == {
     "delete_branch_on_merge=true",
     "merged PR branch deletion observed before custom GC deletion",
 }
