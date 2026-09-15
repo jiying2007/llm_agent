@@ -175,6 +175,7 @@ with tempfile.TemporaryDirectory() as temp_dir:
     assert governance.main(["--fixture", str(blocked_fixture), "--scope", "hosted-ruleset", "--summary-json"]) == 2
 
 assert cli._COMMAND_MODULES["native-governance"] == "tools.control_plane.native_repository_governance"
+assert cli._COMMAND_MODULES["native-governance-admin"] == "tools.control_plane.native_repository_governance_admin"
 
 workflow = Path(".github/workflows/native-governance-control-plane.yml").read_text(encoding="utf-8")
 trigger_block = workflow.split("permissions:", 1)[0]
@@ -194,3 +195,5 @@ assert "if-no-files-found: error" in workflow
 
 print("[PASS] LTA-01 native repository governance certifier authority scopes")
 PY
+
+bash tests/test_native_repository_governance_admin.sh
