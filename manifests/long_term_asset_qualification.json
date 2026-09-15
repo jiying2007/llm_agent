@@ -87,7 +87,19 @@
       "id": "LTA-01",
       "name": "native-repository-governance",
       "status": "blocked_external_admin",
-      "acceptance": "A native repository ruleset covers main, preserves required automated policy, prevents destructive/non-fast-forward updates, and uses zero required human approvals for the solo-maintainer model. Native delete-branch-on-merge and one merged-branch deletion are already proven; after the ruleset is observed, generic merged-PR custom GC responsibility must be retired and fresh-main verified.",
+      "implementation_status": "certifier-ready",
+      "acceptance": "A native repository ruleset covers main, requires pull requests, preserves the solo-maintainer zero-approval policy, has no unconditional bypass actors, permits squash merges only, requires the canonical stable PR qualification contexts with strict/up-to-date status enforcement, and blocks destructive/non-fast-forward main updates. Native delete-branch-on-merge and merged-branch deletion are already proven; after the ruleset is observed and certified, generic merged-PR custom GC responsibility must be retired and fresh-main verified.",
+      "required_status_checks": [
+        "contract",
+        "doc-sync",
+        "integration-impact",
+        "integration-summary",
+        "software-m5-certify",
+        "branch-gc"
+      ],
+      "certifier": "tools.control_plane.native_repository_governance",
+      "certifier_command": "python3 -m tools.control_plane.cli native-governance --repo jiying2007/llm_agent --branch main --summary-json",
+      "hosted_verifier_workflow": ".github/workflows/native-governance-control-plane.yml",
       "evidence": [
         "reports/long-term-assets/native-repository-governance-2026-09-15.json",
         "https://github.com/jiying2007/llm_agent/issues/50"
