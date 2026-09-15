@@ -129,8 +129,17 @@
       "id": "LTA-04",
       "name": "longitudinal-operation",
       "status": "blocked_time_evidence",
-      "acceptance": "At least 30 days of independent pilot observation are summarized with incidents, regressions, recovery events, and unresolved risks represented explicitly.",
+      "implementation_status": "certifier-ready",
+      "pilot_id": "software-m5-v5-independent-pilot-20260912",
+      "repository_id": "digital-worker",
+      "minimum_calendar_days": 30,
+      "acceptance": "At least 30 days of independent pilot observation are summarized with incidents, regressions, recovery events, and unresolved risks represented explicitly. Zero observed incidents/regressions/recoveries are valid only when represented explicitly; blocking unresolved risks or a review hold keep qualification blocked.",
+      "certifier": "tools.control_plane.longitudinal_operation",
+      "certifier_command": "python3 -m tools.control_plane.cli longitudinal-operation --root . --summary-json",
+      "default_evidence_path": "reports/long-term-assets/longitudinal-operation-current.json",
+      "remaining_external_blocker": "observation-window-and-real-summary-evidence",
       "evidence": [
+        "manifests/software_m5_pilot_ledger.json",
         "reports/field-evidence/software-m5-v5-events.jsonl"
       ]
     }
