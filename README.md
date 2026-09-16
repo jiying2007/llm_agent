@@ -12,7 +12,7 @@
 6. `~/.codex`：只接收 `~/codex` apply 后的运行资产。
 7. `reports/`：记录评测、pilot、安装、回归和回灌结论。
 
-运行态 target 由 `manifests/runtime_targets.json` 显式声明，健康检查 adapter 由 `manifests/runtime_health_adapters.json` 绑定；当前默认 target 是 `codex-home`，其 source/live 链路为 `agent-dev-kit -> ~/codex -> ~/.codex`。其他运行时如 `claude-code`、`hermes-agent`、`opencode` 保留为 supported kind，但必须先声明各自 source/live chain 与只读 health adapter 才能成为 active target。
+运行态 target 由 `manifests/runtime_targets.json` 显式声明，健康检查 adapter 由 `manifests/runtime_health_adapters.json` 绑定；当前默认 target 是 `codex-home`，其 source/live 链路为 `agent-dev-kit -> ~/codex -> ~/.codex`。其他运行时如 `claude-code`、`opencode` 保留为 supported kind，但必须先声明各自 source/live chain 与只读 health adapter 才能成为 active target。
 
 ## 快速入口
 
