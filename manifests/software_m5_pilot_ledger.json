@@ -1,6 +1,6 @@
 {
   "schema": "llm-agent-software-m5-pilot-ledger/v1",
-  "updated_at": "2026-09-13",
+  "updated_at": "2026-09-16",
   "candidate_version": "5.0.0-rc.2",
   "event_log": "reports/field-evidence/software-m5-v5-events.jsonl",
   "repositories": [
@@ -60,7 +60,7 @@
       "operators": [
         "operator-primary"
       ],
-      "objective": "Run a real 30-day independent-repository field pilot without weakening second-human, reviewer, event, metric, or campaign requirements."
+      "objective": "Run a real 30-day independent-repository field pilot under the current solo-maintainer governance model without weakening reviewer, event, metric, or campaign requirements."
     }
   ]
 }
