@@ -61,6 +61,26 @@ assert longitudinal["simulated"] is True and longitudinal["terminal_qualified"] 
 assert longitudinal["mode"] == "time-travel-30-day-fixture", longitudinal
 assert longitudinal["exit_code"] == 0, longitudinal
 
+adk = qualification["dependency_closure"]["agent_dev_kit"]
+assert adk["status"] == "pass", adk
+assert adk["repository"] == "jiying2007/agent-dev-kit", adk
+assert adk["authoritative_main"] == "6a05d0ef873553a5098679ad57a3b52b45e0d492", adk
+assert adk["governance_issue"] == 79, adk
+assert adk["governance_issue_state"] == "closed/completed", adk
+assert adk["ruleset_id"] == 23394761, adk
+assert adk["strict_required_status_checks_policy"] is True, adk
+assert adk["stale_base_acceptance_status"] == "pass", adk
+assert adk["acceptance_merge_main"] == "d8d75a229762b18eaf0db3af0467a6addccda569", adk
+assert adk["finalization_pr"] == 83, adk
+assert adk["fresh_main_ci_run"] == 35055426461, adk
+assert adk["fresh_main_branch_gc_run"] == 35055426349, adk
+assert adk["fresh_main_codeql_run"] == 35055426374, adk
+assert adk["fresh_main_platform_vnext_run"] == 35055426733, adk
+assert adk["promotion_job_id"] == 104665310429, adk
+assert adk["promotion_artifact_id"] == 10430631584, adk
+assert adk["promotion_artifact_sha256"] == "f56851a19d7d18d7787d088408bc7d812e44adf56f69c73479869aa139277136", adk
+assert adk["terminal_effect"] == "internal-dependency-closure-only", adk
+
 readiness = qualification["terminal_readiness"]
 assert readiness["engineering_control_plane"] == "pass", readiness
 assert readiness["rehearsal"] == "pass", readiness
@@ -77,4 +97,4 @@ assert qualification["terminal"]["status"] == "blocked", qualification["terminal
 assert set(readiness["real_blockers"]) == set(real["terminal_blockers"]), (readiness, real)
 PY
 
-echo '[PASS] long-term rehearsal and terminal-readiness projection preserve simulated/real separation'
+echo '[PASS] long-term rehearsal and terminal-readiness projection preserve simulated/real separation with ADK dependency closure'

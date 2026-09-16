@@ -39,6 +39,30 @@
       "current_release": "5.1.0"
     }
   },
+  "dependency_closure": {
+    "agent_dev_kit": {
+      "status": "pass",
+      "repository": "jiying2007/agent-dev-kit",
+      "authoritative_main": "6a05d0ef873553a5098679ad57a3b52b45e0d492",
+      "governance_issue": 79,
+      "governance_issue_state": "closed/completed",
+      "ruleset_id": 23394761,
+      "strict_required_status_checks_policy": true,
+      "stale_base_acceptance_status": "pass",
+      "stale_base_acceptance_path": "reports/governance/strict-stale-base-acceptance.json",
+      "acceptance_merge_main": "d8d75a229762b18eaf0db3af0467a6addccda569",
+      "finalization_pr": 83,
+      "fresh_main_ci_run": 35055426461,
+      "fresh_main_branch_gc_run": 35055426349,
+      "fresh_main_codeql_run": 35055426374,
+      "fresh_main_platform_vnext_run": 35055426733,
+      "promotion_job_id": 104665310429,
+      "promotion_artifact_id": 10430631584,
+      "promotion_artifact_sha256": "f56851a19d7d18d7787d088408bc7d812e44adf56f69c73479869aa139277136",
+      "terminal_effect": "internal-dependency-closure-only",
+      "note": "ADK native governance, strict stale-base rejection/requalification, exact-head merge, fresh-main qualification, keyless GitHub OIDC promotion, branch GC, and issue closure are terminally complete. This removes ADK governance as an internal dependency blocker but does not satisfy LTA-02 real-provider evidence or LTA-04 real-time evidence."
+    }
+  },
   "qualification_layers": [
     {
       "id": "source-valid",
@@ -188,7 +212,7 @@
       "LTA-02",
       "LTA-04"
     ],
-    "meaning": "The engineering/control-plane implementation and both terminal paths are proven reachable by fail-closed rehearsal, while real long-term qualification remains blocked until real external and time evidence satisfies the canonical certifiers."
+    "meaning": "The engineering/control-plane implementation and both terminal paths are proven reachable by fail-closed rehearsal, while all internal cross-repository dependencies including agent-dev-kit governance/promotion are terminally closed; real long-term qualification remains blocked only until LTA-02 real external evidence and LTA-04 real time evidence satisfy the canonical certifiers."
   },
   "terminal": {
     "qualified": false,
