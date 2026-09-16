@@ -137,7 +137,10 @@ fi
 
 # Long-term runtime/field qualification regressions stay on the existing
 # Product-M5 tooling CI path. Their fixtures are temporary and never qualify LTA.
+# Keep the machine-readable candidate projection on this mandatory path too so
+# blocked R1 candidates can never drift into certifier-ready status unnoticed.
+bash "$ROOT/tests/test_digital_worker_runtime_pilot_contract.sh"
 bash "$ROOT/tests/test_runtime_portability_certifier.sh"
 bash "$ROOT/tests/test_longitudinal_operation_certifier.sh"
 
-echo "[PASS] runtime smoke, portability, and longitudinal evidence contracts"
+echo "[PASS] runtime smoke, candidate projection, portability, and longitudinal evidence contracts"
