@@ -1,0 +1,58 @@
+{
+  "schema": "llm-agent-native-repository-governance-hosted-evidence/v1",
+  "status": "pass",
+  "qualification": "LTA-01",
+  "repository": "jiying2007/llm_agent",
+  "branch": "main",
+  "reference_sha": "73d4493a85839ff4e0c9351050148495f932d9ce",
+  "ruleset": {
+    "id": 23516987,
+    "name": "llm_agent main governance",
+    "scope": "hosted-ruleset",
+    "active": true,
+    "bypass_actors": [],
+    "required_approving_review_count": 0,
+    "allowed_merge_methods": ["squash"],
+    "strict_required_status_checks_policy": true,
+    "required_status_checks": [
+      "contract",
+      "doc-sync",
+      "integration-impact",
+      "integration-summary",
+      "software-m5-certify",
+      "branch-gc"
+    ],
+    "non_fast_forward_blocked": true,
+    "branch_deletion_blocked": true
+  },
+  "checks": {
+    "active_main_ruleset": true,
+    "all_required_checks_enforced": true,
+    "branch_deletion_blocked": true,
+    "default_branch_is_main": true,
+    "force_push_blocked": true,
+    "main_protected": true,
+    "no_ruleset_bypass": true,
+    "pull_request_required": true,
+    "required_status_checks_present": true,
+    "ruleset_squash_only": true,
+    "solo_zero_required_approvals": true,
+    "strict_required_status_checks": true
+  },
+  "missing_status_checks": [],
+  "violations": [],
+  "workflow": {
+    "run_id": 35043919633,
+    "job_id": 104629540397,
+    "event": "issue_comment",
+    "conclusion": "success"
+  },
+  "artifact": {
+    "id": 10425933771,
+    "name": "llm-agent-native-governance-73d4493a85839ff4e0c9351050148495f932d9ce",
+    "sha256": "29b7d1c1f9b36aeeb6d7a2cd3790c092947f8aa30511a90340d3cb2673dd1271",
+    "size_bytes": 1088,
+    "retention_days": 90
+  },
+  "evidence_boundary": "Hosted verification uses low-permission Actions credentials and proves the native ruleset surface. Repository Administration settings that require elevated permission are independently bound by the trusted-local apply receipt."
+}
