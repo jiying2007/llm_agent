@@ -346,6 +346,9 @@ if manifest:
     missing_kinds = required_kinds - supported
     if missing_kinds:
         fail(f"runtime_targets.json missing supported runtime kinds: {', '.join(sorted(missing_kinds))}")
+    unexpected_kinds = supported - required_kinds
+    if unexpected_kinds:
+        fail(f"runtime_targets.json unsupported runtime kinds: {', '.join(sorted(unexpected_kinds))}")
 
     rules = manifest.get("rules")
     if not isinstance(rules, dict):
