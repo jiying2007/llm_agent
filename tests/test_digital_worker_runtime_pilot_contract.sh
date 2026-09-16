@@ -56,10 +56,10 @@ assert claude["repository"] == "https://github.com/jiying2007/claude.git", claud
 assert claude["target"] == "claude-code", claude
 assert claude["source_identity_mode"] == "exact-release-source-blobs", claude
 assert claude["status"] == "source-set-bound", claude
-assert claude["merged_pr"] == "jiying2007/claude#1", claude
-assert claude["binding_commit"] == "9768012c46f348421050192919a91b8070b5d672", claude
-assert claude["exact_head_workflow_run"] == "jiying2007/claude/actions/runs/35111664791", claude
-assert claude["fresh_main_workflow_run"] == "jiying2007/claude/actions/runs/35111772454", claude
+assert claude["merged_pr"] == "jiying2007/claude#3", claude
+assert claude["binding_commit"] == "8cd87956507f9dbde0438c9135493c96f3b2d318", claude
+assert claude["exact_head_workflow_run"] == "jiying2007/claude/actions/runs/35115950799", claude
+assert claude["fresh_main_workflow_run"] == "jiying2007/claude/actions/runs/35116031702", claude
 assert claude["r1_binding_conformance"] == "passed", claude
 assert claude["verified_runtime_execution_receipt"] == "pending", claude
 assert claude["r2_real_provider_substitution"] == "pending", claude
