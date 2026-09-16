@@ -157,9 +157,8 @@ assert 'name = "llm-agent-control-plane"' in pyproject
 assert 'llm-ctl = "tools.control_plane.cli:main"' in pyproject
 assert 'files = [' in pyproject and '"tools/control_plane/impact.py"' in pyproject
 
-# Branch GC remains fail-closed for exceptional historical branches. Generic cleanup
-# may later be delegated to GitHub repository settings, but no such admin state is
-# assumed by source code.
+# Native delete-on-merge now owns ordinary merged PR branches. Custom Branch GC
+# remains only for exceptional, explicitly registered exact-SHA retirement proofs.
 assert "name: Branch GC" in branch_gc
 assert re.search(r"^  pull_request:\s*$", branch_gc, re.MULTILINE)
 assert re.search(r"^  push:\n\s+branches:\n\s+- main", branch_gc, re.MULTILINE)
@@ -171,13 +170,19 @@ assert 'EVENT_NAME" == "push" && "$REF_NAME" == "main"' in branch_gc
 assert 'EVENT_NAME" == "workflow_dispatch" && "$DISPATCH_APPLY" == "true"' in branch_gc
 assert 'args+=(--apply)' in branch_gc
 assert "name: branch-gc-report" in branch_gc
+assert "explicitly retired" in branch_gc.lower()
+assert "merged_pr" not in branch_gc
 
-assert 'head.get("sha") != sha' in branch_gc_code
 assert 'client.pulls(branch, base, "open")' in branch_gc_code
-assert 'if branch_sha(current) != c.sha' in branch_gc_code
+assert 'if branch_sha(current) != candidate.sha' in branch_gc_code
 assert 'proof not in {"ancestor-of-main", "absorbed-path-blobs", "terminal-probe"}' in branch_gc_code
 assert 'retired-proof-no-longer-valid' in branch_gc_code
-assert 'client.delete_branch(c.branch)' in branch_gc_code
+assert 'client.delete_branch(candidate.branch)' in branch_gc_code
+assert '"candidate_policy": "explicit-retirement-only"' in branch_gc_code
+assert 'not-explicitly-retired' in branch_gc_code
+assert 'explicit-retired-' in branch_gc_code
+assert 'exact-merged-pr' not in branch_gc_code
+assert 'def exact_merged_pr' not in branch_gc_code
 
 assert retired_gc["schema"] == "llm-agent-branch-gc-retired/v1"
 entries = {item["branch"]: item for item in retired_gc["entries"]}
@@ -191,4 +196,4 @@ assert re.search(r"^doc-sync:\s*$", gitlab, re.MULTILINE)
 assert re.search(r"weekly-report:\n(?:.|\n)*?needs:\n\s+- doc-sync", gitlab)
 PY
 
-echo '[PASS] CI uses gate-derived integration impact, typed control-plane entrypoints, and fail-closed evidence/GC semantics'
+echo '[PASS] CI uses gate-derived integration impact, typed control-plane entrypoints, and native-deletion-aware fail-closed GC semantics'
