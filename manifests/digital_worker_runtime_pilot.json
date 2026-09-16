@@ -86,6 +86,16 @@
       "candidate_pr": "jiying2007/claude#1",
       "blocker_ref": "jiying2007/claude#2",
       "blocker": "github-hosted-runner-admission-before-step-execution"
+    },
+    {
+      "runtime": "hermes-agent",
+      "repository": "jiying2007/hermes",
+      "target": "hermes-agent",
+      "source_identity_mode": "exact-release-source-blobs",
+      "status": "binding-candidate-blocked",
+      "candidate_pr": "jiying2007/hermes#1",
+      "blocker_ref": "jiying2007/llm_agent#66",
+      "blocker": "github-hosted-runner-admission-before-step-execution"
     }
   ],
   "required_metrics": [
