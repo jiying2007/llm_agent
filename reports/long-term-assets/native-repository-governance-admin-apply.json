@@ -1,0 +1,310 @@
+{
+  "branch": "main",
+  "checkout": {
+    "branch": "main",
+    "head_sha": "73d4493a85839ff4e0c9351050148495f932d9ce",
+    "origin": "git@github.com:jiying2007/llm_agent.git",
+    "remote_branch_sha": "73d4493a85839ff4e0c9351050148495f932d9ce",
+    "repository": "jiying2007/llm_agent",
+    "worktree_clean": true
+  },
+  "mode": "apply",
+  "operations": [
+    {
+      "id": 23516987,
+      "operation": "create_ruleset"
+    }
+  ],
+  "plan": {
+    "branch": "main",
+    "current_governance": {
+      "active_rulesets": [],
+      "branch": "main",
+      "checks": {
+        "active_main_ruleset": false,
+        "all_required_checks_enforced": false,
+        "branch_deletion_blocked": false,
+        "default_branch_is_main": true,
+        "delete_branch_on_merge": true,
+        "force_push_blocked": false,
+        "main_protected": false,
+        "no_ruleset_bypass": false,
+        "pull_request_required": false,
+        "required_status_checks_present": false,
+        "ruleset_squash_only": false,
+        "solo_zero_required_approvals": false,
+        "strict_required_status_checks": false
+      },
+      "desired_ruleset": {
+        "bypass_actors": [],
+        "conditions": {
+          "ref_name": {
+            "exclude": [],
+            "include": [
+              "refs/heads/main"
+            ]
+          }
+        },
+        "enforcement": "active",
+        "name": "llm_agent main governance",
+        "rules": [
+          {
+            "parameters": {
+              "allowed_merge_methods": [
+                "squash"
+              ],
+              "dismiss_stale_reviews_on_push": false,
+              "require_code_owner_review": false,
+              "require_last_push_approval": false,
+              "required_approving_review_count": 0,
+              "required_review_thread_resolution": false
+            },
+            "type": "pull_request"
+          },
+          {
+            "parameters": {
+              "do_not_enforce_on_create": false,
+              "required_status_checks": [
+                {"context": "contract"},
+                {"context": "doc-sync"},
+                {"context": "integration-impact"},
+                {"context": "integration-summary"},
+                {"context": "software-m5-certify"},
+                {"context": "branch-gc"}
+              ],
+              "strict_required_status_checks_policy": true
+            },
+            "type": "required_status_checks"
+          },
+          {"type": "non_fast_forward"},
+          {"type": "deletion"}
+        ],
+        "target": "branch"
+      },
+      "full_checks": {
+        "active_main_ruleset": false,
+        "all_required_checks_enforced": false,
+        "branch_deletion_blocked": false,
+        "default_branch_is_main": true,
+        "delete_branch_on_merge": true,
+        "force_push_blocked": false,
+        "main_protected": false,
+        "no_ruleset_bypass": false,
+        "pull_request_required": false,
+        "required_status_checks_present": false,
+        "ruleset_squash_only": false,
+        "solo_zero_required_approvals": false,
+        "strict_required_status_checks": false
+      },
+      "full_compliant": false,
+      "hosted_checks": {
+        "active_main_ruleset": false,
+        "all_required_checks_enforced": false,
+        "branch_deletion_blocked": false,
+        "default_branch_is_main": true,
+        "force_push_blocked": false,
+        "main_protected": false,
+        "no_ruleset_bypass": false,
+        "pull_request_required": false,
+        "required_status_checks_present": false,
+        "ruleset_squash_only": false,
+        "solo_zero_required_approvals": false,
+        "strict_required_status_checks": false
+      },
+      "implementation_status": "certifier-ready",
+      "missing_status_checks": [
+        "branch-gc",
+        "contract",
+        "doc-sync",
+        "integration-impact",
+        "integration-summary",
+        "software-m5-certify"
+      ],
+      "observed_pull_request_merge_methods": [],
+      "observed_required_approval_counts": [],
+      "observed_status_checks": [],
+      "observed_strict_required_status_checks_policies": [],
+      "qualification": "LTA-01",
+      "remediation": [
+        "create or enable an active native ruleset covering main",
+        "create the canonical solo-maintainer main ruleset",
+        "add a pull_request rule",
+        "set required_approving_review_count to 0",
+        "remove unconditional ruleset bypass actors",
+        "set allowed merge methods to squash only",
+        "add a required_status_checks rule",
+        "enable strict_required_status_checks_policy",
+        "require every canonical llm_agent PR qualification context",
+        "add a non_fast_forward rule",
+        "add a deletion rule"
+      ],
+      "repository": "jiying2007/llm_agent",
+      "repository_admin_settings_authoritative": true,
+      "required_status_checks": [
+        "contract",
+        "doc-sync",
+        "integration-impact",
+        "integration-summary",
+        "software-m5-certify",
+        "branch-gc"
+      ],
+      "schema": "llm-agent-native-repository-governance-check/v2",
+      "scope": "full",
+      "status": "blocked_external_admin",
+      "violations": [
+        "main is not protected by native GitHub governance",
+        "no active native repository ruleset covers main",
+        "native ruleset does not require pull requests",
+        "native ruleset does not preserve zero required human approvals",
+        "native ruleset has a bypass actor",
+        "native ruleset does not restrict merge methods to squash",
+        "native ruleset does not require status checks",
+        "required status checks do not require an up-to-date branch",
+        "required status checks missing: branch-gc, contract, doc-sync, integration-impact, integration-summary, software-m5-certify",
+        "native ruleset does not block non-fast-forward updates",
+        "native ruleset does not block main branch deletion"
+      ]
+    },
+    "mode": "plan",
+    "repository": "jiying2007/llm_agent",
+    "repository_prerequisites": {"delete_branch_on_merge": true},
+    "ruleset": {
+      "action": "create",
+      "desired": {
+        "bypass_actors": [],
+        "conditions": {"ref_name": {"exclude": [], "include": ["refs/heads/main"]}},
+        "enforcement": "active",
+        "name": "llm_agent main governance",
+        "rules": [
+          {
+            "parameters": {
+              "allowed_merge_methods": ["squash"],
+              "dismiss_stale_reviews_on_push": false,
+              "require_code_owner_review": false,
+              "require_last_push_approval": false,
+              "required_approving_review_count": 0,
+              "required_review_thread_resolution": false
+            },
+            "type": "pull_request"
+          },
+          {
+            "parameters": {
+              "do_not_enforce_on_create": false,
+              "required_status_checks": [
+                {"context": "contract"}, {"context": "doc-sync"}, {"context": "integration-impact"},
+                {"context": "integration-summary"}, {"context": "software-m5-certify"}, {"context": "branch-gc"}
+              ],
+              "strict_required_status_checks_policy": true
+            },
+            "type": "required_status_checks"
+          },
+          {"type": "non_fast_forward"}, {"type": "deletion"}
+        ],
+        "target": "branch"
+      },
+      "id": null,
+      "name": "llm_agent main governance"
+    },
+    "schema": "llm-agent-native-repository-governance-admin/v1"
+  },
+  "repository": "jiying2007/llm_agent",
+  "schema": "llm-agent-native-repository-governance-admin/v1",
+  "verification": {
+    "active_rulesets": [
+      {"bypass_actors": [], "id": 23516987, "name": "llm_agent main governance"}
+    ],
+    "branch": "main",
+    "checks": {
+      "active_main_ruleset": true,
+      "all_required_checks_enforced": true,
+      "branch_deletion_blocked": true,
+      "default_branch_is_main": true,
+      "delete_branch_on_merge": true,
+      "force_push_blocked": true,
+      "main_protected": true,
+      "no_ruleset_bypass": true,
+      "pull_request_required": true,
+      "required_status_checks_present": true,
+      "ruleset_squash_only": true,
+      "solo_zero_required_approvals": true,
+      "strict_required_status_checks": true
+    },
+    "desired_ruleset": {
+      "bypass_actors": [],
+      "conditions": {"ref_name": {"exclude": [], "include": ["refs/heads/main"]}},
+      "enforcement": "active",
+      "name": "llm_agent main governance",
+      "rules": [
+        {
+          "parameters": {
+            "allowed_merge_methods": ["squash"],
+            "dismiss_stale_reviews_on_push": false,
+            "require_code_owner_review": false,
+            "require_last_push_approval": false,
+            "required_approving_review_count": 0,
+            "required_review_thread_resolution": false
+          },
+          "type": "pull_request"
+        },
+        {
+          "parameters": {
+            "do_not_enforce_on_create": false,
+            "required_status_checks": [
+              {"context": "contract"}, {"context": "doc-sync"}, {"context": "integration-impact"},
+              {"context": "integration-summary"}, {"context": "software-m5-certify"}, {"context": "branch-gc"}
+            ],
+            "strict_required_status_checks_policy": true
+          },
+          "type": "required_status_checks"
+        },
+        {"type": "non_fast_forward"}, {"type": "deletion"}
+      ],
+      "target": "branch"
+    },
+    "full_checks": {
+      "active_main_ruleset": true,
+      "all_required_checks_enforced": true,
+      "branch_deletion_blocked": true,
+      "default_branch_is_main": true,
+      "delete_branch_on_merge": true,
+      "force_push_blocked": true,
+      "main_protected": true,
+      "no_ruleset_bypass": true,
+      "pull_request_required": true,
+      "required_status_checks_present": true,
+      "ruleset_squash_only": true,
+      "solo_zero_required_approvals": true,
+      "strict_required_status_checks": true
+    },
+    "full_compliant": true,
+    "hosted_checks": {
+      "active_main_ruleset": true,
+      "all_required_checks_enforced": true,
+      "branch_deletion_blocked": true,
+      "default_branch_is_main": true,
+      "force_push_blocked": true,
+      "main_protected": true,
+      "no_ruleset_bypass": true,
+      "pull_request_required": true,
+      "required_status_checks_present": true,
+      "ruleset_squash_only": true,
+      "solo_zero_required_approvals": true,
+      "strict_required_status_checks": true
+    },
+    "implementation_status": "certifier-ready",
+    "missing_status_checks": [],
+    "observed_pull_request_merge_methods": [["squash"]],
+    "observed_required_approval_counts": [0],
+    "observed_status_checks": ["branch-gc", "contract", "doc-sync", "integration-impact", "integration-summary", "software-m5-certify"],
+    "observed_strict_required_status_checks_policies": [true],
+    "qualification": "LTA-01",
+    "remediation": [],
+    "repository": "jiying2007/llm_agent",
+    "repository_admin_settings_authoritative": true,
+    "required_status_checks": ["contract", "doc-sync", "integration-impact", "integration-summary", "software-m5-certify", "branch-gc"],
+    "schema": "llm-agent-native-repository-governance-check/v2",
+    "scope": "full",
+    "status": "pass",
+    "violations": []
+  }
+}

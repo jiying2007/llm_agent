@@ -150,13 +150,17 @@ assert "LLM_AGENT_GITHUB_ADMIN_TOKEN" not in source
 
 lta = json.loads(Path("manifests/long_term_asset_qualification.json").read_text(encoding="utf-8"))
 lta01 = {item["id"]: item for item in lta["blocking_requirements"]}["LTA-01"]
-assert lta01["status"] == "blocked_external_admin"
-assert lta01["remaining_admin_blocker"] == "native-main-ruleset-only"
+assert lta01["status"] == "pass"
+assert lta01["implementation_status"] == "verified"
+assert "remaining_admin_blocker" not in lta01
+assert lta01["ruleset_id"] == 23516987
 assert "native-governance-admin" in lta01["admin_apply_command"]
 assert "--apply" in lta01["admin_apply_command"]
 assert lta01["admin_token_env"] == admin.TOKEN_ENV == "ADK_GITHUB_ADMIN_TOKEN"
 assert "LLM_AGENT_GITHUB_ADMIN_TOKEN" not in json.dumps(lta01, sort_keys=True)
 assert lta01["admin_apply_environment"] == "trusted-local-clean-main-only"
+assert "reports/long-term-assets/native-repository-governance-admin-apply.json" in lta01["evidence"]
+assert "reports/long-term-assets/native-repository-governance-hosted-2026-09-16.json" in lta01["evidence"]
 
-print("[PASS] local LTA-01 governance admin planner/apply is fail-closed, manifest-bound, and uses the shared ADK admin token")
+print("[PASS] local LTA-01 governance admin planner/apply is fail-closed, manifest-bound, shared-token-only, and evidence-ratcheted")
 PY

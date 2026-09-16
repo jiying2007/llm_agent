@@ -1,6 +1,6 @@
 {
   "schema": "llm-agent-product-maturity-scorecard/v1",
-  "updated_at": "2026-09-15",
+  "updated_at": "2026-09-16",
   "product_boundary": "reference-intake workspace plus platform-neutral agent asset compiler/control plane; no LLM agent runtime",
   "overall": {
     "level": "M5",
@@ -22,7 +22,6 @@
     "blocking_gates": [],
     "advisory_followups": [
       "30_day_operational_observation",
-      "native_repository_governance",
       "multi_runtime_campaign",
       "repository_runtime_campaign",
       "historical_4_0_artifact_continuity",

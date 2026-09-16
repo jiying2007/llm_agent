@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       apply:
-        description: Delete eligible terminal branches after exact revalidation
+        description: Delete explicitly retired exact-SHA branches after proof revalidation
         required: false
         type: boolean
         default: false
@@ -55,7 +55,7 @@ jobs:
           echo "apply=$apply" >> "$GITHUB_OUTPUT"
           echo "### Branch GC mode: $([[ "$apply" == "true" ]] && echo APPLY || echo DRY_RUN)" >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Discover and clean terminal branches
+      - name: Discover and clean explicitly retired branches
         shell: bash
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -83,16 +83,15 @@ jobs:
           report = json.loads(Path("/tmp/branch-gc-report.json").read_text(encoding="utf-8"))
           print("### Branch GC result")
           print(f"- mode: {report['mode']}")
+          print(f"- candidate_policy: {report.get('candidate_policy', 'unknown')}")
           print(f"- candidates: {len(report.get('candidates', []))}")
           print(f"- deleted: {len(report.get('deleted', []))}")
           print(f"- revalidation_skips: {len(report.get('revalidation_skips', []))}")
           for item in report.get("deleted", []):
-              proof = f"PR #{item['merged_pr']}" if "merged_pr" in item else item.get("basis", "explicit-retired")
-              print(f"- deleted `{item['branch']}` @ `{item['sha'][:12]}` via {proof}")
+              print(f"- deleted `{item['branch']}` @ `{item['sha'][:12]}` via {item.get('basis', 'explicit-retired')}")
           if report["mode"] == "dry-run":
               for item in report.get("candidates", []):
-                  proof = f"PR #{item['merged_pr']}" if "merged_pr" in item else item.get("basis", "explicit-retired")
-                  print(f"- candidate `{item['branch']}` @ `{item['sha'][:12]}` via {proof}")
+                  print(f"- candidate `{item['branch']}` @ `{item['sha'][:12]}` via {item.get('basis', 'explicit-retired')}")
           PY
 
       - name: Upload Branch GC report
