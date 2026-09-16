@@ -82,10 +82,14 @@
       "repository": "https://github.com/jiying2007/claude.git",
       "target": "claude-code",
       "source_identity_mode": "exact-release-source-blobs",
-      "status": "binding-candidate-blocked",
-      "candidate_pr": "jiying2007/claude#1",
-      "blocker_ref": "jiying2007/claude#2",
-      "blocker": "github-hosted-runner-admission-before-step-execution"
+      "status": "source-set-bound",
+      "merged_pr": "jiying2007/claude#1",
+      "binding_commit": "9768012c46f348421050192919a91b8070b5d672",
+      "exact_head_workflow_run": "jiying2007/claude/actions/runs/35111664791",
+      "fresh_main_workflow_run": "jiying2007/claude/actions/runs/35111772454",
+      "r1_binding_conformance": "passed",
+      "verified_runtime_execution_receipt": "pending",
+      "r2_real_provider_substitution": "pending"
     }
   ],
   "required_metrics": [

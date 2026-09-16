@@ -193,7 +193,20 @@ assert "requires R2-real-provider-substitution" in value["reason"], value
 PY
 
 # A real evidence file cannot pass while a compared binding remains future-only.
+# Construct that negative state explicitly instead of depending on the canonical
+# Claude binding being blocked; canonical R1 readiness is allowed to advance.
 cp "$ROOT/manifests/digital_worker_runtime_pilot.json" "$FIXTURE/manifests/digital_worker_runtime_pilot.json"
+python3 - "$FIXTURE/manifests/digital_worker_runtime_pilot.json" <<'PY'
+import json, sys
+from pathlib import Path
+path = Path(sys.argv[1]); value = json.loads(path.read_text())
+for item in value["candidate_runtime_bindings"]:
+    if item["runtime"] == "claude-code":
+        item["status"] = "binding-candidate-blocked"
+        item["blocker_ref"] = "selftest://future-only"
+        item["blocker"] = "selftest-future-only"
+path.write_text(json.dumps(value, indent=2) + "\n")
+PY
 set +e
 python3 -m tools.control_plane.runtime_portability --root "$FIXTURE" --evidence "$FIXTURE/reports/portability/comparison.json" --summary-json >"$TMP/future.json"
 rc=$?
