@@ -84,7 +84,7 @@ frozen = digest_obj(controlled)
 runs = []
 receipts = {}
 for runtime, repository, commit, target, provider in (
-    ("codex", "jiying2007/codex", "1" * 40, "codex-cli", "openai"),
+    ("codex", "https://github.com/jiying2007/codex.git", "1" * 40, "codex-cli", "openai"),
     ("claude-code", "jiying2007/claude-code-binding", "2" * 40, "claude-code", "anthropic"),
 ):
     identity = {
