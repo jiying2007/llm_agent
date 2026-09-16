@@ -212,6 +212,8 @@ elif case == "legacy_target_health_check":
 elif case == "script_not_executable":
     script_path = os.path.join(root, "scripts", "check-global-codex-health.sh")
     os.chmod(script_path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH)
+elif case == "retired_runtime_kind":
+    targets["supported_runtime_kinds"].append("hermes-agent")
 elif case == "second_enabled_valid":
     enable_second_target()
 elif case == "second_enabled_runtime_mismatch":
@@ -356,6 +358,7 @@ expect_explain_arg_fail() {
 
 expect_pass
 expect_pass "second_enabled_valid"
+expect_fail "retired_runtime_kind" "runtime_targets.json unsupported runtime kinds: hermes-agent"
 expect_fail "runtime_mismatch" "enabled runtime target health_adapter runtime mismatch: codex-home -> codex-global-health"
 expect_fail "disabled_adapter" "enabled runtime target health_adapter must be enabled: codex-home -> codex-global-health"
 expect_fail "missing_profile" "enabled runtime health adapter missing profile: codex-global-health -> strict"
