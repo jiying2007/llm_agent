@@ -40,14 +40,40 @@ assert set(data["replaceability_evidence_levels"]) == {
     "R1-binding-conformance", "R2-real-provider-substitution"
 }, data
 assert data["terminal_replaceability_evidence_level"] == "R2-real-provider-substitution", data
-codex = data["candidate_runtime_bindings"][0]
-assert codex["runtime"] == "codex", data
-assert codex["repository"] == "jiying2007/codex", data
-assert codex["source_identity_mode"] == "exact-release-source-blobs", data
-assert codex["status"] == "source-set-bound", data
-claude = data["candidate_runtime_bindings"][1]
-assert claude["runtime"] == "claude-code", data
-assert claude["status"] == "future-binding", data
+
+bindings = {item["runtime"]: item for item in data["candidate_runtime_bindings"]}
+assert set(bindings) == {"codex", "claude-code", "hermes-agent"}, bindings
+
+codex = bindings["codex"]
+assert codex["repository"] == "jiying2007/codex", codex
+assert codex["target"] == "codex-cli", codex
+assert codex["source_identity_mode"] == "exact-release-source-blobs", codex
+assert codex["status"] == "source-set-bound", codex
+
+claude = bindings["claude-code"]
+assert claude["repository"] == "jiying2007/claude", claude
+assert claude["target"] == "claude-code", claude
+assert claude["status"] == "binding-candidate-blocked", claude
+assert claude["candidate_pr"] == "jiying2007/claude#1", claude
+assert claude["blocker_ref"] == "jiying2007/claude#2", claude
+assert claude["blocker"] == "github-hosted-runner-admission-before-step-execution", claude
+
+hermes = bindings["hermes-agent"]
+assert hermes["repository"] == "jiying2007/hermes", hermes
+assert hermes["target"] == "hermes-agent", hermes
+assert hermes["status"] == "binding-candidate-blocked", hermes
+assert hermes["candidate_pr"] == "jiying2007/hermes#1", hermes
+assert hermes["blocker_ref"] == "jiying2007/llm_agent#66", hermes
+assert hermes["blocker"] == "github-hosted-runner-admission-before-step-execution", hermes
+
+# Keep contract projection aligned with the certifier: blocked candidates must
+# never be counted as a healthy second binding before real R1 promotion.
+ready_statuses = {"source-set-bound", "ready", "active"}
+assert [name for name, item in bindings.items() if item["status"] in ready_statuses] == ["codex"], bindings
+certifier_text = certifier_path.read_text(encoding="utf-8")
+assert 'READY_BINDING_STATUSES = {"source-set-bound", "ready", "active"}' in certifier_text, certifier_text
+assert "binding-candidate-blocked" not in ready_statuses
+
 rules = data["hard_rules"]
 for key in (
     "runtime_output_is_not_verification_pass",
@@ -88,4 +114,4 @@ for retired in (
     assert retired not in text, retired
 PY
 
-echo '[PASS] digital-worker runtime pilot freezes DW governance identity and keeps terminal portability R2-only'
+echo '[PASS] digital-worker runtime pilot tracks blocked candidates without weakening R2-only terminal portability'
