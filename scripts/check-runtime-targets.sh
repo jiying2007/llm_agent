@@ -248,7 +248,7 @@ adapter_by_id = {}
 target_by_id = {}
 enabled_target_ids = set()
 
-required_kinds = {"codex", "claude-code", "hermes-agent", "opencode"}
+required_kinds = {"codex", "claude-code", "opencode"}
 required_rules = {
     "targets_must_be_declared",
     "live_writes_must_use_declared_apply_chain",
