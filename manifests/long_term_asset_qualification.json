@@ -1,6 +1,6 @@
 {
   "schema": "llm-agent-long-term-asset-qualification/v1",
-  "updated_at": "2026-09-15",
+  "updated_at": "2026-09-16",
   "qualification_scope": "llm_agent control plane plus pinned agent-dev-kit component",
   "purpose": "Separate product M5 qualification from long-term asset terminal qualification without weakening fail-closed evidence semantics.",
   "rules": {
@@ -86,9 +86,9 @@
     {
       "id": "LTA-01",
       "name": "native-repository-governance",
-      "status": "blocked_external_admin",
-      "implementation_status": "certifier-ready",
-      "acceptance": "A native repository ruleset covers main, requires pull requests, preserves the solo-maintainer zero-approval policy, has no unconditional bypass actors, permits squash merges only, requires the canonical stable PR qualification contexts with strict/up-to-date status enforcement, and blocks destructive/non-fast-forward main updates. Native delete-branch-on-merge and merged-branch deletion are already proven; after the ruleset is observed and certified, generic merged-PR custom GC responsibility must be retired and fresh-main verified.",
+      "status": "pass",
+      "implementation_status": "verified",
+      "acceptance": "A native repository ruleset covers main, requires pull requests, preserves the solo-maintainer zero-approval policy, has no unconditional bypass actors, permits squash merges only, requires the canonical stable PR qualification contexts with strict/up-to-date status enforcement, blocks destructive/non-fast-forward main updates, and delegates ordinary merged-PR branch deletion to native delete-on-merge while custom Branch GC is restricted to explicit exact-SHA retirement proofs.",
       "required_status_checks": [
         "contract",
         "doc-sync",
@@ -104,14 +104,25 @@
       "admin_apply_environment": "trusted-local-clean-main-only",
       "hosted_verifier_workflow": ".github/workflows/native-governance-control-plane.yml",
       "evidence": [
+        "reports/long-term-assets/native-repository-governance-admin-apply.json",
+        "reports/long-term-assets/native-repository-governance-hosted-2026-09-16.json",
         "reports/long-term-assets/native-repository-governance-2026-09-15.json",
         "https://github.com/jiying2007/llm_agent/issues/50"
       ],
+      "verified_main_commit": "73d4493a85839ff4e0c9351050148495f932d9ce",
+      "ruleset_id": 23516987,
+      "workflow_run_id": 35043919633,
+      "workflow_job_id": 104629540397,
+      "artifact_id": 10425933771,
+      "artifact_sha256": "29b7d1c1f9b36aeeb6d7a2cd3790c092947f8aa30511a90340d3cb2673dd1271",
       "completed_subrequirements": [
         "delete_branch_on_merge=true",
-        "merged PR branch deletion observed before custom GC deletion"
-      ],
-      "remaining_admin_blocker": "native-main-ruleset-only"
+        "merged PR branch deletion observed before custom GC deletion",
+        "canonical active main ruleset observed",
+        "trusted-local full governance verification passed",
+        "hosted low-permission ruleset verification passed",
+        "generic merged-PR custom GC responsibility retired"
+      ]
     },
     {
       "id": "LTA-02",
@@ -165,7 +176,6 @@
     "qualified": false,
     "status": "blocked",
     "blockers": [
-      "LTA-01",
       "LTA-02",
       "LTA-04"
     ]
