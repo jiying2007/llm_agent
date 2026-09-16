@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "active",
-  "last_updated": "2026-07-09",
+  "last_updated": "2026-09-16",
   "rules": {
     "targets_must_reference_adapter_id": true,
     "enabled_adapters_must_be_read_only": true,
@@ -43,24 +43,6 @@
     {
       "id": "claude-code-health",
       "runtime": "claude-code",
-      "status": "candidate",
-      "enabled": false,
-      "script": null,
-      "target_ids": [],
-      "profiles": [],
-      "read_only": true,
-      "activation_requirements": [
-        "declare active runtime target",
-        "add executable read-only health script",
-        "bind target.health_adapter to this adapter id",
-        "add source-to-live apply and rollback evidence",
-        "pass disabled target negative gate before activation"
-      ],
-      "notes": "Candidate placeholder only. It must not dispatch until a governed source/live chain exists."
-    },
-    {
-      "id": "hermes-agent-health",
-      "runtime": "hermes-agent",
       "status": "candidate",
       "enabled": false,
       "script": null,

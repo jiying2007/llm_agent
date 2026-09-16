@@ -1,6 +1,6 @@
 # Runtime Target Activation Runbook
 
-本 runbook 用于把 `claude-code`、`hermes-agent`、`opencode` 等 runtime target 从 candidate 提升为 `enabled=true`。默认 target 仍是 `codex-home`；新增 target 不得绕过 source/live chain、只读 health adapter、dry-run 和 rollback 证据。
+本 runbook 用于把 `claude-code`、`opencode` 等 runtime target 从 candidate 提升为 `enabled=true`。默认 target 仍是 `codex-home`；新增 target 不得绕过 source/live chain、只读 health adapter、dry-run 和 rollback 证据。
 
 ## 1. 目标边界
 

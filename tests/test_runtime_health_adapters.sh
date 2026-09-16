@@ -26,7 +26,7 @@ targets = {
     "status": "active",
     "last_updated": "2026-07-09",
     "default_target": "codex-home",
-    "supported_runtime_kinds": ["codex", "claude-code", "hermes-agent", "opencode"],
+    "supported_runtime_kinds": ["codex", "claude-code", "opencode"],
     "rules": {
         "targets_must_be_declared": True,
         "live_writes_must_use_declared_apply_chain": True,
@@ -66,27 +66,6 @@ targets = {
         {
             "id": "claude-code-home",
             "runtime": "claude-code",
-            "role": "target-candidate",
-            "enabled": False,
-            "source_repo": None,
-            "live_root": None,
-            "registry_repo": None,
-            "source_to_live_chain": [],
-            "health_adapter": None,
-            "footprint_check": None,
-            "target_policy_check": None,
-            "required_evidence": ["declared source repo", "declared live root", "read-only health adapter", "dry-run apply evidence", "rollback evidence"],
-            "write_policy": "not-enabled",
-            "activation_requirements": [
-                "declare source_repo and live_root",
-                "add read-only health adapter",
-                "add source-to-live apply and rollback evidence",
-                "pass runtime target gate with enabled=true",
-            ],
-        },
-        {
-            "id": "hermes-agent-home",
-            "runtime": "hermes-agent",
             "role": "target-candidate",
             "enabled": False,
             "source_repo": None,
@@ -151,7 +130,6 @@ adapters = {
             "read_only": True,
         },
         {"id": "claude-code-health", "runtime": "claude-code", "status": "candidate", "enabled": False, "script": None, "target_ids": [], "profiles": [], "read_only": True, "activation_requirements": ["declare active runtime target", "add executable read-only health script", "bind target.health_adapter to this adapter id", "pass disabled target negative gate before activation"]},
-        {"id": "hermes-agent-health", "runtime": "hermes-agent", "status": "candidate", "enabled": False, "script": None, "target_ids": [], "profiles": [], "read_only": True, "activation_requirements": ["declare active runtime target", "add executable read-only health script", "bind target.health_adapter to this adapter id", "pass disabled target negative gate before activation"]},
         {"id": "opencode-health", "runtime": "opencode", "status": "candidate", "enabled": False, "script": None, "target_ids": [], "profiles": [], "read_only": True, "activation_requirements": ["declare active runtime target", "add executable read-only health script", "bind target.health_adapter to this adapter id", "pass disabled target negative gate before activation"]},
     ],
 }
@@ -234,6 +212,8 @@ elif case == "legacy_target_health_check":
 elif case == "script_not_executable":
     script_path = os.path.join(root, "scripts", "check-global-codex-health.sh")
     os.chmod(script_path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH)
+elif case == "retired_runtime_kind":
+    targets["supported_runtime_kinds"].append("hermes-agent")
 elif case == "second_enabled_valid":
     enable_second_target()
 elif case == "second_enabled_runtime_mismatch":
@@ -378,6 +358,7 @@ expect_explain_arg_fail() {
 
 expect_pass
 expect_pass "second_enabled_valid"
+expect_fail "retired_runtime_kind" "runtime_targets.json unsupported runtime kinds: hermes-agent"
 expect_fail "runtime_mismatch" "enabled runtime target health_adapter runtime mismatch: codex-home -> codex-global-health"
 expect_fail "disabled_adapter" "enabled runtime target health_adapter must be enabled: codex-home -> codex-global-health"
 expect_fail "missing_profile" "enabled runtime health adapter missing profile: codex-global-health -> strict"
