@@ -14,7 +14,7 @@ from pathlib import Path
 receipt = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
 assert receipt["status"] == "pass", receipt
 assert receipt["mode"] == "pin-only", receipt
-assert receipt["agent_dev_kit"]["version"] == "5.1.0", receipt
+assert receipt["agent_dev_kit"]["version"] == "5.1.1", receipt
 assert len(receipt["agent_dev_kit"]["commit"]) == 40, receipt
 assert len(receipt["codex"]["commit"]) == 40, receipt
 assert receipt["digital_worker"]["repository"] == "jiying2007/digital-worker", receipt
