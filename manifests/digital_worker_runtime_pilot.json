@@ -79,10 +79,13 @@
     },
     {
       "runtime": "claude-code",
-      "repository": null,
+      "repository": "jiying2007/claude",
       "target": "claude-code",
-      "source_identity_mode": null,
-      "status": "future-binding"
+      "source_identity_mode": "exact-release-source-blobs",
+      "status": "binding-candidate-blocked",
+      "candidate_pr": "jiying2007/claude#1",
+      "blocker_ref": "jiying2007/claude#2",
+      "blocker": "github-hosted-runner-admission-before-step-execution"
     }
   ],
   "required_metrics": [
