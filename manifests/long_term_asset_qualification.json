@@ -172,6 +172,24 @@
       ]
     }
   ],
+  "terminal_readiness": {
+    "engineering_control_plane": "pass",
+    "rehearsal": "pass",
+    "rehearsal_scope": [
+      "LTA-02",
+      "LTA-04"
+    ],
+    "rehearsal_command": "python3 -m tools.control_plane.cli long-term-rehearsal --scope all --summary-json",
+    "rehearsal_simulated": true,
+    "rehearsal_terminal_qualified": false,
+    "simulated_evidence_counts_as_real": false,
+    "real_qualification": "blocked",
+    "real_blockers": [
+      "LTA-02",
+      "LTA-04"
+    ],
+    "meaning": "The engineering/control-plane implementation and both terminal paths are proven reachable by fail-closed rehearsal, while real long-term qualification remains blocked until real external and time evidence satisfies the canonical certifiers."
+  },
   "terminal": {
     "qualified": false,
     "status": "blocked",
