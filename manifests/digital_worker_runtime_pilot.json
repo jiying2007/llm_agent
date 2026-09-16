@@ -72,29 +72,19 @@
   "candidate_runtime_bindings": [
     {
       "runtime": "codex",
-      "repository": "jiying2007/codex",
+      "repository": "https://github.com/jiying2007/codex.git",
       "target": "codex-cli",
       "source_identity_mode": "exact-release-source-blobs",
       "status": "source-set-bound"
     },
     {
       "runtime": "claude-code",
-      "repository": "jiying2007/claude",
+      "repository": "https://github.com/jiying2007/claude.git",
       "target": "claude-code",
       "source_identity_mode": "exact-release-source-blobs",
       "status": "binding-candidate-blocked",
       "candidate_pr": "jiying2007/claude#1",
       "blocker_ref": "jiying2007/claude#2",
-      "blocker": "github-hosted-runner-admission-before-step-execution"
-    },
-    {
-      "runtime": "hermes-agent",
-      "repository": "jiying2007/hermes",
-      "target": "hermes-agent",
-      "source_identity_mode": "exact-release-source-blobs",
-      "status": "binding-candidate-blocked",
-      "candidate_pr": "jiying2007/hermes#1",
-      "blocker_ref": "jiying2007/llm_agent#66",
       "blocker": "github-hosted-runner-admission-before-step-execution"
     }
   ],
@@ -127,7 +117,9 @@
     "missing_runtime_source_set_identity_is_blocked_not_pass": true,
     "missing_runtime_distribution_identity_is_blocked_not_pass": true,
     "r1_binding_conformance_is_not_r2_real_provider_substitution": true,
-    "terminal_replaceability_requires_r2_real_provider_substitution": true
+    "terminal_replaceability_requires_r2_real_provider_substitution": true,
+    "candidate_runtime_bindings_must_match_declared_set_exactly": true,
+    "retired_runtime_bindings_must_be_absent": true
   },
   "completion": "R2 only: at least two healthy real runtime/provider bindings complete the same controlled real task under one frozen Digital Worker governance identity and exact ADK release/source-set/runtime-distribution identity, with separate execution receipts and independent digital-worker verification/review"
 }

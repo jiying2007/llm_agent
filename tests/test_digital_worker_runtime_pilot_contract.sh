@@ -42,34 +42,28 @@ assert set(data["replaceability_evidence_levels"]) == {
 assert data["terminal_replaceability_evidence_level"] == "R2-real-provider-substitution", data
 
 bindings = {item["runtime"]: item for item in data["candidate_runtime_bindings"]}
-assert set(bindings) == {"codex", "claude-code", "hermes-agent"}, bindings
+assert set(bindings) == {"codex", "claude-code"}, bindings
+assert len(data["candidate_runtime_bindings"]) == 2, data["candidate_runtime_bindings"]
 
 codex = bindings["codex"]
-assert codex["repository"] == "jiying2007/codex", codex
+assert codex["repository"] == "https://github.com/jiying2007/codex.git", codex
 assert codex["target"] == "codex-cli", codex
 assert codex["source_identity_mode"] == "exact-release-source-blobs", codex
 assert codex["status"] == "source-set-bound", codex
 
 claude = bindings["claude-code"]
-assert claude["repository"] == "jiying2007/claude", claude
+assert claude["repository"] == "https://github.com/jiying2007/claude.git", claude
 assert claude["target"] == "claude-code", claude
 assert claude["status"] == "binding-candidate-blocked", claude
 assert claude["candidate_pr"] == "jiying2007/claude#1", claude
 assert claude["blocker_ref"] == "jiying2007/claude#2", claude
 assert claude["blocker"] == "github-hosted-runner-admission-before-step-execution", claude
 
-hermes = bindings["hermes-agent"]
-assert hermes["repository"] == "jiying2007/hermes", hermes
-assert hermes["target"] == "hermes-agent", hermes
-assert hermes["status"] == "binding-candidate-blocked", hermes
-assert hermes["candidate_pr"] == "jiying2007/hermes#1", hermes
-assert hermes["blocker_ref"] == "jiying2007/llm_agent#66", hermes
-assert hermes["blocker"] == "github-hosted-runner-admission-before-step-execution", hermes
-
-# Keep contract projection aligned with the certifier: blocked candidates must
-# never be counted as a healthy second binding before real R1 promotion.
+# The active contract is closed over exactly the declared two-runtime set.
+# A retired runtime cannot re-enter without changing this mandatory assertion.
 ready_statuses = {"source-set-bound", "ready", "active"}
 assert [name for name, item in bindings.items() if item["status"] in ready_statuses] == ["codex"], bindings
+assert [name for name, item in bindings.items() if item["status"] == "binding-candidate-blocked"] == ["claude-code"], bindings
 certifier_text = certifier_path.read_text(encoding="utf-8")
 assert 'READY_BINDING_STATUSES = {"source-set-bound", "ready", "active"}' in certifier_text, certifier_text
 assert "binding-candidate-blocked" not in ready_statuses
@@ -87,6 +81,8 @@ for key in (
     "missing_runtime_distribution_identity_is_blocked_not_pass",
     "r1_binding_conformance_is_not_r2_real_provider_substitution",
     "terminal_replaceability_requires_r2_real_provider_substitution",
+    "candidate_runtime_bindings_must_match_declared_set_exactly",
+    "retired_runtime_bindings_must_be_absent",
 ):
     assert rules[key] is True, (key, data)
 
@@ -114,4 +110,4 @@ for retired in (
     assert retired not in text, retired
 PY
 
-echo '[PASS] digital-worker runtime pilot tracks blocked candidates without weakening R2-only terminal portability'
+echo '[PASS] digital-worker runtime pilot is exact Codex + Claude while preserving R2-only terminal portability'
