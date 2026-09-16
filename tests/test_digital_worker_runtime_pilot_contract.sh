@@ -54,19 +54,23 @@ assert codex["status"] == "source-set-bound", codex
 claude = bindings["claude-code"]
 assert claude["repository"] == "https://github.com/jiying2007/claude.git", claude
 assert claude["target"] == "claude-code", claude
-assert claude["status"] == "binding-candidate-blocked", claude
-assert claude["candidate_pr"] == "jiying2007/claude#1", claude
-assert claude["blocker_ref"] == "jiying2007/claude#2", claude
-assert claude["blocker"] == "github-hosted-runner-admission-before-step-execution", claude
+assert claude["source_identity_mode"] == "exact-release-source-blobs", claude
+assert claude["status"] == "source-set-bound", claude
+assert claude["merged_pr"] == "jiying2007/claude#1", claude
+assert claude["binding_commit"] == "9768012c46f348421050192919a91b8070b5d672", claude
+assert claude["exact_head_workflow_run"] == "jiying2007/claude/actions/runs/35111664791", claude
+assert claude["fresh_main_workflow_run"] == "jiying2007/claude/actions/runs/35111772454", claude
+assert claude["r1_binding_conformance"] == "passed", claude
+assert claude["verified_runtime_execution_receipt"] == "pending", claude
+assert claude["r2_real_provider_substitution"] == "pending", claude
 
 # The active contract is closed over exactly the declared two-runtime set.
-# A retired runtime cannot re-enter without changing this mandatory assertion.
+# Both runtime source sets are now bound at R1, but terminal portability remains R2-only.
 ready_statuses = {"source-set-bound", "ready", "active"}
-assert [name for name, item in bindings.items() if item["status"] in ready_statuses] == ["codex"], bindings
-assert [name for name, item in bindings.items() if item["status"] == "binding-candidate-blocked"] == ["claude-code"], bindings
+assert [name for name, item in bindings.items() if item["status"] in ready_statuses] == ["codex", "claude-code"], bindings
+assert [name for name, item in bindings.items() if item["status"] == "binding-candidate-blocked"] == [], bindings
 certifier_text = certifier_path.read_text(encoding="utf-8")
 assert 'READY_BINDING_STATUSES = {"source-set-bound", "ready", "active"}' in certifier_text, certifier_text
-assert "binding-candidate-blocked" not in ready_statuses
 
 rules = data["hard_rules"]
 for key in (
@@ -110,4 +114,4 @@ for retired in (
     assert retired not in text, retired
 PY
 
-echo '[PASS] digital-worker runtime pilot is exact Codex + Claude while preserving R2-only terminal portability'
+echo '[PASS] digital-worker runtime pilot is exact Codex + Claude R1 source-set-bound while preserving R2-only terminal portability'
