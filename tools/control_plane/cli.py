@@ -14,6 +14,7 @@ _COMMAND_MODULES = {
     "native-governance-admin": "tools.control_plane.native_repository_governance_admin",
     "runtime-portability": "tools.control_plane.runtime_portability",
     "longitudinal-operation": "tools.control_plane.longitudinal_operation",
+    "long-term-rehearsal": "tools.control_plane.long_term_asset_rehearsal",
     "promotion-evidence": "tools.control_plane.adk_promotion_evidence",
 }
 
