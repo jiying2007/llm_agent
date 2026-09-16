@@ -1,6 +1,6 @@
 {
   "schema": "llm-agent-product-maturity-task-pack/v1",
-  "updated_at": "2026-09-15",
+  "updated_at": "2026-09-16",
   "rules": {
     "fail_closed": true,
     "no_automatic_external_write": true,
@@ -27,7 +27,6 @@
   ],
   "operational_followups": [
     "30-day independent pilot observation",
-    "native repository governance closure for issue #50",
     "full Codex/second-runtime comparative campaign",
     "real-repository runtime campaign",
     "historical 4.0.0 official artifact recovery"
