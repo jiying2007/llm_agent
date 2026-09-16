@@ -203,6 +203,7 @@ jobs:
         run: >-
           cosign verify-blob
           --use-signed-timestamps
+          --new-bundle-format
           --trusted-root '${{ steps.sigstore_root.outputs.path }}'
           --bundle reports/promotion/agent-dev-kit/promotion-attestation.json
           --certificate-identity https://github.com/jiying2007/agent-dev-kit/.github/workflows/ci.yml@refs/heads/main
