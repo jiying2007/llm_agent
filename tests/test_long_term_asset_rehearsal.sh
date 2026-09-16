@@ -18,6 +18,7 @@ from pathlib import Path
 root = Path(sys.argv[1])
 receipt = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
 policy = json.loads((root / "manifests/long_term_asset_rehearsal.json").read_text(encoding="utf-8"))
+qualification = json.loads((root / "manifests/long_term_asset_qualification.json").read_text(encoding="utf-8"))
 cli = (root / "tools/control_plane/cli.py").read_text(encoding="utf-8")
 
 assert policy["schema"] == "llm-agent-long-term-asset-rehearsal-policy/v1", policy
@@ -59,6 +60,21 @@ assert longitudinal["status"] == "pass", longitudinal
 assert longitudinal["simulated"] is True and longitudinal["terminal_qualified"] is False, longitudinal
 assert longitudinal["mode"] == "time-travel-30-day-fixture", longitudinal
 assert longitudinal["exit_code"] == 0, longitudinal
+
+readiness = qualification["terminal_readiness"]
+assert readiness["engineering_control_plane"] == "pass", readiness
+assert readiness["rehearsal"] == "pass", readiness
+assert set(readiness["rehearsal_scope"]) == {"LTA-02", "LTA-04"}, readiness
+assert readiness["rehearsal_command"] == "python3 -m tools.control_plane.cli long-term-rehearsal --scope all --summary-json", readiness
+assert readiness["rehearsal_simulated"] is True, readiness
+assert readiness["rehearsal_terminal_qualified"] is False, readiness
+assert readiness["simulated_evidence_counts_as_real"] is False, readiness
+assert readiness["real_qualification"] == "blocked", readiness
+assert set(readiness["real_blockers"]) == {"LTA-02", "LTA-04"}, readiness
+assert set(readiness["real_blockers"]) == set(qualification["terminal"]["blockers"]), (readiness, qualification["terminal"])
+assert qualification["terminal"]["qualified"] is False, qualification["terminal"]
+assert qualification["terminal"]["status"] == "blocked", qualification["terminal"]
+assert set(readiness["real_blockers"]) == set(real["terminal_blockers"]), (readiness, real)
 PY
 
-echo '[PASS] long-term rehearsal reaches simulated R2/30-day PASS without terminal effect'
+echo '[PASS] long-term rehearsal and terminal-readiness projection preserve simulated/real separation'
