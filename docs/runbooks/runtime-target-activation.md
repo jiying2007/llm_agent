@@ -1,6 +1,6 @@
 # Runtime Target Activation Runbook
 
-本 runbook 用于把 `claude-code`、`hermes-agent`、`opencode` 等 runtime target 从 candidate 提升为 `enabled=true`。默认 target 仍是 `codex-home`；新增 target 不得绕过 source/live chain、只读 health adapter、dry-run 和 rollback 证据。
+本 runbook 用于把 `claude-code`、`opencode` 等 runtime target 从 candidate 提升为 `enabled=true`。默认 target 仍是 `codex-home`；新增 target 不得绕过 source/live chain、只读 health adapter、dry-run 和 rollback 证据。
 
 ## 1. 目标边界
 
@@ -139,7 +139,7 @@ Evidence Index 只记录真实执行或明确计划的证据，不得只复制 `
 | `<TARGET>-FOOTPRINT-001` | `<target-id>` | footprint | `<target footprint command>` | `-` | no missing required assets | not executed yet | read-only | `reports/runtime-target-activation/<target-id>/footprint-policy.json` | RuntimeTarget | footprint policy | no | not-required | planned |
 | `<TARGET>-PLAN-001` | `<target-id>` | dry-run | `<source repo plan command>` | `-` | plan generated and reviewed | not executed yet | source-repo-only | `reports/runtime-target-activation/<target-id>/apply-plan.md` | RuntimeTarget | source-to-live plan | no | not-required | planned |
 | `<TARGET>-DRYRUN-001` | `<target-id>` | dry-run | `<source repo apply dry-run>` | `-` | no unexplained overwrite/delete | not executed yet | source-repo-only | `reports/runtime-target-activation/<target-id>/apply-dry-run.md` | RuntimeTarget | source-to-live dry-run | no | not-required | planned |
-| `<TARGET>-ROLLBACK-001` | `<target-id>` | rollback | `<rollback dry-run or documented procedure>` | `-` | rollback path reviewed | not executed yet | read-only or rollback-live-root | `reports/runtime-target-activation/<target-id>/rollback.md` | RuntimeTarget | rollback plan | yes | required | planned |
+| `<TARGET>-ROLLBACK-001` | `<target-id>` | rollback | `<rollback dry-run or documented procedure>` | `-` | rollback path reviewed | read-only or rollback-live-root | `reports/runtime-target-activation/<target-id>/rollback.md` | RuntimeTarget | rollback plan | yes | required | planned |
 | `<TARGET>-APPLY-001` | `<target-id>` | apply | `<source repo apply command>` | `-` | live root updated as approved | blocked until approval | live-root | `reports/runtime-target-activation/<target-id>/apply-report.md` | RuntimeTarget | apply report | yes | required | blocked |
 
 `<TARGET>-APPLY-001` 和真实 `<TARGET>-ROLLBACK-001` 默认不执行；只有用户明确授权写 live root 时才执行。
