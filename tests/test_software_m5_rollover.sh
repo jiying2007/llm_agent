@@ -124,18 +124,18 @@ scorecard = json.loads((root / "manifests/product_maturity_scorecard.json").read
 status = (root / "reports/current-status.md").read_text()
 
 assert summary["status"] == "pass", summary
-assert summary["candidate_version"] == "5.1.0", summary
+assert summary["candidate_version"] == "5.1.1", summary
 assert summary["release_authorized"] is True, summary
 assert summary["software_m5_certified"] is True, summary
 assert len(summary["changed_paths"]) == 5, summary
-assert policy["release"]["candidate_version"] == "5.1.0", policy
-assert policy["release"]["candidate_commit"] == "59cbd5cb40ca7077ee5407636bfc617e295ec7e5", policy
+assert policy["release"]["candidate_version"] == "5.1.1", policy
+assert policy["release"]["candidate_commit"] == "e36dfec69f21806431b07daddc4bd78412179e62", policy
 assert policy["runtime_qualification"]["measured_evidence"] == [summary["runtime_evidence"]], policy
 assert policy["qualification_record"] == summary["qualification_record"], policy
-assert "5.1.0" in Path(summary["qualification_record"]).name
-assert scorecard["software_m5"]["candidate_version"] == "5.1.0", scorecard
-assert scorecard["working_candidate"]["version"] == "5.1.0", scorecard
-assert "5_1_0_release_train" not in scorecard["software_m5"]["advisory_followups"], scorecard
+assert "5.1.1" in Path(summary["qualification_record"]).name
+assert scorecard["software_m5"]["candidate_version"] == "5.1.1", scorecard
+assert scorecard["working_candidate"]["version"] == "5.1.1", scorecard
+assert "5_1_1_release_train" not in scorecard["software_m5"]["advisory_followups"], scorecard
 assert cert["software_m5_certified"] is True and cert["declaration_status"] == "pass", cert
 assert projection["status"] == "pass" and projection["release_authorized"] is True, projection
 assert projection["current_evidence_state"] == "verified-for-current-source", projection
