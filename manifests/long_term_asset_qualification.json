@@ -36,7 +36,7 @@
       "model": "versioned-component",
       "identity": "signed-release-plus-exact-source",
       "component_release_required": true,
-      "current_release": "5.1.0"
+      "current_release": "5.1.1"
     }
   },
   "dependency_closure": {
@@ -160,7 +160,7 @@
       "certifier": "tools.control_plane.runtime_portability",
       "certifier_command": "python3 -m tools.control_plane.cli runtime-portability --root . --summary-json",
       "default_evidence_path": "reports/long-term-assets/runtime-portability-current.json",
-      "remaining_external_blocker": "second-real-runtime-provider-binding-and-R2-comparison-evidence",
+      "remaining_external_blocker": "real-claude-runtime-execution-receipt-and-same-frozen-task-R2-comparison-evidence",
       "evidence": [
         "manifests/digital_worker_runtime_pilot.json"
       ]
