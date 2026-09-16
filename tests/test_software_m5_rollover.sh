@@ -6,6 +6,31 @@ TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 GOOD="$TMP/good"
 BAD="$TMP/bad"
+
+python3 - "$ROOT" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+ledger = json.loads((root / "manifests/software_m5_pilot_ledger.json").read_text(encoding="utf-8"))
+policy = json.loads((root / "manifests/software_m5_policy.json").read_text(encoding="utf-8"))
+assert policy["operational_advisories"]["second_human_operator"] is False
+pilots = {item["id"]: item for item in ledger["pilots"]}
+independent = pilots["software-m5-v5-independent-pilot-20260912"]
+assert independent["environment_class"] == "independent"
+assert independent["status"] == "active"
+assert independent["started_at"] == "2026-09-12T04:19:00Z"
+assert independent["repositories"] == ["digital-worker"]
+objective = independent["objective"].lower()
+assert "solo-maintainer" in objective
+assert "second-human" not in objective
+assert "second human" not in objective
+# Historical pilot-start evidence is immutable hash-bound evidence and is not
+# rewritten by this current-ledger policy ratchet.
+assert (root / "reports/field-evidence/software-m5-independent-pilot-start-2026-09-12.json").is_file()
+PY
+
 cp -a "$ROOT" "$GOOD"
 cp -a "$ROOT" "$BAD"
 
