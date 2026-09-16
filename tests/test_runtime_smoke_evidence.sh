@@ -135,12 +135,11 @@ if python3 -m tools.codex_assets.runtime_smoke_evidence \
   exit 1
 fi
 
-# Long-term runtime/field qualification regressions stay on the existing
-# Product-M5 tooling CI path. Their fixtures are temporary and never qualify LTA.
-# Keep the machine-readable candidate projection on this mandatory path too so
-# blocked R1 candidates can never drift into certifier-ready status unnoticed.
+# Candidate projection and long-term qualification rehearsal stay on the mandatory
+# Product-M5 tooling path. The rehearsal itself runs the R2 + longitudinal
+# certifier fixtures but is explicitly simulated/non-terminal and must leave the
+# worktree unchanged.
 bash "$ROOT/tests/test_digital_worker_runtime_pilot_contract.sh"
-bash "$ROOT/tests/test_runtime_portability_certifier.sh"
-bash "$ROOT/tests/test_longitudinal_operation_certifier.sh"
+bash "$ROOT/tests/test_long_term_asset_rehearsal.sh"
 
-echo "[PASS] runtime smoke, candidate projection, portability, and longitudinal evidence contracts"
+echo "[PASS] runtime smoke, candidate projection, and non-terminal long-term rehearsal contracts"
