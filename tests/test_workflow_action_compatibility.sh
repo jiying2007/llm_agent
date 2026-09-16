@@ -26,8 +26,12 @@ for path in workflows:
     text = path.read_text(encoding="utf-8")
     if "ubuntu-latest" in text:
         failures.append(f"{path.relative_to(root)} uses floating ubuntu-latest")
-    if "--new-bundle-format" in text:
-        failures.append(f"{path.relative_to(root)} uses deprecated Cosign --new-bundle-format")
+    has_trusted_root = "--trusted-root" in text
+    has_new_bundle_format = "--new-bundle-format" in text
+    if has_trusted_root and not has_new_bundle_format:
+        failures.append(
+            f"{path.relative_to(root)} uses Cosign --trusted-root without required --new-bundle-format"
+        )
     for lineno, line in enumerate(text.splitlines(), 1):
         match = uses_re.match(line)
         if not match:
@@ -53,7 +57,7 @@ if failures:
 
 print(
     "[PASS] Root workflows use pinned Node24-generation action identities "
-    "and current Cosign bundle verification syntax "
+    "and current Cosign trusted-root bundle verification syntax "
     + " ".join(f"{name}={count}" for name, count in sorted(seen.items()))
 )
 PY
