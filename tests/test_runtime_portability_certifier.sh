@@ -222,18 +222,25 @@ assert "requires R2-real-provider-substitution" in value["reason"], value
 PY
 
 # A real evidence file cannot pass while a compared binding remains future-only.
-# Construct that negative state explicitly instead of depending on the canonical
-# Claude binding being blocked; canonical R1 readiness is allowed to advance.
+# Keep the synthetic frozen identity intact so this case isolates binding readiness,
+# rather than failing earlier on an unrelated exact-identity mismatch.
 cp "$ROOT/manifests/digital_worker_runtime_pilot.json" "$FIXTURE/manifests/digital_worker_runtime_pilot.json"
 python3 - "$FIXTURE/manifests/digital_worker_runtime_pilot.json" <<'PY'
 import json, sys
 from pathlib import Path
 path = Path(sys.argv[1]); value = json.loads(path.read_text())
+commits = {"codex": "1" * 40, "claude-code": "2" * 40}
 for item in value["candidate_runtime_bindings"]:
-    if item["runtime"] == "claude-code":
+    runtime = item["runtime"]
+    item["binding_commit"] = commits[runtime]
+    item["status"] = "source-set-bound"
+    if runtime == "claude-code":
+        item["repository"] = "jiying2007/claude-code-binding"
         item["status"] = "binding-candidate-blocked"
         item["blocker_ref"] = "selftest://future-only"
         item["blocker"] = "selftest-future-only"
+for runtime, commit in commits.items():
+    value["execution_plane_evidence"][runtime]["frozen_binding_commit"] = commit
 path.write_text(json.dumps(value, indent=2) + "\n")
 PY
 set +e
