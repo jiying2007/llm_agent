@@ -8,7 +8,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Mapping
 
-LTA_SCHEMA = "llm-agent-long-term-asset-qualification/v1"
+LTA_SCHEMA = "llm-agent-long-term-asset-qualification/v2"
 LEDGER_SCHEMA = "llm-agent-software-m5-pilot-ledger/v1"
 EVENT_SCHEMA = "llm-agent-software-field-event/v1"
 EVIDENCE_SCHEMA = "llm-agent-longitudinal-operation-evidence/v1"
@@ -98,14 +98,14 @@ def _lta04(root: Path) -> dict[str, Any]:
         raise LongitudinalError("long-term asset contract schema is unsupported")
     requirements = {
         item.get("id"): item
-        for item in contract.get("blocking_requirements", [])
+        for item in contract.get("qualification_requirements", [])
         if isinstance(item, dict) and isinstance(item.get("id"), str)
     }
     requirement = requirements.get("LTA-04")
     if not isinstance(requirement, dict):
         raise LongitudinalError("LTA-04 requirement is missing")
-    if requirement.get("status") != "blocked_time_evidence":
-        raise LongitudinalError("LTA-04 must remain blocked_time_evidence until real qualification evidence is ratcheted")
+    if requirement.get("status") != "observation_window_in_progress":
+        raise LongitudinalError("LTA-04 must remain observation_window_in_progress until real qualification evidence is ratcheted")
     if requirement.get("implementation_status") != "certifier-ready":
         raise LongitudinalError("LTA-04 implementation_status must be certifier-ready")
     if requirement.get("minimum_calendar_days") != 30:
