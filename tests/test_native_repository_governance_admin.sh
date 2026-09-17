@@ -149,10 +149,11 @@ assert 'TOKEN_ENV = "ADK_GITHUB_ADMIN_TOKEN"' in source
 assert "LLM_AGENT_GITHUB_ADMIN_TOKEN" not in source
 
 lta = json.loads(Path("manifests/long_term_asset_qualification.json").read_text(encoding="utf-8"))
-lta01 = {item["id"]: item for item in lta["blocking_requirements"]}["LTA-01"]
+assert lta["schema"] == "llm-agent-long-term-asset-qualification/v2"
+lta01 = {item["id"]: item for item in lta["qualification_requirements"]}["LTA-01"]
 assert lta01["status"] == "pass"
+assert lta01["affects"] == []
 assert lta01["implementation_status"] == "verified"
-assert "remaining_admin_blocker" not in lta01
 assert lta01["ruleset_id"] == 23516987
 assert "native-governance-admin" in lta01["admin_apply_command"]
 assert "--apply" in lta01["admin_apply_command"]
