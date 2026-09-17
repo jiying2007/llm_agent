@@ -1,13 +1,13 @@
 {
   "schema": "llm-agent-product-maturity-scorecard/v1",
-  "updated_at": "2026-09-16",
+  "updated_at": "2026-09-17",
   "product_boundary": "reference-intake workspace plus platform-neutral agent asset compiler/control plane; no LLM agent runtime",
   "overall": {
     "level": "M5",
     "status": "production-qualified",
     "terminal_mature": true,
     "terminal_scope": "product_maturity_v5",
-    "long_term_asset_status": "blocked",
+    "long_term_asset_status": "qualification_pending",
     "long_term_asset_contract": "manifests/long_term_asset_qualification.json",
     "reason": "Current ADK identity is signed and release-qualified, root integration is fresh, one measured runtime smoke passes, and a governed independent real-software pilot has started with hash-bound field evidence. This terminal flag is scoped to Product M5 and does not imply long-term asset terminal qualification.",
     "field_status": "production_qualified"

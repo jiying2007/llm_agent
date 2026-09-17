@@ -31,11 +31,11 @@ mkdir -p "$FIXTURE/manifests" "$FIXTURE/reports/field-evidence" "$FIXTURE/report
 
 cat >"$FIXTURE/manifests/long_term_asset_qualification.json" <<'JSON'
 {
-  "schema": "llm-agent-long-term-asset-qualification/v1",
-  "blocking_requirements": [
+  "schema": "llm-agent-long-term-asset-qualification/v2",
+  "qualification_requirements": [
     {
       "id": "LTA-04",
-      "status": "blocked_time_evidence",
+      "status": "observation_window_in_progress",
       "implementation_status": "certifier-ready",
       "pilot_id": "pilot-independent",
       "repository_id": "independent-repo",

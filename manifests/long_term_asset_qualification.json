@@ -1,26 +1,25 @@
 {
-  "schema": "llm-agent-long-term-asset-qualification/v1",
+  "schema": "llm-agent-long-term-asset-qualification/v2",
   "updated_at": "2026-09-17",
   "qualification_scope": "llm_agent control plane plus pinned agent-dev-kit component",
-  "purpose": "Separate product M5 qualification from long-term asset terminal qualification without weakening fail-closed evidence semantics.",
+  "purpose": "Separate current engineering readiness from long-term asset terminal qualification without weakening fail-closed evidence semantics.",
   "rules": {
     "fail_closed": true,
     "no_simulated_external_evidence": true,
-    "terminal_requires_all_blocking_requirements": true,
+    "terminal_requires_all_qualification_requirements": true,
     "product_maturity_does_not_imply_long_term_terminal": true,
-    "blocking_scope_must_be_explicit": true,
     "qualification_pending_does_not_block_iteration": true
   },
   "iteration_readiness": {
     "development": "ready",
     "integration": "ready",
     "control_plane": "ready",
-    "blocking_requirements": [],
+    "iteration_gates": [],
     "qualification_pending": [
       "LTA-02",
       "LTA-04"
     ],
-    "meaning": "Pending long-term qualification evidence is tracked fail-closed at the qualification boundary and does not block normal development, integration, CI, runtime binding, or Pilot iteration."
+    "meaning": "Long-term qualification evidence may remain pending while normal development, integration, CI, runtime binding, Pilot work, and product iteration continue."
   },
   "maintainer_model": {
     "type": "solo",
@@ -73,7 +72,7 @@
       "promotion_artifact_id": 10430631584,
       "promotion_artifact_sha256": "f56851a19d7d18d7787d088408bc7d812e44adf56f69c73479869aa139277136",
       "terminal_effect": "internal-dependency-closure-only",
-      "note": "ADK native governance, strict stale-base rejection/requalification, exact-head merge, fresh-main qualification, keyless GitHub OIDC promotion, branch GC, and issue closure are terminally complete. This removes ADK governance as an internal dependency blocker but does not satisfy LTA-02 real-provider evidence or LTA-04 real-time evidence."
+      "note": "ADK native governance, strict stale-base rejection/requalification, exact-head merge, fresh-main qualification, keyless GitHub OIDC promotion, branch GC, and issue closure are terminally complete. LTA-02 and LTA-04 remain separate qualification requirements."
     }
   },
   "qualification_layers": [
@@ -101,7 +100,7 @@
         "reports/runtime-evidence/codex-v5-runtime-smoke-2026-08-30.json",
         "manifests/digital_worker_runtime_pilot.json"
       ],
-      "note": "Representative runtime evidence is sufficient for Product M5 but long-term terminal portability requires R2 real-provider substitution evidence below."
+      "note": "Representative runtime evidence is sufficient for Product M5; terminal portability qualification still requires R2 real-provider substitution evidence."
     },
     {
       "id": "product-qualified",
@@ -113,24 +112,21 @@
     },
     {
       "id": "long-term-asset-qualified",
-      "status": "blocked",
-      "blocking_scope": "long-term-asset-terminal-qualification-only",
-      "development_blocking": false,
-      "integration_blocking": false,
+      "status": "qualification_pending",
+      "affects": [
+        "long-term-asset-terminal-qualification"
+      ],
       "evidence": [
         "manifests/long_term_asset_qualification.json"
       ]
     }
   ],
-  "blocking_requirements": [
+  "qualification_requirements": [
     {
       "id": "LTA-01",
       "name": "native-repository-governance",
       "status": "pass",
-      "blocking_scope": "none",
-      "development_blocking": false,
-      "integration_blocking": false,
-      "terminal_qualification_blocking": false,
+      "affects": [],
       "implementation_status": "verified",
       "acceptance": "A native repository ruleset covers main, requires pull requests, preserves the solo-maintainer zero-approval policy, has no unconditional bypass actors, permits squash merges only, requires the canonical stable PR qualification contexts with strict/up-to-date status enforcement, blocks destructive/non-fast-forward main updates, and delegates ordinary merged-PR branch deletion to native delete-on-merge while custom Branch GC is restricted to explicit exact-SHA retirement proofs.",
       "required_status_checks": [
@@ -171,13 +167,11 @@
     {
       "id": "LTA-02",
       "name": "multi-runtime-portability",
-      "status": "blocked_external_evidence",
-      "operational_status": "evidence_collection_in_progress",
-      "blocking_scope": "runtime-portability-terminal-qualification-only",
-      "development_blocking": false,
-      "integration_blocking": false,
-      "product_maturity_blocking": false,
-      "terminal_qualification_blocking": true,
+      "status": "evidence_collection_in_progress",
+      "affects": [
+        "runtime-portability-terminal-qualification",
+        "long-term-asset-terminal-qualification"
+      ],
       "implementation_status": "certifier-ready",
       "required_healthy_runtime_bindings": 2,
       "required_evidence_level": "R2-real-provider-substitution",
@@ -186,7 +180,7 @@
       "certifier": "tools.control_plane.runtime_portability",
       "certifier_command": "python3 -m tools.control_plane.cli runtime-portability --root . --summary-json",
       "default_evidence_path": "reports/long-term-assets/runtime-portability-current.json",
-      "remaining_external_blocker": "real-claude-runtime-execution-receipt-and-same-frozen-task-R2-comparison-evidence",
+      "pending_evidence": "real-claude-runtime-execution-receipt-and-same-frozen-task-R2-comparison-evidence",
       "evidence": [
         "manifests/digital_worker_runtime_pilot.json"
       ]
@@ -195,10 +189,7 @@
       "id": "LTA-03",
       "name": "solo-maintainer-recovery-drill",
       "status": "pass",
-      "blocking_scope": "none",
-      "development_blocking": false,
-      "integration_blocking": false,
-      "terminal_qualification_blocking": false,
+      "affects": [],
       "acceptance": "A clean environment reconstructs the control plane from authoritative source, verifies current identities, exercises rollback/recovery, and emits a machine-readable receipt without relying on untracked local state.",
       "evidence": [
         "reports/long-term-assets/solo-maintainer-recovery-2026-09-15.json"
@@ -210,24 +201,22 @@
     {
       "id": "LTA-04",
       "name": "longitudinal-operation",
-      "status": "blocked_time_evidence",
-      "operational_status": "observation_window_in_progress",
-      "blocking_scope": "longitudinal-terminal-qualification-only",
-      "development_blocking": false,
-      "integration_blocking": false,
-      "product_maturity_blocking": false,
-      "terminal_qualification_blocking": true,
+      "status": "observation_window_in_progress",
+      "affects": [
+        "longitudinal-terminal-qualification",
+        "long-term-asset-terminal-qualification"
+      ],
       "implementation_status": "certifier-ready",
       "pilot_id": "software-m5-v5-independent-pilot-20260912",
       "repository_id": "digital-worker",
       "pilot_start_at": "2026-09-12T04:19:00Z",
       "minimum_calendar_days": 30,
       "earliest_qualification_at": "2026-10-12T04:19:00Z",
-      "acceptance": "At least 30 days of independent pilot observation are summarized with incidents, regressions, recovery events, and unresolved risks represented explicitly. Zero observed incidents/regressions/recoveries are valid only when represented explicitly; blocking unresolved risks or a review hold keep qualification blocked.",
+      "acceptance": "At least 30 days of independent pilot observation are summarized with incidents, regressions, recovery events, and unresolved risks represented explicitly. Zero observed incidents/regressions/recoveries are valid only when represented explicitly; unresolved risks or a review hold keep terminal qualification pending.",
       "certifier": "tools.control_plane.longitudinal_operation",
       "certifier_command": "python3 -m tools.control_plane.cli longitudinal-operation --root . --summary-json",
       "default_evidence_path": "reports/long-term-assets/longitudinal-operation-current.json",
-      "remaining_external_blocker": "observation-window-and-real-summary-evidence",
+      "pending_evidence": "observation-window-and-real-summary-evidence",
       "evidence": [
         "manifests/software_m5_pilot_ledger.json",
         "reports/field-evidence/software-m5-v5-events.jsonl"
@@ -237,9 +226,9 @@
   "terminal_readiness": {
     "engineering_control_plane": "pass",
     "iteration_readiness": "ready",
-    "development_blockers": [],
-    "integration_blockers": [],
-    "qualification_pending": [
+    "iteration_gates": [],
+    "qualification_status": "pending",
+    "pending_requirements": [
       "LTA-02",
       "LTA-04"
     ],
@@ -252,19 +241,12 @@
     "rehearsal_simulated": true,
     "rehearsal_terminal_qualified": false,
     "simulated_evidence_counts_as_real": false,
-    "real_qualification": "blocked",
-    "real_blocker_scope": "long-term-asset-terminal-qualification-only",
-    "real_blockers": [
-      "LTA-02",
-      "LTA-04"
-    ],
-    "meaning": "The engineering/control-plane implementation is ready for ongoing development and integration. LTA-02 and LTA-04 remain fail-closed only at their terminal long-term qualification boundaries until real R2 evidence and real longitudinal time evidence satisfy the canonical certifiers."
+    "meaning": "Engineering and integration are ready. LTA-02 and LTA-04 are pending terminal qualification requirements until real R2 evidence and real longitudinal evidence satisfy the canonical certifiers."
   },
   "terminal": {
     "qualified": false,
-    "status": "blocked",
-    "blocking_scope": "long-term-asset-terminal-qualification-only",
-    "blockers": [
+    "status": "qualification_pending",
+    "pending_requirements": [
       "LTA-02",
       "LTA-04"
     ]

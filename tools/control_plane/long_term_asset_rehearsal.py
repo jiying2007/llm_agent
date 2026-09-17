@@ -10,8 +10,9 @@ from typing import Any
 
 POLICY_PATH = Path("manifests/long_term_asset_rehearsal.json")
 LTA_PATH = Path("manifests/long_term_asset_qualification.json")
-SCHEMA = "llm-agent-long-term-asset-rehearsal/v1"
+SCHEMA = "llm-agent-long-term-asset-rehearsal/v2"
 POLICY_SCHEMA = "llm-agent-long-term-asset-rehearsal-policy/v1"
+LTA_SCHEMA = "llm-agent-long-term-asset-qualification/v2"
 
 
 class RehearsalError(RuntimeError):
@@ -72,9 +73,11 @@ def _policy(root: Path) -> dict[str, Any]:
 
 def _real_state(root: Path) -> dict[str, Any]:
     data = _load(root / LTA_PATH, "long-term asset qualification")
+    if data.get("schema") != LTA_SCHEMA:
+        raise RehearsalError("long-term asset qualification schema is unsupported")
     requirements = {
         item.get("id"): item
-        for item in data.get("blocking_requirements", [])
+        for item in data.get("qualification_requirements", [])
         if isinstance(item, dict) and isinstance(item.get("id"), str)
     }
     for key in ("LTA-02", "LTA-04"):
@@ -88,7 +91,7 @@ def _real_state(root: Path) -> dict[str, Any]:
         "LTA-04": requirements["LTA-04"].get("status"),
         "terminal_status": terminal.get("status"),
         "terminal_qualified": terminal.get("qualified"),
-        "terminal_blockers": terminal.get("blockers"),
+        "terminal_pending_requirements": terminal.get("pending_requirements"),
     }
 
 

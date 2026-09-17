@@ -90,16 +90,16 @@ for key in (
 ):
     assert rules[key] is True, (key, data)
 
-requirements = {item["id"]: item for item in lta["blocking_requirements"]}
+requirements = {item["id"]: item for item in lta["qualification_requirements"]}
 lta02 = requirements["LTA-02"]
-assert lta02["status"] == "blocked_external_evidence", lta02
+assert lta02["status"] == "evidence_collection_in_progress", lta02
 assert lta02["implementation_status"] == "certifier-ready", lta02
 assert lta02["required_healthy_runtime_bindings"] >= 2, lta02
 assert lta02["required_evidence_level"] == "R2-real-provider-substitution", lta02
 assert lta02["r1_binding_conformance_is_terminal_evidence"] is False, lta02
 assert lta02["certifier"] == "tools.control_plane.runtime_portability", lta02
 assert lta02["default_evidence_path"] == "reports/long-term-assets/runtime-portability-current.json", lta02
-assert lta02["remaining_external_blocker"] == "real-claude-runtime-execution-receipt-and-same-frozen-task-R2-comparison-evidence", lta02
+assert lta02["pending_evidence"] == "real-claude-runtime-execution-receipt-and-same-frozen-task-R2-comparison-evidence", lta02
 assert certifier_path.is_file()
 assert '"runtime-portability": "tools.control_plane.runtime_portability"' in cli_path.read_text(encoding="utf-8")
 
