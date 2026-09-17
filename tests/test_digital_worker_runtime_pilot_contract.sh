@@ -19,6 +19,9 @@ assert data["schema_version"] == 4, data
 assert data["contract_version"] == "1.3", data
 assert data["status"] == "report-only", data
 assert "governance_identity" in data["roles"]["digital-worker"], data
+assert "r2_freeze" in data["roles"]["digital-worker"], data
+assert "execution_evidence_intake" in data["roles"]["digital-worker"], data
+assert "provider_execution" in data["roles"]["runtime-binding"], data
 assert data["roles"]["agent-dev-kit"] == [
     "asset_profile", "skill_assets", "immutable_release_identity", "source_set_handoff_contract"
 ], data
@@ -41,6 +44,20 @@ assert set(data["replaceability_evidence_levels"]) == {
 }, data
 assert data["terminal_replaceability_evidence_level"] == "R2-real-provider-substitution", data
 
+ownership = data["execution_ownership"]
+assert ownership == {
+    "model": "runtime-owned-provider-execution+digital-worker-verifier-only",
+    "provider_credentials_owner": "runtime-binding-repository",
+    "provider_execution_authority_owner": "runtime-binding-repository",
+    "digital_worker_holds_provider_credentials": False,
+    "runtime_execution_evidence_transport": "github-oidc-attested-runtime-owned-evidence",
+    "digital_worker_verifies_execution_provenance": True,
+    "digital_worker_projects_native_receipts": True,
+    "digital_worker_domain_verification_is_separate": True,
+    "independent_review_must_be_distinct_from_all_runtime_executors_and_verifier": True,
+    "attested_execution_receipt_is_not_r2_pass": True,
+}, ownership
+
 bindings = {item["runtime"]: item for item in data["candidate_runtime_bindings"]}
 assert set(bindings) == {"codex", "claude-code"}, bindings
 assert len(data["candidate_runtime_bindings"]) == 2, data["candidate_runtime_bindings"]
@@ -50,6 +67,7 @@ assert codex["repository"] == "https://github.com/jiying2007/codex.git", codex
 assert codex["target"] == "codex-cli", codex
 assert codex["source_identity_mode"] == "exact-release-source-blobs", codex
 assert codex["status"] == "source-set-bound", codex
+assert codex["binding_commit"] == "d12e782b46430d6bfc828f24a41f94f871a7a19a", codex
 
 claude = bindings["claude-code"]
 assert claude["repository"] == "https://github.com/jiying2007/claude.git", claude
@@ -64,13 +82,51 @@ assert claude["r1_binding_conformance"] == "passed", claude
 assert claude["verified_runtime_execution_receipt"] == "pending", claude
 assert claude["r2_real_provider_substitution"] == "pending", claude
 
+planes = data["execution_plane_evidence"]
+codex_plane = planes["codex"]
+assert codex_plane["repository"] == "jiying2007/codex", codex_plane
+assert codex_plane["execution_plane_commit"] == "ad3ca665e5c773b05461c27f53f34756b672f0de", codex_plane
+assert codex_plane["frozen_binding_commit"] == codex["binding_commit"], codex_plane
+assert codex_plane["credential_owner"] == "jiying2007/codex", codex_plane
+assert codex_plane["merged_pr"] == "jiying2007/codex#14", codex_plane
+assert codex_plane["exact_head_contract_run"] == "jiying2007/codex/actions/runs/35198177281", codex_plane
+assert codex_plane["fresh_main_contract_run"] == "jiying2007/codex/actions/runs/35201225651", codex_plane
+assert codex_plane["real_provider_execution_receipt"] == "pending", codex_plane
+
+claude_plane = planes["claude-code"]
+assert claude_plane["repository"] == "jiying2007/claude", claude_plane
+assert claude_plane["execution_plane_commit"] == "5489f881aac3fb19b4fc4d4677d6083437ab4986", claude_plane
+assert claude_plane["frozen_binding_commit"] == claude["binding_commit"], claude_plane
+assert claude_plane["credential_owner"] == "jiying2007/claude", claude_plane
+assert claude_plane["merged_pr"] == "jiying2007/claude#4", claude_plane
+assert claude_plane["exact_head_contract_run"] == "jiying2007/claude/actions/runs/35198276279", claude_plane
+assert claude_plane["fresh_main_contract_run"] == "jiying2007/claude/actions/runs/35201235807", claude_plane
+assert claude_plane["real_provider_execution_receipt"] == "pending", claude_plane
+
+dw_plane = planes["digital-worker"]
+assert dw_plane["repository"] == "jiying2007/digital-worker", dw_plane
+assert dw_plane["verifier_only_commit"] == "b92c81d6733468709737e11ae5a6336cb06001fc", dw_plane
+assert dw_plane["merged_pr"] == "jiying2007/digital-worker#118", dw_plane
+assert dw_plane["provider_credentials_held"] is False, dw_plane
+assert dw_plane["combined_provider_workflow_present"] is False, dw_plane
+assert dw_plane["freeze_workflow"] == ".github/workflows/runtime-r2-freeze.yml", dw_plane
+assert dw_plane["domain_verification_workflow"] == ".github/workflows/runtime-r2-domain-verification.yml", dw_plane
+assert dw_plane["independent_review_workflow"] == ".github/workflows/runtime-r2-independent-review.yml", dw_plane
+assert dw_plane["fresh_main_runs"] == {
+    "runtime_r2_harness": "jiying2007/digital-worker/actions/runs/35201429559",
+    "terminal_consistency": "jiying2007/digital-worker/actions/runs/35201429455",
+    "embedded_expert_contracts": "jiying2007/digital-worker/actions/runs/35201429384",
+}, dw_plane
+
 # The active contract is closed over exactly the declared two-runtime set.
-# Both runtime source sets are now bound at R1, but terminal portability remains R2-only.
+# Both frozen runtime source sets remain R1-bound while the execution planes may advance independently.
 ready_statuses = {"source-set-bound", "ready", "active"}
 assert [name for name, item in bindings.items() if item["status"] in ready_statuses] == ["codex", "claude-code"], bindings
 assert [name for name, item in bindings.items() if item["status"] == "binding-candidate-blocked"] == [], bindings
 certifier_text = certifier_path.read_text(encoding="utf-8")
 assert 'READY_BINDING_STATUSES = {"source-set-bound", "ready", "active"}' in certifier_text, certifier_text
+assert "runtime_binding_commit does not match the frozen canonical binding" in certifier_text, certifier_text
+assert "runtime pilot execution ownership drift" in certifier_text, certifier_text
 
 rules = data["hard_rules"]
 for key in (
@@ -87,6 +143,12 @@ for key in (
     "terminal_replaceability_requires_r2_real_provider_substitution",
     "candidate_runtime_bindings_must_match_declared_set_exactly",
     "retired_runtime_bindings_must_be_absent",
+    "provider_credentials_must_remain_runtime_owned",
+    "digital_worker_must_not_hold_provider_credentials",
+    "runtime_execution_must_be_separate_from_digital_worker_verification",
+    "attested_execution_receipt_is_not_domain_verification",
+    "tracked_evidence_intake_is_not_real_provider_execution",
+    "frozen_binding_identity_must_not_follow_execution_plane_head",
 ):
     assert rules[key] is True, (key, data)
 
@@ -114,4 +176,4 @@ for retired in (
     assert retired not in text, retired
 PY
 
-echo '[PASS] digital-worker runtime pilot is exact Codex + Claude R1 source-set-bound while preserving R2-only terminal portability'
+echo '[PASS] digital-worker runtime pilot enforces runtime-owned R2 execution, verifier-only DW, exact frozen bindings, and R2-only terminal portability'
