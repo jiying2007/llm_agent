@@ -36,13 +36,21 @@ from pathlib import Path
 root = Path(sys.argv[1])
 contract_path = root / "manifests/digital_worker_runtime_pilot.json"
 contract = json.loads(contract_path.read_text(encoding="utf-8"))
+selftest_binding_commits = {
+    "codex": "1" * 40,
+    "claude-code": "2" * 40,
+}
 for item in contract["candidate_runtime_bindings"]:
-    if item["runtime"] == "claude-code":
+    runtime = item["runtime"]
+    item["binding_commit"] = selftest_binding_commits[runtime]
+    if runtime == "claude-code":
         item.update({
             "repository": "jiying2007/claude-code-binding",
             "source_identity_mode": "exact-release-source-blobs",
             "status": "source-set-bound",
         })
+for runtime, commit in selftest_binding_commits.items():
+    contract["execution_plane_evidence"][runtime]["frozen_binding_commit"] = commit
 contract_path.write_text(json.dumps(contract, indent=2) + "\n", encoding="utf-8")
 
 interface = json.loads((root / "manifests/adk_interface.lock.json").read_text(encoding="utf-8"))
@@ -172,6 +180,27 @@ assert set(value["execution_receipts"]) == {"codex", "claude-code"}, value
 assert value["digital_worker_commit"] == "4" * 40, value
 PY
 
+# The current execution-plane HEAD is operational evidence, never the frozen runtime binding identity.
+python3 - "$FIXTURE/reports/portability/comparison.json" "$FIXTURE/manifests/digital_worker_runtime_pilot.json" "$FIXTURE/reports/portability/wrong-binding.json" <<'PY'
+import json, sys
+from pathlib import Path
+comparison = json.loads(Path(sys.argv[1]).read_text())
+contract = json.loads(Path(sys.argv[2]).read_text())
+comparison["runtime_runs"][0]["runtime_binding_commit"] = contract["execution_plane_evidence"]["codex"]["execution_plane_commit"]
+Path(sys.argv[3]).write_text(json.dumps(comparison, indent=2, sort_keys=True) + "\n")
+PY
+set +e
+python3 -m tools.control_plane.runtime_portability --root "$FIXTURE" --evidence "$FIXTURE/reports/portability/wrong-binding.json" --summary-json >"$TMP/wrong-binding-result.json"
+rc=$?
+set -e
+[[ "$rc" -eq 1 ]]
+python3 - "$TMP/wrong-binding-result.json" <<'PY'
+import json, sys
+value = json.load(open(sys.argv[1], encoding="utf-8"))
+assert value["status"] == "fail", value
+assert "does not match the frozen canonical binding" in value["error"], value
+PY
+
 # R1 binding conformance must never qualify terminal portability.
 python3 - "$FIXTURE/reports/portability/comparison.json" "$FIXTURE/reports/portability/r1.json" <<'PY'
 import json, sys
@@ -193,18 +222,25 @@ assert "requires R2-real-provider-substitution" in value["reason"], value
 PY
 
 # A real evidence file cannot pass while a compared binding remains future-only.
-# Construct that negative state explicitly instead of depending on the canonical
-# Claude binding being blocked; canonical R1 readiness is allowed to advance.
+# Keep the synthetic frozen identity intact so this case isolates binding readiness,
+# rather than failing earlier on an unrelated exact-identity mismatch.
 cp "$ROOT/manifests/digital_worker_runtime_pilot.json" "$FIXTURE/manifests/digital_worker_runtime_pilot.json"
 python3 - "$FIXTURE/manifests/digital_worker_runtime_pilot.json" <<'PY'
 import json, sys
 from pathlib import Path
 path = Path(sys.argv[1]); value = json.loads(path.read_text())
+commits = {"codex": "1" * 40, "claude-code": "2" * 40}
 for item in value["candidate_runtime_bindings"]:
-    if item["runtime"] == "claude-code":
+    runtime = item["runtime"]
+    item["binding_commit"] = commits[runtime]
+    item["status"] = "source-set-bound"
+    if runtime == "claude-code":
+        item["repository"] = "jiying2007/claude-code-binding"
         item["status"] = "binding-candidate-blocked"
         item["blocker_ref"] = "selftest://future-only"
         item["blocker"] = "selftest-future-only"
+for runtime, commit in commits.items():
+    value["execution_plane_evidence"][runtime]["frozen_binding_commit"] = commit
 path.write_text(json.dumps(value, indent=2) + "\n")
 PY
 set +e
@@ -219,14 +255,22 @@ assert value["status"] == "blocked", value
 assert "runtime binding is not source-set-bound/ready: claude-code" in value["reason"], value
 PY
 
-# Restore self-test ready binding for malformed-evidence negative cases.
+# Restore the self-test frozen identities for malformed-evidence negative cases.
 python3 - "$FIXTURE/manifests/digital_worker_runtime_pilot.json" <<'PY'
 import json, sys
 from pathlib import Path
 path = Path(sys.argv[1]); value = json.loads(path.read_text())
+commits = {"codex": "1" * 40, "claude-code": "2" * 40}
 for item in value["candidate_runtime_bindings"]:
-    if item["runtime"] == "claude-code":
-        item.update({"repository":"jiying2007/claude-code-binding","source_identity_mode":"exact-release-source-blobs","status":"source-set-bound"})
+    runtime = item["runtime"]
+    item["binding_commit"] = commits[runtime]
+    item["status"] = "source-set-bound"
+    if runtime == "claude-code":
+        item["repository"] = "jiying2007/claude-code-binding"
+        item.pop("blocker_ref", None)
+        item.pop("blocker", None)
+for runtime, commit in commits.items():
+    value["execution_plane_evidence"][runtime]["frozen_binding_commit"] = commit
 path.write_text(json.dumps(value, indent=2) + "\n")
 PY
 
@@ -269,4 +313,4 @@ assert value["status"] == "fail", value
 assert "forbidden verification PASS claim" in value["error"], value
 PY
 
-echo "[PASS] LTA-02 certifier requires frozen DW governance identity, R2 evidence, and keeps missing real second-runtime evidence BLOCKED"
+echo "[PASS] LTA-02 certifier requires runtime-owned execution architecture, exact frozen binding identity, R2 evidence, and keeps missing real provider evidence BLOCKED"
