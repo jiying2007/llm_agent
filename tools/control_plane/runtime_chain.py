@@ -43,7 +43,8 @@ def _expect(value: Any, expected: Any, label: str) -> None:
 
 
 def _current_adk_pin(root: Path) -> dict[str, str]:
-    current_adk = _current_adk_pin(root)
+    adk = _lock(root / "adk.lock")
+    _expect(adk.get("schema"), "llm-agent-adk-lock/v2", "adk.lock schema")
     version = adk.get("agent-dev-kit.version", "")
     if not version:
         raise RuntimeError("adk.lock agent-dev-kit.version must be non-empty")
@@ -51,7 +52,6 @@ def _current_adk_pin(root: Path) -> dict[str, str]:
         if not FULL_SHA.fullmatch(adk.get(key, "")):
             raise RuntimeError(f"adk.lock {key} must be a full Git SHA")
     return adk
-
 
 def _pin_check(root: Path) -> dict[str, str]:
     codex = _lock(root / "codex.lock")
