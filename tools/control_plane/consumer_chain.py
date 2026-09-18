@@ -144,12 +144,24 @@ def check(root: Path, *, require_codex_worktree: bool = False) -> dict[str, Any]
     return {
         "schema": "llm-agent-consumer-chain-check/v1",
         "status": "pass",
-        "chain": "agent-dev-kit release -> codex runtime distribution -> digital-worker independent consumer evidence",
+        "chain": "codex frozen ADK source-set -> codex runtime distribution -> digital-worker independent consumer evidence; root current ADK is a separate control-plane identity",
         "mode": "worktree" if require_codex_worktree else "pin-only",
         "agent_dev_kit": {
             "version": codex_lock["agent-dev-kit.version"],
             "commit": codex_lock["agent-dev-kit.commit"],
             "release_artifact_sha256": codex_lock["agent-dev-kit.release_artifact_sha256"],
+            "identity_role": "codex-frozen-runtime-source-set",
+        },
+        "root_current_agent_dev_kit": {
+            "version": codex_lock["root-current-agent-dev-kit.version"],
+            "commit": codex_lock["root-current-agent-dev-kit.commit"],
+            "tree": codex_lock["root-current-agent-dev-kit.tree"],
+            "manifest_blob": codex_lock["root-current-agent-dev-kit.manifest_blob"],
+            "identity_role": "root-current-control-plane",
+        },
+        "identity_domains": {
+            "root_current_adk_may_differ_from_codex_frozen_adk": True,
+            "cross_domain_equality_required": False,
         },
         "codex": {
             "commit": codex_lock["codex.commit"],
