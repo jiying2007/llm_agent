@@ -32,6 +32,28 @@ for path in workflows:
         failures.append(
             f"{path.relative_to(root)} uses Cosign --trusted-root without required --new-bundle-format"
         )
+    promotion_bundle = "reports/promotion/agent-dev-kit/promotion-attestation.json"
+    if promotion_bundle in text:
+        index = text.index(promotion_bundle)
+        block = text[max(0, index - 900): index + 900]
+        required_tokens = (
+            "cosign verify-blob",
+            "--use-signed-timestamps",
+            "--bundle reports/promotion/agent-dev-kit/promotion-attestation.json",
+            "--certificate-identity https://github.com/jiying2007/agent-dev-kit/.github/workflows/ci.yml@refs/heads/main",
+            "--certificate-oidc-issuer https://token.actions.githubusercontent.com",
+            "reports/promotion/agent-dev-kit/promotion-evidence.json",
+        )
+        for token in required_tokens:
+            if token not in block:
+                failures.append(
+                    f"{path.relative_to(root)} promotion bundle verification missing producer-proven token: {token}"
+                )
+        for forbidden in ("--trusted-root", "--new-bundle-format"):
+            if forbidden in block:
+                failures.append(
+                    f"{path.relative_to(root)} promotion bundle verification reintroduced incompatible {forbidden}"
+                )
     for lineno, line in enumerate(text.splitlines(), 1):
         match = uses_re.match(line)
         if not match:
@@ -57,7 +79,7 @@ if failures:
 
 print(
     "[PASS] Root workflows use pinned Node24-generation action identities "
-    "and current Cosign trusted-root bundle verification syntax "
+    "and producer-compatible Cosign promotion-bundle verification semantics "
     + " ".join(f"{name}={count}" for name, count in sorted(seen.items()))
 )
 PY
