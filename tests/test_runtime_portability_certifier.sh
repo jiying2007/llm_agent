@@ -8,7 +8,7 @@ FIXTURE="$TMP/root"
 mkdir -p "$FIXTURE/manifests" "$FIXTURE/reports/promotion/agent-dev-kit" "$FIXTURE/reports/portability"
 
 cp "$ROOT/manifests/digital_worker_runtime_pilot.json" "$FIXTURE/manifests/"
-cp "$ROOT/manifests/adk_interface.lock.json" "$FIXTURE/manifests/"
+cp "$ROOT/manifests/r2_frozen_adk_release.lock.json" "$FIXTURE/manifests/"
 cp "$ROOT/reports/promotion/agent-dev-kit/promotion-evidence.json" "$FIXTURE/reports/promotion/agent-dev-kit/"
 
 # Missing real comparison evidence is a BLOCKED external-evidence state, never PASS.
@@ -53,8 +53,7 @@ for runtime, commit in selftest_binding_commits.items():
     contract["execution_plane_evidence"][runtime]["frozen_binding_commit"] = commit
 contract_path.write_text(json.dumps(contract, indent=2) + "\n", encoding="utf-8")
 
-interface = json.loads((root / "manifests/adk_interface.lock.json").read_text(encoding="utf-8"))
-promotion = json.loads((root / "reports/promotion/agent-dev-kit/promotion-evidence.json").read_text(encoding="utf-8"))
+frozen_adk = json.loads((root / "manifests/r2_frozen_adk_release.lock.json").read_text(encoding="utf-8"))
 
 def canonical(value):
     return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()
@@ -83,7 +82,7 @@ controlled = {
     "engineering_task_package": {"digest": "task-package-selftest"},
     "acceptance_criteria": ["same acceptance"],
     "required_verification": ["same verification"],
-    "adk_release_identity_ref": "manifests/adk_interface.lock.json",
+    "adk_release_identity_ref": "manifests/r2_frozen_adk_release.lock.json",
     "adk_asset_profile": "core",
     "runtime_source_set_identity_ref": "comparison-source-set-selftest",
 }
@@ -148,11 +147,11 @@ evidence = {
     "controlled_task": controlled,
     "frozen_inputs_sha256": frozen,
     "adk_release_identity": {
-        "version": interface["version"],
-        "commit": interface["commit"],
-        "tree": interface["tree"],
-        "manifest_blob": interface["manifest_blob"],
-        "artifact_sha256": promotion["release"]["artifact_sha256"],
+        "version": frozen_adk["version"],
+        "commit": frozen_adk["commit"],
+        "tree": frozen_adk["tree"],
+        "manifest_blob": frozen_adk["manifest_blob"],
+        "artifact_sha256": frozen_adk["artifact_sha256"],
     },
     "runtime_runs": runs,
     "verification_standard_id": "same-verifier-review-standard-v1",
