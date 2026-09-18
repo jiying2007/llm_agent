@@ -55,10 +55,9 @@ def _current_adk_pin(root: Path) -> dict[str, str]:
 
 def _pin_check(root: Path) -> dict[str, str]:
     codex = _lock(root / "codex.lock")
-    adk = _lock(root / "adk.lock")
+    current_adk = _current_adk_pin(root)
     evidence = _json(root / "reports/promotion/agent-dev-kit/promotion-evidence.json")
     _expect(codex.get("schema"), "llm-agent-codex-lock/v1", "codex.lock schema")
-    _expect(adk.get("schema"), "llm-agent-adk-lock/v2", "adk.lock schema")
     for key in ("codex.commit", "codex.tree", "codex.provider_lock_blob", "codex.runtime_control_blob", "codex.runtime_binding_blob", "codex.agents_blob", "codex.validator_blob", "codex.workflow_blob", "agent-dev-kit.commit", "agent-dev-kit.tree", "agent-dev-kit.manifest_blob"):
         if not FULL_SHA.fullmatch(codex.get(key, "")):
             raise RuntimeError(f"codex.lock {key} must be a full Git SHA")
