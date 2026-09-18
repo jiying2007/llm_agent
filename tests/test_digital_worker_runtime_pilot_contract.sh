@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-python3 - "$ROOT/manifests/digital_worker_runtime_pilot.json" "$ROOT/manifests/long_term_asset_qualification.json" "$ROOT/tools/control_plane/runtime_portability.py" "$ROOT/tools/control_plane/cli.py" <<'PY'
+python3 - "$ROOT/manifests/digital_worker_runtime_pilot.json" "$ROOT/manifests/long_term_asset_qualification.json" "$ROOT/tools/control_plane/runtime_portability.py" "$ROOT/tools/control_plane/cli.py" "$ROOT/manifests/r2_frozen_adk_release.lock.json" <<'PY'
 import json
 import sys
 from pathlib import Path
@@ -12,8 +12,10 @@ path = Path(sys.argv[1])
 lta_path = Path(sys.argv[2])
 certifier_path = Path(sys.argv[3])
 cli_path = Path(sys.argv[4])
+frozen_adk_path = Path(sys.argv[5])
 data = json.loads(path.read_text(encoding="utf-8"))
 lta = json.loads(lta_path.read_text(encoding="utf-8"))
+frozen_adk = json.loads(frozen_adk_path.read_text(encoding="utf-8"))
 
 assert data["schema_version"] == 4, data
 assert data["contract_version"] == "1.3", data
@@ -43,6 +45,12 @@ assert set(data["replaceability_evidence_levels"]) == {
     "R1-binding-conformance", "R2-real-provider-substitution"
 }, data
 assert data["terminal_replaceability_evidence_level"] == "R2-real-provider-substitution", data
+assert data["frozen_adk_release_identity_ref"] == "manifests/r2_frozen_adk_release.lock.json", data
+assert frozen_adk["schema"] == "llm-agent-r2-frozen-adk-release/v1", frozen_adk
+assert frozen_adk["campaign_id"] == "R2-FEATURE-PCR02-OTA-001", frozen_adk
+assert frozen_adk["version"] == "5.1.1", frozen_adk
+assert frozen_adk["commit"] == "e36dfec69f21806431b07daddc4bd78412179e62", frozen_adk
+assert frozen_adk["root_current_adk_may_advance"] is True, frozen_adk
 
 ownership = data["execution_ownership"]
 assert ownership == {
@@ -105,17 +113,17 @@ assert claude_plane["real_provider_execution_receipt"] == "pending", claude_plan
 
 dw_plane = planes["digital-worker"]
 assert dw_plane["repository"] == "jiying2007/digital-worker", dw_plane
-assert dw_plane["verifier_only_commit"] == "b92c81d6733468709737e11ae5a6336cb06001fc", dw_plane
-assert dw_plane["merged_pr"] == "jiying2007/digital-worker#118", dw_plane
+assert dw_plane["verifier_only_commit"] == "7ac5fa7c800bbfb20ca3323101410a6a26750fd0", dw_plane
+assert dw_plane["merged_pr"] == "jiying2007/digital-worker#120", dw_plane
 assert dw_plane["provider_credentials_held"] is False, dw_plane
 assert dw_plane["combined_provider_workflow_present"] is False, dw_plane
 assert dw_plane["freeze_workflow"] == ".github/workflows/runtime-r2-freeze.yml", dw_plane
 assert dw_plane["domain_verification_workflow"] == ".github/workflows/runtime-r2-domain-verification.yml", dw_plane
 assert dw_plane["independent_review_workflow"] == ".github/workflows/runtime-r2-independent-review.yml", dw_plane
 assert dw_plane["fresh_main_runs"] == {
-    "runtime_r2_harness": "jiying2007/digital-worker/actions/runs/35201429559",
-    "terminal_consistency": "jiying2007/digital-worker/actions/runs/35201429455",
-    "embedded_expert_contracts": "jiying2007/digital-worker/actions/runs/35201429384",
+    "runtime_r2_harness": "jiying2007/digital-worker/actions/runs/35292787860",
+    "terminal_consistency": "jiying2007/digital-worker/actions/runs/35292787835",
+    "embedded_expert_contracts": "jiying2007/digital-worker/actions/runs/35292787821",
 }, dw_plane
 
 # The active contract is closed over exactly the declared two-runtime set.
@@ -149,6 +157,7 @@ for key in (
     "attested_execution_receipt_is_not_domain_verification",
     "tracked_evidence_intake_is_not_real_provider_execution",
     "frozen_binding_identity_must_not_follow_execution_plane_head",
+    "r2_frozen_adk_identity_must_not_follow_root_current_adk",
 ):
     assert rules[key] is True, (key, data)
 
