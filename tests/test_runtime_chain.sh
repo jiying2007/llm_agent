@@ -4,28 +4,14 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 bash "$ROOT/scripts/check-codex-lock.sh" "$ROOT" --pin-only
 
+current_version="$(awk -F= '$1=="agent-dev-kit.version"{print $2; exit}' "$ROOT/adk.lock")"
+current_commit="$(awk -F= '$1=="agent-dev-kit.commit"{print $2; exit}' "$ROOT/adk.lock")"
+frozen_version="$(awk -F= '$1=="agent-dev-kit.version"{print $2; exit}' "$ROOT/codex.lock")"
+frozen_commit="$(awk -F= '$1=="agent-dev-kit.commit"{print $2; exit}' "$ROOT/codex.lock")"
+
 python3 -m tools.control_plane.runtime_chain --root "$ROOT" --pin-only --summary-json \
-  | python3 - "$ROOT/adk.lock" "$ROOT/codex.lock" <<'PY'
-import json, sys
-from pathlib import Path
-
-def lock(path):
-    out={}
-    for line in Path(path).read_text(encoding="utf-8").splitlines():
-        if "=" in line:
-            k,v=line.split("=",1); out[k]=v
-    return out
-
-current=lock(sys.argv[1]); frozen=lock(sys.argv[2]); d=json.load(sys.stdin)
-assert d["status"]=="pass" and d["mode"]=="pin-only", d
-assert d["current_agent_dev_kit"]["version"]==current["agent-dev-kit.version"], d
-assert d["current_agent_dev_kit"]["commit"]==current["agent-dev-kit.commit"], d
-assert d["frozen_codex_provider"]["version"]==frozen["agent-dev-kit.version"], d
-assert d["frozen_codex_provider"]["commit"]==frozen["agent-dev-kit.commit"], d
-assert d["current_agent_dev_kit"]["commit"] != d["frozen_codex_provider"]["commit"], d
-assert d["frozen_codex_provider"]["promotion_evidence"].endswith("/promotion-evidence.json"), d
-assert d["frozen_codex_provider"]["promotion_attestation"].endswith("/promotion-attestation.json"), d
-PY
+  | python3 -c 'import json,sys; d=json.load(sys.stdin); cv,cc,fv,fc=sys.argv[1:]; assert d["status"]=="pass" and d["mode"]=="pin-only", d; assert d["current_agent_dev_kit"]["version"]==cv and d["current_agent_dev_kit"]["commit"]==cc, d; assert d["frozen_codex_provider"]["version"]==fv and d["frozen_codex_provider"]["commit"]==fc, d; assert cc != fc, d; assert d["frozen_codex_provider"]["promotion_evidence"].endswith("/promotion-evidence.json"), d; assert d["frozen_codex_provider"]["promotion_attestation"].endswith("/promotion-attestation.json"), d' \
+      "$current_version" "$current_commit" "$frozen_version" "$frozen_commit"
 
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
