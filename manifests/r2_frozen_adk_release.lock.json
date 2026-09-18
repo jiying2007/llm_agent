@@ -8,6 +8,7 @@
   "tree": "9c37468930231bdfa7f230e38ed1b85e0dc0f5f5",
   "manifest_blob": "4715a03db12ac28d2978356306381c028c75af76",
   "artifact_sha256": "1924d79034a216f04dde0d08826dd5b87c597f090721335c1cec16e9bc88cbc1",
-  "promotion_evidence": "reports/promotion/agent-dev-kit/promotion-evidence.json",
-  "root_current_adk_may_advance": true
+  "promotion_evidence": "reports/promotion/agent-dev-kit/history/5.1.1/promotion-evidence.json",
+  "root_current_adk_may_advance": true,
+  "promotion_attestation": "reports/promotion/agent-dev-kit/history/5.1.1/promotion-attestation.json"
 }
