@@ -1,0 +1,50 @@
+{
+  "ci": {
+    "contract_matrix": {
+      "python": [
+        "3.11",
+        "3.12"
+      ],
+      "status": "success"
+    },
+    "deterministic_eval_package": "success",
+    "regression_matrix": {
+      "python": [
+        "3.11",
+        "3.12"
+      ],
+      "status": "success"
+    },
+    "static_security": "success"
+  },
+  "contracts": {
+    "contract_registry_sha256": "7609d4938ee879321580d041d6d5cd42335124275436f7bd0e111192a6039bda",
+    "release_manifest_sha256": "f9991fcc18748e12e6374383b20a668f69b43d3716dbc253330cb4134819bfdf",
+    "schema_set_sha256": "43f3773090862b4b848630bf96699cfcc930809501dac491664b7cf94ffe962e"
+  },
+  "issued_at": "2026-09-16T12:48:08.448501Z",
+  "provenance": {
+    "format": "sigstore-bundle/v1",
+    "subject": "promotion-evidence.json"
+  },
+  "release": {
+    "artifact_sha256": "1924d79034a216f04dde0d08826dd5b87c597f090721335c1cec16e9bc88cbc1",
+    "release_eligible": true
+  },
+  "schema": "adk-promotion-evidence/v1",
+  "source": {
+    "commit": "e36dfec69f21806431b07daddc4bd78412179e62",
+    "event": "push",
+    "manifest_blob": "4715a03db12ac28d2978356306381c028c75af76",
+    "manifest_sha256": "317b3d88c74286d7f42bee23b2f83eae12bba1503ae09bb06d8951c3f87f0c9e",
+    "ref": "refs/heads/main",
+    "repository": "jiying2007/agent-dev-kit",
+    "run_attempt": 1,
+    "run_id": 35097591312,
+    "tree": "9c37468930231bdfa7f230e38ed1b85e0dc0f5f5",
+    "version": "5.1.1",
+    "workflow": "agent-dev-kit-ci",
+    "workflow_ref": "jiying2007/agent-dev-kit/.github/workflows/ci.yml@refs/heads/main",
+    "workflow_sha": "e36dfec69f21806431b07daddc4bd78412179e62"
+  }
+}

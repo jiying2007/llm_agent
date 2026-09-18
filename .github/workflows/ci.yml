@@ -189,22 +189,10 @@ jobs:
           --summary-json
           > /tmp/llm-agent-integration-receipt.json
 
-      - name: Initialize Sigstore trusted root
-        id: sigstore_root
-        shell: bash
-        run: |
-          set -euo pipefail
-          cosign initialize
-          trusted_root="$(find "$HOME/.sigstore/root" -type f -path '*/targets/trusted_root.json' -print -quit)"
-          [[ -n "$trusted_root" && -f "$trusted_root" ]] || { echo '[FAIL] Sigstore trusted_root.json was not initialized' >&2; exit 1; }
-          echo "path=$trusted_root" >> "$GITHUB_OUTPUT"
-
-      - name: Verify keyless ADK Sigstore bundle with Rekor v2 trust time
+      - name: Verify keyless ADK Sigstore bundle with producer-compatible trust discovery
         run: >-
           cosign verify-blob
           --use-signed-timestamps
-          --new-bundle-format
-          --trusted-root '${{ steps.sigstore_root.outputs.path }}'
           --bundle reports/promotion/agent-dev-kit/promotion-attestation.json
           --certificate-identity https://github.com/jiying2007/agent-dev-kit/.github/workflows/ci.yml@refs/heads/main
           --certificate-oidc-issuer https://token.actions.githubusercontent.com

@@ -132,9 +132,12 @@ assert "/tmp/runtime-chain-receipt.json" in github
 assert "promotion-attestation" in github and "promotion-evidence" in github
 assert "sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6" in github
 assert "cosign-release: v3.1.3" in github
-assert "cosign initialize" in github and "trusted_root.json" in github
-assert "cosign verify-blob" in github and "--trusted-root" in github
+assert "cosign initialize" not in github
+assert "trusted_root.json" not in github
+assert "cosign verify-blob" in github
 assert "--use-signed-timestamps" in github
+assert "--trusted-root" not in github
+assert "--new-bundle-format" not in github
 assert "--insecure-ignore-tlog" not in github
 assert "--certificate-identity https://github.com/jiying2007/agent-dev-kit/.github/workflows/ci.yml@refs/heads/main" in github
 assert "--certificate-oidc-issuer https://token.actions.githubusercontent.com" in github

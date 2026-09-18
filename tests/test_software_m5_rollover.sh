@@ -122,20 +122,28 @@ projection = json.loads(Path(sys.argv[4]).read_text())
 policy = json.loads((root / "manifests/software_m5_policy.json").read_text())
 scorecard = json.loads((root / "manifests/product_maturity_scorecard.json").read_text())
 status = (root / "reports/current-status.md").read_text()
+lock = {}
+for line in (root / "adk.lock").read_text(encoding="utf-8").splitlines():
+    if "=" in line:
+        key, value = line.split("=", 1)
+        lock[key] = value
+expected_version = lock["agent-dev-kit.version"]
+expected_commit = lock["agent-dev-kit.commit"]
+release_train_token = expected_version.replace(".", "_").replace("-", "_").replace("+", "_") + "_release_train"
 
 assert summary["status"] == "pass", summary
-assert summary["candidate_version"] == "5.1.1", summary
+assert summary["candidate_version"] == expected_version, summary
 assert summary["release_authorized"] is True, summary
 assert summary["software_m5_certified"] is True, summary
 assert len(summary["changed_paths"]) == 5, summary
-assert policy["release"]["candidate_version"] == "5.1.1", policy
-assert policy["release"]["candidate_commit"] == "e36dfec69f21806431b07daddc4bd78412179e62", policy
+assert policy["release"]["candidate_version"] == expected_version, policy
+assert policy["release"]["candidate_commit"] == expected_commit, policy
 assert policy["runtime_qualification"]["measured_evidence"] == [summary["runtime_evidence"]], policy
 assert policy["qualification_record"] == summary["qualification_record"], policy
-assert "5.1.1" in Path(summary["qualification_record"]).name
-assert scorecard["software_m5"]["candidate_version"] == "5.1.1", scorecard
-assert scorecard["working_candidate"]["version"] == "5.1.1", scorecard
-assert "5_1_1_release_train" not in scorecard["software_m5"]["advisory_followups"], scorecard
+assert expected_version in Path(summary["qualification_record"]).name
+assert scorecard["software_m5"]["candidate_version"] == expected_version, scorecard
+assert scorecard["working_candidate"]["version"] == expected_version, scorecard
+assert release_train_token not in scorecard["software_m5"]["advisory_followups"], scorecard
 assert cert["software_m5_certified"] is True and cert["declaration_status"] == "pass", cert
 assert projection["status"] == "pass" and projection["release_authorized"] is True, projection
 assert projection["current_evidence_state"] == "verified-for-current-source", projection
