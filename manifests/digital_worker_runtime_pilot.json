@@ -4,10 +4,40 @@
   "status": "report-only",
   "purpose": "Joint runtime comparison contract for digital-worker, agent-dev-kit, replaceable Runtime Bindings and llm_agent without changing domain verification semantics.",
   "roles": {
-    "digital-worker": ["work_item", "system_context", "governance_identity", "acceptance", "action_policy", "engineering_result", "r2_freeze", "execution_evidence_intake", "verification", "independent_review"],
-    "agent-dev-kit": ["asset_profile", "skill_assets", "immutable_release_identity", "source_set_handoff_contract"],
-    "runtime-binding": ["runtime_target_mapping", "runtime_profile", "host_integration", "exact_source_set_identity", "runtime_distribution_identity", "provider_execution", "runtime_execution_receipt", "runtime_local_conformance"],
-    "llm_agent": ["runtime_target_health", "cross_runtime_comparison_evidence", "loop_readiness_mapping", "adoption_recommendation"]
+    "digital-worker": [
+      "work_item",
+      "system_context",
+      "governance_identity",
+      "acceptance",
+      "action_policy",
+      "engineering_result",
+      "r2_freeze",
+      "execution_evidence_intake",
+      "verification",
+      "independent_review"
+    ],
+    "agent-dev-kit": [
+      "asset_profile",
+      "skill_assets",
+      "immutable_release_identity",
+      "source_set_handoff_contract"
+    ],
+    "runtime-binding": [
+      "runtime_target_mapping",
+      "runtime_profile",
+      "host_integration",
+      "exact_source_set_identity",
+      "runtime_distribution_identity",
+      "provider_execution",
+      "runtime_execution_receipt",
+      "runtime_local_conformance"
+    ],
+    "llm_agent": [
+      "runtime_target_health",
+      "cross_runtime_comparison_evidence",
+      "loop_readiness_mapping",
+      "adoption_recommendation"
+    ]
   },
   "frozen_inputs": [
     "work_item_id",
@@ -130,17 +160,17 @@
     },
     "digital-worker": {
       "repository": "jiying2007/digital-worker",
-      "verifier_only_commit": "b92c81d6733468709737e11ae5a6336cb06001fc",
-      "merged_pr": "jiying2007/digital-worker#118",
+      "verifier_only_commit": "7ac5fa7c800bbfb20ca3323101410a6a26750fd0",
+      "merged_pr": "jiying2007/digital-worker#120",
       "provider_credentials_held": false,
       "combined_provider_workflow_present": false,
       "freeze_workflow": ".github/workflows/runtime-r2-freeze.yml",
       "domain_verification_workflow": ".github/workflows/runtime-r2-domain-verification.yml",
       "independent_review_workflow": ".github/workflows/runtime-r2-independent-review.yml",
       "fresh_main_runs": {
-        "runtime_r2_harness": "jiying2007/digital-worker/actions/runs/35201429559",
-        "terminal_consistency": "jiying2007/digital-worker/actions/runs/35201429455",
-        "embedded_expert_contracts": "jiying2007/digital-worker/actions/runs/35201429384"
+        "runtime_r2_harness": "jiying2007/digital-worker/actions/runs/35292787860",
+        "terminal_consistency": "jiying2007/digital-worker/actions/runs/35292787835",
+        "embedded_expert_contracts": "jiying2007/digital-worker/actions/runs/35292787821"
       }
     }
   },
@@ -181,7 +211,9 @@
     "runtime_execution_must_be_separate_from_digital_worker_verification": true,
     "attested_execution_receipt_is_not_domain_verification": true,
     "tracked_evidence_intake_is_not_real_provider_execution": true,
-    "frozen_binding_identity_must_not_follow_execution_plane_head": true
+    "frozen_binding_identity_must_not_follow_execution_plane_head": true,
+    "r2_frozen_adk_identity_must_not_follow_root_current_adk": true
   },
-  "completion": "R2 only: Codex and Claude each execute the same controlled real task in their own credential-bearing execution domain against the frozen binding identity, emit GitHub-OIDC-attested execution evidence, and Digital Worker independently validates provenance, projects receipts, replays/verifies both results, and records an independent review before llm_agent may certify terminal portability. Architecture/CI readiness alone is never R2 evidence."
+  "completion": "R2 only: Codex and Claude each execute the same controlled real task in their own credential-bearing execution domain against the frozen binding identity, emit GitHub-OIDC-attested execution evidence, and Digital Worker independently validates provenance, projects receipts, replays/verifies both results, and records an independent review before llm_agent may certify terminal portability. Architecture/CI readiness alone is never R2 evidence.",
+  "frozen_adk_release_identity_ref": "manifests/r2_frozen_adk_release.lock.json"
 }
