@@ -73,7 +73,14 @@ def _current_adk_check(root: Path) -> dict[str, str]:
 def _pin_check(root: Path) -> dict[str, str]:
     """Validate the frozen Codex provider/replay chain without coupling it to current ADK."""
     codex = _lock(root / "codex.lock")
-    evidence = _json(root / "reports/promotion/agent-dev-kit/promotion-evidence.json")
+    frozen_version = codex.get("agent-dev-kit.version", "")
+    if not frozen_version:
+        raise RuntimeError("codex.lock frozen ADK version is missing")
+    frozen_root = root / "reports" / "promotion" / "agent-dev-kit" / "history" / frozen_version
+    evidence_path = frozen_root / "promotion-evidence.json"
+    attestation_path = frozen_root / "promotion-attestation.json"
+    evidence = _json(evidence_path)
+    attestation = _json(attestation_path)
     _expect(codex.get("schema"), "llm-agent-codex-lock/v1", "codex.lock schema")
     for key in ("codex.commit", "codex.tree", "codex.provider_lock_blob", "codex.runtime_control_blob", "codex.runtime_binding_blob", "codex.agents_blob", "codex.validator_blob", "codex.workflow_blob", "agent-dev-kit.commit", "agent-dev-kit.tree", "agent-dev-kit.manifest_blob"):
         if not FULL_SHA.fullmatch(codex.get(key, "")):
@@ -82,6 +89,20 @@ def _pin_check(root: Path) -> dict[str, str]:
         raise RuntimeError("codex.lock release artifact must be sha256 hex")
     source = evidence.get("source", {})
     release = evidence.get("release", {})
+    provenance = evidence.get("provenance", {})
+    if not isinstance(provenance, dict):
+        raise RuntimeError("frozen promotion evidence provenance is invalid")
+    _expect(provenance.get("subject"), "promotion-evidence.json", "frozen promotion provenance subject")
+    _expect(provenance.get("format"), "sigstore-bundle/v1", "frozen promotion provenance format")
+    if not isinstance(attestation, dict):
+        raise RuntimeError("frozen promotion attestation must be a JSON object")
+    _expect(
+        attestation.get("mediaType"),
+        "application/vnd.dev.sigstore.bundle.v0.3+json",
+        "frozen promotion attestation mediaType",
+    )
+    if not isinstance(attestation.get("verificationMaterial"), dict):
+        raise RuntimeError("frozen promotion attestation verificationMaterial is missing")
     _expect(source.get("repository"), "jiying2007/agent-dev-kit", "promotion repository")
     _expect(source.get("version"), codex["agent-dev-kit.version"], "promotion version")
     _expect(source.get("commit"), codex["agent-dev-kit.commit"], "promotion commit")
@@ -199,6 +220,8 @@ def main(argv: list[str] | None = None) -> int:
                 "tree": codex["agent-dev-kit.tree"],
                 "manifest_blob": codex["agent-dev-kit.manifest_blob"],
                 "release_artifact_sha256": codex["agent-dev-kit.release_artifact_sha256"],
+            "promotion_evidence": f"reports/promotion/agent-dev-kit/history/{codex['agent-dev-kit.version']}/promotion-evidence.json",
+            "promotion_attestation": f"reports/promotion/agent-dev-kit/history/{codex['agent-dev-kit.version']}/promotion-attestation.json",
             },
             **detail,
         }
