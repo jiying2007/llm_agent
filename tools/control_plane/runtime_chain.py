@@ -42,6 +42,17 @@ def _expect(value: Any, expected: Any, label: str) -> None:
         raise RuntimeError(f"{label}: {value!r} != {expected!r}")
 
 
+def _current_adk_pin(root: Path) -> dict[str, str]:
+    current_adk = _current_adk_pin(root)
+    version = adk.get("agent-dev-kit.version", "")
+    if not version:
+        raise RuntimeError("adk.lock agent-dev-kit.version must be non-empty")
+    for key in ("agent-dev-kit.commit", "agent-dev-kit.tree", "agent-dev-kit.manifest_blob"):
+        if not FULL_SHA.fullmatch(adk.get(key, "")):
+            raise RuntimeError(f"adk.lock {key} must be a full Git SHA")
+    return adk
+
+
 def _pin_check(root: Path) -> dict[str, str]:
     codex = _lock(root / "codex.lock")
     adk = _lock(root / "adk.lock")
@@ -53,8 +64,6 @@ def _pin_check(root: Path) -> dict[str, str]:
             raise RuntimeError(f"codex.lock {key} must be a full Git SHA")
     if not SHA256.fullmatch(codex.get("agent-dev-kit.release_artifact_sha256", "")):
         raise RuntimeError("codex.lock release artifact must be sha256 hex")
-    for key in ("agent-dev-kit.version", "agent-dev-kit.commit", "agent-dev-kit.tree", "agent-dev-kit.manifest_blob"):
-        _expect(codex.get(key), adk.get(key), f"cross-lock {key}")
     source = evidence.get("source", {})
     release = evidence.get("release", {})
     _expect(source.get("repository"), "jiying2007/agent-dev-kit", "promotion repository")
@@ -64,6 +73,12 @@ def _pin_check(root: Path) -> dict[str, str]:
     _expect(source.get("manifest_blob"), codex["agent-dev-kit.manifest_blob"], "promotion manifest")
     _expect(release.get("artifact_sha256"), codex["agent-dev-kit.release_artifact_sha256"], "promotion artifact")
     _expect(release.get("release_eligible"), True, "promotion eligibility")
+    # Root current ADK and the Codex runtime source-set ADK are independent identity domains.
+    # Both must be exact and valid, but they are not required to be equal.
+    codex["root-current-agent-dev-kit.version"] = current_adk["agent-dev-kit.version"]
+    codex["root-current-agent-dev-kit.commit"] = current_adk["agent-dev-kit.commit"]
+    codex["root-current-agent-dev-kit.tree"] = current_adk["agent-dev-kit.tree"]
+    codex["root-current-agent-dev-kit.manifest_blob"] = current_adk["agent-dev-kit.manifest_blob"]
     return codex
 
 
@@ -161,7 +176,34 @@ def main(argv: list[str] | None = None) -> int:
                 raise RuntimeError("--pin-only cannot be combined with --require-codex-worktree")
         else:
             detail = _worktree_check(root, codex)
-        result = {"schema": "llm-agent-runtime-chain-check/v1", "status": "pass", "mode": "pin-only" if args.pin_only else "worktree", "chain": "llm_agent -> agent-dev-kit@v5.1.0 -> codex -> ~/.codex", **detail}
+        result = {
+            "schema": "llm-agent-runtime-chain-check/v1",
+            "status": "pass",
+            "mode": "pin-only" if args.pin_only else "worktree",
+            "chain": (
+                "llm_agent(current-adk@"
+                + codex["root-current-agent-dev-kit.version"]
+                + ") -> codex(frozen-adk@"
+                + codex["agent-dev-kit.version"]
+                + ") -> ~/.codex"
+            ),
+            "identity_domains": {
+                "root_current_adk": {
+                    "version": codex["root-current-agent-dev-kit.version"],
+                    "commit": codex["root-current-agent-dev-kit.commit"],
+                    "tree": codex["root-current-agent-dev-kit.tree"],
+                    "manifest_blob": codex["root-current-agent-dev-kit.manifest_blob"],
+                },
+                "codex_frozen_adk": {
+                    "version": codex["agent-dev-kit.version"],
+                    "commit": codex["agent-dev-kit.commit"],
+                    "tree": codex["agent-dev-kit.tree"],
+                    "manifest_blob": codex["agent-dev-kit.manifest_blob"],
+                },
+                "cross_domain_equality_required": False,
+            },
+            **detail,
+        }
     except (OSError, ValueError, RuntimeError, json.JSONDecodeError) as exc:
         if args.summary_json:
             print(json.dumps({"schema": "llm-agent-runtime-chain-check/v1", "status": "fail", "error": str(exc)}, ensure_ascii=False, sort_keys=True))
