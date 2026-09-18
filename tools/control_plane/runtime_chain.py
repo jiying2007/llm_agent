@@ -8,6 +8,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from tools.control_plane import adk_interface
+
 FULL_SHA = re.compile(r"^[0-9a-f]{40}$")
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
 
@@ -42,19 +44,42 @@ def _expect(value: Any, expected: Any, label: str) -> None:
         raise RuntimeError(f"{label}: {value!r} != {expected!r}")
 
 
+def _current_adk_check(root: Path) -> dict[str, str]:
+    """Validate the Root current managed ADK identity independently of frozen runtimes."""
+    result = adk_interface.validate(root)
+    if result.get("status") != "pass":
+        failures = result.get("failures", [])
+        raise RuntimeError("current managed ADK identity failed: " + "; ".join(str(x) for x in failures))
+    identity = result.get("identity", {})
+    if not isinstance(identity, dict):
+        raise RuntimeError("current managed ADK identity is missing")
+    version = identity.get("version")
+    commit = identity.get("commit")
+    tree = identity.get("tree")
+    manifest_blob = identity.get("manifest_blob")
+    if not isinstance(version, str) or not version:
+        raise RuntimeError("current managed ADK version is missing")
+    for label, value in (("commit", commit), ("tree", tree), ("manifest_blob", manifest_blob)):
+        if not isinstance(value, str) or not FULL_SHA.fullmatch(value):
+            raise RuntimeError(f"current managed ADK {label} must be a full Git SHA")
+    return {
+        "version": version,
+        "commit": str(commit),
+        "tree": str(tree),
+        "manifest_blob": str(manifest_blob),
+    }
+
+
 def _pin_check(root: Path) -> dict[str, str]:
+    """Validate the frozen Codex provider/replay chain without coupling it to current ADK."""
     codex = _lock(root / "codex.lock")
-    adk = _lock(root / "adk.lock")
     evidence = _json(root / "reports/promotion/agent-dev-kit/promotion-evidence.json")
     _expect(codex.get("schema"), "llm-agent-codex-lock/v1", "codex.lock schema")
-    _expect(adk.get("schema"), "llm-agent-adk-lock/v2", "adk.lock schema")
     for key in ("codex.commit", "codex.tree", "codex.provider_lock_blob", "codex.runtime_control_blob", "codex.runtime_binding_blob", "codex.agents_blob", "codex.validator_blob", "codex.workflow_blob", "agent-dev-kit.commit", "agent-dev-kit.tree", "agent-dev-kit.manifest_blob"):
         if not FULL_SHA.fullmatch(codex.get(key, "")):
             raise RuntimeError(f"codex.lock {key} must be a full Git SHA")
     if not SHA256.fullmatch(codex.get("agent-dev-kit.release_artifact_sha256", "")):
         raise RuntimeError("codex.lock release artifact must be sha256 hex")
-    for key in ("agent-dev-kit.version", "agent-dev-kit.commit", "agent-dev-kit.tree", "agent-dev-kit.manifest_blob"):
-        _expect(codex.get(key), adk.get(key), f"cross-lock {key}")
     source = evidence.get("source", {})
     release = evidence.get("release", {})
     _expect(source.get("repository"), "jiying2007/agent-dev-kit", "promotion repository")
@@ -146,7 +171,7 @@ def _worktree_check(root: Path, lock: dict[str, str]) -> dict[str, Any]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Validate terminal llm_agent -> ADK -> Codex identity chain")
+    parser = argparse.ArgumentParser(description="Validate current Root ADK plus frozen Codex provider/replay identity domains")
     parser.add_argument("--root", default=".")
     parser.add_argument("--pin-only", action="store_true")
     parser.add_argument("--require-codex-worktree", action="store_true")
@@ -154,6 +179,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     root = Path(args.root).resolve()
     try:
+        current_adk = _current_adk_check(root)
         codex = _pin_check(root)
         detail: dict[str, Any] = {}
         if args.pin_only:
@@ -161,7 +187,21 @@ def main(argv: list[str] | None = None) -> int:
                 raise RuntimeError("--pin-only cannot be combined with --require-codex-worktree")
         else:
             detail = _worktree_check(root, codex)
-        result = {"schema": "llm-agent-runtime-chain-check/v1", "status": "pass", "mode": "pin-only" if args.pin_only else "worktree", "chain": "llm_agent -> agent-dev-kit@v5.1.0 -> codex -> ~/.codex", **detail}
+        result = {
+            "schema": "llm-agent-runtime-chain-check/v1",
+            "status": "pass",
+            "mode": "pin-only" if args.pin_only else "worktree",
+            "chain": "llm_agent current managed ADK + Codex frozen provider/replay chain",
+            "current_agent_dev_kit": current_adk,
+            "frozen_codex_provider": {
+                "version": codex["agent-dev-kit.version"],
+                "commit": codex["agent-dev-kit.commit"],
+                "tree": codex["agent-dev-kit.tree"],
+                "manifest_blob": codex["agent-dev-kit.manifest_blob"],
+                "release_artifact_sha256": codex["agent-dev-kit.release_artifact_sha256"],
+            },
+            **detail,
+        }
     except (OSError, ValueError, RuntimeError, json.JSONDecodeError) as exc:
         if args.summary_json:
             print(json.dumps({"schema": "llm-agent-runtime-chain-check/v1", "status": "fail", "error": str(exc)}, ensure_ascii=False, sort_keys=True))
@@ -171,7 +211,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.summary_json:
         print(json.dumps(result, ensure_ascii=False, sort_keys=True))
     else:
-        print("[PASS] terminal llm_agent -> ADK -> Codex runtime chain is consistent")
+        print("[PASS] current Root ADK and frozen Codex provider/replay chains are independently consistent")
     return 0
 
 
