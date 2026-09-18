@@ -211,41 +211,61 @@ def _contract(root: Path) -> dict[str, Any]:
         "attested_execution_receipt_is_not_domain_verification",
         "tracked_evidence_intake_is_not_real_provider_execution",
         "frozen_binding_identity_must_not_follow_execution_plane_head",
+        "r2_frozen_adk_identity_must_not_follow_root_current_adk",
     )
     if any(rules.get(key) is not True for key in required_rules):
         raise PortabilityError("runtime pilot hard rules are incomplete or weakened")
     frozen_inputs = contract.get("frozen_inputs")
     if not isinstance(frozen_inputs, list) or "digital_worker_governance_identity_ref" not in frozen_inputs:
         raise PortabilityError("runtime pilot must freeze exact digital-worker governance identity")
+    frozen_adk_ref = contract.get("frozen_adk_release_identity_ref")
+    if frozen_adk_ref != "manifests/r2_frozen_adk_release.lock.json":
+        raise PortabilityError("runtime pilot frozen ADK release identity ref drift")
     _validate_execution_architecture(contract)
     return contract
 
 
-def _authoritative_adk(root: Path) -> dict[str, str]:
-    interface = _load_object(root / "manifests/adk_interface.lock.json", "ADK interface lock")
-    promotion = _load_object(root / "reports/promotion/agent-dev-kit/promotion-evidence.json", "ADK promotion evidence")
+def _authoritative_adk(root: Path, contract: Mapping[str, Any]) -> dict[str, str]:
+    frozen_ref = _require_text(
+        contract.get("frozen_adk_release_identity_ref"),
+        "runtime pilot frozen_adk_release_identity_ref",
+    )
+    frozen_path = _repo_path(root, frozen_ref, "R2 frozen ADK release identity")
+    frozen = _load_object(frozen_path, "R2 frozen ADK release identity")
+    if frozen.get("schema") != "llm-agent-r2-frozen-adk-release/v1":
+        raise PortabilityError("R2 frozen ADK release lock schema is unsupported")
+    if frozen.get("campaign_id") != "R2-FEATURE-PCR02-OTA-001":
+        raise PortabilityError("R2 frozen ADK release campaign_id drift")
+    if frozen.get("root_current_adk_may_advance") is not True:
+        raise PortabilityError("R2 frozen ADK release must permit Root current ADK advancement")
+
+    expected = {
+        "version": _require_text(frozen.get("version"), "R2 frozen ADK version"),
+        "commit": _require_full_sha(frozen.get("commit"), "R2 frozen ADK commit"),
+        "tree": _require_full_sha(frozen.get("tree"), "R2 frozen ADK tree"),
+        "manifest_blob": _require_full_sha(frozen.get("manifest_blob"), "R2 frozen ADK manifest blob"),
+        "artifact_sha256": _require_sha256(frozen.get("artifact_sha256"), "R2 frozen ADK artifact digest"),
+    }
+    promotion_ref = _require_text(
+        frozen.get("promotion_evidence"),
+        "R2 frozen ADK promotion evidence ref",
+    )
+    promotion_path = _repo_path(root, promotion_ref, "R2 frozen ADK promotion evidence")
+    promotion = _load_object(promotion_path, "R2 frozen ADK promotion evidence")
     source = promotion.get("source")
     release = promotion.get("release")
-    if interface.get("schema") != "llm-agent-adk-interface-lock/v1":
-        raise PortabilityError("ADK interface lock schema is unsupported")
     if not isinstance(source, dict) or not isinstance(release, dict):
-        raise PortabilityError("ADK promotion evidence source/release is missing")
-    expected = {
-        "version": interface.get("version"),
-        "commit": interface.get("commit"),
-        "tree": interface.get("tree"),
-        "manifest_blob": interface.get("manifest_blob"),
-        "artifact_sha256": release.get("artifact_sha256"),
-    }
-    if any(not isinstance(value, str) or not value for value in expected.values()):
-        raise PortabilityError("authoritative ADK identity is incomplete")
+        raise PortabilityError("R2 frozen ADK promotion evidence source/release is missing")
+    if source.get("repository") != "jiying2007/agent-dev-kit":
+        raise PortabilityError("R2 frozen ADK promotion repository drift")
     for field in ("version", "commit", "tree", "manifest_blob"):
         if source.get(field) != expected[field]:
-            raise PortabilityError(f"ADK promotion source.{field} does not match interface lock")
+            raise PortabilityError(f"R2 frozen ADK promotion source.{field} does not match frozen lock")
+    if release.get("artifact_sha256") != expected["artifact_sha256"]:
+        raise PortabilityError("R2 frozen ADK promotion artifact does not match frozen lock")
     if release.get("release_eligible") is not True:
-        raise PortabilityError("ADK promotion evidence is not release eligible")
-    return {key: str(value) for key, value in expected.items()}
-
+        raise PortabilityError("R2 frozen ADK promotion evidence is not release eligible")
+    return expected
 
 def _validate_adk_identity(evidence: Mapping[str, Any], expected: Mapping[str, str]) -> None:
     identity = evidence.get("adk_release_identity")
@@ -332,7 +352,7 @@ def _validate_external_result(
 def check(root: Path, evidence_path: Path | None = None) -> dict[str, Any]:
     root = root.resolve()
     contract = _contract(root)
-    expected_adk = _authoritative_adk(root)
+    expected_adk = _authoritative_adk(root, contract)
     evidence = (evidence_path or (root / DEFAULT_EVIDENCE)).resolve()
     try:
         evidence.relative_to(root)
@@ -360,8 +380,11 @@ def check(root: Path, evidence_path: Path | None = None) -> dict[str, Any]:
     missing_frozen = [field for field in frozen_fields if field not in controlled_task or not _nonempty(controlled_task[field])]
     if missing_frozen:
         raise PortabilityError("controlled_task is missing frozen inputs: " + ", ".join(missing_frozen))
-    if controlled_task.get("adk_release_identity_ref") != "manifests/adk_interface.lock.json":
-        raise PortabilityError("controlled_task.adk_release_identity_ref must bind the canonical ADK interface lock")
+    expected_adk_ref = contract.get("frozen_adk_release_identity_ref")
+    if controlled_task.get("adk_release_identity_ref") != expected_adk_ref:
+        raise PortabilityError(
+            "controlled_task.adk_release_identity_ref must bind the R2 frozen ADK release identity"
+        )
     _require_text(controlled_task.get("digital_worker_governance_identity_ref"), "controlled_task.digital_worker_governance_identity_ref")
     frozen_digest = _digest(controlled_task)
     if data.get("frozen_inputs_sha256") != frozen_digest:
