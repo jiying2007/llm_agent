@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+trap 'rc=$?; echo "[FAIL] reference registration regression line=${LINENO} rc=${rc} command=${BASH_COMMAND}" >&2; exit "${rc}"' ERR
+
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 python3 - "$ROOT/tools/codex_assets/reference_repository.py" <<'PY'
 from pathlib import Path
