@@ -140,28 +140,28 @@ for report in \
   cp "${ROOT}/reports/${report}" "${APPLY_ROOT}/reports/${report}"
 done
 
-rtk proxy git -C "${SOURCE_ROOT}" init >/dev/null
-rtk proxy git -C "${SOURCE_ROOT}" symbolic-ref HEAD refs/heads/main
-rtk proxy git -C "${SOURCE_ROOT}" config user.name fixture
-rtk proxy git -C "${SOURCE_ROOT}" config user.email fixture@example.invalid
+git -C "${SOURCE_ROOT}" init >/dev/null
+git -C "${SOURCE_ROOT}" symbolic-ref HEAD refs/heads/main
+git -C "${SOURCE_ROOT}" config user.name fixture
+git -C "${SOURCE_ROOT}" config user.email fixture@example.invalid
 python3 - "${SOURCE_ROOT}/README.md" <<'PY'
 import pathlib
 import sys
 pathlib.Path(sys.argv[1]).write_text("# reviewed source\n", encoding="utf-8")
 PY
-rtk proxy git -C "${SOURCE_ROOT}" add README.md
-rtk proxy git -C "${SOURCE_ROOT}" commit -m "fixture source" >/dev/null 2>&1
-rtk proxy git -C "${SOURCE_ROOT}" remote add origin https://github.com/example/agent-harness
+git -C "${SOURCE_ROOT}" add README.md
+git -C "${SOURCE_ROOT}" commit -m "fixture source" >/dev/null 2>&1
+git -C "${SOURCE_ROOT}" remote add origin https://github.com/example/agent-harness
 
-rtk proxy git -C "${APPLY_ROOT}" init >/dev/null
-rtk proxy git -C "${APPLY_ROOT}" symbolic-ref HEAD refs/heads/main
-rtk proxy git -C "${APPLY_ROOT}" config user.name fixture
-rtk proxy git -C "${APPLY_ROOT}" config user.email fixture@example.invalid
-rtk proxy git -C "${APPLY_ROOT}" add .
-rtk proxy git -C "${APPLY_ROOT}" commit -m "fixture baseline" >/dev/null 2>&1
+git -C "${APPLY_ROOT}" init >/dev/null
+git -C "${APPLY_ROOT}" symbolic-ref HEAD refs/heads/main
+git -C "${APPLY_ROOT}" config user.name fixture
+git -C "${APPLY_ROOT}" config user.email fixture@example.invalid
+git -C "${APPLY_ROOT}" add .
+git -C "${APPLY_ROOT}" commit -m "fixture baseline" >/dev/null 2>&1
 
 REACTIVATE_ROOT="${TMP_DIR}/reactivate-root"
-rtk proxy git clone "${APPLY_ROOT}" "${REACTIVATE_ROOT}" >/dev/null 2>&1
+git clone "${APPLY_ROOT}" "${REACTIVATE_ROOT}" >/dev/null 2>&1
 python3 - "${REACTIVATE_ROOT}" <<'PY'
 import csv
 import json
@@ -204,8 +204,8 @@ lifecycle["entries"].append({
 })
 lifecycle_path.write_text(json.dumps(lifecycle, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 PY
-rtk proxy git -C "${REACTIVATE_ROOT}" add subrepos/registry.csv manifests/subrepo_lifecycle.json
-rtk proxy git -C "${REACTIVATE_ROOT}" commit -m "fixture disabled reference" >/dev/null 2>&1
+git -C "${REACTIVATE_ROOT}" add subrepos/registry.csv manifests/subrepo_lifecycle.json
+git -C "${REACTIVATE_ROOT}" commit -m "fixture disabled reference" >/dev/null 2>&1
 
 PYTHONPATH="${ROOT}" python3 -m tools.codex_assets.reference_repository \
   --root "${REACTIVATE_ROOT}" plan \
@@ -241,11 +241,11 @@ assert entries[0]["reactivated_from"] == "watch"
 assert entries[0]["review_window"] == "monthly"
 assert "reports/previous-agent-harness-review.md" in entries[0]["evidence"]
 PY
-[[ "$(rtk proxy git -C "${REACTIVATE_ROOT}" config -f .gitmodules --get submodule.agent-harness.url)" == "https://github.com/example/agent-harness" ]]
-[[ "$(rtk proxy git -C "${REACTIVATE_ROOT}/agent-harness" config --get remote.origin.url)" == "https://github.com/example/agent-harness" ]]
+[[ "$(git -C "${REACTIVATE_ROOT}" config -f .gitmodules --get submodule.agent-harness.url)" == "https://github.com/example/agent-harness" ]]
+[[ "$(git -C "${REACTIVATE_ROOT}/agent-harness" config --get remote.origin.url)" == "https://github.com/example/agent-harness" ]]
 
 FAIL_ROOT="${TMP_DIR}/apply-failure-root"
-rtk proxy git clone "${APPLY_ROOT}" "${FAIL_ROOT}" >/dev/null 2>&1
+git clone "${APPLY_ROOT}" "${FAIL_ROOT}" >/dev/null 2>&1
 chmod 555 "${FAIL_ROOT}/manifests"
 if PYTHONPATH="${ROOT}" python3 -m tools.codex_assets.reference_repository \
   --root "${FAIL_ROOT}" plan \
@@ -309,7 +309,7 @@ assert '"repo":"agent-harness"' in (root / "subrepos/adoption-matrix.jsonl").rea
 lifecycle = json.loads((root / "manifests/subrepo_lifecycle.json").read_text(encoding="utf-8"))
 assert any(item.get("repo") == "agent-harness" and item.get("state") == "active-reference" for item in lifecycle["entries"])
 PY
-[[ "$(rtk proxy git -C "${APPLY_ROOT}" config -f .gitmodules --get submodule.agent-harness.url)" == "https://github.com/example/agent-harness" ]]
-[[ "$(rtk proxy git -C "${APPLY_ROOT}/agent-harness" config --get remote.origin.url)" == "https://github.com/example/agent-harness" ]]
+[[ "$(git -C "${APPLY_ROOT}" config -f .gitmodules --get submodule.agent-harness.url)" == "https://github.com/example/agent-harness" ]]
+[[ "$(git -C "${APPLY_ROOT}/agent-harness" config --get remote.origin.url)" == "https://github.com/example/agent-harness" ]]
 
 echo "[PASS] reference repository onboarding requires v1 candidate, independent ADOPT decision, and safe reactivation"
