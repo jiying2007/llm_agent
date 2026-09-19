@@ -1,6 +1,6 @@
 {
   "schema": "llm-agent-long-term-asset-qualification/v2",
-  "updated_at": "2026-09-17",
+  "updated_at": "2026-09-19",
   "qualification_scope": "llm_agent control plane plus pinned agent-dev-kit component",
   "purpose": "Separate current engineering readiness from long-term asset terminal qualification without weakening fail-closed evidence semantics.",
   "rules": {
@@ -48,7 +48,7 @@
       "model": "versioned-component",
       "identity": "signed-release-plus-exact-source",
       "component_release_required": true,
-      "current_release": "5.1.1"
+      "current_release": "7.0.4"
     }
   },
   "dependency_closure": {
@@ -192,11 +192,13 @@
       "affects": [],
       "acceptance": "A clean environment reconstructs the control plane from authoritative source, verifies current identities, exercises rollback/recovery, and emits a machine-readable receipt without relying on untracked local state.",
       "evidence": [
-        "reports/long-term-assets/solo-maintainer-recovery-2026-09-15.json"
+        "reports/long-term-assets/solo-maintainer-recovery-current.json"
       ],
-      "verified_main_commit": "b3de8e4e57874aaa4fd28cebb9cfcc657cad220b",
-      "workflow_run_id": 34951483463,
-      "artifact_sha256": "b8a9b818290bb6a532510b62fbe4050f4e5e7bf9674c50a3e1398448a67715b3"
+      "verified_main_commit": "7c284c75089a514933ea28c83007c52eabbda6df",
+      "workflow_run_id": 35445814666,
+      "workflow_job_id": 105904421691,
+      "artifact_id": 10584873865,
+      "receipt_sha256": "44bf4f173bb15e45c82928fe6cc0a648d9e916fcf09ae46a3c72fa43106e630f"
     },
     {
       "id": "LTA-04",
