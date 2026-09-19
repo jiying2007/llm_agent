@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+trap 'rc=$?; echo "[FAIL] runtime target evidence package line=${LINENO} rc=${rc} command=${BASH_COMMAND}" >&2; exit "${rc}"' ERR
+
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "${ROOT}/tests/helpers/runtime_target_evidence_test_lib.sh"
 runtime_evidence_test_init "${ROOT}"
