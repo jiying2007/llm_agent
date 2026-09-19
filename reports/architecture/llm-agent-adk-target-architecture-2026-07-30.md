@@ -286,7 +286,7 @@ blocked 项必须写清不能由本地代码替代的 blocking condition。
 | G16 | P1 | External source freshness and provenance | 官方来源有当前检索、到期和复审决策证据 | freshness manifest/review | official-docs/strict |
 | G17 | P0 | Unified routing intent and permission IR | task mode、否定、权限和 abstain 由单一 fail-closed IR 裁决 | routing-ir/v2 + cross-mode mapping | routing contrastive/negative |
 | G18 | P0 | Platform-neutral core profile | core 不导出嵌入式专属 Agent/Skill/参考矩阵 | core/embedded capability closure | profile/target/taxonomy |
-| G19 | P0 | Workflow and runtime completion semantics | typed Workflow IR 与 task-mode artifact gate 不允许旁路完成证据 | workflow-ir/v2 + runtime-control/v2 | workflow/runtime tests |
+| G19 | P0 | Workflow and runtime completion semantics | typed Workflow IR 与 task-mode artifact gate 不允许旁路完成证据 | workflow-ir/v2 + Execution Policy / runtime_control.policy/v2 wire contract | workflow/execution-policy tests |
 | G20 | P0 | Typed evidence graph and outcome traces | provenance DAG 和 outcome trace 脱敏、类型化、可寻址 | Evidence Graph + trace schema | graph/trace/security tests |
 | G21 | P0 | Runtime adapter conformance | static 声明与 native runtime 证据分离，至少一个 target 完成真实 conformance | target-contract/v2 adapter | target/native campaign |
 | G22 | P1 | Agent, skill and profile value lifecycle | 角色权限、调用、误路由、abstain、outcome 和退役信号可验证 | typed role/value contract | capability/routing/field |

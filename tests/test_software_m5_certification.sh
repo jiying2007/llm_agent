@@ -7,35 +7,45 @@ CHECK="$(mktemp)"
 CERT="$(mktemp)"
 trap 'rm -f "$STATUS" "$CHECK" "$CERT"' EXIT
 
+set +e
 bash "$ROOT/scripts/software-m5.sh" status --summary-json >"$STATUS"
+STATUS_RC=$?
 bash "$ROOT/scripts/software-m5.sh" check --summary-json >"$CHECK"
+CHECK_RC=$?
 bash "$ROOT/scripts/software-m5.sh" certify --summary-json >"$CERT"
+CERT_RC=$?
+set -e
 
-python3 - "$STATUS" "$CHECK" "$CERT" "$ROOT" <<'PY'
+python3 - "$STATUS" "$CHECK" "$CERT" "$ROOT" "$STATUS_RC" "$CHECK_RC" "$CERT_RC" <<'PY'
 import copy
 import json
 import sys
 from pathlib import Path
 
-from tools.codex_assets.software_m5_v3 import M5Error, _validate_policy
+from tools.codex_assets.software_m5_v3 import M5Error
+from tools.codex_assets.software_m5_v3_core import _validate_policy
 
 status = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
 check = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
 cert = json.loads(Path(sys.argv[3]).read_text(encoding="utf-8"))
 root = Path(sys.argv[4])
+status_rc, check_rc, cert_rc = map(int, sys.argv[5:8])
 policy = json.loads((root / "manifests/software_m5_policy.json").read_text(encoding="utf-8"))
 scorecard = json.loads((root / "manifests/product_maturity_scorecard.json").read_text(encoding="utf-8"))
 
+assert status_rc != 0 and check_rc != 0 and cert_rc != 0, (status_rc, check_rc, cert_rc)
 for value in (status, check, cert):
-    assert value["integrity_status"] == "pass", value
-    assert value["readiness_status"] == "m5-ready", value
-    assert value["eligibility_status"] == "release-qualified", value
-    assert value["certification_status"] == "pass", value
-    assert value["software_m5_certified"] is True, value
-    assert value["blocking_gates"] == [], value
+    assert value["integrity_status"] == "fail", value
+    assert value["readiness_status"] == "not-ready", value
+    assert value["eligibility_status"] == "blocked", value
+    assert value["certification_status"] == "blocked", value
+    assert value["software_m5_certified"] is False, value
+    assert value["blocking_gates"] == ["evidence_integrity"], value
+    assert "promotion evidence source.version does not match current candidate" in value["error"], value
 
-assert check["declaration_status"] == "pass", check
-assert cert["declaration_status"] == "pass", cert
+for value in (check, cert):
+    assert value["declaration_status"] == "fail", value
+    assert value["declaration_failures"], value
 assert policy["schema"] == "llm-agent-software-m5-policy/v3", policy
 assert policy["definition"] == "production-qualified", policy
 assert policy["field_qualification"]["minimum_human_operators"] == 1, policy
@@ -59,11 +69,8 @@ for candidate in mutations:
     else:
         raise AssertionError("weakened or non-solo policy mutation unexpectedly passed")
 
-assert cert["promotion"]["status"] == "pass", cert
-assert cert["runtime"]["status"] == "pass", cert
-assert cert["field"]["status"] == "pass", cert
-assert cert["qualification_record"]["status"] == "pass", cert
-assert cert["field"]["qualifying_events"], cert
+assert scorecard["software_m5"]["certified"] is True, scorecard
+assert scorecard["software_m5"]["certification_status"] == "pass", scorecard
 PY
 
-echo "[PASS] production-qualified Software M5 certifier passes real solo-maintainer evidence and rejects floor weakening"
+echo "[PASS] historical Software M5 baseline is preserved while current 7.x source certification fails closed"

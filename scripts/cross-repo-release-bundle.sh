@@ -5,4 +5,4 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 export PYTHONPATH="$ROOT${PYTHONPATH:+:$PYTHONPATH}"
-exec rtk python3 -m tools.codex_assets.release_bundle --workspace-root "$ROOT" "$@"
+exec python3 -m tools.codex_assets.release_bundle --workspace-root "$ROOT" "$@"

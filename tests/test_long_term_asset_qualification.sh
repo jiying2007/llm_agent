@@ -13,12 +13,12 @@ root = Path('.')
 lta = json.loads((root / 'manifests/long_term_asset_qualification.json').read_text())
 scorecard = json.loads((root / 'manifests/product_maturity_scorecard.json').read_text())
 lock = json.loads((root / 'manifests/adk_interface.lock.json').read_text())
-recovery_path = root / 'reports/long-term-assets/solo-maintainer-recovery-2026-09-15.json'
+recovery_path = root / 'reports/long-term-assets/solo-maintainer-recovery-current.json'
 recovery = json.loads(recovery_path.read_text())
 runbook = root / 'docs/runbooks/solo-maintainer-continuity.md'
 
 assert lta['schema'] == 'llm-agent-long-term-asset-qualification/v2'
-assert lta['updated_at'] == '2026-09-17'
+assert lta['updated_at'] == '2026-09-19'
 assert lta['rules'] == {
     'fail_closed': True,
     'no_simulated_external_evidence': True,
@@ -53,8 +53,8 @@ assert lta['lifecycle']['llm_agent']['model'] == 'non-release-workspace'
 assert lta['lifecycle']['llm_agent']['component_release_required'] is False
 assert lta['lifecycle']['agent_dev_kit']['model'] == 'versioned-component'
 assert lta['lifecycle']['agent_dev_kit']['component_release_required'] is True
-assert lta['lifecycle']['agent_dev_kit']['current_release'] == '5.1.1'
-assert lock['version'] == '5.1.1'
+assert lta['lifecycle']['agent_dev_kit']['current_release'] == lock['version']
+assert lock['version'] == '7.0.4'
 
 iteration = lta['iteration_readiness']
 assert iteration['development'] == 'ready'
@@ -80,7 +80,8 @@ assert lta01['affects'] == []
 assert lta01['implementation_status'] == 'verified'
 assert lta01['certifier'] == 'tools.control_plane.native_repository_governance'
 assert lta01['ruleset_id'] == 23516987
-assert lta01['strict_required_status_checks_policy'] is True
+dependency_closure = lta['dependency_closure']['agent_dev_kit']
+assert dependency_closure['strict_required_status_checks_policy'] is True
 assert set(lta01['required_status_checks']) == {
     'contract', 'doc-sync', 'integration-impact', 'integration-summary', 'software-m5-certify', 'branch-gc'
 }
@@ -103,6 +104,11 @@ lta03 = requirements['LTA-03']
 assert lta03['status'] == 'pass'
 assert lta03['affects'] == []
 assert lta03['evidence'] == [recovery_path.as_posix()]
+assert lta03['verified_main_commit'] == recovery['source']['llm_agent_commit']
+assert lta03['workflow_run_id'] == int(recovery['environment']['github_run_id'])
+assert lta03['workflow_job_id'] == 105904421691
+assert lta03['artifact_id'] == 10584873865
+assert re.fullmatch(r'[0-9a-f]{64}', lta03['receipt_sha256'])
 
 lta04 = requirements['LTA-04']
 assert lta04['status'] == 'observation_window_in_progress'
@@ -149,14 +155,22 @@ assert scorecard['overall']['long_term_asset_status'] == 'qualification_pending'
 assert scorecard['software_m5']['certified'] is True
 assert scorecard['software_m5']['blocking_gates'] == []
 
-assert recovery['schema'] == 'llm-agent-solo-recovery-evidence/v1'
+assert recovery['schema'] == 'llm-agent-solo-recovery-receipt/v1'
 assert recovery['status'] == 'pass'
-assert recovery['qualification'] == 'LTA-03'
+assert recovery['drill']['fresh_dependency_materialization'] is True
+assert recovery['drill']['replace_managed_apply'] == 'pass'
+assert recovery['drill']['previous_receipt_restore'] == 'pass'
+assert recovery['drill']['final_rollback'] == 'pass'
+assert recovery['drill']['recovery_validation'] == {
+    'static_target_contracts': 'pass',
+    'typed_quick_validation': 'pass',
+}
 assert recovery['source']['agent_dev_kit_version'] == lock['version']
 assert recovery['source']['agent_dev_kit_commit'] == lock['commit']
 assert recovery['source']['agent_dev_kit_tree'] == lock['tree']
 assert recovery['source']['lock_identity_match'] is True
-assert re.fullmatch(r'[0-9a-f]{64}', recovery['artifact']['sha256'])
+assert recovery['source']['llm_agent_commit'] == lta03['verified_main_commit']
+assert recovery['environment']['github_sha'] == lta03['verified_main_commit']
 
 serialized = json.dumps(lta, sort_keys=True)
 for retired_token in (

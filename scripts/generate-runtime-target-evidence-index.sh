@@ -78,7 +78,6 @@ from datetime import datetime, timezone
 
 root, target_id, out_path, jsonl_out_path, output_format = sys.argv[1:6]
 targets_path = os.path.join(root, "manifests", "runtime_targets.json")
-adapters_path = os.path.join(root, "manifests", "runtime_health_adapters.json")
 explain_cmd = [
     os.path.join(root, "scripts", "check-runtime-targets.sh"),
     root,
@@ -137,7 +136,6 @@ def make_entry(evidence_id, gate, command, expected_result, write_scope, artifac
 
 try:
     manifest = read_json(targets_path)
-    adapters_manifest = read_json(adapters_path)
 except Exception as exc:
     print(f"[FAIL] failed to read runtime manifests: {exc}", file=sys.stderr)
     sys.exit(1)
@@ -166,7 +164,7 @@ except Exception as exc:
     print(f"[FAIL] invalid explain-target JSON for {target_id}: {exc}", file=sys.stderr)
     sys.exit(1)
 
-adapters = adapters_manifest.get("adapters") or []
+adapters = manifest.get("health_adapters") or []
 adapter_id = target.get("health_adapter")
 adapter = next((item for item in adapters if item.get("id") == adapter_id), None)
 

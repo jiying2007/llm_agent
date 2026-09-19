@@ -1,10 +1,23 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+trap 'rc=$?; echo "[FAIL] runtime target evidence promotion line=${LINENO} rc=${rc} command=${BASH_COMMAND}" >&2; exit "${rc}"' ERR
+
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "${ROOT}/tests/helpers/runtime_target_evidence_test_lib.sh"
 runtime_evidence_test_init "${ROOT}"
 trap runtime_evidence_test_cleanup EXIT
+
+# Exercise active-target promotion with a deterministic live/source fixture
+# rather than depending on the developer machine's Codex installation.
+export HOME="${TMP_DIR}/home"
+mkdir -p "${HOME}/.codex" "${HOME}/codex/scripts"
+cat >"${HOME}/codex/scripts/doctor.sh" <<'SH'
+#!/usr/bin/env bash
+set -euo pipefail
+echo "[PASS] fixture codex live doctor errors=0"
+SH
+chmod +x "${HOME}/codex/scripts/doctor.sh"
 
 promote_dir="${TMP_DIR}/reports/runtime-target-activation/codex-home/runs/20260709T000002Z"
 canonical_dir="${TMP_DIR}/reports/runtime-target-activation/codex-home"

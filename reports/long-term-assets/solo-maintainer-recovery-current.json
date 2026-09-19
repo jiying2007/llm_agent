@@ -1,0 +1,40 @@
+{
+  "drill": {
+    "final_rollback": "pass",
+    "final_target_managed_assets_absent": true,
+    "first_receipt_sha256": "efc4854af1bfc0790b4954dac81a2899f2fb02642ddbc21164a09dd875da2da3",
+    "fresh_dependency_materialization": true,
+    "full_release_governance_reclassified": false,
+    "isolated_target": true,
+    "isolated_virtual_environment": true,
+    "managed_asset_count": 33,
+    "previous_receipt_restore": "pass",
+    "recovery_validation": {
+      "static_target_contracts": "pass",
+      "typed_quick_validation": "pass"
+    },
+    "release_surface_compatible": true,
+    "replace_managed_apply": "pass",
+    "restored_asset_digest_check": "pass",
+    "runtime_invoked": false,
+    "transaction_target_contract": "claude-code"
+  },
+  "environment": {
+    "github_run_attempt": "1",
+    "github_run_id": "35445814666",
+    "github_sha": "7c284c75089a514933ea28c83007c52eabbda6df",
+    "python": "3.11.16",
+    "runner_os": "Linux"
+  },
+  "generated_at": "2026-09-19T13:27:41Z",
+  "qualification_boundary": "This receipt proves clean-source reconstruction and transactional install/rollback recovery against the immutable ADK release surface only; full ADK release governance remains independently fail-closed, this is not native runtime evidence, and it does not satisfy multi-runtime portability.",
+  "schema": "llm-agent-solo-recovery-receipt/v1",
+  "source": {
+    "agent_dev_kit_commit": "1d6c28e89eb98a4af5ac978707730783f0c84437",
+    "agent_dev_kit_tree": "c5b8fa7b11a81597ac2c7cd6fb44d7abf9605137",
+    "agent_dev_kit_version": "7.0.4",
+    "llm_agent_commit": "7c284c75089a514933ea28c83007c52eabbda6df",
+    "lock_identity_match": true
+  },
+  "status": "pass"
+}

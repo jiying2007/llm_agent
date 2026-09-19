@@ -180,6 +180,11 @@ jobs:
         with:
           cosign-release: v3.1.3
 
+      - name: Install root regression dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ripgrep
+
       - name: Initialize pinned ADK source
         run: git submodule update --init --depth=1 agent-dev-kit
 
@@ -216,6 +221,12 @@ jobs:
           bash scripts/check-codex-lock.sh .
           python -m tools.control_plane.cli runtime-chain --root . --require-codex-worktree --summary-json > /tmp/runtime-chain-receipt.json
 
+      - name: Run declarative integration-extra gate graph
+        run: >-
+          python -m tools.control_plane.cli gate
+          --profile integration-extra
+          --output-json /tmp/llm-agent-integration-gate-receipt.json
+
       - name: Verify terminal digital-worker consumer evidence binding
         run: >-
           python -m tools.control_plane.cli consumer-chain
@@ -234,6 +245,7 @@ jobs:
             /tmp/adk-attestation-verification.txt
             /tmp/adk-interface-worktree.json
             /tmp/runtime-chain-receipt.json
+            /tmp/llm-agent-integration-gate-receipt.json
             /tmp/consumer-chain-receipt.json
           if-no-files-found: warn
           retention-days: 14

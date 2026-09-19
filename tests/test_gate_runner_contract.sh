@@ -3,7 +3,8 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TMP="$(mktemp)"
-trap 'rm -f "$TMP"' EXIT
+FIXTURE="$(mktemp -d)"
+trap 'rm -f "$TMP"; rm -rf "$FIXTURE"' EXIT
 
 python3 -m tools.control_plane.gate_runner \
   --root "$ROOT" \
@@ -39,11 +40,40 @@ tampered["profile"] = "tampered"
 assert bind_receipt(tampered)["receipt_sha256"] != data["receipt_sha256"], data
 PY
 
+mkdir -p "$FIXTURE/manifests"
+cat >"$FIXTURE/manifests/gates.json" <<'JSON'
+{
+  "schema": "llm-agent-gates/v2",
+  "gates": {
+    "needs-capability": {
+      "owner": "fixture",
+      "side_effect": "none",
+      "depends_on": [],
+      "requires": ["fixture-capability"],
+      "inputs": [],
+      "outputs": [],
+      "cache_policy": "disabled",
+      "argv": ["bash", "-lc", "true"],
+      "timeout_seconds": 5,
+      "evidence_class": "test"
+    }
+  },
+  "profiles": {
+    "fixture": ["needs-capability"]
+  }
+}
+JSON
+git -C "$FIXTURE" init -q
+git -C "$FIXTURE" config user.email test@example.invalid
+git -C "$FIXTURE" config user.name test
+git -C "$FIXTURE" add manifests/gates.json
+git -C "$FIXTURE" commit -q -m fixture
+
 if python3 -m tools.control_plane.gate_runner \
-  --root "$ROOT" \
-  --profile integration \
+  --root "$FIXTURE" \
+  --profile fixture \
   --summary-json >"$TMP"; then
-  echo "[FAIL] integration profile passed without adk-checkout capability" >&2
+  echo "[FAIL] fixture gate passed without required capability" >&2
   exit 1
 fi
 python3 - "$TMP" <<'PY'
@@ -54,7 +84,7 @@ from tools.control_plane.receipts import bind_receipt
 with open(sys.argv[1], encoding="utf-8") as handle:
     data = json.load(handle)
 assert data["status"] == "blocked", data
-assert "adk-checkout" in data["blocked_capabilities"], data
+assert "fixture-capability" in data["blocked_capabilities"], data
 assert any(gate["status"] == "blocked" for gate in data["gates"]), data
 assert re.fullmatch(r"[0-9a-f]{64}", data["receipt_sha256"]), data
 assert bind_receipt(data)["receipt_sha256"] == data["receipt_sha256"], data

@@ -9,7 +9,6 @@ trap 'rm -rf "${TMP_DIR}"' EXIT
 write_fixture() {
   rm -rf "${TMP_DIR:?}"/*
   mkdir -p "${TMP_DIR}/manifests" "${TMP_DIR}/scripts" "${TMP_DIR}/subrepos"
-  printf 'codex.source=~/codex\ncodex.target=~/.codex\n' >"${TMP_DIR}/adk.lock"
   printf 'repo,group,priority,sync_mode,branch,enabled,notes,status,owner,last_reviewed_on,intake_policy,grade\ncodex,runtime-target,0,manual,main,no,"~/codex to ~/.codex",disabled,adk-team,2026-07-09,pilot-first,A\n' >"${TMP_DIR}/subrepos/registry.csv"
   for script in check-global-codex-health.sh check-claude-code-health.sh check-runtime-live-footprint.sh check-global-codex-target-policy.sh; do
     printf '#!/usr/bin/env bash\nexit 0\n' >"${TMP_DIR}/scripts/${script}"
@@ -133,13 +132,11 @@ adapters = {
         {"id": "opencode-health", "runtime": "opencode", "status": "candidate", "enabled": False, "script": None, "target_ids": [], "profiles": [], "read_only": True, "activation_requirements": ["declare active runtime target", "add executable read-only health script", "bind target.health_adapter to this adapter id", "pass disabled target negative gate before activation"]},
     ],
 }
-for name, data in (
-    ("runtime_targets.json", targets),
-    ("runtime_health_adapters.json", adapters),
-):
-    with open(os.path.join(root, "manifests", name), "w", encoding="utf-8") as handle:
-        json.dump(data, handle, ensure_ascii=False, indent=2)
-        handle.write("\n")
+targets["health_adapter_rules"] = adapters["rules"]
+targets["health_adapters"] = adapters["adapters"]
+with open(os.path.join(root, "manifests", "runtime_targets.json"), "w", encoding="utf-8") as handle:
+    json.dump(targets, handle, ensure_ascii=False, indent=2)
+    handle.write("\n")
 PY
 }
 
@@ -152,11 +149,9 @@ import sys
 
 root, case = sys.argv[1:3]
 targets_path = os.path.join(root, "manifests", "runtime_targets.json")
-adapters_path = os.path.join(root, "manifests", "runtime_health_adapters.json")
 with open(targets_path, "r", encoding="utf-8") as handle:
     targets = json.load(handle)
-with open(adapters_path, "r", encoding="utf-8") as handle:
-    adapters = json.load(handle)
+adapters = {"adapters": targets["health_adapters"]}
 
 adapter = adapters["adapters"][0]
 target = targets["targets"][0]
@@ -233,11 +228,9 @@ elif case == "missing_runtime_footprint":
 else:
     raise SystemExit(f"unknown case: {case}")
 
+targets["health_adapters"] = adapters["adapters"]
 with open(targets_path, "w", encoding="utf-8") as handle:
     json.dump(targets, handle, ensure_ascii=False, indent=2)
-    handle.write("\n")
-with open(adapters_path, "w", encoding="utf-8") as handle:
-    json.dump(adapters, handle, ensure_ascii=False, indent=2)
     handle.write("\n")
 PY
 }
@@ -382,4 +375,8 @@ expect_explain "claude-code-home" '"next_action":"declare source_repo and live_r
 expect_explain_fail "missing-runtime-home" "runtime target not declared: missing-runtime-home"
 expect_explain_arg_fail "--summary-json cannot be combined with --explain-target"
 
+[[ ! -e "$ROOT/manifests/runtime_health_adapters.json" ]] || {
+  echo "[FAIL] retired split runtime_health_adapters.json still exists" >&2
+  exit 1
+}
 echo "[PASS] runtime health adapter fixtures behave as expected"

@@ -56,12 +56,8 @@ import sys
 
 root, requested, profile = sys.argv[1:4]
 manifest_path = os.path.join(root, "manifests", "runtime_targets.json")
-adapters_path = os.path.join(root, "manifests", "runtime_health_adapters.json")
 with open(manifest_path, "r", encoding="utf-8") as handle:
     manifest = json.load(handle)
-with open(adapters_path, "r", encoding="utf-8") as handle:
-    adapters_manifest = json.load(handle)
-
 target_id = requested or manifest.get("default_target")
 target = next((item for item in manifest.get("targets", []) if item.get("id") == target_id), None)
 if not target:
@@ -75,7 +71,7 @@ runtime = target.get("runtime") or ""
 if not adapter_id or not live_root or not runtime:
     raise SystemExit(f"[FAIL] runtime target missing health fields: {target_id}")
 
-adapter = next((item for item in adapters_manifest.get("adapters", []) if item.get("id") == adapter_id), None)
+adapter = next((item for item in manifest.get("health_adapters", []) if item.get("id") == adapter_id), None)
 if not adapter:
     raise SystemExit(f"[FAIL] runtime health adapter not declared: {adapter_id}")
 if adapter.get("enabled") is not True:

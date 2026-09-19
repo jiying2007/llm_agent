@@ -120,6 +120,8 @@ assert "tools.control_plane.cli impact" in github
 assert "tools.control_plane.cli status" in github
 assert "tools.control_plane.cli runtime-chain" in github
 assert "tools.control_plane.cli promotion-evidence" in github
+assert len(re.findall(r"--profile\s+integration-extra(?:\s|$)", github)) == 1
+assert "/tmp/llm-agent-integration-gate-receipt.json" in github
 assert "--group integration-deep" in github
 assert '--github-output "$GITHUB_OUTPUT"' in github
 assert '--step-summary "$GITHUB_STEP_SUMMARY"' in github
@@ -132,6 +134,7 @@ assert "/tmp/runtime-chain-receipt.json" in github
 assert "promotion-attestation" in github and "promotion-evidence" in github
 assert "sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6" in github
 assert "cosign-release: v3.1.3" in github
+assert "sudo apt-get install -y ripgrep" in github
 assert "cosign initialize" not in github
 assert "trusted_root.json" not in github
 assert "cosign verify-blob" in github

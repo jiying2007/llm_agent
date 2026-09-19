@@ -27,7 +27,7 @@ def sha256_file(path: pathlib.Path) -> str:
 
 def git_output(root: pathlib.Path, *args: str, text: bool = False) -> Union[bytes, str]:
     result = subprocess.run(
-        ["rtk", "git", "-C", str(root), *args],
+        ["git", "-C", str(root), *args],
         check=True,
         capture_output=True,
         text=text,

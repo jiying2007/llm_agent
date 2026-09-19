@@ -17,8 +17,9 @@ from pathlib import Path
 
 root = Path(sys.argv[1])
 receipt = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
-policy = json.loads((root / "manifests/long_term_asset_rehearsal.json").read_text(encoding="utf-8"))
 qualification = json.loads((root / "manifests/long_term_asset_qualification.json").read_text(encoding="utf-8"))
+policy = qualification["rehearsal_policy"]
+assert not (root / "manifests/long_term_asset_rehearsal.json").exists()
 cli = (root / "tools/control_plane/cli.py").read_text(encoding="utf-8")
 
 assert policy["schema"] == "llm-agent-long-term-asset-rehearsal-policy/v1", policy
@@ -42,6 +43,8 @@ assert receipt["scope"] == "all", receipt
 assert receipt["worktree_unchanged"] is True, receipt
 assert receipt["canonical_evidence_written"] is False, receipt
 assert receipt["failed_scopes"] == [], receipt
+assert receipt["source"]["policy"] == "manifests/long_term_asset_qualification.json#rehearsal_policy", receipt
+assert len(receipt["source"]["policy_sha256"]) == 64, receipt
 
 real = receipt["real_state"]
 assert real["LTA-02"] == "evidence_collection_in_progress", real

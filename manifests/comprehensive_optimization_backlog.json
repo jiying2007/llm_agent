@@ -78,12 +78,14 @@
           "*.yaml",
           "*.yml"
         ],
-        "exclude_prefixes": [],
+        "exclude_prefixes": [
+          "manifests/history"
+        ],
         "baseline": 15,
         "warning_limit": 20,
         "hard_limit": 25,
         "owner": "llm-agent-governance",
-        "next_action": "Extend an existing SSOT manifest unless a new lifecycle and owner justify a separate contract."
+        "next_action": "Keep historical snapshots under manifests/history; consolidate active SSOT contracts before adding another root manifest."
       },
       {
         "id": "root-largest-shell-lines",
@@ -646,7 +648,7 @@
       "implementation_targets": [
         "routing-ir/v2",
         "contrastive negation and abstain regression",
-        "routing to Runtime Control artifact-mode mapping"
+        "routing to Execution Policy artifact-mode mapping"
       ],
       "verification": [
         "rtk bash agent-dev-kit/tests/test_match_effectiveness.sh",

@@ -2,396 +2,64 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-CHECKER="${ROOT}/scripts/check-current-status-consistency.sh"
+CHECKER="$ROOT/scripts/check-current-status-consistency.sh"
 TMP_DIR="$(mktemp -d)"
-trap 'rm -rf "${TMP_DIR}"' EXIT
+trap 'rm -rf "$TMP_DIR"' EXIT
 
-mapfile -t POLICY_VALUES < <(python3 - "${ROOT}/manifests/software_m5_policy.json" <<'PY'
-import json
-import pathlib
-import sys
+"$CHECKER" "$ROOT" --summary-json >"$TMP_DIR/release-clean.json"
+"$CHECKER" "$ROOT" --worktree-integration --summary-json >"$TMP_DIR/working-tree.json"
 
-policy_path = pathlib.Path(sys.argv[1])
-root = policy_path.parent.parent
-policy = json.load(open(policy_path, encoding="utf-8"))
-release = policy["release"]
-print(release["candidate_version"])
-print(release["rehearsal_report"])
-print(release["evidence_report"])
-print(release["previous_evidence_report"])
-evidence = json.load(open(root / release["evidence_report"], encoding="utf-8"))
-print(str(evidence["source_to_live"]["mapped_content_changed"]).lower())
-print(policy["runtime_campaign"]["plan"])
-print(release["runtime_attestation"])
-attestation = json.load(open(root / release["runtime_attestation"], encoding="utf-8"))
-print(attestation["supersedes"]["path"])
-print(release["codex_runtime_evidence"])
-ledger = json.load(open(root / "manifests/software_m5_pilot_ledger.json", encoding="utf-8"))
-print(ledger["event_log"])
-registry = json.load(open(root / "manifests/report_registry.json", encoding="utf-8"))
-current = [item for item in registry["reports"] if item["status"] == "current"]
-assert len(current) == 1, registry
-print(current[0]["path"])
-PY
-)
-CANDIDATE_VERSION="${POLICY_VALUES[0]}"
-REHEARSAL_REPO_PATH="${POLICY_VALUES[1]}"
-RELEASE_EVIDENCE_PATH="${POLICY_VALUES[2]}"
-PREVIOUS_RELEASE_EVIDENCE_PATH="${POLICY_VALUES[3]}"
-MAPPED_CONTENT_CHANGED="${POLICY_VALUES[4]}"
-CAMPAIGN_PLAN_PATH="${POLICY_VALUES[5]}"
-RUNTIME_ATTESTATION_PATH="${POLICY_VALUES[6]}"
-SUPERSEDED_ATTESTATION_PATH="${POLICY_VALUES[7]}"
-CODEX_RUNTIME_EVIDENCE_PATH="${POLICY_VALUES[8]}"
-M5_EVENT_LOG_PATH="${POLICY_VALUES[9]}"
-CURRENT_REPORT_PATH="${POLICY_VALUES[10]}"
-
-make_fixture() {
-  local dest="$1"
-  local legacy_change_path="docs/changes/adk-v3-1-software-m5-ready"
-  local rehearsal_dir
-  rehearsal_dir="$(dirname "${REHEARSAL_REPO_PATH}")"
-  local release_evidence_dir
-  release_evidence_dir="$(dirname "${RELEASE_EVIDENCE_PATH}")"
-  local campaign_plan_dir
-  campaign_plan_dir="$(dirname "${CAMPAIGN_PLAN_PATH}")"
-  local runtime_attestation_dir
-  runtime_attestation_dir="$(dirname "${RUNTIME_ATTESTATION_PATH}")"
-  local codex_runtime_evidence_dir
-  codex_runtime_evidence_dir="$(dirname "${CODEX_RUNTIME_EVIDENCE_PATH}")"
-  local m5_event_log_dir
-  m5_event_log_dir="$(dirname "${M5_EVENT_LOG_PATH}")"
-  mkdir -p \
-    "${dest}/reports/architecture" \
-    "${dest}/reports/field-evidence" \
-    "${dest}/manifests" \
-    "${dest}/scripts" \
-    "${dest}/subrepos" \
-    "${dest}/docs" \
-    "${dest}/${release_evidence_dir}" \
-    "${dest}/${rehearsal_dir}" \
-    "${dest}/${campaign_plan_dir}" \
-    "${dest}/${runtime_attestation_dir}" \
-    "${dest}/${codex_runtime_evidence_dir}" \
-    "${dest}/${m5_event_log_dir}" \
-    "${dest}/agent-dev-kit/agents/example" \
-    "${dest}/agent-dev-kit/${legacy_change_path}"
-
-  cp "${ROOT}/reports/current-status.md" "${dest}/reports/current-status.md"
-  cp "${ROOT}/${CURRENT_REPORT_PATH}" "${dest}/${CURRENT_REPORT_PATH}"
-  cp "${ROOT}/${RELEASE_EVIDENCE_PATH}" "${dest}/${RELEASE_EVIDENCE_PATH}"
-  mkdir -p "${dest}/$(dirname "${PREVIOUS_RELEASE_EVIDENCE_PATH}")"
-  cp "${ROOT}/${PREVIOUS_RELEASE_EVIDENCE_PATH}" "${dest}/${PREVIOUS_RELEASE_EVIDENCE_PATH}"
-  cp "${ROOT}/${REHEARSAL_REPO_PATH}" "${dest}/${REHEARSAL_REPO_PATH}"
-  cp "${ROOT}/${CAMPAIGN_PLAN_PATH}" "${dest}/${CAMPAIGN_PLAN_PATH}"
-  cp "${ROOT}/${RUNTIME_ATTESTATION_PATH}" "${dest}/${RUNTIME_ATTESTATION_PATH}"
-  cp "${ROOT}/${SUPERSEDED_ATTESTATION_PATH}" "${dest}/${SUPERSEDED_ATTESTATION_PATH}"
-  cp "${ROOT}/${CODEX_RUNTIME_EVIDENCE_PATH}" "${dest}/${CODEX_RUNTIME_EVIDENCE_PATH}"
-  cp "${ROOT}/${M5_EVENT_LOG_PATH}" "${dest}/${M5_EVENT_LOG_PATH}"
-  cp "${ROOT}/manifests/product_maturity_scorecard.json" "${dest}/manifests/"
-  cp "${ROOT}/manifests/product_maturity_task_pack.json" "${dest}/manifests/"
-  cp "${ROOT}/manifests/report_registry.json" "${dest}/manifests/"
-  cp "${ROOT}/manifests/software_m5_policy.json" "${dest}/manifests/"
-  cp "${ROOT}/manifests/software_m5_pilot_ledger.json" "${dest}/manifests/"
-  cp "${ROOT}/docs/software-m5-certification-plan.md" "${dest}/docs/"
-  cp "${ROOT}/adk.lock" "${dest}/adk.lock"
-  cp "${ROOT}/scripts/check-subrepo-state.sh" "${dest}/scripts/"
-  cp "${ROOT}/scripts/classify-repo-worktree.sh" "${dest}/scripts/"
-  chmod +x "${dest}/scripts/check-subrepo-state.sh" "${dest}/scripts/classify-repo-worktree.sh"
-
-  cat >"${dest}/subrepos/registry.csv" <<'CSV'
-repo,group,priority,sync_mode,branch,enabled,notes,status,owner,last_reviewed_on,intake_policy,grade
-agent-dev-kit,adk-core,P0,pull,main,yes,fixture,active,tester,2026-07-13,adopt-first,S
-CSV
-
-  printf '{"version":"3.0.0"}\n' >"${dest}/agent-dev-kit/manifest.json"
-  printf 'baseline asset\n' >"${dest}/agent-dev-kit/agents/example/AGENTS.md"
-  git -C "${dest}/agent-dev-kit" init -q
-  git -C "${dest}/agent-dev-kit" config user.email "fixture@example.invalid"
-  git -C "${dest}/agent-dev-kit" config user.name "Fixture"
-  git -C "${dest}/agent-dev-kit" add manifest.json agents/example/AGENTS.md
-  git -C "${dest}/agent-dev-kit" commit -q -m "fixture baseline"
-  local previous_adk
-  previous_adk="$(git -C "${dest}/agent-dev-kit" rev-parse HEAD)"
-
-  cp "${ROOT}/agent-dev-kit/manifest.json" "${dest}/agent-dev-kit/manifest.json"
-  cp "${ROOT}/agent-dev-kit/${legacy_change_path}/release-rehearsal.json" "${dest}/agent-dev-kit/${legacy_change_path}/"
-  cp "${ROOT}/agent-dev-kit/${legacy_change_path}/codex-runtime-smoke.json" "${dest}/agent-dev-kit/${legacy_change_path}/"
-  if [[ "${MAPPED_CONTENT_CHANGED}" == "true" ]]; then
-    printf 'candidate mapped asset\n' >"${dest}/agent-dev-kit/agents/example/AGENTS.md"
-  fi
-  git -C "${dest}/agent-dev-kit" add manifest.json agents/example/AGENTS.md "${legacy_change_path}"
-  git -C "${dest}/agent-dev-kit" commit -q -m "fixture M5-ready candidate"
-  local release_adk
-  release_adk="$(git -C "${dest}/agent-dev-kit" rev-parse HEAD)"
-
-  printf 'governance-only change\n' >"${dest}/agent-dev-kit/docs/governance-contract.md"
-  git -C "${dest}/agent-dev-kit" add docs/governance-contract.md
-  git -C "${dest}/agent-dev-kit" commit -q -m "fixture governance-only change"
-  local current_adk
-  current_adk="$(git -C "${dest}/agent-dev-kit" rev-parse HEAD)"
-
-  python3 - \
-    "${dest}/reports/current-status.md" \
-    "${dest}/${RELEASE_EVIDENCE_PATH}" \
-    "${dest}/adk.lock" \
-    "${dest}/${RUNTIME_ATTESTATION_PATH}" \
-    "${dest}/${CODEX_RUNTIME_EVIDENCE_PATH}" \
-    "${previous_adk}" \
-    "${release_adk}" \
-    "${current_adk}" \
-    "${CANDIDATE_VERSION}" <<'PY'
-import json
-import pathlib
-import re
-import sys
-
-status_path, release_path, lock_path, attestation_path, codex_path, previous_adk, release_adk, current_adk, candidate_version = sys.argv[1:]
-status = pathlib.Path(status_path).read_text(encoding="utf-8")
-status = re.sub(r"^- agent_dev_kit_commit: .+$", f"- agent_dev_kit_commit: {current_adk}", status, flags=re.MULTILINE)
-status = re.sub(r"^- agent_dev_kit_release_commit: .+$", f"- agent_dev_kit_release_commit: {release_adk}", status, flags=re.MULTILINE)
-status = re.sub(r"^- adk_previous_commit: .+$", f"- adk_previous_commit: {previous_adk}", status, flags=re.MULTILINE)
-pathlib.Path(status_path).write_text(status, encoding="utf-8")
-
-release = json.loads(pathlib.Path(release_path).read_text(encoding="utf-8"))
-release["agent_dev_kit"]["commit"] = release_adk
-release["agent_dev_kit"]["previous_commit"] = previous_adk
-release["source_to_live"]["comparison"] = f"{previous_adk}..{release_adk}"
-pathlib.Path(release_path).write_text(json.dumps(release, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-
-attestation = json.loads(pathlib.Path(attestation_path).read_text(encoding="utf-8"))
-attestation["adk_commit"] = release_adk
-unsigned_attestation = dict(attestation)
-unsigned_attestation.pop("evidence_sha256", None)
-import hashlib
-attestation["evidence_sha256"] = hashlib.sha256(
-    json.dumps(unsigned_attestation, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
-).hexdigest()
-pathlib.Path(attestation_path).write_text(json.dumps(attestation, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-
-codex = json.loads(pathlib.Path(codex_path).read_text(encoding="utf-8"))
-codex["adk_commit"] = release_adk
-unsigned = dict(codex)
-unsigned.pop("evidence_sha256", None)
-codex["evidence_sha256"] = hashlib.sha256(
-    json.dumps(unsigned, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
-).hexdigest()
-pathlib.Path(codex_path).write_text(json.dumps(codex, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-
-lock = pathlib.Path(lock_path).read_text(encoding="utf-8")
-lock = re.sub(r"agent-dev-kit.version=.*", f"agent-dev-kit.version={candidate_version}", lock)
-lock = re.sub(r"agent-dev-kit.commit=.*", f"agent-dev-kit.commit={current_adk}", lock)
-pathlib.Path(lock_path).write_text(lock, encoding="utf-8")
-PY
-
-  git -C "${dest}" init -q
-  git -C "${dest}" config user.email "fixture@example.invalid"
-  git -C "${dest}" config user.name "Fixture"
-  git -C "${dest}" add reports manifests adk.lock subrepos docs
-  git -C "${dest}" update-index --add --cacheinfo "160000,${current_adk},agent-dev-kit"
-  git -C "${dest}" commit -q -m "fixture product"
-  local root_product
-  root_product="$(git -C "${dest}" rev-parse HEAD)"
-
-  python3 - "${dest}/reports/current-status.md" "${root_product}" <<'PY'
-import pathlib
-import re
-import sys
-import datetime
-
-status_path, root_product = sys.argv[1:]
-status = pathlib.Path(status_path).read_text(encoding="utf-8")
-today = datetime.date.today().isoformat()
-status = re.sub(r"^- root_product_commit: .+$", f"- root_product_commit: {root_product}", status, flags=re.MULTILINE)
-status = re.sub(r"^- updated_at: .+$", f"- updated_at: {today}", status, flags=re.MULTILINE)
-status = re.sub(r"^- last_verified_at: .+$", f"- last_verified_at: {today}", status, flags=re.MULTILINE)
-pathlib.Path(status_path).write_text(status, encoding="utf-8")
-PY
-  git -C "${dest}" add reports/current-status.md
-  git -C "${dest}" commit -q -m "fixture status"
-}
-
-expect_fail_contains() {
-  local fixture="$1"
-  local expected="$2"
-  local output="${fixture}.out"
-  if "${CHECKER}" "${fixture}" --summary-json >"${output}" 2>&1; then
-    echo "[FAIL] fixture unexpectedly passed: ${fixture}" >&2
-    exit 1
-  fi
-  if ! rg -q --fixed-strings -- "${expected}" "${output}"; then
-    echo "[FAIL] expected failure did not include: ${expected}" >&2
-    sed -n '1,160p' "${output}" >&2 || true
-    exit 1
-  fi
-}
-
-pass_root="${TMP_DIR}/pass-root"
-make_fixture "${pass_root}"
-pass_output="${TMP_DIR}/pass-root.out"
-if ! "${CHECKER}" "${pass_root}" --summary-json >"${pass_output}" 2>&1; then
-  echo "[FAIL] current-status pass fixture failed" >&2
-  sed -n '1,160p' "${pass_output}" >&2 || true
-  exit 1
-fi
-
-codex_identity_root="${TMP_DIR}/codex-identity-root"
-cp -a "${pass_root}" "${codex_identity_root}"
-python3 - "${codex_identity_root}/${CODEX_RUNTIME_EVIDENCE_PATH}" <<'PY'
-import hashlib
-import json
-import pathlib
-import sys
-path = pathlib.Path(sys.argv[1])
-value = json.loads(path.read_text(encoding="utf-8"))
-value["manifest_version"] = "0.0.0"
-unsigned = dict(value)
-unsigned.pop("evidence_sha256", None)
-value["evidence_sha256"] = hashlib.sha256(
-    json.dumps(unsigned, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
-).hexdigest()
-path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-PY
-expect_fail_contains "${codex_identity_root}" "Codex runtime smoke identity/result is invalid or stale"
-
-stale_attestation_root="${TMP_DIR}/stale-attestation-root"
-cp -a "${pass_root}" "${stale_attestation_root}"
-python3 - "${stale_attestation_root}/${RUNTIME_ATTESTATION_PATH}" <<'PY'
-import json
-import pathlib
-import sys
-path = pathlib.Path(sys.argv[1])
-value = json.loads(path.read_text(encoding="utf-8"))
-value["review_after"] = "2000-01-01"
-path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-PY
-expect_fail_contains "${stale_attestation_root}" "Claude Code owner attestation is stale"
-
-mismatch_root="${TMP_DIR}/mismatch-root"
-cp -a "${pass_root}" "${mismatch_root}"
-python3 - "${mismatch_root}/reports/current-status.md" <<'PY'
-import pathlib
-import re
-import sys
-path = pathlib.Path(sys.argv[1])
-path.write_text(re.sub(r"^- agent_dev_kit_commit: .+$", "- agent_dev_kit_commit: 0000000", path.read_text(encoding="utf-8"), flags=re.MULTILINE), encoding="utf-8")
-PY
-expect_fail_contains "${mismatch_root}" "gitlink ADK commit does not match current-status"
-
-release_mismatch_root="${TMP_DIR}/release-mismatch-root"
-cp -a "${pass_root}" "${release_mismatch_root}"
-python3 - "${release_mismatch_root}/reports/current-status.md" <<'PY'
-import pathlib
-import re
-import sys
-path = pathlib.Path(sys.argv[1])
-path.write_text(re.sub(r"^- agent_dev_kit_release_commit: .+$", "- agent_dev_kit_release_commit: 0000000", path.read_text(encoding="utf-8"), flags=re.MULTILINE), encoding="utf-8")
-PY
-expect_fail_contains "${release_mismatch_root}" "software M5 release evidence ADK identity does not match current-status"
-
-stale_root="${TMP_DIR}/stale-root"
-cp -a "${pass_root}" "${stale_root}"
-python3 - "${stale_root}/reports/current-status.md" <<'PY'
-import pathlib
-import re
-import sys
-path = pathlib.Path(sys.argv[1])
-path.write_text(re.sub(r"^- last_verified_at: .+$", "- last_verified_at: 2000-01-01", path.read_text(encoding="utf-8"), flags=re.MULTILINE), encoding="utf-8")
-PY
-expect_fail_contains "${stale_root}" "current-status verification is stale"
-
-terminal_root="${TMP_DIR}/terminal-root"
-cp -a "${pass_root}" "${terminal_root}"
-python3 - "${terminal_root}/manifests/product_maturity_scorecard.json" <<'PY'
-import json
-import pathlib
-import sys
-path = pathlib.Path(sys.argv[1])
-value = json.loads(path.read_text(encoding="utf-8"))
-value["overall"]["terminal_mature"] = True
-path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-PY
-expect_fail_contains "${terminal_root}" "product scorecard must keep terminal_mature=false"
-
-campaign_root="${TMP_DIR}/campaign-root"
-cp -a "${pass_root}" "${campaign_root}"
-python3 - "${campaign_root}/${CAMPAIGN_PLAN_PATH}" <<'PY'
-import json
-import pathlib
-import sys
-path = pathlib.Path(sys.argv[1])
-value = json.loads(path.read_text(encoding="utf-8"))
-value["maximum_worst_cost_usd"] = 1
-path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-PY
-expect_fail_contains "${campaign_root}" "software M5 campaign plan hash does not match content"
-
-knowledge_root="${TMP_DIR}/knowledge-root"
-cp -a "${pass_root}" "${knowledge_root}"
-python3 - "${knowledge_root}/reports/current-status.md" <<'PY'
-import pathlib
-import re
-import sys
-path = pathlib.Path(sys.argv[1])
-path.write_text(re.sub(r"^- knowledge_candidate_status: .+$", "- knowledge_candidate_status: active-promotion-applied", path.read_text(encoding="utf-8"), flags=re.MULTILINE), encoding="utf-8")
-PY
-expect_fail_contains "${knowledge_root}" "knowledge_candidate_status is invalid for the current delivery"
-
-events_root="${TMP_DIR}/events-root"
-cp -a "${pass_root}" "${events_root}"
-python3 - "${events_root}/${M5_EVENT_LOG_PATH}" <<'PY'
-import json
-import pathlib
-import sys
-path = pathlib.Path(sys.argv[1])
-lines = path.read_text(encoding="utf-8").splitlines()
-value = json.loads(lines[0])
-value["summary"] = "tampered"
-lines[0] = json.dumps(value, separators=(",", ":"))
-path.write_text("\n".join(lines) + "\n", encoding="utf-8")
-PY
-expect_fail_contains "${events_root}" "software M5 evidence integrity or scorecard declaration is not pass"
-
-mapped_root="${TMP_DIR}/mapped-root"
-cp -a "${pass_root}" "${mapped_root}"
-printf 'mapped change\n' >>"${mapped_root}/agent-dev-kit/agents/example/AGENTS.md"
-git -C "${mapped_root}/agent-dev-kit" add agents/example/AGENTS.md
-git -C "${mapped_root}/agent-dev-kit" commit -q -m "fixture mapped change"
-mapped_adk="$(git -C "${mapped_root}/agent-dev-kit" rev-parse HEAD)"
-python3 - \
-  "${mapped_root}/reports/current-status.md" \
-  "${mapped_root}/adk.lock" \
-  "${mapped_adk}" <<'PY'
-import pathlib
-import re
-import sys
-status_path, lock_path, mapped_adk = sys.argv[1:]
-status = pathlib.Path(status_path).read_text(encoding="utf-8")
-status = re.sub(r"^- agent_dev_kit_commit: .+$", f"- agent_dev_kit_commit: {mapped_adk}", status, flags=re.MULTILINE)
-pathlib.Path(status_path).write_text(status, encoding="utf-8")
-lock = pathlib.Path(lock_path).read_text(encoding="utf-8")
-lock = re.sub(r"agent-dev-kit.commit=.*", f"agent-dev-kit.commit={mapped_adk}", lock)
-pathlib.Path(lock_path).write_text(lock, encoding="utf-8")
-PY
-git -C "${mapped_root}" update-index --cacheinfo "160000,${mapped_adk},agent-dev-kit"
-expect_fail_contains "${mapped_root}" "mapped ADK asset paths changed after release baseline"
-
-dirty_root="${TMP_DIR}/dirty-root"
-cp -a "${pass_root}" "${dirty_root}"
-printf '\n' >>"${dirty_root}/agent-dev-kit/manifest.json"
-expect_fail_contains "${dirty_root}" "current subrepo state is not pass"
-integration_output="${TMP_DIR}/dirty-integration.json"
-"${CHECKER}" "${dirty_root}" --worktree-integration --summary-json >"${integration_output}"
-python3 - "${integration_output}" <<'PY'
+python3 - "$TMP_DIR/release-clean.json" "$TMP_DIR/working-tree.json" "$ROOT/adk.lock" <<'PY'
 import json
 import sys
+from pathlib import Path
 
-payload = json.load(open(sys.argv[1], encoding="utf-8"))
-assert payload["status"] == "pass", payload
-assert payload["gate_mode"] == "working-tree"
-assert payload["subrepo_state"]["gate_mode"] == "working-tree"
-assert payload["subrepo_state"]["agent_dev_kit_change_count"] == 1
-assert len(payload["subrepo_state"]["agent_dev_kit_fingerprint"]) == 64
+release = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+working = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
+lock = {}
+for line in Path(sys.argv[3]).read_text(encoding="utf-8").splitlines():
+    if "=" in line:
+        key, value = line.split("=", 1)
+        lock[key] = value
+
+for result in (release, working):
+    assert result["schema"] == "llm-agent-current-status-consistency/v2", result
+    assert result["status"] == "pass", result
+    assert result["current_adk_version"] == lock["agent-dev-kit.version"], result
+    assert result["current_adk_commit"] == lock["agent-dev-kit.commit"], result
+    assert result["product_maturity"] == "M5", result
+    assert result["product_terminal_scope"] == "product_maturity_v5", result
+    assert result["long_term_asset_status"] == "qualification_pending", result
+    assert set(result["pending_requirements"]) == {"LTA-02", "LTA-04"}, result
+    assert result["current_report"].startswith("reports/architecture/"), result
+    assert result["failures"] == [], result
+
+assert release["gate_mode"] == "release-clean", release
+assert working["gate_mode"] == "working-tree", working
 PY
 
-echo "[PASS] current product status consistency checks behave as expected"
+python3 - "$CHECKER" <<'PY'
+from pathlib import Path
+import sys
+
+text = Path(sys.argv[1]).read_text(encoding="utf-8")
+for retired in (
+    "rehearsal_report",
+    "evidence_report",
+    "previous_evidence_report",
+    "runtime_campaign",
+    "runtime_attestation",
+    "self_pilot_active",
+    "terminal_mature=false",
+):
+    assert retired not in text, retired
+for canonical in (
+    "tools.control_plane.status_projection",
+    "product_maturity_v5",
+    "long_term_asset_qualification.json",
+    "qualification_pending",
+):
+    assert canonical in text, canonical
+PY
+
+echo "[PASS] current-status consistency is derived from current projection, Product M5, and separate LTA state"

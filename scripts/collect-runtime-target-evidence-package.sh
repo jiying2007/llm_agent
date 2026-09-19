@@ -121,7 +121,6 @@ out_dir = os.path.abspath(out_dir)
 summary_json = summary_json_text == "1"
 promote_current = promote_current_text == "1"
 manifest_path = os.path.join(root, "manifests", "runtime_targets.json")
-adapters_path = os.path.join(root, "manifests", "runtime_health_adapters.json")
 
 
 def target_prefix(value):
@@ -332,13 +331,6 @@ manifest = require_object(read_json(
     "RUNTIME_TARGET_EVIDENCE_RUNTIME_TARGETS_MANIFEST_INVALID_JSON",
     "RUNTIME_TARGET_EVIDENCE_RUNTIME_TARGETS_MANIFEST_READ_FAILED",
 ), "runtime targets manifest")
-adapters_manifest = require_object(read_json(
-    adapters_path,
-    "runtime health adapters manifest",
-    "RUNTIME_TARGET_EVIDENCE_HEALTH_ADAPTERS_MANIFEST_MISSING",
-    "RUNTIME_TARGET_EVIDENCE_HEALTH_ADAPTERS_MANIFEST_INVALID_JSON",
-    "RUNTIME_TARGET_EVIDENCE_HEALTH_ADAPTERS_MANIFEST_READ_FAILED",
-), "runtime health adapters manifest")
 targets = require_object_items(
     require_list_field(manifest, "targets", "runtime targets manifest"),
     "targets",
@@ -356,9 +348,9 @@ os.makedirs(out_dir, exist_ok=True)
 
 adapter_id = target.get("health_adapter")
 adapters = require_object_items(
-    require_list_field(adapters_manifest, "adapters", "runtime health adapters manifest"),
-    "adapters",
-    "runtime health adapters manifest",
+    require_list_field(manifest, "health_adapters", "runtime targets manifest"),
+    "health_adapters",
+    "runtime targets manifest",
 )
 adapter = next((item for item in adapters if item.get("id") == adapter_id), None)
 prefix = target_prefix(target_id)

@@ -11,20 +11,20 @@ if [[ ! -d "${ADK_ROOT}" ]]; then
   exit 1
 fi
 
-rtk bash "${ADK_ROOT}/scripts/devkit.sh" goal check --summary-json >"${TMP_DIR}/goal-contracts.json"
-rtk bash "${ADK_ROOT}/scripts/devkit.sh" capability health --summary-json >"${TMP_DIR}/capability-health.json"
-rtk bash "${ADK_ROOT}/scripts/devkit.sh" benchmark run --iterations 3 --summary-json >"${TMP_DIR}/performance-budgets.json"
-if ! rtk bash "${ADK_ROOT}/tests/test_runtime_control.sh" >"${TMP_DIR}/runtime-control-test.log" 2>&1; then
-  echo "[FAIL] ADK Runtime Control regression failed" >&2
-  rtk tail -n 40 "${TMP_DIR}/runtime-control-test.log" >&2
+bash "${ADK_ROOT}/scripts/devkit.sh" goal check --summary-json >"${TMP_DIR}/goal-contracts.json"
+bash "${ADK_ROOT}/scripts/devkit.sh" capability health --summary-json >"${TMP_DIR}/capability-health.json"
+bash "${ADK_ROOT}/scripts/devkit.sh" benchmark run --iterations 3 --summary-json >"${TMP_DIR}/performance-budgets.json"
+if ! bash "${ADK_ROOT}/tests/test_execution_policy.sh" >"${TMP_DIR}/runtime-control-test.log" 2>&1; then
+  echo "[FAIL] ADK Execution Policy regression failed" >&2
+  tail -n 40 "${TMP_DIR}/runtime-control-test.log" >&2
   exit 1
 fi
 
-if ! rtk rg -q '"status":"pass"' "${TMP_DIR}/goal-contracts.json"; then
+if ! grep -Fq '"status":"pass"' "${TMP_DIR}/goal-contracts.json"; then
   echo "[FAIL] ADK goal contracts did not pass" >&2
   exit 1
 fi
-if ! rtk rg -q '"status":"pass"' "${TMP_DIR}/capability-health.json"; then
+if ! grep -Fq '"status":"pass"' "${TMP_DIR}/capability-health.json"; then
   echo "[FAIL] ADK capability health did not pass" >&2
   exit 1
 fi
@@ -37,4 +37,4 @@ assert report["status"] == "pass", report
 assert report["budget_gate"] and all(report["budget_gate"].values()), report
 PY
 
-echo "[PASS] ADK goal, capability, Runtime Control, and benchmark budget gates passed"
+echo "[PASS] ADK goal, capability, Execution Policy, and benchmark budget gates passed"

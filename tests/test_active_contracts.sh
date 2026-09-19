@@ -19,13 +19,16 @@ root = Path(sys.argv[2])
 assert data["status"] == "pass", data
 assert data["item_count"] >= 22, data
 assert data["failures"] == [], data
+assert not (root / "manifests/runtime_health_adapters.json").exists()
+assert not (root / "manifests/reference_repository_registration_policy.json").exists()
+assert not (root / "manifests/reference_repository_removal_policy.json").exists()
+assert not (root / "manifests/long_term_asset_rehearsal.json").exists()
 
 targets = json.loads((root / "manifests/runtime_targets.json").read_text(encoding="utf-8"))
-adapters = json.loads((root / "manifests/runtime_health_adapters.json").read_text(encoding="utf-8"))
 expected_runtimes = {"codex", "claude-code", "opencode"}
 assert set(targets["supported_runtime_kinds"]) == expected_runtimes, targets
 assert {item["runtime"] for item in targets["targets"]} == expected_runtimes, targets
-assert {item["runtime"] for item in adapters["adapters"]} == expected_runtimes, adapters
+assert {item["runtime"] for item in targets["health_adapters"]} == expected_runtimes, targets
 
 for relative in (
     "README.md",
