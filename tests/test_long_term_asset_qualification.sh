@@ -80,7 +80,8 @@ assert lta01['affects'] == []
 assert lta01['implementation_status'] == 'verified'
 assert lta01['certifier'] == 'tools.control_plane.native_repository_governance'
 assert lta01['ruleset_id'] == 23516987
-assert lta01['strict_required_status_checks_policy'] is True
+dependency_closure = lta['dependency_closure']['agent_dev_kit']
+assert dependency_closure['strict_required_status_checks_policy'] is True
 assert set(lta01['required_status_checks']) == {
     'contract', 'doc-sync', 'integration-impact', 'integration-summary', 'software-m5-certify', 'branch-gc'
 }
