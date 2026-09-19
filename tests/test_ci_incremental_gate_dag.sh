@@ -120,6 +120,8 @@ assert "tools.control_plane.cli impact" in github
 assert "tools.control_plane.cli status" in github
 assert "tools.control_plane.cli runtime-chain" in github
 assert "tools.control_plane.cli promotion-evidence" in github
+assert len(re.findall(r"--profile\s+integration-extra(?:\s|$)", github)) == 1
+assert "/tmp/llm-agent-integration-gate-receipt.json" in github
 assert "--group integration-deep" in github
 assert '--github-output "$GITHUB_OUTPUT"' in github
 assert '--step-summary "$GITHUB_STEP_SUMMARY"' in github
