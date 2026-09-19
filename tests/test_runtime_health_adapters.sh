@@ -9,7 +9,6 @@ trap 'rm -rf "${TMP_DIR}"' EXIT
 write_fixture() {
   rm -rf "${TMP_DIR:?}"/*
   mkdir -p "${TMP_DIR}/manifests" "${TMP_DIR}/scripts" "${TMP_DIR}/subrepos"
-  printf 'codex.source=~/codex\ncodex.target=~/.codex\n' >"${TMP_DIR}/adk.lock"
   printf 'repo,group,priority,sync_mode,branch,enabled,notes,status,owner,last_reviewed_on,intake_policy,grade\ncodex,runtime-target,0,manual,main,no,"~/codex to ~/.codex",disabled,adk-team,2026-07-09,pilot-first,A\n' >"${TMP_DIR}/subrepos/registry.csv"
   for script in check-global-codex-health.sh check-claude-code-health.sh check-runtime-live-footprint.sh check-global-codex-target-policy.sh; do
     printf '#!/usr/bin/env bash\nexit 0\n' >"${TMP_DIR}/scripts/${script}"
