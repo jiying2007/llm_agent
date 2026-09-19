@@ -56,8 +56,18 @@ if ! rg -q --fixed-strings -- "runtime target not declared: missing-runtime-home
   exit 1
 fi
 
+hermes_out="${TMP_DIR}/hermes-retired.out"
+if "${GENERATOR}" "${ROOT}" --target hermes-agent-home >"${hermes_out}" 2>&1; then
+  echo "[FAIL] retired Hermes runtime target unexpectedly passed" >&2
+  exit 1
+fi
+if ! rg -q --fixed-strings -- "runtime target not declared: hermes-agent-home" "${hermes_out}"; then
+  echo "[FAIL] retired Hermes runtime target failure was not explicit" >&2
+  exit 1
+fi
+
 "${CHECKER}" "${ROOT}" >/dev/null
-"${CHECKER}" "${ROOT}" --target hermes-agent-home --target opencode-home >/dev/null
+"${CHECKER}" "${ROOT}" --target claude-code-home --target opencode-home >/dev/null
 
 summary_out="${TMP_DIR}/summary.json"
 "${CHECKER}" "${ROOT}" --summary-json >"${summary_out}"
