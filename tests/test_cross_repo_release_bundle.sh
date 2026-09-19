@@ -2,10 +2,12 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-if grep -Eq '(^|[[:space:]])rtk([[:space:]]|$)' "$ROOT/scripts/cross-repo-release-bundle.sh"; then
-  echo "[FAIL] canonical release bundle entrypoint depends on local rtk wrapper" >&2
-  exit 1
-fi
+for path in "$ROOT/scripts/cross-repo-release-bundle.sh" "$ROOT/tools/codex_assets/release_bundle.py"; do
+  if grep -Eq '(^|[[:space:]"[])(rtk)([[:space:]",]]|$)' "$path"; then
+    echo "[FAIL] release bundle implementation depends on local rtk wrapper: $path" >&2
+    exit 1
+  fi
+done
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "$TMP_DIR"' EXIT
 
