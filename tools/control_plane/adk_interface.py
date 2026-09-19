@@ -12,12 +12,12 @@ LOCK_SCHEMA = "llm-agent-adk-lock/v2"
 
 _SURFACES = {
     "manifest": "manifest.json",
-    "maturity_test": "tests/test_product_maturity_v5.sh",
+    "maturity_test": "tests/test_product_maturity.sh",
     "target_contract_schema": "manifests/target-contract.schema.json",
     "evidence_graph_schema": "schemas/evidence-graph-v1.schema.json",
     "runtime_control_schema": "schemas/runtime-control-decision-v2.schema.json",
 }
-_DEPRECATED = ["manifest.yaml", "tests/test_product_maturity_v4.sh"]
+_DEPRECATED = ["manifest.yaml", "tests/test_product_maturity_v4.sh", "tests/test_product_maturity_v5.sh"]
 
 
 def _read_lock(path: Path) -> dict[str, str]:
@@ -71,7 +71,35 @@ def render_interface_lock(identity: Mapping[str, str], updated_at: str) -> str:
     return json.dumps(interface_payload(identity, updated_at), ensure_ascii=False, indent=2) + "\n"
 
 
-def validate(root: Path) -> dict[str, Any]:
+def _validate_pinned_worktree(root: Path, expected: Mapping[str, str | None]) -> list[str]:
+    worktree = root / "agent-dev-kit"
+    failures: list[str] = []
+    if not (worktree / "manifest.json").is_file():
+        return ["pinned ADK worktree is not initialized"]
+
+    completed = subprocess.run(
+        ["git", "-C", str(worktree), "rev-parse", "HEAD"],
+        check=False,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    if completed.returncode != 0:
+        return [completed.stderr.strip() or "unable to resolve pinned ADK worktree HEAD"]
+    head = completed.stdout.strip()
+    if expected.get("commit") and head != expected["commit"]:
+        failures.append("pinned ADK worktree HEAD does not match interface/lock commit")
+
+    for label, relative in _SURFACES.items():
+        if not (worktree / relative).is_file():
+            failures.append(f"pinned ADK worktree missing supported surface {label}: {relative}")
+    for relative in _DEPRECATED:
+        if (worktree / relative).exists():
+            failures.append(f"pinned ADK worktree contains retired surface: {relative}")
+    return failures
+
+
+def validate(root: Path, *, require_worktree: bool = False) -> dict[str, Any]:
     root = root.resolve()
     lock = _read_lock(root / "adk.lock")
     interface = json.loads((root / "manifests" / "adk_interface.lock.json").read_text(encoding="utf-8"))
@@ -102,6 +130,8 @@ def validate(root: Path) -> dict[str, Any]:
         failures.append("ADK interface surfaces drifted from the supported v5 contract")
     if interface.get("deprecated_surfaces") != _DEPRECATED:
         failures.append("ADK deprecated-surface contract drifted")
+    if require_worktree:
+        failures.extend(_validate_pinned_worktree(root, expected))
 
     return {
         "schema": INTERFACE_SCHEMA,
@@ -110,6 +140,7 @@ def validate(root: Path) -> dict[str, Any]:
         "gitlink": _gitlink(root),
         "surfaces": dict(_SURFACES),
         "deprecated_surfaces": list(_DEPRECATED),
+        "worktree_checked": require_worktree,
         "failures": failures,
     }
 
@@ -117,17 +148,18 @@ def validate(root: Path) -> dict[str, Any]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Validate the pinned ADK cross-repository interface lock")
     parser.add_argument("--root", default=".")
+    parser.add_argument("--require-worktree", action="store_true")
     parser.add_argument("--summary-json", action="store_true")
     args = parser.parse_args(argv)
     try:
-        result = validate(Path(args.root))
+        result = validate(Path(args.root), require_worktree=args.require_worktree)
     except (OSError, ValueError, json.JSONDecodeError) as exc:
         result = {"schema": INTERFACE_SCHEMA, "status": "fail", "failures": [str(exc)]}
     if args.summary_json:
         print(json.dumps(result, ensure_ascii=False, sort_keys=True))
     else:
         if result["status"] == "pass":
-            print("[PASS] ADK interface lock matches gitlink and adk.lock")
+            print("[PASS] ADK interface lock matches gitlink, adk.lock and required source surfaces")
         else:
             for failure in result.get("failures", []):
                 print(f"[FAIL] {failure}", file=sys.stderr)
