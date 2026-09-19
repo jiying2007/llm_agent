@@ -230,7 +230,7 @@ def _safe_branch(value: str) -> str:
 
 def _run_git(path: Path, arguments: Sequence[str], label: str) -> str:
     completed = subprocess.run(
-        ["rtk", "proxy", "git", "-C", str(path), *arguments],
+        ["git", "-C", str(path), *arguments],
         check=False,
         text=True,
         stdout=subprocess.PIPE,
@@ -717,14 +717,14 @@ def _markdown(plan: Mapping[str, Any]) -> str:
 
 def _rollback_added_submodule(root: Path, target: str) -> None:
     subprocess.run(
-        ["rtk", "git", "-C", str(root), "submodule", "deinit", "-f", "--", target],
+        ["git", "-C", str(root), "submodule", "deinit", "-f", "--", target],
         check=False,
         text=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
     completed = subprocess.run(
-        ["rtk", "git", "-C", str(root), "rm", "-f", "--", target],
+        ["git", "-C", str(root), "rm", "-f", "--", target],
         check=False,
         text=True,
         stdout=subprocess.PIPE,
@@ -853,7 +853,6 @@ def _apply(
     submodule_added = False
     completed = subprocess.run(
         [
-            "rtk",
             "git",
             "-C",
             str(root),
