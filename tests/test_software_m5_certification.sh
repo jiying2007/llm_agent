@@ -22,7 +22,8 @@ import json
 import sys
 from pathlib import Path
 
-from tools.codex_assets.software_m5_v3 import M5Error, _validate_policy
+from tools.codex_assets.software_m5_v3 import M5Error
+from tools.codex_assets.software_m5_v3_core import _validate_policy
 
 status = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
 check = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
