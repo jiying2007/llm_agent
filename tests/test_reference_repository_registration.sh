@@ -123,7 +123,7 @@ mkdir -p \
   "${APPLY_ROOT}/agent-dev-kit/manifests" \
   "${SOURCE_ROOT}"
 cp "${ROOT}/manifests/external_practice_sources.json" "${APPLY_ROOT}/manifests/"
-cp "${ROOT}/manifests/reference_repository_registration_policy.json" "${APPLY_ROOT}/manifests/"
+cp "${ROOT}/manifests/reference_repository_lifecycle_policy.json" "${APPLY_ROOT}/manifests/"
 cp "${ROOT}/manifests/subrepo_lifecycle.json" "${APPLY_ROOT}/manifests/"
 cp "${ROOT}/subrepos/registry.csv" "${APPLY_ROOT}/subrepos/"
 cp "${ROOT}/subrepos/adoption-matrix.md" "${APPLY_ROOT}/subrepos/"
