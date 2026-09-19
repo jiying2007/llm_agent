@@ -159,8 +159,7 @@ done
 required_assets=(
   "manifests/external_practice_sources.json"
   "manifests/external_practice_cycle.json"
-  "manifests/reference_repository_registration_policy.json"
-  "manifests/reference_repository_removal_policy.json"
+  "manifests/reference_repository_lifecycle_policy.json"
   "manifests/runtime_targets.json"
   "schemas/external-practice-candidate.schema.json"
   "schemas/external-practice-decision.schema.json"
@@ -171,6 +170,18 @@ required_assets=(
 for asset in "${required_assets[@]}"; do
   if [[ ! -e "${ROOT}/${asset}" ]]; then
     echo "[FAIL] required governance asset missing: ${asset}" >&2
+    exit 2
+  fi
+done
+
+for retired in \
+  manifests/reference_repository_registration_policy.json \
+  manifests/reference_repository_removal_policy.json \
+  manifests/runtime_health_adapters.json \
+  manifests/long_term_asset_rehearsal.json
+do
+  if [[ -e "${ROOT}/${retired}" ]]; then
+    echo "[FAIL] retired split governance asset still exists: ${retired}" >&2
     exit 2
   fi
 done
