@@ -38,4 +38,10 @@ if "${PLAN}" "${ROOT}" \
   exit 1
 fi
 
+python3 - "$ROOT/manifests/reference_repository_lifecycle_policy.json" <<'PY'
+import json, sys
+value=json.load(open(sys.argv[1], encoding="utf-8"))
+assert value["schema"] == "reference-repository-lifecycle-policy/v1", value
+assert set(value) == {"schema", "last_updated", "registration", "removal"}, value
+PY
 echo "[PASS] reference repository removal plans are hashed, dry-run, and non-destructive"
