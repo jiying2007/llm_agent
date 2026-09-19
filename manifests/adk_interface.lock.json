@@ -16,7 +16,10 @@
   "deprecated_surfaces": [
     "manifest.yaml",
     "tests/test_product_maturity_v4.sh",
-    "tests/test_product_maturity_v5.sh"
+    "tests/test_product_maturity_v5.sh",
+    "tests/test_runtime_control.sh",
+    "tests/test_runtime_control.py",
+    "src/agent_dev_kit/runtime_control"
   ],
   "updated_at": "2026-09-19"
 }
