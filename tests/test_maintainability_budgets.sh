@@ -5,8 +5,18 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "$TMP_DIR"' EXIT
 
+set +e
 "$ROOT/scripts/check-maintainability-budgets.sh" --strict --summary-json >"$TMP_DIR/root.json"
+root_rc=$?
 "$ROOT/scripts/check-maintainability-budgets.sh" "$ROOT" --strict --summary-json >"$TMP_DIR/root-positional.json"
+positional_rc=$?
+set -e
+if [[ "$root_rc" -ne 0 || "$positional_rc" -ne 0 ]]; then
+  echo "[FAIL] canonical maintainability budget is not strict-pass" >&2
+  cat "$TMP_DIR/root.json" >&2 || true
+  cat "$TMP_DIR/root-positional.json" >&2 || true
+  exit 1
+fi
 python3 - "$TMP_DIR/root.json" "$TMP_DIR/root-positional.json" <<'PY'
 import json
 import sys
