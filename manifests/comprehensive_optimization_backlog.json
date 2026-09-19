@@ -646,7 +646,7 @@
       "implementation_targets": [
         "routing-ir/v2",
         "contrastive negation and abstain regression",
-        "routing to Runtime Control artifact-mode mapping"
+        "routing to Execution Policy artifact-mode mapping"
       ],
       "verification": [
         "rtk bash agent-dev-kit/tests/test_match_effectiveness.sh",
