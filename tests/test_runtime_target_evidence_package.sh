@@ -8,6 +8,17 @@ source "${ROOT}/tests/helpers/runtime_target_evidence_test_lib.sh"
 runtime_evidence_test_init "${ROOT}"
 trap runtime_evidence_test_cleanup EXIT
 
+# Active-target package collection must exercise real health dispatch without
+# depending on the developer machine's ~/.codex / ~/codex installation.
+export HOME="${TMP_DIR}/home"
+mkdir -p "${HOME}/.codex" "${HOME}/codex/scripts"
+cat >"${HOME}/codex/scripts/doctor.sh" <<'SH'
+#!/usr/bin/env bash
+set -euo pipefail
+echo "[PASS] fixture codex live doctor errors=0"
+SH
+chmod +x "${HOME}/codex/scripts/doctor.sh"
+
 codex_dir="${TMP_DIR}/reports/runtime-target-activation/codex-home/20260709T000000Z"
 canonical_dir="${TMP_DIR}/reports/runtime-target-activation/codex-home"
 candidate_dir="${TMP_DIR}/reports/runtime-target-activation/claude-code-home/20260709T000001Z"
@@ -113,7 +124,12 @@ if "${COLLECTOR}" "${adapters_entry_invalid_root}" --target codex-home --summary
 fi
 assert_collector_summary_failure_no_traceback "${adapters_entry_invalid_summary}" "${TMP_DIR}/adapters-entry-invalid-summary.err" "RUNTIME_TARGET_EVIDENCE_MANIFEST_SCHEMA_INVALID" "adapters-entry-invalid manifest"
 
-"${COLLECTOR}" "${ROOT}" --target codex-home --timestamp 20260709T000000Z --out-dir "${codex_dir}" --summary-json >"${TMP_DIR}/codex-summary.json"
+if ! "${COLLECTOR}" "${ROOT}" --target codex-home --timestamp 20260709T000000Z --out-dir "${codex_dir}" --summary-json >"${TMP_DIR}/codex-summary.json"; then
+  echo "[FAIL] codex evidence package collector failed" >&2
+  show_file_head "${TMP_DIR}/codex-summary.json"
+  show_file_head "${codex_dir}/evidence-index.jsonl"
+  exit 1
+fi
 
 assert_json_value "${TMP_DIR}/codex-summary.json" "status" '"pass"' "codex evidence package summary did not pass"
 assert_json_value "${TMP_DIR}/codex-summary.json" "error_code" 'null' "codex evidence package pass summary did not include null error_code"
