@@ -25,7 +25,7 @@ while [[ $# -gt 0 ]]; do
 usage: scripts/check-runtime-targets.sh [root] [--summary-json] [--explain-target <id>]
 
 Validates the unified manifests/runtime_targets.json target and health-adapter contract
-against adk.lock, registry.csv and runtime target check scripts. This is a
+against registry.csv, managed gitlinks and runtime target check scripts. This is a
 declaration gate only; it does not apply assets or modify live directories.
 
 --explain-target emits a read-only JSON explanation for one target and exits
@@ -49,13 +49,13 @@ python3 - "$ROOT" "$SUMMARY_JSON" "$EXPLAIN_TARGET" <<'PY'
 import csv
 import json
 import os
+import subprocess
 import sys
 
 root = sys.argv[1]
 summary_json = sys.argv[2] == "1"
 explain_target = sys.argv[3]
 manifest_path = os.path.join(root, "manifests", "runtime_targets.json")
-lock_path = os.path.join(root, "adk.lock")
 registry_path = os.path.join(root, "subrepos", "registry.csv")
 failures = []
 
@@ -78,21 +78,6 @@ def read_json(path):
     except Exception as exc:
         fail(f"invalid JSON in {rel(path)}: {exc}")
         return None
-
-
-def read_lock(path):
-    values = {}
-    if not os.path.isfile(path):
-        fail(f"missing file: {rel(path)}")
-        return values
-    with open(path, "r", encoding="utf-8") as handle:
-        for line in handle:
-            line = line.strip()
-            if not line or line.startswith("#") or "=" not in line:
-                continue
-            key, value = line.split("=", 1)
-            values[key] = value
-    return values
 
 
 def read_registry(path):
@@ -150,7 +135,6 @@ adapters_manifest = ({
     "rules": manifest.get("health_adapter_rules"),
     "adapters": manifest.get("health_adapters"),
 } if isinstance(manifest, dict) else None)
-lock = read_lock(lock_path)
 registry = read_registry(registry_path)
 
 if explain_target:
@@ -492,10 +476,10 @@ if default_target:
 
     if default_target.get("runtime") != "codex":
         fail("default runtime target must currently be codex")
-    if default_target.get("source_repo") != lock.get("codex.source"):
-        fail("default runtime source_repo must match adk.lock codex.source")
-    if default_target.get("live_root") != lock.get("codex.target"):
-        fail("default runtime live_root must match adk.lock codex.target")
+    if default_target.get("source_repo") != "~/codex":
+        fail("default runtime source_repo must be canonical ~/codex")
+    if default_target.get("live_root") != "~/.codex":
+        fail("default runtime live_root must be canonical ~/.codex")
     if default_target.get("registry_repo") != "codex":
         fail("default runtime registry_repo must be codex")
     if default_target.get("enabled") is not True:
@@ -531,8 +515,40 @@ else:
         if token not in notes:
             fail(f"codex registry notes must mention {token}")
 
-if os.path.isdir(os.path.join(root, "codex")):
-    fail("workspace-local codex/ directory must not exist")
+workspace_codex = os.path.join(root, "codex")
+if os.path.exists(workspace_codex):
+    gitlinks_path = os.path.join(root, "manifests", "gitlinks.json")
+    gitlinks_manifest = read_json(gitlinks_path)
+    declared_gitlink = None
+    if isinstance(gitlinks_manifest, dict):
+        declared_gitlink = next(
+            (
+                item
+                for item in gitlinks_manifest.get("gitlinks", [])
+                if isinstance(item, dict) and item.get("path") == "codex"
+            ),
+            None,
+        )
+    if not isinstance(declared_gitlink, dict):
+        fail("workspace codex/ exists without managed gitlink declaration")
+    else:
+        if declared_gitlink.get("kind") != "managed-dependency" or declared_gitlink.get("required") is not True:
+            fail("workspace codex/ gitlink must remain a required managed dependency")
+        if declared_gitlink.get("lock") != "codex.lock":
+            fail("workspace codex/ gitlink must remain bound to codex.lock")
+    completed = subprocess.run(
+        ["git", "-C", root, "ls-files", "--stage", "--", "codex"],
+        check=False,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    if completed.returncode != 0 or not completed.stdout.startswith("160000 "):
+        fail("workspace codex/ may exist only as the registered gitlink checkout")
+    if default_target and default_target.get("source_repo") in {"codex", "./codex", workspace_codex}:
+        fail("workspace codex/ gitlink must not become the runtime source_repo")
+    if default_target and default_target.get("live_root") in {"codex", "./codex", workspace_codex}:
+        fail("workspace codex/ gitlink must not become the runtime live_root")
 
 if failures:
     if summary_json:
