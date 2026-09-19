@@ -171,6 +171,8 @@ git -C "${APPLY_ROOT}" commit -m "fixture baseline" >/dev/null 2>&1
 
 REACTIVATE_ROOT="${TMP_DIR}/reactivate-root"
 git clone "${APPLY_ROOT}" "${REACTIVATE_ROOT}" >/dev/null 2>&1
+git -C "${REACTIVATE_ROOT}" config user.name fixture
+git -C "${REACTIVATE_ROOT}" config user.email fixture@example.invalid
 python3 - "${REACTIVATE_ROOT}" <<'PY'
 import csv
 import json
