@@ -24,7 +24,7 @@ while [[ $# -gt 0 ]]; do
       cat <<USAGE
 usage: scripts/check-runtime-targets.sh [root] [--summary-json] [--explain-target <id>]
 
-Validates manifests/runtime_targets.json and runtime_health_adapters.json
+Validates the unified manifests/runtime_targets.json target and health-adapter contract
 against adk.lock, registry.csv and runtime target check scripts. This is a
 declaration gate only; it does not apply assets or modify live directories.
 
@@ -55,7 +55,6 @@ root = sys.argv[1]
 summary_json = sys.argv[2] == "1"
 explain_target = sys.argv[3]
 manifest_path = os.path.join(root, "manifests", "runtime_targets.json")
-adapters_path = os.path.join(root, "manifests", "runtime_health_adapters.json")
 lock_path = os.path.join(root, "adk.lock")
 registry_path = os.path.join(root, "subrepos", "registry.csv")
 failures = []
@@ -145,7 +144,12 @@ def grouped_evidence(evidence):
 
 
 manifest = read_json(manifest_path)
-adapters_manifest = read_json(adapters_path)
+adapters_manifest = ({
+    "schema_version": manifest.get("schema_version"),
+    "status": manifest.get("status"),
+    "rules": manifest.get("health_adapter_rules"),
+    "adapters": manifest.get("health_adapters"),
+} if isinstance(manifest, dict) else None)
 lock = read_lock(lock_path)
 registry = read_registry(registry_path)
 
@@ -197,11 +201,11 @@ if explain_target:
         if not target.get("source_repo") or not target.get("live_root"):
             next_action = "declare source_repo and live_root"
         elif not adapter:
-            next_action = "declare and bind health_adapter in runtime_health_adapters.json"
+            next_action = "declare and bind health_adapter in runtime_targets.json health-adapter contract"
         else:
             next_action = "complete activation_requirements before setting enabled=true"
     elif not adapter:
-        next_action = "declare and bind health_adapter in runtime_health_adapters.json"
+        next_action = "declare and bind health_adapter in runtime_targets.json health-adapter contract"
     elif not activation_ready:
         next_action = "fix target or adapter contract, then run check-runtime-targets.sh"
     else:
@@ -266,21 +270,21 @@ required_adapter_rules = {
 
 if adapters_manifest:
     if adapters_manifest.get("schema_version") != 1:
-        fail("runtime_health_adapters.json schema_version must be 1")
+        fail("runtime_targets.json health-adapter contract schema_version must be 1")
     if adapters_manifest.get("status") != "active":
-        fail("runtime_health_adapters.json status must be active")
+        fail("runtime_targets.json health-adapter contract status must be active")
 
     adapter_rules = adapters_manifest.get("rules")
     if not isinstance(adapter_rules, dict):
-        fail("runtime_health_adapters.json rules must be an object")
+        fail("runtime_targets.json health-adapter contract rules must be an object")
     else:
         for rule in required_adapter_rules:
             if adapter_rules.get(rule) is not True:
-                fail(f"runtime_health_adapters.json rules.{rule} must be true")
+                fail(f"runtime_targets.json health-adapter contract rules.{rule} must be true")
 
     adapters = adapters_manifest.get("adapters")
     if not isinstance(adapters, list) or not adapters:
-        fail("runtime_health_adapters.json adapters must be a non-empty array")
+        fail("runtime_targets.json health-adapter contract adapters must be a non-empty array")
         adapters = []
     adapter_count = len(adapters)
     adapter_ids = [item.get("id") for item in adapters if isinstance(item, dict)]
@@ -290,7 +294,7 @@ if adapters_manifest:
     adapter_runtimes = {item.get("runtime") for item in adapters if isinstance(item, dict)}
     missing_adapter_kinds = required_kinds - adapter_runtimes
     if missing_adapter_kinds:
-        fail(f"runtime_health_adapters.json missing adapter for runtime kinds: {', '.join(sorted(missing_adapter_kinds))}")
+        fail(f"runtime_targets.json health-adapter contract missing adapter for runtime kinds: {', '.join(sorted(missing_adapter_kinds))}")
 
     for item in adapters:
         if not isinstance(item, dict):
