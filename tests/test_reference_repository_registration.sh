@@ -2,6 +2,13 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+python3 - "$ROOT/tools/codex_assets/reference_repository.py" <<'PY'
+from pathlib import Path
+import sys
+text = Path(sys.argv[1]).read_text(encoding="utf-8")
+for retired in ('["rtk", "git"', '["rtk", "proxy", "git"'):
+    assert retired not in text, retired
+PY
 CHECK="${ROOT}/scripts/check-reference-repository-registration.sh"
 ONBOARD="${ROOT}/scripts/onboard-reference-repository.sh"
 TMP_DIR="$(mktemp -d)"
