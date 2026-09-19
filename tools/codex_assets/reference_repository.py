@@ -35,6 +35,7 @@ from .practice_intake import (
 
 
 PLAN_SCHEMA = "reference-repository-onboarding/v1"
+LIFECYCLE_POLICY_SCHEMA = "reference-repository-lifecycle-policy/v1"
 REGISTRATION_POLICY_SCHEMA = "reference-repository-registration-policy/v1"
 REMOVAL_PLAN_SCHEMA = "reference-repository-removal/v1"
 REMOVAL_POLICY_SCHEMA = "reference-repository-removal-policy/v1"
@@ -96,9 +97,19 @@ REMOVAL_ROLLBACK_FILES = {
 }
 
 
+def _load_lifecycle_policy(root: Path) -> Tuple[Mapping[str, Any], Path]:
+    path = root / "manifests/reference_repository_lifecycle_policy.json"
+    value = _load_json(path, 4194304, "reference repository lifecycle policy")
+    if not isinstance(value, dict) or value.get("schema") != LIFECYCLE_POLICY_SCHEMA:
+        raise IntakeError("reference repository lifecycle policy must use the v1 schema")
+    if set(value) != {"schema", "last_updated", "registration", "removal"}:
+        raise IntakeError("reference repository lifecycle policy fields drifted")
+    return value, path
+
+
 def _load_registration_policy(root: Path) -> Tuple[Mapping[str, Any], Path]:
-    path = root / "manifests/reference_repository_registration_policy.json"
-    value = _load_json(path, 4194304, "reference repository registration policy")
+    lifecycle, path = _load_lifecycle_policy(root)
+    value = lifecycle.get("registration")
     if not isinstance(value, dict):
         raise IntakeError("registration policy root must be an object")
     if value.get("schema") != REGISTRATION_POLICY_SCHEMA:
@@ -132,8 +143,8 @@ def _load_registration_policy(root: Path) -> Tuple[Mapping[str, Any], Path]:
 
 
 def _load_removal_policy(root: Path) -> Tuple[Mapping[str, Any], Path]:
-    path = root / "manifests/reference_repository_removal_policy.json"
-    value = _load_json(path, 4194304, "reference repository removal policy")
+    lifecycle, path = _load_lifecycle_policy(root)
+    value = lifecycle.get("removal")
     if not isinstance(value, dict) or value.get("schema") != REMOVAL_POLICY_SCHEMA:
         raise IntakeError("reference repository removal policy must use the v1 schema")
     if value.get("status") != "gated-removal" or value.get("default_mode") != "dry-run":
