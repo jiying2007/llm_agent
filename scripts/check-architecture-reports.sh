@@ -464,8 +464,11 @@ if product_scorecard:
     if not isinstance(assessment_model, dict):
         fail("product_maturity_scorecard.json assessment_model must be an object")
     else:
-        if not str(assessment_model.get("effective_level", "")).startswith("minimum of "):
-            fail("product_maturity_scorecard.json must define effective_level as the minimum evidence-backed level")
+        effective_level_semantics = str(assessment_model.get("effective_level", ""))
+        if not effective_level_semantics:
+            fail("product_maturity_scorecard.json assessment_model.effective_level is required")
+        if assessment_model.get("long_term_asset_model") != "separate qualification in manifests/long_term_asset_qualification.json":
+            fail("product_maturity_scorecard.json must separate long-term asset qualification from Product M5")
         semantics = assessment_model.get("status_semantics")
         if not isinstance(semantics, dict) or set(semantics) != {
             "verified",
@@ -518,10 +521,18 @@ if product_scorecard:
     if not isinstance(overall, dict):
         fail("product_maturity_scorecard.json overall must be an object")
     else:
-        if overall.get("terminal_mature") is not False:
-            fail("current product scorecard must not claim terminal maturity without field evidence")
-        if overall.get("field_status") != "self_pilot_active":
-            fail("current product scorecard must preserve self_pilot_active until independent certification")
+        if overall.get("level") != "M5" or overall.get("status") != "production-qualified":
+            fail("current product scorecard must declare production-qualified Product M5")
+        if overall.get("terminal_mature") is not True:
+            fail("current product scorecard Product M5 terminal_mature must be true")
+        if overall.get("terminal_scope") != "product_maturity_v5":
+            fail("current product terminal scope must remain product_maturity_v5")
+        if overall.get("field_status") != "production_qualified":
+            fail("current product scorecard field_status must be production_qualified")
+        if overall.get("long_term_asset_status") != "qualification_pending":
+            fail("Product M5 must not imply long-term asset terminal qualification")
+        if overall.get("long_term_asset_contract") != "manifests/long_term_asset_qualification.json":
+            fail("Product M5 must bind the canonical long-term asset qualification contract")
 
 report_registry = read_json(report_registry_path)
 current_report_path = ""
