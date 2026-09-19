@@ -33,7 +33,6 @@ assert_collector_summary_failure "${missing_manifest_summary}" "RUNTIME_TARGET_E
 invalid_manifest_root="${TMP_DIR}/invalid-manifest-root"
 mkdir -p "${invalid_manifest_root}/manifests"
 printf '{bad json\n' >"${invalid_manifest_root}/manifests/runtime_targets.json"
-printf '{"adapters":[]}\n' >"${invalid_manifest_root}/manifests/runtime_health_adapters.json"
 invalid_manifest_summary="${TMP_DIR}/invalid-manifest-summary.json"
 if "${COLLECTOR}" "${invalid_manifest_root}" --target codex-home --summary-json --out-dir "${TMP_DIR}/invalid-manifest-out" >"${invalid_manifest_summary}" 2>"${TMP_DIR}/invalid-manifest-summary.err"; then
   fail "invalid manifest collector summary unexpectedly passed"
@@ -42,27 +41,25 @@ assert_collector_summary_failure "${invalid_manifest_summary}" "RUNTIME_TARGET_E
 
 adapters_missing_root="${TMP_DIR}/adapters-missing-root"
 mkdir -p "${adapters_missing_root}/manifests"
-printf '{"targets":[]}\n' >"${adapters_missing_root}/manifests/runtime_targets.json"
+printf '{"targets":[{"id":"codex-home","health_adapter":"codex-global-health"}]}\n' >"${adapters_missing_root}/manifests/runtime_targets.json"
 adapters_missing_summary="${TMP_DIR}/adapters-missing-summary.json"
 if "${COLLECTOR}" "${adapters_missing_root}" --target codex-home --summary-json --out-dir "${TMP_DIR}/adapters-missing-out" >"${adapters_missing_summary}" 2>"${TMP_DIR}/adapters-missing-summary.err"; then
   fail "missing adapters manifest collector summary unexpectedly passed"
 fi
-assert_collector_summary_failure "${adapters_missing_summary}" "RUNTIME_TARGET_EVIDENCE_HEALTH_ADAPTERS_MANIFEST_MISSING" "missing adapters manifest"
+assert_collector_summary_failure "${adapters_missing_summary}" "RUNTIME_TARGET_EVIDENCE_MANIFEST_SCHEMA_INVALID" "missing health_adapters field"
 
 adapters_invalid_root="${TMP_DIR}/adapters-invalid-root"
 mkdir -p "${adapters_invalid_root}/manifests"
-printf '{"targets":[]}\n' >"${adapters_invalid_root}/manifests/runtime_targets.json"
-printf '{bad json\n' >"${adapters_invalid_root}/manifests/runtime_health_adapters.json"
+printf '{"targets":[{"id":"codex-home","health_adapter":"codex-global-health"}],"health_adapters":{}}\n' >"${adapters_invalid_root}/manifests/runtime_targets.json"
 adapters_invalid_summary="${TMP_DIR}/adapters-invalid-summary.json"
 if "${COLLECTOR}" "${adapters_invalid_root}" --target codex-home --summary-json --out-dir "${TMP_DIR}/adapters-invalid-out" >"${adapters_invalid_summary}" 2>"${TMP_DIR}/adapters-invalid-summary.err"; then
   fail "invalid adapters manifest collector summary unexpectedly passed"
 fi
-assert_collector_summary_failure "${adapters_invalid_summary}" "RUNTIME_TARGET_EVIDENCE_HEALTH_ADAPTERS_MANIFEST_INVALID_JSON" "invalid adapters manifest"
+assert_collector_summary_failure "${adapters_invalid_summary}" "RUNTIME_TARGET_EVIDENCE_MANIFEST_SCHEMA_INVALID" "invalid health_adapters field"
 
 targets_top_invalid_root="${TMP_DIR}/targets-top-invalid-root"
 mkdir -p "${targets_top_invalid_root}/manifests"
 printf '[]\n' >"${targets_top_invalid_root}/manifests/runtime_targets.json"
-printf '{"adapters":[]}\n' >"${targets_top_invalid_root}/manifests/runtime_health_adapters.json"
 targets_top_invalid_summary="${TMP_DIR}/targets-top-invalid-summary.json"
 if "${COLLECTOR}" "${targets_top_invalid_root}" --target codex-home --summary-json --out-dir "${TMP_DIR}/targets-top-invalid-out" >"${targets_top_invalid_summary}" 2>"${TMP_DIR}/targets-top-invalid-summary.err"; then
   fail "targets-top-invalid manifest collector summary unexpectedly passed"
@@ -71,8 +68,7 @@ assert_collector_summary_failure_no_traceback "${targets_top_invalid_summary}" "
 
 adapters_top_invalid_root="${TMP_DIR}/adapters-top-invalid-root"
 mkdir -p "${adapters_top_invalid_root}/manifests"
-printf '{"targets":[]}\n' >"${adapters_top_invalid_root}/manifests/runtime_targets.json"
-printf '[]\n' >"${adapters_top_invalid_root}/manifests/runtime_health_adapters.json"
+printf '{"targets":[{"id":"codex-home","health_adapter":"codex-global-health"}],"health_adapters":{}}\n' >"${adapters_top_invalid_root}/manifests/runtime_targets.json"
 adapters_top_invalid_summary="${TMP_DIR}/adapters-top-invalid-summary.json"
 if "${COLLECTOR}" "${adapters_top_invalid_root}" --target codex-home --summary-json --out-dir "${TMP_DIR}/adapters-top-invalid-out" >"${adapters_top_invalid_summary}" 2>"${TMP_DIR}/adapters-top-invalid-summary.err"; then
   fail "adapters-top-invalid manifest collector summary unexpectedly passed"
@@ -82,7 +78,6 @@ assert_collector_summary_failure_no_traceback "${adapters_top_invalid_summary}" 
 schema_invalid_root="${TMP_DIR}/schema-invalid-root"
 mkdir -p "${schema_invalid_root}/manifests"
 printf '{"targets":{}}\n' >"${schema_invalid_root}/manifests/runtime_targets.json"
-printf '{"adapters":[]}\n' >"${schema_invalid_root}/manifests/runtime_health_adapters.json"
 schema_invalid_summary="${TMP_DIR}/schema-invalid-summary.json"
 if "${COLLECTOR}" "${schema_invalid_root}" --target codex-home --summary-json --out-dir "${TMP_DIR}/schema-invalid-out" >"${schema_invalid_summary}" 2>"${TMP_DIR}/schema-invalid-summary.err"; then
   fail "schema-invalid manifest collector summary unexpectedly passed"
@@ -92,7 +87,6 @@ assert_collector_summary_failure_no_traceback "${schema_invalid_summary}" "${TMP
 targets_entry_invalid_root="${TMP_DIR}/targets-entry-invalid-root"
 mkdir -p "${targets_entry_invalid_root}/manifests"
 printf '{"targets":["not-object"]}\n' >"${targets_entry_invalid_root}/manifests/runtime_targets.json"
-printf '{"adapters":[]}\n' >"${targets_entry_invalid_root}/manifests/runtime_health_adapters.json"
 targets_entry_invalid_summary="${TMP_DIR}/targets-entry-invalid-summary.json"
 if "${COLLECTOR}" "${targets_entry_invalid_root}" --target codex-home --summary-json --out-dir "${TMP_DIR}/targets-entry-invalid-out" >"${targets_entry_invalid_summary}" 2>"${TMP_DIR}/targets-entry-invalid-summary.err"; then
   fail "targets-entry-invalid manifest collector summary unexpectedly passed"
@@ -101,8 +95,7 @@ assert_collector_summary_failure_no_traceback "${targets_entry_invalid_summary}"
 
 adapters_schema_invalid_root="${TMP_DIR}/adapters-schema-invalid-root"
 mkdir -p "${adapters_schema_invalid_root}/manifests"
-printf '{"targets":[{"id":"codex-home","health_adapter":"codex-global-health"}]}\n' >"${adapters_schema_invalid_root}/manifests/runtime_targets.json"
-printf '{"adapters":{}}\n' >"${adapters_schema_invalid_root}/manifests/runtime_health_adapters.json"
+printf '{"targets":[{"id":"codex-home","health_adapter":"codex-global-health"}],"health_adapters":{}}\n' >"${adapters_schema_invalid_root}/manifests/runtime_targets.json"
 adapters_schema_invalid_summary="${TMP_DIR}/adapters-schema-invalid-summary.json"
 if "${COLLECTOR}" "${adapters_schema_invalid_root}" --target codex-home --summary-json --out-dir "${TMP_DIR}/adapters-schema-invalid-out" >"${adapters_schema_invalid_summary}" 2>"${TMP_DIR}/adapters-schema-invalid-summary.err"; then
   fail "adapters-schema-invalid manifest collector summary unexpectedly passed"
@@ -111,8 +104,7 @@ assert_collector_summary_failure_no_traceback "${adapters_schema_invalid_summary
 
 adapters_entry_invalid_root="${TMP_DIR}/adapters-entry-invalid-root"
 mkdir -p "${adapters_entry_invalid_root}/manifests"
-printf '{"targets":[{"id":"codex-home","health_adapter":"codex-global-health"}]}\n' >"${adapters_entry_invalid_root}/manifests/runtime_targets.json"
-printf '{"adapters":["not-object"]}\n' >"${adapters_entry_invalid_root}/manifests/runtime_health_adapters.json"
+printf '{"targets":[{"id":"codex-home","health_adapter":"codex-global-health"}],"health_adapters":["not-object"]}\n' >"${adapters_entry_invalid_root}/manifests/runtime_targets.json"
 adapters_entry_invalid_summary="${TMP_DIR}/adapters-entry-invalid-summary.json"
 if "${COLLECTOR}" "${adapters_entry_invalid_root}" --target codex-home --summary-json --out-dir "${TMP_DIR}/adapters-entry-invalid-out" >"${adapters_entry_invalid_summary}" 2>"${TMP_DIR}/adapters-entry-invalid-summary.err"; then
   fail "adapters-entry-invalid manifest collector summary unexpectedly passed"
