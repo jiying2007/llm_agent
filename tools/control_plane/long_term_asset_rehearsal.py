@@ -8,7 +8,6 @@ import sys
 from pathlib import Path
 from typing import Any
 
-POLICY_PATH = Path("manifests/long_term_asset_rehearsal.json")
 LTA_PATH = Path("manifests/long_term_asset_qualification.json")
 SCHEMA = "llm-agent-long-term-asset-rehearsal/v2"
 POLICY_SCHEMA = "llm-agent-long-term-asset-rehearsal-policy/v1"
@@ -51,7 +50,10 @@ def _git(root: Path, *args: str) -> str:
 
 
 def _policy(root: Path) -> dict[str, Any]:
-    policy = _load(root / POLICY_PATH, "rehearsal policy")
+    qualification = _load(root / LTA_PATH, "long-term asset qualification")
+    policy = qualification.get("rehearsal_policy")
+    if not isinstance(policy, dict):
+        raise RehearsalError("long-term asset qualification is missing rehearsal_policy")
     if policy.get("schema") != POLICY_SCHEMA or policy.get("enabled") is not True:
         raise RehearsalError("long-term rehearsal policy is disabled or unsupported")
     if policy.get("terminal_effect") != "none":
@@ -162,8 +164,10 @@ def rehearse(root: Path, scope: str) -> dict[str, Any]:
         "source": {
             "head": source_head,
             "tree": source_tree,
-            "policy": POLICY_PATH.as_posix(),
-            "policy_sha256": _sha256(root / POLICY_PATH),
+            "policy": LTA_PATH.as_posix() + "#rehearsal_policy",
+            "policy_sha256": hashlib.sha256(
+                json.dumps(policy, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+            ).hexdigest(),
         },
         "real_state": real_after,
         "worktree_unchanged": True,
