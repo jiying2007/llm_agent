@@ -76,6 +76,10 @@ projection = json.loads(projection_run.stdout)
 assert projection["status"] == "pass", projection
 assert projection["source"]["pin_consistent"] is True, projection
 assert projection["current_projection"]["consistent"] is True, projection
+assert projection["current_evidence_state"] == "source-current-evidence-historical", projection
+assert projection["release_authorized"] is False, projection
+assert projection["last_verified_baseline"]["source_inputs_match"] is False, projection
+assert projection["last_verified_baseline"]["fresh_for_current_source"] is False, projection
 
 completed = subprocess.run(
     ["bash", str(root / "scripts/software-m5.sh"), "certify", "--summary-json"],
@@ -85,9 +89,13 @@ completed = subprocess.run(
     stdout=subprocess.PIPE,
     stderr=subprocess.PIPE,
 )
-assert completed.returncode == 0, completed.stderr + completed.stdout
+assert completed.returncode != 0, completed.stderr + completed.stdout
 cert = json.loads(completed.stdout)
-assert cert["software_m5_certified"] is True and cert["declaration_status"] == "pass", cert
+assert cert["software_m5_certified"] is False, cert
+assert cert["declaration_status"] == "fail", cert
+assert cert["integrity_status"] == "fail", cert
+assert cert["blocking_gates"] == ["evidence_integrity"], cert
+assert "promotion evidence source.version does not match current candidate" in cert["error"], cert
 PY
 
-echo "[PASS] product maturity contracts declare and machine-verify production-qualified M5"
+echo "[PASS] Product M5 baseline is preserved while current 7.x source remains historical-not-authorized"
