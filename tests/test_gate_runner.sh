@@ -18,8 +18,19 @@ with open(sys.argv[1], encoding="utf-8") as handle:
 assert result["status"] == "pass", result
 assert [item["name"] for item in result["gates"]] == [
     "adk-pin",
+    "adk-interface",
+    "codex-pin",
+    "runtime-chain-pin",
     "gitlink-registry",
+    "reference-pins",
     "source-hygiene",
+    "status-projection",
+    "active-contracts",
+    "native-governance-contract",
+    "status-projection-regression",
+    "adk-promotion-transaction",
+    "current-status-source-split",
+    "ci-incremental-dag",
 ]
 assert all(item["status"] == "pass" for item in result["gates"])
 PY
