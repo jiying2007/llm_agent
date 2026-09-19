@@ -6,6 +6,24 @@ TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 cd "$ROOT"
 
+python3 - "$ROOT/scripts/check-adk-promotion-evidence.sh" <<'PY'
+from pathlib import Path
+import sys
+
+text = Path(sys.argv[1]).read_text(encoding="utf-8")
+required = (
+    "cosign verify-blob",
+    "--use-signed-timestamps",
+    "--bundle \"$ATTESTATION\"",
+    "--certificate-identity 'https://github.com/jiying2007/agent-dev-kit/.github/workflows/ci.yml@refs/heads/main'",
+    "--certificate-oidc-issuer 'https://token.actions.githubusercontent.com'",
+)
+for token in required:
+    assert token in text, token
+for retired in ("cosign initialize", "trusted_root.json", "--trusted-root", "--new-bundle-format"):
+    assert retired not in text, retired
+PY
+
 python - "$TMP" <<'PY'
 import datetime as dt
 import json
