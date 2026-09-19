@@ -17,7 +17,14 @@ _SURFACES = {
     "evidence_graph_schema": "schemas/evidence-graph-v1.schema.json",
     "runtime_control_schema": "schemas/runtime-control-decision-v2.schema.json",
 }
-_DEPRECATED = ["manifest.yaml", "tests/test_product_maturity_v4.sh", "tests/test_product_maturity_v5.sh"]
+_DEPRECATED = [
+    "manifest.yaml",
+    "tests/test_product_maturity_v4.sh",
+    "tests/test_product_maturity_v5.sh",
+    "tests/test_runtime_control.sh",
+    "tests/test_runtime_control.py",
+    "src/agent_dev_kit/runtime_control",
+]
 
 
 def _read_lock(path: Path) -> dict[str, str]:
