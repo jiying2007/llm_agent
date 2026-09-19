@@ -1,21 +1,25 @@
 {
   "schema": "llm-agent-adk-interface-lock/v1",
-  "version": "5.2.0",
-  "commit": "fb8951ef8dc9647d684b0c5a66361a8051a86f7e",
-  "tree": "42e7f599ba84cea45e542454c3f9494206bcf36a",
-  "manifest_blob": "7ba1c0502bb4018e25ca922f841884a10866c977",
+  "version": "7.0.4",
+  "commit": "1d6c28e89eb98a4af5ac978707730783f0c84437",
+  "tree": "c5b8fa7b11a81597ac2c7cd6fb44d7abf9605137",
+  "manifest_blob": "a5e5963545318c4a4498cda0d49d10f08c5f6412",
   "manifest_mode": "json-only",
   "maturity_contract": "v5",
   "surfaces": {
     "manifest": "manifest.json",
-    "maturity_test": "tests/test_product_maturity_v5.sh",
+    "maturity_test": "tests/test_product_maturity.sh",
     "target_contract_schema": "manifests/target-contract.schema.json",
     "evidence_graph_schema": "schemas/evidence-graph-v1.schema.json",
     "runtime_control_schema": "schemas/runtime-control-decision-v2.schema.json"
   },
   "deprecated_surfaces": [
     "manifest.yaml",
-    "tests/test_product_maturity_v4.sh"
+    "tests/test_product_maturity_v4.sh",
+    "tests/test_product_maturity_v5.sh",
+    "tests/test_runtime_control.sh",
+    "tests/test_runtime_control.py",
+    "src/agent_dev_kit/runtime_control"
   ],
-  "updated_at": "2026-09-18"
+  "updated_at": "2026-09-19"
 }

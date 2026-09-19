@@ -37,7 +37,7 @@ for line in Path(sys.argv[3]).read_text(encoding="utf-8").splitlines():
         lock[key] = value
 
 assert result == receipt, (result, receipt)
-assert result["schema"] == "llm-agent-adk-promotion/v3", result
+assert result["schema"] == "llm-agent-adk-promotion/v4", result
 assert result["status"] == "planned", result
 assert result["mode"] == "dry-run", result
 assert result["candidate"]["commit"] == lock["agent-dev-kit.commit"], result

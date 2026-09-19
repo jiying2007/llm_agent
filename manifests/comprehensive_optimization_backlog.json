@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "status": "active",
-  "last_updated": "2026-09-11",
+  "last_updated": "2026-09-19",
   "review_after": "2026-10-11",
   "purpose": "Machine-readable terminal optimization backlog for llm_agent and agent-dev-kit architecture governance. The current source report is selected through manifests/report_registry.json so the backlog can evolve without rewriting historical reports.",
   "source_report": "reports/architecture/llm-agent-adk-target-architecture-2026-07-30.md",
@@ -33,8 +33,12 @@
       {
         "id": "root-script-count",
         "metric": "file_count",
-        "scope_paths": ["scripts"],
-        "include_patterns": ["*.sh"],
+        "scope_paths": [
+          "scripts"
+        ],
+        "include_patterns": [
+          "*.sh"
+        ],
         "exclude_prefixes": [],
         "baseline": 89,
         "warning_limit": 92,
@@ -45,9 +49,17 @@
       {
         "id": "root-report-count",
         "metric": "file_count",
-        "scope_paths": ["reports"],
-        "include_patterns": ["*.md", "*.json", "*.jsonl"],
-        "exclude_prefixes": ["reports/runtime-evidence"],
+        "scope_paths": [
+          "reports"
+        ],
+        "include_patterns": [
+          "*.md",
+          "*.json",
+          "*.jsonl"
+        ],
+        "exclude_prefixes": [
+          "reports/runtime-evidence"
+        ],
         "baseline": 284,
         "warning_limit": 320,
         "hard_limit": 400,
@@ -57,8 +69,15 @@
       {
         "id": "root-manifest-count",
         "metric": "file_count",
-        "scope_paths": ["manifests"],
-        "include_patterns": ["*.json", "*.jsonl", "*.yaml", "*.yml"],
+        "scope_paths": [
+          "manifests"
+        ],
+        "include_patterns": [
+          "*.json",
+          "*.jsonl",
+          "*.yaml",
+          "*.yml"
+        ],
         "exclude_prefixes": [],
         "baseline": 15,
         "warning_limit": 20,
@@ -69,8 +88,12 @@
       {
         "id": "root-largest-shell-lines",
         "metric": "max_lines",
-        "scope_paths": ["scripts"],
-        "include_patterns": ["*.sh"],
+        "scope_paths": [
+          "scripts"
+        ],
+        "include_patterns": [
+          "*.sh"
+        ],
         "exclude_prefixes": [],
         "baseline": 666,
         "warning_limit": 750,
@@ -81,8 +104,12 @@
       {
         "id": "root-largest-python-lines",
         "metric": "max_lines",
-        "scope_paths": ["tools/codex_assets"],
-        "include_patterns": ["*.py"],
+        "scope_paths": [
+          "tools/codex_assets"
+        ],
+        "include_patterns": [
+          "*.py"
+        ],
         "exclude_prefixes": [],
         "baseline": 2078,
         "warning_limit": 2200,
@@ -93,8 +120,12 @@
       {
         "id": "adk-largest-shell-lines",
         "metric": "max_lines",
-        "scope_paths": ["agent-dev-kit/scripts"],
-        "include_patterns": ["*.sh"],
+        "scope_paths": [
+          "agent-dev-kit/scripts"
+        ],
+        "include_patterns": [
+          "*.sh"
+        ],
         "exclude_prefixes": [],
         "baseline": 1745,
         "warning_limit": 1850,
@@ -105,8 +136,12 @@
       {
         "id": "adk-largest-python-lines",
         "metric": "max_lines",
-        "scope_paths": ["agent-dev-kit/src/agent_dev_kit"],
-        "include_patterns": ["*.py"],
+        "scope_paths": [
+          "agent-dev-kit/src/agent_dev_kit"
+        ],
+        "include_patterns": [
+          "*.py"
+        ],
         "exclude_prefixes": [],
         "baseline": 1054,
         "warning_limit": 1150,
@@ -117,8 +152,12 @@
       {
         "id": "root-python-import-fan-out",
         "metric": "max_import_fan_out",
-        "scope_paths": ["tools/codex_assets"],
-        "include_patterns": ["*.py"],
+        "scope_paths": [
+          "tools/codex_assets"
+        ],
+        "include_patterns": [
+          "*.py"
+        ],
         "exclude_prefixes": [],
         "baseline": 17,
         "warning_limit": 20,
@@ -129,8 +168,12 @@
       {
         "id": "adk-python-import-fan-out",
         "metric": "max_import_fan_out",
-        "scope_paths": ["agent-dev-kit/src/agent_dev_kit"],
-        "include_patterns": ["*.py"],
+        "scope_paths": [
+          "agent-dev-kit/src/agent_dev_kit"
+        ],
+        "include_patterns": [
+          "*.py"
+        ],
         "exclude_prefixes": [],
         "baseline": 24,
         "warning_limit": 28,
@@ -141,8 +184,14 @@
       {
         "id": "root-exact-code-duplication",
         "metric": "duplicate_content_groups",
-        "scope_paths": ["scripts", "tools/codex_assets"],
-        "include_patterns": ["*.sh", "*.py"],
+        "scope_paths": [
+          "scripts",
+          "tools/codex_assets"
+        ],
+        "include_patterns": [
+          "*.sh",
+          "*.py"
+        ],
         "exclude_prefixes": [],
         "baseline": 0,
         "warning_limit": 1,
@@ -153,8 +202,15 @@
       {
         "id": "adk-exact-code-duplication",
         "metric": "duplicate_content_groups",
-        "scope_paths": ["agent-dev-kit/src/agent_dev_kit", "agent-dev-kit/scripts", "agent-dev-kit/tests"],
-        "include_patterns": ["*.py", "*.sh"],
+        "scope_paths": [
+          "agent-dev-kit/src/agent_dev_kit",
+          "agent-dev-kit/scripts",
+          "agent-dev-kit/tests"
+        ],
+        "include_patterns": [
+          "*.py",
+          "*.sh"
+        ],
         "exclude_prefixes": [],
         "baseline": 0,
         "warning_limit": 2,
@@ -216,9 +272,19 @@
       "terminal_outcome": "Every cross-repo goal has a goal statement, non-goal boundary, maturity level, stop condition, and completion evidence.",
       "design_status": "landed",
       "implementation_status": "done",
-      "implementation_targets": ["architecture report template", "current-status update rules", "goal closure fields"],
-      "verification": ["rtk scripts/check-architecture-reports.sh . --summary-json", "rtk scripts/check-current-status-consistency.sh . --summary-json"],
-      "implementation_evidence": ["docs/product-maturity-model.md", "manifests/product_maturity_scorecard.json"]
+      "implementation_targets": [
+        "architecture report template",
+        "current-status update rules",
+        "goal closure fields"
+      ],
+      "verification": [
+        "rtk scripts/check-architecture-reports.sh . --summary-json",
+        "rtk scripts/check-current-status-consistency.sh . --summary-json"
+      ],
+      "implementation_evidence": [
+        "docs/product-maturity-model.md",
+        "manifests/product_maturity_scorecard.json"
+      ]
     },
     {
       "id": "G2",
@@ -227,9 +293,20 @@
       "terminal_outcome": "Registry, adoption, lifecycle, dirty baseline, and Hub candidate state claims do not contradict each other.",
       "design_status": "landed",
       "implementation_status": "done",
-      "implementation_targets": ["root reports", "lifecycle gates", "adoption gates"],
-      "verification": ["rtk scripts/check-practice-intake.sh .", "rtk scripts/check-adoption-matrix-structured.sh .", "rtk scripts/check-subrepo-state.sh . --summary-json"],
-      "implementation_evidence": ["tools/codex_assets/practice_intake.py", "tools/codex_assets/reference_repository.py"]
+      "implementation_targets": [
+        "root reports",
+        "lifecycle gates",
+        "adoption gates"
+      ],
+      "verification": [
+        "rtk scripts/check-practice-intake.sh .",
+        "rtk scripts/check-adoption-matrix-structured.sh .",
+        "rtk scripts/check-subrepo-state.sh . --summary-json"
+      ],
+      "implementation_evidence": [
+        "tools/codex_assets/practice_intake.py",
+        "tools/codex_assets/reference_repository.py"
+      ]
     },
     {
       "id": "G3",
@@ -238,9 +315,19 @@
       "terminal_outcome": "Every complete, applied, archived, or promoted claim is tied to command-level evidence and at least one negative or before-fix record.",
       "design_status": "landed",
       "implementation_status": "done",
-      "implementation_targets": ["Evidence Index", "evidence bundle", "completion audit"],
-      "verification": ["rtk scripts/check-evidence-bundle.sh .", "rtk scripts/check-all.sh --quick"],
-      "implementation_evidence": ["agent-dev-kit/docs/changes/adk-v3-product-maturity/negative-results.md", "agent-dev-kit/docs/changes/adk-v3-product-maturity/verify-report.md"]
+      "implementation_targets": [
+        "Evidence Index",
+        "evidence bundle",
+        "completion audit"
+      ],
+      "verification": [
+        "rtk scripts/check-evidence-bundle.sh .",
+        "rtk scripts/check-all.sh --quick"
+      ],
+      "implementation_evidence": [
+        "agent-dev-kit/docs/changes/adk-v3-product-maturity/negative-results.md",
+        "agent-dev-kit/docs/changes/adk-v3-product-maturity/verify-report.md"
+      ]
     },
     {
       "id": "G4",
@@ -249,9 +336,20 @@
       "terminal_outcome": "ADK capability gaps are closed by enhancing existing agents, skills, or workflows instead of creating parallel skills by default.",
       "design_status": "landed",
       "implementation_status": "done",
-      "implementation_targets": ["agent-dev-kit/manifest.json", "routing matrix", "capability health report"],
-      "verification": ["rtk bash agent-dev-kit/scripts/devkit.sh capability health --summary-json", "rtk scripts/check-skill-routing-conflicts.sh .", "rtk bash agent-dev-kit/scripts/devkit.sh workflow-closure --profile core --summary-json"],
-      "implementation_evidence": ["agent-dev-kit/manifest.json", "agent-dev-kit/src/agent_dev_kit/cli.py"]
+      "implementation_targets": [
+        "agent-dev-kit/manifest.json",
+        "routing matrix",
+        "capability health report"
+      ],
+      "verification": [
+        "rtk bash agent-dev-kit/scripts/devkit.sh capability health --summary-json",
+        "rtk scripts/check-skill-routing-conflicts.sh .",
+        "rtk bash agent-dev-kit/scripts/devkit.sh workflow-closure --profile core --summary-json"
+      ],
+      "implementation_evidence": [
+        "agent-dev-kit/manifest.json",
+        "agent-dev-kit/src/agent_dev_kit/cli.py"
+      ]
     },
     {
       "id": "G5",
@@ -260,9 +358,19 @@
       "terminal_outcome": "Default entrypoints stay short, deep evidence is read on demand, and new reports prefer summary-json gates.",
       "design_status": "landed",
       "implementation_status": "done",
-      "implementation_targets": ["reports/current-status.md", "scripts/README.md", "token budget gate"],
-      "verification": ["rtk scripts/check-token-budget.sh . --summary-json", "rtk rg -n \"summary-json|current-status\" reports scripts"],
-      "implementation_evidence": ["agent-dev-kit/src/agent_dev_kit/quality.py", "agent-dev-kit/docs/changes/adk-v3-product-maturity/benchmark.json"]
+      "implementation_targets": [
+        "reports/current-status.md",
+        "scripts/README.md",
+        "token budget gate"
+      ],
+      "verification": [
+        "rtk scripts/check-token-budget.sh . --summary-json",
+        "rtk rg -n \"summary-json|current-status\" reports scripts"
+      ],
+      "implementation_evidence": [
+        "agent-dev-kit/src/agent_dev_kit/quality.py",
+        "agent-dev-kit/docs/changes/adk-v3-product-maturity/benchmark.json"
+      ]
     },
     {
       "id": "G6",
@@ -271,9 +379,19 @@
       "terminal_outcome": "Long-term design, current state, execution plan, and knowledge candidates each have one canonical entrypoint.",
       "design_status": "landed",
       "implementation_status": "done",
-      "implementation_targets": ["reports/architecture/README.md", "reports/current-status.md", "Hub candidate policy"],
-      "verification": ["rtk scripts/check-doc-sync.sh .", "rtk scripts/check-current-status-consistency.sh . --summary-json"],
-      "implementation_evidence": ["manifests/report_registry.json", "reports/architecture/README.md"]
+      "implementation_targets": [
+        "reports/architecture/README.md",
+        "reports/current-status.md",
+        "Hub candidate policy"
+      ],
+      "verification": [
+        "rtk scripts/check-doc-sync.sh .",
+        "rtk scripts/check-current-status-consistency.sh . --summary-json"
+      ],
+      "implementation_evidence": [
+        "manifests/report_registry.json",
+        "reports/architecture/README.md"
+      ]
     },
     {
       "id": "G7",
@@ -282,9 +400,21 @@
       "terminal_outcome": "New runtimes, reference sources, and profiles enter candidate or dry-run state before becoming active.",
       "design_status": "landed",
       "implementation_status": "done",
-      "implementation_targets": ["runtime target registry", "unified external-practice intake", "independent adoption decision"],
-      "verification": ["rtk scripts/check-runtime-targets.sh . --summary-json", "rtk scripts/check-practice-intake.sh .", "rtk scripts/check-reference-repository-registration.sh ."],
-      "implementation_evidence": ["manifests/external_practice_sources.json", "agent-dev-kit/manifest.json", "agent-dev-kit/scripts/check-runtime-boundary.sh"]
+      "implementation_targets": [
+        "runtime target registry",
+        "unified external-practice intake",
+        "independent adoption decision"
+      ],
+      "verification": [
+        "rtk scripts/check-runtime-targets.sh . --summary-json",
+        "rtk scripts/check-practice-intake.sh .",
+        "rtk scripts/check-reference-repository-registration.sh ."
+      ],
+      "implementation_evidence": [
+        "manifests/external_practice_sources.json",
+        "agent-dev-kit/manifest.json",
+        "agent-dev-kit/scripts/check-runtime-boundary.sh"
+      ]
     },
     {
       "id": "G8",
@@ -293,9 +423,19 @@
       "terminal_outcome": "Operators can reach the correct runbook, skill, and verification command from low-token entrypoints.",
       "design_status": "landed",
       "implementation_status": "done",
-      "implementation_targets": ["root README/AGENTS", "ADK docs/workflows", "agent-skill catalog"],
-      "verification": ["rtk scripts/check-agents-coverage.sh .", "rtk bash agent-dev-kit/tests/test_templates.sh"],
-      "implementation_evidence": ["agent-dev-kit/docs/commands.md", "agent-dev-kit/scripts/devkit.sh"]
+      "implementation_targets": [
+        "root README/AGENTS",
+        "ADK docs/workflows",
+        "agent-skill catalog"
+      ],
+      "verification": [
+        "rtk scripts/check-agents-coverage.sh .",
+        "rtk bash agent-dev-kit/tests/test_templates.sh"
+      ],
+      "implementation_evidence": [
+        "agent-dev-kit/docs/commands.md",
+        "agent-dev-kit/scripts/devkit.sh"
+      ]
     },
     {
       "id": "G9",
@@ -304,9 +444,18 @@
       "terminal_outcome": "High-value conclusions generate sanitized candidates, and active or archive promotion requires owner review.",
       "design_status": "landed",
       "implementation_status": "in_progress",
-      "implementation_targets": ["architecture knowledge candidate", "Hub dry-run evidence", "Hub status evidence"],
-      "verification": ["rtk bash ~/knowledge-hub/tools/knowledge-promote.sh --id llm-agent-adk-target-architecture --target projects/llm-agent --dry-run --json", "rtk bash ~/knowledge-hub/tools/knowledge-status.sh --json --review-queue-limit 5"],
-      "implementation_evidence": ["manifests/product_maturity_task_pack.json"]
+      "implementation_targets": [
+        "architecture knowledge candidate",
+        "Hub dry-run evidence",
+        "Hub status evidence"
+      ],
+      "verification": [
+        "rtk bash ~/knowledge-hub/tools/knowledge-promote.sh --id llm-agent-adk-target-architecture --target projects/llm-agent --dry-run --json",
+        "rtk bash ~/knowledge-hub/tools/knowledge-status.sh --json --review-queue-limit 5"
+      ],
+      "implementation_evidence": [
+        "manifests/product_maturity_task_pack.json"
+      ]
     },
     {
       "id": "G10",
@@ -315,9 +464,19 @@
       "terminal_outcome": "Source-to-live, Hub promotion, and reference cleanup have separate approval points and rollback or stop conditions.",
       "design_status": "landed",
       "implementation_status": "in_progress",
-      "implementation_targets": ["runtime delivery contract", "knowledge promotion contract", "removal plan"],
-      "verification": ["rtk scripts/check-runtime-target-evidence-index.sh .", "rtk scripts/check-reference-repository-removal.sh ."],
-      "implementation_evidence": ["agent-dev-kit/src/agent_dev_kit/installer.py", "agent-dev-kit/src/agent_dev_kit/release.py"]
+      "implementation_targets": [
+        "runtime delivery contract",
+        "knowledge promotion contract",
+        "removal plan"
+      ],
+      "verification": [
+        "rtk scripts/check-runtime-target-evidence-index.sh .",
+        "rtk scripts/check-reference-repository-removal.sh ."
+      ],
+      "implementation_evidence": [
+        "agent-dev-kit/src/agent_dev_kit/installer.py",
+        "agent-dev-kit/src/agent_dev_kit/release.py"
+      ]
     },
     {
       "id": "G11",
@@ -326,9 +485,21 @@
       "terminal_outcome": "The report registry, current-state checks, and optimization backlog can advance to a new current report without hard-coded report paths or a fixed G1-G10 ceiling.",
       "design_status": "landed",
       "implementation_status": "done",
-      "implementation_targets": ["report registry driven current report", "extensible sequential optimization item validation", "historical report immutability"],
-      "verification": ["rtk scripts/check-architecture-reports.sh . --summary-json", "rtk tests/test_architecture_reports.sh", "rtk tests/test_current_status_consistency.sh"],
-      "implementation_evidence": ["scripts/check-architecture-reports.sh", "scripts/check-current-status-consistency.sh", "manifests/report_registry.json"]
+      "implementation_targets": [
+        "report registry driven current report",
+        "extensible sequential optimization item validation",
+        "historical report immutability"
+      ],
+      "verification": [
+        "rtk scripts/check-architecture-reports.sh . --summary-json",
+        "rtk tests/test_architecture_reports.sh",
+        "rtk tests/test_current_status_consistency.sh"
+      ],
+      "implementation_evidence": [
+        "scripts/check-architecture-reports.sh",
+        "scripts/check-current-status-consistency.sh",
+        "manifests/report_registry.json"
+      ]
     },
     {
       "id": "G12",
@@ -337,9 +508,26 @@
       "terminal_outcome": "Root and ADK governance surfaces have measured growth budgets, named hotspots, and an evidence-led consolidation queue instead of unbounded scripts, manifests, reports, and oversized modules.",
       "design_status": "landed",
       "implementation_status": "done",
-      "implementation_targets": ["maintainability trend baseline", "thin shell wrappers over typed core", "report retention and supersession policy"],
-      "verification": ["rtk scripts/check-maintainability-budgets.sh --strict --summary-json", "rtk tests/test_maintainability_budgets.sh", "rtk scripts/health-check.sh --summary-json", "rtk scripts/check-token-budget.sh . --summary-json", "rtk scripts/check-doc-sync.sh ."],
-      "implementation_evidence": ["tools/codex_assets/maintainability_budget.py", "scripts/check-maintainability-budgets.sh", "tests/test_maintainability_budgets.sh", "reports/architecture/llm-agent-adk-target-architecture-2026-07-30.md", "scripts/health-check.sh", "agent-dev-kit/src/agent_dev_kit/cli.py"]
+      "implementation_targets": [
+        "maintainability trend baseline",
+        "thin shell wrappers over typed core",
+        "report retention and supersession policy"
+      ],
+      "verification": [
+        "rtk scripts/check-maintainability-budgets.sh --strict --summary-json",
+        "rtk tests/test_maintainability_budgets.sh",
+        "rtk scripts/health-check.sh --summary-json",
+        "rtk scripts/check-token-budget.sh . --summary-json",
+        "rtk scripts/check-doc-sync.sh ."
+      ],
+      "implementation_evidence": [
+        "tools/codex_assets/maintainability_budget.py",
+        "scripts/check-maintainability-budgets.sh",
+        "tests/test_maintainability_budgets.sh",
+        "reports/architecture/llm-agent-adk-target-architecture-2026-07-30.md",
+        "scripts/health-check.sh",
+        "agent-dev-kit/src/agent_dev_kit/cli.py"
+      ]
     },
     {
       "id": "G13",
@@ -348,9 +536,22 @@
       "terminal_outcome": "Every release-grade validation runs on a declared Python and dependency baseline, while unsupported local environments fail clearly without being mistaken for release evidence.",
       "design_status": "landed",
       "implementation_status": "in_progress",
-      "implementation_targets": ["reviewed Python 3.11 or 3.12 execution path", "reproducible dependency environment", "doctor evidence before release claims"],
-      "verification": ["rtk bash agent-dev-kit/scripts/devkit.sh doctor --summary-json", "rtk bash agent-dev-kit/scripts/run-local-ci-parity.sh --python all --mode full"],
-      "implementation_evidence": ["agent-dev-kit/pyproject.toml", "agent-dev-kit/scripts/run-local-ci-parity.sh", "agent-dev-kit/docs/commands.md", "agent-dev-kit/docs/runbooks/local-ci-parity.md", "agent-dev-kit/docs/changes/official-model-catalog-freshness-2026-07-30/verify-report.md"]
+      "implementation_targets": [
+        "reviewed Python 3.11 or 3.12 execution path",
+        "reproducible dependency environment",
+        "doctor evidence before release claims"
+      ],
+      "verification": [
+        "rtk bash agent-dev-kit/scripts/devkit.sh doctor --summary-json",
+        "rtk bash agent-dev-kit/scripts/run-local-ci-parity.sh --python all --mode full"
+      ],
+      "implementation_evidence": [
+        "agent-dev-kit/pyproject.toml",
+        "agent-dev-kit/scripts/run-local-ci-parity.sh",
+        "agent-dev-kit/docs/commands.md",
+        "agent-dev-kit/docs/runbooks/local-ci-parity.md",
+        "agent-dev-kit/docs/changes/official-model-catalog-freshness-2026-07-30/verify-report.md"
+      ]
     },
     {
       "id": "G14",
@@ -360,9 +561,22 @@
       "design_status": "landed",
       "implementation_status": "blocked",
       "blocking_condition": "Claude authentication, independent repositories, a second human operator, a 30-day observation window, and required field events are external evidence gaps that cannot be simulated.",
-      "implementation_targets": ["real direct-target runtime smoke", "dual-runtime effectiveness campaign", "independent 30-day pilot and field evidence"],
-      "verification": ["rtk scripts/check-software-m5-readiness.sh . --summary-json", "rtk scripts/software-m5.sh status --summary-json", "rtk bash agent-dev-kit/scripts/devkit.sh target check --all --level static --summary-json"],
-      "implementation_evidence": ["manifests/product_maturity_scorecard.json", "manifests/software_m5_policy.json", "manifests/software_m5_pilot_ledger.json", "reports/architecture/g14-g15-runtime-field-handoff-2026-07-30.md"]
+      "implementation_targets": [
+        "real direct-target runtime smoke",
+        "dual-runtime effectiveness campaign",
+        "independent 30-day pilot and field evidence"
+      ],
+      "verification": [
+        "rtk scripts/check-software-m5-readiness.sh . --summary-json",
+        "rtk scripts/software-m5.sh status --summary-json",
+        "rtk bash agent-dev-kit/scripts/devkit.sh target check --all --level static --summary-json"
+      ],
+      "implementation_evidence": [
+        "manifests/product_maturity_scorecard.json",
+        "manifests/software_m5_policy.json",
+        "manifests/software_m5_pilot_ledger.json",
+        "reports/architecture/g14-g15-runtime-field-handoff-2026-07-30.md"
+      ]
     },
     {
       "id": "G15",
@@ -372,9 +586,25 @@
       "design_status": "landed",
       "implementation_status": "blocked",
       "blocking_condition": "Repository ownership and freshness metadata are implemented, but a named backup reviewer and a real second-operator maintenance rehearsal require another human and cannot be self-attested.",
-      "implementation_targets": ["owner and reviewer coverage", "CODEOWNERS or equivalent ownership contract", "second-operator maintenance rehearsal"],
-      "verification": ["rtk bash agent-dev-kit/scripts/devkit.sh harness readiness --root agent-dev-kit --summary-json", "rtk scripts/check-current-status-consistency.sh . --summary-json", "rtk scripts/check-software-m5-readiness.sh . --summary-json"],
-      "implementation_evidence": ["agent-dev-kit/OWNERS", "agent-dev-kit/.adk/harness-readiness.json", "agent-dev-kit/docs/changes/adk-self-readiness-ownership/verify-report.md", "reports/architecture/g14-g15-runtime-field-handoff-2026-07-30.md", "agent-dev-kit/manifests/harness_readiness_contracts.json", "manifests/product_maturity_task_pack.json", "manifests/software_m5_policy.json"]
+      "implementation_targets": [
+        "owner and reviewer coverage",
+        "CODEOWNERS or equivalent ownership contract",
+        "second-operator maintenance rehearsal"
+      ],
+      "verification": [
+        "rtk bash agent-dev-kit/scripts/devkit.sh harness readiness --root agent-dev-kit --summary-json",
+        "rtk scripts/check-current-status-consistency.sh . --summary-json",
+        "rtk scripts/check-software-m5-readiness.sh . --summary-json"
+      ],
+      "implementation_evidence": [
+        "agent-dev-kit/OWNERS",
+        "agent-dev-kit/.adk/harness-readiness.json",
+        "agent-dev-kit/docs/changes/adk-self-readiness-ownership/verify-report.md",
+        "reports/architecture/g14-g15-runtime-field-handoff-2026-07-30.md",
+        "agent-dev-kit/manifests/harness_readiness_contracts.json",
+        "manifests/product_maturity_task_pack.json",
+        "manifests/software_m5_policy.json"
+      ]
     },
     {
       "id": "G16",
@@ -383,9 +613,28 @@
       "terminal_outcome": "Promoted official-source contracts have current retrieval evidence, expiry, review status, and a deliberate keep, update, supersede, or retire decision.",
       "design_status": "landed",
       "implementation_status": "done",
-      "implementation_targets": ["official source revalidation", "freshness decision evidence", "strict validation recovery"],
-      "verification": ["rtk bash agent-dev-kit/scripts/devkit.sh official-docs-governance --summary-json", "rtk bash agent-dev-kit/scripts/devkit.sh validate --strict --summary-json", "rtk tests/test_official_docs_adoption_review.sh", "rtk bash agent-dev-kit/tests/test_official_docs_governance.sh", "rtk bash agent-dev-kit/tests/test_agent_ecosystem_standards.sh"],
-      "implementation_evidence": ["agent-dev-kit/manifests/official_docs_freshness_gates.json", "agent-dev-kit/scripts/check-official-docs-governance.sh", "agent-dev-kit/docs/runbooks/official-docs-governance.md", "agent-dev-kit/docs/changes/official-model-catalog-freshness-2026-07-30/proposal.md", "reports/external-practice-targeted-decisions-2026-07-30.jsonl", "agent-dev-kit/manifests/external_agent_pattern_contracts.json", "agent-dev-kit/docs/changes/mcp-2026-final-metadata-refresh-2026-07-30/proposal.md", "agent-dev-kit/docs/changes/official-source-toolchain-refresh-20260830/source-review.md"]
+      "implementation_targets": [
+        "official source revalidation",
+        "freshness decision evidence",
+        "strict validation recovery"
+      ],
+      "verification": [
+        "rtk bash agent-dev-kit/scripts/devkit.sh official-docs-governance --summary-json",
+        "rtk bash agent-dev-kit/scripts/devkit.sh validate --strict --summary-json",
+        "rtk tests/test_official_docs_adoption_review.sh",
+        "rtk bash agent-dev-kit/tests/test_official_docs_governance.sh",
+        "rtk bash agent-dev-kit/tests/test_agent_ecosystem_standards.sh"
+      ],
+      "implementation_evidence": [
+        "agent-dev-kit/manifests/official_docs_freshness_gates.json",
+        "agent-dev-kit/scripts/check-official-docs-governance.sh",
+        "agent-dev-kit/docs/runbooks/official-docs-governance.md",
+        "agent-dev-kit/docs/changes/official-model-catalog-freshness-2026-07-30/proposal.md",
+        "reports/external-practice-targeted-decisions-2026-07-30.jsonl",
+        "agent-dev-kit/manifests/external_agent_pattern_contracts.json",
+        "agent-dev-kit/docs/changes/mcp-2026-final-metadata-refresh-2026-07-30/proposal.md",
+        "agent-dev-kit/docs/changes/official-source-toolchain-refresh-20260830/source-review.md"
+      ]
     },
     {
       "id": "G17",
@@ -394,9 +643,21 @@
       "terminal_outcome": "Task mode, negation, mutation permission, risk, profile availability and abstention are resolved from one fail-closed routing IR without unsafe permission escalation.",
       "design_status": "landed",
       "implementation_status": "in_progress",
-      "implementation_targets": ["routing-ir/v2", "contrastive negation and abstain regression", "routing to Runtime Control artifact-mode mapping"],
-      "verification": ["rtk bash agent-dev-kit/tests/test_match_effectiveness.sh", "rtk bash agent-dev-kit/tests/test_boundary_conditions_match.sh", "rtk bash agent-dev-kit/tests/test_product_maturity_v5.sh"],
-      "implementation_evidence": ["agent-dev-kit/src/agent_dev_kit/matcher.py", "agent-dev-kit/docs/changes/routing-ir-v2/", "agent-dev-kit/manifests/manifest.schema.json"]
+      "implementation_targets": [
+        "routing-ir/v2",
+        "contrastive negation and abstain regression",
+        "routing to Runtime Control artifact-mode mapping"
+      ],
+      "verification": [
+        "rtk bash agent-dev-kit/tests/test_match_effectiveness.sh",
+        "rtk bash agent-dev-kit/tests/test_boundary_conditions_match.sh",
+        "rtk bash agent-dev-kit/tests/test_product_maturity.sh"
+      ],
+      "implementation_evidence": [
+        "agent-dev-kit/src/agent_dev_kit/matcher.py",
+        "agent-dev-kit/docs/changes/routing-ir-v2/",
+        "agent-dev-kit/manifests/manifest.schema.json"
+      ]
     },
     {
       "id": "G18",
@@ -405,20 +666,46 @@
       "terminal_outcome": "Core exports only platform-neutral agents, skills and workflows while embedded-fullstack owns every driver, BSP, RTOS, C/C++, SIL/HIL and field-only asset.",
       "design_status": "landed",
       "implementation_status": "in_progress",
-      "implementation_targets": ["core and embedded capability closure", "platform-neutral test strategy", "embedded-only matrix and target export boundary"],
-      "verification": ["rtk bash agent-dev-kit/tests/test_profile_coherence.sh", "rtk bash agent-dev-kit/tests/test_target_contracts.sh", "rtk bash agent-dev-kit/tests/test_asset_taxonomy.sh"],
-      "implementation_evidence": ["agent-dev-kit/manifest.json", "agent-dev-kit/scripts/check-profile-coherence.sh", "agent-dev-kit/skills/adk-test-strategy/SKILL.md", "agent-dev-kit/skills/adk-unit-test-embedded/references/embedded-tdd-matrix.md"]
+      "implementation_targets": [
+        "core and embedded capability closure",
+        "platform-neutral test strategy",
+        "embedded-only matrix and target export boundary"
+      ],
+      "verification": [
+        "rtk bash agent-dev-kit/tests/test_profile_coherence.sh",
+        "rtk bash agent-dev-kit/tests/test_target_contracts.sh",
+        "rtk bash agent-dev-kit/tests/test_asset_taxonomy.sh"
+      ],
+      "implementation_evidence": [
+        "agent-dev-kit/manifest.json",
+        "agent-dev-kit/scripts/check-profile-coherence.sh",
+        "agent-dev-kit/skills/adk-test-strategy/SKILL.md",
+        "agent-dev-kit/skills/adk-unit-test-embedded/references/embedded-tdd-matrix.md"
+      ]
     },
     {
       "id": "G19",
       "priority": "P0",
       "optimization_area": "Workflow and runtime completion semantics",
-      "terminal_outcome": "Workflow nodes, I/O, transitions, failure, cancellation, rollback and evidence are compiled into a strict IR, and Runtime Control applies task-mode-specific artifact gates without bypassing completion evidence.",
+      "terminal_outcome": "Workflow nodes, I/O, transitions, failure, cancellation, rollback and evidence are compiled into a strict IR, and Execution Policy applies task-mode-specific artifact gates without bypassing completion evidence.",
       "design_status": "landed",
       "implementation_status": "in_progress",
-      "implementation_targets": ["adk-workflow-ir/v2", "runtime_control.policy/v2", "body projection and completion guard regression"],
-      "verification": ["rtk bash agent-dev-kit/tests/test_workflow_ir.sh", "rtk bash agent-dev-kit/tests/test_runtime_control.sh", "rtk bash agent-dev-kit/tests/test_workflow_closure.sh"],
-      "implementation_evidence": ["agent-dev-kit/src/agent_dev_kit/workflow_ir.py", "agent-dev-kit/manifests/workflow_ir_policy.json", "agent-dev-kit/src/agent_dev_kit/runtime_control/engine.py", "agent-dev-kit/docs/changes/runtime-control-task-mode-applicability-v2/"]
+      "implementation_targets": [
+        "adk-workflow-ir/v2",
+        "runtime_control.policy/v2",
+        "body projection and completion guard regression"
+      ],
+      "verification": [
+        "rtk bash agent-dev-kit/tests/test_workflow_ir.sh",
+        "rtk bash agent-dev-kit/tests/test_execution_policy.sh",
+        "rtk bash agent-dev-kit/tests/test_workflow_closure.sh"
+      ],
+      "implementation_evidence": [
+        "agent-dev-kit/src/agent_dev_kit/workflow_ir.py",
+        "agent-dev-kit/manifests/workflow_ir_policy.json",
+        "agent-dev-kit/src/agent_dev_kit/execution_policy/engine.py",
+        "agent-dev-kit/docs/changes/runtime-control-task-mode-applicability-v2/"
+      ]
     },
     {
       "id": "G20",
@@ -427,9 +714,22 @@
       "terminal_outcome": "Sanitized source-to-retirement provenance and run outcome metrics are type-checked, content-addressed, acyclic, connected and usable without storing prompts, messages, raw logs or tool payloads.",
       "design_status": "landed",
       "implementation_status": "in_progress",
-      "implementation_targets": ["adk-evidence-graph/v1", "strict workflow trace summary", "outcome metrics and privacy validation"],
-      "verification": ["rtk bash agent-dev-kit/tests/test_evidence_graph.sh", "rtk bash agent-dev-kit/tests/test_trace_summary.sh", "rtk bash agent-dev-kit/tests/test_agent_ecosystem_standards.sh"],
-      "implementation_evidence": ["agent-dev-kit/src/agent_dev_kit/evidence_graph.py", "agent-dev-kit/manifests/evidence_graph_contracts.json", "agent-dev-kit/manifests/trace_eval_contracts.json", "agent-dev-kit/docs/runbooks/evidence-graph.md"]
+      "implementation_targets": [
+        "adk-evidence-graph/v1",
+        "strict workflow trace summary",
+        "outcome metrics and privacy validation"
+      ],
+      "verification": [
+        "rtk bash agent-dev-kit/tests/test_evidence_graph.sh",
+        "rtk bash agent-dev-kit/tests/test_trace_summary.sh",
+        "rtk bash agent-dev-kit/tests/test_agent_ecosystem_standards.sh"
+      ],
+      "implementation_evidence": [
+        "agent-dev-kit/src/agent_dev_kit/evidence_graph.py",
+        "agent-dev-kit/manifests/evidence_graph_contracts.json",
+        "agent-dev-kit/manifests/trace_eval_contracts.json",
+        "agent-dev-kit/docs/runbooks/evidence-graph.md"
+      ]
     },
     {
       "id": "G21",
@@ -438,9 +738,21 @@
       "terminal_outcome": "Every direct target separates static declarations from native discovery, load, trigger, permission, resume, cancel, rollback and trace evidence, with at least one version-pinned native conformance pass.",
       "design_status": "landed",
       "implementation_status": "in_progress",
-      "implementation_targets": ["target-contract/v2 adapter SPI", "static versus native conformance branches", "one native target campaign"],
-      "verification": ["rtk bash agent-dev-kit/tests/test_target_contracts.sh", "rtk bash agent-dev-kit/scripts/devkit.sh target check --all --level static --summary-json", "rtk bash agent-dev-kit/scripts/devkit.sh target smoke --target <target> --stage discovery --runtime-command <native-command>"],
-      "implementation_evidence": ["agent-dev-kit/manifests/target-contract.schema.json", "agent-dev-kit/manifests/target-contracts/", "agent-dev-kit/src/agent_dev_kit/targets.py"]
+      "implementation_targets": [
+        "target-contract/v2 adapter SPI",
+        "static versus native conformance branches",
+        "one native target campaign"
+      ],
+      "verification": [
+        "rtk bash agent-dev-kit/tests/test_target_contracts.sh",
+        "rtk bash agent-dev-kit/scripts/devkit.sh target check --all --level static --summary-json",
+        "rtk bash agent-dev-kit/scripts/devkit.sh target smoke --target <target> --stage discovery --runtime-command <native-command>"
+      ],
+      "implementation_evidence": [
+        "agent-dev-kit/manifests/target-contract.schema.json",
+        "agent-dev-kit/manifests/target-contracts/",
+        "agent-dev-kit/src/agent_dev_kit/targets.py"
+      ]
     },
     {
       "id": "G22",
@@ -449,9 +761,24 @@
       "terminal_outcome": "Agents, skills and profiles have typed authority, permission, handoff, assumption and eval contracts plus real invocation, wrong-route, abstain, outcome and retirement signals.",
       "design_status": "landed",
       "implementation_status": "in_progress",
-      "implementation_targets": ["typed agent role contract", "asset invocation and outcome receipt", "evidence-led consolidation and retirement"],
-      "verification": ["rtk bash agent-dev-kit/scripts/devkit.sh capability health --summary-json", "rtk bash agent-dev-kit/tests/test_skill_trigger_matrix.sh", "rtk bash agent-dev-kit/tests/test_harness_readiness.sh"],
-      "implementation_evidence": ["agent-dev-kit/manifests/agent_value_contracts.json", "agent-dev-kit/schemas/agent-value-contracts-v1.schema.json", "agent-dev-kit/schemas/asset-invocation-receipt-v1.schema.json", "agent-dev-kit/src/agent_dev_kit/agent_value.py", "agent-dev-kit/tests/test_agent_value.sh", "agent-dev-kit/docs/runbooks/agent-value-lifecycle.md"]
+      "implementation_targets": [
+        "typed agent role contract",
+        "asset invocation and outcome receipt",
+        "evidence-led consolidation and retirement"
+      ],
+      "verification": [
+        "rtk bash agent-dev-kit/scripts/devkit.sh capability health --summary-json",
+        "rtk bash agent-dev-kit/tests/test_skill_trigger_matrix.sh",
+        "rtk bash agent-dev-kit/tests/test_harness_readiness.sh"
+      ],
+      "implementation_evidence": [
+        "agent-dev-kit/manifests/agent_value_contracts.json",
+        "agent-dev-kit/schemas/agent-value-contracts-v1.schema.json",
+        "agent-dev-kit/schemas/asset-invocation-receipt-v1.schema.json",
+        "agent-dev-kit/src/agent_dev_kit/agent_value.py",
+        "agent-dev-kit/tests/test_agent_value.sh",
+        "agent-dev-kit/docs/runbooks/agent-value-lifecycle.md"
+      ]
     }
   ]
 }

@@ -180,6 +180,9 @@ jobs:
         with:
           cosign-release: v3.1.3
 
+      - name: Initialize pinned ADK source
+        run: git submodule update --init --depth=1 agent-dev-kit
+
       - name: Verify portable promotion evidence claims
         run: >-
           python -m tools.control_plane.cli promotion-evidence
@@ -203,6 +206,7 @@ jobs:
         run: |
           bash scripts/check-adk-lock.sh . --pin-only
           bash scripts/check-codex-lock.sh . --pin-only
+          python -m tools.control_plane.adk_interface --root . --require-worktree --summary-json > /tmp/adk-interface-worktree.json
           bash tests/test_adk_interface_lock.sh
 
       - name: Verify terminal ADK to Codex runtime chain
@@ -228,6 +232,7 @@ jobs:
           path: |
             /tmp/llm-agent-integration-receipt.json
             /tmp/adk-attestation-verification.txt
+            /tmp/adk-interface-worktree.json
             /tmp/runtime-chain-receipt.json
             /tmp/consumer-chain-receipt.json
           if-no-files-found: warn
