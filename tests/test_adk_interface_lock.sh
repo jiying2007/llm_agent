@@ -28,6 +28,9 @@ assert "tests/test_product_maturity_v5.sh" not in data["surfaces"].values(), dat
 assert "manifest.yaml" in data["deprecated_surfaces"], data
 assert "tests/test_product_maturity_v4.sh" in data["deprecated_surfaces"], data
 assert "tests/test_product_maturity_v5.sh" in data["deprecated_surfaces"], data
+assert "tests/test_runtime_control.sh" in data["deprecated_surfaces"], data
+assert "tests/test_runtime_control.py" in data["deprecated_surfaces"], data
+assert "src/agent_dev_kit/runtime_control" in data["deprecated_surfaces"], data
 PY
 
 echo '[PASS] pinned ADK interface identity is coherent'
