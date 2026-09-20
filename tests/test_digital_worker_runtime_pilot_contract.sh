@@ -161,7 +161,7 @@ assert lta02["required_evidence_level"] == "R2-real-provider-substitution", lta0
 assert lta02["r1_binding_conformance_is_terminal_evidence"] is False, lta02
 assert lta02["certifier"] == "tools.control_plane.runtime_portability", lta02
 assert lta02["default_evidence_path"] == "reports/long-term-assets/runtime-portability-current.json", lta02
-assert lta02["pending_evidence"] == "real-claude-runtime-execution-receipt-and-same-frozen-task-R2-comparison-evidence", lta02
+assert lta02["pending_evidence"] == "real-codex-and-claude-runtime-execution-receipts-and-same-frozen-task-R2-comparison-evidence", lta02
 assert certifier_path.is_file()
 assert '"runtime-portability": "tools.control_plane.runtime_portability"' in cli_path.read_text(encoding="utf-8")
 

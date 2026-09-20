@@ -180,7 +180,7 @@
       "certifier": "tools.control_plane.runtime_portability",
       "certifier_command": "python3 -m tools.control_plane.cli runtime-portability --root . --summary-json",
       "default_evidence_path": "reports/long-term-assets/runtime-portability-current.json",
-      "pending_evidence": "real-claude-runtime-execution-receipt-and-same-frozen-task-R2-comparison-evidence",
+      "pending_evidence": "real-codex-and-claude-runtime-execution-receipts-and-same-frozen-task-R2-comparison-evidence",
       "evidence": [
         "manifests/digital_worker_runtime_pilot.json"
       ]
