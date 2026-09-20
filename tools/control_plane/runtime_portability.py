@@ -118,16 +118,16 @@ def _validate_execution_architecture(contract: Mapping[str, Any]) -> None:
     if not isinstance(ownership, Mapping):
         raise PortabilityError("runtime pilot execution_ownership is missing")
     expected_ownership = {
-        "model": "runtime-owned-provider-execution+digital-worker-verifier-only",
-        "provider_credentials_owner": "runtime-binding-repository",
+        "model": "runtime-owned-local-provider-execution+digital-worker-local-verification",
+        "provider_credentials_owner": "runtime-local-auth-state",
         "provider_execution_authority_owner": "runtime-binding-repository",
         "digital_worker_holds_provider_credentials": False,
-        "runtime_execution_evidence_transport": "github-oidc-attested-runtime-owned-evidence",
+        "runtime_execution_evidence_transport": "local-terminal-digest-bound-runtime-evidence",
         "digital_worker_verifies_execution_provenance": True,
         "digital_worker_projects_native_receipts": True,
         "digital_worker_domain_verification_is_separate": True,
         "independent_review_must_be_distinct_from_all_runtime_executors_and_verifier": True,
-        "attested_execution_receipt_is_not_r2_pass": True,
+        "local_execution_receipt_is_not_r2_pass": True,
     }
     for field, expected in expected_ownership.items():
         if ownership.get(field) != expected:
@@ -143,47 +143,57 @@ def _validate_execution_architecture(contract: Mapping[str, Any]) -> None:
     for runtime in ("codex", "claude-code"):
         _require_full_sha(candidates[runtime].get("binding_commit"), f"{runtime} frozen binding commit")
 
+    expected_adapters = {
+        "codex": ("jiying2007/codex", "scripts/runtime-r2-local.sh"),
+        "claude-code": ("jiying2007/claude", "control/scripts/runtime-r2-local.sh"),
+    }
     planes = contract.get("execution_plane_evidence")
     if not isinstance(planes, Mapping):
         raise PortabilityError("runtime pilot execution_plane_evidence is missing")
-    for runtime, repository in (("codex", "jiying2007/codex"), ("claude-code", "jiying2007/claude")):
+    for runtime, (repository, adapter) in expected_adapters.items():
         plane = planes.get(runtime)
         if not isinstance(plane, Mapping):
             raise PortabilityError(f"runtime execution plane is missing: {runtime}")
-        if plane.get("repository") != repository or plane.get("credential_owner") != repository:
-            raise PortabilityError(f"runtime execution plane ownership drift: {runtime}")
+        if plane.get("repository") != repository:
+            raise PortabilityError(f"runtime execution plane repository drift: {runtime}")
+        if plane.get("credential_owner") != "runtime-local-auth-state":
+            raise PortabilityError(f"runtime credential ownership drift: {runtime}")
+        if plane.get("execution_venue") != "local-terminal":
+            raise PortabilityError(f"runtime execution venue drift: {runtime}")
         execution_commit = _require_full_sha(plane.get("execution_plane_commit"), f"{runtime} execution plane commit")
         frozen_commit = _require_full_sha(plane.get("frozen_binding_commit"), f"{runtime} execution plane frozen binding")
         if frozen_commit != candidates[runtime].get("binding_commit"):
             raise PortabilityError(f"runtime execution plane frozen binding drift: {runtime}")
-        if execution_commit == frozen_commit:
-            raise PortabilityError(f"runtime execution plane must not redefine frozen binding identity: {runtime}")
-        if plane.get("provider_execution_workflow") != ".github/workflows/runtime-r2-provider-execution.yml":
-            raise PortabilityError(f"runtime execution workflow drift: {runtime}")
+        if execution_commit != frozen_commit:
+            raise PortabilityError(f"runtime local adapter must be part of the exact frozen binding identity: {runtime}")
+        if plane.get("provider_execution_adapter") != adapter:
+            raise PortabilityError(f"runtime local execution adapter drift: {runtime}")
 
     digital_worker = planes.get("digital-worker")
     if not isinstance(digital_worker, Mapping):
-        raise PortabilityError("digital-worker verifier-only execution-plane evidence is missing")
+        raise PortabilityError("digital-worker verification-plane evidence is missing")
     if digital_worker.get("repository") != "jiying2007/digital-worker":
-        raise PortabilityError("digital-worker execution-plane repository drift")
-    _require_full_sha(digital_worker.get("verifier_only_commit"), "digital-worker verifier-only commit")
+        raise PortabilityError("digital-worker verification-plane repository drift")
     if digital_worker.get("provider_credentials_held") is not False:
         raise PortabilityError("digital-worker must not hold provider credentials")
     if digital_worker.get("combined_provider_workflow_present") is not False:
         raise PortabilityError("digital-worker combined provider workflow must remain retired")
-    expected_workflows = {
+    expected_paths = {
         "freeze_workflow": ".github/workflows/runtime-r2-freeze.yml",
-        "domain_verification_workflow": ".github/workflows/runtime-r2-domain-verification.yml",
+        "local_intake": "scripts/runtime_r2_intake.py",
+        "local_verifier": "scripts/runtime_r2_local_verify.py",
         "independent_review_workflow": ".github/workflows/runtime-r2-independent-review.yml",
     }
-    for field, expected in expected_workflows.items():
+    for field, expected in expected_paths.items():
         if digital_worker.get(field) != expected:
-            raise PortabilityError(f"digital-worker verifier-only workflow drift: {field}")
+            raise PortabilityError(f"digital-worker verification path drift: {field}")
+    if digital_worker.get("verifier_identity_mode") != "receipt-bound-tool-commit":
+        raise PortabilityError("digital-worker verifier identity must be receipt-bound")
 
 
 def _contract(root: Path) -> dict[str, Any]:
     contract = _load_object(root / "manifests/digital_worker_runtime_pilot.json", "runtime pilot contract")
-    if contract.get("schema_version") != 4 or contract.get("contract_version") != "1.3":
+    if contract.get("schema_version") != 5 or contract.get("contract_version") != "1.4":
         raise PortabilityError("runtime pilot contract version is unsupported")
     if contract.get("status") != "report-only":
         raise PortabilityError("runtime pilot contract must remain report-only")
@@ -208,8 +218,9 @@ def _contract(root: Path) -> dict[str, Any]:
         "provider_credentials_must_remain_runtime_owned",
         "digital_worker_must_not_hold_provider_credentials",
         "runtime_execution_must_be_separate_from_digital_worker_verification",
-        "attested_execution_receipt_is_not_domain_verification",
-        "tracked_evidence_intake_is_not_real_provider_execution",
+        "local_execution_receipt_is_not_domain_verification",
+        "local_execution_evidence_intake_is_not_provider_execution",
+        "verification_tool_identity_must_be_receipt_bound",
         "frozen_binding_identity_must_not_follow_execution_plane_head",
     )
     if any(rules.get(key) is not True for key in required_rules):
