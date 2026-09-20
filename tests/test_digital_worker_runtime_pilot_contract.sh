@@ -16,7 +16,7 @@ data = json.loads(path.read_text(encoding="utf-8"))
 lta = json.loads(lta_path.read_text(encoding="utf-8"))
 
 assert data["schema_version"] == 5, data
-assert data["contract_version"] == "1.4", data
+assert data["contract_version"] == "1.5", data
 assert data["status"] == "report-only", data
 assert "governance_identity" in data["roles"]["digital-worker"], data
 assert "r2_freeze" in data["roles"]["digital-worker"], data
@@ -50,6 +50,8 @@ assert ownership == {
     "digital_worker_domain_verification_is_separate": True,
     "independent_review_must_be_distinct_from_all_runtime_executors_and_verifier": True,
     "local_execution_receipt_is_not_r2_pass": True,
+    "runtime_home_mode": "shared-user-home",
+    "runtime_local_state_policy": "reuse-local-auth-and-provider-config-exclude-from-evidence",
 }, ownership
 
 bindings = {item["runtime"]: item for item in data["candidate_runtime_bindings"]}
@@ -61,14 +63,14 @@ assert codex["repository"] == "https://github.com/jiying2007/codex.git", codex
 assert codex["target"] == "codex-cli", codex
 assert codex["source_identity_mode"] == "exact-release-source-blobs", codex
 assert codex["status"] == "source-set-bound", codex
-assert codex["binding_commit"] == "e80116bf2c192b02b5b038120323ef4af4618fa6", codex
+assert codex["binding_commit"] == "c4a1fa995b281da909be10bfe5c41fe719ce2759", codex
 
 claude = bindings["claude-code"]
 assert claude["repository"] == "https://github.com/jiying2007/claude.git", claude
 assert claude["target"] == "claude-code", claude
 assert claude["source_identity_mode"] == "exact-release-source-blobs", claude
 assert claude["status"] == "source-set-bound", claude
-assert claude["binding_commit"] == "50e9b8d4d19d35d3315ba8400e87dfe851a749dd", claude
+assert claude["binding_commit"] == "e6d2be534a85ac1208967774612f07b54c59a0b5", claude
 assert claude["r1_binding_conformance"] == "passed", claude
 assert claude["verified_runtime_execution_receipt"] == "pending", claude
 assert claude["r2_real_provider_substitution"] == "pending", claude
@@ -79,15 +81,15 @@ for runtime, expected in {
         "repository": "jiying2007/codex",
         "commit": codex["binding_commit"],
         "adapter": "scripts/runtime-r2-local.sh",
-        "pr": "jiying2007/codex#19",
-        "run": "jiying2007/codex/actions/runs/35511867346",
+        "pr": "jiying2007/codex#20",
+        "run": "jiying2007/codex/actions/runs/35516083941",
     },
     "claude-code": {
         "repository": "jiying2007/claude",
         "commit": claude["binding_commit"],
         "adapter": "control/scripts/runtime-r2-local.sh",
-        "pr": "jiying2007/claude#9",
-        "run": "jiying2007/claude/actions/runs/35511869558",
+        "pr": "jiying2007/claude#10",
+        "run": "jiying2007/claude/actions/runs/35516087337",
     },
 }.items():
     plane = planes[runtime]
@@ -96,6 +98,8 @@ for runtime, expected in {
     assert plane["frozen_binding_commit"] == expected["commit"], plane
     assert plane["provider_execution_adapter"] == expected["adapter"], plane
     assert plane["execution_venue"] == "local-terminal", plane
+    assert plane["runtime_home_mode"] == "shared-user-home", plane
+    assert plane["credential_state_in_evidence"] is False, plane
     assert plane["credential_owner"] == "runtime-local-auth-state", plane
     assert plane["merged_pr"] == expected["pr"], plane
     assert plane["exact_head_contract_run"] == expected["run"], plane
@@ -124,6 +128,8 @@ assert "runtime_binding_commit does not match the frozen canonical binding" in c
 assert "runtime local adapter must be part of the exact frozen binding identity" in certifier_text, certifier_text
 assert "digital-worker verifier identity must be receipt-bound" in certifier_text, certifier_text
 assert "verification_tool_commit" in certifier_text, certifier_text
+assert "shared-user-home" in certifier_text, certifier_text
+assert "credential state entered evidence" in certifier_text, certifier_text
 
 rules = data["hard_rules"]
 for key in (
@@ -148,6 +154,9 @@ for key in (
     "local_execution_receipt_is_not_domain_verification",
     "local_execution_evidence_intake_is_not_provider_execution",
     "verification_tool_identity_must_be_receipt_bound",
+    "runtime_home_must_reuse_user_state",
+    "credential_state_must_not_enter_evidence",
+    "local_runtime_config_may_drift_outside_managed_identity",
 ):
     assert rules[key] is True, (key, data)
 assert "attested_execution_receipt_is_not_domain_verification" not in rules
@@ -178,4 +187,4 @@ for retired in (
     assert retired not in text, retired
 PY
 
-echo '[PASS] digital-worker runtime pilot enforces exact local-terminal R2 adapters, local-only provider auth, receipt-bound DW verification, and R2-only terminal portability'
+echo '[PASS] digital-worker runtime pilot enforces exact shared-user-home R2 adapters, local auth/config exclusion from evidence, receipt-bound DW verification, and R2-only terminal portability'

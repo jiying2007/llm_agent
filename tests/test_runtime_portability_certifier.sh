@@ -131,10 +131,14 @@ for runtime, repository, commit, target, provider in (
 provider_execution_evidence = {
     "codex": {
         "execution_venue": "local-terminal",
+        "runtime_home_mode": "shared-user-home",
+        "credential_state_in_evidence": False,
         "runtime_binding_commit": "1" * 40,
     },
     "claude-code": {
         "execution_venue": "local-terminal",
+        "runtime_home_mode": "shared-user-home",
+        "credential_state_in_evidence": False,
         "runtime_binding_commit": "2" * 40,
     },
 }
