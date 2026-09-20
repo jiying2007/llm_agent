@@ -332,6 +332,26 @@ def _validate_external_result(
     if source_repository != "jiying2007/digital-worker":
         raise PortabilityError(f"{label} must originate from jiying2007/digital-worker")
     _require_full_sha(value.get("source_commit"), f"{label}.source_commit")
+    _require_full_sha(value.get("verification_tool_commit"), f"{label}.verification_tool_commit")
+    if value.get("verification_pass_claimed_by_runtime") is not False:
+        raise PortabilityError(f"{label} must preserve runtime/verification authority separation")
+    provider_evidence = value.get("provider_execution_evidence")
+    if not isinstance(provider_evidence, dict) or set(provider_evidence) != {"codex", "claude-code"}:
+        raise PortabilityError(f"{label} must bind both local runtime evidence descriptors")
+    for runtime, descriptor in provider_evidence.items():
+        if not isinstance(descriptor, Mapping) or descriptor.get("execution_venue") != "local-terminal":
+            raise PortabilityError(f"{label} provider execution venue drift: {runtime}")
+        _require_full_sha(descriptor.get("runtime_binding_commit"), f"{label}.{runtime}.runtime_binding_commit")
+    if label == "digital-worker domain verification":
+        if value.get("verification_execution_venue") != "local-terminal":
+            raise PortabilityError("digital-worker domain verification must execute in the local-terminal verification domain")
+        if value.get("github_provider_credentials_required") is not False:
+            raise PortabilityError("digital-worker domain verification must not require GitHub provider credentials")
+        if value.get("independent_review_status") != "pending":
+            raise PortabilityError("digital-worker domain verification must leave independent review pending")
+    if require_independent:
+        if value.get("release_ready_claimed") is not False or value.get("r2_qualified") is not False:
+            raise PortabilityError(f"{label} must remain non-terminal")
     bound_receipts = value.get("execution_receipts")
     if not isinstance(bound_receipts, dict) or bound_receipts != dict(receipt_digests):
         raise PortabilityError(f"{label} does not bind the exact execution receipt set")
@@ -457,7 +477,9 @@ def check(root: Path, evidence_path: Path | None = None) -> dict[str, Any]:
         require_independent=True,
     )
     if verification.get("source_commit") != review.get("source_commit"):
-        raise PortabilityError("domain verification and independent review must bind the same digital-worker source commit")
+        raise PortabilityError("domain verification and independent review must bind the same frozen digital-worker governance commit")
+    if verification.get("verification_tool_commit") != review.get("verification_tool_commit"):
+        raise PortabilityError("domain verification and independent review must bind the same verifier tool commit")
 
     return {
         "schema": CHECK_SCHEMA,
