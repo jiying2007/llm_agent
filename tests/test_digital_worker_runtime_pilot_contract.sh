@@ -63,14 +63,14 @@ assert codex["repository"] == "https://github.com/jiying2007/codex.git", codex
 assert codex["target"] == "codex-cli", codex
 assert codex["source_identity_mode"] == "exact-release-source-blobs", codex
 assert codex["status"] == "source-set-bound", codex
-assert codex["binding_commit"] == "c4a1fa995b281da909be10bfe5c41fe719ce2759", codex
+assert codex["binding_commit"] == "1d77de27ef01d9be403ce0bd8ce50e2ece5d8967", codex
 
 claude = bindings["claude-code"]
 assert claude["repository"] == "https://github.com/jiying2007/claude.git", claude
 assert claude["target"] == "claude-code", claude
 assert claude["source_identity_mode"] == "exact-release-source-blobs", claude
 assert claude["status"] == "source-set-bound", claude
-assert claude["binding_commit"] == "e6d2be534a85ac1208967774612f07b54c59a0b5", claude
+assert claude["binding_commit"] == "e358b029607cf9dc5429eb7c2ca05b5d4a13c0f1", claude
 assert claude["r1_binding_conformance"] == "passed", claude
 assert claude["verified_runtime_execution_receipt"] == "pending", claude
 assert claude["r2_real_provider_substitution"] == "pending", claude
@@ -81,15 +81,15 @@ for runtime, expected in {
         "repository": "jiying2007/codex",
         "commit": codex["binding_commit"],
         "adapter": "scripts/runtime-r2-local.sh",
-        "pr": "jiying2007/codex#20",
-        "run": "jiying2007/codex/actions/runs/35516083941",
+        "pr": "jiying2007/codex#21",
+        "run": "jiying2007/codex/actions/runs/35518061439",
     },
     "claude-code": {
         "repository": "jiying2007/claude",
         "commit": claude["binding_commit"],
         "adapter": "control/scripts/runtime-r2-local.sh",
-        "pr": "jiying2007/claude#10",
-        "run": "jiying2007/claude/actions/runs/35516087337",
+        "pr": "jiying2007/claude#11",
+        "run": "jiying2007/claude/actions/runs/35523054373",
     },
 }.items():
     plane = planes[runtime]
