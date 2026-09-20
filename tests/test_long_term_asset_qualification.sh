@@ -94,7 +94,7 @@ assert lta02['required_evidence_level'] == 'R2-real-provider-substitution'
 assert lta02['r1_binding_conformance_is_terminal_evidence'] is False
 assert lta02['certifier'] == 'tools.control_plane.runtime_portability'
 assert lta02['default_evidence_path'] == 'reports/long-term-assets/runtime-portability-current.json'
-assert lta02['pending_evidence'] == 'real-claude-runtime-execution-receipt-and-same-frozen-task-R2-comparison-evidence'
+assert lta02['pending_evidence'] == 'real-codex-and-claude-runtime-execution-receipts-and-same-frozen-task-R2-comparison-evidence'
 assert set(lta02['affects']) == {
     'runtime-portability-terminal-qualification',
     'long-term-asset-terminal-qualification',
