@@ -1,6 +1,6 @@
 {
-  "schema_version": 4,
-  "contract_version": "1.3",
+  "schema_version": 5,
+  "contract_version": "1.4",
   "status": "report-only",
   "purpose": "Joint runtime comparison contract for digital-worker, agent-dev-kit, replaceable Runtime Bindings and llm_agent without changing domain verification semantics.",
   "roles": {
@@ -83,7 +83,7 @@
   },
   "replaceability_evidence_levels": {
     "R1-binding-conformance": "Controlled/fake adapters may prove contract shape, exact identity handling, failure semantics and rollback only; R1 never qualifies terminal portability.",
-    "R2-real-provider-substitution": "Two real Runtime/Provider Bindings execute the same frozen real task in their own execution domains, emit independently attested execution receipts, and are evaluated under shared Digital Worker verification/review semantics; R2 is required for terminal portability."
+    "R2-real-provider-substitution": "Two real Runtime/Provider Bindings execute the same frozen real task in isolated local terminal domains using exact frozen runtime-owned adapters, emit digest-bound execution receipts and replay-complete result evidence, and are evaluated under shared Digital Worker local verification/review semantics; R2 is required for terminal portability."
   },
   "terminal_replaceability_evidence_level": "R2-real-provider-substitution",
   "isolation": {
@@ -92,19 +92,19 @@
     "shared_pre_run_context_only": true
   },
   "execution_ownership": {
-    "model": "runtime-owned-provider-execution+digital-worker-verifier-only",
-    "provider_credentials_owner": "runtime-binding-repository",
+    "model": "runtime-owned-local-provider-execution+digital-worker-local-verification",
+    "provider_credentials_owner": "runtime-local-auth-state",
     "provider_execution_authority_owner": "runtime-binding-repository",
     "digital_worker_holds_provider_credentials": false,
-    "runtime_execution_evidence_transport": "github-oidc-attested-runtime-owned-evidence",
+    "runtime_execution_evidence_transport": "local-terminal-digest-bound-runtime-evidence",
     "digital_worker_verifies_execution_provenance": true,
     "digital_worker_projects_native_receipts": true,
     "digital_worker_domain_verification_is_separate": true,
     "independent_review_must_be_distinct_from_all_runtime_executors_and_verifier": true,
-    "attested_execution_receipt_is_not_r2_pass": true
+    "local_execution_receipt_is_not_r2_pass": true
   },
   "loop_readiness_mapping": {
-    "tool_execution_evidence": "runtime-binding:attested-execution-receipt+digital-worker:verified-evidence-intake",
+    "tool_execution_evidence": "runtime-binding:local-execution-receipt+digital-worker:local-evidence-intake+local-domain-verification",
     "loop_recovery_evidence": "digital-worker:team-run-state.blockers/recovery",
     "guardrail_coverage": "digital-worker:A0-A7+gate-policy",
     "budget_control_evidence": "digital-worker:context-and-action-scope",
@@ -118,7 +118,7 @@
       "target": "codex-cli",
       "source_identity_mode": "exact-release-source-blobs",
       "status": "source-set-bound",
-      "binding_commit": "79acb193cef381b4c8b72f00e0af15f87e32765c"
+      "binding_commit": "364277dc52fc0b18c4fc30168c8bb82878ad2204"
     },
     {
       "runtime": "claude-code",
@@ -126,10 +126,7 @@
       "target": "claude-code",
       "source_identity_mode": "exact-release-source-blobs",
       "status": "source-set-bound",
-      "merged_pr": "jiying2007/claude#5",
-      "binding_commit": "fba4551aa4a2abe5f74cff3c60e8318961b36add",
-      "exact_head_workflow_run": "jiying2007/claude/actions/runs/35477726658",
-      "fresh_main_workflow_run": "jiying2007/claude/actions/runs/35477771868",
+      "binding_commit": "81c8890ef952104c629c99e11259da6f180ce7db",
       "r1_binding_conformance": "passed",
       "verified_runtime_execution_receipt": "pending",
       "r2_real_provider_substitution": "pending"
@@ -138,40 +135,35 @@
   "execution_plane_evidence": {
     "codex": {
       "repository": "jiying2007/codex",
-      "execution_plane_commit": "fa4f050bf03050bac3e10190952ccb8c6dde0882",
-      "frozen_binding_commit": "79acb193cef381b4c8b72f00e0af15f87e32765c",
-      "provider_execution_workflow": ".github/workflows/runtime-r2-provider-execution.yml",
-      "credential_owner": "jiying2007/codex",
-      "merged_pr": "jiying2007/codex#16",
-      "exact_head_contract_run": "jiying2007/codex/actions/runs/35479144672",
-      "fresh_main_contract_run": "jiying2007/codex/actions/runs/35479163874",
+      "execution_plane_commit": "364277dc52fc0b18c4fc30168c8bb82878ad2204",
+      "frozen_binding_commit": "364277dc52fc0b18c4fc30168c8bb82878ad2204",
+      "provider_execution_adapter": "scripts/runtime-r2-local.sh",
+      "execution_venue": "local-terminal",
+      "credential_owner": "runtime-local-auth-state",
+      "merged_pr": "jiying2007/codex#18",
+      "exact_head_contract_run": "jiying2007/codex/actions/runs/35510135013",
       "real_provider_execution_receipt": "pending"
     },
     "claude-code": {
       "repository": "jiying2007/claude",
-      "execution_plane_commit": "b8dc8b9b33084ed619c7b398f33e8c826e7b4185",
-      "frozen_binding_commit": "fba4551aa4a2abe5f74cff3c60e8318961b36add",
-      "provider_execution_workflow": ".github/workflows/runtime-r2-provider-execution.yml",
-      "credential_owner": "jiying2007/claude",
-      "merged_pr": "jiying2007/claude#6",
-      "exact_head_contract_run": "jiying2007/claude/actions/runs/35477834233",
-      "fresh_main_contract_run": "jiying2007/claude/actions/runs/35477851200",
+      "execution_plane_commit": "81c8890ef952104c629c99e11259da6f180ce7db",
+      "frozen_binding_commit": "81c8890ef952104c629c99e11259da6f180ce7db",
+      "provider_execution_adapter": "control/scripts/runtime-r2-local.sh",
+      "execution_venue": "local-terminal",
+      "credential_owner": "runtime-local-auth-state",
+      "merged_pr": "jiying2007/claude#8",
+      "exact_head_contract_run": "jiying2007/claude/actions/runs/35510136587",
       "real_provider_execution_receipt": "pending"
     },
     "digital-worker": {
       "repository": "jiying2007/digital-worker",
-      "verifier_only_commit": "b92c81d6733468709737e11ae5a6336cb06001fc",
-      "merged_pr": "jiying2007/digital-worker#118",
       "provider_credentials_held": false,
       "combined_provider_workflow_present": false,
       "freeze_workflow": ".github/workflows/runtime-r2-freeze.yml",
-      "domain_verification_workflow": ".github/workflows/runtime-r2-domain-verification.yml",
-      "independent_review_workflow": ".github/workflows/runtime-r2-independent-review.yml",
-      "fresh_main_runs": {
-        "runtime_r2_harness": "jiying2007/digital-worker/actions/runs/35201429559",
-        "terminal_consistency": "jiying2007/digital-worker/actions/runs/35201429455",
-        "embedded_expert_contracts": "jiying2007/digital-worker/actions/runs/35201429384"
-      }
+      "local_intake": "scripts/runtime_r2_intake.py",
+      "local_verifier": "scripts/runtime_r2_local_verify.py",
+      "verifier_identity_mode": "receipt-bound-tool-commit",
+      "independent_review_workflow": ".github/workflows/runtime-r2-independent-review.yml"
     }
   },
   "required_metrics": [
@@ -209,9 +201,11 @@
     "provider_credentials_must_remain_runtime_owned": true,
     "digital_worker_must_not_hold_provider_credentials": true,
     "runtime_execution_must_be_separate_from_digital_worker_verification": true,
-    "attested_execution_receipt_is_not_domain_verification": true,
     "tracked_evidence_intake_is_not_real_provider_execution": true,
-    "frozen_binding_identity_must_not_follow_execution_plane_head": true
+    "frozen_binding_identity_must_not_follow_execution_plane_head": true,
+    "local_execution_receipt_is_not_domain_verification": true,
+    "local_execution_evidence_intake_is_not_provider_execution": true,
+    "verification_tool_identity_must_be_receipt_bound": true
   },
-  "completion": "R2 only: Codex and Claude each execute the same controlled real task in their own credential-bearing execution domain against the frozen binding identity, emit GitHub-OIDC-attested execution evidence, and Digital Worker independently validates provenance, projects receipts, replays/verifies both results, and records an independent review before llm_agent may certify terminal portability. Architecture/CI readiness alone is never R2 evidence."
+  "completion": "R2 only: Codex and Claude each execute the same controlled real task in isolated local terminal domains using the exact frozen runtime binding/adapter identity, emit digest-bound execution receipts plus replay-complete result evidence, Digital Worker independently performs local intake and host verification while recording its verifier tool commit, and an independent review binds the same verification receipt before llm_agent may certify terminal portability. GitHub provider credentials, provider execution workflows, and architecture/CI readiness alone are never R2 evidence."
 }
