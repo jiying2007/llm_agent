@@ -51,6 +51,7 @@ for item in contract["candidate_runtime_bindings"]:
         })
 for runtime, commit in selftest_binding_commits.items():
     contract["execution_plane_evidence"][runtime]["frozen_binding_commit"] = commit
+    contract["execution_plane_evidence"][runtime]["execution_plane_commit"] = commit
 contract_path.write_text(json.dumps(contract, indent=2) + "\n", encoding="utf-8")
 
 interface = json.loads((root / "manifests/adk_interface.lock.json").read_text(encoding="utf-8"))
@@ -100,7 +101,7 @@ for runtime, repository, commit, target, provider in (
         "runtime_binding_commit": commit,
         "runtime_target": target,
         "runtime_profile": "controlled-selftest",
-        "runtime_host": "hosted-selftest",
+        "runtime_host": "local-terminal",
         "runtime_provider": provider,
         "runtime_version": "selftest-1",
         "runtime_source_set_identity_ref": f"{runtime}-source-set-selftest",
@@ -127,6 +128,16 @@ for runtime, repository, commit, target, provider in (
         "execution_receipt_sha256": receipt_digest,
     })
 
+provider_execution_evidence = {
+    "codex": {
+        "execution_venue": "local-terminal",
+        "runtime_binding_commit": "1" * 40,
+    },
+    "claude-code": {
+        "execution_venue": "local-terminal",
+        "runtime_binding_commit": "2" * 40,
+    },
+}
 common_result = {
     "status": "pass",
     "comparison_id": "selftest-comparison",
@@ -134,12 +145,27 @@ common_result = {
     "standard_id": "same-verifier-review-standard-v1",
     "source_repository": "jiying2007/digital-worker",
     "source_commit": "4" * 40,
+    "verification_tool_commit": "5" * 40,
     "execution_receipts": receipts,
+    "provider_execution_evidence": provider_execution_evidence,
+    "verification_pass_claimed_by_runtime": False,
 }
 verification_ref = "reports/portability/domain-verification.json"
 review_ref = "reports/portability/independent-review.json"
-write(root / verification_ref, {"schema": "digital-worker-domain-verification/selftest-v1", **common_result})
-write(root / review_ref, {"schema": "digital-worker-independent-review/selftest-v1", **common_result, "independent": True})
+write(root / verification_ref, {
+    "schema": "digital-worker-domain-verification/selftest-v1",
+    **common_result,
+    "verification_execution_venue": "local-terminal",
+    "github_provider_credentials_required": False,
+    "independent_review_status": "pending",
+})
+write(root / review_ref, {
+    "schema": "digital-worker-independent-review/selftest-v1",
+    **common_result,
+    "independent": True,
+    "release_ready_claimed": False,
+    "r2_qualified": False,
+})
 
 evidence = {
     "schema": "llm-agent-runtime-portability-evidence/v1",
@@ -180,14 +206,13 @@ assert set(value["execution_receipts"]) == {"codex", "claude-code"}, value
 assert value["digital_worker_commit"] == "4" * 40, value
 PY
 
-# The current execution-plane HEAD is operational evidence, never the frozen runtime binding identity.
-python3 - "$FIXTURE/reports/portability/comparison.json" "$FIXTURE/manifests/digital_worker_runtime_pilot.json" "$FIXTURE/reports/portability/wrong-binding.json" <<'PY'
+# A runtime receipt cannot drift away from the exact frozen local adapter/binding identity.
+python3 - "$FIXTURE/reports/portability/comparison.json" "$FIXTURE/reports/portability/wrong-binding.json" <<'PY'
 import json, sys
 from pathlib import Path
 comparison = json.loads(Path(sys.argv[1]).read_text())
-contract = json.loads(Path(sys.argv[2]).read_text())
-comparison["runtime_runs"][0]["runtime_binding_commit"] = contract["execution_plane_evidence"]["codex"]["execution_plane_commit"]
-Path(sys.argv[3]).write_text(json.dumps(comparison, indent=2, sort_keys=True) + "\n")
+comparison["runtime_runs"][0]["runtime_binding_commit"] = "9" * 40
+Path(sys.argv[2]).write_text(json.dumps(comparison, indent=2, sort_keys=True) + "\n")
 PY
 set +e
 python3 -m tools.control_plane.runtime_portability --root "$FIXTURE" --evidence "$FIXTURE/reports/portability/wrong-binding.json" --summary-json >"$TMP/wrong-binding-result.json"
@@ -241,6 +266,7 @@ for item in value["candidate_runtime_bindings"]:
         item["blocker"] = "selftest-future-only"
 for runtime, commit in commits.items():
     value["execution_plane_evidence"][runtime]["frozen_binding_commit"] = commit
+    value["execution_plane_evidence"][runtime]["execution_plane_commit"] = commit
 path.write_text(json.dumps(value, indent=2) + "\n")
 PY
 set +e
@@ -271,6 +297,7 @@ for item in value["candidate_runtime_bindings"]:
         item.pop("blocker", None)
 for runtime, commit in commits.items():
     value["execution_plane_evidence"][runtime]["frozen_binding_commit"] = commit
+    value["execution_plane_evidence"][runtime]["execution_plane_commit"] = commit
 path.write_text(json.dumps(value, indent=2) + "\n")
 PY
 
@@ -313,4 +340,4 @@ assert value["status"] == "fail", value
 assert "forbidden verification PASS claim" in value["error"], value
 PY
 
-echo "[PASS] LTA-02 certifier requires runtime-owned execution architecture, exact frozen binding identity, R2 evidence, and keeps missing real provider evidence BLOCKED"
+echo "[PASS] LTA-02 certifier requires exact local-terminal runtime adapter identity, digest-bound R2 evidence, local Digital Worker verification/review provenance, and keeps missing real provider evidence BLOCKED"
