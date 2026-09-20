@@ -128,6 +128,8 @@ def _validate_execution_architecture(contract: Mapping[str, Any]) -> None:
         "digital_worker_domain_verification_is_separate": True,
         "independent_review_must_be_distinct_from_all_runtime_executors_and_verifier": True,
         "local_execution_receipt_is_not_r2_pass": True,
+        "runtime_home_mode": "shared-user-home",
+        "runtime_local_state_policy": "reuse-local-auth-and-provider-config-exclude-from-evidence",
     }
     for field, expected in expected_ownership.items():
         if ownership.get(field) != expected:
@@ -160,6 +162,10 @@ def _validate_execution_architecture(contract: Mapping[str, Any]) -> None:
             raise PortabilityError(f"runtime credential ownership drift: {runtime}")
         if plane.get("execution_venue") != "local-terminal":
             raise PortabilityError(f"runtime execution venue drift: {runtime}")
+        if plane.get("runtime_home_mode") != "shared-user-home":
+            raise PortabilityError(f"runtime home mode drift: {runtime}")
+        if plane.get("credential_state_in_evidence") is not False:
+            raise PortabilityError(f"runtime credential state entered evidence: {runtime}")
         execution_commit = _require_full_sha(plane.get("execution_plane_commit"), f"{runtime} execution plane commit")
         frozen_commit = _require_full_sha(plane.get("frozen_binding_commit"), f"{runtime} execution plane frozen binding")
         if frozen_commit != candidates[runtime].get("binding_commit"):
@@ -193,7 +199,7 @@ def _validate_execution_architecture(contract: Mapping[str, Any]) -> None:
 
 def _contract(root: Path) -> dict[str, Any]:
     contract = _load_object(root / "manifests/digital_worker_runtime_pilot.json", "runtime pilot contract")
-    if contract.get("schema_version") != 5 or contract.get("contract_version") != "1.4":
+    if contract.get("schema_version") != 5 or contract.get("contract_version") != "1.5":
         raise PortabilityError("runtime pilot contract version is unsupported")
     if contract.get("status") != "report-only":
         raise PortabilityError("runtime pilot contract must remain report-only")
@@ -221,6 +227,9 @@ def _contract(root: Path) -> dict[str, Any]:
         "local_execution_receipt_is_not_domain_verification",
         "local_execution_evidence_intake_is_not_provider_execution",
         "verification_tool_identity_must_be_receipt_bound",
+        "runtime_home_must_reuse_user_state",
+        "credential_state_must_not_enter_evidence",
+        "local_runtime_config_may_drift_outside_managed_identity",
         "frozen_binding_identity_must_not_follow_execution_plane_head",
     )
     if any(rules.get(key) is not True for key in required_rules):
@@ -341,6 +350,10 @@ def _validate_external_result(
     for runtime, descriptor in provider_evidence.items():
         if not isinstance(descriptor, Mapping) or descriptor.get("execution_venue") != "local-terminal":
             raise PortabilityError(f"{label} provider execution venue drift: {runtime}")
+        if descriptor.get("runtime_home_mode") != "shared-user-home":
+            raise PortabilityError(f"{label} provider runtime home mode drift: {runtime}")
+        if descriptor.get("credential_state_in_evidence") is not False:
+            raise PortabilityError(f"{label} provider credential state entered evidence: {runtime}")
         _require_full_sha(descriptor.get("runtime_binding_commit"), f"{label}.{runtime}.runtime_binding_commit")
     if label == "digital-worker domain verification":
         if value.get("verification_execution_venue") != "local-terminal":
