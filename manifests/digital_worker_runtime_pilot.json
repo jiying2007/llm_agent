@@ -4,10 +4,40 @@
   "status": "report-only",
   "purpose": "Joint runtime comparison contract for digital-worker, agent-dev-kit, replaceable Runtime Bindings and llm_agent without changing domain verification semantics.",
   "roles": {
-    "digital-worker": ["work_item", "system_context", "governance_identity", "acceptance", "action_policy", "engineering_result", "r2_freeze", "execution_evidence_intake", "verification", "independent_review"],
-    "agent-dev-kit": ["asset_profile", "skill_assets", "immutable_release_identity", "source_set_handoff_contract"],
-    "runtime-binding": ["runtime_target_mapping", "runtime_profile", "host_integration", "exact_source_set_identity", "runtime_distribution_identity", "provider_execution", "runtime_execution_receipt", "runtime_local_conformance"],
-    "llm_agent": ["runtime_target_health", "cross_runtime_comparison_evidence", "loop_readiness_mapping", "adoption_recommendation"]
+    "digital-worker": [
+      "work_item",
+      "system_context",
+      "governance_identity",
+      "acceptance",
+      "action_policy",
+      "engineering_result",
+      "r2_freeze",
+      "execution_evidence_intake",
+      "verification",
+      "independent_review"
+    ],
+    "agent-dev-kit": [
+      "asset_profile",
+      "skill_assets",
+      "immutable_release_identity",
+      "source_set_handoff_contract"
+    ],
+    "runtime-binding": [
+      "runtime_target_mapping",
+      "runtime_profile",
+      "host_integration",
+      "exact_source_set_identity",
+      "runtime_distribution_identity",
+      "provider_execution",
+      "runtime_execution_receipt",
+      "runtime_local_conformance"
+    ],
+    "llm_agent": [
+      "runtime_target_health",
+      "cross_runtime_comparison_evidence",
+      "loop_readiness_mapping",
+      "adoption_recommendation"
+    ]
   },
   "frozen_inputs": [
     "work_item_id",
@@ -88,7 +118,7 @@
       "target": "codex-cli",
       "source_identity_mode": "exact-release-source-blobs",
       "status": "source-set-bound",
-      "binding_commit": "d12e782b46430d6bfc828f24a41f94f871a7a19a"
+      "binding_commit": "79acb193cef381b4c8b72f00e0af15f87e32765c"
     },
     {
       "runtime": "claude-code",
@@ -96,10 +126,10 @@
       "target": "claude-code",
       "source_identity_mode": "exact-release-source-blobs",
       "status": "source-set-bound",
-      "merged_pr": "jiying2007/claude#3",
-      "binding_commit": "8cd87956507f9dbde0438c9135493c96f3b2d318",
-      "exact_head_workflow_run": "jiying2007/claude/actions/runs/35115950799",
-      "fresh_main_workflow_run": "jiying2007/claude/actions/runs/35116031702",
+      "merged_pr": "jiying2007/claude#5",
+      "binding_commit": "fba4551aa4a2abe5f74cff3c60e8318961b36add",
+      "exact_head_workflow_run": "jiying2007/claude/actions/runs/35477726658",
+      "fresh_main_workflow_run": "jiying2007/claude/actions/runs/35477771868",
       "r1_binding_conformance": "passed",
       "verified_runtime_execution_receipt": "pending",
       "r2_real_provider_substitution": "pending"
@@ -108,24 +138,24 @@
   "execution_plane_evidence": {
     "codex": {
       "repository": "jiying2007/codex",
-      "execution_plane_commit": "ad3ca665e5c773b05461c27f53f34756b672f0de",
-      "frozen_binding_commit": "d12e782b46430d6bfc828f24a41f94f871a7a19a",
+      "execution_plane_commit": "fa4f050bf03050bac3e10190952ccb8c6dde0882",
+      "frozen_binding_commit": "79acb193cef381b4c8b72f00e0af15f87e32765c",
       "provider_execution_workflow": ".github/workflows/runtime-r2-provider-execution.yml",
       "credential_owner": "jiying2007/codex",
-      "merged_pr": "jiying2007/codex#14",
-      "exact_head_contract_run": "jiying2007/codex/actions/runs/35198177281",
-      "fresh_main_contract_run": "jiying2007/codex/actions/runs/35201225651",
+      "merged_pr": "jiying2007/codex#16",
+      "exact_head_contract_run": "jiying2007/codex/actions/runs/35479144672",
+      "fresh_main_contract_run": "jiying2007/codex/actions/runs/35479163874",
       "real_provider_execution_receipt": "pending"
     },
     "claude-code": {
       "repository": "jiying2007/claude",
-      "execution_plane_commit": "5489f881aac3fb19b4fc4d4677d6083437ab4986",
-      "frozen_binding_commit": "8cd87956507f9dbde0438c9135493c96f3b2d318",
+      "execution_plane_commit": "b8dc8b9b33084ed619c7b398f33e8c826e7b4185",
+      "frozen_binding_commit": "fba4551aa4a2abe5f74cff3c60e8318961b36add",
       "provider_execution_workflow": ".github/workflows/runtime-r2-provider-execution.yml",
       "credential_owner": "jiying2007/claude",
-      "merged_pr": "jiying2007/claude#4",
-      "exact_head_contract_run": "jiying2007/claude/actions/runs/35198276279",
-      "fresh_main_contract_run": "jiying2007/claude/actions/runs/35201235807",
+      "merged_pr": "jiying2007/claude#6",
+      "exact_head_contract_run": "jiying2007/claude/actions/runs/35477834233",
+      "fresh_main_contract_run": "jiying2007/claude/actions/runs/35477851200",
       "real_provider_execution_receipt": "pending"
     },
     "digital-worker": {

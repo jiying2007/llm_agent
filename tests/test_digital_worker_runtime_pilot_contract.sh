@@ -67,17 +67,17 @@ assert codex["repository"] == "https://github.com/jiying2007/codex.git", codex
 assert codex["target"] == "codex-cli", codex
 assert codex["source_identity_mode"] == "exact-release-source-blobs", codex
 assert codex["status"] == "source-set-bound", codex
-assert codex["binding_commit"] == "d12e782b46430d6bfc828f24a41f94f871a7a19a", codex
+assert codex["binding_commit"] == "79acb193cef381b4c8b72f00e0af15f87e32765c", codex
 
 claude = bindings["claude-code"]
 assert claude["repository"] == "https://github.com/jiying2007/claude.git", claude
 assert claude["target"] == "claude-code", claude
 assert claude["source_identity_mode"] == "exact-release-source-blobs", claude
 assert claude["status"] == "source-set-bound", claude
-assert claude["merged_pr"] == "jiying2007/claude#3", claude
-assert claude["binding_commit"] == "8cd87956507f9dbde0438c9135493c96f3b2d318", claude
-assert claude["exact_head_workflow_run"] == "jiying2007/claude/actions/runs/35115950799", claude
-assert claude["fresh_main_workflow_run"] == "jiying2007/claude/actions/runs/35116031702", claude
+assert claude["merged_pr"] == "jiying2007/claude#5", claude
+assert claude["binding_commit"] == "fba4551aa4a2abe5f74cff3c60e8318961b36add", claude
+assert claude["exact_head_workflow_run"] == "jiying2007/claude/actions/runs/35477726658", claude
+assert claude["fresh_main_workflow_run"] == "jiying2007/claude/actions/runs/35477771868", claude
 assert claude["r1_binding_conformance"] == "passed", claude
 assert claude["verified_runtime_execution_receipt"] == "pending", claude
 assert claude["r2_real_provider_substitution"] == "pending", claude
@@ -85,22 +85,22 @@ assert claude["r2_real_provider_substitution"] == "pending", claude
 planes = data["execution_plane_evidence"]
 codex_plane = planes["codex"]
 assert codex_plane["repository"] == "jiying2007/codex", codex_plane
-assert codex_plane["execution_plane_commit"] == "ad3ca665e5c773b05461c27f53f34756b672f0de", codex_plane
+assert codex_plane["execution_plane_commit"] == "fa4f050bf03050bac3e10190952ccb8c6dde0882", codex_plane
 assert codex_plane["frozen_binding_commit"] == codex["binding_commit"], codex_plane
 assert codex_plane["credential_owner"] == "jiying2007/codex", codex_plane
-assert codex_plane["merged_pr"] == "jiying2007/codex#14", codex_plane
-assert codex_plane["exact_head_contract_run"] == "jiying2007/codex/actions/runs/35198177281", codex_plane
-assert codex_plane["fresh_main_contract_run"] == "jiying2007/codex/actions/runs/35201225651", codex_plane
+assert codex_plane["merged_pr"] == "jiying2007/codex#16", codex_plane
+assert codex_plane["exact_head_contract_run"] == "jiying2007/codex/actions/runs/35479144672", codex_plane
+assert codex_plane["fresh_main_contract_run"] == "jiying2007/codex/actions/runs/35479163874", codex_plane
 assert codex_plane["real_provider_execution_receipt"] == "pending", codex_plane
 
 claude_plane = planes["claude-code"]
 assert claude_plane["repository"] == "jiying2007/claude", claude_plane
-assert claude_plane["execution_plane_commit"] == "5489f881aac3fb19b4fc4d4677d6083437ab4986", claude_plane
+assert claude_plane["execution_plane_commit"] == "b8dc8b9b33084ed619c7b398f33e8c826e7b4185", claude_plane
 assert claude_plane["frozen_binding_commit"] == claude["binding_commit"], claude_plane
 assert claude_plane["credential_owner"] == "jiying2007/claude", claude_plane
-assert claude_plane["merged_pr"] == "jiying2007/claude#4", claude_plane
-assert claude_plane["exact_head_contract_run"] == "jiying2007/claude/actions/runs/35198276279", claude_plane
-assert claude_plane["fresh_main_contract_run"] == "jiying2007/claude/actions/runs/35201235807", claude_plane
+assert claude_plane["merged_pr"] == "jiying2007/claude#6", claude_plane
+assert claude_plane["exact_head_contract_run"] == "jiying2007/claude/actions/runs/35477834233", claude_plane
+assert claude_plane["fresh_main_contract_run"] == "jiying2007/claude/actions/runs/35477851200", claude_plane
 assert claude_plane["real_provider_execution_receipt"] == "pending", claude_plane
 
 dw_plane = planes["digital-worker"]
