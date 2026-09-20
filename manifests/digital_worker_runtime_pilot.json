@@ -118,7 +118,7 @@
       "target": "codex-cli",
       "source_identity_mode": "exact-release-source-blobs",
       "status": "source-set-bound",
-      "binding_commit": "364277dc52fc0b18c4fc30168c8bb82878ad2204"
+      "binding_commit": "e80116bf2c192b02b5b038120323ef4af4618fa6"
     },
     {
       "runtime": "claude-code",
@@ -126,7 +126,7 @@
       "target": "claude-code",
       "source_identity_mode": "exact-release-source-blobs",
       "status": "source-set-bound",
-      "binding_commit": "81c8890ef952104c629c99e11259da6f180ce7db",
+      "binding_commit": "50e9b8d4d19d35d3315ba8400e87dfe851a749dd",
       "r1_binding_conformance": "passed",
       "verified_runtime_execution_receipt": "pending",
       "r2_real_provider_substitution": "pending"
@@ -135,24 +135,24 @@
   "execution_plane_evidence": {
     "codex": {
       "repository": "jiying2007/codex",
-      "execution_plane_commit": "364277dc52fc0b18c4fc30168c8bb82878ad2204",
-      "frozen_binding_commit": "364277dc52fc0b18c4fc30168c8bb82878ad2204",
+      "execution_plane_commit": "e80116bf2c192b02b5b038120323ef4af4618fa6",
+      "frozen_binding_commit": "e80116bf2c192b02b5b038120323ef4af4618fa6",
       "provider_execution_adapter": "scripts/runtime-r2-local.sh",
       "execution_venue": "local-terminal",
       "credential_owner": "runtime-local-auth-state",
-      "merged_pr": "jiying2007/codex#18",
-      "exact_head_contract_run": "jiying2007/codex/actions/runs/35510135013",
+      "merged_pr": "jiying2007/codex#19",
+      "exact_head_contract_run": "jiying2007/codex/actions/runs/35511867346",
       "real_provider_execution_receipt": "pending"
     },
     "claude-code": {
       "repository": "jiying2007/claude",
-      "execution_plane_commit": "81c8890ef952104c629c99e11259da6f180ce7db",
-      "frozen_binding_commit": "81c8890ef952104c629c99e11259da6f180ce7db",
+      "execution_plane_commit": "50e9b8d4d19d35d3315ba8400e87dfe851a749dd",
+      "frozen_binding_commit": "50e9b8d4d19d35d3315ba8400e87dfe851a749dd",
       "provider_execution_adapter": "control/scripts/runtime-r2-local.sh",
       "execution_venue": "local-terminal",
       "credential_owner": "runtime-local-auth-state",
-      "merged_pr": "jiying2007/claude#8",
-      "exact_head_contract_run": "jiying2007/claude/actions/runs/35510136587",
+      "merged_pr": "jiying2007/claude#9",
+      "exact_head_contract_run": "jiying2007/claude/actions/runs/35511869558",
       "real_provider_execution_receipt": "pending"
     },
     "digital-worker": {
