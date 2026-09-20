@@ -120,7 +120,7 @@
       "target": "codex-cli",
       "source_identity_mode": "exact-release-source-blobs",
       "status": "source-set-bound",
-      "binding_commit": "c4a1fa995b281da909be10bfe5c41fe719ce2759"
+      "binding_commit": "1d77de27ef01d9be403ce0bd8ce50e2ece5d8967"
     },
     {
       "runtime": "claude-code",
@@ -128,7 +128,7 @@
       "target": "claude-code",
       "source_identity_mode": "exact-release-source-blobs",
       "status": "source-set-bound",
-      "binding_commit": "e6d2be534a85ac1208967774612f07b54c59a0b5",
+      "binding_commit": "e358b029607cf9dc5429eb7c2ca05b5d4a13c0f1",
       "r1_binding_conformance": "passed",
       "verified_runtime_execution_receipt": "pending",
       "r2_real_provider_substitution": "pending"
@@ -137,26 +137,26 @@
   "execution_plane_evidence": {
     "codex": {
       "repository": "jiying2007/codex",
-      "execution_plane_commit": "c4a1fa995b281da909be10bfe5c41fe719ce2759",
-      "frozen_binding_commit": "c4a1fa995b281da909be10bfe5c41fe719ce2759",
+      "execution_plane_commit": "1d77de27ef01d9be403ce0bd8ce50e2ece5d8967",
+      "frozen_binding_commit": "1d77de27ef01d9be403ce0bd8ce50e2ece5d8967",
       "provider_execution_adapter": "scripts/runtime-r2-local.sh",
       "execution_venue": "local-terminal",
       "credential_owner": "runtime-local-auth-state",
-      "merged_pr": "jiying2007/codex#20",
-      "exact_head_contract_run": "jiying2007/codex/actions/runs/35516083941",
+      "merged_pr": "jiying2007/codex#21",
+      "exact_head_contract_run": "jiying2007/codex/actions/runs/35518061439",
       "real_provider_execution_receipt": "pending",
       "runtime_home_mode": "shared-user-home",
       "credential_state_in_evidence": false
     },
     "claude-code": {
       "repository": "jiying2007/claude",
-      "execution_plane_commit": "e6d2be534a85ac1208967774612f07b54c59a0b5",
-      "frozen_binding_commit": "e6d2be534a85ac1208967774612f07b54c59a0b5",
+      "execution_plane_commit": "e358b029607cf9dc5429eb7c2ca05b5d4a13c0f1",
+      "frozen_binding_commit": "e358b029607cf9dc5429eb7c2ca05b5d4a13c0f1",
       "provider_execution_adapter": "control/scripts/runtime-r2-local.sh",
       "execution_venue": "local-terminal",
       "credential_owner": "runtime-local-auth-state",
-      "merged_pr": "jiying2007/claude#10",
-      "exact_head_contract_run": "jiying2007/claude/actions/runs/35516087337",
+      "merged_pr": "jiying2007/claude#11",
+      "exact_head_contract_run": "jiying2007/claude/actions/runs/35523054373",
       "real_provider_execution_receipt": "pending",
       "runtime_home_mode": "shared-user-home",
       "credential_state_in_evidence": false
