@@ -103,7 +103,7 @@
     "independent_review_must_be_distinct_from_all_runtime_executors_and_verifier": true,
     "local_execution_receipt_is_not_r2_pass": true,
     "runtime_home_mode": "shared-user-home",
-    "runtime_local_state_policy": "reuse-local-auth-and-provider-config-exclude-from-evidence"
+    "runtime_local_state_policy": "reuse-local-auth-and-provider-state-exclude-credential-state-and-user-behavioral-settings-from-evidence-execution-context"
   },
   "loop_readiness_mapping": {
     "tool_execution_evidence": "runtime-binding:local-execution-receipt+digital-worker:local-evidence-intake+local-domain-verification",
@@ -128,7 +128,7 @@
       "target": "claude-code",
       "source_identity_mode": "exact-release-source-blobs",
       "status": "source-set-bound",
-      "binding_commit": "e358b029607cf9dc5429eb7c2ca05b5d4a13c0f1",
+      "binding_commit": "cc3044eefd42d2f95f68d2ae85024845e9edcf63",
       "r1_binding_conformance": "passed",
       "verified_runtime_execution_receipt": "pending",
       "r2_real_provider_substitution": "pending"
@@ -150,13 +150,13 @@
     },
     "claude-code": {
       "repository": "jiying2007/claude",
-      "execution_plane_commit": "e358b029607cf9dc5429eb7c2ca05b5d4a13c0f1",
-      "frozen_binding_commit": "e358b029607cf9dc5429eb7c2ca05b5d4a13c0f1",
+      "execution_plane_commit": "cc3044eefd42d2f95f68d2ae85024845e9edcf63",
+      "frozen_binding_commit": "cc3044eefd42d2f95f68d2ae85024845e9edcf63",
       "provider_execution_adapter": "control/scripts/runtime-r2-local.sh",
       "execution_venue": "local-terminal",
       "credential_owner": "runtime-local-auth-state",
-      "merged_pr": "jiying2007/claude#11",
-      "exact_head_contract_run": "jiying2007/claude/actions/runs/35523054373",
+      "merged_pr": "jiying2007/claude#12",
+      "exact_head_contract_run": "jiying2007/claude/actions/runs/35563435255",
       "real_provider_execution_receipt": "pending",
       "runtime_home_mode": "shared-user-home",
       "credential_state_in_evidence": false
