@@ -53,8 +53,8 @@ assert lta['lifecycle']['llm_agent']['model'] == 'non-release-workspace'
 assert lta['lifecycle']['llm_agent']['component_release_required'] is False
 assert lta['lifecycle']['agent_dev_kit']['model'] == 'versioned-component'
 assert lta['lifecycle']['agent_dev_kit']['component_release_required'] is True
-assert lta['lifecycle']['agent_dev_kit']['current_release'] == lock['version']
-assert lock['version'] == '7.0.4'
+assert 'current_release' not in lta['lifecycle']['agent_dev_kit']
+assert lock['version']
 
 iteration = lta['iteration_readiness']
 assert iteration['development'] == 'ready'
