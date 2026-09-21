@@ -24,7 +24,7 @@ assert iteration == {
     'integration': 'ready',
     'control_plane': 'ready',
     'iteration_gates': [],
-    'qualification_pending': ['LTA-02', 'LTA-04'],
+    'qualification_pending': ['LTA-04'],
     'meaning': iteration['meaning'],
 }
 
@@ -34,15 +34,14 @@ assert requirements['LTA-01']['status'] == 'pass'
 assert requirements['LTA-03']['status'] == 'pass'
 
 lta02 = requirements['LTA-02']
-assert lta02['status'] == 'evidence_collection_in_progress'
-assert lta02['affects'] == [
-    'runtime-portability-terminal-qualification',
-    'long-term-asset-terminal-qualification',
-]
-assert lta02['implementation_status'] == 'certifier-ready'
-assert lta02['pending_evidence'] == 'real-codex-and-claude-runtime-execution-receipts-and-same-frozen-task-R2-comparison-evidence'
-assert lta02['required_evidence_level'] == 'R2-real-provider-substitution'
+assert lta02['status'] == 'delegated_nonblocking_observation'
+assert lta02['affects'] == ['runtime-portability-observation']
+assert lta02['implementation_status'] == 'observer-ready'
+assert lta02['pending_evidence'] == 'fresh-digital-worker-periodic-r2-qualification-receipt-for-observation'
+assert lta02['required_evidence_level'] == 'R2-periodic-real-provider-substitution'
 assert lta02['r1_binding_conformance_is_terminal_evidence'] is False
+assert lta02['qualification_authority'] == 'jiying2007/digital-worker'
+assert lta02['terminal_blocking'] is False
 
 ownership = runtime_pilot['execution_ownership']
 assert ownership['runtime_home_mode'] == 'shared-user-home'
@@ -53,6 +52,12 @@ assert ownership['runtime_local_state_policy'] == (
 rules = runtime_pilot['hard_rules']
 assert rules['runtime_user_behavioral_settings_must_not_enter_controlled_execution_context'] is True
 assert rules['shared_home_reuse_is_auth_provider_state_not_behavioral_instruction_reuse'] is True
+assert rules['r2_qualification_authority_must_be_digital_worker'] is True
+assert rules['llm_agent_must_not_recertify_r2'] is True
+assert rules['independent_verifier_must_be_distinct_from_provider_execution_actors'] is True
+assert ownership['r2_qualification_authority'] == 'jiying2007/digital-worker'
+assert ownership['independent_verifier_actor_required'] is True
+assert ownership['llm_agent_role'] == 'optional-evolution-observer'
 
 lta04 = requirements['LTA-04']
 assert lta04['status'] == 'observation_window_in_progress'
@@ -70,7 +75,7 @@ terminal = lta['terminal']
 assert terminal == {
     'qualified': False,
     'status': 'qualification_pending',
-    'pending_requirements': ['LTA-02', 'LTA-04'],
+    'pending_requirements': ['LTA-04'],
 }
 
 readiness = lta['terminal_readiness']
@@ -78,7 +83,8 @@ assert readiness['engineering_control_plane'] == 'pass'
 assert readiness['iteration_readiness'] == 'ready'
 assert readiness['iteration_gates'] == []
 assert readiness['qualification_status'] == 'pending'
-assert readiness['pending_requirements'] == ['LTA-02', 'LTA-04']
+assert readiness['pending_requirements'] == ['LTA-04']
+assert readiness['rehearsal_scope'] == ['LTA-04']
 
 layer = {item['id']: item for item in lta['qualification_layers']}['long-term-asset-qualified']
 assert layer['status'] == 'qualification_pending'
