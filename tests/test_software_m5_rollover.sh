@@ -30,9 +30,17 @@ assert "second human" not in objective
 # rewritten by this current-ledger policy ratchet.
 assert (root / "reports/field-evidence/software-m5-independent-pilot-start-2026-09-12.json").is_file()
 PY
+echo "[INFO] rollover baseline assertions PASS" >&2
 
-cp -a "$ROOT" "$GOOD"
-cp -a "$ROOT" "$BAD"
+if ! cp -a "$ROOT" "$GOOD"; then
+  echo "[FAIL] failed to copy GOOD rollover fixture" >&2
+  exit 1
+fi
+if ! cp -a "$ROOT" "$BAD"; then
+  echo "[FAIL] failed to copy BAD rollover fixture" >&2
+  exit 1
+fi
+echo "[INFO] rollover repository fixtures copied" >&2
 
 make_evidence() {
   local repo="$1"
@@ -93,6 +101,7 @@ PY
 }
 
 make_evidence "$GOOD" "$TMP/good-evidence.json" true
+echo "[INFO] rollover good measured evidence built" >&2
 (
   cd "$GOOD"
   if ! python3 -m tools.codex_assets.software_m5_rollover \
@@ -164,6 +173,11 @@ assert "- release_evidence_relation: current" in status
 assert "- release_authorized: true" in status
 assert "- baseline_release_authorized: true" in status
 PY
+then
+  echo "[FAIL] rollover post-apply contract assertions failed" >&2
+  exit 1
+fi
+echo "[INFO] rollover post-apply contract assertions PASS" >&2
 
 # Exercise the same review-bundle contract used by the manual hosted workflow.
 BUNDLE="$TMP/rollover-candidate"
