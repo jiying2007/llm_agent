@@ -12,7 +12,7 @@
 6. `~/.codex`：只接收 `~/codex` apply 后的运行资产。
 7. `reports/`：记录评测、pilot、安装、回归和回灌结论。
 
-运行态 target 由 `manifests/runtime_targets.json` 显式声明，健康检查 adapter 由 `manifests/runtime_health_adapters.json` 绑定；当前默认 target 是 `codex-home`，其 source/live 链路为 `agent-dev-kit -> ~/codex -> ~/.codex`。其他运行时如 `claude-code`、`opencode` 保留为 supported kind，但必须先声明各自 source/live chain 与只读 health adapter 才能成为 active target。
+运行态 target 与健康检查 adapter 统一由 `manifests/runtime_targets.json` 声明；当前默认 target 是 `codex-home`，其 source/live 链路为 `agent-dev-kit -> ~/codex -> ~/.codex`。其他运行时如 `claude-code`、`opencode` 保留为 supported kind，但必须先声明各自 source/live chain 与只读 health adapter 才能成为 active target。
 
 ## 快速入口
 
@@ -60,7 +60,7 @@ Root 控制面的统一 Python 入口是 `llm-ctl`（`pyproject.toml`）；GitHu
 - `subrepos/registry.csv`：参考仓 intake/生命周期清单。
 - `subrepos/adoption-matrix.md`：参考仓吸收决策矩阵。
 - `manifests/runtime_targets.json`：运行态 target registry。
-- `manifests/runtime_health_adapters.json`：运行态健康检查 adapter contract。
+- `manifests/runtime_targets.json`：运行态 target registry 与 health-adapter contract 的统一 SSOT。
 - `docs/runbooks/runtime-target-activation.md`：新增或启用 runtime target 的 checklist。
 - `reports/reference-dirty-triage-YYYY-MM-DD.md`：参考仓 dirty 分流报告。
 - `reports/codex-pilot-report.md`：`~/codex -> ~/.codex` pilot 证据。
