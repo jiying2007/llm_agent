@@ -166,6 +166,10 @@ def _validate_execution_architecture(contract: Mapping[str, Any]) -> None:
             raise PortabilityError(f"runtime home mode drift: {runtime}")
         if plane.get("credential_state_in_evidence") is not False:
             raise PortabilityError(f"runtime credential state entered evidence: {runtime}")
+        if plane.get("replay_postflight_required") is not True:
+            raise PortabilityError(f"runtime replay postflight requirement drift: {runtime}")
+        if plane.get("replay_postflight_authority") != "digital-worker:scripts/runtime_r2_result_postflight.py":
+            raise PortabilityError(f"runtime replay postflight authority drift: {runtime}")
         execution_commit = _require_full_sha(plane.get("execution_plane_commit"), f"{runtime} execution plane commit")
         frozen_commit = _require_full_sha(plane.get("frozen_binding_commit"), f"{runtime} execution plane frozen binding")
         if frozen_commit != candidates[runtime].get("binding_commit"):
@@ -182,6 +186,8 @@ def _validate_execution_architecture(contract: Mapping[str, Any]) -> None:
         raise PortabilityError("digital-worker verification-plane repository drift")
     if digital_worker.get("provider_credentials_held") is not False:
         raise PortabilityError("digital-worker must not hold provider credentials")
+    if digital_worker.get("result_postflight") != "scripts/runtime_r2_result_postflight.py":
+        raise PortabilityError("digital-worker result postflight path drift")
     if digital_worker.get("combined_provider_workflow_present") is not False:
         raise PortabilityError("digital-worker combined provider workflow must remain retired")
     expected_paths = {
@@ -232,6 +238,9 @@ def _contract(root: Path) -> dict[str, Any]:
         "local_runtime_config_may_drift_outside_managed_identity",
         "runtime_user_behavioral_settings_must_not_enter_controlled_execution_context",
         "shared_home_reuse_is_auth_provider_state_not_behavioral_instruction_reuse",
+        "runtime_execution_evidence_ready_requires_replay_postflight",
+        "replay_postflight_must_use_exported_git_free_result_tree",
+        "replay_postflight_is_not_domain_verification",
         "frozen_binding_identity_must_not_follow_execution_plane_head",
     )
     if any(rules.get(key) is not True for key in required_rules):
@@ -284,7 +293,7 @@ def _receipt_binding(
     run: Mapping[str, Any],
     required_identity_fields: list[str],
     frozen_digest: str,
-) -> tuple[str, dict[str, Any]]:
+) -> tuple[str, dict[str, Any], str]:
     ref = _require_text(run.get("execution_receipt_ref"), f"{runtime}.execution_receipt_ref")
     expected_digest = _require_sha256(run.get("execution_receipt_sha256"), f"{runtime}.execution_receipt_sha256")
     path = _repo_path(root, ref, f"{runtime} execution receipt")
@@ -302,6 +311,22 @@ def _receipt_binding(
         raise PortabilityError(f"{runtime} execution receipt must explicitly disclaim verification PASS")
     if _contains_verification_pass_claim(receipt):
         raise PortabilityError(f"{runtime} execution receipt contains a forbidden verification PASS claim")
+    postflight = receipt.get("replay_postflight")
+    if not isinstance(postflight, dict):
+        raise PortabilityError(f"{runtime} execution receipt replay_postflight is missing")
+    postflight_digest = _require_sha256(
+        postflight.get("sha256"),
+        f"{runtime}.execution_receipt.replay_postflight.sha256",
+    )
+    refs = receipt.get("evidence_refs")
+    expected_ref = "replay-postflight:sha256:" + postflight_digest
+    if (
+        not isinstance(refs, list)
+        or sum(1 for item in refs if item == expected_ref) != 1
+    ):
+        raise PortabilityError(
+            f"{runtime} execution receipt must bind exactly one replay-postflight evidence ref"
+        )
     receipt_identity = receipt.get("runtime_identity")
     if not isinstance(receipt_identity, dict):
         raise PortabilityError(f"{runtime} execution receipt runtime_identity is missing")
@@ -310,7 +335,7 @@ def _receipt_binding(
             continue
         if receipt_identity.get(field) != run.get(field):
             raise PortabilityError(f"{runtime} execution receipt identity field drift: {field}")
-    return actual_digest, receipt
+    return actual_digest, receipt, postflight_digest
 
 
 def _validate_external_result(
@@ -322,6 +347,7 @@ def _validate_external_result(
     comparison_id: str,
     frozen_digest: str,
     receipt_digests: Mapping[str, str],
+    postflight_digests: Mapping[str, str],
     standard_id: str,
     *,
     require_independent: bool,
@@ -356,6 +382,12 @@ def _validate_external_result(
             raise PortabilityError(f"{label} provider runtime home mode drift: {runtime}")
         if descriptor.get("credential_state_in_evidence") is not False:
             raise PortabilityError(f"{label} provider credential state entered evidence: {runtime}")
+        postflight_digest = _require_sha256(
+            descriptor.get("replay_postflight_sha256"),
+            f"{label}.{runtime}.replay_postflight_sha256",
+        )
+        if postflight_digest != postflight_digests.get(runtime):
+            raise PortabilityError(f"{label} provider replay postflight digest drift: {runtime}")
         _require_full_sha(descriptor.get("runtime_binding_commit"), f"{label}.{runtime}.runtime_binding_commit")
     if label == "digital-worker domain verification":
         if value.get("verification_execution_venue") != "local-terminal":
@@ -429,6 +461,7 @@ def check(root: Path, evidence_path: Path | None = None) -> dict[str, Any]:
 
     seen: set[str] = set()
     receipt_digests: dict[str, str] = {}
+    postflight_digests: dict[str, str] = {}
     for index, raw in enumerate(runs):
         if not isinstance(raw, dict):
             raise PortabilityError(f"runtime_runs[{index}] must be an object")
@@ -454,7 +487,7 @@ def check(root: Path, evidence_path: Path | None = None) -> dict[str, Any]:
         candidate_repository = candidate.get("repository")
         if candidate_repository is not None and raw.get("runtime_binding_repository") != candidate_repository:
             raise PortabilityError(f"{runtime} runtime binding repository does not match the contract")
-        receipt_digest, _receipt = _receipt_binding(
+        receipt_digest, _receipt, postflight_digest = _receipt_binding(
             root,
             runtime,
             raw,
@@ -462,6 +495,7 @@ def check(root: Path, evidence_path: Path | None = None) -> dict[str, Any]:
             frozen_digest,
         )
         receipt_digests[runtime] = receipt_digest
+        postflight_digests[runtime] = postflight_digest
 
     if len(seen) < required_count:
         raise PortabilityBlocked("LTA-02 requires two distinct healthy runtime bindings")
@@ -476,6 +510,7 @@ def check(root: Path, evidence_path: Path | None = None) -> dict[str, Any]:
         comparison_id,
         frozen_digest,
         receipt_digests,
+        postflight_digests,
         standard_id,
         require_independent=False,
     )
@@ -488,6 +523,7 @@ def check(root: Path, evidence_path: Path | None = None) -> dict[str, Any]:
         comparison_id,
         frozen_digest,
         receipt_digests,
+        postflight_digests,
         standard_id,
         require_independent=True,
     )
@@ -508,6 +544,7 @@ def check(root: Path, evidence_path: Path | None = None) -> dict[str, Any]:
         "agent_dev_kit": expected_adk,
         "runtimes": sorted(seen),
         "execution_receipts": dict(sorted(receipt_digests.items())),
+        "replay_postflights": dict(sorted(postflight_digests.items())),
         "verification_standard_id": standard_id,
         "digital_worker_commit": verification.get("source_commit"),
         "evidence": evidence.relative_to(root).as_posix(),

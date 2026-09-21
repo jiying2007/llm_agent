@@ -30,7 +30,8 @@
       "runtime_distribution_identity",
       "provider_execution",
       "runtime_execution_receipt",
-      "runtime_local_conformance"
+      "runtime_local_conformance",
+      "replay_result_postflight"
     ],
     "llm_agent": [
       "runtime_target_health",
@@ -83,7 +84,7 @@
   },
   "replaceability_evidence_levels": {
     "R1-binding-conformance": "Controlled/fake adapters may prove contract shape, exact identity handling, failure semantics and rollback only; R1 never qualifies terminal portability.",
-    "R2-real-provider-substitution": "Two real Runtime/Provider Bindings execute the same frozen real task in isolated local terminal domains using exact frozen runtime-owned adapters, emit digest-bound execution receipts and replay-complete result evidence, and are evaluated under shared Digital Worker local verification/review semantics; R2 is required for terminal portability."
+    "R2-real-provider-substitution": "Two real Runtime/Provider Bindings execute the same frozen real task in isolated local terminal domains using exact frozen runtime-owned adapters, emit digest-bound execution receipts and replay-complete result evidence, pass the frozen Digital Worker replay postflight on exported git-free result trees, and are evaluated under shared Digital Worker local verification/review semantics; replay postflight is required before evidence-ready but is not Domain Verification, and R2 is required for terminal portability."
   },
   "terminal_replaceability_evidence_level": "R2-real-provider-substitution",
   "isolation": {
@@ -120,7 +121,7 @@
       "target": "codex-cli",
       "source_identity_mode": "exact-release-source-blobs",
       "status": "source-set-bound",
-      "binding_commit": "1d77de27ef01d9be403ce0bd8ce50e2ece5d8967"
+      "binding_commit": "541c058731b5f5ee3ab7d5fdee29b64a76158085"
     },
     {
       "runtime": "claude-code",
@@ -128,7 +129,7 @@
       "target": "claude-code",
       "source_identity_mode": "exact-release-source-blobs",
       "status": "source-set-bound",
-      "binding_commit": "cc3044eefd42d2f95f68d2ae85024845e9edcf63",
+      "binding_commit": "6ef0c97503d2e81dae0ddbe8a477449c4961b690",
       "r1_binding_conformance": "passed",
       "verified_runtime_execution_receipt": "pending",
       "r2_real_provider_substitution": "pending"
@@ -137,29 +138,33 @@
   "execution_plane_evidence": {
     "codex": {
       "repository": "jiying2007/codex",
-      "execution_plane_commit": "1d77de27ef01d9be403ce0bd8ce50e2ece5d8967",
-      "frozen_binding_commit": "1d77de27ef01d9be403ce0bd8ce50e2ece5d8967",
+      "execution_plane_commit": "541c058731b5f5ee3ab7d5fdee29b64a76158085",
+      "frozen_binding_commit": "541c058731b5f5ee3ab7d5fdee29b64a76158085",
       "provider_execution_adapter": "scripts/runtime-r2-local.sh",
       "execution_venue": "local-terminal",
       "credential_owner": "runtime-local-auth-state",
-      "merged_pr": "jiying2007/codex#21",
-      "exact_head_contract_run": "jiying2007/codex/actions/runs/35518061439",
+      "merged_pr": "jiying2007/codex#22",
+      "exact_head_contract_run": "jiying2007/codex/actions/runs/35574305909",
       "real_provider_execution_receipt": "pending",
       "runtime_home_mode": "shared-user-home",
-      "credential_state_in_evidence": false
+      "credential_state_in_evidence": false,
+      "replay_postflight_required": true,
+      "replay_postflight_authority": "digital-worker:scripts/runtime_r2_result_postflight.py"
     },
     "claude-code": {
       "repository": "jiying2007/claude",
-      "execution_plane_commit": "cc3044eefd42d2f95f68d2ae85024845e9edcf63",
-      "frozen_binding_commit": "cc3044eefd42d2f95f68d2ae85024845e9edcf63",
+      "execution_plane_commit": "6ef0c97503d2e81dae0ddbe8a477449c4961b690",
+      "frozen_binding_commit": "6ef0c97503d2e81dae0ddbe8a477449c4961b690",
       "provider_execution_adapter": "control/scripts/runtime-r2-local.sh",
       "execution_venue": "local-terminal",
       "credential_owner": "runtime-local-auth-state",
-      "merged_pr": "jiying2007/claude#12",
-      "exact_head_contract_run": "jiying2007/claude/actions/runs/35563435255",
+      "merged_pr": "jiying2007/claude#13",
+      "exact_head_contract_run": "jiying2007/claude/actions/runs/35574429365",
       "real_provider_execution_receipt": "pending",
       "runtime_home_mode": "shared-user-home",
-      "credential_state_in_evidence": false
+      "credential_state_in_evidence": false,
+      "replay_postflight_required": true,
+      "replay_postflight_authority": "digital-worker:scripts/runtime_r2_result_postflight.py"
     },
     "digital-worker": {
       "repository": "jiying2007/digital-worker",
@@ -169,7 +174,8 @@
       "local_intake": "scripts/runtime_r2_intake.py",
       "local_verifier": "scripts/runtime_r2_local_verify.py",
       "verifier_identity_mode": "receipt-bound-tool-commit",
-      "independent_review_workflow": ".github/workflows/runtime-r2-independent-review.yml"
+      "independent_review_workflow": ".github/workflows/runtime-r2-independent-review.yml",
+      "result_postflight": "scripts/runtime_r2_result_postflight.py"
     }
   },
   "required_metrics": [
@@ -216,7 +222,10 @@
     "credential_state_must_not_enter_evidence": true,
     "local_runtime_config_may_drift_outside_managed_identity": true,
     "runtime_user_behavioral_settings_must_not_enter_controlled_execution_context": true,
-    "shared_home_reuse_is_auth_provider_state_not_behavioral_instruction_reuse": true
+    "shared_home_reuse_is_auth_provider_state_not_behavioral_instruction_reuse": true,
+    "runtime_execution_evidence_ready_requires_replay_postflight": true,
+    "replay_postflight_must_use_exported_git_free_result_tree": true,
+    "replay_postflight_is_not_domain_verification": true
   },
-  "completion": "R2 only: Codex and Claude each execute the same controlled real task using the exact frozen runtime binding/adapter identity while reusing the operator's normal shared runtime home (Codex CODEX_HOME/~/.codex; Claude user HOME/.claude). Local authentication/provider configuration remains local state and is excluded from evidence identity; managed frozen assets, receipts, replay-complete results, Digital Worker verification and independent review remain exact and fail-closed before llm_agent may certify terminal portability."
+  "completion": "R2 only: Codex and Claude each execute the same controlled real task using the exact frozen runtime binding/adapter identity while reusing the operator's normal shared runtime home (Codex CODEX_HOME/~/.codex; Claude user HOME/.claude). Local authentication/provider configuration remains local state and is excluded from evidence identity; managed frozen assets, receipts, exported git-free replay trees, mandatory replay postflight evidence, Digital Worker verification and independent review remain exact and fail-closed before llm_agent may certify terminal portability."
 }

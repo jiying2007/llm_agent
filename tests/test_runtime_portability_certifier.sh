@@ -24,6 +24,9 @@ assert ownership["runtime_local_state_policy"] == (
 rules = value["hard_rules"]
 assert rules["runtime_user_behavioral_settings_must_not_enter_controlled_execution_context"] is True
 assert rules["shared_home_reuse_is_auth_provider_state_not_behavioral_instruction_reuse"] is True
+assert rules["runtime_execution_evidence_ready_requires_replay_postflight"] is True
+assert rules["replay_postflight_must_use_exported_git_free_result_tree"] is True
+assert rules["replay_postflight_is_not_domain_verification"] is True
 PY
 
 # Missing real comparison evidence is a BLOCKED external-evidence state, never PASS.
@@ -107,6 +110,7 @@ frozen = digest_obj(controlled)
 
 runs = []
 receipts = {}
+postflight_digests = {}
 for runtime, repository, commit, target, provider in (
     ("codex", "https://github.com/jiying2007/codex.git", "1" * 40, "codex-cli", "openai"),
     ("claude-code", "jiying2007/claude-code-binding", "2" * 40, "claude-code", "anthropic"),
@@ -123,6 +127,8 @@ for runtime, repository, commit, target, provider in (
         "runtime_distribution_identity_ref": f"{runtime}-distribution-selftest",
     }
     receipt_ref = f"reports/portability/{runtime}-receipt.json"
+    postflight_digest = ("a" if runtime == "codex" else "b") * 64
+    postflight_digests[runtime] = postflight_digest
     receipt = {
         "schema": "runtime-binding-execution-receipt/selftest-v1",
         "status": "completed",
@@ -130,6 +136,8 @@ for runtime, repository, commit, target, provider in (
         "frozen_inputs_sha256": frozen,
         "verification_pass_claimed": False,
         "runtime_identity": identity,
+        "replay_postflight": {"sha256": postflight_digest},
+        "evidence_refs": ["replay-postflight:sha256:" + postflight_digest],
     }
     receipt_path = root / receipt_ref
     write(receipt_path, receipt)
@@ -149,12 +157,14 @@ provider_execution_evidence = {
         "runtime_home_mode": "shared-user-home",
         "credential_state_in_evidence": False,
         "runtime_binding_commit": "1" * 40,
+        "replay_postflight_sha256": postflight_digests["codex"],
     },
     "claude-code": {
         "execution_venue": "local-terminal",
         "runtime_home_mode": "shared-user-home",
         "credential_state_in_evidence": False,
         "runtime_binding_commit": "2" * 40,
+        "replay_postflight_sha256": postflight_digests["claude-code"],
     },
 }
 common_result = {
@@ -222,6 +232,10 @@ assert value["evidence_level"] == "R2-real-provider-substitution", value
 assert value["digital_worker_governance_identity_ref"].startswith("sha256:"), value
 assert value["runtimes"] == ["claude-code", "codex"], value
 assert set(value["execution_receipts"]) == {"codex", "claude-code"}, value
+assert value["replay_postflights"] == {
+    "claude-code": "b" * 64,
+    "codex": "a" * 64,
+}, value
 assert value["digital_worker_commit"] == "4" * 40, value
 PY
 

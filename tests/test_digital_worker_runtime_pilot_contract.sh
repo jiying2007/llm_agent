@@ -22,6 +22,7 @@ assert "governance_identity" in data["roles"]["digital-worker"], data
 assert "r2_freeze" in data["roles"]["digital-worker"], data
 assert "execution_evidence_intake" in data["roles"]["digital-worker"], data
 assert "provider_execution" in data["roles"]["runtime-binding"], data
+assert "replay_result_postflight" in data["roles"]["runtime-binding"], data
 assert data["roles"]["agent-dev-kit"] == [
     "asset_profile", "skill_assets", "immutable_release_identity", "source_set_handoff_contract"
 ], data
@@ -63,14 +64,14 @@ assert codex["repository"] == "https://github.com/jiying2007/codex.git", codex
 assert codex["target"] == "codex-cli", codex
 assert codex["source_identity_mode"] == "exact-release-source-blobs", codex
 assert codex["status"] == "source-set-bound", codex
-assert codex["binding_commit"] == "1d77de27ef01d9be403ce0bd8ce50e2ece5d8967", codex
+assert codex["binding_commit"] == "541c058731b5f5ee3ab7d5fdee29b64a76158085", codex
 
 claude = bindings["claude-code"]
 assert claude["repository"] == "https://github.com/jiying2007/claude.git", claude
 assert claude["target"] == "claude-code", claude
 assert claude["source_identity_mode"] == "exact-release-source-blobs", claude
 assert claude["status"] == "source-set-bound", claude
-assert claude["binding_commit"] == "cc3044eefd42d2f95f68d2ae85024845e9edcf63", claude
+assert claude["binding_commit"] == "6ef0c97503d2e81dae0ddbe8a477449c4961b690", claude
 assert claude["r1_binding_conformance"] == "passed", claude
 assert claude["verified_runtime_execution_receipt"] == "pending", claude
 assert claude["r2_real_provider_substitution"] == "pending", claude
@@ -81,15 +82,15 @@ for runtime, expected in {
         "repository": "jiying2007/codex",
         "commit": codex["binding_commit"],
         "adapter": "scripts/runtime-r2-local.sh",
-        "pr": "jiying2007/codex#21",
-        "run": "jiying2007/codex/actions/runs/35518061439",
+        "pr": "jiying2007/codex#22",
+        "run": "jiying2007/codex/actions/runs/35574305909",
     },
     "claude-code": {
         "repository": "jiying2007/claude",
         "commit": claude["binding_commit"],
         "adapter": "control/scripts/runtime-r2-local.sh",
-        "pr": "jiying2007/claude#12",
-        "run": "jiying2007/claude/actions/runs/35563435255",
+        "pr": "jiying2007/claude#13",
+        "run": "jiying2007/claude/actions/runs/35574429365",
     },
 }.items():
     plane = planes[runtime]
@@ -104,6 +105,8 @@ for runtime, expected in {
     assert plane["merged_pr"] == expected["pr"], plane
     assert plane["exact_head_contract_run"] == expected["run"], plane
     assert plane["real_provider_execution_receipt"] == "pending", plane
+    assert plane["replay_postflight_required"] is True, plane
+    assert plane["replay_postflight_authority"] == "digital-worker:scripts/runtime_r2_result_postflight.py", plane
     assert "provider_execution_workflow" not in plane, plane
 
 dw_plane = planes["digital-worker"]
@@ -114,6 +117,7 @@ assert dw_plane == {
     "freeze_workflow": ".github/workflows/runtime-r2-freeze.yml",
     "local_intake": "scripts/runtime_r2_intake.py",
     "local_verifier": "scripts/runtime_r2_local_verify.py",
+    "result_postflight": "scripts/runtime_r2_result_postflight.py",
     "verifier_identity_mode": "receipt-bound-tool-commit",
     "independent_review_workflow": ".github/workflows/runtime-r2-independent-review.yml",
 }, dw_plane
@@ -130,6 +134,9 @@ assert "digital-worker verifier identity must be receipt-bound" in certifier_tex
 assert "verification_tool_commit" in certifier_text, certifier_text
 assert "shared-user-home" in certifier_text, certifier_text
 assert "credential state entered evidence" in certifier_text, certifier_text
+assert "replay_postflight" in certifier_text, certifier_text
+assert "replay-postflight:sha256:" in certifier_text, certifier_text
+assert "provider replay postflight digest drift" in certifier_text, certifier_text
 
 rules = data["hard_rules"]
 for key in (
@@ -159,6 +166,9 @@ for key in (
     "local_runtime_config_may_drift_outside_managed_identity",
     "runtime_user_behavioral_settings_must_not_enter_controlled_execution_context",
     "shared_home_reuse_is_auth_provider_state_not_behavioral_instruction_reuse",
+    "runtime_execution_evidence_ready_requires_replay_postflight",
+    "replay_postflight_must_use_exported_git_free_result_tree",
+    "replay_postflight_is_not_domain_verification",
 ):
     assert rules[key] is True, (key, data)
 assert "attested_execution_receipt_is_not_domain_verification" not in rules
