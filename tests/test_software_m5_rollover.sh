@@ -95,13 +95,17 @@ PY
 make_evidence "$GOOD" "$TMP/good-evidence.json" true
 (
   cd "$GOOD"
-  python3 -m tools.codex_assets.software_m5_rollover \
+  if ! python3 -m tools.codex_assets.software_m5_rollover \
     --root . \
     --runtime-evidence "$TMP/good-evidence.json" \
     --root-integration-run-id 34703075857 \
     --qualification-time 2026-09-12T00:10:00Z \
     --apply \
-    --summary-json >"$TMP/rollover-summary.json"
+    --summary-json >"$TMP/rollover-summary.json"; then
+    echo "[FAIL] Software M5 rollover command failed" >&2
+    cat "$TMP/rollover-summary.json" >&2 || true
+    exit 1
+  fi
   if ! bash scripts/software-m5.sh certify --summary-json >"$TMP/certification.json"; then
     echo "[FAIL] Software M5 certification failed after rollover" >&2
     cat "$TMP/certification.json" >&2 || true
