@@ -214,7 +214,9 @@
     "verification_tool_identity_must_be_receipt_bound": true,
     "runtime_home_must_reuse_user_state": true,
     "credential_state_must_not_enter_evidence": true,
-    "local_runtime_config_may_drift_outside_managed_identity": true
+    "local_runtime_config_may_drift_outside_managed_identity": true,
+    "runtime_user_behavioral_settings_must_not_enter_controlled_execution_context": true,
+    "shared_home_reuse_is_auth_provider_state_not_behavioral_instruction_reuse": true
   },
   "completion": "R2 only: Codex and Claude each execute the same controlled real task using the exact frozen runtime binding/adapter identity while reusing the operator's normal shared runtime home (Codex CODEX_HOME/~/.codex; Claude user HOME/.claude). Local authentication/provider configuration remains local state and is excluded from evidence identity; managed frozen assets, receipts, replay-complete results, Digital Worker verification and independent review remain exact and fail-closed before llm_agent may certify terminal portability."
 }
