@@ -12,7 +12,7 @@
 6. `~/.codex`：只接收 `~/codex` apply 后的运行资产。
 7. `reports/`：记录评测、pilot、安装、回归和回灌结论。
 
-运行态 target 由 `manifests/runtime_targets.json` 显式声明，健康检查 adapter 由 `manifests/runtime_health_adapters.json` 绑定；当前默认 target 是 `codex-home`，其 source/live 链路为 `agent-dev-kit -> ~/codex -> ~/.codex`。其他运行时如 `claude-code`、`opencode` 保留为 supported kind，但必须先声明各自 source/live chain 与只读 health adapter 才能成为 active target。
+运行态 target 与健康检查 adapter 统一由 `manifests/runtime_targets.json` 声明；当前默认 target 是 `codex-home`，其 source/live 链路为 `agent-dev-kit -> ~/codex -> ~/.codex`。其他运行时如 `claude-code`、`opencode` 保留为 supported kind，但必须先声明各自 source/live chain 与只读 health adapter 才能成为 active target。
 
 ## 快速入口
 
@@ -64,7 +64,7 @@ Root 控制面的统一 Python 入口是 `llm-ctl`（`pyproject.toml`）；GitHu
 - `subrepos/registry.csv`：参考仓 intake/生命周期清单。
 - `subrepos/adoption-matrix.md`：参考仓吸收决策矩阵。
 - `manifests/runtime_targets.json`：运行态 target registry。
-- `manifests/runtime_health_adapters.json`：运行态健康检查 adapter contract。
+- `manifests/runtime_targets.json`：运行态 target registry 与 health-adapter contract 的统一 SSOT。
 - `docs/runbooks/runtime-target-activation.md`：新增或启用 runtime target 的 checklist。
 - `reports/reference-dirty-triage-YYYY-MM-DD.md`：参考仓 dirty 分流报告。
 - `reports/codex-pilot-report.md`：`~/codex -> ~/.codex` pilot 证据。
@@ -116,5 +116,5 @@ rtk scripts/check-adk-harden-readiness.sh . --require-pilot
 3. 若修改根仓脚本、契约或治理资产：运行 `rtk tests/run_all.sh`；全量门禁使用 `rtk scripts/check-all.sh --full --result-json <artifact>` 留存逐项状态和耗时。
 4. 若影响生产部署、`~/codex` 分发或 `~/.codex`：运行 `rtk scripts/check-adk-harden-readiness.sh . --require-pilot`，并在 `~/codex` 侧执行 build/apply dry-run。
 5. 若评估 reference repo 更新：先更新/审查 `manifests/reference_pins.json` 的 exact commit，再显式 materialize 到 cache 执行分析；审查结构化 decision/task pack 后才允许创建 ADK change artifact。
-6. 若推进 LTA-02：先完成第二 runtime binding 的 source/live/health 治理，再对同一 frozen real task 产出两份独立 execution receipt 与 `digital-worker` verification/review，最后用 `llm-ctl runtime-portability` 认证；在此之前 LTA-02 必须保持 `blocked_external_evidence`。
+6. 若推进 LTA-02：仓库侧 runtime binding/adapter/certifier 前置条件已完成；下一步只允许从一次 fresh freeze 开始，对同一 frozen real task 分别执行真实 Codex 与 Claude local-terminal campaign，完成 replay postflight、Digital Worker domain verification 与 independent review，再用 `llm-ctl runtime-portability` 认证。缺少真实双运行时证据时 LTA-02 必须保持 `evidence_collection_in_progress`，不得再新增模拟 venue、shim 或平行架构来制造进展。
 7. 若推进 LTA-04：继续把真实独立 pilot 事件追加到现有 hash-chain event log；2026-10-12T04:19:00Z 之前 `llm-ctl longitudinal-operation` 必须保持 BLOCKED。到期后生成真实 `reports/long-term-assets/longitudinal-operation-current.json`，绑定当前 event-chain head 并显式汇总 incident/regression/recovery/unresolved risk，再由 certifier 决定 PASS/BLOCKED；禁止用 synthetic fixture 作为资格证据。
