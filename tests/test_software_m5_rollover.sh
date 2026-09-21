@@ -102,12 +102,20 @@ make_evidence "$GOOD" "$TMP/good-evidence.json" true
     --qualification-time 2026-09-12T00:10:00Z \
     --apply \
     --summary-json >"$TMP/rollover-summary.json"
-  bash scripts/software-m5.sh certify --summary-json >"$TMP/certification.json"
-  python3 -m tools.control_plane.status_projection \
+  if ! bash scripts/software-m5.sh certify --summary-json >"$TMP/certification.json"; then
+    echo "[FAIL] Software M5 certification failed after rollover" >&2
+    cat "$TMP/certification.json" >&2 || true
+    exit 1
+  fi
+  if ! python3 -m tools.control_plane.status_projection \
     --root . \
     --today 2026-09-12 \
     --require-fresh \
-    --summary-json >"$TMP/projection.json"
+    --summary-json >"$TMP/projection.json"; then
+    echo "[FAIL] status projection failed after rollover" >&2
+    cat "$TMP/projection.json" >&2 || true
+    exit 1
+  fi
 )
 
 python3 - "$GOOD" "$TMP/rollover-summary.json" "$TMP/certification.json" "$TMP/projection.json" <<'PY'
