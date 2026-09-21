@@ -193,9 +193,19 @@ PY
 )
 (
   cd "$GOOD"
-  git add -N -- "${CHANGED_PATHS[@]}"
-  git diff --binary >"$TMP/rollover.patch"
-  git reset --mixed HEAD >/dev/null
+  if ! git add -N -- "${CHANGED_PATHS[@]}"; then
+    echo "[FAIL] git add -N failed for rollover changed paths" >&2
+    printf '  %s\n' "${CHANGED_PATHS[@]}" >&2
+    exit 1
+  fi
+  if ! git diff --binary >"$TMP/rollover.patch"; then
+    echo "[FAIL] git diff failed for rollover changed paths" >&2
+    exit 1
+  fi
+  if ! git reset --mixed HEAD >/dev/null; then
+    echo "[FAIL] git reset failed after rollover patch capture" >&2
+    exit 1
+  fi
 )
 if [[ "${#CHANGED_PATHS[@]}" -ne 5 ]]; then
   echo "[FAIL] rollover changed_paths count expected=5 actual=${#CHANGED_PATHS[@]}" >&2
