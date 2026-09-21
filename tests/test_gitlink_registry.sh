@@ -15,8 +15,8 @@ assert data["submodule_count"] == 2, data
 items = {item["path"]: item for item in data["gitlinks"]}
 assert set(items) == {"agent-dev-kit", "codex"}, items
 assert items["agent-dev-kit"]["kind"] == "managed-dependency", items
-assert items["codex"]["kind"] == "managed-dependency", items
+assert items["codex"]["kind"] == "frozen-evidence-dependency", items
 PY
 rm -f /tmp/llm-agent-gitlink-check.json
 
-echo "[PASS] only managed dependencies remain as tracked gitlinks"
+echo "[PASS] tracked gitlinks distinguish current managed dependencies from frozen evidence dependencies"
