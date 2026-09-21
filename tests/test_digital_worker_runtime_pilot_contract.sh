@@ -11,6 +11,7 @@ from pathlib import Path
 path = Path(sys.argv[1])
 lta_path = Path(sys.argv[2])
 cli_path = Path(sys.argv[3])
+root = path.parent.parent
 data = json.loads(path.read_text(encoding="utf-8"))
 lta = json.loads(lta_path.read_text(encoding="utf-8"))
 cli = cli_path.read_text(encoding="utf-8")
@@ -92,7 +93,7 @@ assert lta02["affects"] == ["runtime-portability-observation"], lta02
 assert "certifier" not in lta02 and "certifier_command" not in lta02, lta02
 
 assert '"runtime-portability": "tools.control_plane.runtime_portability"' not in cli
-assert not (Path("$ROOT") / "tools/control_plane/runtime_portability.py").exists()
+assert not (root / "tools/control_plane/runtime_portability.py").exists()
 
 text = path.read_text(encoding="utf-8")
 for retired in (
