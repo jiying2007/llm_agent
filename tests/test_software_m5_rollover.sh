@@ -191,6 +191,8 @@ for relative in json.loads(Path(sys.argv[1]).read_text())["changed_paths"]:
     print(relative)
 PY
 )
+echo "[INFO] rollover changed_paths count=${#CHANGED_PATHS[@]}" >&2
+printf '[INFO]   %s\n' "${CHANGED_PATHS[@]}" >&2
 (
   cd "$GOOD"
   if ! git add -N -- "${CHANGED_PATHS[@]}"; then
