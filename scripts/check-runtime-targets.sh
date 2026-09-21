@@ -25,7 +25,7 @@ while [[ $# -gt 0 ]]; do
 usage: scripts/check-runtime-targets.sh [root] [--summary-json] [--explain-target <id>]
 
 Validates the unified manifests/runtime_targets.json target and health-adapter contract
-against registry.csv, managed gitlinks and runtime target check scripts. This is a
+against registry.csv, registered gitlinks and runtime target check scripts. This is a
 declaration gate only; it does not apply assets or modify live directories.
 
 --explain-target emits a read-only JSON explanation for one target and exits
@@ -530,10 +530,10 @@ if os.path.exists(workspace_codex):
             None,
         )
     if not isinstance(declared_gitlink, dict):
-        fail("workspace codex/ exists without managed gitlink declaration")
+        fail("workspace codex/ exists without registered gitlink declaration")
     else:
-        if declared_gitlink.get("kind") != "managed-dependency" or declared_gitlink.get("required") is not True:
-            fail("workspace codex/ gitlink must remain a required managed dependency")
+        if declared_gitlink.get("kind") != "frozen-evidence-dependency" or declared_gitlink.get("required") is not True:
+            fail("workspace codex/ gitlink must remain a required frozen evidence dependency")
         if declared_gitlink.get("lock") != "codex.lock":
             fail("workspace codex/ gitlink must remain bound to codex.lock")
     completed = subprocess.run(

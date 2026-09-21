@@ -30,7 +30,7 @@ for result in (release, working):
     assert result["product_maturity"] == "M5", result
     assert result["product_terminal_scope"] == "product_maturity_v5", result
     assert result["long_term_asset_status"] == "qualification_pending", result
-    assert set(result["pending_requirements"]) == {"LTA-02", "LTA-04"}, result
+    assert set(result["pending_requirements"]) == {"LTA-04"}, result
     assert result["current_report"].startswith("reports/architecture/"), result
     assert result["failures"] == [], result
 

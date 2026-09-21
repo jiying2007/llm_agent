@@ -142,8 +142,8 @@ if not isinstance(terminal, dict):
 else:
     if terminal.get("qualified") is not False or terminal.get("status") != "qualification_pending":
         failures.append("LTA terminal state must remain qualification_pending")
-    if set(terminal.get("pending_requirements") or []) != {"LTA-02", "LTA-04"}:
-        failures.append("LTA pending requirements must be LTA-02 and LTA-04")
+    if set(terminal.get("pending_requirements") or []) != {"LTA-04"}:
+        failures.append("LTA pending requirements must contain only LTA-04; R2 is delegated observation")
 
 agent_lifecycle = lifecycle.get("agent_dev_kit") if isinstance(lifecycle, dict) else None
 if not isinstance(agent_lifecycle, dict):
