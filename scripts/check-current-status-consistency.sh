@@ -148,8 +148,13 @@ else:
 agent_lifecycle = lifecycle.get("agent_dev_kit") if isinstance(lifecycle, dict) else None
 if not isinstance(agent_lifecycle, dict):
     failures.append("LTA agent_dev_kit lifecycle is missing")
-elif agent_lifecycle.get("current_release") != lock.get("agent-dev-kit.version"):
-    failures.append("LTA current ADK release does not match adk.lock")
+else:
+    if agent_lifecycle.get("model") != "versioned-component":
+        failures.append("LTA agent_dev_kit lifecycle must remain versioned-component")
+    if agent_lifecycle.get("component_release_required") is not True:
+        failures.append("LTA agent_dev_kit lifecycle must require component releases")
+    if "current_release" in agent_lifecycle:
+        failures.append("LTA agent_dev_kit lifecycle must not duplicate the current ADK release identity")
 
 reports = registry.get("reports")
 current_reports = [

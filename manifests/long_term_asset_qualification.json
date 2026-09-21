@@ -47,8 +47,7 @@
       "model": "versioned-component",
       "identity": "signed-release-plus-exact-source",
       "component_release_required": true,
-      "current_release": "7.0.4",
-      "note": "ADK native governance, strict stale-base rejection/requalification, exact-head merge, fresh-main qualification, keyless GitHub OIDC promotion, branch GC, and issue closure are terminally complete. Digital Worker periodic R2 is a delegated nonblocking observation; LTA-04 is the only remaining llm_agent qualification requirement."
+      "note": "ADK lifecycle classification is stable here; current component version/commit/tree are owned exclusively by adk.lock and the signed promotion evidence chain. Digital Worker periodic R2 is a delegated nonblocking observation; LTA-04 is the only remaining llm_agent qualification requirement."
     }
   },
   "dependency_closure": {
