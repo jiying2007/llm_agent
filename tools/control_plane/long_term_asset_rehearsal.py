@@ -68,8 +68,8 @@ def _policy(root: Path) -> dict[str, Any]:
     if not isinstance(forbidden, list) or not forbidden:
         raise RehearsalError("rehearsal forbidden canonical outputs are missing")
     scopes = policy.get("scopes")
-    if not isinstance(scopes, dict) or set(scopes) != {"r2", "longitudinal"}:
-        raise RehearsalError("rehearsal scopes must remain exactly r2 + longitudinal")
+    if not isinstance(scopes, dict) or set(scopes) != {"longitudinal"}:
+        raise RehearsalError("rehearsal scopes must remain exactly longitudinal")
     return policy
 
 
@@ -82,14 +82,12 @@ def _real_state(root: Path) -> dict[str, Any]:
         for item in data.get("qualification_requirements", [])
         if isinstance(item, dict) and isinstance(item.get("id"), str)
     }
-    for key in ("LTA-02", "LTA-04"):
-        if key not in requirements:
-            raise RehearsalError(f"real long-term asset state is missing {key}")
+    if "LTA-04" not in requirements:
+        raise RehearsalError("real long-term asset state is missing LTA-04")
     terminal = data.get("terminal")
     if not isinstance(terminal, dict):
         raise RehearsalError("real terminal state is missing")
     return {
-        "LTA-02": requirements["LTA-02"].get("status"),
         "LTA-04": requirements["LTA-04"].get("status"),
         "terminal_status": terminal.get("status"),
         "terminal_qualified": terminal.get("qualified"),
@@ -138,7 +136,7 @@ def rehearse(root: Path, scope: str) -> dict[str, Any]:
     source_tree = _git(root, "rev-parse", "HEAD^{tree}")
     real_before = _real_state(root)
 
-    selected = [scope] if scope != "all" else ["r2", "longitudinal"]
+    selected = ["longitudinal"]
     results: dict[str, Any] = {}
     for name in selected:
         spec = policy["scopes"].get(name)
@@ -182,10 +180,10 @@ def rehearse(root: Path, scope: str) -> dict[str, Any]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="llm-ctl long-term-rehearsal",
-        description="Exercise simulated LTA-02 R2 and LTA-04 >=30-day PASS paths without terminal effect.",
+        description="Exercise the simulated LTA-04 >=30-day PASS path without terminal effect.",
     )
     parser.add_argument("--root", default=".")
-    parser.add_argument("--scope", choices=("all", "r2", "longitudinal"), default="all")
+    parser.add_argument("--scope", choices=("all", "longitudinal"), default="all")
     parser.add_argument("--summary-json", action="store_true")
     args = parser.parse_args(argv)
     try:

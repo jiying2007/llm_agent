@@ -1,8 +1,8 @@
 {
   "schema": "llm-agent-long-term-asset-qualification/v2",
-  "updated_at": "2026-09-19",
+  "updated_at": "2026-09-21",
   "qualification_scope": "llm_agent control plane plus pinned agent-dev-kit component",
-  "purpose": "Separate current engineering readiness from long-term asset terminal qualification without weakening fail-closed evidence semantics.",
+  "purpose": "Separate engineering readiness from long-term terminal qualification while treating Digital Worker periodic R2 as an external nonblocking observation rather than a second llm_agent decision authority.",
   "rules": {
     "fail_closed": true,
     "no_simulated_external_evidence": true,
@@ -16,10 +16,9 @@
     "control_plane": "ready",
     "iteration_gates": [],
     "qualification_pending": [
-      "LTA-02",
       "LTA-04"
     ],
-    "meaning": "Long-term qualification evidence may remain pending while normal development, integration, CI, runtime binding, Pilot work, and product iteration continue."
+    "meaning": "Development, integration and control-plane operation are ready. Digital Worker owns periodic R2 qualification; llm_agent observes it without re-certification. Only real longitudinal LTA-04 evidence remains a llm_agent terminal requirement."
   },
   "maintainer_model": {
     "type": "solo",
@@ -95,12 +94,12 @@
     },
     {
       "id": "runtime-conformant",
-      "status": "partial",
+      "status": "observer-aligned",
       "evidence": [
         "reports/runtime-evidence/codex-v5-runtime-smoke-2026-08-30.json",
         "manifests/digital_worker_runtime_pilot.json"
       ],
-      "note": "Representative runtime evidence is sufficient for Product M5; terminal portability qualification still requires R2 real-provider substitution evidence."
+      "note": "Runtime replaceability qualification authority is Digital Worker. llm_agent retains runtime health/evolution observation only."
     },
     {
       "id": "product-qualified",
@@ -166,24 +165,22 @@
     },
     {
       "id": "LTA-02",
-      "name": "multi-runtime-portability",
-      "status": "evidence_collection_in_progress",
+      "name": "multi-runtime-portability-observation",
+      "status": "delegated_nonblocking_observation",
       "affects": [
-        "runtime-portability-terminal-qualification",
-        "long-term-asset-terminal-qualification"
+        "runtime-portability-observation"
       ],
-      "implementation_status": "certifier-ready",
+      "implementation_status": "observer-ready",
       "required_healthy_runtime_bindings": 2,
-      "required_evidence_level": "R2-real-provider-substitution",
+      "required_evidence_level": "R2-periodic-real-provider-substitution",
       "r1_binding_conformance_is_terminal_evidence": false,
-      "acceptance": "R2 only: at least two healthy real runtime/provider bindings complete the same controlled real task under one exact Digital Worker governance identity with exact ADK release/source-set/distribution identity, separate execution receipts, and independent machine-verifiable domain verification/review under one shared frozen task and verifier/reviewer standard. Fake or controlled alternate bindings may prove R1 contract conformance but cannot satisfy LTA-02.",
-      "certifier": "tools.control_plane.runtime_portability",
-      "certifier_command": "python3 -m tools.control_plane.cli runtime-portability --root . --summary-json",
-      "default_evidence_path": "reports/long-term-assets/runtime-portability-current.json",
-      "pending_evidence": "real-codex-and-claude-runtime-execution-receipts-and-same-frozen-task-R2-comparison-evidence",
+      "acceptance": "Digital Worker owns periodic R2 qualification. llm_agent may observe a fresh Digital Worker qualification receipt for runtime-practice analysis but must not re-certify provider evidence or make R2 a llm_agent terminal blocker.",
+      "pending_evidence": "fresh-digital-worker-periodic-r2-qualification-receipt-for-observation",
       "evidence": [
         "manifests/digital_worker_runtime_pilot.json"
-      ]
+      ],
+      "qualification_authority": "jiying2007/digital-worker",
+      "terminal_blocking": false
     },
     {
       "id": "LTA-03",
@@ -231,7 +228,6 @@
     "iteration_gates": [],
     "qualification_status": "pending",
     "pending_requirements": [
-      "LTA-02",
       "LTA-04"
     ],
     "rehearsal": "pass",
@@ -243,13 +239,12 @@
     "rehearsal_simulated": true,
     "rehearsal_terminal_qualified": false,
     "simulated_evidence_counts_as_real": false,
-    "meaning": "Engineering and integration are ready. LTA-02 and LTA-04 are pending terminal qualification requirements until real R2 evidence and real longitudinal evidence satisfy the canonical certifiers."
+    "meaning": "Engineering and integration are ready. Digital Worker periodic R2 is observed but nonblocking here. LTA-04 real longitudinal evidence is the only remaining llm_agent terminal qualification requirement."
   },
   "terminal": {
     "qualified": false,
     "status": "qualification_pending",
     "pending_requirements": [
-      "LTA-02",
       "LTA-04"
     ]
   },
@@ -257,17 +252,12 @@
     "schema": "llm-agent-long-term-asset-rehearsal-policy/v1",
     "enabled": true,
     "terminal_effect": "none",
-    "purpose": "Exercise the LTA-02 R2 and LTA-04 >=30-day PASS paths with isolated fixtures without creating terminal qualification evidence.",
+    "purpose": "Exercise the LTA-04 >=30-day PASS path with isolated time-travel fixtures without creating terminal qualification evidence.",
     "required_markers": {
       "simulated": true,
       "terminal_qualified": false
     },
     "scopes": {
-      "r2": {
-        "mode": "synthetic-r2-fixture",
-        "test": "tests/test_runtime_portability_certifier.sh",
-        "claim": "R2 certifier PASS path is reachable with isolated synthetic comparison evidence only."
-      },
       "longitudinal": {
         "mode": "time-travel-30-day-fixture",
         "test": "tests/test_longitudinal_operation_certifier.sh",
@@ -275,7 +265,6 @@
       }
     },
     "forbidden_canonical_outputs": [
-      "reports/long-term-assets/runtime-portability-current.json",
       "reports/long-term-assets/longitudinal-operation-current.json",
       "manifests/long_term_asset_qualification.json"
     ],
@@ -284,7 +273,6 @@
       "rehearsal_must_not_write_canonical_evidence": true,
       "rehearsal_must_leave_worktree_unchanged": true,
       "rehearsal_pass_is_not_terminal_pass": true,
-      "real_r2_still_requires_real_provider_execution": true,
       "real_lta04_still_requires_real_calendar_window": true
     }
   }

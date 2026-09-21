@@ -1,8 +1,8 @@
 {
   "schema_version": 5,
-  "contract_version": "1.5",
+  "contract_version": "1.6",
   "status": "report-only",
-  "purpose": "Joint runtime comparison contract for digital-worker, agent-dev-kit, replaceable Runtime Bindings and llm_agent without changing domain verification semantics.",
+  "purpose": "Observer contract for Digital Worker periodic R2 qualification and runtime-practice evolution without creating a second R2 decision authority.",
   "roles": {
     "digital-worker": [
       "work_item",
@@ -14,7 +14,7 @@
       "r2_freeze",
       "execution_evidence_intake",
       "verification",
-      "independent_review"
+      "periodic_r2_qualification"
     ],
     "agent-dev-kit": [
       "asset_profile",
@@ -35,7 +35,7 @@
     ],
     "llm_agent": [
       "runtime_target_health",
-      "cross_runtime_comparison_evidence",
+      "cross_runtime_comparison_observation",
       "loop_readiness_mapping",
       "adoption_recommendation"
     ]
@@ -83,10 +83,10 @@
     "source_of_truth_stays_at_source": true
   },
   "replaceability_evidence_levels": {
-    "R1-binding-conformance": "Controlled/fake adapters may prove contract shape, exact identity handling, failure semantics and rollback only; R1 never qualifies terminal portability.",
-    "R2-real-provider-substitution": "Two real Runtime/Provider Bindings execute the same frozen real task in isolated local terminal domains using exact frozen runtime-owned adapters, emit digest-bound execution receipts and replay-complete result evidence, pass the frozen Digital Worker replay postflight on exported git-free result trees, and are evaluated under shared Digital Worker local verification/review semantics; replay postflight is required before evidence-ready but is not Domain Verification, and R2 is required for terminal portability."
+    "R1-binding-conformance": "Controlled/fake adapters may prove binding conformance only; R1 never qualifies runtime replaceability.",
+    "R2-periodic-real-provider-substitution": "Digital Worker periodically qualifies real Codex + Claude substitution on one frozen task. llm_agent may observe the resulting qualification receipt but does not re-certify provider evidence."
   },
-  "terminal_replaceability_evidence_level": "R2-real-provider-substitution",
+  "terminal_replaceability_evidence_level": "R2-periodic-real-provider-substitution",
   "isolation": {
     "share_previous_runtime_final_answer": false,
     "share_previous_runtime_patch": false,
@@ -101,10 +101,12 @@
     "digital_worker_verifies_execution_provenance": true,
     "digital_worker_projects_native_receipts": true,
     "digital_worker_domain_verification_is_separate": true,
-    "independent_review_must_be_distinct_from_all_runtime_executors_and_verifier": true,
     "local_execution_receipt_is_not_r2_pass": true,
     "runtime_home_mode": "shared-user-home",
-    "runtime_local_state_policy": "reuse-local-auth-and-provider-state-exclude-credential-state-and-user-behavioral-settings-from-evidence-execution-context"
+    "runtime_local_state_policy": "reuse-local-auth-and-provider-state-exclude-credential-state-and-user-behavioral-settings-from-evidence-execution-context",
+    "r2_qualification_authority": "jiying2007/digital-worker",
+    "independent_verifier_actor_required": true,
+    "llm_agent_role": "optional-evolution-observer"
   },
   "loop_readiness_mapping": {
     "tool_execution_evidence": "runtime-binding:local-execution-receipt+digital-worker:local-evidence-intake+local-domain-verification",
@@ -181,8 +183,9 @@
       "local_intake": "scripts/runtime_r2_intake.py",
       "local_verifier": "scripts/runtime_r2_local_verify.py",
       "verifier_identity_mode": "receipt-bound-tool-commit",
-      "independent_review_workflow": ".github/workflows/runtime-r2-independent-review.yml",
-      "result_postflight": "scripts/runtime_r2_result_postflight.py"
+      "result_postflight": "scripts/runtime_r2_result_postflight.py",
+      "qualification_policy": "manifests/runtime-r2-qualification-policy.json",
+      "qualification_authority": "digital-worker-independent-verifier"
     }
   },
   "required_metrics": [
@@ -204,7 +207,6 @@
     "runtime_output_is_not_verification_pass": true,
     "runtime_local_conformance_is_not_domain_verification": true,
     "execution_receipt_must_not_contain_verification_pass": true,
-    "same_verifier_and_reviewer_standard": true,
     "a0_a7_unchanged_by_runtime": true,
     "a6_a7_human_gate": true,
     "missing_runtime_health_is_blocked_not_pass": true,
@@ -234,7 +236,10 @@
     "replay_postflight_must_use_exported_git_free_result_tree": true,
     "replay_postflight_is_not_domain_verification": true,
     "runtime_required_workspace_scaffolding_must_be_permitted": true,
-    "runtime_turn_budget_must_be_bounded_and_configurable": true
+    "runtime_turn_budget_must_be_bounded_and_configurable": true,
+    "r2_qualification_authority_must_be_digital_worker": true,
+    "llm_agent_must_not_recertify_r2": true,
+    "independent_verifier_must_be_distinct_from_provider_execution_actors": true
   },
-  "completion": "R2 only: Codex and Claude each execute the same controlled real task using the exact frozen runtime binding/adapter identity while reusing the operator's normal shared runtime home (Codex CODEX_HOME/~/.codex; Claude user HOME/.claude). Local authentication/provider configuration remains local state and is excluded from evidence identity; required workspace scaffolding must be explicitly permitted, runtime turn budgets must remain bounded and configurable, and managed frozen assets, receipts, exported git-free replay trees, mandatory replay postflight evidence, Digital Worker verification and independent review remain exact and fail-closed before llm_agent may certify terminal portability."
+  "completion": "R2 qualification is owned by Digital Worker: Codex and Claude execute the same frozen real task, replay postflight passes, and an independent Digital Worker verifier actor distinct from both provider execution actors emits the qualification receipt. llm_agent may observe freshness/status for evolution analysis but does not re-certify R2."
 }

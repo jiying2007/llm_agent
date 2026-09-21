@@ -26,9 +26,8 @@ assert policy["schema"] == "llm-agent-long-term-asset-rehearsal-policy/v1", poli
 assert policy["enabled"] is True, policy
 assert policy["terminal_effect"] == "none", policy
 assert policy["required_markers"] == {"simulated": True, "terminal_qualified": False}, policy
-assert set(policy["scopes"]) == {"r2", "longitudinal"}, policy
+assert set(policy["scopes"]) == {"longitudinal"}, policy
 assert all(policy["hard_rules"].values()), policy
-assert "reports/long-term-assets/runtime-portability-current.json" in policy["forbidden_canonical_outputs"], policy
 assert "reports/long-term-assets/longitudinal-operation-current.json" in policy["forbidden_canonical_outputs"], policy
 assert "manifests/long_term_asset_qualification.json" in policy["forbidden_canonical_outputs"], policy
 assert '"long-term-rehearsal": "tools.control_plane.long_term_asset_rehearsal"' in cli, cli
@@ -47,17 +46,10 @@ assert receipt["source"]["policy"] == "manifests/long_term_asset_qualification.j
 assert len(receipt["source"]["policy_sha256"]) == 64, receipt
 
 real = receipt["real_state"]
-assert real["LTA-02"] == "evidence_collection_in_progress", real
 assert real["LTA-04"] == "observation_window_in_progress", real
 assert real["terminal_status"] == "qualification_pending", real
 assert real["terminal_qualified"] is False, real
-assert set(real["terminal_pending_requirements"]) == {"LTA-02", "LTA-04"}, real
-
-r2 = receipt["rehearsals"]["r2"]
-assert r2["status"] == "pass", r2
-assert r2["simulated"] is True and r2["terminal_qualified"] is False, r2
-assert r2["mode"] == "synthetic-r2-fixture", r2
-assert r2["exit_code"] == 0, r2
+assert real["terminal_pending_requirements"] == ["LTA-04"], real
 
 longitudinal = receipt["rehearsals"]["longitudinal"]
 assert longitudinal["status"] == "pass", longitudinal
@@ -75,7 +67,7 @@ assert readiness["engineering_control_plane"] == "pass", readiness
 assert readiness["iteration_readiness"] == "ready", readiness
 assert readiness["iteration_gates"] == [], readiness
 assert readiness["qualification_status"] == "pending", readiness
-assert set(readiness["pending_requirements"]) == {"LTA-02", "LTA-04"}, readiness
+assert readiness["pending_requirements"] == ["LTA-04"], readiness
 assert readiness["rehearsal"] == "pass", readiness
 assert readiness["rehearsal_simulated"] is True, readiness
 assert readiness["rehearsal_terminal_qualified"] is False, readiness
@@ -84,7 +76,7 @@ assert readiness["simulated_evidence_counts_as_real"] is False, readiness
 terminal = qualification["terminal"]
 assert terminal["qualified"] is False, terminal
 assert terminal["status"] == "qualification_pending", terminal
-assert set(terminal["pending_requirements"]) == {"LTA-02", "LTA-04"}, terminal
+assert terminal["pending_requirements"] == ["LTA-04"], terminal
 assert set(terminal["pending_requirements"]) == set(real["terminal_pending_requirements"]), (terminal, real)
 PY
 
