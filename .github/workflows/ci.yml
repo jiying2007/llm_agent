@@ -199,6 +199,9 @@ jobs:
           --summary-json
           > /tmp/llm-agent-integration-receipt.json
 
+      - name: Refresh Sigstore TUF trust root
+        run: cosign initialize
+
       - name: Verify keyless ADK Sigstore bundle with producer-compatible trust discovery
         run: >-
           cosign verify-blob

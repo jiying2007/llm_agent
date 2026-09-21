@@ -37,6 +37,7 @@ for path in workflows:
         index = text.index(promotion_bundle)
         block = text[max(0, index - 900): index + 900]
         required_tokens = (
+            "cosign initialize",
             "cosign verify-blob",
             "--use-signed-timestamps",
             "--bundle reports/promotion/agent-dev-kit/promotion-attestation.json",
