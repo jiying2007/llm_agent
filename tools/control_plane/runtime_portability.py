@@ -170,6 +170,15 @@ def _validate_execution_architecture(contract: Mapping[str, Any]) -> None:
             raise PortabilityError(f"runtime replay postflight requirement drift: {runtime}")
         if plane.get("replay_postflight_authority") != "digital-worker:scripts/runtime_r2_result_postflight.py":
             raise PortabilityError(f"runtime replay postflight authority drift: {runtime}")
+        if runtime == "claude-code":
+            if plane.get("workspace_scaffolding_permission") != "Bash(mkdir *)":
+                raise PortabilityError("claude-code required workspace scaffolding permission drift")
+            budget = plane.get("turn_budget")
+            if not isinstance(budget, Mapping):
+                raise PortabilityError("claude-code turn budget contract is missing")
+            expected_budget = {"default": 32, "min": 1, "max": 64, "configurable": True}
+            if dict(budget) != expected_budget:
+                raise PortabilityError("claude-code turn budget contract drift")
         execution_commit = _require_full_sha(plane.get("execution_plane_commit"), f"{runtime} execution plane commit")
         frozen_commit = _require_full_sha(plane.get("frozen_binding_commit"), f"{runtime} execution plane frozen binding")
         if frozen_commit != candidates[runtime].get("binding_commit"):
@@ -241,6 +250,8 @@ def _contract(root: Path) -> dict[str, Any]:
         "runtime_execution_evidence_ready_requires_replay_postflight",
         "replay_postflight_must_use_exported_git_free_result_tree",
         "replay_postflight_is_not_domain_verification",
+        "runtime_required_workspace_scaffolding_must_be_permitted",
+        "runtime_turn_budget_must_be_bounded_and_configurable",
         "frozen_binding_identity_must_not_follow_execution_plane_head",
     )
     if any(rules.get(key) is not True for key in required_rules):
