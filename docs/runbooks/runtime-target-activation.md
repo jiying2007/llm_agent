@@ -37,14 +37,14 @@
 - `live_root` 指向 runtime live root
 - `registry_repo` 指向治理 registry 名称
 - `source_to_live_chain` 为非空数组
-- `health_adapter` 指向 `runtime_health_adapters.json` 中的 adapter id
+- `health_adapter` 指向 `manifests/runtime_targets.json:health_adapters` 中的 adapter id
 - `footprint_check` 和 `target_policy_check` 指向可执行脚本
 - `write_policy` 不得为 `not-enabled`
 - `required_evidence` 至少覆盖 dry-run、rollback、runtime health、runtime live footprint
 
 ### 3.2 Health Adapter
 
-在 `manifests/runtime_health_adapters.json` 中启用对应 adapter：
+在 `manifests/runtime_targets.json:health_adapters` 中启用对应 adapter：
 
 - `enabled=true`
 - `status=active`
