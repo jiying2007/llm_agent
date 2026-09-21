@@ -131,7 +131,7 @@ echo "[INFO] rollover good measured evidence built" >&2
   fi
 )
 
-python3 - "$GOOD" "$TMP/rollover-summary.json" "$TMP/certification.json" "$TMP/projection.json" <<'PY'
+if ! python3 - "$GOOD" "$TMP/rollover-summary.json" "$TMP/certification.json" "$TMP/projection.json" <<'PY'
 import json
 import sys
 from pathlib import Path
