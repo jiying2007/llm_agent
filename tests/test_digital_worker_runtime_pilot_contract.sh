@@ -157,6 +157,8 @@ for key in (
     "runtime_home_must_reuse_user_state",
     "credential_state_must_not_enter_evidence",
     "local_runtime_config_may_drift_outside_managed_identity",
+    "runtime_user_behavioral_settings_must_not_enter_controlled_execution_context",
+    "shared_home_reuse_is_auth_provider_state_not_behavioral_instruction_reuse",
 ):
     assert rules[key] is True, (key, data)
 assert "attested_execution_receipt_is_not_domain_verification" not in rules
