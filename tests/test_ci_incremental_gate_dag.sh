@@ -135,7 +135,7 @@ assert "promotion-attestation" in github and "promotion-evidence" in github
 assert "sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6" in github
 assert "cosign-release: v3.1.3" in github
 assert "sudo apt-get install -y ripgrep" in github
-assert "cosign initialize" not in github
+assert "cosign initialize" in github
 assert "trusted_root.json" not in github
 assert "cosign verify-blob" in github
 assert "--use-signed-timestamps" in github
