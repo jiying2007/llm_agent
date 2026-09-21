@@ -71,7 +71,7 @@ assert claude["repository"] == "https://github.com/jiying2007/claude.git", claud
 assert claude["target"] == "claude-code", claude
 assert claude["source_identity_mode"] == "exact-release-source-blobs", claude
 assert claude["status"] == "source-set-bound", claude
-assert claude["binding_commit"] == "6ef0c97503d2e81dae0ddbe8a477449c4961b690", claude
+assert claude["binding_commit"] == "5614184bde6c4a1d1feab1a6cef5030ca4adf482", claude
 assert claude["r1_binding_conformance"] == "passed", claude
 assert claude["verified_runtime_execution_receipt"] == "pending", claude
 assert claude["r2_real_provider_substitution"] == "pending", claude
@@ -89,8 +89,8 @@ for runtime, expected in {
         "repository": "jiying2007/claude",
         "commit": claude["binding_commit"],
         "adapter": "control/scripts/runtime-r2-local.sh",
-        "pr": "jiying2007/claude#13",
-        "run": "jiying2007/claude/actions/runs/35574429365",
+        "pr": "jiying2007/claude#14",
+        "run": "jiying2007/claude/actions/runs/35585815439",
     },
 }.items():
     plane = planes[runtime]
@@ -107,6 +107,14 @@ for runtime, expected in {
     assert plane["real_provider_execution_receipt"] == "pending", plane
     assert plane["replay_postflight_required"] is True, plane
     assert plane["replay_postflight_authority"] == "digital-worker:scripts/runtime_r2_result_postflight.py", plane
+    if runtime == "claude-code":
+        assert plane["workspace_scaffolding_permission"] == "Bash(mkdir *)", plane
+        assert plane["turn_budget"] == {
+            "default": 32,
+            "min": 1,
+            "max": 64,
+            "configurable": True,
+        }, plane
     assert "provider_execution_workflow" not in plane, plane
 
 dw_plane = planes["digital-worker"]
@@ -137,6 +145,8 @@ assert "credential state entered evidence" in certifier_text, certifier_text
 assert "replay_postflight" in certifier_text, certifier_text
 assert "replay-postflight:sha256:" in certifier_text, certifier_text
 assert "provider replay postflight digest drift" in certifier_text, certifier_text
+assert "claude-code required workspace scaffolding permission drift" in certifier_text, certifier_text
+assert "claude-code turn budget contract drift" in certifier_text, certifier_text
 
 rules = data["hard_rules"]
 for key in (
@@ -169,6 +179,8 @@ for key in (
     "runtime_execution_evidence_ready_requires_replay_postflight",
     "replay_postflight_must_use_exported_git_free_result_tree",
     "replay_postflight_is_not_domain_verification",
+    "runtime_required_workspace_scaffolding_must_be_permitted",
+    "runtime_turn_budget_must_be_bounded_and_configurable",
 ):
     assert rules[key] is True, (key, data)
 assert "attested_execution_receipt_is_not_domain_verification" not in rules

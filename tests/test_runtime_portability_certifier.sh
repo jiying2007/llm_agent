@@ -27,6 +27,8 @@ assert rules["shared_home_reuse_is_auth_provider_state_not_behavioral_instructio
 assert rules["runtime_execution_evidence_ready_requires_replay_postflight"] is True
 assert rules["replay_postflight_must_use_exported_git_free_result_tree"] is True
 assert rules["replay_postflight_is_not_domain_verification"] is True
+assert rules["runtime_required_workspace_scaffolding_must_be_permitted"] is True
+assert rules["runtime_turn_budget_must_be_bounded_and_configurable"] is True
 PY
 
 # Missing real comparison evidence is a BLOCKED external-evidence state, never PASS.

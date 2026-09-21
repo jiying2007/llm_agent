@@ -129,7 +129,7 @@
       "target": "claude-code",
       "source_identity_mode": "exact-release-source-blobs",
       "status": "source-set-bound",
-      "binding_commit": "6ef0c97503d2e81dae0ddbe8a477449c4961b690",
+      "binding_commit": "5614184bde6c4a1d1feab1a6cef5030ca4adf482",
       "r1_binding_conformance": "passed",
       "verified_runtime_execution_receipt": "pending",
       "r2_real_provider_substitution": "pending"
@@ -153,18 +153,25 @@
     },
     "claude-code": {
       "repository": "jiying2007/claude",
-      "execution_plane_commit": "6ef0c97503d2e81dae0ddbe8a477449c4961b690",
-      "frozen_binding_commit": "6ef0c97503d2e81dae0ddbe8a477449c4961b690",
+      "execution_plane_commit": "5614184bde6c4a1d1feab1a6cef5030ca4adf482",
+      "frozen_binding_commit": "5614184bde6c4a1d1feab1a6cef5030ca4adf482",
       "provider_execution_adapter": "control/scripts/runtime-r2-local.sh",
       "execution_venue": "local-terminal",
       "credential_owner": "runtime-local-auth-state",
-      "merged_pr": "jiying2007/claude#13",
-      "exact_head_contract_run": "jiying2007/claude/actions/runs/35574429365",
+      "merged_pr": "jiying2007/claude#14",
+      "exact_head_contract_run": "jiying2007/claude/actions/runs/35585815439",
       "real_provider_execution_receipt": "pending",
       "runtime_home_mode": "shared-user-home",
       "credential_state_in_evidence": false,
       "replay_postflight_required": true,
-      "replay_postflight_authority": "digital-worker:scripts/runtime_r2_result_postflight.py"
+      "replay_postflight_authority": "digital-worker:scripts/runtime_r2_result_postflight.py",
+      "workspace_scaffolding_permission": "Bash(mkdir *)",
+      "turn_budget": {
+        "default": 32,
+        "min": 1,
+        "max": 64,
+        "configurable": true
+      }
     },
     "digital-worker": {
       "repository": "jiying2007/digital-worker",
@@ -225,7 +232,9 @@
     "shared_home_reuse_is_auth_provider_state_not_behavioral_instruction_reuse": true,
     "runtime_execution_evidence_ready_requires_replay_postflight": true,
     "replay_postflight_must_use_exported_git_free_result_tree": true,
-    "replay_postflight_is_not_domain_verification": true
+    "replay_postflight_is_not_domain_verification": true,
+    "runtime_required_workspace_scaffolding_must_be_permitted": true,
+    "runtime_turn_budget_must_be_bounded_and_configurable": true
   },
-  "completion": "R2 only: Codex and Claude each execute the same controlled real task using the exact frozen runtime binding/adapter identity while reusing the operator's normal shared runtime home (Codex CODEX_HOME/~/.codex; Claude user HOME/.claude). Local authentication/provider configuration remains local state and is excluded from evidence identity; managed frozen assets, receipts, exported git-free replay trees, mandatory replay postflight evidence, Digital Worker verification and independent review remain exact and fail-closed before llm_agent may certify terminal portability."
+  "completion": "R2 only: Codex and Claude each execute the same controlled real task using the exact frozen runtime binding/adapter identity while reusing the operator's normal shared runtime home (Codex CODEX_HOME/~/.codex; Claude user HOME/.claude). Local authentication/provider configuration remains local state and is excluded from evidence identity; required workspace scaffolding must be explicitly permitted, runtime turn budgets must remain bounded and configurable, and managed frozen assets, receipts, exported git-free replay trees, mandatory replay postflight evidence, Digital Worker verification and independent review remain exact and fail-closed before llm_agent may certify terminal portability."
 }
