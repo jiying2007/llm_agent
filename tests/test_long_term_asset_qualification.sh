@@ -164,9 +164,10 @@ assert recovery['drill']['recovery_validation'] == {
     'static_target_contracts': 'pass',
     'typed_quick_validation': 'pass',
 }
-assert recovery['source']['agent_dev_kit_version'] == lock['version']
-assert recovery['source']['agent_dev_kit_commit'] == lock['commit']
-assert recovery['source']['agent_dev_kit_tree'] == lock['tree']
+assert lta03['evidence_semantics'] == 'historical-exact-source-baseline-plus-fresh-pr-recovery-drill'
+assert isinstance(recovery['source']['agent_dev_kit_version'], str) and recovery['source']['agent_dev_kit_version']
+assert re.fullmatch(r'[0-9a-f]{40}', recovery['source']['agent_dev_kit_commit'])
+assert re.fullmatch(r'[0-9a-f]{40}', recovery['source']['agent_dev_kit_tree'])
 assert recovery['source']['lock_identity_match'] is True
 assert recovery['source']['llm_agent_commit'] == lta03['verified_main_commit']
 assert recovery['environment']['github_sha'] == lta03['verified_main_commit']

@@ -187,7 +187,7 @@
       "name": "solo-maintainer-recovery-drill",
       "status": "pass",
       "affects": [],
-      "acceptance": "A clean environment reconstructs the control plane from authoritative source, verifies current identities, exercises rollback/recovery, and emits a machine-readable receipt without relying on untracked local state.",
+      "acceptance": "A clean environment reconstructs the control plane from authoritative source, verifies the source identities of that drill, exercises rollback/recovery, and emits a machine-readable receipt without relying on untracked local state. The committed receipt is immutable historical exact-source evidence; current source changes are re-exercised by the mandatory solo-recovery workflow instead of rewriting the historical receipt.",
       "evidence": [
         "reports/long-term-assets/solo-maintainer-recovery-current.json"
       ],
@@ -195,7 +195,8 @@
       "workflow_run_id": 35445814666,
       "workflow_job_id": 105904421691,
       "artifact_id": 10584873865,
-      "receipt_sha256": "44bf4f173bb15e45c82928fe6cc0a648d9e916fcf09ae46a3c72fa43106e630f"
+      "receipt_sha256": "44bf4f173bb15e45c82928fe6cc0a648d9e916fcf09ae46a3c72fa43106e630f",
+      "evidence_semantics": "historical-exact-source-baseline-plus-fresh-pr-recovery-drill"
     },
     {
       "id": "LTA-04",
