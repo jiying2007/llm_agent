@@ -193,9 +193,21 @@ PY
   git diff --binary >"$TMP/rollover.patch"
   git reset --mixed HEAD >/dev/null
 )
-[[ "${#CHANGED_PATHS[@]}" -eq 5 ]]
-[[ -s "$TMP/rollover.patch" ]]
-[[ "$(find "$BUNDLE" -type f | wc -l)" -eq 5 ]]
+if [[ "${#CHANGED_PATHS[@]}" -ne 5 ]]; then
+  echo "[FAIL] rollover changed_paths count expected=5 actual=${#CHANGED_PATHS[@]}" >&2
+  printf '  %s\n' "${CHANGED_PATHS[@]}" >&2
+  exit 1
+fi
+if [[ ! -s "$TMP/rollover.patch" ]]; then
+  echo "[FAIL] rollover patch is empty" >&2
+  exit 1
+fi
+bundle_count="$(find "$BUNDLE" -type f | wc -l)"
+if [[ "$bundle_count" -ne 5 ]]; then
+  echo "[FAIL] rollover review bundle file count expected=5 actual=$bundle_count" >&2
+  find "$BUNDLE" -type f -printf '  %P\n' >&2
+  exit 1
+fi
 
 make_evidence "$BAD" "$TMP/bad-evidence.json" false
 before="$(git -C "$BAD" status --porcelain=v1)"
