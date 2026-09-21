@@ -39,7 +39,7 @@ assert lta02['affects'] == [
     'long-term-asset-terminal-qualification',
 ]
 assert lta02['implementation_status'] == 'certifier-ready'
-assert lta02['pending_evidence'] == 'real-claude-runtime-execution-receipt-and-same-frozen-task-R2-comparison-evidence'
+assert lta02['pending_evidence'] == 'real-codex-and-claude-runtime-execution-receipts-and-same-frozen-task-R2-comparison-evidence'
 assert lta02['required_evidence_level'] == 'R2-real-provider-substitution'
 assert lta02['r1_binding_conformance_is_terminal_evidence'] is False
 
