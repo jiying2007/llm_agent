@@ -24,9 +24,6 @@ rtk scripts/check-runtime-health.sh .
 rtk scripts/check-runtime-routing.sh .
 rtk scripts/check-upstream-intake-readiness.sh .
 
-# LTA-02 跨运行时可移植性只读认证；真实双运行时证据缺失时必须返回 BLOCKED
-rtk python -m tools.control_plane.cli runtime-portability --root . --summary-json
-
 # LTA-04 30 天纵向运营只读认证；窗口未满或真实 summary 缺失时必须返回 BLOCKED
 rtk python -m tools.control_plane.cli longitudinal-operation --root . --summary-json
 
@@ -42,7 +39,7 @@ rtk python -m tools.control_plane.reference_pins --root . --materialize OpenSpec
 
 Root 控制面的统一 Python 入口是 `llm-ctl`（`pyproject.toml`）；GitHub Actions 和本地脚本逐步收敛到同一组 `tools.control_plane` 实现。Reference materialization 永远不把第三方仓重新写回 Root working tree。
 
-`runtime-portability` 只认证已经存在的真实 comparison evidence，不启动模型、不执行第二运行时，也不生成外部证据。它要求至少两个不同且健康的 runtime binding 共享同一 frozen task 与精确 ADK release identity，各自拥有独立 execution receipt，并由 `digital-worker` 提供绑定同一 receipt 集的 domain verification 与 independent review。缺少第二运行时、binding 仍为 future-only、或证据缺失时均为 `BLOCKED`，不能升级成 PASS。
+`digital-worker` 是 periodic R2 runtime replaceability 的唯一 qualification authority；`llm_agent` 只观察其 fresh qualification receipt、runtime health 与长期演进，不再对 provider evidence 做第二次 R2 认证。R2 blocked/stale/not-run 不阻塞 llm_agent 日常开发，也不成为 llm_agent 的 terminal blocker。
 
 `longitudinal-operation` 只读取现有 Software M5 append-only field ledger/event log 与 LTA-04 summary，不创建现场事件，也不会把 Product M5 的初始资格重新改成 30 天门禁。当前独立 pilot 从 `2026-09-12T04:19:00Z` 开始，因此 LTA-04 最早在 `2026-10-12T04:19:00Z` 之后才可能通过。到期后 summary 必须绑定当前 event-chain head，并显式表示 incident、regression、recovery 和 unresolved risk；即使数量为 0 也必须明确写出。存在 blocking risk 或 review hold 时仍返回 `BLOCKED`。
 
@@ -57,7 +54,6 @@ Root 控制面的统一 Python 入口是 `llm-ctl`（`pyproject.toml`）；GitHu
 - `manifests/reference_pins.json`：非 source reference repository 的 exact commit / URL SSOT。
 - `manifests/gitlinks.json`：Root managed dependency gitlink registry；终态仅保留 ADK 与 Codex。
 - `manifests/digital_worker_runtime_pilot.json`：`digital-worker + agent-dev-kit + llm_agent` 联合 Runtime Pilot 的 report-only 证据合同；Runtime 输出不得替代 Verification PASS。
-- `tools/control_plane/runtime_portability.py`：LTA-02 双运行时真实 comparison evidence 的只读、fail-closed 认证器。
 - `tools/control_plane/longitudinal_operation.py`：LTA-04 30 天独立 pilot 纵向运营 summary 的只读、fail-closed 认证器。
 - `scripts/README.md`：子仓治理、门禁和同步脚本说明。
 - `AGENTS.md`：本工作区代理执行规则与维护记录。
@@ -116,5 +112,5 @@ rtk scripts/check-adk-harden-readiness.sh . --require-pilot
 3. 若修改根仓脚本、契约或治理资产：运行 `rtk tests/run_all.sh`；全量门禁使用 `rtk scripts/check-all.sh --full --result-json <artifact>` 留存逐项状态和耗时。
 4. 若影响生产部署、`~/codex` 分发或 `~/.codex`：运行 `rtk scripts/check-adk-harden-readiness.sh . --require-pilot`，并在 `~/codex` 侧执行 build/apply dry-run。
 5. 若评估 reference repo 更新：先更新/审查 `manifests/reference_pins.json` 的 exact commit，再显式 materialize 到 cache 执行分析；审查结构化 decision/task pack 后才允许创建 ADK change artifact。
-6. 若推进 LTA-02：先完成第二 runtime binding 的 source/live/health 治理，再对同一 frozen real task 产出两份独立 execution receipt 与 `digital-worker` verification/review，最后用 `llm-ctl runtime-portability` 认证；在此之前 LTA-02 必须保持 `blocked_external_evidence`。
+6. 若观察 R2：只消费 Digital Worker 当前 periodic qualification receipt/状态用于 runtime 演进分析；不得在 Root 重新认证 R2，也不得把 R2 状态写成 llm_agent terminal gate。
 7. 若推进 LTA-04：继续把真实独立 pilot 事件追加到现有 hash-chain event log；2026-10-12T04:19:00Z 之前 `llm-ctl longitudinal-operation` 必须保持 BLOCKED。到期后生成真实 `reports/long-term-assets/longitudinal-operation-current.json`，绑定当前 event-chain head 并显式汇总 incident/regression/recovery/unresolved risk，再由 certifier 决定 PASS/BLOCKED；禁止用 synthetic fixture 作为资格证据。
