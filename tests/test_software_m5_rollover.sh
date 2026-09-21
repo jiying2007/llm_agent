@@ -30,9 +30,17 @@ assert "second human" not in objective
 # rewritten by this current-ledger policy ratchet.
 assert (root / "reports/field-evidence/software-m5-independent-pilot-start-2026-09-12.json").is_file()
 PY
+echo "[INFO] rollover baseline assertions PASS" >&2
 
-cp -a "$ROOT" "$GOOD"
-cp -a "$ROOT" "$BAD"
+if ! cp -a "$ROOT" "$GOOD"; then
+  echo "[FAIL] failed to copy GOOD rollover fixture" >&2
+  exit 1
+fi
+if ! cp -a "$ROOT" "$BAD"; then
+  echo "[FAIL] failed to copy BAD rollover fixture" >&2
+  exit 1
+fi
+echo "[INFO] rollover repository fixtures copied" >&2
 
 make_evidence() {
   local repo="$1"
@@ -93,24 +101,37 @@ PY
 }
 
 make_evidence "$GOOD" "$TMP/good-evidence.json" true
+echo "[INFO] rollover good measured evidence built" >&2
 (
   cd "$GOOD"
-  python3 -m tools.codex_assets.software_m5_rollover \
+  if ! python3 -m tools.codex_assets.software_m5_rollover \
     --root . \
     --runtime-evidence "$TMP/good-evidence.json" \
     --root-integration-run-id 34703075857 \
     --qualification-time 2026-09-12T00:10:00Z \
     --apply \
-    --summary-json >"$TMP/rollover-summary.json"
-  bash scripts/software-m5.sh certify --summary-json >"$TMP/certification.json"
-  python3 -m tools.control_plane.status_projection \
+    --summary-json >"$TMP/rollover-summary.json"; then
+    echo "[FAIL] Software M5 rollover command failed" >&2
+    cat "$TMP/rollover-summary.json" >&2 || true
+    exit 1
+  fi
+  if ! bash scripts/software-m5.sh certify --summary-json >"$TMP/certification.json"; then
+    echo "[FAIL] Software M5 certification failed after rollover" >&2
+    cat "$TMP/certification.json" >&2 || true
+    exit 1
+  fi
+  if ! python3 -m tools.control_plane.status_projection \
     --root . \
     --today 2026-09-12 \
     --require-fresh \
-    --summary-json >"$TMP/projection.json"
+    --summary-json >"$TMP/projection.json"; then
+    echo "[FAIL] status projection failed after rollover" >&2
+    cat "$TMP/projection.json" >&2 || true
+    exit 1
+  fi
 )
 
-python3 - "$GOOD" "$TMP/rollover-summary.json" "$TMP/certification.json" "$TMP/projection.json" <<'PY'
+if ! python3 - "$GOOD" "$TMP/rollover-summary.json" "$TMP/certification.json" "$TMP/projection.json" <<'PY'
 import json
 import sys
 from pathlib import Path
@@ -152,6 +173,11 @@ assert "- release_evidence_relation: current" in status
 assert "- release_authorized: true" in status
 assert "- baseline_release_authorized: true" in status
 PY
+then
+  echo "[FAIL] rollover post-apply contract assertions failed" >&2
+  exit 1
+fi
+echo "[INFO] rollover post-apply contract assertions PASS" >&2
 
 # Exercise the same review-bundle contract used by the manual hosted workflow.
 BUNDLE="$TMP/rollover-candidate"
@@ -179,15 +205,39 @@ for relative in json.loads(Path(sys.argv[1]).read_text())["changed_paths"]:
     print(relative)
 PY
 )
+echo "[INFO] rollover changed_paths count=${#CHANGED_PATHS[@]}" >&2
+printf '[INFO]   %s\n' "${CHANGED_PATHS[@]}" >&2
 (
   cd "$GOOD"
-  git add -N -- "${CHANGED_PATHS[@]}"
-  git diff --binary >"$TMP/rollover.patch"
-  git reset --mixed HEAD >/dev/null
+  if ! git add -N -- "${CHANGED_PATHS[@]}"; then
+    echo "[FAIL] git add -N failed for rollover changed paths" >&2
+    printf '  %s\n' "${CHANGED_PATHS[@]}" >&2
+    exit 1
+  fi
+  if ! git diff --binary >"$TMP/rollover.patch"; then
+    echo "[FAIL] git diff failed for rollover changed paths" >&2
+    exit 1
+  fi
+  if ! git reset --mixed HEAD >/dev/null; then
+    echo "[FAIL] git reset failed after rollover patch capture" >&2
+    exit 1
+  fi
 )
-[[ "${#CHANGED_PATHS[@]}" -eq 5 ]]
-[[ -s "$TMP/rollover.patch" ]]
-[[ "$(find "$BUNDLE" -type f | wc -l)" -eq 5 ]]
+if [[ "${#CHANGED_PATHS[@]}" -ne 5 ]]; then
+  echo "[FAIL] rollover changed_paths count expected=5 actual=${#CHANGED_PATHS[@]}" >&2
+  printf '  %s\n' "${CHANGED_PATHS[@]}" >&2
+  exit 1
+fi
+if [[ ! -s "$TMP/rollover.patch" ]]; then
+  echo "[FAIL] rollover patch is empty" >&2
+  exit 1
+fi
+bundle_count="$(find "$BUNDLE" -type f | wc -l)"
+if [[ "$bundle_count" -ne 5 ]]; then
+  echo "[FAIL] rollover review bundle file count expected=5 actual=$bundle_count" >&2
+  find "$BUNDLE" -type f -printf '  %P\n' >&2
+  exit 1
+fi
 
 make_evidence "$BAD" "$TMP/bad-evidence.json" false
 before="$(git -C "$BAD" status --porcelain=v1)"

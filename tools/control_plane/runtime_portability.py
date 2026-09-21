@@ -129,7 +129,7 @@ def _validate_execution_architecture(contract: Mapping[str, Any]) -> None:
         "independent_review_must_be_distinct_from_all_runtime_executors_and_verifier": True,
         "local_execution_receipt_is_not_r2_pass": True,
         "runtime_home_mode": "shared-user-home",
-        "runtime_local_state_policy": "reuse-local-auth-and-provider-config-exclude-from-evidence",
+        "runtime_local_state_policy": "reuse-local-auth-and-provider-state-exclude-credential-state-and-user-behavioral-settings-from-evidence-execution-context",
     }
     for field, expected in expected_ownership.items():
         if ownership.get(field) != expected:
@@ -230,6 +230,8 @@ def _contract(root: Path) -> dict[str, Any]:
         "runtime_home_must_reuse_user_state",
         "credential_state_must_not_enter_evidence",
         "local_runtime_config_may_drift_outside_managed_identity",
+        "runtime_user_behavioral_settings_must_not_enter_controlled_execution_context",
+        "shared_home_reuse_is_auth_provider_state_not_behavioral_instruction_reuse",
         "frozen_binding_identity_must_not_follow_execution_plane_head",
     )
     if any(rules.get(key) is not True for key in required_rules):

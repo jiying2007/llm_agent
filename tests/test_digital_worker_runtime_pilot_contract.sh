@@ -51,7 +51,7 @@ assert ownership == {
     "independent_review_must_be_distinct_from_all_runtime_executors_and_verifier": True,
     "local_execution_receipt_is_not_r2_pass": True,
     "runtime_home_mode": "shared-user-home",
-    "runtime_local_state_policy": "reuse-local-auth-and-provider-config-exclude-from-evidence",
+    "runtime_local_state_policy": "reuse-local-auth-and-provider-state-exclude-credential-state-and-user-behavioral-settings-from-evidence-execution-context",
 }, ownership
 
 bindings = {item["runtime"]: item for item in data["candidate_runtime_bindings"]}
@@ -70,7 +70,7 @@ assert claude["repository"] == "https://github.com/jiying2007/claude.git", claud
 assert claude["target"] == "claude-code", claude
 assert claude["source_identity_mode"] == "exact-release-source-blobs", claude
 assert claude["status"] == "source-set-bound", claude
-assert claude["binding_commit"] == "e358b029607cf9dc5429eb7c2ca05b5d4a13c0f1", claude
+assert claude["binding_commit"] == "cc3044eefd42d2f95f68d2ae85024845e9edcf63", claude
 assert claude["r1_binding_conformance"] == "passed", claude
 assert claude["verified_runtime_execution_receipt"] == "pending", claude
 assert claude["r2_real_provider_substitution"] == "pending", claude
@@ -88,8 +88,8 @@ for runtime, expected in {
         "repository": "jiying2007/claude",
         "commit": claude["binding_commit"],
         "adapter": "control/scripts/runtime-r2-local.sh",
-        "pr": "jiying2007/claude#11",
-        "run": "jiying2007/claude/actions/runs/35523054373",
+        "pr": "jiying2007/claude#12",
+        "run": "jiying2007/claude/actions/runs/35563435255",
     },
 }.items():
     plane = planes[runtime]
@@ -157,6 +157,8 @@ for key in (
     "runtime_home_must_reuse_user_state",
     "credential_state_must_not_enter_evidence",
     "local_runtime_config_may_drift_outside_managed_identity",
+    "runtime_user_behavioral_settings_must_not_enter_controlled_execution_context",
+    "shared_home_reuse_is_auth_provider_state_not_behavioral_instruction_reuse",
 ):
     assert rules[key] is True, (key, data)
 assert "attested_execution_receipt_is_not_domain_verification" not in rules
@@ -187,4 +189,4 @@ for retired in (
     assert retired not in text, retired
 PY
 
-echo '[PASS] digital-worker runtime pilot enforces exact shared-user-home R2 adapters, local auth/config exclusion from evidence, receipt-bound DW verification, and R2-only terminal portability'
+echo '[PASS] digital-worker runtime pilot enforces exact shared-user-home R2 adapters, local auth/provider reuse with user behavioral settings excluded from the controlled execution context, receipt-bound DW verification, and R2-only terminal portability'

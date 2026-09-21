@@ -11,6 +11,7 @@ from pathlib import Path
 root = Path('.')
 lta = json.loads((root / 'manifests/long_term_asset_qualification.json').read_text())
 scorecard = json.loads((root / 'manifests/product_maturity_scorecard.json').read_text())
+runtime_pilot = json.loads((root / 'manifests/digital_worker_runtime_pilot.json').read_text())
 
 assert lta['schema'] == 'llm-agent-long-term-asset-qualification/v2'
 assert lta['rules']['fail_closed'] is True
@@ -39,9 +40,19 @@ assert lta02['affects'] == [
     'long-term-asset-terminal-qualification',
 ]
 assert lta02['implementation_status'] == 'certifier-ready'
-assert lta02['pending_evidence'] == 'real-claude-runtime-execution-receipt-and-same-frozen-task-R2-comparison-evidence'
+assert lta02['pending_evidence'] == 'real-codex-and-claude-runtime-execution-receipts-and-same-frozen-task-R2-comparison-evidence'
 assert lta02['required_evidence_level'] == 'R2-real-provider-substitution'
 assert lta02['r1_binding_conformance_is_terminal_evidence'] is False
+
+ownership = runtime_pilot['execution_ownership']
+assert ownership['runtime_home_mode'] == 'shared-user-home'
+assert ownership['runtime_local_state_policy'] == (
+    'reuse-local-auth-and-provider-state-exclude-credential-state-and-user-behavioral-settings-'
+    'from-evidence-execution-context'
+)
+rules = runtime_pilot['hard_rules']
+assert rules['runtime_user_behavioral_settings_must_not_enter_controlled_execution_context'] is True
+assert rules['shared_home_reuse_is_auth_provider_state_not_behavioral_instruction_reuse'] is True
 
 lta04 = requirements['LTA-04']
 assert lta04['status'] == 'observation_window_in_progress'
