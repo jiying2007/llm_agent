@@ -18,7 +18,7 @@ recovery = json.loads(recovery_path.read_text())
 runbook = root / 'docs/runbooks/solo-maintainer-continuity.md'
 
 assert lta['schema'] == 'llm-agent-long-term-asset-qualification/v2'
-assert lta['updated_at'] == '2026-09-19'
+assert lta['updated_at'] == '2026-09-21'
 assert lta['rules'] == {
     'fail_closed': True,
     'no_simulated_external_evidence': True,
@@ -61,13 +61,13 @@ assert iteration['development'] == 'ready'
 assert iteration['integration'] == 'ready'
 assert iteration['control_plane'] == 'ready'
 assert iteration['iteration_gates'] == []
-assert set(iteration['qualification_pending']) == {'LTA-02', 'LTA-04'}
+assert iteration['qualification_pending'] == ['LTA-04']
 
 layers = {item['id']: item for item in lta['qualification_layers']}
 assert layers['source-valid']['status'] == 'pass'
 assert layers['release-qualified']['status'] == 'pass'
 assert layers['product-qualified']['status'] == 'pass'
-assert layers['runtime-conformant']['status'] == 'partial'
+assert layers['runtime-conformant']['status'] == 'observer-aligned'
 assert layers['long-term-asset-qualified']['status'] == 'qualification_pending'
 assert layers['long-term-asset-qualified']['affects'] == ['long-term-asset-terminal-qualification']
 
@@ -87,18 +87,17 @@ assert set(lta01['required_status_checks']) == {
 }
 
 lta02 = requirements['LTA-02']
-assert lta02['status'] == 'evidence_collection_in_progress'
-assert lta02['implementation_status'] == 'certifier-ready'
+assert lta02['status'] == 'delegated_nonblocking_observation'
+assert lta02['implementation_status'] == 'observer-ready'
 assert lta02['required_healthy_runtime_bindings'] >= 2
-assert lta02['required_evidence_level'] == 'R2-real-provider-substitution'
+assert lta02['required_evidence_level'] == 'R2-periodic-real-provider-substitution'
 assert lta02['r1_binding_conformance_is_terminal_evidence'] is False
-assert lta02['certifier'] == 'tools.control_plane.runtime_portability'
-assert lta02['default_evidence_path'] == 'reports/long-term-assets/runtime-portability-current.json'
-assert lta02['pending_evidence'] == 'real-codex-and-claude-runtime-execution-receipts-and-same-frozen-task-R2-comparison-evidence'
-assert set(lta02['affects']) == {
-    'runtime-portability-terminal-qualification',
-    'long-term-asset-terminal-qualification',
-}
+assert lta02['qualification_authority'] == 'jiying2007/digital-worker'
+assert lta02['terminal_blocking'] is False
+assert 'certifier' not in lta02
+assert 'certifier_command' not in lta02
+assert lta02['pending_evidence'] == 'fresh-digital-worker-periodic-r2-qualification-receipt-for-observation'
+assert lta02['affects'] == ['runtime-portability-observation']
 
 lta03 = requirements['LTA-03']
 assert lta03['status'] == 'pass'
@@ -135,14 +134,14 @@ for requirement in requirements.values():
 terminal = lta['terminal']
 assert terminal['qualified'] is False
 assert terminal['status'] == 'qualification_pending'
-assert set(terminal['pending_requirements']) == {'LTA-02', 'LTA-04'}
+assert terminal['pending_requirements'] == ['LTA-04']
 
 readiness = lta['terminal_readiness']
 assert readiness['engineering_control_plane'] == 'pass'
 assert readiness['iteration_readiness'] == 'ready'
 assert readiness['iteration_gates'] == []
 assert readiness['qualification_status'] == 'pending'
-assert set(readiness['pending_requirements']) == {'LTA-02', 'LTA-04'}
+assert readiness['pending_requirements'] == ['LTA-04']
 assert readiness['rehearsal'] == 'pass'
 assert readiness['rehearsal_simulated'] is True
 assert readiness['rehearsal_terminal_qualified'] is False
