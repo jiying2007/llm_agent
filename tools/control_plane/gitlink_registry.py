@@ -105,10 +105,13 @@ def check(root: Path) -> dict[str, Any]:
             raise RuntimeError(f"gitlink {path} requires url")
         if submodules[path] != expected_url:
             raise RuntimeError(f"submodule URL drift for {path}: {submodules[path]} != {expected_url}")
-        if entry.get("kind") == "managed-dependency":
+        kind = entry.get("kind")
+        if kind not in {"managed-dependency", "frozen-evidence-dependency"}:
+            raise RuntimeError(f"unsupported gitlink kind for {path}: {kind!r}")
+        if kind in {"managed-dependency", "frozen-evidence-dependency"}:
             lock_name = entry.get("lock")
             if not isinstance(lock_name, str) or not (root / lock_name).is_file():
-                raise RuntimeError(f"managed dependency {path} requires an existing lock file")
+                raise RuntimeError(f"{kind} {path} requires an existing lock file")
 
     return {
         "schema": "llm-agent-gitlink-check/v2",
