@@ -11,6 +11,21 @@ cp "$ROOT/manifests/digital_worker_runtime_pilot.json" "$FIXTURE/manifests/"
 cp "$ROOT/manifests/adk_interface.lock.json" "$FIXTURE/manifests/"
 cp "$ROOT/reports/promotion/agent-dev-kit/promotion-evidence.json" "$FIXTURE/reports/promotion/agent-dev-kit/"
 
+python3 - "$ROOT/manifests/digital_worker_runtime_pilot.json" <<'PY'
+import json
+import sys
+from pathlib import Path
+value = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+ownership = value["execution_ownership"]
+assert ownership["runtime_local_state_policy"] == (
+    "reuse-local-auth-and-provider-state-exclude-credential-state-and-user-behavioral-settings-"
+    "from-evidence-execution-context"
+), ownership
+rules = value["hard_rules"]
+assert rules["runtime_user_behavioral_settings_must_not_enter_controlled_execution_context"] is True
+assert rules["shared_home_reuse_is_auth_provider_state_not_behavioral_instruction_reuse"] is True
+PY
+
 # Missing real comparison evidence is a BLOCKED external-evidence state, never PASS.
 set +e
 python3 -m tools.control_plane.runtime_portability --root "$FIXTURE" --summary-json >"$TMP/missing.json"
