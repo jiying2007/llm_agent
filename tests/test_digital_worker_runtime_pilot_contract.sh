@@ -70,7 +70,7 @@ assert claude["repository"] == "https://github.com/jiying2007/claude.git", claud
 assert claude["target"] == "claude-code", claude
 assert claude["source_identity_mode"] == "exact-release-source-blobs", claude
 assert claude["status"] == "source-set-bound", claude
-assert claude["binding_commit"] == "e358b029607cf9dc5429eb7c2ca05b5d4a13c0f1", claude
+assert claude["binding_commit"] == "cc3044eefd42d2f95f68d2ae85024845e9edcf63", claude
 assert claude["r1_binding_conformance"] == "passed", claude
 assert claude["verified_runtime_execution_receipt"] == "pending", claude
 assert claude["r2_real_provider_substitution"] == "pending", claude
@@ -88,8 +88,8 @@ for runtime, expected in {
         "repository": "jiying2007/claude",
         "commit": claude["binding_commit"],
         "adapter": "control/scripts/runtime-r2-local.sh",
-        "pr": "jiying2007/claude#11",
-        "run": "jiying2007/claude/actions/runs/35523054373",
+        "pr": "jiying2007/claude#12",
+        "run": "jiying2007/claude/actions/runs/35563435255",
     },
 }.items():
     plane = planes[runtime]
