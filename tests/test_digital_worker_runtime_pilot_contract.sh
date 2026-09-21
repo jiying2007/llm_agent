@@ -51,7 +51,7 @@ assert ownership == {
     "independent_review_must_be_distinct_from_all_runtime_executors_and_verifier": True,
     "local_execution_receipt_is_not_r2_pass": True,
     "runtime_home_mode": "shared-user-home",
-    "runtime_local_state_policy": "reuse-local-auth-and-provider-config-exclude-from-evidence",
+    "runtime_local_state_policy": "reuse-local-auth-and-provider-state-exclude-credential-state-and-user-behavioral-settings-from-evidence-execution-context",
 }, ownership
 
 bindings = {item["runtime"]: item for item in data["candidate_runtime_bindings"]}
@@ -187,4 +187,4 @@ for retired in (
     assert retired not in text, retired
 PY
 
-echo '[PASS] digital-worker runtime pilot enforces exact shared-user-home R2 adapters, local auth/config exclusion from evidence, receipt-bound DW verification, and R2-only terminal portability'
+echo '[PASS] digital-worker runtime pilot enforces exact shared-user-home R2 adapters, local auth/provider reuse with user behavioral settings excluded from the controlled execution context, receipt-bound DW verification, and R2-only terminal portability'
