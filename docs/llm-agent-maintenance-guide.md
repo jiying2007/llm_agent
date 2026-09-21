@@ -25,7 +25,7 @@
 
 不推荐在 `llm_agent` 中直接改 `~/.codex` 运行资产。生产运行资产应先由 `agent-dev-kit` 导出，经 `~/codex` 注册到 `src/codex-home/` 与 `manifests/`，再由 `~/codex/scripts/build.sh` 和 `~/codex/scripts/apply.sh` 注入 `~/.codex`。报告需记录 adk 版本、profile、optional skill、`~/codex` build/apply 证据和 `~/.codex` 健康检查结果。
 
-运行态 target registry 位于 `manifests/runtime_targets.json`，健康检查 adapter contract 位于 `manifests/runtime_health_adapters.json`。当前默认 target 是 `codex-home`；`check-runtime-targets.sh` 会验证它与 `adk.lock`、`subrepos/registry.csv`、adapter contract 和 runtime 检查脚本一致。新增 `claude-code`、`opencode` 等运行态时，先按 `docs/runbooks/runtime-target-activation.md` 补 source/live chain、只读 health adapter、写入策略和候选阻断证据，再允许成为 active target。
+运行态 target registry 与健康检查 adapter contract 统一位于 `manifests/runtime_targets.json`。当前默认 target 是 `codex-home`；`check-runtime-targets.sh` 会验证它与 `adk.lock`、`subrepos/registry.csv`、统一 adapter contract 和 runtime 检查脚本一致。新增 `claude-code`、`opencode` 等运行态时，先按 `docs/runbooks/runtime-target-activation.md` 补 source/live chain、只读 health adapter、写入策略和候选阻断证据，再允许成为 active target。
 
 参考子仓 dirty 只允许通过 `subrepos/dirty-baseline.tsv` 和 `reports/reference-dirty-triage-YYYY-MM-DD.*` 解释，不允许在治理提交中静默清理或混入参考仓文件。baseline 必须区分 `mode/content/type/untracked/staged` 并声明 `commit-snapshot-only`；`generate-reference-dirty-triage.sh` 只读采集分类与 status sample，`check-reference-dirty-triage.sh` 默认选择 latest valid schema v2 报告，并按当天日期重新判断 baseline 是否过期。深度分析必须通过 `analyze-repo.sh` 的安全 `git archive` 快照读取，报告只写根仓 `reports/repo-analysis/<repo>/<commit>/`，并固定生成 `analysis.json`、`decision-candidate.json`、`task-pack.json`。静态分析完成只表示 `static-complete`；决策必须保持 `review-required`，不能直接写入 ADK。
 
