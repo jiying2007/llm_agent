@@ -456,7 +456,7 @@
         "rtk bash ~/knowledge-hub/tools/knowledge-status.sh --json --review-queue-limit 5"
       ],
       "implementation_evidence": [
-        "manifests/product_maturity_task_pack.json"
+        "manifests/history/product_maturity_task_pack-2026-09-16.json"
       ]
     },
     {

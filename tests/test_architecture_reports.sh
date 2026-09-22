@@ -21,6 +21,20 @@ import sys
 
 root = pathlib.Path(sys.argv[1])
 backlog = json.loads((root / "manifests/comprehensive_optimization_backlog.json").read_text(encoding="utf-8"))
+g9 = next(item for item in backlog["items"] if item["id"] == "G9")
+assert "manifests/history/product_maturity_task_pack-2026-09-16.json" in g9["implementation_evidence"], g9
+assert "manifests/product_maturity_task_pack.json" not in g9["implementation_evidence"], g9
+assert (root / "manifests/history/product_maturity_task_pack-2026-09-16.json").is_file()
+assert not (root / "manifests/product_maturity_task_pack.json").exists()
+PY
+
+python3 - "${ROOT}" <<'PY'
+import json
+import pathlib
+import sys
+
+root = pathlib.Path(sys.argv[1])
+backlog = json.loads((root / "manifests/comprehensive_optimization_backlog.json").read_text(encoding="utf-8"))
 g19 = next(item for item in backlog["items"] if item["id"] == "G19")
 assert "agent-dev-kit/src/agent_dev_kit/execution_policy/__init__.py" in g19["implementation_evidence"], g19
 assert "agent-dev-kit/src/agent_dev_kit/execution_policy/engine.py" not in g19["implementation_evidence"], g19
