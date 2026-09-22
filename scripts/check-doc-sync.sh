@@ -82,6 +82,7 @@ readme_tokens=(
   "check-adk-target-evidence.sh"
   "check-runtime-targets.sh"
   "check-runtime-health.sh"
+  "python3 -m tools.codex_assets execution-policy"
   "check-runtime-routing.sh"
   "check-runtime-pilot.sh"
   "check-runtime-live-footprint.sh"
@@ -98,6 +99,18 @@ readme_tokens=(
 for token in "${readme_tokens[@]}"; do
   if ! rg -q --fixed-strings -- "${token}" "${SCRIPTS_README}"; then
     echo "[FAIL] scripts/README.md missing token: ${token}" >&2
+    exit 2
+  fi
+done
+
+retired_operator_doc_tokens=(
+  "~/codex/scripts/runtime-control.sh"
+  "scripts/execution-policy.sh"
+  "agent-dev-kit/scripts/check-profile-coherence.sh"
+)
+for token in "${retired_operator_doc_tokens[@]}"; do
+  if rg -q --fixed-strings -- "${token}" "${SCRIPTS_README}"; then
+    echo "[FAIL] scripts/README.md references retired operator path: ${token}" >&2
     exit 2
   fi
 done
