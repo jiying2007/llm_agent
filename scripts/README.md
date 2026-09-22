@@ -211,11 +211,11 @@ runtime live 实装态与长会话提醒：
 ```bash
 scripts/check-runtime-live-footprint.sh . --summary-json  # 低 token 摘要
 scripts/check-runtime-live-footprint.sh . --strict        # core-live 缺失时失败
-rtk bash ~/codex/scripts/runtime-control.sh snapshot  # 唯一任务、Token、上下文和决策快照
-rtk bash ~/codex/scripts/runtime-control.sh watch     # 动态实时观察同一状态与决策
+cd ~/codex && rtk python3 -m tools.codex_assets execution-policy snapshot  # 唯一任务、Token、上下文和决策快照
+cd ~/codex && rtk python3 -m tools.codex_assets execution-policy watch     # 动态实时观察同一状态与决策
 ```
 
-未传 `--runtime-root` 时，`check-runtime-live-footprint.sh` 从 `manifests/runtime_targets.json` 读取默认 target 的 `live_root` 和 `runtime_footprint`，检查 required ADK Skill 已在 direct/system/vendor 路径实装，并拒绝 forbidden compatibility Skill/vendor 路径；任务、Token、上下文和动作建议只读取 `~/codex/scripts/runtime-control.sh` 的版本化输出。
+未传 `--runtime-root` 时，`check-runtime-live-footprint.sh` 从 `manifests/runtime_targets.json` 读取默认 target 的 `live_root` 和 `runtime_footprint`，检查 required ADK Skill 已在 direct/system/vendor 路径实装，并拒绝 forbidden compatibility Skill/vendor 路径；任务、Token、上下文和动作建议只读取 `~/codex` 中 `python3 -m tools.codex_assets execution-policy` 的版本化输出。
 
 Token budget 检查脚本：
 ```bash
@@ -258,7 +258,7 @@ scripts/check-delivery-adopt-depth.sh .
 scripts/check-runtime-routing.sh .
 ```
 
-该脚本会同时调用 `agent-dev-kit/scripts/check-profile-coherence.sh`，防止 profile 继承后重复声明 Agent/Skill 或引用漂移。
+该脚本会同时调用 `PYTHONPATH=agent-dev-kit/src python3 -m agent_dev_kit.profile_coherence_contract --root agent-dev-kit`，防止 profile 继承后重复声明 Agent/Skill 或引用漂移。
 
 上游吸收生产准入检查脚本：
 
@@ -423,7 +423,7 @@ scripts/devkit.sh health --summary-json
 
 # runtime live / 长会话提醒
 scripts/devkit.sh runtime-live --summary-json
-rtk bash ~/codex/scripts/runtime-control.sh snapshot
+cd ~/codex && rtk python3 -m tools.codex_assets execution-policy snapshot
 
 # 生成周报
 scripts/devkit.sh weekly-report
