@@ -6,7 +6,13 @@ CHECKER="${ROOT}/scripts/check-architecture-reports.sh"
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "${TMP_DIR}"' EXIT
 
-"${CHECKER}" "${ROOT}" --summary-json >/dev/null
+root_summary="${TMP_DIR}/root-summary.json"
+if ! "${CHECKER}" "${ROOT}" --summary-json >"${root_summary}" 2>"${TMP_DIR}/root-summary.err"; then
+  echo "[FAIL] current architecture report check failed" >&2
+  sed -n '1,160p' "${root_summary}" >&2 || true
+  sed -n '1,80p' "${TMP_DIR}/root-summary.err" >&2 || true
+  exit 1
+fi
 
 python3 - "${ROOT}" <<'PY'
 import json
