@@ -8,6 +8,37 @@ trap 'rm -rf "${TMP_DIR}"' EXIT
 
 "${CHECKER}" "${ROOT}" --summary-json >/dev/null
 
+python3 - "${ROOT}" <<'PY'
+import json
+import pathlib
+import sys
+
+root = pathlib.Path(sys.argv[1])
+backlog = json.loads((root / "manifests/comprehensive_optimization_backlog.json").read_text(encoding="utf-8"))
+lta = json.loads((root / "manifests/long_term_asset_qualification.json").read_text(encoding="utf-8"))
+scorecard = json.loads((root / "manifests/product_maturity_scorecard.json").read_text(encoding="utf-8"))
+items = {item["id"]: item for item in backlog["items"]}
+
+for item_id in ("G14", "G15"):
+    assert items[item_id]["implementation_status"] == "done", items[item_id]
+    assert "blocking_condition" not in items[item_id], items[item_id]
+
+assert lta["maintainer_model"]["type"] == "solo", lta["maintainer_model"]
+assert lta["maintainer_model"]["required_human_approvals"] == 0, lta["maintainer_model"]
+assert lta["maintainer_model"]["human_redundancy_required"] is False, lta["maintainer_model"]
+assert lta["terminal"]["pending_requirements"] == ["LTA-04"], lta["terminal"]
+assert scorecard["overall"]["status"] == "production-qualified", scorecard["overall"]
+
+serialized = json.dumps({"G14": items["G14"], "G15": items["G15"]}, ensure_ascii=False)
+for retired in (
+    "Claude authentication",
+    "second human operator",
+    "second-operator maintenance rehearsal",
+    "multi-operator maintenance evidence",
+):
+    assert retired not in serialized, retired
+PY
+
 fixture_root="${TMP_DIR}/fixture-root"
 mkdir -p "${fixture_root}/reports/architecture" "${fixture_root}/manifests" "${fixture_root}/agent-dev-kit/templates/artifacts"
 cp "${ROOT}/reports/architecture/README.md" "${fixture_root}/reports/architecture/README.md"
