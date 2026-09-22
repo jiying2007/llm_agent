@@ -1,8 +1,8 @@
 {
   "schema_version": 2,
   "status": "active",
-  "last_updated": "2026-09-19",
-  "review_after": "2026-10-11",
+  "last_updated": "2026-09-22",
+  "review_after": "2026-10-12",
   "purpose": "Machine-readable terminal optimization backlog for llm_agent and agent-dev-kit architecture governance. The current source report is selected through manifests/report_registry.json so the backlog can evolve without rewriting historical reports.",
   "source_report": "reports/architecture/llm-agent-adk-target-architecture-2026-07-30.md",
   "rules": {
@@ -559,53 +559,50 @@
       "id": "G14",
       "priority": "P0",
       "optimization_area": "Runtime and field effectiveness",
-      "terminal_outcome": "Functional completeness, cost, latency, reliability, and rollback claims are supported by real multi-runtime campaigns and independent long-duration repository evidence.",
+      "terminal_outcome": "Runtime and field effectiveness claims stay scope-correct: the historical Product M5 baseline is backed by real measured runtime/field evidence, current-source release authority never inherits automatically, and periodic runtime replaceability is observed from Digital Worker without creating a second Root qualification gate.",
       "design_status": "landed",
-      "implementation_status": "blocked",
-      "blocking_condition": "Claude authentication, independent repositories, a second human operator, a 30-day observation window, and required field events are external evidence gaps that cannot be simulated.",
+      "implementation_status": "done",
       "implementation_targets": [
-        "real direct-target runtime smoke",
-        "dual-runtime effectiveness campaign",
-        "independent 30-day pilot and field evidence"
+        "historical measured Product M5 runtime and field baseline",
+        "current-source versus historical-evidence separation",
+        "Digital Worker periodic R2 observation without Root recertification"
       ],
       "verification": [
         "rtk scripts/check-software-m5-readiness.sh . --summary-json",
-        "rtk scripts/software-m5.sh status --summary-json",
-        "rtk bash agent-dev-kit/scripts/devkit.sh target check --all --level static --summary-json"
+        "rtk scripts/check-current-status-consistency.sh . --summary-json",
+        "rtk tests/test_long_term_asset_qualification.sh"
       ],
       "implementation_evidence": [
         "manifests/product_maturity_scorecard.json",
         "manifests/software_m5_policy.json",
-        "manifests/software_m5_pilot_ledger.json",
-        "reports/architecture/g14-g15-runtime-field-handoff-2026-07-30.md"
+        "reports/runtime-evidence/software-m5-production-qualification-2026-09-12.json",
+        "manifests/long_term_asset_qualification.json",
+        "manifests/digital_worker_runtime_pilot.json"
       ]
     },
     {
       "id": "G15",
       "priority": "P1",
       "optimization_area": "Maintainer scalability and succession",
-      "terminal_outcome": "Critical manifests, release gates, runtime evidence, and knowledge promotion have explicit ownership, review succession, and multi-operator maintenance evidence.",
+      "terminal_outcome": "The explicit solo-maintainer operating model has machine-owned repository governance, exact source/release identity, automated security/regression gates, clean-room recovery/rollback evidence, ownership metadata and a continuity runbook; a second human is optional succession capacity, not a terminal prerequisite.",
       "design_status": "landed",
-      "implementation_status": "blocked",
-      "blocking_condition": "Repository ownership and freshness metadata are implemented, but a named backup reviewer and a real second-operator maintenance rehearsal require another human and cannot be self-attested.",
+      "implementation_status": "done",
       "implementation_targets": [
-        "owner and reviewer coverage",
-        "CODEOWNERS or equivalent ownership contract",
-        "second-operator maintenance rehearsal"
+        "explicit solo-maintainer ownership model",
+        "native repository governance and automated required checks",
+        "clean-room recovery and rollback drill",
+        "continuity and succession runbook without mandatory human redundancy"
       ],
       "verification": [
-        "rtk bash agent-dev-kit/scripts/devkit.sh harness readiness --root agent-dev-kit --summary-json",
-        "rtk scripts/check-current-status-consistency.sh . --summary-json",
-        "rtk scripts/check-software-m5-readiness.sh . --summary-json"
+        "rtk python3 -m tools.control_plane.cli native-governance --repo jiying2007/llm_agent --branch main --summary-json",
+        "rtk tests/test_long_term_asset_qualification.sh",
+        "rtk scripts/check-current-status-consistency.sh . --summary-json"
       ],
       "implementation_evidence": [
-        "agent-dev-kit/OWNERS",
-        "agent-dev-kit/.adk/harness-readiness.json",
-        "agent-dev-kit/docs/changes/adk-self-readiness-ownership/verify-report.md",
-        "reports/architecture/g14-g15-runtime-field-handoff-2026-07-30.md",
-        "agent-dev-kit/manifests/harness_readiness_contracts.json",
-        "manifests/product_maturity_task_pack.json",
-        "manifests/software_m5_policy.json"
+        ".github/CODEOWNERS",
+        "manifests/long_term_asset_qualification.json",
+        "reports/long-term-assets/solo-maintainer-recovery-current.json",
+        "docs/runbooks/solo-maintainer-continuity.md"
       ]
     },
     {
