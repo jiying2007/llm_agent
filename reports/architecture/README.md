@@ -45,8 +45,8 @@ rtk tests/test_architecture_reports.sh
 ## 当前报告
 
 - `llm-agent-adk-target-architecture-2026-07-30.md`：当前全面优化评估、目标架构、实施队列与证据边界。
-- `llm-agent-adk-software-m5-readiness-2026-07-13.md`：历史软件 M5 readiness 基线，已 superseded。
+- `software-m5-readiness-2026-07-13`：历史软件 M5 readiness 基线，已归档到 Git history；exact commit/blob 见 `manifests/report_registry.json`。
 - `llm-agent-adk-product-maturity-audit-2026-07-13.md`：历史产品成熟度审计，已 superseded。
-- `llm-agent-adk-target-architecture-2026-07-11.md`：历史目标架构，已 superseded。
+- `target-architecture-2026-07-11`：历史目标架构，已归档到 Git history；exact commit/blob 见 `manifests/report_registry.json`。
 
-机器可读 current/superseded 关系见 `manifests/report_registry.json`；README 和门禁不得硬编码 dated current 路径。当前成熟度仍以 `manifests/product_maturity_scorecard.json` 为准，当前报告不能覆盖机器 scorecard。
+机器可读 current/superseded/archived 关系见 `manifests/report_registry.json`；README 和门禁不得硬编码 dated current 路径。当前成熟度仍以 `manifests/product_maturity_scorecard.json` 为准，当前报告不能覆盖机器 scorecard。
