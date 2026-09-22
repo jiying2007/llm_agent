@@ -199,18 +199,26 @@ jobs:
           --summary-json
           > /tmp/llm-agent-integration-receipt.json
 
-      - name: Refresh Sigstore TUF trust root
-        run: cosign initialize
-
-      - name: Verify keyless ADK Sigstore bundle with producer-compatible trust discovery
-        run: >-
-          cosign verify-blob
-          --use-signed-timestamps
-          --bundle reports/promotion/agent-dev-kit/promotion-attestation.json
-          --certificate-identity https://github.com/jiying2007/agent-dev-kit/.github/workflows/ci.yml@refs/heads/main
-          --certificate-oidc-issuer https://token.actions.githubusercontent.com
-          reports/promotion/agent-dev-kit/promotion-evidence.json
-          > /tmp/adk-attestation-verification.txt
+      - name: Verify keyless ADK Sigstore bundle with bounded trust refresh retries
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3; do
+            echo "[INFO] Sigstore verification attempt ${attempt}/3"
+            if cosign initialize && cosign verify-blob \
+              --use-signed-timestamps \
+              --bundle reports/promotion/agent-dev-kit/promotion-attestation.json \
+              --certificate-identity https://github.com/jiying2007/agent-dev-kit/.github/workflows/ci.yml@refs/heads/main \
+              --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+              reports/promotion/agent-dev-kit/promotion-evidence.json \
+              > /tmp/adk-attestation-verification.txt; then
+              exit 0
+            fi
+            if [[ "${attempt}" -eq 3 ]]; then
+              echo "[FAIL] Sigstore bundle verification failed after 3 strict attempts" >&2
+              exit 1
+            fi
+            sleep "$((attempt * 2))"
+          done
 
       - name: Re-run root-side exact interface contracts
         run: |
