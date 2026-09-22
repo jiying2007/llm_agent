@@ -12,7 +12,10 @@ import sys
 root = pathlib.Path(sys.argv[1])
 policy = json.loads((root / "manifests/software_m5_policy.json").read_text(encoding="utf-8"))
 scorecard = json.loads((root / "manifests/product_maturity_scorecard.json").read_text(encoding="utf-8"))
-task_pack_path = root / "manifests/history/product_maturity_task_pack-2026-09-16.json"\ntask_pack = json.loads(task_pack_path.read_text(encoding="utf-8"))\nassert not (root / "manifests/product_maturity_task_pack.json").exists()\nassert task_pack_path.is_file()
+task_pack_path = root / "manifests/history/product_maturity_task_pack-2026-09-16.json"
+task_pack = json.loads(task_pack_path.read_text(encoding="utf-8"))
+assert not (root / "manifests/product_maturity_task_pack.json").exists()
+assert task_pack_path.is_file()
 status = (root / "reports/current-status.md").read_text(encoding="utf-8")
 
 assert policy["schema"] == "llm-agent-software-m5-policy/v3", policy
