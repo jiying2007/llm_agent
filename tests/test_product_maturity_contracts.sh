@@ -46,6 +46,15 @@ assert scorecard["software_m5"]["blocking_gates"] == [], scorecard
 assert "solo_maintainer_recovery_drill" not in scorecard["software_m5"]["advisory_followups"], scorecard
 assert len(scorecard["dimensions"]) == 12, scorecard
 assert [item["id"] for item in scorecard["dimensions"]] == [f"D{i:02d}" for i in range(1, 13)]
+assert all(
+    "manifests/product_maturity_task_pack.json" not in dimension["evidence"]
+    for dimension in scorecard["dimensions"]
+), scorecard
+assert any(
+    "manifests/history/product_maturity_task_pack-2026-09-16.json" in dimension["evidence"]
+    for dimension in scorecard["dimensions"]
+), scorecard
+
 for dimension in scorecard["dimensions"]:
     assert dimension["implementation_level"] == "M5", dimension
     assert dimension["evidence_level"] == "M5", dimension
