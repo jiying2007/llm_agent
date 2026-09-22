@@ -15,6 +15,18 @@ import sys
 
 root = pathlib.Path(sys.argv[1])
 backlog = json.loads((root / "manifests/comprehensive_optimization_backlog.json").read_text(encoding="utf-8"))
+g18 = next(item for item in backlog["items"] if item["id"] == "G18")
+assert "agent-dev-kit/src/agent_dev_kit/profile_coherence_contract.py" in g18["implementation_evidence"], g18
+assert "agent-dev-kit/scripts/check-profile-coherence.sh" not in g18["implementation_evidence"], g18
+PY
+
+python3 - "${ROOT}" <<'PY'
+import json
+import pathlib
+import sys
+
+root = pathlib.Path(sys.argv[1])
+backlog = json.loads((root / "manifests/comprehensive_optimization_backlog.json").read_text(encoding="utf-8"))
 lta = json.loads((root / "manifests/long_term_asset_qualification.json").read_text(encoding="utf-8"))
 scorecard = json.loads((root / "manifests/product_maturity_scorecard.json").read_text(encoding="utf-8"))
 items = {item["id"]: item for item in backlog["items"]}
