@@ -3,7 +3,7 @@
 - 日期: 2026-07-13
 - 审计范围: 目标、产品边界、架构、功能、效果、可靠性、性能、安全、发布、维护、扩展、体验、长期资产和现场证据
 - 机器状态: `manifests/product_maturity_scorecard.json`
-- 执行任务: `manifests/product_maturity_task_pack.json`
+- 执行任务: `manifests/history/product_maturity_task_pack-2026-09-16.json`
 - 前序设计: `llm-agent-adk-target-architecture-2026-07-11.md`（已被本报告替代为 current）
 
 ## 执行结论
@@ -135,7 +135,7 @@ Codex 最终固定集对照使用相同的审批策略、同一 30 条任务和�
 
 1. `docs/product-maturity-model.md` 定义跨仓 M0-M5 和四层证据。
 2. `manifests/product_maturity_scorecard.json` 是当前成熟度机器 SSOT。
-3. `manifests/product_maturity_task_pack.json` 保存剩余任务、验收和命令。
+3. `manifests/history/product_maturity_task_pack-2026-09-16.json` 保存剩余任务、验收和命令。
 4. `manifests/report_registry.json` 固定 current/superseded 关系，历史报告不再竞争 SSOT。
 5. ADK 变更由 `docs/changes/adk-v3-product-maturity/` 保存 proposal/design/tasks/negative/verify。
 6. 参考源每个 commit 独立输出 evidence、decision、task pack，不把一次性内容写进 AGENTS。
@@ -203,4 +203,4 @@ Knowledge Hub 预检将本任务路由到 `projects/llm-agent/validation/`，并
 | `tests/test_reference_source_integrity.sh` | immutable snapshot and dirty isolation |
 | `reports/pipeline-report-2026-07-13.json` | structured pipeline result |
 | `manifests/product_maturity_scorecard.json` | authoritative maturity status |
-| `manifests/product_maturity_task_pack.json` | executable remaining work |
+| `manifests/history/product_maturity_task_pack-2026-09-16.json` | executable remaining work |
