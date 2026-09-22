@@ -51,13 +51,29 @@ for retired in (
     assert retired not in serialized, retired
 PY
 
+python3 - "${ROOT}" <<'PY'
+import json
+import pathlib
+import re
+import sys
+
+root = pathlib.Path(sys.argv[1])
+registry = json.loads((root / "manifests/report_registry.json").read_text(encoding="utf-8"))
+entries = {item["id"]: item for item in registry["reports"]}
+for item_id in ("target-architecture-2026-07-11", "software-m5-readiness-2026-07-13"):
+    item = entries[item_id]
+    assert item["status"] == "archived", item
+    assert re.fullmatch(r"[0-9a-f]{40}", item["archive_commit"]), item
+    assert re.fullmatch(r"[0-9a-f]{40}", item["archive_blob_sha"]), item
+    assert not (root / item["path"]).exists(), item
+assert registry["policy"]["archived_reports_may_be_git_history_only"] is True, registry["policy"]
+PY
+
 fixture_root="${TMP_DIR}/fixture-root"
 mkdir -p "${fixture_root}/reports/architecture" "${fixture_root}/manifests" "${fixture_root}/agent-dev-kit/templates/artifacts"
 cp "${ROOT}/reports/architecture/README.md" "${fixture_root}/reports/architecture/README.md"
-cp "${ROOT}/reports/architecture/llm-agent-adk-target-architecture-2026-07-11.md" "${fixture_root}/reports/architecture/llm-agent-adk-target-architecture-2026-07-11.md"
 cp "${ROOT}/reports/architecture/llm-agent-adk-target-architecture-2026-07-30.md" "${fixture_root}/reports/architecture/llm-agent-adk-target-architecture-2026-07-30.md"
 cp "${ROOT}/reports/architecture/llm-agent-adk-product-maturity-audit-2026-07-13.md" "${fixture_root}/reports/architecture/llm-agent-adk-product-maturity-audit-2026-07-13.md"
-cp "${ROOT}/reports/architecture/llm-agent-adk-software-m5-readiness-2026-07-13.md" "${fixture_root}/reports/architecture/llm-agent-adk-software-m5-readiness-2026-07-13.md"
 cp "${ROOT}/manifests/comprehensive_optimization_backlog.json" "${fixture_root}/manifests/comprehensive_optimization_backlog.json"
 cp "${ROOT}/manifests/product_maturity_scorecard.json" "${fixture_root}/manifests/product_maturity_scorecard.json"
 cp "${ROOT}/manifests/report_registry.json" "${fixture_root}/manifests/report_registry.json"
@@ -139,7 +155,7 @@ mkdir -p "${legacy_root}/reports/architecture" "${legacy_root}/manifests" "${leg
 cp "${ROOT}/reports/architecture/README.md" "${legacy_root}/reports/architecture/README.md"
 cp "${ROOT}/manifests/comprehensive_optimization_backlog.json" "${legacy_root}/manifests/comprehensive_optimization_backlog.json"
 cp "${ROOT}/agent-dev-kit/templates/artifacts/target-architecture-report-template.md" "${legacy_root}/agent-dev-kit/templates/artifacts/target-architecture-report-template.md"
-python3 - "${ROOT}/reports/architecture/llm-agent-adk-target-architecture-2026-07-11.md" "${legacy_root}/reports/architecture/llm-agent-adk-target-architecture-legacy.md" <<'PY'
+python3 - "${ROOT}/reports/architecture/llm-agent-adk-target-architecture-2026-07-30.md" "${legacy_root}/reports/architecture/llm-agent-adk-target-architecture-legacy.md" <<'PY'
 import re
 import sys
 
@@ -228,7 +244,7 @@ PY
 missing_manifest_root="${TMP_DIR}/missing-manifest-root"
 mkdir -p "${missing_manifest_root}/reports/architecture"
 cp "${ROOT}/reports/architecture/README.md" "${missing_manifest_root}/reports/architecture/README.md"
-cp "${ROOT}/reports/architecture/llm-agent-adk-target-architecture-2026-07-11.md" "${missing_manifest_root}/reports/architecture/target-architecture-good.md"
+cp "${ROOT}/reports/architecture/llm-agent-adk-target-architecture-2026-07-30.md" "${missing_manifest_root}/reports/architecture/target-architecture-good.md"
 missing_manifest_out="${TMP_DIR}/missing-manifest.out"
 if "${CHECKER}" "${missing_manifest_root}" >"${missing_manifest_out}" 2>&1; then
   echo "[FAIL] missing manifest fixture unexpectedly passed" >&2
