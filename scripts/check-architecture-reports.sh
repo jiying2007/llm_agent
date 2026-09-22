@@ -449,7 +449,7 @@ else:
                 fail(f"{label} missing product maturity heading: {heading}")
         for token in (
             "manifests/product_maturity_scorecard.json",
-            "manifests/product_maturity_task_pack.json",
+            "manifests/history/product_maturity_task_pack-2026-09-16.json",
             "field_not_verified",
             "terminal_mature",
             "source-to-live",
@@ -575,6 +575,23 @@ if report_registry:
                 fail(f"report registry path must stay under reports/architecture: {registry_path}")
                 continue
             report_path = os.path.join(root, normalized_registry_path)
+            registry_status = str(item.get("status") or "")
+            if registry_status not in {"current", "superseded", "archived"}:
+                fail(f"report registry status is invalid: {registry_status or '<missing>'}")
+                continue
+            if registry_status == "archived":
+                archive_commit = str(item.get("archive_commit") or "")
+                archive_blob_sha = str(item.get("archive_blob_sha") or "")
+                archived_at = str(item.get("archived_at") or "")
+                if not re.fullmatch(r"[0-9a-f]{40}", archive_commit):
+                    fail(f"archived report missing exact archive_commit: {registry_path}")
+                if not re.fullmatch(r"[0-9a-f]{40}", archive_blob_sha):
+                    fail(f"archived report missing exact archive_blob_sha: {registry_path}")
+                if not re.fullmatch(r"20[0-9]{2}-[0-9]{2}-[0-9]{2}", archived_at):
+                    fail(f"archived report missing archived_at date: {registry_path}")
+                if os.path.isfile(report_path):
+                    fail(f"archived report must not remain in active worktree: {registry_path}")
+                continue
             if not os.path.isfile(report_path):
                 fail(f"report registry path missing: {registry_path}")
 
