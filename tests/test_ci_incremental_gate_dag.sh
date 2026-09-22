@@ -136,6 +136,8 @@ assert "sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6" in g
 assert "cosign-release: v3.1.3" in github
 assert "sudo apt-get install -y ripgrep" in github
 assert "cosign initialize" in github
+assert "for attempt in 1 2 3" in github
+assert "failed after 3 strict attempts" in github
 assert "trusted_root.json" not in github
 assert "cosign verify-blob" in github
 assert "--use-signed-timestamps" in github
