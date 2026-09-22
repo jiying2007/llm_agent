@@ -71,9 +71,15 @@
       "implementation_level": "M5",
       "evidence_level": "M5",
       "effective_level": "M5",
-      "evidence_layers_present": ["source", "test"],
+      "evidence_layers_present": [
+        "source",
+        "test"
+      ],
       "status": "verified",
-      "evidence": ["docs/product-maturity-model.md", "manifests/software_m5_policy.json"]
+      "evidence": [
+        "docs/product-maturity-model.md",
+        "manifests/software_m5_policy.json"
+      ]
     },
     {
       "id": "D02",
@@ -83,9 +89,15 @@
       "implementation_level": "M5",
       "evidence_level": "M5",
       "effective_level": "M5",
-      "evidence_layers_present": ["source", "test"],
+      "evidence_layers_present": [
+        "source",
+        "test"
+      ],
       "status": "verified",
-      "evidence": ["manifests/adk_interface.lock.json", "tools/codex_assets/software_m5_v3.py"]
+      "evidence": [
+        "manifests/adk_interface.lock.json",
+        "tools/codex_assets/software_m5_v3.py"
+      ]
     },
     {
       "id": "D03",
@@ -95,9 +107,15 @@
       "implementation_level": "M5",
       "evidence_level": "M5",
       "effective_level": "M5",
-      "evidence_layers_present": ["source", "test"],
+      "evidence_layers_present": [
+        "source",
+        "test"
+      ],
       "status": "verified",
-      "evidence": ["reports/promotion/agent-dev-kit/promotion-evidence.json", "reports/current-status.md"]
+      "evidence": [
+        "reports/promotion/agent-dev-kit/promotion-evidence.json",
+        "reports/current-status.md"
+      ]
     },
     {
       "id": "D04",
@@ -107,9 +125,16 @@
       "implementation_level": "M5",
       "evidence_level": "M5",
       "effective_level": "M5",
-      "evidence_layers_present": ["source", "test", "runtime"],
+      "evidence_layers_present": [
+        "source",
+        "test",
+        "runtime"
+      ],
       "status": "verified",
-      "evidence": ["reports/runtime-evidence/codex-v5-runtime-smoke-2026-08-30.json", "reports/runtime-evidence/software-m5-production-qualification-2026-09-12.json"]
+      "evidence": [
+        "reports/runtime-evidence/codex-v5-runtime-smoke-2026-08-30.json",
+        "reports/runtime-evidence/software-m5-production-qualification-2026-09-12.json"
+      ]
     },
     {
       "id": "D05",
@@ -119,9 +144,16 @@
       "implementation_level": "M5",
       "evidence_level": "M5",
       "effective_level": "M5",
-      "evidence_layers_present": ["source", "test", "runtime"],
+      "evidence_layers_present": [
+        "source",
+        "test",
+        "runtime"
+      ],
       "status": "verified",
-      "evidence": ["tests/test_software_m5_certification.sh", "reports/runtime-evidence/software-m5-production-qualification-2026-09-12.json"]
+      "evidence": [
+        "tests/test_software_m5_certification.sh",
+        "reports/runtime-evidence/software-m5-production-qualification-2026-09-12.json"
+      ]
     },
     {
       "id": "D06",
@@ -131,9 +163,16 @@
       "implementation_level": "M5",
       "evidence_level": "M5",
       "effective_level": "M5",
-      "evidence_layers_present": ["source", "test", "runtime"],
+      "evidence_layers_present": [
+        "source",
+        "test",
+        "runtime"
+      ],
       "status": "verified",
-      "evidence": ["reports/runtime-evidence/codex-v5-runtime-smoke-2026-08-30.json", "manifests/product_maturity_task_pack.json"]
+      "evidence": [
+        "reports/runtime-evidence/codex-v5-runtime-smoke-2026-08-30.json",
+        "manifests/history/product_maturity_task_pack-2026-09-16.json"
+      ]
     },
     {
       "id": "D07",
@@ -143,9 +182,16 @@
       "implementation_level": "M5",
       "evidence_level": "M5",
       "effective_level": "M5",
-      "evidence_layers_present": ["source", "test", "runtime"],
+      "evidence_layers_present": [
+        "source",
+        "test",
+        "runtime"
+      ],
       "status": "verified",
-      "evidence": ["reports/promotion/agent-dev-kit/promotion-evidence.json", "reports/promotion/agent-dev-kit/promotion-attestation.json"]
+      "evidence": [
+        "reports/promotion/agent-dev-kit/promotion-evidence.json",
+        "reports/promotion/agent-dev-kit/promotion-attestation.json"
+      ]
     },
     {
       "id": "D08",
@@ -155,9 +201,16 @@
       "implementation_level": "M5",
       "evidence_level": "M5",
       "effective_level": "M5",
-      "evidence_layers_present": ["source", "test", "runtime"],
+      "evidence_layers_present": [
+        "source",
+        "test",
+        "runtime"
+      ],
       "status": "verified",
-      "evidence": ["reports/runtime-evidence/adk-v5-exact-source-transition-2026-08-30.json", "reports/promotion/agent-dev-kit/promotion-evidence.json"]
+      "evidence": [
+        "reports/runtime-evidence/adk-v5-exact-source-transition-2026-08-30.json",
+        "reports/promotion/agent-dev-kit/promotion-evidence.json"
+      ]
     },
     {
       "id": "D09",
@@ -167,9 +220,15 @@
       "implementation_level": "M5",
       "evidence_level": "M5",
       "effective_level": "M5",
-      "evidence_layers_present": ["source", "test"],
+      "evidence_layers_present": [
+        "source",
+        "test"
+      ],
       "status": "verified",
-      "evidence": ["docs/software-m5-certification-plan.md", "manifests/product_maturity_task_pack.json"]
+      "evidence": [
+        "docs/software-m5-certification-plan.md",
+        "manifests/history/product_maturity_task_pack-2026-09-16.json"
+      ]
     },
     {
       "id": "D10",
@@ -179,9 +238,16 @@
       "implementation_level": "M5",
       "evidence_level": "M5",
       "effective_level": "M5",
-      "evidence_layers_present": ["source", "test", "runtime"],
+      "evidence_layers_present": [
+        "source",
+        "test",
+        "runtime"
+      ],
       "status": "verified",
-      "evidence": ["manifests/adk_interface.lock.json", "reports/runtime-evidence/claude-code-owner-attestation-v2-2026-08-30.json"]
+      "evidence": [
+        "manifests/adk_interface.lock.json",
+        "reports/runtime-evidence/claude-code-owner-attestation-v2-2026-08-30.json"
+      ]
     },
     {
       "id": "D11",
@@ -191,9 +257,15 @@
       "implementation_level": "M5",
       "evidence_level": "M5",
       "effective_level": "M5",
-      "evidence_layers_present": ["source", "test"],
+      "evidence_layers_present": [
+        "source",
+        "test"
+      ],
       "status": "verified",
-      "evidence": ["scripts/software-m5.sh", "reports/current-status.md"]
+      "evidence": [
+        "scripts/software-m5.sh",
+        "reports/current-status.md"
+      ]
     },
     {
       "id": "D12",
@@ -203,15 +275,26 @@
       "implementation_level": "M5",
       "evidence_level": "M5",
       "effective_level": "M5",
-      "evidence_layers_present": ["source", "test", "field"],
+      "evidence_layers_present": [
+        "source",
+        "test",
+        "field"
+      ],
       "status": "verified",
       "scope": "product_maturity_v5",
-      "evidence": ["reports/field-evidence/software-m5-independent-pilot-start-2026-09-12.json", "reports/field-evidence/software-m5-v5-events.jsonl"]
+      "evidence": [
+        "reports/field-evidence/software-m5-independent-pilot-start-2026-09-12.json",
+        "reports/field-evidence/software-m5-v5-events.jsonl"
+      ]
     }
   ],
   "release_gates": {
     "blocking": [],
-    "advisory": ["D04", "D08", "D12"],
+    "advisory": [
+      "D04",
+      "D08",
+      "D12"
+    ],
     "hardware_policy": "not applicable to this software-only product boundary",
     "status": "pass"
   }
