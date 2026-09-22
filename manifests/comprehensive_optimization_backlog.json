@@ -677,7 +677,7 @@
       ],
       "implementation_evidence": [
         "agent-dev-kit/manifest.json",
-        "agent-dev-kit/scripts/check-profile-coherence.sh",
+        "agent-dev-kit/src/agent_dev_kit/profile_coherence_contract.py",
         "agent-dev-kit/skills/adk-test-strategy/SKILL.md",
         "agent-dev-kit/skills/adk-unit-test-embedded/references/embedded-tdd-matrix.md"
       ]
