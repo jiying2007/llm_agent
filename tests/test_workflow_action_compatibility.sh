@@ -32,6 +32,10 @@ for path in workflows:
         failures.append(
             f"{path.relative_to(root)} uses Cosign --trusted-root without required --new-bundle-format"
         )
+    if "sigstore/cosign-installer" in text and "cosign-release: v3.1.3" not in text:
+        failures.append(
+            f"{path.relative_to(root)} must pin the verified Cosign CLI contract to v3.1.3"
+        )
     promotion_bundle = "reports/promotion/agent-dev-kit/promotion-attestation.json"
     if promotion_bundle in text:
         index = text.index(promotion_bundle)
@@ -40,7 +44,6 @@ for path in workflows:
             "for attempt in 1 2 3",
             "cosign initialize",
             "cosign verify-blob",
-            "--use-signed-timestamps",
             "--bundle reports/promotion/agent-dev-kit/promotion-attestation.json",
             "--certificate-identity https://github.com/jiying2007/agent-dev-kit/.github/workflows/ci.yml@refs/heads/main",
             "--certificate-oidc-issuer https://token.actions.githubusercontent.com",
@@ -51,7 +54,12 @@ for path in workflows:
                 failures.append(
                     f"{path.relative_to(root)} promotion bundle verification missing producer-proven token: {token}"
                 )
-        for forbidden in ("--trusted-root", "--new-bundle-format"):
+        for forbidden in (
+            "--use-signed-timestamps",
+            "--rfc3161-timestamp-path",
+            "--trusted-root",
+            "--new-bundle-format",
+        ):
             if forbidden in block:
                 failures.append(
                     f"{path.relative_to(root)} promotion bundle verification reintroduced incompatible {forbidden}"

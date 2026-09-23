@@ -16,7 +16,6 @@ python3 -m tools.control_plane.adk_promotion_evidence \
   --summary-json
 
 cosign verify-blob \
-  --use-signed-timestamps \
   --bundle "$ATTESTATION" \
   --certificate-identity 'https://github.com/jiying2007/agent-dev-kit/.github/workflows/ci.yml@refs/heads/main' \
   --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \

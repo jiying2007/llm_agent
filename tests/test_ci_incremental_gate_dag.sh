@@ -140,7 +140,8 @@ assert "for attempt in 1 2 3" in github
 assert "failed after 3 strict attempts" in github
 assert "trusted_root.json" not in github
 assert "cosign verify-blob" in github
-assert "--use-signed-timestamps" in github
+assert "--use-signed-timestamps" not in github
+assert "--rfc3161-timestamp-path" not in github
 assert "--trusted-root" not in github
 assert "--new-bundle-format" not in github
 assert "--insecure-ignore-tlog" not in github
