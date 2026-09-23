@@ -1,0 +1,56 @@
+{
+  "schema": "llm-agent-branch-gc-retired/v1",
+  "entries": [
+    {
+      "branch": "codex/reconstruct-attestation-20260912",
+      "sha": "ba121135d710f9c1a7281a5bdf0a951e4b811a7b",
+      "disposition": "delete",
+      "proof": "ancestor-of-main",
+      "reviewed_against_main": "8bc6b290ab55af8069c6779dc5d93b2885c0cad8",
+      "reason": "Temporary attestation reconstruction branch has no unique commits; its exact head is fully contained in main."
+    },
+    {
+      "branch": "arch/runtime-binding-receipt-v1",
+      "sha": "4fb361247dfe6f6bf196f1a532dc1abc4b1c72ed",
+      "disposition": "delete",
+      "proof": "absorbed-path-blobs",
+      "reviewed_against_main": "951106bc8879c2a679914797a79ca46438288564",
+      "unique_commit_count": 1,
+      "paths": {
+        "manifests/digital_worker_runtime_pilot.json": "fc975dcc332d04297eccad5504396edaf2c2fde1"
+      },
+      "reason": "The branch's only unique commit updates the runtime-pilot contract, and the exact resulting blob is already present on current main."
+    },
+    {
+      "branch": "codex/runner-allocation-probe-20260912",
+      "sha": "eac43874b8ce8f630f196d7b936a497f7927e894",
+      "disposition": "delete",
+      "proof": "terminal-probe",
+      "reviewed_against_main": "7e3f7790f5eacf67a7d93c20ed7c8288126a7063",
+      "unique_commit_count": 1,
+      "path": ".github/workflows/runner-probe.yml",
+      "blob_sha": "8d228a8dda5ad80111853cae32395fce03cdcb57",
+      "probe_run": {
+        "id": 34658015398,
+        "name": "runner-allocation-probe",
+        "path": ".github/workflows/runner-probe.yml",
+        "head_branch": "codex/runner-allocation-probe-20260912",
+        "head_sha": "eac43874b8ce8f630f196d7b936a497f7927e894",
+        "status": "completed",
+        "conclusion": "failure",
+        "event": "pull_request"
+      },
+      "superseding_run": {
+        "id": 34678812343,
+        "name": "llm-agent-ci",
+        "path": ".github/workflows/ci.yml",
+        "head_branch": "main",
+        "head_sha": "7e3f7790f5eacf67a7d93c20ed7c8288126a7063",
+        "status": "completed",
+        "conclusion": "success",
+        "event": "push"
+      },
+      "reason": "One-shot GitHub-hosted runner allocation diagnostic is terminal: its exact one-commit/one-probe-workflow identity is fixed, the historical diagnostic run is preserved, and a later successful hosted main CI supersedes the probe without absorbing its disposable workflow file."
+    }
+  ]
+}
