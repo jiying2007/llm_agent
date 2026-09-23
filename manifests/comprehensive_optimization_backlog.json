@@ -465,7 +465,7 @@
       "optimization_area": "Release and rollback clarity",
       "terminal_outcome": "Source-to-live, Hub promotion, and reference cleanup have separate approval points and rollback or stop conditions.",
       "design_status": "landed",
-      "implementation_status": "in_progress",
+      "implementation_status": "done",
       "implementation_targets": [
         "runtime delivery contract",
         "knowledge promotion contract",
