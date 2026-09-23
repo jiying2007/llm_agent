@@ -205,7 +205,6 @@ jobs:
           for attempt in 1 2 3; do
             echo "[INFO] Sigstore verification attempt ${attempt}/3"
             if cosign initialize && cosign verify-blob \
-              --use-signed-timestamps \
               --bundle reports/promotion/agent-dev-kit/promotion-attestation.json \
               --certificate-identity https://github.com/jiying2007/agent-dev-kit/.github/workflows/ci.yml@refs/heads/main \
               --certificate-oidc-issuer https://token.actions.githubusercontent.com \
