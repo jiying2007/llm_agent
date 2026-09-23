@@ -19,32 +19,32 @@
   },
   "contracts": {
     "contract_registry_sha256": "ec840b85b66e1b43d9fdf619a730177811b343145c0a07d744b676d4649f4b3d",
-    "release_manifest_sha256": "25d9ab796dbb29999f4db87cc9c9f102c5f2580bdc68f17f1387b4fbd50f371d",
-    "schema_set_sha256": "fd945f21c9d55cb0396dbdacf08b4810302ceb7e3f3ce181b832e6a9166965e3"
+    "release_manifest_sha256": "668a675358189fbc2d4958e7b1a8803b414c898909fc45d52132a78876e189eb",
+    "schema_set_sha256": "61e107f9db10a64c63e2d03dc24c4316736c46f797f91fad59e4156bbf11073e"
   },
-  "issued_at": "2026-09-22T17:27:34.707284Z",
+  "issued_at": "2026-09-23T01:32:20.930364Z",
   "provenance": {
     "format": "sigstore-bundle/v1",
     "subject": "promotion-evidence.json"
   },
   "release": {
-    "artifact_sha256": "4c457eecda1d26fda6dfd40258e4f92679778a10e6acb3b833c28a00b8412476",
+    "artifact_sha256": "0f51f031a8033b497d8769972162137db19b862b435188f9c760a0ff4a73f6f5",
     "release_eligible": true
   },
   "schema": "adk-promotion-evidence/v1",
   "source": {
-    "commit": "277b001315a2021940d254d91f2379ae57e7b9be",
+    "commit": "fa90623709d67205af3ad028b32e515d4495e739",
     "event": "push",
-    "manifest_blob": "92f9e82a3fe4e1ae08bcd7ce78b94ce010c03bb9",
-    "manifest_sha256": "f69ef137d382055e387f9476c31f366f5ecda90451548fa5fbb4d7a7b956867c",
+    "manifest_blob": "439710514fe590be6e316d344b289e7c318137fc",
+    "manifest_sha256": "827d4595035c4f1f832b6b9f4ae5b9f7662a7783b996863fc678945e76258f2d",
     "ref": "refs/heads/main",
     "repository": "jiying2007/agent-dev-kit",
     "run_attempt": 1,
-    "run_id": 35760416043,
-    "tree": "61106ef2db26bec8104a8b4eecae60abd5432766",
-    "version": "7.0.21",
+    "run_id": 35806386133,
+    "tree": "fb3ba33a934200c5c8c0f54c440ef462072a04b5",
+    "version": "7.0.23",
     "workflow": "agent-dev-kit-ci",
     "workflow_ref": "jiying2007/agent-dev-kit/.github/workflows/ci.yml@refs/heads/main",
-    "workflow_sha": "277b001315a2021940d254d91f2379ae57e7b9be"
+    "workflow_sha": "fa90623709d67205af3ad028b32e515d4495e739"
   }
 }
