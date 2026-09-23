@@ -17,7 +17,10 @@ assert "def exact_merged_pr" not in source
 assert "not-explicitly-retired" in source
 assert "explicit-retired-" in source
 assert '"candidate_policy": "explicit-retirement-only"' in source
-assert "manifests/branch_gc_retired.json" in workflow
+assert "registry/branch_gc_retired.json" in workflow
+assert "manifests/branch_gc_retired.json" not in workflow
+assert Path("registry/branch_gc_retired.json").is_file()
+assert not Path("manifests/branch_gc_retired.json").exists()
 assert "explicitly retired" in workflow.lower()
 assert "merged_pr" not in workflow
 
