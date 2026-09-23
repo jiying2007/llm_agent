@@ -63,11 +63,11 @@ lta = json.loads((root / "manifests/long_term_asset_qualification.json").read_te
 scorecard = json.loads((root / "manifests/product_maturity_scorecard.json").read_text(encoding="utf-8"))
 items = {item["id"]: item for item in backlog["items"]}
 
-for item_id in ("G13", "G14", "G15", "G17", "G18", "G19", "G20"):
+for item_id in ("G10", "G13", "G14", "G15", "G17", "G18", "G19", "G20"):
     assert items[item_id]["implementation_status"] == "done", items[item_id]
     assert "blocking_condition" not in items[item_id], items[item_id]
 
-for item_id in ("G9", "G10", "G21", "G22"):
+for item_id in ("G9", "G21", "G22"):
     assert items[item_id]["implementation_status"] == "in_progress", items[item_id]
 
 assert lta["maintainer_model"]["type"] == "solo", lta["maintainer_model"]
