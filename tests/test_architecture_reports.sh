@@ -35,6 +35,24 @@ import sys
 
 root = pathlib.Path(sys.argv[1])
 backlog = json.loads((root / "manifests/comprehensive_optimization_backlog.json").read_text(encoding="utf-8"))
+g10 = next(item for item in backlog["items"] if item["id"] == "G10")
+expected = {
+    "agent-dev-kit/src/agent_dev_kit/installation_contract.py",
+    "agent-dev-kit/src/agent_dev_kit/installation_plan.py",
+    "agent-dev-kit/src/agent_dev_kit/installation_transaction.py",
+    "agent-dev-kit/src/agent_dev_kit/release.py",
+}
+assert expected.issubset(set(g10["implementation_evidence"])), g10
+assert "agent-dev-kit/src/agent_dev_kit/installer.py" not in g10["implementation_evidence"], g10
+PY
+
+python3 - "${ROOT}" <<'PY'
+import json
+import pathlib
+import sys
+
+root = pathlib.Path(sys.argv[1])
+backlog = json.loads((root / "manifests/comprehensive_optimization_backlog.json").read_text(encoding="utf-8"))
 g19 = next(item for item in backlog["items"] if item["id"] == "G19")
 assert "agent-dev-kit/src/agent_dev_kit/execution_policy/__init__.py" in g19["implementation_evidence"], g19
 assert "agent-dev-kit/src/agent_dev_kit/execution_policy/engine.py" not in g19["implementation_evidence"], g19
