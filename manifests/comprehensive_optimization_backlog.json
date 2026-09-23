@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "status": "active",
-  "last_updated": "2026-09-22",
+  "last_updated": "2026-09-23",
   "review_after": "2026-10-12",
   "purpose": "Machine-readable terminal optimization backlog for llm_agent and agent-dev-kit architecture governance. The current source report is selected through manifests/report_registry.json so the backlog can evolve without rewriting historical reports.",
   "source_report": "reports/architecture/llm-agent-adk-target-architecture-2026-07-30.md",
@@ -537,7 +537,7 @@
       "optimization_area": "Supported toolchain portability",
       "terminal_outcome": "Every release-grade validation runs on a declared Python and dependency baseline, while unsupported local environments fail clearly without being mistaken for release evidence.",
       "design_status": "landed",
-      "implementation_status": "in_progress",
+      "implementation_status": "done",
       "implementation_targets": [
         "reviewed Python 3.11 or 3.12 execution path",
         "reproducible dependency environment",
@@ -641,7 +641,7 @@
       "optimization_area": "Unified routing intent and permission IR",
       "terminal_outcome": "Task mode, negation, mutation permission, risk, profile availability and abstention are resolved from one fail-closed routing IR without unsafe permission escalation.",
       "design_status": "landed",
-      "implementation_status": "in_progress",
+      "implementation_status": "done",
       "implementation_targets": [
         "routing-ir/v2",
         "contrastive negation and abstain regression",
@@ -664,7 +664,7 @@
       "optimization_area": "Platform-neutral core profile",
       "terminal_outcome": "Core exports only platform-neutral agents, skills and workflows while embedded-fullstack owns every driver, BSP, RTOS, C/C++, SIL/HIL and field-only asset.",
       "design_status": "landed",
-      "implementation_status": "in_progress",
+      "implementation_status": "done",
       "implementation_targets": [
         "core and embedded capability closure",
         "platform-neutral test strategy",
@@ -688,7 +688,7 @@
       "optimization_area": "Workflow and runtime completion semantics",
       "terminal_outcome": "Workflow nodes, I/O, transitions, failure, cancellation, rollback and evidence are compiled into a strict IR, and Execution Policy applies task-mode-specific artifact gates without bypassing completion evidence.",
       "design_status": "landed",
-      "implementation_status": "in_progress",
+      "implementation_status": "done",
       "implementation_targets": [
         "adk-workflow-ir/v2",
         "runtime_control.policy/v2",
@@ -712,7 +712,7 @@
       "optimization_area": "Typed evidence graph and outcome traces",
       "terminal_outcome": "Sanitized source-to-retirement provenance and run outcome metrics are type-checked, content-addressed, acyclic, connected and usable without storing prompts, messages, raw logs or tool payloads.",
       "design_status": "landed",
-      "implementation_status": "in_progress",
+      "implementation_status": "done",
       "implementation_targets": [
         "adk-evidence-graph/v1",
         "strict workflow trace summary",
