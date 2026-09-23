@@ -70,7 +70,7 @@ jobs:
             --prefix 'arch/'
             --protected main
             --protected master
-            --retired-registry manifests/branch_gc_retired.json
+            --retired-registry registry/branch_gc_retired.json
             --report /tmp/branch-gc-report.json
           )
           if [[ "$APPLY" == "true" ]]; then
