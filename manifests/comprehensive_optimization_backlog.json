@@ -476,7 +476,9 @@
         "rtk scripts/check-reference-repository-removal.sh ."
       ],
       "implementation_evidence": [
-        "agent-dev-kit/src/agent_dev_kit/installer.py",
+        "agent-dev-kit/src/agent_dev_kit/installation_contract.py",
+        "agent-dev-kit/src/agent_dev_kit/installation_plan.py",
+        "agent-dev-kit/src/agent_dev_kit/installation_transaction.py",
         "agent-dev-kit/src/agent_dev_kit/release.py"
       ]
     },
