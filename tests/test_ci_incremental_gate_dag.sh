@@ -20,7 +20,7 @@ gates = manifest["gates"]
 github = (root / ".github/workflows/ci.yml").read_text(encoding="utf-8")
 branch_gc = (root / ".github/workflows/branch-gc.yml").read_text(encoding="utf-8")
 branch_gc_code = (root / "tools/control_plane/branch_gc.py").read_text(encoding="utf-8")
-retired_gc = json.loads((root / "manifests/branch_gc_retired.json").read_text(encoding="utf-8"))
+retired_gc = json.loads((root / "registry/branch_gc_retired.json").read_text(encoding="utf-8"))
 gitlab = (root / ".gitlab-ci.yml").read_text(encoding="utf-8")
 pyproject = (root / "pyproject.toml").read_text(encoding="utf-8")
 
@@ -173,7 +173,8 @@ assert re.search(r"^  push:\n\s+branches:\n\s+- main", branch_gc, re.MULTILINE)
 assert "workflow_dispatch:" in branch_gc and "apply:" in branch_gc
 assert "contents: write" in branch_gc and "pull-requests: read" in branch_gc
 assert "cancel-in-progress: false" in branch_gc
-assert "--retired-registry manifests/branch_gc_retired.json" in branch_gc
+assert "--retired-registry registry/branch_gc_retired.json" in branch_gc
+assert "manifests/branch_gc_retired.json" not in branch_gc
 assert 'EVENT_NAME" == "push" && "$REF_NAME" == "main"' in branch_gc
 assert 'EVENT_NAME" == "workflow_dispatch" && "$DISPATCH_APPLY" == "true"' in branch_gc
 assert 'args+=(--apply)' in branch_gc
