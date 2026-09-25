@@ -2,6 +2,7 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
+# Bind the checked-out gitlink explicitly; do not infer llm_agent as the ADK manifest root.
 
 python3 - <<'PY'
 import json
