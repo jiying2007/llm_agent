@@ -58,3 +58,15 @@ rtk python3 -m tools.control_plane.cli native-readiness --root . --require-nativ
 The default command validates the software chain and returns exit 0 even when terminal native evidence is still externally blocked. Read `terminal_status`, `software_ready`, `native_verified_targets`, and `blockers`. The `--require-native` form exits 2 until at least one direct target has a real version-pinned runtime conformance pass whose evidence path, trust policy, enabled registry authority, target scope, and runtime identity are coherent.
 
 A green default projection means the status projection is valid; it does **not** mean native certification passed. This distinction is intentional so missing provider authentication or a real runtime campaign does not block unrelated software maintenance while still remaining a machine-visible terminal blocker.
+
+
+## ADK 7.4.1 project discovery layout
+
+真实 native campaign 必须让运行时从它实际支持的**项目级 discovery 位置**看到 Skill，而不是只把 `skills/` 放到任意临时目录：
+
+- Claude Code：isolated project root 下的 `.claude/skills/<skill>/SKILL.md`
+- OpenCode：isolated project root 下的 `.opencode/skills/<skill>/SKILL.md`
+
+7.4.1 的 campaign runner 以 isolated project root 作为 runtime cwd，`ADK_TARGET_PROJECT_ROOT` 指向该项目根，`ADK_TARGET_ROOT` 指向对应 `.claude` / `.opencode` 配置根。这样 source/layout harness 与真实项目 discovery 语义一致。
+
+`auth_mode=home` 只用于复用受控用户认证状态，不通过 `CLAUDE_CONFIG_DIR` 或 `OPENCODE_CONFIG_DIR` 把项目 Skill 路径替换成用户全局配置根。真实 campaign 仍需设计唯一 canary/命中证据，防止用户全局 Skill 造成假阳性。

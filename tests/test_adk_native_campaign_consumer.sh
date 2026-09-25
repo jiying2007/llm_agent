@@ -25,6 +25,13 @@ major, minor, patch = (int(item) for item in expected_version.split("."))
 assert (major, minor, patch) >= (7, 4, 0), expected_version
 assert expected_commit, lock
 
+layouts = json.loads(
+    (adk / "manifests" / "native_campaign_target_layouts.json").read_text(encoding="utf-8")
+)
+assert layouts["schema"] == "adk-native-campaign-target-layouts/v1", layouts
+assert layouts["targets"]["claude-code"]["project_config_dir"] == ".claude", layouts
+assert layouts["targets"]["opencode"]["project_config_dir"] == ".opencode", layouts
+
 active_contract = adk / "manifests" / "target-contracts" / "claude-code.json"
 active_before = active_contract.read_bytes()
 runtime_reports = adk / "reports" / "runtime"
@@ -50,7 +57,12 @@ try:
             "from pathlib import Path;"
             "assert 'HOME' not in os.environ;"
             "assert os.environ['ADK_TARGET_SMOKE_STAGE']==sys.argv[1];"
-            "assert Path(os.environ['ADK_TARGET_ROOT']).is_dir();"
+            "project=Path(os.environ['ADK_TARGET_PROJECT_ROOT']).resolve();"
+            "config=Path(os.environ['ADK_TARGET_ROOT']).resolve();"
+            "assert Path.cwd().resolve()==project;"
+            "assert config==project/'.claude';"
+            "assert config.is_dir();"
+            "assert list((config/'skills').glob('*/SKILL.md'));"
             f"print('{sentinel}-'+sys.argv[1]);"
             f"raise SystemExit({exit_code})"
         )
