@@ -42,7 +42,7 @@ assert profiles["contract"] == [
     "ci-incremental-dag",
 ]
 assert profiles["pr-fast"] == ["contract", "doc-sync"]
-assert profiles["integration-extra"] == ["adk-promotion-evidence", "root-regression"]
+assert profiles["integration-extra"] == ["adk-promotion-evidence", "root-regression", "campaign-readiness"]
 assert profiles["integration"] == ["pr-fast", "integration-extra"]
 assert profiles["release-extra"] == ["fresh-status", "harden-readiness"]
 assert profiles["release"] == ["integration", "release-extra"]
@@ -60,6 +60,11 @@ assert gates["native-governance-contract"]["argv"] == [
 assert "tools/control_plane/native_repository_governance.py" in gates["native-governance-contract"]["inputs"]
 assert ".github/workflows/native-governance-control-plane.yml" in gates["native-governance-contract"]["inputs"]
 assert gates["root-regression"]["depends_on"] == ["adk-promotion-evidence"]
+assert gates["campaign-readiness"]["depends_on"] == ["root-regression", "status-projection"]
+assert gates["campaign-readiness"]["impact_inputs"] == ["agent-dev-kit"]
+assert "integration-deep" in gates["campaign-readiness"]["impact_groups"]
+assert "--gate" in gates["campaign-readiness"]["argv"]
+assert "software" in gates["campaign-readiness"]["argv"]
 assert gates["harden-readiness"].get("requires") == ["runtime-source"]
 assert gates["adk-pin"]["impact_inputs"] == ["agent-dev-kit"]
 assert gates["codex-pin"]["impact_inputs"] == ["codex"]
@@ -94,6 +99,7 @@ assert {"adk-pin", "adk-interface", "runtime-chain-pin"}.issubset(adk["group_gat
 
 adk_gitlink = impact("agent-dev-kit")
 assert adk_gitlink["required"] is True and "adk-pin" in adk_gitlink["group_gates"], adk_gitlink
+assert "campaign-readiness" in adk_gitlink["group_gates"], adk_gitlink
 
 codex = impact("codex")
 assert codex["required"] is True and "codex-pin" in codex["group_gates"], codex
