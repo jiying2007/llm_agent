@@ -491,6 +491,36 @@
       ],
       "timeout_seconds": 30,
       "evidence_class": "runtime"
+    },
+    "effect-readiness": {
+      "owner": "llm_agent",
+      "side_effect": "none",
+      "depends_on": [
+        "adk-promotion-evidence"
+      ],
+      "inputs": [
+        "adk.lock",
+        "manifests/comprehensive_optimization_backlog.json",
+        "tools/control_plane/effect_readiness.py"
+      ],
+      "impact_inputs": [
+        "agent-dev-kit"
+      ],
+      "impact_groups": [
+        "integration-deep"
+      ],
+      "outputs": [],
+      "cache_policy": "disabled",
+      "argv": [
+        "python3",
+        "-m",
+        "tools.control_plane.effect_readiness",
+        "--root",
+        ".",
+        "--summary-json"
+      ],
+      "timeout_seconds": 60,
+      "evidence_class": "runtime"
     }
   },
   "profiles": {
@@ -517,6 +547,7 @@
     "integration-extra": [
       "adk-promotion-evidence",
       "native-target-readiness",
+      "effect-readiness",
       "root-regression"
     ],
     "integration": [
