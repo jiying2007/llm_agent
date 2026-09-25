@@ -376,6 +376,41 @@
       "timeout_seconds": 1800,
       "evidence_class": "test"
     },
+    "campaign-readiness": {
+      "owner": "llm_agent",
+      "side_effect": "none",
+      "depends_on": [
+        "root-regression",
+        "status-projection"
+      ],
+      "inputs": [
+        "adk.lock",
+        "reports/current-status.md",
+        "tools/control_plane/campaign_readiness.py",
+        "tests/test_campaign_readiness.sh"
+      ],
+      "impact_inputs": [
+        "agent-dev-kit"
+      ],
+      "impact_groups": [
+        "integration-deep"
+      ],
+      "outputs": [],
+      "cache_policy": "disabled",
+      "argv": [
+        "python3",
+        "-m",
+        "tools.control_plane.campaign_readiness",
+        "--root",
+        ".",
+        "--require-adk-worktree",
+        "--gate",
+        "software",
+        "--summary-json"
+      ],
+      "timeout_seconds": 30,
+      "evidence_class": "test"
+    },
     "harden-readiness": {
       "owner": "llm_agent",
       "side_effect": "none",
@@ -486,7 +521,8 @@
     ],
     "integration-extra": [
       "adk-promotion-evidence",
-      "root-regression"
+      "root-regression",
+      "campaign-readiness"
     ],
     "integration": [
       "pr-fast",
