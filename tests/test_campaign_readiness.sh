@@ -4,6 +4,30 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TMP="$(mktemp)"
 trap 'rm -f "$TMP"' EXIT
 
+
+python3 - <<'PY'
+import subprocess
+import tempfile
+from pathlib import Path
+from tools.control_plane.campaign_readiness import _git_state
+
+with tempfile.TemporaryDirectory() as tmp:
+    repo=Path(tmp)
+    subprocess.run(["git","-C",str(repo),"init","-q"],check=True)
+    subprocess.run(["git","-C",str(repo),"config","user.name","Fixture"],check=True)
+    subprocess.run(["git","-C",str(repo),"config","user.email","fixture@example.invalid"],check=True)
+    (repo/"tracked.txt").write_text("base\n",encoding="utf-8")
+    subprocess.run(["git","-C",str(repo),"add","tracked.txt"],check=True)
+    subprocess.run(["git","-C",str(repo),"commit","-qm","fixture"],check=True)
+    head,dirty=_git_state(repo)
+    assert len(head)==40 and dirty==0,(head,dirty)
+    (repo/"tracked.txt").write_text("changed\n",encoding="utf-8")
+    (repo/"odd name\nfile.txt").write_text("untracked\n",encoding="utf-8")
+    same_head,dirty=_git_state(repo)
+    assert same_head==head and dirty==2,(same_head,dirty)
+print("[PASS] campaign readiness git NUL status parser handles clean/dirty and unusual names")
+PY
+
 python3 -m tools.control_plane.campaign_readiness --root "$ROOT" --summary-json >"$TMP"
 python3 - "$ROOT" "$TMP" <<'PY'
 import json, sys
