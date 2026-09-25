@@ -70,8 +70,8 @@ def _json(path: Path, label: str) -> dict[str, Any]:
     return value
 
 
-def _git_head(repository: Path) -> str:
-    completed = subprocess.run(
+def _git_state(repository: Path) -> tuple[str, int]:
+    head = subprocess.run(
         ["git", "-C", str(repository), "rev-parse", "HEAD"],
         stdin=subprocess.DEVNULL,
         capture_output=True,
@@ -79,9 +79,31 @@ def _git_head(repository: Path) -> str:
         check=False,
         timeout=10,
     )
-    if completed.returncode:
+    if head.returncode:
         raise ReadinessError("unable to resolve ADK worktree HEAD")
-    return completed.stdout.strip()
+    status = subprocess.run(
+        [
+            "git", "-C", str(repository), "status", "--porcelain=v1", "-z",
+            "--untracked-files=all", "--no-renames",
+        ],
+        stdin=subprocess.DEVNULL,
+        capture_output=True,
+        check=False,
+        timeout=10,
+    )
+    if status.returncode:
+        raise ReadinessError("unable to inspect ADK worktree status")
+    dirty_count = sum(bool(item) for item in status.stdout.split("\0"))
+    return head.stdout.strip(), dirty_count
+
+
+def _within(root: Path, raw: str, label: str) -> Path:
+    candidate = (root / raw).resolve()
+    try:
+        candidate.relative_to(root.resolve())
+    except ValueError as exc:
+        raise ReadinessError(f"{label} escapes ADK worktree") from exc
+    return candidate
 
 
 def _required_files(root: Path, names: tuple[str, ...]) -> dict[str, Any]:
@@ -95,6 +117,8 @@ def _required_files(root: Path, names: tuple[str, ...]) -> dict[str, Any]:
 
 def _adk_projection(root: Path, lock: dict[str, str], require_worktree: bool) -> dict[str, Any]:
     adk = root / "agent-dev-kit"
+    if adk.is_symlink():
+        raise ReadinessError("ADK worktree must not be a symlink")
     manifest_path = adk / "manifest.json"
     if not manifest_path.is_file():
         if require_worktree:
@@ -109,11 +133,11 @@ def _adk_projection(root: Path, lock: dict[str, str], require_worktree: bool) ->
         }
 
     manifest = _json(manifest_path, "ADK manifest")
-    head = _git_head(adk)
+    head, dirty_count = _git_state(adk)
     expected_version = lock.get("agent-dev-kit.version")
     expected_commit = lock.get("agent-dev-kit.commit")
     version = manifest.get("version")
-    identity_ready = version == expected_version and head == expected_commit
+    identity_ready = version == expected_version and head == expected_commit and dirty_count == 0
     effect = _required_files(adk, _EFFECT_REQUIRED)
     native = _required_files(adk, _NATIVE_REQUIRED)
 
@@ -146,7 +170,8 @@ def _adk_projection(root: Path, lock: dict[str, str], require_worktree: bool) ->
     for target, config in sorted(raw_targets.items()):
         if not isinstance(config, dict) or not isinstance(config.get("contract"), str):
             raise ReadinessError(f"ADK target contract reference is invalid: {target}")
-        contract = _json(adk / config["contract"], f"target contract {target}")
+        contract_path = _within(adk, config["contract"], f"target contract {target}")
+        contract = _json(contract_path, f"target contract {target}")
         adapter = contract.get("adapter")
         if not isinstance(adapter, dict):
             raise ReadinessError(f"target adapter is invalid: {target}")
@@ -168,6 +193,7 @@ def _adk_projection(root: Path, lock: dict[str, str], require_worktree: bool) ->
         "identity_status": "ready" if identity_ready else "blocked",
         "version": version,
         "commit": head,
+        "dirty_count": dirty_count,
         "effect_software": effect,
         "native_software": native,
         "native_registry": registry,
@@ -180,6 +206,8 @@ def project_campaign_readiness(root: Path, *, require_adk_worktree: bool = False
     lock = _kv(root / "adk.lock")
     adk = _adk_projection(root, lock, require_adk_worktree)
     status = project_status(root, dt.date.today())
+    if status.get("status") != "pass":
+        raise ReadinessError("current status projection is not valid")
 
     identity_ready = adk["identity_status"] == "ready"
     effect_software_ready = identity_ready and adk["effect_software"]["status"] == "ready"
