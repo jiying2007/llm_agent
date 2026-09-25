@@ -50,7 +50,12 @@ try:
             "from pathlib import Path;"
             "assert 'HOME' not in os.environ;"
             "assert os.environ['ADK_TARGET_SMOKE_STAGE']==sys.argv[1];"
-            "assert Path(os.environ['ADK_TARGET_ROOT']).is_dir();"
+            "project=Path(os.environ['ADK_TARGET_PROJECT_ROOT']).resolve();"
+            "config=Path(os.environ['ADK_TARGET_ROOT']).resolve();"
+            "assert Path.cwd().resolve()==project;"
+            "assert config==project/'.claude';"
+            "assert config.is_dir();"
+            "assert list((config/'skills').glob('*/SKILL.md'));"
             f"print('{sentinel}-'+sys.argv[1]);"
             f"raise SystemExit({exit_code})"
         )
