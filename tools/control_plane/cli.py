@@ -15,6 +15,8 @@ _COMMAND_MODULES = {
     "longitudinal-operation": "tools.control_plane.longitudinal_operation",
     "long-term-rehearsal": "tools.control_plane.long_term_asset_rehearsal",
     "promotion-evidence": "tools.control_plane.adk_promotion_evidence",
+    "reference-pins": "tools.control_plane.reference_pins",
+    "analyze": "tools.codex_assets.intake_pipeline",
 }
 
 
