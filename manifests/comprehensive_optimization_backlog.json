@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "status": "active",
-  "last_updated": "2026-09-23",
+  "last_updated": "2026-09-25",
   "review_after": "2026-10-12",
   "purpose": "Machine-readable terminal optimization backlog for llm_agent and agent-dev-kit architecture governance. The current source report is selected through manifests/report_registry.json so the backlog can evolve without rewriting historical reports.",
   "source_report": "reports/architecture/llm-agent-adk-target-architecture-2026-07-30.md",
@@ -740,20 +740,33 @@
       "design_status": "landed",
       "implementation_status": "in_progress",
       "implementation_targets": [
-        "target-contract/v2 adapter SPI",
-        "static versus native conformance branches",
-        "one native target campaign"
+        "target-contract/v2 adapter SPI and static/native evidence separation",
+        "source-layout probe and profile/source observability",
+        "managed native trust verifier and owner-reviewed registry",
+        "native campaign prepare/run/finalize with typed plan/evidence/receipt candidate",
+        "one real authenticated version-pinned native target pass with signed receipt and production-loader verification"
       ],
       "verification": [
-        "rtk bash agent-dev-kit/tests/test_target_contracts.sh",
-        "rtk bash agent-dev-kit/scripts/devkit.sh target check --all --level static --summary-json",
-        "rtk bash agent-dev-kit/scripts/devkit.sh target smoke --target <target> --stage discovery --runtime-command <native-command>"
+        "rtk python3 -m tools.control_plane.cli native-readiness --root . --summary-json",
+        "rtk bash tests/test_native_target_readiness.sh",
+        "rtk bash tests/test_adk_context_observability_consumer.sh",
+        "rtk bash tests/test_adk_native_trust_consumer.sh",
+        "rtk bash tests/test_adk_native_campaign_consumer.sh",
+        "rtk python3 -m tools.control_plane.cli native-readiness --root . --require-native --summary-json"
       ],
       "implementation_evidence": [
         "agent-dev-kit/manifests/target-contract.schema.json",
         "agent-dev-kit/manifests/target-contracts/",
-        "agent-dev-kit/src/agent_dev_kit/targets.py"
-      ]
+        "agent-dev-kit/manifests/native_conformance_trust_registry.json",
+        "agent-dev-kit/src/agent_dev_kit/target_source_probe.py",
+        "agent-dev-kit/src/agent_dev_kit/native_trust.py",
+        "agent-dev-kit/src/agent_dev_kit/native_campaign.py",
+        "agent-dev-kit/src/agent_dev_kit/native_campaign_contract.py",
+        "agent-dev-kit/src/agent_dev_kit/native_campaign_execution.py",
+        "docs/runbooks/native-target-conformance-readiness.md",
+        "tools/control_plane/native_target_readiness.py"
+      ],
+      "blocking_condition": "Software layers through ADK 7.4.0 are landed and Root-consumed. Terminal completion requires at least one real authenticated version-pinned direct-target discovery/load/trigger campaign, complete typed receipt, reviewed signature/provenance, exact managed-registry binding, and production-loader verification; synthetic/source-layout evidence cannot satisfy this condition."
     },
     {
       "id": "G22",
