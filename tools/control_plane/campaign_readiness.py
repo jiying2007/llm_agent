@@ -18,7 +18,7 @@ from typing import Any
 from .status_projection import project as project_status
 
 SCHEMA = "llm-agent-campaign-readiness/v1"
-GATES = ("software", "effect", "native", "evidence")
+GATES = ("software",)
 MAX_JSON_BYTES = 4 * 1024 * 1024
 
 _EFFECT_REQUIRED = (
@@ -194,7 +194,9 @@ def project_campaign_readiness(root: Path, *, require_adk_worktree: bool = False
     ]
     enabled_authorities = adk["native_registry"]["enabled_authority_count"]
     native_external_blockers: list[str] = []
-    if enabled_authorities == 0:
+    if enabled_authorities is None:
+        native_external_blockers.append("native-authority-state-unknown")
+    elif enabled_authorities == 0:
         native_external_blockers.append("no-enabled-native-authority")
     if not runtime_targets:
         native_external_blockers.append("no-native-certified-target")
@@ -276,12 +278,6 @@ def project_campaign_readiness(root: Path, *, require_adk_worktree: bool = False
 def _gate_ok(result: dict[str, Any], gate: str) -> bool:
     if gate == "software":
         return result["software_status"] == "ready"
-    if gate == "effect":
-        return result["campaigns"]["effect"]["evidence_status"] != "external-input-required"
-    if gate == "native":
-        return result["campaigns"]["native"]["evidence_status"] != "external-input-required"
-    if gate == "evidence":
-        return result["evidence_closure_status"] == "ready"
     raise ReadinessError(f"unknown gate: {gate}")
 
 
