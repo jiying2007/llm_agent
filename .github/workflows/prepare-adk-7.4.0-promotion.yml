@@ -42,6 +42,7 @@ jobs:
           expected={
             '.github/workflows/prepare-adk-7.4.0-promotion.yml',
             'tests/test_adk_native_campaign_consumer.sh',
+            'tests/test_adk_native_trust_consumer.sh',
             'docs/runbooks/native-target-conformance-readiness.md',
           }
           assert changed == expected, (changed-expected, expected-changed)
