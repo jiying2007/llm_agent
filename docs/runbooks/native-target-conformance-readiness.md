@@ -44,3 +44,17 @@ rtk bash agent-dev-kit/scripts/devkit.sh target check --all --level static --sum
 `finalize` 仅输出 `ready-for-signature-and-registry` 候选，且拒绝覆盖 active target contract。后续仍必须独立完成 receipt 签名、managed registry exact binding、production loader 验证、owner review 与 target contract promotion。
 
 Root 的 `test_adk_native_campaign_consumer.sh` 使用隔离 Python runtime fixture，只验证公开 CLI、fail-closed 与权限边界；其 PASS 不可写入 native certification、runtime qualification 或 product release evidence。
+
+
+## Machine-readable readiness projection
+
+Root now exposes one read-only projection for G21:
+
+```bash
+rtk python3 -m tools.control_plane.cli native-readiness --root . --summary-json
+rtk python3 -m tools.control_plane.cli native-readiness --root . --require-native --summary-json
+```
+
+The default command validates the software chain and returns exit 0 even when terminal native evidence is still externally blocked. Read `terminal_status`, `software_ready`, `native_verified_targets`, and `blockers`. The `--require-native` form exits 2 until at least one direct target has a real version-pinned runtime conformance pass whose evidence path, trust policy, enabled registry authority, target scope, and runtime identity are coherent.
+
+A green default projection means the status projection is valid; it does **not** mean native certification passed. This distinction is intentional so missing provider authentication or a real runtime campaign does not block unrelated software maintenance while still remaining a machine-visible terminal blocker.
