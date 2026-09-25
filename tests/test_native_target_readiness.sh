@@ -33,6 +33,7 @@ for target,item in value["targets"].items():
         assert item["evidence_paths_valid"] is True, (target,item)
         assert item["trust_enabled"] is True, (target,item)
         assert item["bound_registry_authorities"], (target,item)
+        assert item["production_loader_verified"] is True, (target,item)
 
 if value["native_verified"]:
     assert value["terminal_status"]=="ready", value
