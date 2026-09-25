@@ -55,7 +55,7 @@ for target in ("claude-code", "opencode"):
     probe = run(["target-source-probe", "--target", target, "--profile", "core"])
     assert probe["schema"] == "adk-target-source-probe/v1", probe
     assert probe["status"] == "pass", probe
-    assert probe["discovery"] == "pass" and probe["load"] == "pass", probe
+    assert probe["source_discovery"] == "pass" and probe["source_load"] == "pass", probe
     assert probe["evidence_level"] == "source-layout", probe
     assert probe["native_runtime_evidence"] is False, probe
     assert probe["certification"] == "not-certified", probe
