@@ -10,6 +10,7 @@ _COMMAND_MODULES = {
     "impact": "tools.control_plane.impact",
     "runtime-chain": "tools.control_plane.runtime_chain",
     "consumer-chain": "tools.control_plane.consumer_chain",
+    "campaign-readiness": "tools.control_plane.campaign_readiness",
     "native-governance": "tools.control_plane.native_repository_governance",
     "native-governance-admin": "tools.control_plane.native_repository_governance_admin",
     "longitudinal-operation": "tools.control_plane.longitudinal_operation",
