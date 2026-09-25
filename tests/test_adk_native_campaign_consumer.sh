@@ -29,7 +29,7 @@ active_contract = adk / "manifests" / "target-contracts" / "claude-code.json"
 active_before = active_contract.read_bytes()
 runtime_reports = adk / "reports" / "runtime"
 runtime_reports.mkdir(parents=True, exist_ok=True)
-receipt_dir = Path(tempfile.mkdtemp(prefix=".root-native-campaign-", dir=runtime_reports))
+receipt_dir = Path(tempfile.mkdtemp(prefix="root-native-campaign-", dir=runtime_reports))
 external = Path(tempfile.mkdtemp(prefix="root-native-campaign-"))
 try:
     receipt = receipt_dir / "receipt.json"
