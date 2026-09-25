@@ -11,6 +11,15 @@ import sys
 from pathlib import Path
 
 root = Path.cwd()
+lock = {}
+for line in (root / "adk.lock").read_text(encoding="utf-8").splitlines():
+    if "=" in line:
+        key, value = line.split("=", 1)
+        lock[key] = value
+expected_version = lock["agent-dev-kit.version"]
+expected_commit = lock["agent-dev-kit.commit"]
+assert expected_version, lock
+assert expected_commit, lock
 
 def run(args, expected=0):
     done = subprocess.run(
@@ -26,7 +35,7 @@ def run(args, expected=0):
 
 core = run(["profile-footprint", "--profile", "core"])
 assert core["schema"] == "adk-profile-context-footprint/v1", core
-assert core["status"] == "pass" and core["source_version"] == "7.2.0", core
+assert core["status"] == "pass" and core["source_version"] == expected_version, (core, lock)
 assert core["accounting"]["runtime_initial_context_measured"] is False, core
 for surface in ("frontmatter_surface", "entry_body_surface", "entry_file_surface", "deferred_support_surface"):
     assert core[surface]["bytes"] > 0, (surface, core[surface])
@@ -66,5 +75,5 @@ for target in ("claude-code", "opencode"):
 bad = run(["target-source-probe", "--target", "missing-target", "--profile", "core"], expected=1)
 assert bad["status"] == "fail", bad
 
-print("[PASS] Root consumes ADK 7.2.0 profile/source observability without upgrading evidence authority")
+print(f"[PASS] Root consumes pinned ADK {expected_version} profile/source observability without upgrading evidence authority")
 PY
