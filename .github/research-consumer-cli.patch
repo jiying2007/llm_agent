@@ -1,0 +1,11 @@
+--- a/tests/test_effect_trial_consumer.sh
++++ b/tests/test_effect_trial_consumer.sh
+@@ -19,7 +19,7 @@
+     source=Path(tmp)/'input.json'
+     def run(value, code, verdict):
+         source.write_text(json.dumps(value),encoding='utf-8')
+-        done=subprocess.run([sys.executable,'-m','agent_dev_kit.cli','--root',str(adk),
++        done=subprocess.run([sys.executable,'-m','agent_dev_kit.cli',
+             'eval','compare-trials','--input',str(source),'--summary-json'],
+             cwd=root,text=True,capture_output=True,timeout=30)
+         assert done.returncode == code, (done.returncode,done.stdout,done.stderr)
