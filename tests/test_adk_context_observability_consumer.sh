@@ -13,7 +13,7 @@ root = Path.cwd()
 
 def run(args, expected=0):
     done = subprocess.run(
-        [sys.executable, "-m", "agent_dev_kit.cli", *args, "--summary-json"],
+        [sys.executable, "-m", "agent_dev_kit.cli", *args, "--root", str(root / "agent-dev-kit"), "--summary-json"],
         cwd=root,
         text=True,
         capture_output=True,
