@@ -18,3 +18,25 @@ rtk bash agent-dev-kit/scripts/devkit.sh eval compare-trials --input /absolute/e
 `tests/test_effect_trial_consumer.sh` 只使用固定ADK提供的合成fixture，检查真实CLI跨仓调用和四类退出语义。它不是模型效果实验，不能从该测试推导成功率或延迟收益。需要完整Root回归时先安装本仓和已pin ADK的声明依赖。
 
 恢复执行先核验当前Root/ADK SHA、bundle和已完成run_id；读取已有receipt后再决定下一未完成trial。缺trial保持invalid，不改task ID、不删失败trial、不重复上传成功结果冒充独立样本。CI、签名晋级和产品资格分别收口。
+
+
+## Profile / context source observability
+
+在进入真实 no-ADK/current/candidate 效果试验前，先记录候选 profile 的 source surface；这不是 runtime 初始上下文或真实 token 计量：
+
+```bash
+rtk bash agent-dev-kit/scripts/devkit.sh profile-footprint --profile core --summary-json
+rtk bash agent-dev-kit/scripts/devkit.sh profile-footprint --profile core --compare embedded-fullstack --summary-json
+rtk bash agent-dev-kit/scripts/devkit.sh profile-footprint --profile core --ratchet --summary-json
+```
+
+重点读取 frontmatter、entry body、deferred support 三层字节。bytes/4 仅为启发式估算；真实 runtime token 必须来自 Run Evidence。profile source-growth ratchet 只防止资产面无审查增长，不是上下文窗口上限，也不构成质量评分。
+
+Direct target 的静态可发现/可加载检查使用隔离 source probe：
+
+```bash
+rtk bash agent-dev-kit/scripts/devkit.sh target-source-probe --target claude-code --profile core --summary-json
+rtk bash agent-dev-kit/scripts/devkit.sh target-source-probe --target opencode --profile core --summary-json
+```
+
+该 probe 不触碰用户 live HOME，不启动 native runtime；PASS 仍必须保持 `evidence_level=source-layout`、`native_runtime_evidence=false`、`certification=not-certified`。真实 discover/load/trigger 只能由独立 native runtime campaign 提升。
