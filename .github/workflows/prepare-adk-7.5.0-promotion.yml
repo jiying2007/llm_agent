@@ -1,0 +1,121 @@
+name: Prepare exact ADK 7.5.0 promotion
+on:
+  pull_request:
+    types: [opened, reopened]
+permissions:
+  contents: read
+jobs:
+  prepare:
+    if: >-
+      github.actor == 'jiying2007' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'chore/promote-adk-7.5.0-agent-value-trust' &&
+      github.event.pull_request.base.sha == '1b433f616786172dfef403897789eb86fd875909'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          submodules: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.11'
+      - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6
+        with:
+          cosign-release: v3.1.3
+      - name: Verify exact 7.5.0 release and promotion artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          python - <<'PY'
+          import json, subprocess
+          changed=set(subprocess.check_output(
+              ['git','diff','--name-only','1b433f616786172dfef403897789eb86fd875909','HEAD'],
+              text=True).splitlines())
+          expected={
+            '.github/workflows/prepare-adk-7.5.0-promotion.yml',
+            'tests/test_adk_agent_value_trust_consumer.sh',
+            'docs/runbooks/practice-effect-review.md',
+          }
+          assert changed == expected, (changed-expected, expected-changed)
+          run=json.loads(subprocess.check_output([
+            'gh','api','repos/jiying2007/agent-dev-kit/actions/runs/36161195072'], text=True))
+          assert run['head_sha']=='ac1d9f18c70a67887e31a9c4e851e7448802b77e'
+          assert run['event']=='push' and run['status']=='completed' and run['conclusion']=='success'
+          release=json.loads(subprocess.check_output([
+            'gh','api','repos/jiying2007/agent-dev-kit/releases/tags/v7.5.0'], text=True))
+          assert release['id']==396767623 and release['immutable'] is True
+          assert not release['draft'] and not release['prerelease']
+          tar=[a for a in release['assets'] if a['name']=='agent-dev-kit-7.5.0.tar.gz']
+          assert len(tar)==1 and tar[0]['digest']=='sha256:204398c583d59983c74738956c9eb8a31e191e49bf6bc012d3c18f8d140004be'
+          PY
+          gh api repos/jiying2007/agent-dev-kit/actions/artifacts/10875916181/zip > /tmp/promotion.zip
+          printf '%s  %s\n' 156ca9e6fd2f896b1d8f983d9b5612d0c2d414070d2720ccb858572464d11359 /tmp/promotion.zip | sha256sum --check -
+          python - <<'PY'
+          import zipfile
+          from pathlib import Path
+          out=Path('/tmp/exact-promotion'); out.mkdir()
+          with zipfile.ZipFile('/tmp/promotion.zip') as z:
+              assert set(z.namelist()) == {'promotion-evidence.json','promotion-attestation.json','release-contract.json'}
+              for item in z.infolist():
+                  assert item.file_size < 100000
+                  (out/item.filename).write_bytes(z.read(item))
+          PY
+          cosign verify-blob --bundle /tmp/exact-promotion/promotion-attestation.json             --certificate-identity https://github.com/jiying2007/agent-dev-kit/.github/workflows/ci.yml@refs/heads/main             --certificate-oidc-issuer https://token.actions.githubusercontent.com             /tmp/exact-promotion/promotion-evidence.json
+          python - <<'PY'
+          import json
+          e=json.load(open('/tmp/exact-promotion/promotion-evidence.json'))
+          assert e['source']['commit']=='ac1d9f18c70a67887e31a9c4e851e7448802b77e'
+          assert e['source']['version']=='7.5.0'
+          assert e['source']['run_id']==36161195072
+          assert e['release']['artifact_sha256']=='204398c583d59983c74738956c9eb8a31e191e49bf6bc012d3c18f8d140004be'
+          PY
+          git submodule update --init --depth=1 agent-dev-kit
+          git -C agent-dev-kit fetch --depth=1 origin refs/tags/v7.5.0
+          test "$(git -C agent-dev-kit rev-parse 'FETCH_HEAD^{commit}')" = ac1d9f18c70a67887e31a9c4e851e7448802b77e
+          git -C agent-dev-kit checkout --detach ac1d9f18c70a67887e31a9c4e851e7448802b77e
+      - name: Apply canonical promotion and verify all ADK consumer layers
+        run: |
+          set -euo pipefail
+          python -m tools.control_plane.adk_promotion --root .             --ref ac1d9f18c70a67887e31a9c4e851e7448802b77e             --updated-at 2026-09-25             --promotion-evidence /tmp/exact-promotion/promotion-evidence.json             --promotion-attestation /tmp/exact-promotion/promotion-attestation.json             --apply --receipt-out /tmp/promotion-receipt.json --summary-json
+          python - <<'PY'
+          import subprocess
+          expected={
+            'agent-dev-kit','adk.lock','manifests/adk_interface.lock.json',
+            'reports/current-status.md',
+            'reports/promotion/agent-dev-kit/promotion-evidence.json',
+            'reports/promotion/agent-dev-kit/promotion-attestation.json',
+          }
+          actual=set(subprocess.check_output(['git','diff','--cached','--name-only'],text=True).splitlines())
+          assert actual == expected, (actual-expected, expected-actual)
+          PY
+          python -m pip install . ./agent-dev-kit
+          bash tests/test_adk_context_observability_consumer.sh
+          bash tests/test_adk_native_trust_consumer.sh
+          bash tests/test_adk_native_campaign_consumer.sh
+          bash tests/test_adk_agent_value_trust_consumer.sh
+          git diff --cached --check
+      - name: Remove temporary workflow and push guarded transaction
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git rm .github/workflows/prepare-adk-7.5.0-promotion.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'chore(adk): 集成已签名发布的 7.5.0'
+          test "$(git ls-remote origin refs/heads/chore/promote-adk-7.5.0-agent-value-trust | cut -f1)" = "$EXPECTED_HEAD"
+          git push origin HEAD:refs/heads/chore/promote-adk-7.5.0-agent-value-trust
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: adk-7.5.0-root-promotion
+          path: /tmp/promotion-receipt.json
+          if-no-files-found: error
+          retention-days: 7
