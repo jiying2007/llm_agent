@@ -25,7 +25,31 @@
 
 ## 最小流程
 
-1. 执行 `scripts/sync-subrepos.sh . fetch`
-2. 执行 `scripts/diff-scan.sh . 7 reports/weekly-change-report.md`
-3. 评估候选项并写入 `subrepos/adoption-matrix.md`
-4. 在 `codex` 试跑后更新 `reports/codex-pilot-report.md`
+1. 按 `manifests/reference_pins.json` 显式计划并物化批准来源到外部 cache。
+2. 使用 `llm-ctl analyze` 或 cache-only pipeline 生成固定提交的覆盖报告。
+3. 按 `docs/runbooks/practice-effect-review.md` 冻结干预与重复试验，独立审查后决定采纳。
+4. 组件、消费端、原生运行和现场证据分别保存，不互相继承资格。
+
+## 2026-09-25 研究归档索引
+
+原方案保持逐字不变。以下元数据整合自 `reports/optimization/2026-09-25/archive.json`，替代该独立索引；原文件和各项身份字段不变。旧索引可从提交 `9cfb8b99c8b4adf23843259aa286cdbc4b9f4d99` 追溯。本次整合不调整报告数量预算、不改变资格状态。
+
+<!-- BEGIN RESEARCH ARCHIVE 2026-09-25 -->
+```json
+{
+  "kind": "research-archive-metadata",
+  "source_filename": "llm_agent-adk-optimization-plan-2026-09-25.md",
+  "archived_path": "reports/optimization/2026-09-25/llm_agent-adk-optimization-plan.md",
+  "bytes": 25060,
+  "sha256": "d2c605ebbc174ec6cd0e6216293ddb976bcb9eb5d39eb07bd3e56246d29dcf30",
+  "git_blob": "0a12f0b86dcbba494aebfed339b534e118560d83",
+  "original_status": "proposal-not-implemented",
+  "root_baseline": "1df8204166ff7768d0e26e42ee12bcd38ba3b515",
+  "adk_baseline": "7367ef84787de75bb751940b32c9e80009660e47",
+  "implementation_evidence": "docs/changes/2026-09-25-evidence-intake-hardening/tasks.md",
+  "qualification_authority": "none"
+}
+```
+<!-- END RESEARCH ARCHIVE 2026-09-25 -->
+
+历史脚本状态摘录：`optimization/2026-09-25/historical-script-status-2026-05-23.md`；仅保留历史，不作为当前状态依据。元数据与原方案的字节、SHA256、Git blob 一致性由 `tests/test_intake_active_docs.sh` 实际核验。

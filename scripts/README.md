@@ -19,16 +19,12 @@ repo,group,priority,sync_mode,branch,enabled,notes,status,owner,last_reviewed_on
 
 默认策略：先压实 `agent-dev-kit`，再跟踪外部子仓更新。
 
-### adk 当前状态（2026-05-23）
+### 当前源码与资格状态
 
-- 版本锁: `agent-dev-kit.version=2.9.0`
-- Pilot readiness: 10/10 ready，planned=0，`device_needs_fix=0`，`device_simulated_pass=1`
-- Runtime footprint: ADK required Skill 必须存在，外部兼容 Skill/vendor 路径必须不存在
-- Codex 交接: `agent-dev-kit -> ~/codex -> ~/.codex` 只通过 handoff/build/plan/apply 链路进入运行目录
-- Runtime boundary: 禁止 adk 绕过 `~/codex` 直接写入 `~/.codex`
-- Production-field: 已有模拟设备状态机闭环；真实 production-ready 仍需实机烧录/readback、boot log、HIL/产测、OTA 回滚和现场包证据
-- 证据刷新: 当前机器保留 build、doctor、plan、apply dry-run 与 global health 证据；当前状态索引见 `reports/current-status.md`
-  `reports/current-status.md` 是最新门禁和证据包引用索引，不是 live refresh 已完成、真实 apply 已执行或 rollback 可用的证明。
+当前 source identity 只读取 `adk.lock`、`manifests/adk_interface.lock.json` 与 `reports/current-status.md` 的生成投影，不在手册维护版本或资格副本。
+
+2026-05-23 的说明保留于 `reports/optimization/2026-09-25/historical-script-status-2026-05-23.md`，仅为历史记录。组件发布、运行时证据、产品资格分别判断；`release_authorized=false` 时不得沿用历史资格。Codex 仍只走 `agent-dev-kit -> ~/codex -> ~/.codex`，本仓不直接写 live HOME。
+
 门禁文件：`subrepos/phase-gate.env`（默认 `allow_upstream_sync=no`）。
 
 阶段门禁已从单一开关扩展为阶段机，当前支持：
@@ -155,7 +151,7 @@ scripts/check-adk-lock.sh . --worktree-integration
 scripts/check-official-docs-adoption-review.sh .
 ```
 
-release-clean 模式校验 `adk.lock`、`agent-dev-kit/manifest.yaml`、ADK worktree 和根仓 gitlink commit 完全一致；working-tree integration 模式允许父仓 gitlink 暂未提交，但要求 lock 匹配 ADK worktree，且新 commit 必须继承已记录 gitlink，防止把分叉历史伪装成待集成状态。
+release-clean 模式校验 `adk.lock`、`agent-dev-kit/manifest.json`、ADK worktree 和根仓 gitlink commit 完全一致；working-tree integration 模式允许父仓 gitlink 暂未提交，但要求 lock 匹配 ADK worktree，且新 commit 必须继承已记录 gitlink，防止把分叉历史伪装成待集成状态。
 
 `check-adk-harden-readiness.sh` 的完整 ADK suite 只接受 Python 3.11+；旧解释器必须 fail-fast，不能产生 release-grade harden pass。旧环境只可显式使用 `--skip-full-suite` 执行非发布治理检查，并另行提供受控 Python 3.11/3.12 full parity。
 子仓状态检查脚本：
@@ -174,7 +170,9 @@ scripts/check-subrepo-state.sh . --summary-json
 默认模式用于日常门禁，避免参考仓未初始化或本地状态噪音阻断主链路；严格模式用于发布前收敛。
 `subrepos/dirty-baseline.tsv` 记录 observe 子仓的预期 dirty 状态、status fingerprint、change count、`expected_classification`、`analysis_policy`、owner 和 expires_on。`scripts/classify-repo-worktree.sh . <repo>` 将 dirty 分为 `mode/content/type/untracked/staged`；known-dirty 只有在分类与 `commit-snapshot-only` 策略同时匹配时才成立，不能用泛化 fingerprint 掩盖内容或 symlink 类型变化。
 `scripts/generate-reference-dirty-triage.sh . --out reports/reference-dirty-triage-YYYY-MM-DD.md --json-out reports/reference-dirty-triage-YYYY-MM-DD.json` 生成只读分流报告；`scripts/check-reference-dirty-triage.sh . --summary-json` 默认选择 latest valid schema v2 报告并校验 fingerprint、分类、分析策略和到期日，`--date YYYY-MM-DD` 可强制指定。
-参考源分析使用 `scripts/analyze-repo.sh <repo> --ref HEAD --all`；完整性门禁与回归为 `scripts/check-reference-source-integrity.sh .`、`tests/test_reference_source_integrity.sh`。薄 wrapper 调用 `tools.codex_assets.intake_pipeline`，只分析经路径校验的 `git archive <commit>` 临时快照，输出 `analysis.json`、`decision-candidate.json`、`task-pack.json` 和 Markdown 到 `reports/repo-analysis/<repo>/<commit>/`，不读取 uncommitted 文件、不写来源仓。`scripts/pipeline-subrepo-update.sh --skip-sync` 调用 fail-fast `tools.codex_assets.update_pipeline`，按 registry + 动态 grade 选择参考源并记录 drift；不执行自动吸收。
+参考源分析使用 `rtk llm-ctl analyze <reference-id> --root . --all --summary-json`，来源只能是 `manifests/reference_pins.json` 批准并已显式物化的外部 cache。自定义 cache 时追加一致的 `--cache-root`；managed dependency 必须显式使用 `--source-kind managed-dependency`。薄包装 `scripts/analyze-repo.sh` 调用相同实现。固定 commit/tree/origin 的快照输出 `analysis.json`、`decision-candidate.json`、`task-pack.json`，不读取未提交正文、不修改来源仓。
+
+`rtk scripts/pipeline-subrepo-update.sh --report-only --summary-json` 只完成来源观察；实际分析使用显式 `--repository <reference-id>` 和需要时的 `--cache-root`。流水线不自动 pull、不运行旧评分 hooks，也不据目录数量决定采纳；未物化返回 BLOCKED，`static-partial` 必须检查 coverage。完整操作与独立审查要求见 `docs/runbooks/reference-intake.md`。
 证据包生成脚本：
 
 ```bash
