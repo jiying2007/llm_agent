@@ -32,6 +32,7 @@ assert native["lifecycle_authority"] == "none-evidence-only"
 if (root/"agent-dev-kit/manifest.json").is_file():
     assert value["source"]["adk_worktree"]["worktree_status"] == "available", value
     assert value["source"]["adk_worktree"]["identity_status"] == "ready", value
+    assert value["source"]["adk_worktree"]["dirty_count"] == 0, value
     assert value["software_status"] == "ready", value
     assert effect["software_status"] == "ready" and effect["campaign_status"] == "ready-for-real-execution", effect
     assert native["software_status"] == "ready", native
