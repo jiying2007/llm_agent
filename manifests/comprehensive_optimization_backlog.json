@@ -747,12 +747,18 @@
       "verification": [
         "rtk bash agent-dev-kit/tests/test_target_contracts.sh",
         "rtk bash agent-dev-kit/scripts/devkit.sh target check --all --level static --summary-json",
-        "rtk bash agent-dev-kit/scripts/devkit.sh target smoke --target <target> --stage discovery --runtime-command <native-command>"
+        "rtk bash agent-dev-kit/scripts/devkit.sh target smoke --target <target> --stage discovery --runtime-command <native-command>",
+        "rtk llm-ctl campaign-readiness --root . --require-adk-worktree --gate software --summary-json"
       ],
       "implementation_evidence": [
         "agent-dev-kit/manifests/target-contract.schema.json",
         "agent-dev-kit/manifests/target-contracts/",
-        "agent-dev-kit/src/agent_dev_kit/targets.py"
+        "agent-dev-kit/src/agent_dev_kit/targets.py",
+        "agent-dev-kit/src/agent_dev_kit/target_source_probe.py",
+        "agent-dev-kit/src/agent_dev_kit/native_trust.py",
+        "agent-dev-kit/manifests/native_conformance_trust_registry.json",
+        "tools/control_plane/campaign_readiness.py",
+        "docs/runbooks/native-target-conformance-readiness.md"
       ]
     },
     {
@@ -770,7 +776,9 @@
       "verification": [
         "rtk bash agent-dev-kit/scripts/devkit.sh capability health --summary-json",
         "rtk bash agent-dev-kit/tests/test_skill_trigger_matrix.sh",
-        "rtk bash agent-dev-kit/tests/test_harness_readiness.sh"
+        "rtk bash agent-dev-kit/tests/test_harness_readiness.sh",
+        "rtk bash tests/test_effect_trial_consumer.sh",
+        "rtk llm-ctl campaign-readiness --root . --require-adk-worktree --gate software --summary-json"
       ],
       "implementation_evidence": [
         "agent-dev-kit/manifests/agent_value_contracts.json",
@@ -778,7 +786,13 @@
         "agent-dev-kit/schemas/asset-invocation-receipt-v1.schema.json",
         "agent-dev-kit/src/agent_dev_kit/agent_value.py",
         "agent-dev-kit/tests/test_agent_value.sh",
-        "agent-dev-kit/docs/runbooks/agent-value-lifecycle.md"
+        "agent-dev-kit/docs/runbooks/agent-value-lifecycle.md",
+        "agent-dev-kit/src/agent_dev_kit/effect_trials.py",
+        "agent-dev-kit/schemas/effect-trials-v1.schema.json",
+        "agent-dev-kit/schemas/effect-trial-comparison-v1.schema.json",
+        "agent-dev-kit/docs/runbooks/effect-trials.md",
+        "docs/runbooks/practice-effect-review.md",
+        "tools/control_plane/campaign_readiness.py"
       ]
     }
   ]
