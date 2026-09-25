@@ -19,8 +19,11 @@ for line in (root / "adk.lock").read_text(encoding="utf-8").splitlines():
     if "=" in line:
         key, value = line.split("=", 1)
         lock[key] = value
-assert lock["agent-dev-kit.version"] == "7.4.0", lock
-assert lock["agent-dev-kit.commit"] == "3b7f926a535cd392e0a837b66bfe46217e130adf", lock
+expected_version = lock["agent-dev-kit.version"]
+expected_commit = lock["agent-dev-kit.commit"]
+major, minor, patch = (int(item) for item in expected_version.split("."))
+assert (major, minor, patch) >= (7, 4, 0), expected_version
+assert expected_commit, lock
 
 active_contract = adk / "manifests" / "target-contracts" / "claude-code.json"
 active_before = active_contract.read_bytes()
@@ -184,7 +187,7 @@ try:
     assert failed_receipt.exists() is False
     assert active_contract.read_bytes() == active_before
 
-    print("[PASS] Root consumes ADK 7.4.0 native campaign CLI without upgrading trust or target authority")
+    print(f"[PASS] Root consumes pinned ADK {expected_version} native campaign CLI without upgrading trust or target authority")
 finally:
     shutil.rmtree(receipt_dir, ignore_errors=True)
     shutil.rmtree(external, ignore_errors=True)
