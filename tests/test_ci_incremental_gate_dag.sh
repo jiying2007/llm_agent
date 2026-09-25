@@ -42,7 +42,7 @@ assert profiles["contract"] == [
     "ci-incremental-dag",
 ]
 assert profiles["pr-fast"] == ["contract", "doc-sync"]
-assert profiles["integration-extra"] == ["adk-promotion-evidence", "native-target-readiness", "root-regression"]
+assert profiles["integration-extra"] == ["adk-promotion-evidence", "native-target-readiness", "effect-readiness", "root-regression"]
 assert profiles["integration"] == ["pr-fast", "integration-extra"]
 assert profiles["release-extra"] == ["fresh-status", "harden-readiness"]
 assert profiles["release"] == ["integration", "release-extra"]
@@ -54,7 +54,14 @@ assert gates["gitlink-registry"]["depends_on"] == ["adk-pin", "codex-pin"]
 assert gates["adk-promotion-evidence"]["depends_on"] == ["adk-interface"]
 assert gates["native-target-readiness"]["depends_on"] == ["adk-promotion-evidence"]
 assert gates["native-target-readiness"]["impact_inputs"] == ["agent-dev-kit"]
+assert gates["effect-readiness"]["depends_on"] == ["adk-promotion-evidence"]
+assert gates["effect-readiness"]["impact_inputs"] == ["agent-dev-kit"]
+assert "integration-deep" in gates["effect-readiness"]["impact_groups"]
+assert gates["effect-readiness"]["argv"] == [
+    "python3", "-m", "tools.control_plane.effect_readiness", "--root", ".", "--summary-json"
+]
 assert "integration-deep" in gates["native-target-readiness"]["impact_groups"]
+assert "integration-deep" in gates["effect-readiness"]["impact_groups"]
 assert gates["native-target-readiness"]["argv"] == [
     "python3", "-m", "tools.control_plane.native_target_readiness", "--root", ".", "--summary-json"
 ]
