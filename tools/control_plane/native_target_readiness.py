@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any
@@ -38,6 +40,42 @@ def _software_surfaces(adk: Path) -> dict[str, bool]:
             )
         ),
     }
+
+
+def _production_loader_accepts(adk: Path, target: str) -> bool:
+    code = (
+        "import sys;"
+        "from pathlib import Path;"
+        "from agent_dev_kit.model import Manifest;"
+        "from agent_dev_kit.target_contracts import load_target_contract;"
+        "root=Path(sys.argv[1]).resolve();"
+        "contract=load_target_contract(Manifest.load(root),sys.argv[2]);"
+        "assert contract.adapter['conformance']['level']=='runtime'"
+    )
+    env = {
+        "PATH": os.environ.get("PATH", os.defpath),
+        "PYTHONPATH": str(adk / "src"),
+        "LANG": "C.UTF-8",
+        "LC_ALL": "C.UTF-8",
+    }
+    for key in ("HOME", "XDG_CACHE_HOME", "SSL_CERT_FILE", "SSL_CERT_DIR"):
+        value = os.environ.get(key)
+        if value:
+            env[key] = value
+    try:
+        completed = subprocess.run(
+            [sys.executable, "-c", code, str(adk), target],
+            cwd=adk,
+            env=env,
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=False,
+            timeout=45,
+        )
+    except subprocess.TimeoutExpired:
+        return False
+    return completed.returncode == 0
 
 
 def _target_projection(
@@ -114,6 +152,9 @@ def _target_projection(
         and isinstance(runtime_digest, str)
         and _SHA256_RE.fullmatch(runtime_digest) is not None
     )
+    production_loader_verified = (
+        _production_loader_accepts(adk, target) if level == "runtime" else False
+    )
     native_verified = (
         level == "runtime"
         and certification == "conformance-certified"
@@ -123,6 +164,7 @@ def _target_projection(
         and evidence_paths_valid
         and trust_enabled
         and bool(bound_authorities)
+        and production_loader_verified
     )
 
     return {
@@ -136,6 +178,7 @@ def _target_projection(
         "evidence_paths_valid": evidence_paths_valid,
         "trust_enabled": trust_enabled,
         "bound_registry_authorities": sorted(bound_authorities),
+        "production_loader_verified": production_loader_verified,
         "native_verified": native_verified,
     }
 
