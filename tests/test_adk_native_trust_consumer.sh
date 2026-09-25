@@ -14,8 +14,16 @@ from agent_dev_kit.native_trust import load_native_trust_registry
 from agent_dev_kit.target_contracts import load_target_contract
 
 adk = Path(sys.argv[1]).resolve()
+root = adk.parent
+lock = {}
+for line in (root / "adk.lock").read_text(encoding="utf-8").splitlines():
+    if "=" in line:
+        key, value = line.split("=", 1)
+        lock[key] = value
 manifest = Manifest.load(adk)
-assert manifest.version == "7.3.0", manifest.version
+assert manifest.version == lock["agent-dev-kit.version"], (manifest.version, lock)
+major, minor, patch = (int(item) for item in manifest.version.split("."))
+assert (major, minor, patch) >= (7, 3, 0), manifest.version
 
 registry = load_native_trust_registry(adk)
 assert registry["schema"] == "adk-native-conformance-trust-registry/v1", registry
@@ -40,7 +48,7 @@ finally:
     else:
         os.environ["PATH"] = old_path
 
-print("[PASS] ADK 7.3.0 managed native trust is installed but enables no authority or target")
+print(f"[PASS] pinned ADK {manifest.version} managed native trust enables no authority or target")
 PY
 
 bash "$ROOT/agent-dev-kit/scripts/devkit.sh" target check --all --level static --summary-json > /tmp/adk-native-trust-target-check.json
