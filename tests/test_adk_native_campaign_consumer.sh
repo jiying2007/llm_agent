@@ -25,6 +25,13 @@ major, minor, patch = (int(item) for item in expected_version.split("."))
 assert (major, minor, patch) >= (7, 4, 0), expected_version
 assert expected_commit, lock
 
+layouts = json.loads(
+    (adk / "manifests" / "native_campaign_target_layouts.json").read_text(encoding="utf-8")
+)
+assert layouts["schema"] == "adk-native-campaign-target-layouts/v1", layouts
+assert layouts["targets"]["claude-code"]["project_config_dir"] == ".claude", layouts
+assert layouts["targets"]["opencode"]["project_config_dir"] == ".opencode", layouts
+
 active_contract = adk / "manifests" / "target-contracts" / "claude-code.json"
 active_before = active_contract.read_bytes()
 runtime_reports = adk / "reports" / "runtime"
