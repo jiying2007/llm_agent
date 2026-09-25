@@ -13,6 +13,7 @@ _COMMAND_MODULES = {
     "native-governance": "tools.control_plane.native_repository_governance",
     "native-governance-admin": "tools.control_plane.native_repository_governance_admin",
     "native-readiness": "tools.control_plane.native_target_readiness",
+    "effect-readiness": "tools.control_plane.effect_readiness",
     "longitudinal-operation": "tools.control_plane.longitudinal_operation",
     "long-term-rehearsal": "tools.control_plane.long_term_asset_rehearsal",
     "promotion-evidence": "tools.control_plane.adk_promotion_evidence",
