@@ -88,12 +88,13 @@ def _git_state(repository: Path) -> tuple[str, int]:
         ],
         stdin=subprocess.DEVNULL,
         capture_output=True,
+        text=False,
         check=False,
         timeout=10,
     )
     if status.returncode:
         raise ReadinessError("unable to inspect ADK worktree status")
-    dirty_count = sum(bool(item) for item in status.stdout.split("\0"))
+    dirty_count = sum(bool(item) for item in status.stdout.split(b"\0"))
     return head.stdout.strip(), dirty_count
 
 
