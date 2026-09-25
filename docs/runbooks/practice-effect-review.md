@@ -40,3 +40,21 @@ rtk bash agent-dev-kit/scripts/devkit.sh target-source-probe --target opencode -
 ```
 
 该 probe 不触碰用户 live HOME，不启动 native runtime；PASS 仍必须保持 `evidence_level=source-layout`、`native_runtime_evidence=false`、`certification=not-certified`。真实 discover/load/trigger 只能由独立 native runtime campaign 提升。
+
+
+## Agent / Skill / Profile invocation trust
+
+ADK 7.5.0 增加了受管 Agent Value receipt verifier，但 Root 当前只消费**默认关闭**边界：
+
+- canonical `agent_value_contracts.json` 的 `evidence_authority_policy` 必须保持 `disabled / not-configured / authorities=[]`；
+- canonical `agent_value_trust_registry.json` 必须保持 active 但 authorities 为空；
+- 没有 owner-reviewed authority 和真实 runtime/field receipt 时，`emit_measurements` 的正确状态是 `not-measured`，不能补零或用调用次数/token 数替代；
+- 即使未来 runtime/field receipt 经 managed verifier 验证，Agent Value v1 仍固定 `production_authority=false`、`quality_evidence_eligible=false`、`owner_review_required=true`、`lifecycle_authority=none-evidence-only`。
+
+Root 回归：
+
+```bash
+rtk bash tests/test_adk_agent_value_trust_consumer.sh
+```
+
+真实 G22 证据必须来自版本固定的 repeated-trial campaign 与脱敏 invocation receipts，覆盖成功和失败、wrong-route、abstain、人工介入、outcome 与 retirement signal。受管 verifier 只证明 receipt 来源/范围可信，不自动证明资产有价值，也不授权 consolidation/retirement。
