@@ -197,6 +197,9 @@ jobs:
       - name: Initialize pinned ADK source
         run: git submodule update --init --depth=1 agent-dev-kit
 
+      - name: Install pinned ADK for source-layer consumer regression
+        run: python -m pip install ./agent-dev-kit
+
       - name: Verify portable promotion evidence claims
         run: >-
           python -m tools.control_plane.cli promotion-evidence
