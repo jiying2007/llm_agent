@@ -43,7 +43,7 @@ finally:
 print("[PASS] ADK 7.3.0 managed native trust is installed but enables no authority or target")
 PY
 
-python3 -m agent_dev_kit.cli target check --root "$ROOT/agent-dev-kit" --all --level static --summary-json   > /tmp/adk-native-trust-target-check.json
+bash "$ROOT/agent-dev-kit/scripts/devkit.sh" target check --all --level static --summary-json > /tmp/adk-native-trust-target-check.json
 python3 - /tmp/adk-native-trust-target-check.json <<'PY'
 import json, sys
 value=json.load(open(sys.argv[1],encoding="utf-8"))
