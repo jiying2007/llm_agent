@@ -445,19 +445,26 @@
       "optimization_area": "Knowledge retention",
       "terminal_outcome": "High-value conclusions generate sanitized candidates, and active or archive promotion requires owner review.",
       "design_status": "landed",
-      "implementation_status": "in_progress",
+      "implementation_status": "blocked",
       "implementation_targets": [
-        "architecture knowledge candidate",
-        "Hub dry-run evidence",
-        "Hub status evidence"
+        "sanitized architecture knowledge candidate in Root",
+        "deterministic Root-to-Hub dry-run handoff projection",
+        "Knowledge Hub capture dry-run and review-queue/status evidence",
+        "owner-reviewed Hub lifecycle decision"
       ],
       "verification": [
-        "rtk bash ~/knowledge-hub/tools/knowledge-promote.sh --id llm-agent-adk-target-architecture --target projects/llm-agent --dry-run --json",
-        "rtk bash ~/knowledge-hub/tools/knowledge-status.sh --json --review-queue-limit 5"
+        "rtk python3 -m tools.control_plane.knowledge_retention_handoff --root . --summary-json",
+        "rtk bash tests/test_knowledge_retention_handoff.sh",
+        "rtk bash ~/knowledge-hub/tools/knowledge-capture.sh --source \"$PWD/docs/knowledge-candidates/llm-agent-adk-target-architecture.md\" --kind architecture --target projects/llm-agent/architecture/llm-agent-adk-target-architecture.md --id llm-agent-adk-target-architecture --title \"llm_agent / agent-dev-kit 长期资产架构结论候选\" --domain projects/llm-agent --owner leiwenjun --status reviewing --generated-by-ai --ai-role summarized --ai-model-or-tool ChatGPT --source-type public-repository --source-from https://github.com/jiying2007/llm_agent --dry-run --json",
+        "rtk bash ~/knowledge-hub/tools/knowledge-status.sh --summary-json --review-queue-limit 5"
       ],
       "implementation_evidence": [
-        "manifests/history/product_maturity_task_pack-2026-09-16.json"
-      ]
+        "docs/knowledge-candidates/llm-agent-adk-target-architecture.md",
+        "docs/runbooks/knowledge-retention-handoff.md",
+        "tools/control_plane/knowledge_retention_handoff.py",
+        "tests/test_knowledge_retention_handoff.sh"
+      ],
+      "blocking_condition": "Root has generated and validated a sanitized promotion=none candidate and current Knowledge Hub capture dry-run handoff. Terminal G9 completion is delegated to the independent knowledge-hub authority: execute the Hub dry-run/status path, then obtain a real owner review/lifecycle decision. Root must not run Hub --apply/promote or infer active/archive status."
     },
     {
       "id": "G10",
