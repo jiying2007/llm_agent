@@ -42,7 +42,7 @@ Each future entry binds the full replay package beneath the index directory:
 - one ADK `adk-asset-value-measurement/v1`;
 - one Root `llm-agent-effect-owner-review/v3`.
 
-Registry signature-bundle paths are resolved relative to the evidence-index directory by ADK 7.7.0's portable managed verifier. Root replays every raw receipt through the exact contract/registry/cosign trust semantics and recomputes the measurement with ADK `emit_measurements()`. A committed aggregate measurement is accepted only when it is exactly equal to that recomputation.
+Registry signature-bundle paths are resolved relative to the evidence-index directory by ADK 7.8.0's portable managed verifier. Root replays every raw receipt through the exact contract/registry/cosign trust semantics and recomputes the measurement with ADK `emit_measurements()`. A committed aggregate measurement is accepted only when it is exactly equal to that recomputation.
 
 Every path has an exact SHA-256 in the index. Root recomputes the comparison from the pinned campaign input using the exact pinned ADK and requires byte-equivalent JSON semantics. The campaign/comparison ID must equal the index entry ID.
 
@@ -106,6 +106,8 @@ A recorded decision does **not** delete an asset, merge a skill, mutate a profil
 ADK intentionally keeps its canonical Agent Value contract disabled and the trust registry empty by default. Those safe defaults are reported for observability, but they do not make terminal readiness impossible.
 
 Real measurements may be produced by a separately owner-reviewed managed contract and verified receipt path. The readiness projection judges the resulting governed evidence artifacts, not whether the canonical default contract was globally enabled.
+
+ADK 7.8.0 also exposes `ManagedInvocationObservation` + `prepare_managed_receipt()` so a real runtime/field adapter can deterministically construct the manifest-bound receipt, authority attestation and receipt ID from explicit observed facts instead of hand-assembling JSON. This is producer ergonomics only: the prepared receipt is **not verified evidence** until the reviewed registry/signature bundle path is replayed by the managed verifier.
 
 ## Exit semantics
 
