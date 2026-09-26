@@ -1,0 +1,134 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://llm-agent.local/schemas/effect-value-evidence-index-v1.schema.json",
+  "title": "llm-agent effect/value evidence index v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "status",
+    "policy",
+    "campaigns"
+  ],
+  "properties": {
+    "schema": {
+      "const": "llm-agent-effect-value-evidence-index/v1"
+    },
+    "status": {
+      "const": "active"
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "evidence_root",
+        "required_asset_kinds",
+        "minimum_accepted_campaigns",
+        "require_decisive_trial_verdict",
+        "require_runtime_or_field_measurement",
+        "require_owner_review",
+        "auto_lifecycle_mutation",
+        "release_authorized"
+      ],
+      "properties": {
+        "evidence_root": {
+          "const": "reports/effect-evidence"
+        },
+        "required_asset_kinds": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "agent",
+              "skill",
+              "profile"
+            ]
+          }
+        },
+        "minimum_accepted_campaigns": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20
+        },
+        "require_decisive_trial_verdict": {
+          "const": true
+        },
+        "require_runtime_or_field_measurement": {
+          "const": true
+        },
+        "require_owner_review": {
+          "const": true
+        },
+        "auto_lifecycle_mutation": {
+          "const": false
+        },
+        "release_authorized": {
+          "const": false
+        }
+      }
+    },
+    "campaigns": {
+      "type": "array",
+      "maxItems": 50,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "campaign_id",
+          "trial_input",
+          "comparison",
+          "measurement",
+          "owner_review"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^evc-[0-9a-f]{20}$"
+          },
+          "campaign_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+          },
+          "trial_input": {
+            "$ref": "#/$defs/evidenceRef"
+          },
+          "comparison": {
+            "$ref": "#/$defs/evidenceRef"
+          },
+          "measurement": {
+            "$ref": "#/$defs/evidenceRef"
+          },
+          "owner_review": {
+            "$ref": "#/$defs/evidenceRef"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "evidenceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]*$"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    }
+  }
+}
