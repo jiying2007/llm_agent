@@ -94,10 +94,9 @@ for item_id in ("G10", "G13", "G14", "G15", "G17", "G18", "G19", "G20"):
     assert items[item_id]["implementation_status"] == "done", items[item_id]
     assert "blocking_condition" not in items[item_id], items[item_id]
 
-assert items["G9"]["implementation_status"] == "blocked", items["G9"]
-assert isinstance(items["G9"].get("blocking_condition"), str) and items["G9"]["blocking_condition"], items["G9"]
-for item_id in ("G21", "G22"):
-    assert items[item_id]["implementation_status"] == "in_progress", items[item_id]
+for item_id in ("G9", "G21", "G22"):
+    assert items[item_id]["implementation_status"] == "blocked", items[item_id]
+    assert isinstance(items[item_id].get("blocking_condition"), str) and items[item_id]["blocking_condition"], items[item_id]
 
 assert lta["maintainer_model"]["type"] == "solo", lta["maintainer_model"]
 assert lta["maintainer_model"]["required_human_approvals"] == 0, lta["maintainer_model"]
