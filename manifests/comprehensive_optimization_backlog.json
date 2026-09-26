@@ -454,10 +454,7 @@
       ],
       "verification": [
         "rtk python3 -m tools.control_plane.knowledge_retention_handoff --root . --summary-json",
-        "rtk bash tests/test_knowledge_retention_handoff.sh",
-        "reports/runtime-evidence/knowledge-retention/g9-hub-dry-run-2026-09-26.json",
-        "Knowledge Hub workflow run 36214654406 / artifact 10897225255",
-        "real Hub owner review/lifecycle decision"
+        "rtk bash tests/test_knowledge_retention_handoff.sh"
       ],
       "implementation_evidence": [
         "docs/knowledge-candidates/llm-agent-adk-target-architecture.md",
