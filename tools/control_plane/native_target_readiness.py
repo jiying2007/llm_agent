@@ -35,8 +35,9 @@ def _software_surfaces(adk: Path) -> dict[str, bool]:
                 "src/agent_dev_kit/native_campaign.py",
                 "src/agent_dev_kit/native_campaign_contract.py",
                 "src/agent_dev_kit/native_campaign_execution.py",
-                "schemas/native-target-campaign-plan-v1.schema.json",
-                "schemas/native-target-campaign-evidence-v1.schema.json",
+                "schemas/native-target-campaign-plan-v2.schema.json",
+                "schemas/native-target-campaign-evidence-v2.schema.json",
+                "schemas/native-target-conformance-receipt-v2.schema.json",
             )
         ),
     }
