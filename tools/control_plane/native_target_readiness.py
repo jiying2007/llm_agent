@@ -35,8 +35,9 @@ def _software_surfaces(adk: Path) -> dict[str, bool]:
                 "src/agent_dev_kit/native_campaign.py",
                 "src/agent_dev_kit/native_campaign_contract.py",
                 "src/agent_dev_kit/native_campaign_execution.py",
-                "schemas/native-target-campaign-plan-v1.schema.json",
-                "schemas/native-target-campaign-evidence-v1.schema.json",
+                "schemas/native-target-campaign-plan-v2.schema.json",
+                "schemas/native-target-campaign-evidence-v2.schema.json",
+                "schemas/native-target-conformance-receipt-v2.schema.json",
             )
         ),
     }
@@ -256,8 +257,10 @@ def project(root: Path) -> dict[str, Any]:
         "authority_boundary": {
             "source_layout_is_native_evidence": False,
             "synthetic_campaign_is_native_evidence": False,
+            "exit_zero_without_semantic_assertion_is_native_evidence": False,
             "managed_trust_without_receipt_is_native_evidence": False,
             "requires_real_version_pinned_native_pass": True,
+            "requires_semantic_assertion_v2": True,
         },
         "release_authorized": False,
     }
