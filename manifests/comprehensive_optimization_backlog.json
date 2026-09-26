@@ -796,6 +796,7 @@
         "typed Agent/Skill/Profile value contracts and canonical invocation receipt/measurement pipeline",
         "repeated task-trial comparison with task-level uncertainty and guardrails",
         "managed Agent Value runtime/field evidence verifier and default-empty trust registry",
+        "typed prepared managed receipt builder for runtime/field producer adapters",
         "governed effect/value evidence index v3 binding original campaign, recomputed comparison, reviewed portable trust package, signed raw receipt replay, recomputed measurement and per-asset human owner review",
         "full current Agent/Skill/Profile coverage with representative success/failure/wrong-route/abstain/outcome/retirement observations"
       ],
@@ -818,9 +819,10 @@
         "reports/runtime-evidence/effect-value/evidence-index.json",
         "docs/runbooks/effect-readiness.md",
         "tools/control_plane/effect_readiness.py",
-        "tests/test_effect_readiness.sh"
+        "tests/test_effect_readiness.sh",
+        "agent-dev-kit/src/agent_dev_kit/agent_value_receipts.py"
       ],
-      "blocking_condition": "Software layers through ADK 7.7.0 plus Root effect evidence-index v3 are landed. The canonical gate now recomputes comparison from the indexed campaign, replays every raw runtime/field receipt through the reviewed portable managed Agent Value contract/registry and signature bundles, recomputes the aggregate measurement, verifies campaign trace/bundle/runtime-target coverage, derives representative success/failure/wrong-route/abstain cases from verified receipts, and requires owner-review v3 with exact trust/receipt/measurement digests, real reviewed_by identity and automation_generated=false. Terminal completion still requires those real external receipts/signatures, full current Agent/Skill/Profile coverage, substantive retirement signals, and human per-asset decisions; synthetic/test-only or fabricated aggregate evidence cannot satisfy the canonical index.",
+      "blocking_condition": "Software layers through ADK 7.8.0 plus Root effect evidence-index v3 are landed. Runtime/field adapters can now use the typed prepared managed receipt builder to eliminate manual manifest/attestation/receipt-id assembly, but prepared receipts remain explicitly unverified. The canonical gate recomputes comparison from the indexed campaign, replays every raw runtime/field receipt through the reviewed portable managed Agent Value contract/registry and signature bundles, recomputes the aggregate measurement, verifies campaign trace/bundle/runtime-target coverage, derives representative success/failure/wrong-route/abstain cases from verified receipts, and requires owner-review v3 with exact trust/receipt/measurement digests, real reviewed_by identity and automation_generated=false. Terminal completion still requires real external observations, signed receipts/bundles, full current Agent/Skill/Profile coverage, substantive retirement signals, and human per-asset decisions; prepared, synthetic/test-only or fabricated aggregate evidence cannot satisfy the canonical index.",
       "external_tracking": {
         "repository": "jiying2007/llm_agent",
         "issue_number": 154
