@@ -26,23 +26,24 @@ The default index is intentionally empty:
 
 ```json
 {
-  "schema": "llm-agent-effect-value-evidence-index/v1",
+  "schema": "llm-agent-effect-value-evidence-index/v2",
   "status": "active",
   "entries": []
 }
 ```
 
-Each future entry binds exactly three Root-relative files beneath the index directory:
+Each future entry binds exactly four Root-relative files beneath the index directory:
 
-- one ADK `adk-effect-trial-comparison/v1`;
+- the original ADK `adk-effect-trials/v1` campaign input;
+- the resulting ADK `adk-effect-trial-comparison/v1`;
 - one ADK `adk-asset-value-measurement/v1`;
-- one Root `llm-agent-effect-owner-review/v1`.
+- one Root `llm-agent-effect-owner-review/v2`.
 
-Every path has an exact SHA-256 in the index. The comparison campaign ID must equal the index entry ID.
+Every path has an exact SHA-256 in the index. Root recomputes the comparison from the pinned campaign input using the exact pinned ADK and requires byte-equivalent JSON semantics. The campaign/comparison ID must equal the index entry ID.
 
 ## Evidence required for terminal readiness
 
-A comparison is accepted only when its verdict is decisive: `improved`, `non-inferior`, or `regressed`. It remains test-only, `quality_evidence_eligible=false`, `owner_review_required=true`, `lifecycle_authority=none-evidence-only`, and `release_authorized=false`.
+A comparison is accepted only when its verdict is decisive: `improved`, `non-inferior`, or `regressed`. It remains test-only, `quality_evidence_eligible=false`, `owner_review_required=true`, `lifecycle_authority=none-evidence-only`, and `release_authorized=false`. Test-only comparison authority is not enough by itself: Root must recompute it from the indexed campaign input, then require every campaign run `trace_ref`, both baseline/candidate bundle digests, and the campaign runtime target to be covered by the same entry's managed runtime/field Agent Value measurement. This prevents a synthetic comparison from being paired with unrelated runtime-looking measurement data.
 
 A measurement is accepted only when:
 
@@ -62,13 +63,16 @@ The owner-review document is deliberately simple and has no execution authority:
 
 ```json
 {
-  "schema": "llm-agent-effect-owner-review/v1",
+  "schema": "llm-agent-effect-owner-review/v2",
   "status": "approved",
   "campaign_id": "campaign-id",
+  "campaign_sha256": "<64 hex>",
   "comparison_sha256": "<64 hex>",
   "measurement_sha256": "<64 hex>",
   "reviewed_at": "2026-09-26T00:00:00Z",
+  "reviewed_by": "<real human reviewer identity>",
   "reviewer_role": "owner",
+  "automation_generated": false,
   "observed_cases": {
     "success": true,
     "failure": true,
@@ -88,7 +92,7 @@ The owner-review document is deliberately simple and has no execution authority:
 }
 ```
 
-The review must cover every asset in its measurement. Allowed decisions are `retain`, `consolidate-candidate`, `retire-candidate`, and `reject-change`. Conflicting decisions for the same asset across active entries invalidate the index.
+The review must bind the exact campaign/comparison/measurement digests, identify the real reviewer, set `automation_generated=false`, and cover every asset in its measurement. Allowed decisions are `retain`, `consolidate-candidate`, `retire-candidate`, and `reject-change`. Conflicting decisions for the same asset across active entries invalidate the index.
 
 A recorded decision does **not** delete an asset, merge a skill, mutate a profile, or authorize a release. Execution remains a separate reviewed change.
 
@@ -117,4 +121,4 @@ effect_evidence_ready=false
 terminal_status=blocked-external-evidence
 ```
 
-Synthetic repeated trials and generated fixture measurements validate the state machine only; they cannot be committed as canonical runtime/field evidence.
+Synthetic repeated trials and generated fixture measurements validate the state machine only; they cannot be committed as canonical runtime/field evidence. Index v2 specifically prevents an unbound synthetic campaign from becoming terminal by requiring campaign→comparison recomputation and campaign trace/bundle/runtime-target coverage from managed runtime/field measurement evidence.
