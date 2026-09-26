@@ -56,8 +56,8 @@ The Hub status projection returned `needs-review`. The temporary evidence PR was
 
 The durable Root evidence record is:
 
-`reports/runtime-evidence/knowledge-retention/g9-hub-dry-run-2026-09-26.json`
+`reports/runtime-evidence/knowledge-retention/g9-hub-handoff-2026-09-26.json`
 
 ### Remaining authority
 
-G9 no longer has a software or dry-run blocker. The remaining blocker is a **real human Knowledge Hub owner decision**. The owner must decide whether the governed capture should be applied and record the resulting lifecycle decision. Automation must not fill `reviewed_by`, fabricate authorization, run Hub apply/promote on behalf of the owner, or infer active/archive status from the successful dry-run.
+The governed capture was subsequently applied through Knowledge Hub PR #124 and merged to Hub master `0fb7ed1e2dbd5f715b9b4382581d696081af1b8c`. The item is now `reviewing`, `manual-entry-pending-review`, `manual_validation_pending=true`, and `promotion=none`.\n\nG9 no longer has a software, dry-run, or mechanical-capture blocker. The only remaining blocker is a **real human Knowledge Hub owner lifecycle decision**. Automation must not fill `reviewed_by`, fabricate authorization, promote to active/archive, or infer a lifecycle outcome.
