@@ -22,10 +22,19 @@ import sys
 root = pathlib.Path(sys.argv[1])
 backlog = json.loads((root / "manifests/comprehensive_optimization_backlog.json").read_text(encoding="utf-8"))
 g9 = next(item for item in backlog["items"] if item["id"] == "G9")
-assert "manifests/history/product_maturity_task_pack-2026-09-16.json" in g9["implementation_evidence"], g9
+expected = {
+    "docs/knowledge-candidates/llm-agent-adk-target-architecture.md",
+    "docs/runbooks/knowledge-retention-handoff.md",
+    "tools/control_plane/knowledge_retention_handoff.py",
+    "tests/test_knowledge_retention_handoff.sh",
+}
+assert expected.issubset(set(g9["implementation_evidence"])), g9
+assert "manifests/history/product_maturity_task_pack-2026-09-16.json" not in g9["implementation_evidence"], g9
 assert "manifests/product_maturity_task_pack.json" not in g9["implementation_evidence"], g9
-assert (root / "manifests/history/product_maturity_task_pack-2026-09-16.json").is_file()
-assert not (root / "manifests/product_maturity_task_pack.json").exists()
+candidate = root / "docs/knowledge-candidates/llm-agent-adk-target-architecture.md"
+assert candidate.is_file()
+text = candidate.read_text(encoding="utf-8")
+assert "promotion: none" in text, text
 PY
 
 python3 - "${ROOT}" <<'PY'
