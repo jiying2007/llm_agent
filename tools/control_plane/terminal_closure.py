@@ -28,9 +28,9 @@ def _load_object(path: Path, label: str) -> dict[str, Any]:
 
 def _git_blob_sha1(path: Path) -> str:
     raw = path.read_bytes()
-    return hashlib.sha1(
-        b"blob " + str(len(raw)).encode("ascii") + b"\0" + raw
-    ).hexdigest()
+    digest = hashlib.sha1(usedforsecurity=False)
+    digest.update(b"blob " + str(len(raw)).encode("ascii") + b"\0" + raw)
+    return digest.hexdigest()
 
 
 def _indexed_object(
@@ -245,24 +245,31 @@ def _g9_projection(root: Path, backlog: dict[str, Any]) -> dict[str, Any]:
         )
         decision = _owner_decision(decision)
 
-    ready = decision is not None
-    if item["implementation_status"] == "done" and not ready:
-        raise ValueError("G9 backlog claims done without indexed owner lifecycle evidence")
-    if item["implementation_status"] == "blocked" and ready:
-        raise ValueError("G9 owner lifecycle evidence exists but backlog remains blocked")
+    owner_reviewed = decision is not None
+    lifecycle_decision = decision.get("lifecycle_decision") if decision else None
+    terminal_decision = lifecycle_decision in {"activate", "archive", "reject"}
+    if item["implementation_status"] == "done" and not terminal_decision:
+        raise ValueError("G9 backlog claims done without terminal owner lifecycle evidence")
+    if item["implementation_status"] == "blocked" and terminal_decision:
+        raise ValueError("G9 terminal owner lifecycle evidence exists but backlog remains blocked")
 
     return {
-        "status": "ready" if ready else "blocked-external-evidence",
+        "status": "ready" if terminal_decision else "blocked-external-evidence",
         "captured_reviewing": True,
         "evidence_index": G9_EVIDENCE_INDEX.as_posix(),
         "handoff_evidence": handoff_path,
         "owner_decision_evidence": decision_path,
         "hub_master_revision": governed.get("merge_revision"),
         "hub_post_merge_quality_run": governed.get("post_merge_quality_run"),
-        "owner_review_recorded": ready,
-        "owner_lifecycle_decision_recorded": ready,
-        "lifecycle_decision": decision.get("lifecycle_decision") if decision else None,
-        "blockers": [] if ready else ["real-human-knowledge-hub-owner-lifecycle-decision"],
+        "owner_review_recorded": owner_reviewed,
+        "owner_lifecycle_decision_recorded": owner_reviewed,
+        "terminal_lifecycle_decision": terminal_decision,
+        "lifecycle_decision": lifecycle_decision,
+        "blockers": (
+            []
+            if terminal_decision
+            else ["real-human-knowledge-hub-owner-terminal-lifecycle-decision"]
+        ),
     }
 
 
