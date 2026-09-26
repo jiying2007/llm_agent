@@ -63,6 +63,16 @@ if "G9" in open_ids:
     assert g9["hub_master_revision"]=="0fb7ed1e2dbd5f715b9b4382581d696081af1b8c", g9
     assert g9["hub_post_merge_quality_run"]==36218784210, g9
 
+else:
+    g9=value["domains"]["G9"]
+    assert g9["status"]=="ready", g9
+    assert g9["owner_review_recorded"] is True, g9
+    assert g9["owner_lifecycle_decision_recorded"] is True, g9
+    assert g9["terminal_lifecycle_decision"] is True, g9
+    assert g9["lifecycle_decision"]=="activate", g9
+    assert g9["owner_decision_evidence"]=="reports/runtime-evidence/knowledge-retention/g9-hub-owner-decision-2026-09-26.json", g9
+    assert g9["blockers"]==[], g9
+
 if "G21" in open_ids:
     g21=value["domains"]["G21"]
     assert g21["software_ready"] is True, g21
