@@ -796,7 +796,7 @@
         "typed Agent/Skill/Profile value contracts and canonical invocation receipt/measurement pipeline",
         "repeated task-trial comparison with task-level uncertainty and guardrails",
         "managed Agent Value runtime/field evidence verifier and default-empty trust registry",
-        "governed effect/value evidence index binding decisive comparison, runtime/field measurement and per-asset owner review",
+        "governed effect/value evidence index v2 binding original campaign, recomputed decisive comparison, managed runtime/field trace coverage and per-asset human owner review",
         "full current Agent/Skill/Profile coverage with representative success/failure/wrong-route/abstain/outcome/retirement observations"
       ],
       "verification": [
@@ -817,9 +817,10 @@
         "agent-dev-kit/src/agent_dev_kit/effect_trials.py",
         "reports/runtime-evidence/effect-value/evidence-index.json",
         "docs/runbooks/effect-readiness.md",
-        "tools/control_plane/effect_readiness.py"
+        "tools/control_plane/effect_readiness.py",
+        "tests/test_effect_readiness.sh"
       ],
-      "blocking_condition": "Software layers through ADK 7.5.0 plus the governed Root evidence-index state machine are landed. Terminal completion now requires real decisive repeated-task comparison evidence, managed runtime/field Agent Value measurement evidence covering every current Agent/Skill/Profile, representative success/failure/wrong-route/abstain observations, substantive retirement signals, and a digest-bound per-asset owner review. Synthetic/test-only evidence cannot satisfy the canonical index.",
+      "blocking_condition": "Software layers through ADK 7.6.0 plus Root effect evidence-index v2 are landed. The canonical gate now recomputes each comparison from the indexed campaign, requires every campaign trace plus both intervention bundles and runtime target to be backed by the same managed runtime/field Agent Value measurement, and requires owner-review v2 with a real reviewed_by identity and automation_generated=false. Terminal completion still requires real decisive repeated-task evidence, managed runtime/field measurements covering every current Agent/Skill/Profile, representative success/failure/wrong-route/abstain observations, substantive retirement signals, and digest-bound per-asset human owner decisions. Synthetic/test-only or unbound evidence cannot satisfy the canonical index.",
       "external_tracking": {
         "repository": "jiying2007/llm_agent",
         "issue_number": 154
