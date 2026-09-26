@@ -22,7 +22,7 @@ for line in (root / "adk.lock").read_text(encoding="utf-8").splitlines():
 expected_version = lock["agent-dev-kit.version"]
 expected_commit = lock["agent-dev-kit.commit"]
 major, minor, patch = (int(item) for item in expected_version.split("."))
-assert (major, minor, patch) >= (7, 4, 0), expected_version
+assert (major, minor, patch) >= (7, 6, 0), expected_version
 assert expected_commit, lock
 
 layouts = json.loads(
@@ -42,6 +42,7 @@ try:
     receipt = receipt_dir / "receipt.json"
     receipt_rel = receipt.relative_to(adk).as_posix()
     commands_path = external / "commands.json"
+    assertions_path = external / "assertions.json"
     plan = external / "plan.json"
     candidate = external / "candidate.json"
     evidence = external / "evidence.json"
@@ -51,9 +52,12 @@ try:
     runtime = str(Path(sys.executable).resolve())
     sentinel = "root-native-campaign-raw-sentinel"
 
-    def stage(stage_name: str, exit_code: int = 0) -> list[str]:
+    def canary(stage_name: str) -> str:
+        return hashlib.sha256(("semantic:" + stage_name).encode("utf-8")).hexdigest()
+
+    def stage(stage_name: str, exit_code: int = 0, semantic_stage: str | None = None) -> list[str]:
         code = (
-            "import os,sys;"
+            "import hashlib,os,sys;"
             "from pathlib import Path;"
             "assert 'HOME' not in os.environ;"
             "assert os.environ['ADK_TARGET_SMOKE_STAGE']==sys.argv[1];"
@@ -63,10 +67,12 @@ try:
             "assert config==project/'.claude';"
             "assert config.is_dir();"
             "assert list((config/'skills').glob('*/SKILL.md'));"
+            "semantic=sys.argv[2];"
+            "print(hashlib.sha256(('semantic:'+semantic).encode()).hexdigest());"
             f"print('{sentinel}-'+sys.argv[1]);"
             f"raise SystemExit({exit_code})"
         )
-        return [runtime, "-c", code, stage_name]
+        return [runtime, "-c", code, stage_name, semantic_stage or stage_name]
 
     commands = {
         "version": [runtime, "--version"],
@@ -74,7 +80,12 @@ try:
         "load": stage("load"),
         "trigger": stage("trigger"),
     }
+    assertions = {
+        name: {"stream": "stdout", "contains": canary(name), "case_sensitive": True}
+        for name in ("discovery", "load", "trigger")
+    }
     commands_path.write_text(json.dumps(commands), encoding="utf-8")
+    assertions_path.write_text(json.dumps(assertions), encoding="utf-8")
 
     def invoke(args: list[str], expected: int = 0) -> dict:
         done = subprocess.run(
@@ -107,6 +118,7 @@ try:
         "--verification-backend", "ci-provenance-verifier",
         "--auth-mode", "none",
         "--commands-json", str(commands_path),
+        "--assertions-json", str(assertions_path),
         "--receipt-path", receipt_rel,
         "--plan-out", str(plan),
         "--candidate-contract-out", str(candidate),
@@ -119,13 +131,18 @@ try:
         "--plan", str(plan),
         "--candidate-contract", str(candidate),
         "--commands-json", str(commands_path),
+        "--assertions-json", str(assertions_path),
         "--runtime-binary", runtime,
         "--evidence-out", str(evidence),
     ])
     assert ran["status"] == "complete", ran
     assert ran["release_authorized"] is False, ran
     assert [item["status"] for item in ran["stages"]] == ["pass", "pass", "pass"], ran
+    assert [item["semantic_assertion_status"] for item in ran["stages"]] == ["pass", "pass", "pass"], ran
+    assert all(len(item["assertion_sha256"]) == 64 for item in ran["stages"]), ran
+    assert all(len(item["assertion_result_sha256"]) == 64 for item in ran["stages"]), ran
     assert sentinel not in json.dumps(ran, ensure_ascii=False), ran
+    assert all(canary(name) not in json.dumps(ran, ensure_ascii=False) for name in ("discovery", "load", "trigger")), ran
 
     finalized = invoke([
         "finalize",
@@ -141,7 +158,12 @@ try:
     assert receipt.is_file() and final_contract.is_file()
     receipt_value = json.loads(receipt.read_text(encoding="utf-8"))
     candidate_value = json.loads(final_contract.read_text(encoding="utf-8"))
-    assert receipt_value["schema"] == "adk-native-target-conformance-receipt/v1", receipt_value
+    assert receipt_value["schema"] == "adk-native-target-conformance-receipt/v2", receipt_value
+    for item in receipt_value["stages"]:
+        assert item["semantic_assertion_status"] == "pass", item
+        assert len(item["assertion_sha256"]) == 64, item
+        assert len(item["assertion_result_sha256"]) == 64, item
+        assert item["assertion_sha256"] != item["assertion_result_sha256"], item
     assert candidate_value["adapter"]["conformance"]["level"] == "runtime", candidate_value
     assert candidate_value["adapter"]["conformance_trust_policy"]["enabled"] is True, candidate_value
     assert active_contract.read_bytes() == active_before
@@ -171,6 +193,7 @@ try:
         "--verification-backend", "ci-provenance-verifier",
         "--auth-mode", "none",
         "--commands-json", str(failed_commands_path),
+        "--assertions-json", str(assertions_path),
         "--receipt-path", failed_receipt.relative_to(adk).as_posix(),
         "--plan-out", str(failed_plan),
         "--candidate-contract-out", str(failed_candidate),
@@ -180,6 +203,7 @@ try:
         "--plan", str(failed_plan),
         "--candidate-contract", str(failed_candidate),
         "--commands-json", str(failed_commands_path),
+        "--assertions-json", str(assertions_path),
         "--runtime-binary", runtime,
         "--evidence-out", str(failed_evidence),
     ], expected=2)
@@ -199,7 +223,48 @@ try:
     assert failed_receipt.exists() is False
     assert active_contract.read_bytes() == active_before
 
-    print(f"[PASS] Root consumes pinned ADK {expected_version} native campaign CLI without upgrading trust or target authority")
+    semantic_commands = dict(commands)
+    semantic_commands["load"] = stage("load", semantic_stage="discovery")
+    semantic_commands_path = external / "semantic-miss-commands.json"
+    semantic_commands_path.write_text(json.dumps(semantic_commands), encoding="utf-8")
+    semantic_plan = external / "semantic-miss-plan.json"
+    semantic_candidate = external / "semantic-miss-candidate.json"
+    semantic_evidence = external / "semantic-miss-evidence.json"
+    semantic_receipt = receipt_dir / "semantic-miss-receipt.json"
+
+    invoke([
+        "prepare",
+        "--target", "claude-code",
+        "--profile", "core",
+        "--runtime-binary", runtime,
+        "--runtime-version", version,
+        "--authority-id", "ci-native-conformance",
+        "--execution-authority", "ci-approved",
+        "--verification-backend", "ci-provenance-verifier",
+        "--auth-mode", "none",
+        "--commands-json", str(semantic_commands_path),
+        "--assertions-json", str(assertions_path),
+        "--receipt-path", semantic_receipt.relative_to(adk).as_posix(),
+        "--plan-out", str(semantic_plan),
+        "--candidate-contract-out", str(semantic_candidate),
+    ])
+    semantic_failed = invoke([
+        "run",
+        "--plan", str(semantic_plan),
+        "--candidate-contract", str(semantic_candidate),
+        "--commands-json", str(semantic_commands_path),
+        "--assertions-json", str(assertions_path),
+        "--runtime-binary", runtime,
+        "--evidence-out", str(semantic_evidence),
+    ], expected=2)
+    assert semantic_failed["status"] == "failed", semantic_failed
+    assert semantic_failed["stages"][1]["status"] == "fail", semantic_failed
+    assert semantic_failed["stages"][1]["reason"] == "semantic-assertion-failed", semantic_failed
+    assert semantic_failed["stages"][1]["exit_code"] == 0, semantic_failed
+    assert semantic_failed["stages"][1]["semantic_assertion_status"] == "fail", semantic_failed
+    assert semantic_receipt.exists() is False
+
+    print(f"[PASS] Root consumes pinned ADK {expected_version} native campaign v2 semantic hard-cut without upgrading trust or target authority")
 finally:
     shutil.rmtree(receipt_dir, ignore_errors=True)
     shutil.rmtree(external, ignore_errors=True)
