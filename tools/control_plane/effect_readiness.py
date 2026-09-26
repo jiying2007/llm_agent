@@ -200,8 +200,8 @@ print(json.dumps(value,ensure_ascii=False,sort_keys=True,separators=(",",":")))
 
 def _canonical_measurement(
     adk: Path,
+    measurement_path: Path,
     receipt_paths: list[Path],
-    measurement: Mapping[str, Any],
 ) -> dict[str, Any]:
     code = r"""
 import json,sys
@@ -238,20 +238,14 @@ print(json.dumps(value,ensure_ascii=False,sort_keys=True,separators=(",",":")))
         value = os.environ.get(key)
         if value:
             env[key] = value
-    args = [sys.executable, "-c", code, str(adk), "__MEASUREMENT__"]
-    with subprocess.Popen(
-        [sys.executable, "-c", "pass"],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-    ) as noop:
-        noop.wait()
-    # Keep the actual measurement path out of the public helper signature; callers
-    # supply it via a private attribute immediately below.
-    measurement_path = getattr(_canonical_measurement, "_measurement_path", None)
-    if not isinstance(measurement_path, Path):
-        raise ValueError("measurement path binding is missing")
-    args[4] = str(measurement_path)
-    args.extend(str(path) for path in receipt_paths)
+    args = [
+        sys.executable,
+        "-c",
+        code,
+        str(adk),
+        str(measurement_path),
+        *(str(path) for path in receipt_paths),
+    ]
     done = subprocess.run(
         args,
         cwd=adk,
@@ -362,16 +356,12 @@ def _validate_campaign(
     measurement_error: str | None = None
     if authority_enabled:
         try:
-            setattr(_canonical_measurement, "_measurement_path", measurement_path)
-            regenerated = _canonical_measurement(adk, receipts, measurement)
+            regenerated = _canonical_measurement(adk, measurement_path, receipts)
             measurement_verified = regenerated == measurement
             if not measurement_verified:
                 measurement_error = "measurement differs from pinned ADK regeneration"
         except ValueError as exc:
             measurement_error = str(exc)
-        finally:
-            if hasattr(_canonical_measurement, "_measurement_path"):
-                delattr(_canonical_measurement, "_measurement_path")
     else:
         measurement_error = "managed Agent Value authority is not enabled"
 
