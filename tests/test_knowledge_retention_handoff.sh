@@ -36,4 +36,28 @@ assert "promotion: none" in text
 assert "Knowledge Hub **dry-run capture 与 owner review**" in text
 PY
 
-echo '[PASS] knowledge retention handoff is sanitized, dry-run-only, and owner-review bounded'
+
+EVIDENCE="$ROOT/reports/runtime-evidence/knowledge-retention/g9-hub-handoff-2026-09-26.json"
+test -s "$EVIDENCE"
+python3 - "$EVIDENCE" <<'PY'
+import json,sys
+value=json.load(open(sys.argv[1],encoding="utf-8"))
+assert value["status"]=="pass", value
+assert value["source"]["candidate_sha256"]=="3d56a96bba926f014fcf68de8bb880bdf2356d88651ca66a3964df41ac7fbd6d", value
+assert value["schema"]=="llm-agent-g9-hub-handoff-evidence/v2", value
+assert value["capture"]["status"]=="applied", value
+assert value["capture"]["created_status"]=="reviewing", value
+assert value["capture"]["promotion"]=="none", value
+assert value["capture"]["manual_validation_pending"] is True, value
+assert value["knowledge_hub"]["governed_capture"]["merged"] is True, value
+assert value["knowledge_hub"]["governed_capture"]["final_pr_quality_conclusion"]=="success", value
+assert value["knowledge_hub"]["governed_capture"]["security_review_conclusion"]=="success", value
+assert value["knowledge_hub"]["governed_capture"]["post_merge_quality_run"]==36218784210, value
+assert value["knowledge_hub"]["governed_capture"]["post_merge_quality_conclusion"]=="success", value
+assert value["authority_boundary"]["owner_review_recorded"] is False, value
+assert value["authority_boundary"]["lifecycle_decision_recorded"] is False, value
+assert value["authority_boundary"]["root_may_apply_or_promote"] is False, value
+assert value["remaining_blocker"]=="real-human-owner-lifecycle-decision-in-knowledge-hub", value
+PY
+
+echo '[PASS] knowledge retention handoff is sanitized, Hub-evidenced, and owner-review bounded'

@@ -1,0 +1,60 @@
+{
+  "schema": "llm-agent-g9-hub-handoff-evidence/v2",
+  "status": "pass",
+  "observed_at": "2026-09-26",
+  "source": {
+    "repository": "jiying2007/llm_agent",
+    "revision": "109949bf36001548d03a96732a8d6020395b518a",
+    "candidate": "docs/knowledge-candidates/llm-agent-adk-target-architecture.md",
+    "candidate_sha256": "3d56a96bba926f014fcf68de8bb880bdf2356d88651ca66a3964df41ac7fbd6d"
+  },
+  "knowledge_hub": {
+    "repository": "jiying2007/knowledge-hub",
+    "dry_run": {
+      "base_revision": "d2e15c31a2562ce92cee99e4695dc7835062512d",
+      "evidence_revision": "c779b7e2a2a68ed00faf7a9b082eefa775807c21",
+      "pull_request": 123,
+      "merged": false,
+      "workflow_run": 36214654406,
+      "artifact_id": 10897225255,
+      "artifact_sha256": "d8d0a6c493f52f1d3254c5fe6823352b1d50f083c3decdaeca744e07d5b6d2d8"
+    },
+    "governed_capture": {
+      "base_revision": "d2e15c31a2562ce92cee99e4695dc7835062512d",
+      "final_head": "f070e46a60e9fd738591214cc322cb773b1a0832",
+      "pull_request": 124,
+      "merged": true,
+      "merge_revision": "0fb7ed1e2dbd5f715b9b4382581d696081af1b8c",
+      "preparation_run": 36214972757,
+      "preparation_artifact_id": 10896659205,
+      "preparation_artifact_sha256": "467f23b6372d57ed933bb1f2facd254cb3807bf3b0a7a933ec27834b3f4f98f5",
+      "final_pr_quality_run": 36215031021,
+      "final_pr_quality_conclusion": "success",
+      "security_review_run": 36215031217,
+      "security_review_conclusion": "success",
+      "post_merge_quality_run": 36218784210,
+      "post_merge_quality_conclusion": "success"
+    }
+  },
+  "capture": {
+    "status": "applied",
+    "action": "capture",
+    "id": "llm-agent-adk-target-architecture",
+    "target": "projects/llm-agent/architecture/llm-agent-adk-target-architecture.md",
+    "created_status": "reviewing",
+    "promotion": "none",
+    "manual_validation_pending": true,
+    "review_status": "manual-entry-pending-review",
+    "active_promotion": false,
+    "promotion_authorized": false
+  },
+  "authority_boundary": {
+    "hub_registry_written": true,
+    "hub_item_captured": true,
+    "owner_review_recorded": false,
+    "lifecycle_decision_recorded": false,
+    "root_may_apply_or_promote": false,
+    "automation_may_fill_reviewed_by": false
+  },
+  "remaining_blocker": "real-human-owner-lifecycle-decision-in-knowledge-hub"
+}

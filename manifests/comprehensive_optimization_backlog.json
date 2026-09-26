@@ -454,17 +454,16 @@
       ],
       "verification": [
         "rtk python3 -m tools.control_plane.knowledge_retention_handoff --root . --summary-json",
-        "rtk bash tests/test_knowledge_retention_handoff.sh",
-        "rtk bash ~/knowledge-hub/tools/knowledge-capture.sh --source \"$PWD/docs/knowledge-candidates/llm-agent-adk-target-architecture.md\" --kind architecture --target projects/llm-agent/architecture/llm-agent-adk-target-architecture.md --id llm-agent-adk-target-architecture --title \"llm_agent / agent-dev-kit 长期资产架构结论候选\" --domain projects/llm-agent --owner leiwenjun --status reviewing --generated-by-ai --ai-role summarized --ai-model-or-tool ChatGPT --source-type public-repository --source-from https://github.com/jiying2007/llm_agent --dry-run --json",
-        "rtk bash ~/knowledge-hub/tools/knowledge-status.sh --summary-json --review-queue-limit 5"
+        "rtk bash tests/test_knowledge_retention_handoff.sh"
       ],
       "implementation_evidence": [
         "docs/knowledge-candidates/llm-agent-adk-target-architecture.md",
         "docs/runbooks/knowledge-retention-handoff.md",
         "tools/control_plane/knowledge_retention_handoff.py",
-        "tests/test_knowledge_retention_handoff.sh"
+        "tests/test_knowledge_retention_handoff.sh",
+        "reports/runtime-evidence/knowledge-retention/g9-hub-handoff-2026-09-26.json"
       ],
-      "blocking_condition": "Root has generated and validated a sanitized promotion=none candidate and current Knowledge Hub capture dry-run handoff. Terminal G9 completion is delegated to the independent knowledge-hub authority: execute the Hub dry-run/status path, then obtain a real owner review/lifecycle decision. Root must not run Hub --apply/promote or infer active/archive status."
+      "blocking_condition": "The Root candidate has been validated, the Knowledge Hub canonical dry-run/status path succeeded, and the candidate has now been mechanically captured on Hub master as status=reviewing with promotion=none and manual_validation_pending=true (Hub PR 124 -> master 0fb7ed1e2dbd5f715b9b4382581d696081af1b8c). No active/archive promotion or owner authorization occurred. Terminal G9 completion now requires only a real human Knowledge Hub owner lifecycle decision. Automation must not fabricate reviewed_by, authorization, or lifecycle outcome."
     },
     {
       "id": "G10",
