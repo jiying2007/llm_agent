@@ -37,17 +37,17 @@ assert "Knowledge Hub **dry-run capture 与 owner review**" in text
 PY
 
 
-EVIDENCE="$ROOT/reports/runtime-evidence/knowledge-retention/g9-hub-dry-run-2026-09-26.json"
+EVIDENCE="$ROOT/reports/runtime-evidence/knowledge-retention/g9-hub-handoff-2026-09-26.json"
 test -s "$EVIDENCE"
 python3 - "$EVIDENCE" <<'PY'
 import json,sys
 value=json.load(open(sys.argv[1],encoding="utf-8"))
 assert value["status"]=="pass", value
 assert value["source"]["candidate_sha256"]=="3d56a96bba926f014fcf68de8bb880bdf2356d88651ca66a3964df41ac7fbd6d", value
-assert value["authority_boundary"]["owner_review_recorded"] is False, value
+assert value["schema"]=="llm-agent-g9-hub-handoff-evidence/v2", value\nassert value["capture"]["status"]=="applied", value\nassert value["capture"]["created_status"]=="reviewing", value\nassert value["capture"]["promotion"]=="none", value\nassert value["capture"]["manual_validation_pending"] is True, value\nassert value["knowledge_hub"]["governed_capture"]["merged"] is True, value\nassert value["knowledge_hub"]["governed_capture"]["final_pr_quality_conclusion"]=="success", value\nassert value["knowledge_hub"]["governed_capture"]["security_review_conclusion"]=="success", value\nassert value["authority_boundary"]["owner_review_recorded"] is False, value
 assert value["authority_boundary"]["lifecycle_decision_recorded"] is False, value
 assert value["authority_boundary"]["root_may_apply_or_promote"] is False, value
-assert value["remaining_blocker"]=="real-human-owner-decision-in-knowledge-hub", value
+assert value["remaining_blocker"]=="real-human-owner-lifecycle-decision-in-knowledge-hub", value
 PY
 
 echo '[PASS] knowledge retention handoff is sanitized, Hub-evidenced, and owner-review bounded'
