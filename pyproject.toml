@@ -4,12 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "llm-agent-control-plane"
-version = "0.3.0"
+version = "0.4.0"
 description = "Evidence and composition control plane for llm_agent"
 requires-python = ">=3.11"
 license = "MIT"
 readme = "README.md"
-dependencies = ["PyYAML==6.0.3"]
+dependencies = ["PyYAML==6.0.3", "jsonschema==4.26.0"]
 
 [project.optional-dependencies]
 quality = [
