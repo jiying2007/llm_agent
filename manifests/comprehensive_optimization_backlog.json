@@ -445,7 +445,7 @@
       "optimization_area": "Knowledge retention",
       "terminal_outcome": "High-value conclusions generate sanitized candidates, and active or archive promotion requires owner review.",
       "design_status": "landed",
-      "implementation_status": "blocked",
+      "implementation_status": "done",
       "implementation_targets": [
         "sanitized architecture knowledge candidate in Root",
         "deterministic Root-to-Hub dry-run handoff projection",
@@ -454,16 +454,17 @@
       ],
       "verification": [
         "rtk python3 -m tools.control_plane.knowledge_retention_handoff --root . --summary-json",
-        "rtk bash tests/test_knowledge_retention_handoff.sh"
+        "rtk bash tests/test_knowledge_retention_handoff.sh",
+        "rtk python3 -m tools.control_plane.terminal_closure --root . --summary-json"
       ],
       "implementation_evidence": [
         "docs/knowledge-candidates/llm-agent-adk-target-architecture.md",
         "docs/runbooks/knowledge-retention-handoff.md",
         "tools/control_plane/knowledge_retention_handoff.py",
         "tests/test_knowledge_retention_handoff.sh",
-        "reports/runtime-evidence/knowledge-retention/g9-hub-handoff-2026-09-26.json"
+        "reports/runtime-evidence/knowledge-retention/g9-hub-handoff-2026-09-26.json",
+        "reports/runtime-evidence/knowledge-retention/g9-hub-owner-decision-2026-09-26.json"
       ],
-      "blocking_condition": "The Root candidate has been validated, the Knowledge Hub canonical dry-run/status path succeeded, and the candidate has now been mechanically captured on Hub master as status=reviewing with promotion=none and manual_validation_pending=true (Hub PR 124 -> master 0fb7ed1e2dbd5f715b9b4382581d696081af1b8c). No active/archive promotion or owner authorization occurred. Terminal G9 completion now requires only a real human Knowledge Hub owner lifecycle decision. Automation must not fabricate reviewed_by, authorization, or lifecycle outcome.",
       "external_tracking": {
         "repository": "jiying2007/knowledge-hub",
         "issue_number": 125
