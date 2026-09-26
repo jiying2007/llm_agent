@@ -13,8 +13,8 @@ from typing import Any
 from .adk_interface import validate as validate_adk_interface
 
 SCHEMA = "llm-agent-effect-readiness/v1"
-INDEX_SCHEMA = "llm-agent-effect-value-evidence-index/v1"
-OWNER_REVIEW_SCHEMA = "llm-agent-effect-owner-review/v1"
+INDEX_SCHEMA = "llm-agent-effect-value-evidence-index/v2"
+OWNER_REVIEW_SCHEMA = "llm-agent-effect-owner-review/v2"
 DEFAULT_INDEX = Path("reports/runtime-evidence/effect-value/evidence-index.json")
 _REQUIRED_CONTRACT_IDS = {"agent-value", "effect-trials", "effect-trial-comparison"}
 _DECISIVE_VERDICTS = {"improved", "non-inferior", "regressed"}
@@ -110,6 +110,86 @@ if errors:
         raise ValueError(f"{label} violates pinned ADK schema: {reason}")
 
 
+def _recompute_effect_comparison(adk: Path, campaign: Path) -> dict[str, Any]:
+    code = r'''
+import json,sys
+from pathlib import Path
+from agent_dev_kit.effect_trials import compare_effect_trial_file
+from agent_dev_kit.model import Manifest
+root=Path(sys.argv[1]).resolve()
+campaign=Path(sys.argv[2]).resolve()
+value=compare_effect_trial_file(campaign, Manifest.load(root))
+print(json.dumps(value,ensure_ascii=False,sort_keys=True))
+'''
+    env = {
+        "PYTHONPATH": str(adk / "src"),
+        "PATH": os.environ.get("PATH", os.defpath),
+        "LANG": "C.UTF-8",
+        "LC_ALL": "C.UTF-8",
+    }
+    done = subprocess.run(
+        [sys.executable, "-c", code, str(adk), str(campaign)],
+        cwd=adk,
+        env=env,
+        stdin=subprocess.DEVNULL,
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=45,
+    )
+    if done.returncode:
+        reason = (done.stderr or done.stdout).strip()[-1000:]
+        raise ValueError(f"effect trial campaign recomputation failed: {reason}")
+    value = json.loads(done.stdout)
+    if not isinstance(value, dict):
+        raise ValueError("effect trial campaign recomputation is invalid")
+    return value
+
+
+def _campaign_bindings(campaign: dict[str, Any]) -> tuple[set[str], set[str], str]:
+    plan = campaign.get("plan")
+    trials = campaign.get("trials")
+    if not isinstance(plan, dict) or not isinstance(trials, list):
+        raise ValueError("effect trial campaign plan/trials are invalid")
+    bundles = plan.get("bundles")
+    controls = plan.get("controls")
+    if not isinstance(bundles, dict) or set(bundles) != {"baseline", "candidate"}:
+        raise ValueError("effect trial campaign bundles are invalid")
+    campaign_bundles = {str(bundles["baseline"]), str(bundles["candidate"])}
+    if len(campaign_bundles) != 2:
+        raise ValueError("effect trial campaign must compare distinct bundles")
+    if not isinstance(controls, dict):
+        raise ValueError("effect trial campaign controls are invalid")
+    runtime_target = controls.get("runtime_target")
+    if not isinstance(runtime_target, str) or not runtime_target:
+        raise ValueError("effect trial campaign runtime target is invalid")
+
+    trace_refs: set[str] = set()
+    for trial in trials:
+        if not isinstance(trial, dict):
+            raise ValueError("effect trial campaign contains invalid trial")
+        for side in ("baseline", "candidate"):
+            bindings = trial.get(side)
+            if not isinstance(bindings, list):
+                raise ValueError("effect trial campaign condition bindings are invalid")
+            for binding in bindings:
+                if not isinstance(binding, dict):
+                    raise ValueError("effect trial campaign binding is invalid")
+                run = binding.get("run")
+                trace_ref = run.get("trace_ref") if isinstance(run, dict) else None
+                if (
+                    not isinstance(trace_ref, str)
+                    or not trace_ref.startswith("ref:")
+                    or len(trace_ref) != 68
+                    or any(ch not in "0123456789abcdef" for ch in trace_ref[4:])
+                ):
+                    raise ValueError("effect trial campaign run lacks a valid trace_ref")
+                trace_refs.add(trace_ref)
+    if not trace_refs:
+        raise ValueError("effect trial campaign contains no trace refs")
+    return trace_refs, campaign_bundles, runtime_target
+
+
 def _canonical_agent_value_projection(adk: Path) -> dict[str, Any]:
     code = r'''
 import json,sys
@@ -183,6 +263,7 @@ def _validate_owner_review(
     review: dict[str, Any],
     *,
     campaign_id: str,
+    campaign_sha256: str,
     comparison_sha256: str,
     measurement_sha256: str,
     measurement_assets: set[tuple[str, str]],
@@ -191,10 +272,13 @@ def _validate_owner_review(
         "schema",
         "status",
         "campaign_id",
+        "campaign_sha256",
         "comparison_sha256",
         "measurement_sha256",
         "reviewed_at",
+        "reviewed_by",
         "reviewer_role",
+        "automation_generated",
         "observed_cases",
         "asset_decisions",
         "raw_content_stored",
@@ -207,6 +291,8 @@ def _validate_owner_review(
         raise ValueError("owner review schema/status is invalid")
     if review["campaign_id"] != campaign_id:
         raise ValueError("owner review campaign differs from comparison")
+    if review["campaign_sha256"] != campaign_sha256:
+        raise ValueError("owner review campaign digest mismatch")
     if review["comparison_sha256"] != comparison_sha256:
         raise ValueError("owner review comparison digest mismatch")
     if review["measurement_sha256"] != measurement_sha256:
@@ -214,8 +300,13 @@ def _validate_owner_review(
     reviewed_at = _parse_time(review["reviewed_at"], "owner review timestamp")
     if reviewed_at > datetime.now(timezone.utc):
         raise ValueError("owner review timestamp is in the future")
+    reviewer = review.get("reviewed_by")
+    if not isinstance(reviewer, str) or not reviewer.strip() or len(reviewer) > 128:
+        raise ValueError("owner review requires a real reviewed_by identity")
     if review["reviewer_role"] != "owner":
         raise ValueError("owner review must use reviewer_role=owner")
+    if review["automation_generated"] is not False:
+        raise ValueError("owner review must not be automation generated")
     observed = review["observed_cases"]
     if (
         not isinstance(observed, dict)
@@ -256,6 +347,8 @@ def _validate_evidence_entry(
 ) -> tuple[set[tuple[str, str]], dict[tuple[str, str], str], dict[str, Any]]:
     required = {
         "id",
+        "campaign_path",
+        "campaign_sha256",
         "comparison_path",
         "comparison_sha256",
         "measurement_path",
@@ -275,7 +368,7 @@ def _validate_evidence_entry(
         raise ValueError("effect evidence entry id is invalid")
 
     docs: dict[str, tuple[Path, str]] = {}
-    for name in ("comparison", "measurement", "owner_review"):
+    for name in ("campaign", "comparison", "measurement", "owner_review"):
         path = _safe_path(root, evidence_root, entry[f"{name}_path"], f"{name} path")
         expected = entry[f"{name}_sha256"]
         if (
@@ -289,10 +382,17 @@ def _validate_evidence_entry(
             raise ValueError(f"{name} digest mismatch")
         docs[name] = (path, actual)
 
+    campaign_path, campaign_sha = docs["campaign"]
     comparison_path, comparison_sha = docs["comparison"]
     measurement_path, measurement_sha = docs["measurement"]
     review_path, _ = docs["owner_review"]
 
+    _schema_validate(
+        adk,
+        "schemas/effect-trials-v1.schema.json",
+        campaign_path,
+        "effect trial campaign",
+    )
     _schema_validate(
         adk,
         "schemas/effect-trial-comparison-v1.schema.json",
@@ -305,9 +405,15 @@ def _validate_evidence_entry(
         measurement_path,
         "Agent Value measurement",
     )
+    campaign = _load_object(campaign_path, "effect trial campaign")
     comparison = _load_object(comparison_path, "effect trial comparison")
     measurement = _load_object(measurement_path, "Agent Value measurement")
     review = _load_object(review_path, "effect owner review")
+
+    recomputed = _recompute_effect_comparison(adk, campaign_path)
+    if recomputed != comparison:
+        raise ValueError("effect comparison differs from pinned ADK campaign recomputation")
+    campaign_trace_refs, campaign_bundles, campaign_runtime_target = _campaign_bindings(campaign)
 
     if comparison.get("verdict") not in _DECISIVE_VERDICTS:
         raise ValueError("effect comparison must have a decisive verdict")
@@ -322,6 +428,11 @@ def _validate_evidence_entry(
     campaign_id = comparison.get("campaign_id")
     if not isinstance(campaign_id, str) or campaign_id != entry_id:
         raise ValueError("effect comparison campaign id must equal evidence entry id")
+    plan = campaign.get("plan")
+    if not isinstance(plan, dict) or plan.get("campaign_id") != campaign_id:
+        raise ValueError("effect trial campaign id must equal comparison/index id")
+    if len(campaign_trace_refs) != comparison.get("run_count"):
+        raise ValueError("effect trial campaign trace population differs from comparison run count")
 
     if measurement.get("measurement_status") != "measured":
         raise ValueError("Agent Value measurement is not measured")
@@ -339,6 +450,9 @@ def _validate_evidence_entry(
         raise ValueError("Agent Value measurement authority boundary is invalid")
 
     assets: set[tuple[str, str]] = set()
+    measurement_trace_refs: set[str] = set()
+    measurement_bundles: set[str] = set()
+    measurement_runtime_targets: set[str] = set()
     for item in measurement.get("asset_measurements", []):
         if not isinstance(item, dict):
             raise ValueError("Agent Value asset measurement is invalid")
@@ -354,6 +468,30 @@ def _validate_evidence_entry(
             raise ValueError("asset measurement lacks managed authority verification")
         if not item.get("authority_ids"):
             raise ValueError("asset measurement lacks authority id")
+        source_trace_refs = item.get("source_trace_refs")
+        bundle_sha256s = item.get("asset_bundle_sha256s")
+        runtime_targets = item.get("runtime_targets")
+        if (
+            not isinstance(source_trace_refs, list)
+            or not source_trace_refs
+            or not all(isinstance(value, str) for value in source_trace_refs)
+        ):
+            raise ValueError("asset measurement lacks source trace refs")
+        if (
+            not isinstance(bundle_sha256s, list)
+            or not bundle_sha256s
+            or not all(isinstance(value, str) for value in bundle_sha256s)
+        ):
+            raise ValueError("asset measurement lacks bundle identities")
+        if (
+            not isinstance(runtime_targets, list)
+            or not runtime_targets
+            or not all(isinstance(value, str) for value in runtime_targets)
+        ):
+            raise ValueError("asset measurement lacks runtime targets")
+        measurement_trace_refs.update(source_trace_refs)
+        measurement_bundles.update(bundle_sha256s)
+        measurement_runtime_targets.update(runtime_targets)
         metrics = item.get("metrics")
         if not isinstance(metrics, dict):
             raise ValueError("asset measurement metrics are missing")
@@ -370,10 +508,20 @@ def _validate_evidence_entry(
             raise ValueError("asset measurement lacks a substantive retirement signal")
     if not assets:
         raise ValueError("Agent Value measurement covers no assets")
+    missing_managed_traces = campaign_trace_refs - measurement_trace_refs
+    if missing_managed_traces:
+        raise ValueError(
+            "effect trial campaign contains traces without managed runtime/field measurement evidence"
+        )
+    if campaign_bundles - measurement_bundles:
+        raise ValueError("effect trial campaign bundles are not measurement-backed")
+    if campaign_runtime_target not in measurement_runtime_targets:
+        raise ValueError("effect trial campaign runtime target is not measurement-backed")
 
     decisions = _validate_owner_review(
         review,
         campaign_id=campaign_id,
+        campaign_sha256=campaign_sha,
         comparison_sha256=comparison_sha,
         measurement_sha256=measurement_sha,
         measurement_assets=assets,
@@ -382,6 +530,9 @@ def _validate_evidence_entry(
         "id": entry_id,
         "comparison_verdict": comparison["verdict"],
         "measurement_evidence_scope": measurement["evidence_scope"],
+        "campaign_trace_count": len(campaign_trace_refs),
+        "managed_campaign_trace_coverage": True,
+        "reviewed_by": review["reviewed_by"],
         "asset_count": len(assets),
         "reviewed_at": review["reviewed_at"],
     }
