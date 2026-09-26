@@ -293,7 +293,10 @@ import json,sys
 from pathlib import Path
 from agent_dev_kit.agent_value import emit_measurements
 from agent_dev_kit.agent_value_contracts import load_contract,validate_contract
-from agent_dev_kit.agent_value_trust import load_agent_value_trust_registry
+from agent_dev_kit.agent_value_trust import (
+    build_portable_managed_agent_value_evidence_verifier,
+    load_agent_value_trust_registry,
+)
 from agent_dev_kit.model import Manifest
 from agent_dev_kit.privacy_ref import opaque_ref_for_sha256
 root=Path(sys.argv[1]).resolve()
@@ -308,6 +311,7 @@ print(json.dumps({
  "manifest_ref":opaque_ref_for_sha256(manifest.digest),
  "policy":{"status":policy["status"],"backend":policy["backend"],"authority_count":len(policy["authorities"])},
  "registry":{"status":registry["status"],"authority_count":len(registry["authorities"]),"enabled_authority_count":sum(1 for x in registry["authorities"].values() if isinstance(x,dict) and x.get("enabled") is True)},
+ "portable_managed_verifier_available":callable(build_portable_managed_agent_value_evidence_verifier),
  "empty_measurement":{"measurement_status":measurement["measurement_status"],"reason":measurement["reason"],"asset_measurement_count":len(measurement["asset_measurements"])}
 },sort_keys=True))
 '''
@@ -789,6 +793,7 @@ def project(root: Path, evidence_index: Path = DEFAULT_INDEX) -> dict[str, Any]:
         not missing_contracts
         and not schema_failures
         and not missing_files
+        and value.get("portable_managed_verifier_available") is True
         and empty_measurement["measurement_status"] == "not-measured"
         and empty_measurement["reason"] == "no-valid-receipts"
     )
@@ -839,6 +844,7 @@ def project(root: Path, evidence_index: Path = DEFAULT_INDEX) -> dict[str, Any]:
             "missing_contract_ids": missing_contracts,
             "schema_failures": schema_failures,
             "missing_files": missing_files,
+            "portable_managed_verifier_available": value.get("portable_managed_verifier_available") is True,
             "agent_value_contract": value["contract_report"],
         },
         "safe_defaults": {
