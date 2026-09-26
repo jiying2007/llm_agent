@@ -53,7 +53,8 @@ assert value["knowledge_hub"]["governed_capture"]["merged"] is True, value
 assert value["knowledge_hub"]["governed_capture"]["final_pr_quality_conclusion"]=="success", value
 assert value["knowledge_hub"]["governed_capture"]["security_review_conclusion"]=="success", value
 assert value["knowledge_hub"]["governed_capture"]["post_merge_quality_run"]==36218784210, value
-assert value["knowledge_hub"]["governed_capture"]["post_merge_quality_conclusion"]=="success", value\nassert value["authority_boundary"]["owner_review_recorded"] is False, value
+assert value["knowledge_hub"]["governed_capture"]["post_merge_quality_conclusion"]=="success", value
+assert value["authority_boundary"]["owner_review_recorded"] is False, value
 assert value["authority_boundary"]["lifecycle_decision_recorded"] is False, value
 assert value["authority_boundary"]["root_may_apply_or_promote"] is False, value
 assert value["remaining_blocker"]=="real-human-owner-lifecycle-decision-in-knowledge-hub", value
