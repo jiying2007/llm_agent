@@ -4,6 +4,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
 TMP="$(mktemp)"
+mkdir -p "$ROOT/tests/fixtures"
 FIXTURE_DIR="$(mktemp -d -p "$ROOT/tests/fixtures" effect-readiness-XXXXXX)"
 cleanup() {
   rm -f "$TMP"
