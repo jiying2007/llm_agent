@@ -10,7 +10,7 @@ python3 -m tools.control_plane.effect_readiness --root . --summary-json >"$TMP"
 python3 - "$TMP" <<'PY'
 import json,sys
 value=json.load(open(sys.argv[1],encoding="utf-8"))
-assert value["schema"]=="llm-agent-effect-readiness/v1", value
+assert value["schema"]=="llm-agent-effect-readiness/v2", value
 assert value["status"]=="pass", value
 assert value["software_ready"] is True, value
 assert value["release_authorized"] is False, value
@@ -21,8 +21,13 @@ assert value["software"]["missing_contract_ids"]==[], value
 assert value["software"]["schema_failures"]==[], value
 assert value["software"]["missing_files"]==[], value
 assert value["authority"]["registry_status"]=="active", value
+assert value["evidence_index"]["schema"]=="llm-agent-effect-value-evidence-index/v1", value
+assert value["evidence_index"]["campaign_count"]==0, value
+assert value["evidence_index"]["accepted_campaign_count"]==0, value
+assert value["evidence_index"]["ready"] is False, value
 assert value["effect_evidence_ready"] is False, value
 assert value["terminal_status"]=="blocked-external-evidence", value
+assert any("effect-evidence-index-campaign" in item for item in value["blockers"]), value
 assert any("real-repeated-task-trials" in item for item in value["blockers"]), value
 assert any("runtime-or-field-invocation-receipts" in item for item in value["blockers"]), value
 boundary=value["authority_boundary"]
@@ -30,6 +35,7 @@ assert boundary["synthetic_trials_are_real_effect_evidence"] is False, boundary
 assert boundary["test_receipts_are_runtime_or_field_evidence"] is False, boundary
 assert boundary["software_ready_is_effectiveness_proof"] is False, boundary
 assert boundary["retirement_signal_is_lifecycle_authority"] is False, boundary
+assert boundary["owner_review_auto_applies_lifecycle_change"] is False, boundary
 PY
 
 set +e
