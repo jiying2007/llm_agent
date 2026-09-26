@@ -443,14 +443,13 @@ def _validate_campaign(
     }
 
 
-def _project_evidence(
+def _evaluate_evidence_index(
     root: Path,
     adk: Path,
+    index: Mapping[str, Any],
     *,
     authority_enabled: bool,
 ) -> dict[str, Any]:
-    index_path = root / "manifests/effect_value_evidence_index.json"
-    index = _load_object(index_path, "effect evidence index", limit=1024 * 1024)
     _validate_schema(
         index,
         root / "schemas/effect-value-evidence-index-v1.schema.json",
@@ -507,6 +506,25 @@ def _project_evidence(
         "campaigns": projections,
         "policy": policy,
     }
+
+
+def _project_evidence(
+    root: Path,
+    adk: Path,
+    *,
+    authority_enabled: bool,
+) -> dict[str, Any]:
+    index = _load_object(
+        root / "manifests/effect_value_evidence_index.json",
+        "effect evidence index",
+        limit=1024 * 1024,
+    )
+    return _evaluate_evidence_index(
+        root,
+        adk,
+        index,
+        authority_enabled=authority_enabled,
+    )
 
 
 def project(root: Path) -> dict[str, Any]:
