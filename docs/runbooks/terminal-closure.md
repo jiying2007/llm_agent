@@ -63,6 +63,17 @@ The terminal projection:
 
 Its purpose is to prevent further software work from being confused with missing external facts and to make the exact remaining actions visible in one command.
 
+## External action queue
+
+Each blocked terminal item carries a durable `external_tracking` entry in the optimization backlog. `terminal-closure` validates that routing and emits it as `tracking_issue` in both the open backlog projection and the external blocker queue, including a normalized GitHub issue URL.
+
+Current queue:
+
+- G9 → `jiying2007/knowledge-hub#125`: real human Knowledge Hub lifecycle decision;
+- G21 → `jiying2007/agent-dev-kit#153`: authenticated version-pinned native conformance campaign;
+- G22 → `jiying2007/llm_agent#154`: governed real effect/value campaign and per-asset owner review.
+
+These issue references are routing metadata only. Their existence does not count as lifecycle, native-runtime, effect/value, owner-review, or release evidence.
 
 ## G9 owner decision evidence
 

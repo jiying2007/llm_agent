@@ -30,8 +30,21 @@ assert projected_ids==open_ids, (projected_ids,open_ids)
 assert value["backlog"]["done_items"]+len(projected_ids)==value["backlog"]["total_items"], value
 assert value["backlog"]["unexpected_nonterminal_items"]==[], value
 
+expected_tracking={
+    "G9": {"repository":"jiying2007/knowledge-hub","issue_number":125},
+    "G21": {"repository":"jiying2007/agent-dev-kit","issue_number":153},
+    "G22": {"repository":"jiying2007/llm_agent","issue_number":154},
+}
 blocker_ids=sorted(item["id"] for item in value["external_blockers"])
 assert blocker_ids==open_ids, (blocker_ids,open_ids)
+for blocker in value["external_blockers"]:
+    item_id=blocker["id"]
+    expected=expected_tracking[item_id]
+    tracking=blocker["tracking_issue"]
+    assert tracking["repository"]==expected["repository"], (tracking,expected)
+    assert tracking["issue_number"]==expected["issue_number"], (tracking,expected)
+    assert tracking["url"]==f'https://github.com/{expected["repository"]}/issues/{expected["issue_number"]}', tracking
+    assert items[item_id]["external_tracking"]==expected, items[item_id]
 for item_id in open_ids:
     assert item_id in {"G9","G21","G22"}, item_id
     assert items[item_id]["implementation_status"]=="blocked", items[item_id]

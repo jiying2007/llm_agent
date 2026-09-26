@@ -463,7 +463,11 @@
         "tests/test_knowledge_retention_handoff.sh",
         "reports/runtime-evidence/knowledge-retention/g9-hub-handoff-2026-09-26.json"
       ],
-      "blocking_condition": "The Root candidate has been validated, the Knowledge Hub canonical dry-run/status path succeeded, and the candidate has now been mechanically captured on Hub master as status=reviewing with promotion=none and manual_validation_pending=true (Hub PR 124 -> master 0fb7ed1e2dbd5f715b9b4382581d696081af1b8c). No active/archive promotion or owner authorization occurred. Terminal G9 completion now requires only a real human Knowledge Hub owner lifecycle decision. Automation must not fabricate reviewed_by, authorization, or lifecycle outcome."
+      "blocking_condition": "The Root candidate has been validated, the Knowledge Hub canonical dry-run/status path succeeded, and the candidate has now been mechanically captured on Hub master as status=reviewing with promotion=none and manual_validation_pending=true (Hub PR 124 -> master 0fb7ed1e2dbd5f715b9b4382581d696081af1b8c). No active/archive promotion or owner authorization occurred. Terminal G9 completion now requires only a real human Knowledge Hub owner lifecycle decision. Automation must not fabricate reviewed_by, authorization, or lifecycle outcome.",
+      "external_tracking": {
+        "repository": "jiying2007/knowledge-hub",
+        "issue_number": 125
+      }
     },
     {
       "id": "G10",
@@ -772,7 +776,11 @@
         "docs/runbooks/native-target-conformance-readiness.md",
         "tools/control_plane/native_target_readiness.py"
       ],
-      "blocking_condition": "Software layers through ADK 7.4.0 are landed and Root-consumed. Terminal completion requires at least one real authenticated version-pinned direct-target discovery/load/trigger campaign, complete typed receipt, reviewed signature/provenance, exact managed-registry binding, and production-loader verification; synthetic/source-layout evidence cannot satisfy this condition."
+      "blocking_condition": "Software layers through ADK 7.4.0 are landed and Root-consumed. Terminal completion requires at least one real authenticated version-pinned direct-target discovery/load/trigger campaign, complete typed receipt, reviewed signature/provenance, exact managed-registry binding, and production-loader verification; synthetic/source-layout evidence cannot satisfy this condition.",
+      "external_tracking": {
+        "repository": "jiying2007/agent-dev-kit",
+        "issue_number": 153
+      }
     },
     {
       "id": "G22",
@@ -808,7 +816,11 @@
         "docs/runbooks/effect-readiness.md",
         "tools/control_plane/effect_readiness.py"
       ],
-      "blocking_condition": "Software layers through ADK 7.5.0 plus the governed Root evidence-index state machine are landed. Terminal completion now requires real decisive repeated-task comparison evidence, managed runtime/field Agent Value measurement evidence covering every current Agent/Skill/Profile, representative success/failure/wrong-route/abstain observations, substantive retirement signals, and a digest-bound per-asset owner review. Synthetic/test-only evidence cannot satisfy the canonical index."
+      "blocking_condition": "Software layers through ADK 7.5.0 plus the governed Root evidence-index state machine are landed. Terminal completion now requires real decisive repeated-task comparison evidence, managed runtime/field Agent Value measurement evidence covering every current Agent/Skill/Profile, representative success/failure/wrong-route/abstain observations, substantive retirement signals, and a digest-bound per-asset owner review. Synthetic/test-only evidence cannot satisfy the canonical index.",
+      "external_tracking": {
+        "repository": "jiying2007/llm_agent",
+        "issue_number": 154
+      }
     }
   ]
 }
