@@ -412,9 +412,12 @@ def _evaluate_evidence_index(
     for entry in entries:
         if not isinstance(entry, dict):
             raise ValueError("effect evidence index entry must be an object")
-        if entry.get("id") in seen_ids:
+        entry_id = entry.get("id")
+        if not isinstance(entry_id, str) or not entry_id:
+            raise ValueError("effect evidence index entry id is invalid")
+        if entry_id in seen_ids:
             raise ValueError("effect evidence index has duplicate campaign id")
-        seen_ids.add(entry.get("id"))
+        seen_ids.add(entry_id)
         assets, entry_decisions, summary = _validate_evidence_entry(
             root, adk, evidence_root, entry, manifest_ref
         )
