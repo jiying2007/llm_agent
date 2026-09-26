@@ -70,3 +70,18 @@ A green default projection means the status projection is valid; it does **not**
 7.4.1 的 campaign runner 以 isolated project root 作为 runtime cwd，`ADK_TARGET_PROJECT_ROOT` 指向该项目根，`ADK_TARGET_ROOT` 指向对应 `.claude` / `.opencode` 配置根。这样 source/layout harness 与真实项目 discovery 语义一致。
 
 `auth_mode=home` 只用于复用受控用户认证状态，不通过 `CLAUDE_CONFIG_DIR` 或 `OPENCODE_CONFIG_DIR` 把项目 Skill 路径替换成用户全局配置根。真实 campaign 仍需设计唯一 canary/命中证据，防止用户全局 Skill 造成假阳性。
+
+## ADK 7.6 semantic evidence hard-cut
+
+ADK 7.6.0 closes the exit-code-only native campaign gap. A discovery/load/trigger command returning zero is no longer sufficient evidence. Every real campaign must provide a separate pre-registered assertions JSON for the three native stages. The plan binds only assertion digests; execution evaluates the selected stdout/stderr/combined stream in memory and retains only assertion identity/result digests plus pass/fail status.
+
+Root accepts only the active v2 certification surfaces:
+
+- `schemas/native-target-campaign-plan-v2.schema.json`;
+- `schemas/native-target-campaign-evidence-v2.schema.json`;
+- `schemas/native-target-conformance-receipt-v2.schema.json`.
+
+The v1 campaign/receipt certification path is retired with no compatibility fallback. `exit_code=0` plus a missing semantic canary must fail the campaign and cannot be finalized. Raw assertions and native command output remain non-retained.
+
+This hard-cut still does not create native certification by itself. G21 terminal completion requires a real authenticated, version-pinned runtime campaign whose semantic assertions describe actual discovery/load/trigger success, followed by signed provenance, exact managed-trust binding, production-loader verification, and owner-reviewed target promotion.
+
