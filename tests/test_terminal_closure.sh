@@ -43,6 +43,7 @@ if "G9" in open_ids:
     assert g9["captured_reviewing"] is True, g9
     assert g9["owner_review_recorded"] is False, g9
     assert g9["owner_lifecycle_decision_recorded"] is False, g9
+    assert g9["terminal_lifecycle_decision"] is False, g9
     assert g9["evidence_index"]=="reports/runtime-evidence/knowledge-retention/evidence-index.json", g9
     assert g9["handoff_evidence"]=="reports/runtime-evidence/knowledge-retention/g9-hub-handoff-2026-09-26.json", g9
     assert g9["owner_decision_evidence"] is None, g9
