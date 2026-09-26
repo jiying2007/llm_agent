@@ -13,8 +13,9 @@ from typing import Any
 from .adk_interface import validate as validate_adk_interface
 
 SCHEMA = "llm-agent-effect-readiness/v1"
-INDEX_SCHEMA = "llm-agent-effect-value-evidence-index/v2"
-OWNER_REVIEW_SCHEMA = "llm-agent-effect-owner-review/v2"
+INDEX_SCHEMA = "llm-agent-effect-value-evidence-index/v3"
+OWNER_REVIEW_SCHEMA = "llm-agent-effect-owner-review/v3"
+RECEIPT_SET_SCHEMA = "llm-agent-effect-receipt-set/v1"
 DEFAULT_INDEX = Path("reports/runtime-evidence/effect-value/evidence-index.json")
 _REQUIRED_CONTRACT_IDS = {"agent-value", "effect-trials", "effect-trial-comparison"}
 _DECISIVE_VERDICTS = {"improved", "non-inferior", "regressed"}
@@ -190,13 +191,112 @@ def _campaign_bindings(campaign: dict[str, Any]) -> tuple[set[str], set[str], st
     return trace_refs, campaign_bundles, runtime_target
 
 
+def _recompute_agent_value_measurement(
+    adk: Path,
+    contract_path: Path,
+    registry_path: Path,
+    receipts_path: Path,
+    bundle_root: Path,
+) -> dict[str, Any]:
+    code = r'''
+import json,sys
+from datetime import datetime
+from pathlib import Path
+from agent_dev_kit.agent_value import emit_measurements
+from agent_dev_kit.agent_value_contracts import load_contract
+from agent_dev_kit.agent_value_trust import (
+    build_portable_managed_agent_value_evidence_verifier,
+)
+from agent_dev_kit.model import Manifest
+root=Path(sys.argv[1]).resolve()
+contract_path=Path(sys.argv[2]).resolve()
+registry_path=Path(sys.argv[3]).resolve()
+receipts_path=Path(sys.argv[4]).resolve()
+bundle_root=Path(sys.argv[5]).resolve()
+manifest=Manifest.load(root)
+contract=load_contract(
+    contract_path,
+    schema_path=root/"schemas"/"agent-value-contracts-v1.schema.json",
+)
+registry=json.load(open(registry_path,encoding="utf-8"))
+receipt_set=json.load(open(receipts_path,encoding="utf-8"))
+if not isinstance(receipt_set,dict) or set(receipt_set)!={"schema","aggregation_window","as_of","receipts"}:
+    raise SystemExit("receipt-set-fields-invalid")
+if receipt_set.get("schema")!="llm-agent-effect-receipt-set/v1":
+    raise SystemExit("receipt-set-schema-invalid")
+window=receipt_set.get("aggregation_window")
+if not isinstance(window,dict) or set(window)!={"from","through"}:
+    raise SystemExit("receipt-set-window-invalid")
+receipts=receipt_set.get("receipts")
+if not isinstance(receipts,list) or not receipts or len(receipts)>10000:
+    raise SystemExit("receipt-set-population-invalid")
+def stamp(value):
+    parsed=datetime.fromisoformat(str(value).replace("Z","+00:00"))
+    if parsed.tzinfo is None:
+        raise SystemExit("receipt-set-timezone-invalid")
+    return parsed
+verifier=build_portable_managed_agent_value_evidence_verifier(
+    manifest,contract,registry,bundle_root=bundle_root,
+)
+measurement=emit_measurements(
+    receipts,
+    manifest,
+    contract,
+    evidence_verifier=verifier,
+    aggregation_window={"from":stamp(window["from"]),"through":stamp(window["through"])},
+    as_of=stamp(receipt_set["as_of"]),
+)
+observed={
+    "success":any(item.get("outcome")=="succeeded" for item in receipts),
+    "failure":any(item.get("outcome") in {"failed","partial","blocked","cancelled"} for item in receipts),
+    "wrong_route":any(isinstance(item.get("routing"),dict) and item["routing"].get("wrong_route") is True for item in receipts),
+    "abstain":any(isinstance(item.get("routing"),dict) and item["routing"].get("abstained") is True for item in receipts),
+}
+print(json.dumps({
+    "measurement":measurement,
+    "observed_cases":observed,
+    "receipt_count":len(receipts),
+},ensure_ascii=False,sort_keys=True))
+'''
+    env = {
+        "PYTHONPATH": str(adk / "src"),
+        "PATH": os.environ.get("PATH", os.defpath),
+        "LANG": "C.UTF-8",
+        "LC_ALL": "C.UTF-8",
+    }
+    done = subprocess.run(
+        [
+            sys.executable, "-c", code,
+            str(adk), str(contract_path), str(registry_path),
+            str(receipts_path), str(bundle_root),
+        ],
+        cwd=adk,
+        env=env,
+        stdin=subprocess.DEVNULL,
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=120,
+    )
+    if done.returncode:
+        reason = (done.stderr or done.stdout).strip()[-1000:]
+        raise ValueError(f"managed Agent Value receipt replay failed: {reason}")
+    value = json.loads(done.stdout)
+    if not isinstance(value, dict) or not isinstance(value.get("measurement"), dict):
+        raise ValueError("managed Agent Value receipt replay is invalid")
+    return value
+
+
 def _canonical_agent_value_projection(adk: Path) -> dict[str, Any]:
     code = r'''
 import json,sys
 from pathlib import Path
 from agent_dev_kit.agent_value import emit_measurements
 from agent_dev_kit.agent_value_contracts import load_contract,validate_contract
-from agent_dev_kit.agent_value_trust import load_agent_value_trust_registry
+from agent_dev_kit.agent_value_trust import (
+    build_portable_managed_agent_value_evidence_verifier,
+    load_agent_value_trust_registry,
+)
 from agent_dev_kit.model import Manifest
 from agent_dev_kit.privacy_ref import opaque_ref_for_sha256
 root=Path(sys.argv[1]).resolve()
@@ -211,6 +311,7 @@ print(json.dumps({
  "manifest_ref":opaque_ref_for_sha256(manifest.digest),
  "policy":{"status":policy["status"],"backend":policy["backend"],"authority_count":len(policy["authorities"])},
  "registry":{"status":registry["status"],"authority_count":len(registry["authorities"]),"enabled_authority_count":sum(1 for x in registry["authorities"].values() if isinstance(x,dict) and x.get("enabled") is True)},
+ "portable_managed_verifier_available":callable(build_portable_managed_agent_value_evidence_verifier),
  "empty_measurement":{"measurement_status":measurement["measurement_status"],"reason":measurement["reason"],"asset_measurement_count":len(measurement["asset_measurements"])}
 },sort_keys=True))
 '''
@@ -265,7 +366,11 @@ def _validate_owner_review(
     campaign_id: str,
     campaign_sha256: str,
     comparison_sha256: str,
+    authority_contract_sha256: str,
+    authority_registry_sha256: str,
+    receipts_sha256: str,
     measurement_sha256: str,
+    observed_cases: dict[str, bool],
     measurement_assets: set[tuple[str, str]],
 ) -> dict[tuple[str, str], str]:
     required = {
@@ -274,6 +379,9 @@ def _validate_owner_review(
         "campaign_id",
         "campaign_sha256",
         "comparison_sha256",
+        "authority_contract_sha256",
+        "authority_registry_sha256",
+        "receipts_sha256",
         "measurement_sha256",
         "reviewed_at",
         "reviewed_by",
@@ -295,6 +403,12 @@ def _validate_owner_review(
         raise ValueError("owner review campaign digest mismatch")
     if review["comparison_sha256"] != comparison_sha256:
         raise ValueError("owner review comparison digest mismatch")
+    if review["authority_contract_sha256"] != authority_contract_sha256:
+        raise ValueError("owner review authority contract digest mismatch")
+    if review["authority_registry_sha256"] != authority_registry_sha256:
+        raise ValueError("owner review authority registry digest mismatch")
+    if review["receipts_sha256"] != receipts_sha256:
+        raise ValueError("owner review receipt-set digest mismatch")
     if review["measurement_sha256"] != measurement_sha256:
         raise ValueError("owner review measurement digest mismatch")
     reviewed_at = _parse_time(review["reviewed_at"], "owner review timestamp")
@@ -311,9 +425,10 @@ def _validate_owner_review(
     if (
         not isinstance(observed, dict)
         or set(observed) != {"success", "failure", "wrong_route", "abstain"}
+        or observed != observed_cases
         or any(observed[name] is not True for name in observed)
     ):
-        raise ValueError("owner review must confirm representative observed cases")
+        raise ValueError("owner review observed cases must match verified receipt evidence")
     if review["raw_content_stored"] is not False or review["release_authorized"] is not False:
         raise ValueError("owner review privacy/release boundary is invalid")
     if review["lifecycle_authority"] != "owner-review-recorded-execution-separate":
@@ -351,6 +466,12 @@ def _validate_evidence_entry(
         "campaign_sha256",
         "comparison_path",
         "comparison_sha256",
+        "authority_contract_path",
+        "authority_contract_sha256",
+        "authority_registry_path",
+        "authority_registry_sha256",
+        "receipts_path",
+        "receipts_sha256",
         "measurement_path",
         "measurement_sha256",
         "owner_review_path",
@@ -368,7 +489,7 @@ def _validate_evidence_entry(
         raise ValueError("effect evidence entry id is invalid")
 
     docs: dict[str, tuple[Path, str]] = {}
-    for name in ("campaign", "comparison", "measurement", "owner_review"):
+    for name in ("campaign", "comparison", "authority_contract", "authority_registry", "receipts", "measurement", "owner_review"):
         path = _safe_path(root, evidence_root, entry[f"{name}_path"], f"{name} path")
         expected = entry[f"{name}_sha256"]
         if (
@@ -384,6 +505,9 @@ def _validate_evidence_entry(
 
     campaign_path, campaign_sha = docs["campaign"]
     comparison_path, comparison_sha = docs["comparison"]
+    authority_contract_path, authority_contract_sha = docs["authority_contract"]
+    authority_registry_path, authority_registry_sha = docs["authority_registry"]
+    receipts_path, receipts_sha = docs["receipts"]
     measurement_path, measurement_sha = docs["measurement"]
     review_path, _ = docs["owner_review"]
 
@@ -407,7 +531,21 @@ def _validate_evidence_entry(
     )
     campaign = _load_object(campaign_path, "effect trial campaign")
     comparison = _load_object(comparison_path, "effect trial comparison")
+    _load_object(authority_contract_path, "Agent Value authority contract")
+    _load_object(authority_registry_path, "Agent Value authority registry")
+    receipt_set = _load_object(receipts_path, "Agent Value receipt set")
+    if receipt_set.get("schema") != RECEIPT_SET_SCHEMA:
+        raise ValueError("Agent Value receipt set schema is invalid")
+    replay = _recompute_agent_value_measurement(
+        adk,
+        authority_contract_path,
+        authority_registry_path,
+        receipts_path,
+        evidence_root,
+    )
     measurement = _load_object(measurement_path, "Agent Value measurement")
+    if replay["measurement"] != measurement:
+        raise ValueError("Agent Value measurement differs from managed signed receipt replay")
     review = _load_object(review_path, "effect owner review")
 
     recomputed = _recompute_effect_comparison(adk, campaign_path)
@@ -523,7 +661,11 @@ def _validate_evidence_entry(
         campaign_id=campaign_id,
         campaign_sha256=campaign_sha,
         comparison_sha256=comparison_sha,
+        authority_contract_sha256=authority_contract_sha,
+        authority_registry_sha256=authority_registry_sha,
+        receipts_sha256=receipts_sha,
         measurement_sha256=measurement_sha,
+        observed_cases=dict(replay["observed_cases"]),
         measurement_assets=assets,
     )
     return assets, decisions, {
@@ -532,6 +674,8 @@ def _validate_evidence_entry(
         "measurement_evidence_scope": measurement["evidence_scope"],
         "campaign_trace_count": len(campaign_trace_refs),
         "managed_campaign_trace_coverage": True,
+        "signed_receipt_replay": True,
+        "verified_receipt_count": replay["receipt_count"],
         "reviewed_by": review["reviewed_by"],
         "asset_count": len(assets),
         "reviewed_at": review["reviewed_at"],
@@ -649,6 +793,7 @@ def project(root: Path, evidence_index: Path = DEFAULT_INDEX) -> dict[str, Any]:
         not missing_contracts
         and not schema_failures
         and not missing_files
+        and value.get("portable_managed_verifier_available") is True
         and empty_measurement["measurement_status"] == "not-measured"
         and empty_measurement["reason"] == "no-valid-receipts"
     )
@@ -699,6 +844,7 @@ def project(root: Path, evidence_index: Path = DEFAULT_INDEX) -> dict[str, Any]:
             "missing_contract_ids": missing_contracts,
             "schema_failures": schema_failures,
             "missing_files": missing_files,
+            "portable_managed_verifier_available": value.get("portable_managed_verifier_available") is True,
             "agent_value_contract": value["contract_report"],
         },
         "safe_defaults": {
