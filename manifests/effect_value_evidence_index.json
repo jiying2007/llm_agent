@@ -1,0 +1,19 @@
+{
+  "schema": "llm-agent-effect-value-evidence-index/v1",
+  "status": "active",
+  "policy": {
+    "evidence_root": "reports/effect-evidence",
+    "required_asset_kinds": [
+      "agent",
+      "skill",
+      "profile"
+    ],
+    "minimum_accepted_campaigns": 1,
+    "require_decisive_trial_verdict": true,
+    "require_runtime_or_field_measurement": true,
+    "require_owner_review": true,
+    "auto_lifecycle_mutation": false,
+    "release_authorized": false
+  },
+  "campaigns": []
+}
