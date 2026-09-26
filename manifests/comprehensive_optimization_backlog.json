@@ -455,16 +455,18 @@
       "verification": [
         "rtk python3 -m tools.control_plane.knowledge_retention_handoff --root . --summary-json",
         "rtk bash tests/test_knowledge_retention_handoff.sh",
-        "rtk bash ~/knowledge-hub/tools/knowledge-capture.sh --source \"$PWD/docs/knowledge-candidates/llm-agent-adk-target-architecture.md\" --kind architecture --target projects/llm-agent/architecture/llm-agent-adk-target-architecture.md --id llm-agent-adk-target-architecture --title \"llm_agent / agent-dev-kit 长期资产架构结论候选\" --domain projects/llm-agent --owner leiwenjun --status reviewing --generated-by-ai --ai-role summarized --ai-model-or-tool ChatGPT --source-type public-repository --source-from https://github.com/jiying2007/llm_agent --dry-run --json",
-        "rtk bash ~/knowledge-hub/tools/knowledge-status.sh --summary-json --review-queue-limit 5"
+        "reports/runtime-evidence/knowledge-retention/g9-hub-dry-run-2026-09-26.json",
+        "Knowledge Hub workflow run 36214654406 / artifact 10897225255",
+        "real Hub owner review/lifecycle decision"
       ],
       "implementation_evidence": [
         "docs/knowledge-candidates/llm-agent-adk-target-architecture.md",
         "docs/runbooks/knowledge-retention-handoff.md",
         "tools/control_plane/knowledge_retention_handoff.py",
-        "tests/test_knowledge_retention_handoff.sh"
+        "tests/test_knowledge_retention_handoff.sh",
+        "reports/runtime-evidence/knowledge-retention/g9-hub-dry-run-2026-09-26.json"
       ],
-      "blocking_condition": "Root has generated and validated a sanitized promotion=none candidate and current Knowledge Hub capture dry-run handoff. Terminal G9 completion is delegated to the independent knowledge-hub authority: execute the Hub dry-run/status path, then obtain a real owner review/lifecycle decision. Root must not run Hub --apply/promote or infer active/archive status."
+      "blocking_condition": "Root handoff validation and the independent Knowledge Hub canonical capture dry-run/status path have completed successfully with exact run/artifact evidence (Hub run 36214654406, artifact 10897225255). The dry-run remained read-only, planned reviewing state, and active_promotion=false. Terminal G9 completion now requires a real human Hub owner decision: decide whether to execute governed capture/apply for this candidate and record the resulting lifecycle decision (reviewing/active/archive/reject as appropriate). Root and automated agents must not fabricate reviewed_by, authorization, apply, or promote."
     },
     {
       "id": "G10",
