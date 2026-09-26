@@ -242,8 +242,8 @@ index_path.write_text(
 # Negative 1: a recomputable comparison cannot become terminal unless every
 # campaign trace is backed by the managed runtime/field measurement.
 unbound_measurement=json.loads(json.dumps(measurement))
-for index,item in enumerate(unbound_measurement["asset_measurements"]):
-    item["source_trace_refs"]=[ref(f"unbound:{index}")]
+for row_index,item in enumerate(unbound_measurement["asset_measurements"]):
+    item["source_trace_refs"]=[ref(f"unbound:{row_index}")]
 unbound_measurement_path=fixture_dir/"unbound-measurement.json"
 unbound_measurement_path.write_text(
     json.dumps(unbound_measurement,ensure_ascii=False,sort_keys=True,indent=2)+"\n",
