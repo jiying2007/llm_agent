@@ -37,7 +37,7 @@ The remaining domains are not collapsed into one authority:
 
 ### G9 — Knowledge retention
 
-The candidate already exists on Knowledge Hub master in reviewing state. Terminal completion requires a real human Knowledge Hub owner lifecycle decision. Automation must not fill `reviewed_by`, fabricate authorization, or infer active/archive/reject.
+The candidate already exists on Knowledge Hub master in reviewing state. Root keeps historical handoff evidence immutable and tracks it through `reports/runtime-evidence/knowledge-retention/evidence-index.json`. Terminal completion requires a **new** indexed `llm-agent-g9-hub-owner-decision/v1` file produced after a real human Knowledge Hub owner lifecycle decision. Automation must not fill `reviewed_by`, fabricate authorization, or infer active/archive/reject.
 
 ### G21 — Runtime adapter conformance
 
@@ -62,3 +62,24 @@ The terminal projection:
 - cannot authorize a release.
 
 Its purpose is to prevent further software work from being confused with missing external facts and to make the exact remaining actions visible in one command.
+
+
+## G9 owner decision evidence
+
+The knowledge-retention index deliberately separates historical capture evidence from the future owner decision:
+
+```json
+{
+  "schema": "llm-agent-knowledge-retention-evidence-index/v1",
+  "status": "active",
+  "handoff": {
+    "path": "reports/runtime-evidence/knowledge-retention/g9-hub-handoff-2026-09-26.json",
+    "git_blob_sha1": "<git blob id>"
+  },
+  "owner_decision": null
+}
+```
+
+After the Hub owner has actually reviewed the item, create a **new** Root evidence file under the same runtime-evidence directory and update `owner_decision` to its path + Git blob SHA-1. The decision document must use `llm-agent-g9-hub-owner-decision/v1`, record a real reviewer, exact Hub revision, one lifecycle decision (`activate`, `continue-reviewing`, `archive`, or `reject`), and keep `automation_generated=false`, `raw_content_stored=false`, `release_authorized=false`.
+
+Do not modify the dated handoff evidence to simulate a later owner review.
