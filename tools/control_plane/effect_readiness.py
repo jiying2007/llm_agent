@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from jsonschema import Draft202012Validator, FormatChecker
+from jsonschema.exceptions import SchemaError
 
 from .adk_interface import validate as validate_adk_interface
 from .process_budget import ProcessBudgetError, run_bounded
@@ -67,7 +68,10 @@ def _load_object(path: Path, label: str, *, limit: int = MAX_JSON_BYTES) -> dict
 
 def _validate_schema(value: Mapping[str, Any], schema_path: Path, label: str) -> None:
     schema = _load_object(schema_path, f"{label} schema", limit=1024 * 1024)
-    Draft202012Validator.check_schema(schema)
+    try:
+        Draft202012Validator.check_schema(schema)
+    except SchemaError as exc:
+        raise ValueError(f"{label} schema is invalid: {exc.message}") from exc
     validator = Draft202012Validator(schema, format_checker=FormatChecker())
     error = next(validator.iter_errors(value), None)
     if error is not None:
@@ -412,6 +416,8 @@ def _validate_campaign(
     reviewed_at = _parse_time(review["reviewed_at"], f"{campaign_id} reviewed_at")
     if reviewed_at < max(trial_as_of, measurement_as_of):
         raise ValueError(f"{campaign_id} owner review predates the evidence")
+    if reviewed_at > datetime.now(timezone.utc):
+        raise ValueError(f"{campaign_id} owner review is in the future")
 
     accepted = (
         review["decision"] == "accept-evidence"
@@ -664,7 +670,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         result = project(Path(args.root))
-    except (OSError, ValueError, json.JSONDecodeError, subprocess.SubprocessError, ProcessBudgetError) as exc:
+    except (OSError, ValueError, RuntimeError, json.JSONDecodeError, subprocess.SubprocessError, ProcessBudgetError) as exc:
         result = {
             "schema": SCHEMA,
             "status": "fail",
