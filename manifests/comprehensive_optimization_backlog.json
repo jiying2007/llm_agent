@@ -461,9 +461,9 @@
         "docs/runbooks/knowledge-retention-handoff.md",
         "tools/control_plane/knowledge_retention_handoff.py",
         "tests/test_knowledge_retention_handoff.sh",
-        "reports/runtime-evidence/knowledge-retention/g9-hub-dry-run-2026-09-26.json"
+        "reports/runtime-evidence/knowledge-retention/g9-hub-handoff-2026-09-26.json"
       ],
-      "blocking_condition": "Root handoff validation and the independent Knowledge Hub canonical capture dry-run/status path have completed successfully with exact run/artifact evidence (Hub run 36214654406, artifact 10897225255). The dry-run remained read-only, planned reviewing state, and active_promotion=false. Terminal G9 completion now requires a real human Hub owner decision: decide whether to execute governed capture/apply for this candidate and record the resulting lifecycle decision (reviewing/active/archive/reject as appropriate). Root and automated agents must not fabricate reviewed_by, authorization, apply, or promote."
+      "blocking_condition": "The Root candidate has been validated, the Knowledge Hub canonical dry-run/status path succeeded, and the candidate has now been mechanically captured on Hub master as status=reviewing with promotion=none and manual_validation_pending=true (Hub PR 124 -> master 0fb7ed1e2dbd5f715b9b4382581d696081af1b8c). No active/archive promotion or owner authorization occurred. Terminal G9 completion now requires only a real human Knowledge Hub owner lifecycle decision. Automation must not fabricate reviewed_by, authorization, or lifecycle outcome."
     },
     {
       "id": "G10",
