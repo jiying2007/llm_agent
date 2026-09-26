@@ -375,7 +375,35 @@ tampered_index_path.write_text(
     encoding="utf-8",
 )
 
-# Negative 2: an automated placeholder cannot stand in for the human owner.
+# Negative 2: changing one signed receipt body without changing the reviewed
+# registry's canonical digest must fail in the ADK managed verifier.
+forged_receipt_set=json.loads(json.dumps(receipt_set))
+forged_receipt_set["receipts"][0]["outcome"]="failed"
+forged_receipts_path=fixture_dir/"forged-receipts.json"
+forged_receipts_path.write_text(
+    json.dumps(forged_receipt_set,ensure_ascii=False,sort_keys=True,indent=2)+"\n",
+    encoding="utf-8",
+)
+forged_review=json.loads(json.dumps(review))
+forged_review["receipts_sha256"]=sha(forged_receipts_path)
+forged_review_path=fixture_dir/"forged-owner-review.json"
+forged_review_path.write_text(
+    json.dumps(forged_review,ensure_ascii=False,sort_keys=True,indent=2)+"\n",
+    encoding="utf-8",
+)
+forged_index=json.loads(json.dumps(index))
+forged_entry=forged_index["entries"][0]
+forged_entry["receipts_path"]=relative(forged_receipts_path)
+forged_entry["receipts_sha256"]=sha(forged_receipts_path)
+forged_entry["owner_review_path"]=relative(forged_review_path)
+forged_entry["owner_review_sha256"]=sha(forged_review_path)
+forged_index_path=fixture_dir/"forged-index.json"
+forged_index_path.write_text(
+    json.dumps(forged_index,ensure_ascii=False,sort_keys=True,indent=2)+"\n",
+    encoding="utf-8",
+)
+
+# Negative 3: an automated placeholder cannot stand in for the human owner.
 automated_review=json.loads(json.dumps(review))
 automated_review["automation_generated"]=True
 automated_review_path=fixture_dir/"automated-owner-review.json"
@@ -427,7 +455,7 @@ assert index["entries"][0]["reviewed_by"]=="fixture-human-owner", index
 assert value["release_authorized"] is False, value
 PY
 
-for BAD in tampered-index.json automated-index.json; do
+for BAD in tampered-index.json forged-index.json automated-index.json; do
   BAD_REL="$(python3 - "$ROOT" "$FIXTURE_DIR" "$BAD" <<'PY'
 import sys
 from pathlib import Path
