@@ -44,7 +44,14 @@ import json,sys
 value=json.load(open(sys.argv[1],encoding="utf-8"))
 assert value["status"]=="pass", value
 assert value["source"]["candidate_sha256"]=="3d56a96bba926f014fcf68de8bb880bdf2356d88651ca66a3964df41ac7fbd6d", value
-assert value["schema"]=="llm-agent-g9-hub-handoff-evidence/v2", value\nassert value["capture"]["status"]=="applied", value\nassert value["capture"]["created_status"]=="reviewing", value\nassert value["capture"]["promotion"]=="none", value\nassert value["capture"]["manual_validation_pending"] is True, value\nassert value["knowledge_hub"]["governed_capture"]["merged"] is True, value\nassert value["knowledge_hub"]["governed_capture"]["final_pr_quality_conclusion"]=="success", value\nassert value["knowledge_hub"]["governed_capture"]["security_review_conclusion"]=="success", value
+assert value["schema"]=="llm-agent-g9-hub-handoff-evidence/v2", value
+assert value["capture"]["status"]=="applied", value
+assert value["capture"]["created_status"]=="reviewing", value
+assert value["capture"]["promotion"]=="none", value
+assert value["capture"]["manual_validation_pending"] is True, value
+assert value["knowledge_hub"]["governed_capture"]["merged"] is True, value
+assert value["knowledge_hub"]["governed_capture"]["final_pr_quality_conclusion"]=="success", value
+assert value["knowledge_hub"]["governed_capture"]["security_review_conclusion"]=="success", value
 assert value["knowledge_hub"]["governed_capture"]["post_merge_quality_run"]==36218784210, value
 assert value["knowledge_hub"]["governed_capture"]["post_merge_quality_conclusion"]=="success", value\nassert value["authority_boundary"]["owner_review_recorded"] is False, value
 assert value["authority_boundary"]["lifecycle_decision_recorded"] is False, value
