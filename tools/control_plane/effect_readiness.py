@@ -13,6 +13,7 @@ from typing import Any, Mapping
 from jsonschema import Draft202012Validator, FormatChecker
 
 from .adk_interface import validate as validate_adk_interface
+from .process_budget import ProcessBudgetError, run_bounded
 
 SCHEMA = "llm-agent-effect-readiness/v2"
 _INDEX_SCHEMA = "llm-agent-effect-value-evidence-index/v1"
@@ -28,7 +29,7 @@ _REQUIRED_SIGNAL_KEYS = {
 }
 MAX_JSON_BYTES = 16 * 1024 * 1024
 MAX_CAMPAIGNS = 50
-MAX_RECEIPTS_PER_CAMPAIGN = 500
+MAX_RECEIPTS_PER_CAMPAIGN = 200
 
 
 def _canonical_json_bytes(value: Any) -> bytes:
@@ -144,19 +145,17 @@ print(json.dumps({
         "LANG": "C.UTF-8",
         "LC_ALL": "C.UTF-8",
     }
-    done = subprocess.run(
+    done = run_bounded(
         [sys.executable, "-c", code, str(adk)],
         cwd=adk,
         env=env,
-        stdin=subprocess.DEVNULL,
-        capture_output=True,
-        text=True,
-        check=False,
         timeout=45,
+        max_stdout=1024 * 1024,
+        max_stderr=64 * 1024,
     )
     if done.returncode:
         raise ValueError("pinned ADK Agent Value projection failed")
-    value = json.loads(done.stdout)
+    value = json.loads(done.stdout.decode("utf-8"))
     if not isinstance(value, dict):
         raise ValueError("pinned ADK Agent Value projection is invalid")
     return value
@@ -178,21 +177,17 @@ print(json.dumps(value,ensure_ascii=False,sort_keys=True,separators=(",",":")))
         "LANG": "C.UTF-8",
         "LC_ALL": "C.UTF-8",
     }
-    done = subprocess.run(
+    done = run_bounded(
         [sys.executable, "-c", code, str(adk), str(trial_input)],
         cwd=adk,
         env=env,
-        stdin=subprocess.DEVNULL,
-        capture_output=True,
-        text=True,
-        check=False,
         timeout=180,
+        max_stdout=MAX_JSON_BYTES,
+        max_stderr=256 * 1024,
     )
     if done.returncode:
         raise ValueError("pinned ADK effect comparison regeneration failed")
-    if len(done.stdout.encode("utf-8")) > MAX_JSON_BYTES:
-        raise ValueError("regenerated effect comparison exceeds byte budget")
-    value = json.loads(done.stdout)
+    value = json.loads(done.stdout.decode("utf-8"))
     if not isinstance(value, dict):
         raise ValueError("regenerated effect comparison is invalid")
     return value
@@ -246,21 +241,17 @@ print(json.dumps(value,ensure_ascii=False,sort_keys=True,separators=(",",":")))
         str(measurement_path),
         *(str(path) for path in receipt_paths),
     ]
-    done = subprocess.run(
+    done = run_bounded(
         args,
         cwd=adk,
         env=env,
-        stdin=subprocess.DEVNULL,
-        capture_output=True,
-        text=True,
-        check=False,
         timeout=180,
+        max_stdout=MAX_JSON_BYTES,
+        max_stderr=256 * 1024,
     )
     if done.returncode:
         raise ValueError("pinned ADK Agent Value measurement regeneration failed")
-    if len(done.stdout.encode("utf-8")) > MAX_JSON_BYTES:
-        raise ValueError("regenerated Agent Value measurement exceeds byte budget")
-    value = json.loads(done.stdout)
+    value = json.loads(done.stdout.decode("utf-8"))
     if not isinstance(value, dict):
         raise ValueError("regenerated Agent Value measurement is invalid")
     return value
@@ -442,7 +433,7 @@ def _validate_campaign(
         "measurement_verified": measurement_verified,
         "measurement_error": measurement_error,
         "receipt_count": len(receipts),
-        "receipt_sha256s": sorted(receipt_shas),
+        "receipt_set_sha256": hashlib.sha256(_canonical_json_bytes(sorted(receipt_shas))).hexdigest(),
         "asset_kinds": sorted(asset_kinds),
         "measured_asset_count": len(measured_assets),
         "signal_coverage": signal_coverage,
@@ -655,7 +646,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         result = project(Path(args.root))
-    except (OSError, ValueError, json.JSONDecodeError, subprocess.SubprocessError) as exc:
+    except (OSError, ValueError, json.JSONDecodeError, subprocess.SubprocessError, ProcessBudgetError) as exc:
         result = {
             "schema": SCHEMA,
             "status": "fail",
