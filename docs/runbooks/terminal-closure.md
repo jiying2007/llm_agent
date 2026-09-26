@@ -31,13 +31,13 @@ Software is considered ready only when:
 - the backlog has no unexpected non-terminal software item;
 - native-readiness reports `software_ready=true`;
 - effect-readiness reports `software_ready=true`;
-- the Knowledge Hub architecture candidate is durably captured in `reviewing`, with merge + post-merge Quality evidence and no fabricated owner review.
+- G9 knowledge retention has a durable, indexed real-human lifecycle decision when the backlog marks G9 done; historical reviewing-capture evidence remains immutable and separate from that later decision.
 
 The remaining domains are not collapsed into one authority:
 
 ### G9 — Knowledge retention
 
-The candidate already exists on Knowledge Hub master in reviewing state. Root keeps historical handoff evidence immutable and tracks it through `reports/runtime-evidence/knowledge-retention/evidence-index.json`. Terminal completion requires a **new** indexed `llm-agent-g9-hub-owner-decision/v1` file produced after a real human Knowledge Hub owner lifecycle decision. Automation must not fill `reviewed_by`, fabricate authorization, or infer active/archive/reject.
+G9 is closed on current main. Root keeps the historical reviewing-capture evidence immutable and separately indexes the later real-human `llm-agent-g9-hub-owner-decision/v1` lifecycle evidence through `reports/runtime-evidence/knowledge-retention/evidence-index.json`. Automation still must not fill `reviewed_by`, fabricate authorization, or infer a lifecycle outcome.
 
 ### G21 — Runtime adapter conformance
 
@@ -69,15 +69,16 @@ Each blocked terminal item carries a durable `external_tracking` entry in the op
 
 Current queue:
 
-- G9 → `jiying2007/knowledge-hub#125`: real human Knowledge Hub lifecycle decision;
 - G21 → `jiying2007/agent-dev-kit#153`: authenticated version-pinned native conformance campaign;
 - G22 → `jiying2007/llm_agent#154`: governed real effect/value campaign and per-asset owner review.
+
+G9 → `jiying2007/knowledge-hub#125` is retained as closed historical routing/evidence provenance, not as a current external blocker.
 
 These issue references are routing metadata only. Their existence does not count as lifecycle, native-runtime, effect/value, owner-review, or release evidence.
 
 ## G9 owner decision evidence
 
-The knowledge-retention index deliberately separates historical capture evidence from the future owner decision:
+The knowledge-retention index deliberately separates the historical reviewing capture from the later owner decision. Current main indexes both immutable records:
 
 ```json
 {
@@ -85,14 +86,15 @@ The knowledge-retention index deliberately separates historical capture evidence
   "status": "active",
   "handoff": {
     "path": "reports/runtime-evidence/knowledge-retention/g9-hub-handoff-2026-09-26.json",
-    "git_blob_sha1": "<git blob id>"
+    "git_blob_sha1": "<historical capture blob>"
   },
-  "owner_decision": null
+  "owner_decision": {
+    "path": "reports/runtime-evidence/knowledge-retention/g9-hub-owner-decision-2026-09-26.json",
+    "git_blob_sha1": "<real owner-decision blob>"
+  }
 }
 ```
 
-After the Hub owner has actually reviewed the item, create a **new** Root evidence file under the same runtime-evidence directory and update `owner_decision` to its path + Git blob SHA-1. The decision document must use `llm-agent-g9-hub-owner-decision/v1`, record a real reviewer, exact Hub revision, one lifecycle decision (`activate`, `continue-reviewing`, `archive`, or `reject`), and keep `automation_generated=false`, `raw_content_stored=false`, `release_authorized=false`.
+The owner-decision document uses `llm-agent-g9-hub-owner-decision/v1`, binds a real reviewer and exact Hub revision, and keeps `automation_generated=false`, `raw_content_stored=false`, `release_authorized=false`. The dated handoff evidence is never rewritten to simulate a later review.
 
-Do not modify the dated handoff evidence to simulate a later owner review.
-
-A recorded `continue-reviewing` decision is valid owner evidence but intentionally keeps G9 blocked. Only `activate`, `archive`, or `reject` is a terminal lifecycle decision for `--require-terminal`.
+For future reuse of this contract, `continue-reviewing` is valid owner evidence but non-terminal; only `activate`, `archive`, or `reject` satisfies terminal lifecycle completion.
