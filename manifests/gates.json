@@ -501,6 +501,9 @@
       "inputs": [
         "adk.lock",
         "manifests/comprehensive_optimization_backlog.json",
+        "manifests/effect_value_evidence_index.json",
+        "schemas/effect-owner-review-v1.schema.json",
+        "schemas/effect-value-evidence-index-v1.schema.json",
         "tools/control_plane/effect_readiness.py"
       ],
       "impact_inputs": [
