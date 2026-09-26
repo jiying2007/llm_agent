@@ -82,13 +82,6 @@ def _g9_projection(root: Path, backlog: dict[str, Any]) -> dict[str, Any]:
     item = backlog["items"].get("G9")
     if not isinstance(item, dict):
         raise ValueError("G9 is missing from optimization backlog")
-    if item["implementation_status"] == "done":
-        return {
-            "status": "ready",
-            "captured_reviewing": True,
-            "owner_lifecycle_decision_recorded": True,
-            "blockers": [],
-        }
 
     evidence = _load_object(root / G9_EVIDENCE_PATH, "G9 Hub handoff evidence")
     if (
@@ -113,25 +106,31 @@ def _g9_projection(root: Path, backlog: dict[str, Any]) -> dict[str, Any]:
         and capture.get("status") == "applied"
         and capture.get("created_status") == "reviewing"
         and capture.get("promotion") == "none"
-        and capture.get("manual_validation_pending") is True
         and capture.get("active_promotion") is False
         and capture.get("promotion_authorized") is False
         and authority.get("hub_item_captured") is True
-        and authority.get("owner_review_recorded") is False
-        and authority.get("lifecycle_decision_recorded") is False
         and authority.get("root_may_apply_or_promote") is False
         and authority.get("automation_may_fill_reviewed_by") is False
     )
     if not captured_reviewing:
         raise ValueError("G9 governed reviewing capture evidence is inconsistent")
 
+    owner_reviewed = authority.get("owner_review_recorded") is True
+    lifecycle_decided = authority.get("lifecycle_decision_recorded") is True
+    ready = owner_reviewed and lifecycle_decided
+    if item["implementation_status"] == "done" and not ready:
+        raise ValueError("G9 backlog claims done without durable owner lifecycle evidence")
+    if item["implementation_status"] == "blocked" and ready:
+        raise ValueError("G9 durable owner lifecycle evidence exists but backlog remains blocked")
+
     return {
-        "status": "blocked-external-evidence",
+        "status": "ready" if ready else "blocked-external-evidence",
         "captured_reviewing": True,
         "hub_master_revision": governed.get("merge_revision"),
         "hub_post_merge_quality_run": governed.get("post_merge_quality_run"),
-        "owner_lifecycle_decision_recorded": False,
-        "blockers": ["real-human-knowledge-hub-owner-lifecycle-decision"],
+        "owner_review_recorded": owner_reviewed,
+        "owner_lifecycle_decision_recorded": lifecycle_decided,
+        "blockers": [] if ready else ["real-human-knowledge-hub-owner-lifecycle-decision"],
     }
 
 
