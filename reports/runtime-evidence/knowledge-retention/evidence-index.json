@@ -1,0 +1,9 @@
+{
+  "schema": "llm-agent-knowledge-retention-evidence-index/v1",
+  "status": "active",
+  "handoff": {
+    "path": "reports/runtime-evidence/knowledge-retention/g9-hub-handoff-2026-09-26.json",
+    "git_blob_sha1": "d564143bbe969bf76a2a41a9febec7c0fe3522bf"
+  },
+  "owner_decision": null
+}
