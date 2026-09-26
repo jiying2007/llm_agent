@@ -26,6 +26,7 @@ assert value["measurement_baseline"]["asset_measurement_count"]==0, value
 assert value["software"]["missing_contract_ids"]==[], value
 assert value["software"]["schema_failures"]==[], value
 assert value["software"]["missing_files"]==[], value
+assert value["software"]["portable_managed_verifier_available"] is True, value
 assert value["safe_defaults"]["registry_status"]=="active", value
 assert value["evidence_index"]["entry_count"]==0, value
 assert value["evidence_index"]["covered_asset_count"]==0, value
@@ -409,6 +410,7 @@ value=json.load(open(sys.argv[1],encoding="utf-8"))
 assert value["status"]=="pass", value
 assert value["terminal_status"]=="ready", value
 assert value["software_ready"] is True, value
+assert value["software"]["portable_managed_verifier_available"] is True, value
 assert value["effect_evidence_ready"] is True, value
 assert value["blockers"]==[], value
 index=value["evidence_index"]
