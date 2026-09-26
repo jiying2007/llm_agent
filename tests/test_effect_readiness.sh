@@ -54,12 +54,16 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import stat
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+from agent_dev_kit.agent_value import emit_measurements
+from agent_dev_kit.agent_value_contracts import load_contract
+from agent_dev_kit.agent_value_trust import build_portable_managed_agent_value_evidence_verifier
 from agent_dev_kit.effect_trials import compare_effect_trials
-from agent_dev_kit.model import Manifest
+from agent_dev_kit.model import Manifest, canonical_json_bytes, sha256_bytes
 from agent_dev_kit.privacy_ref import opaque_ref_for_sha256
 
 root=Path(sys.argv[1]).resolve()
@@ -110,73 +114,168 @@ assert assets
 def ref(seed: str) -> str:
     return opaque_ref_for_sha256(hashlib.sha256(seed.encode("utf-8")).hexdigest())
 
-def metric(value: float, unit: str) -> dict:
-    return {
-        "status":"measured",
-        "value":value,
-        "sample_size":10,
-        "applicable_sample_size":10,
-        "observed_sample_size":10,
-        "coverage":1.0,
-        "unit":unit,
-    }
-
 now=datetime.now(timezone.utc).replace(microsecond=0)
-start=now-timedelta(days=1)
-asset_measurements=[]
-for index,(kind,asset_id) in enumerate(sorted(assets)):
-    token=f"{kind}:{asset_id}:{index}"
-    asset_measurements.append({
-        "asset_id":asset_id,
-        "asset_kind":kind,
-        "evidence_layer":"runtime",
-        "source_verification":"managed-authority-verified",
-        "measurement_status":"measured",
-        "receipt_refs":[ref(token+":receipt")],
-        "invocation_refs":[ref(token+":invocation")],
-        "source_trace_refs":[campaign_trace_refs[index % len(campaign_trace_refs)]],
-        "asset_bundle_sha256s":[campaign_bundles[index % len(campaign_bundles)]],
-        "runtime_targets":[campaign_runtime_target],
-        "authority_ids":["agent-value-ci"],
-        "production_authority":False,
-        "evidence_refs":[ref(token+":evidence")],
-        "metrics":{
-            "task-success-rate":metric(0.8,"ratio"),
-            "first-pass-success-rate":metric(0.7,"ratio"),
-            "wrong-route-rate":metric(0.1,"ratio"),
-            "abstain-precision":metric(0.9,"ratio"),
-            "human-interventions-per-task":metric(0.2,"count-per-task"),
-            "time-to-trustworthy-change":metric(1200.0,"milliseconds"),
-            "escaped-defect-rate":metric(0.05,"ratio"),
-            "rollback-rate":metric(0.05,"ratio"),
-        },
-        "retirement_signals":["retain"],
-        "retirement_authority":"signal-only-owner-decision-required",
-        "observation_window":{
-            "from":start.isoformat().replace("+00:00","Z"),
-            "through":now.isoformat().replace("+00:00","Z"),
-        },
-    })
+window_from=now-timedelta(hours=2)
+window_through=now-timedelta(minutes=1)
 
-measurement={
-    "schema_version":"adk-asset-value-measurement/v1",
-    "measurement_status":"measured",
-    "manifest_ref":opaque_ref_for_sha256(manifest.digest),
-    "privacy_status":"opaque-refs-only",
-    "raw_content_stored":False,
-    "source_receipt_count":len(assets),
+contract=load_contract(adk/"manifests/agent_value_contracts.json")
+contract=json.loads(json.dumps(contract))
+contract["evidence_authority_policy"]={
+    "managed":True,
+    "status":"enabled",
+    "backend":"ci-provenance-verifier",
+    "authorities":[{
+        "authority_id":"agent-value-ci",
+        "backend":"ci-provenance-verifier",
+        "allowed_layers":["runtime"],
+        "runtime_targets":[campaign_runtime_target],
+        "production":False,
+    }],
+}
+contract_path=fixture_dir/"authority-contract.json"
+contract_path.write_text(
+    json.dumps(contract,ensure_ascii=False,sort_keys=True,indent=2)+"\n",
+    encoding="utf-8",
+)
+
+cosign=fixture_dir/"cosign"
+cosign.write_text(
+    "#!/usr/bin/env python3\n"
+    "import pathlib,sys\n"
+    "a=sys.argv[1:]\n"
+    "blob=sys.stdin.buffer.read()\n"
+    "ok=(len(a)==8 and a[0]=='verify-blob' and a[1]=='--bundle' "
+    "and a[3]=='--certificate-identity' and a[5]=='--certificate-oidc-issuer' "
+    "and pathlib.Path(a[2]).is_file() and a[7]=='/dev/stdin' and len(blob)>0)\n"
+    "sys.exit(0 if ok else 97)\n",
+    encoding="utf-8",
+)
+cosign.chmod(cosign.stat().st_mode | stat.S_IXUSR)
+bundle=fixture_dir/"receipt.sigstore.json"
+bundle.write_text('{"fixture":"portable-sigstore"}\n',encoding="utf-8")
+manifest_ref=opaque_ref_for_sha256(manifest.digest)
+
+receipts=[]
+receipt_index=0
+for kind,asset_id in sorted(assets):
+    for case in ("success","failure","abstain"):
+        token=f"{kind}:{asset_id}:{case}:{receipt_index}"
+        trace_ref=campaign_trace_refs[receipt_index % len(campaign_trace_refs)]
+        bundle_sha=campaign_bundles[receipt_index % len(campaign_bundles)]
+        observed=window_from+timedelta(seconds=receipt_index+1)
+        payload={
+            "schema_version":"adk-asset-invocation-receipt/v1",
+            "invocation_ref":ref(token+":invocation"),
+            "source_trace_ref":trace_ref,
+            "manifest_ref":manifest_ref,
+            "asset_bundle_sha256":bundle_sha,
+            "runtime_target":campaign_runtime_target,
+            "evidence_layer":"runtime",
+            "observed_at":observed.isoformat().replace("+00:00","Z"),
+            "measurement_status":"measured",
+            "asset_id":asset_id,
+            "asset_kind":kind,
+            "human_interventions":0 if case!="failure" else 1,
+            "retirement_signal":"retain",
+            "evidence_refs":[ref(token+":evidence")],
+            "privacy_status":"sanitized",
+            "raw_content_stored":False,
+        }
+        if case=="success":
+            payload["routing"]={"routed":True,"abstained":False,"wrong_route":False}
+            payload["outcome"]="succeeded"
+            payload["first_pass"]=True
+            payload["time_to_trustworthy_change_ms"]=100
+        elif case=="failure":
+            payload["routing"]={"routed":True,"abstained":False,"wrong_route":True}
+            payload["outcome"]="failed"
+            payload["first_pass"]=False
+            payload["time_to_trustworthy_change_ms"]=200
+        else:
+            payload["routing"]={"routed":False,"abstained":True,"wrong_route":False}
+            payload["outcome"]="abstained"
+            payload["abstain_correct"]=True
+        body_sha=sha256_bytes(canonical_json_bytes(payload))
+        receipt=dict(payload)
+        receipt["authority_attestation"]={
+            "authority_id":"agent-value-ci",
+            "body_sha256":body_sha,
+            "manifest_ref":manifest_ref,
+            "asset_bundle_sha256":bundle_sha,
+            "evidence_layer":"runtime",
+            "runtime_target":campaign_runtime_target,
+            "source_trace_ref":trace_ref,
+        }
+        receipt["receipt_id"]=opaque_ref_for_sha256(
+            sha256_bytes(canonical_json_bytes(receipt))
+        )
+        receipts.append(receipt)
+        receipt_index+=1
+
+bundle_sha=hashlib.sha256(bundle.read_bytes()).hexdigest()
+binary_sha=hashlib.sha256(cosign.read_bytes()).hexdigest()
+registry={
+    "schema":"adk-agent-value-trust-registry/v1",
+    "status":"active",
+    "authority_model":"owner-reviewed-managed-registry",
+    "authorities":{
+        "agent-value-ci":{
+            "enabled":True,
+            "policy_backend":"ci-provenance-verifier",
+            "verifier":"sigstore-cosign-blob",
+            "allowed_layers":["runtime"],
+            "runtime_targets":[campaign_runtime_target],
+            "certificate_identity":"https://github.com/example/repo/.github/workflows/value.yml@refs/heads/main",
+            "certificate_oidc_issuer":"https://token.actions.githubusercontent.com",
+            "cosign_binary":str(cosign.resolve()),
+            "cosign_binary_sha256":binary_sha,
+            "receipts":{
+                receipt["receipt_id"]:{
+                    "receipt_canonical_sha256":hashlib.sha256(
+                        canonical_json_bytes(receipt)
+                    ).hexdigest(),
+                    "bundle_path":bundle.relative_to(fixture_dir).as_posix(),
+                    "bundle_sha256":bundle_sha,
+                }
+                for receipt in receipts
+            },
+        }
+    },
+}
+registry_path=fixture_dir/"authority-registry.json"
+registry_path.write_text(
+    json.dumps(registry,ensure_ascii=False,sort_keys=True,indent=2)+"\n",
+    encoding="utf-8",
+)
+receipt_set={
+    "schema":"llm-agent-effect-receipt-set/v1",
     "aggregation_window":{
-        "from":start.isoformat().replace("+00:00","Z"),
-        "through":now.isoformat().replace("+00:00","Z"),
+        "from":window_from.isoformat().replace("+00:00","Z"),
+        "through":window_through.isoformat().replace("+00:00","Z"),
     },
     "as_of":now.isoformat().replace("+00:00","Z"),
-    "evidence_scope":"runtime-verified",
-    "quality_evidence_eligible":False,
-    "quality_ineligibility_reason":"non-production-authority",
-    "owner_review_required":True,
-    "lifecycle_authority":"none-evidence-only",
-    "asset_measurements":asset_measurements,
+    "receipts":receipts,
 }
+receipts_path=fixture_dir/"receipts.json"
+receipts_path.write_text(
+    json.dumps(receipt_set,ensure_ascii=False,sort_keys=True,indent=2)+"\n",
+    encoding="utf-8",
+)
+
+verifier=build_portable_managed_agent_value_evidence_verifier(
+    manifest,contract,registry,bundle_root=fixture_dir
+)
+measurement=emit_measurements(
+    receipts,
+    manifest,
+    contract,
+    evidence_verifier=verifier,
+    aggregation_window={"from":window_from,"through":window_through},
+    as_of=now,
+)
+assert measurement["measurement_status"]=="measured", measurement
+assert measurement["evidence_scope"]=="runtime-verified", measurement
+assert len(measurement["asset_measurements"])==len(assets), measurement
 measurement_path=fixture_dir/"measurement.json"
 measurement_path.write_text(
     json.dumps(measurement,ensure_ascii=False,sort_keys=True,indent=2)+"\n",
@@ -187,11 +286,14 @@ def sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 review={
-    "schema":"llm-agent-effect-owner-review/v2",
+    "schema":"llm-agent-effect-owner-review/v3",
     "status":"approved",
     "campaign_id":comparison["campaign_id"],
     "campaign_sha256":sha(campaign_path),
     "comparison_sha256":sha(comparison_path),
+    "authority_contract_sha256":sha(contract_path),
+    "authority_registry_sha256":sha(registry_path),
+    "receipts_sha256":sha(receipts_path),
     "measurement_sha256":sha(measurement_path),
     "reviewed_at":now.isoformat().replace("+00:00","Z"),
     "reviewed_by":"fixture-human-owner",
@@ -219,7 +321,7 @@ review_path.write_text(
 
 relative=lambda path: path.relative_to(root).as_posix()
 index={
-    "schema":"llm-agent-effect-value-evidence-index/v2",
+    "schema":"llm-agent-effect-value-evidence-index/v3",
     "status":"active",
     "entries":[{
         "id":comparison["campaign_id"],
@@ -227,6 +329,12 @@ index={
         "campaign_sha256":sha(campaign_path),
         "comparison_path":relative(comparison_path),
         "comparison_sha256":sha(comparison_path),
+        "authority_contract_path":relative(contract_path),
+        "authority_contract_sha256":sha(contract_path),
+        "authority_registry_path":relative(registry_path),
+        "authority_registry_sha256":sha(registry_path),
+        "receipts_path":relative(receipts_path),
+        "receipts_sha256":sha(receipts_path),
         "measurement_path":relative(measurement_path),
         "measurement_sha256":sha(measurement_path),
         "owner_review_path":relative(review_path),
@@ -239,32 +347,30 @@ index_path.write_text(
     encoding="utf-8",
 )
 
-# Negative 1: a recomputable comparison cannot become terminal unless every
-# campaign trace is backed by the managed runtime/field measurement.
-unbound_measurement=json.loads(json.dumps(measurement))
-for row_index,item in enumerate(unbound_measurement["asset_measurements"]):
-    item["source_trace_refs"]=[ref(f"unbound:{row_index}")]
-unbound_measurement_path=fixture_dir/"unbound-measurement.json"
-unbound_measurement_path.write_text(
-    json.dumps(unbound_measurement,ensure_ascii=False,sort_keys=True,indent=2)+"\n",
+# Negative 1: an aggregate measurement cannot be hand-edited after signed receipt replay.
+tampered_measurement=json.loads(json.dumps(measurement))
+tampered_measurement["asset_measurements"][0]["metrics"]["task-success-rate"]["value"]=0.123
+tampered_measurement_path=fixture_dir/"tampered-measurement.json"
+tampered_measurement_path.write_text(
+    json.dumps(tampered_measurement,ensure_ascii=False,sort_keys=True,indent=2)+"\n",
     encoding="utf-8",
 )
-unbound_review=json.loads(json.dumps(review))
-unbound_review["measurement_sha256"]=sha(unbound_measurement_path)
-unbound_review_path=fixture_dir/"unbound-owner-review.json"
-unbound_review_path.write_text(
-    json.dumps(unbound_review,ensure_ascii=False,sort_keys=True,indent=2)+"\n",
+tampered_review=json.loads(json.dumps(review))
+tampered_review["measurement_sha256"]=sha(tampered_measurement_path)
+tampered_review_path=fixture_dir/"tampered-owner-review.json"
+tampered_review_path.write_text(
+    json.dumps(tampered_review,ensure_ascii=False,sort_keys=True,indent=2)+"\n",
     encoding="utf-8",
 )
-unbound_index=json.loads(json.dumps(index))
-unbound_entry=unbound_index["entries"][0]
-unbound_entry["measurement_path"]=relative(unbound_measurement_path)
-unbound_entry["measurement_sha256"]=sha(unbound_measurement_path)
-unbound_entry["owner_review_path"]=relative(unbound_review_path)
-unbound_entry["owner_review_sha256"]=sha(unbound_review_path)
-unbound_index_path=fixture_dir/"unbound-index.json"
-unbound_index_path.write_text(
-    json.dumps(unbound_index,ensure_ascii=False,sort_keys=True,indent=2)+"\n",
+tampered_index=json.loads(json.dumps(index))
+tampered_entry=tampered_index["entries"][0]
+tampered_entry["measurement_path"]=relative(tampered_measurement_path)
+tampered_entry["measurement_sha256"]=sha(tampered_measurement_path)
+tampered_entry["owner_review_path"]=relative(tampered_review_path)
+tampered_entry["owner_review_sha256"]=sha(tampered_review_path)
+tampered_index_path=fixture_dir/"tampered-index.json"
+tampered_index_path.write_text(
+    json.dumps(tampered_index,ensure_ascii=False,sort_keys=True,indent=2)+"\n",
     encoding="utf-8",
 )
 
@@ -312,12 +418,14 @@ assert index["covered_asset_count"]==index["expected_asset_count"], index
 assert index["owner_decision_count"]==index["expected_asset_count"], index
 assert index["entries"][0]["comparison_verdict"]=="improved", index
 assert index["entries"][0]["managed_campaign_trace_coverage"] is True, index
+assert index["entries"][0]["signed_receipt_replay"] is True, index
+assert index["entries"][0]["verified_receipt_count"]>index["expected_asset_count"], index
 assert index["entries"][0]["campaign_trace_count"]>0, index
 assert index["entries"][0]["reviewed_by"]=="fixture-human-owner", index
 assert value["release_authorized"] is False, value
 PY
 
-for BAD in unbound-index.json automated-index.json; do
+for BAD in tampered-index.json automated-index.json; do
   BAD_REL="$(python3 - "$ROOT" "$FIXTURE_DIR" "$BAD" <<'PY'
 import sys
 from pathlib import Path
@@ -333,4 +441,4 @@ done
 
 python3 -m tools.control_plane.cli effect-readiness --root . --summary-json   | python3 -c 'import json,sys; v=json.load(sys.stdin); assert v["status"]=="pass" and v["software_ready"] is True and v["effect_evidence_ready"] is False, v'
 
-echo '[PASS] effect readiness requires recomputed campaign provenance, managed trace coverage, and real owner-review metadata'
+echo '[PASS] effect readiness requires signed receipt replay, recomputed measurement, campaign provenance, and real owner review'
