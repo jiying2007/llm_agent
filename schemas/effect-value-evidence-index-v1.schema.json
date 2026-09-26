@@ -80,6 +80,7 @@
           "id",
           "campaign_id",
           "trial_input",
+          "receipts",
           "comparison",
           "measurement",
           "owner_review"
@@ -104,6 +105,15 @@
           },
           "owner_review": {
             "$ref": "#/$defs/evidenceRef"
+          },
+          "receipts": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 500,
+            "uniqueItems": true,
+            "items": {
+              "$ref": "#/$defs/evidenceRef"
+            }
           }
         }
       }
