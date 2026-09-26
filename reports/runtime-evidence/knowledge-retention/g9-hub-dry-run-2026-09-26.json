@@ -1,0 +1,45 @@
+{
+  "schema": "llm-agent-g9-hub-dry-run-evidence/v1",
+  "status": "pass",
+  "observed_at": "2026-09-26",
+  "source": {
+    "repository": "jiying2007/llm_agent",
+    "revision": "109949bf36001548d03a96732a8d6020395b518a",
+    "candidate": "docs/knowledge-candidates/llm-agent-adk-target-architecture.md",
+    "candidate_sha256": "3d56a96bba926f014fcf68de8bb880bdf2356d88651ca66a3964df41ac7fbd6d"
+  },
+  "knowledge_hub": {
+    "repository": "jiying2007/knowledge-hub",
+    "base_revision": "d2e15c31a2562ce92cee99e4695dc7835062512d",
+    "evidence_branch_revision": "c779b7e2a2a68ed00faf7a9b082eefa775807c21",
+    "pull_request": 123,
+    "pull_request_merged": false,
+    "workflow_run": 36214654406,
+    "artifact_id": 10897225255,
+    "artifact_name": "llm-agent-g9-hub-dry-run",
+    "artifact_sha256": "d8d0a6c493f52f1d3254c5fe6823352b1d50f083c3decdaeca744e07d5b6d2d8"
+  },
+  "capture": {
+    "status": "planned",
+    "action": "capture",
+    "id": "llm-agent-adk-target-architecture",
+    "target": "projects/llm-agent/architecture/llm-agent-adk-target-architecture.md",
+    "created_status": "reviewing",
+    "dry_run": true,
+    "transaction_read_only": true,
+    "active_promotion": false,
+    "promotion_authorized": false
+  },
+  "hub_status": {
+    "status": "needs-review",
+    "projection": "knowledge-status-summary-v1"
+  },
+  "authority_boundary": {
+    "hub_registry_written": false,
+    "hub_item_captured": false,
+    "owner_review_recorded": false,
+    "lifecycle_decision_recorded": false,
+    "root_may_apply_or_promote": false
+  },
+  "remaining_blocker": "real-human-owner-decision-in-knowledge-hub"
+}
