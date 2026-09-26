@@ -17,6 +17,32 @@ G9_EVIDENCE_INDEX = Path(
 _EXTERNAL_IDS = ("G9", "G21", "G22")
 
 
+def _external_tracking(item_id: str, item: dict[str, Any]) -> dict[str, Any] | None:
+    tracking = item.get("external_tracking")
+    if item_id not in _EXTERNAL_IDS:
+        if tracking is not None:
+            raise ValueError(f"non-external item {item_id} must not declare external_tracking")
+        return None
+    if not isinstance(tracking, dict) or set(tracking) != {"repository", "issue_number"}:
+        raise ValueError(f"external item {item_id} has invalid external_tracking")
+    repository = tracking.get("repository")
+    issue_number = tracking.get("issue_number")
+    if (
+        not isinstance(repository, str)
+        or repository.count("/") != 1
+        or any(not part for part in repository.split("/"))
+        or not isinstance(issue_number, int)
+        or isinstance(issue_number, bool)
+        or issue_number <= 0
+    ):
+        raise ValueError(f"external item {item_id} tracking issue is invalid")
+    return {
+        "repository": repository,
+        "issue_number": issue_number,
+        "url": f"https://github.com/{repository}/issues/{issue_number}",
+    }
+
+
 def _load_object(path: Path, label: str) -> dict[str, Any]:
     if path.is_symlink() or not path.is_file():
         raise ValueError(f"{label} is missing or unsafe: {path}")
@@ -153,6 +179,7 @@ def _backlog_projection(root: Path) -> dict[str, Any]:
             blocker = item.get("blocking_condition")
             if not isinstance(blocker, str) or not blocker.strip():
                 raise ValueError(f"blocked item {item_id} has no blocking condition")
+        _external_tracking(item_id, item)
         by_id[item_id] = item
 
     open_items = [
@@ -162,6 +189,7 @@ def _backlog_projection(root: Path) -> dict[str, Any]:
             "optimization_area": item.get("optimization_area"),
             "implementation_status": item["implementation_status"],
             "blocking_condition": item.get("blocking_condition"),
+            "tracking_issue": _external_tracking(item_id, item),
         }
         for item_id, item in sorted(by_id.items())
         if item["implementation_status"] != "done"
@@ -303,6 +331,7 @@ def project(root: Path) -> dict[str, Any]:
             {
                 "id": "G9",
                 "kind": "human-owner-decision",
+                "tracking_issue": _external_tracking("G9", backlog["items"]["G9"]),
                 "action": (
                     "Knowledge Hub owner reviews llm-agent-adk-target-architecture "
                     "and records the lifecycle decision; automation must not fill reviewed_by."
@@ -314,6 +343,7 @@ def project(root: Path) -> dict[str, Any]:
             {
                 "id": "G21",
                 "kind": "real-native-runtime-evidence",
+                "tracking_issue": _external_tracking("G21", backlog["items"]["G21"]),
                 "action": (
                     "Run one authenticated version-pinned direct-target discovery/load/trigger "
                     "campaign, sign the typed receipt, bind it in managed trust, and pass the "
@@ -326,6 +356,7 @@ def project(root: Path) -> dict[str, Any]:
             {
                 "id": "G22",
                 "kind": "real-effect-value-evidence",
+                "tracking_issue": _external_tracking("G22", backlog["items"]["G22"]),
                 "action": (
                     "Collect decisive repeated-task comparison plus managed runtime/field "
                     "Agent Value measurements covering every current Agent/Skill/Profile, "
