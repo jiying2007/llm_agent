@@ -796,7 +796,7 @@
         "typed Agent/Skill/Profile value contracts and canonical invocation receipt/measurement pipeline",
         "repeated task-trial comparison with task-level uncertainty and guardrails",
         "managed Agent Value runtime/field evidence verifier and default-empty trust registry",
-        "governed effect/value evidence index v2 binding original campaign, recomputed decisive comparison, managed runtime/field trace coverage and per-asset human owner review",
+        "governed effect/value evidence index v3 binding original campaign, recomputed comparison, reviewed portable trust package, signed raw receipt replay, recomputed measurement and per-asset human owner review",
         "full current Agent/Skill/Profile coverage with representative success/failure/wrong-route/abstain/outcome/retirement observations"
       ],
       "verification": [
@@ -820,7 +820,7 @@
         "tools/control_plane/effect_readiness.py",
         "tests/test_effect_readiness.sh"
       ],
-      "blocking_condition": "Software layers through ADK 7.6.0 plus Root effect evidence-index v2 are landed. The canonical gate now recomputes each comparison from the indexed campaign, requires every campaign trace plus both intervention bundles and runtime target to be backed by the same managed runtime/field Agent Value measurement, and requires owner-review v2 with a real reviewed_by identity and automation_generated=false. Terminal completion still requires real decisive repeated-task evidence, managed runtime/field measurements covering every current Agent/Skill/Profile, representative success/failure/wrong-route/abstain observations, substantive retirement signals, and digest-bound per-asset human owner decisions. Synthetic/test-only or unbound evidence cannot satisfy the canonical index.",
+      "blocking_condition": "Software layers through ADK 7.7.0 plus Root effect evidence-index v3 are landed. The canonical gate now recomputes comparison from the indexed campaign, replays every raw runtime/field receipt through the reviewed portable managed Agent Value contract/registry and signature bundles, recomputes the aggregate measurement, verifies campaign trace/bundle/runtime-target coverage, derives representative success/failure/wrong-route/abstain cases from verified receipts, and requires owner-review v3 with exact trust/receipt/measurement digests, real reviewed_by identity and automation_generated=false. Terminal completion still requires those real external receipts/signatures, full current Agent/Skill/Profile coverage, substantive retirement signals, and human per-asset decisions; synthetic/test-only or fabricated aggregate evidence cannot satisfy the canonical index.",
       "external_tracking": {
         "repository": "jiying2007/llm_agent",
         "issue_number": 154

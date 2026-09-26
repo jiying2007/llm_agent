@@ -26,18 +26,23 @@ The default index is intentionally empty:
 
 ```json
 {
-  "schema": "llm-agent-effect-value-evidence-index/v2",
+  "schema": "llm-agent-effect-value-evidence-index/v3",
   "status": "active",
   "entries": []
 }
 ```
 
-Each future entry binds exactly four Root-relative files beneath the index directory:
+Each future entry binds the full replay package beneath the index directory:
 
 - the original ADK `adk-effect-trials/v1` campaign input;
 - the resulting ADK `adk-effect-trial-comparison/v1`;
+- one reviewed enabled Agent Value contract;
+- one reviewed managed Agent Value trust registry;
+- one `llm-agent-effect-receipt-set/v1` containing the raw sanitized runtime/field receipts plus fixed aggregation window/as-of;
 - one ADK `adk-asset-value-measurement/v1`;
-- one Root `llm-agent-effect-owner-review/v2`.
+- one Root `llm-agent-effect-owner-review/v3`.
+
+Registry signature-bundle paths are resolved relative to the evidence-index directory by ADK 7.7.0's portable managed verifier. Root replays every raw receipt through the exact contract/registry/cosign trust semantics and recomputes the measurement with ADK `emit_measurements()`. A committed aggregate measurement is accepted only when it is exactly equal to that recomputation.
 
 Every path has an exact SHA-256 in the index. Root recomputes the comparison from the pinned campaign input using the exact pinned ADK and requires byte-equivalent JSON semantics. The campaign/comparison ID must equal the index entry ID.
 
@@ -63,7 +68,7 @@ The owner-review document is deliberately simple and has no execution authority:
 
 ```json
 {
-  "schema": "llm-agent-effect-owner-review/v2",
+  "schema": "llm-agent-effect-owner-review/v3",
   "status": "approved",
   "campaign_id": "campaign-id",
   "campaign_sha256": "<64 hex>",
@@ -92,7 +97,7 @@ The owner-review document is deliberately simple and has no execution authority:
 }
 ```
 
-The review must bind the exact campaign/comparison/measurement digests, identify the real reviewer, set `automation_generated=false`, and cover every asset in its measurement. Allowed decisions are `retain`, `consolidate-candidate`, `retire-candidate`, and `reject-change`. Conflicting decisions for the same asset across active entries invalidate the index.
+The review must bind the exact campaign/comparison, authority contract, authority registry, receipt-set and measurement digests, identify the real reviewer, set `automation_generated=false`, and cover every asset in its measurement. The `observed_cases` flags must also exactly match representative success/failure/wrong-route/abstain cases derived from the verified raw receipts. Allowed decisions are `retain`, `consolidate-candidate`, `retire-candidate`, and `reject-change`. Conflicting decisions for the same asset across active entries invalidate the index.
 
 A recorded decision does **not** delete an asset, merge a skill, mutate a profile, or authorize a release. Execution remains a separate reviewed change.
 
@@ -121,4 +126,4 @@ effect_evidence_ready=false
 terminal_status=blocked-external-evidence
 ```
 
-Synthetic repeated trials and generated fixture measurements validate the state machine only; they cannot be committed as canonical runtime/field evidence. Index v2 specifically prevents an unbound synthetic campaign from becoming terminal by requiring campaign→comparison recomputation and campaign trace/bundle/runtime-target coverage from managed runtime/field measurement evidence.
+Synthetic repeated trials and fake verifier fixtures validate the state machine only; they cannot be committed as canonical runtime/field evidence. Index v3 requires campaign→comparison recomputation, portable managed signature replay of every raw receipt, exact aggregate measurement recomputation, campaign trace/bundle/runtime-target coverage, and digest-bound human review.

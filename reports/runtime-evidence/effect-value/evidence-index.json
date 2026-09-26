@@ -1,5 +1,5 @@
 {
-  "schema": "llm-agent-effect-value-evidence-index/v2",
+  "schema": "llm-agent-effect-value-evidence-index/v3",
   "status": "active",
   "entries": []
 }
