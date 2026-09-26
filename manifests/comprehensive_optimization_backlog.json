@@ -753,8 +753,8 @@
         "target-contract/v2 adapter SPI and static/native evidence separation",
         "source-layout probe and profile/source observability",
         "managed native trust verifier and owner-reviewed registry",
-        "native campaign prepare/run/finalize with typed plan/evidence/receipt candidate",
-        "one real authenticated version-pinned native target pass with signed receipt and production-loader verification"
+        "native campaign v2 prepare/run/finalize with pre-registered semantic assertions and typed plan/evidence/receipt candidate",
+        "one real authenticated version-pinned semantic-asserted native target pass with signed receipt and production-loader verification"
       ],
       "verification": [
         "rtk python3 -m tools.control_plane.cli native-readiness --root . --summary-json",
@@ -776,7 +776,7 @@
         "docs/runbooks/native-target-conformance-readiness.md",
         "tools/control_plane/native_target_readiness.py"
       ],
-      "blocking_condition": "Software layers through ADK 7.4.0 are landed and Root-consumed. Terminal completion requires at least one real authenticated version-pinned direct-target discovery/load/trigger campaign, complete typed receipt, reviewed signature/provenance, exact managed-registry binding, and production-loader verification; synthetic/source-layout evidence cannot satisfy this condition.",
+      "blocking_condition": "Software layers through ADK 7.6.0 are landed upstream and this Root branch hard-cuts consumers to native campaign plan/evidence/receipt v2 with per-stage semantic assertions; exit_code=0 without a semantic assertion PASS is not native evidence. Terminal completion still requires at least one real authenticated version-pinned direct-target discovery/load/trigger campaign, complete v2 typed receipt, reviewed signature/provenance, exact managed-registry binding, production-loader verification, and owner-reviewed target promotion; synthetic/source-layout/exit-code-only evidence cannot satisfy this condition.",
       "external_tracking": {
         "repository": "jiying2007/agent-dev-kit",
         "issue_number": 153
