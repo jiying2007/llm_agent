@@ -22,10 +22,19 @@ import sys
 root = pathlib.Path(sys.argv[1])
 backlog = json.loads((root / "manifests/comprehensive_optimization_backlog.json").read_text(encoding="utf-8"))
 g9 = next(item for item in backlog["items"] if item["id"] == "G9")
-assert "manifests/history/product_maturity_task_pack-2026-09-16.json" in g9["implementation_evidence"], g9
+expected = {
+    "docs/knowledge-candidates/llm-agent-adk-target-architecture.md",
+    "docs/runbooks/knowledge-retention-handoff.md",
+    "tools/control_plane/knowledge_retention_handoff.py",
+    "tests/test_knowledge_retention_handoff.sh",
+}
+assert expected.issubset(set(g9["implementation_evidence"])), g9
+assert "manifests/history/product_maturity_task_pack-2026-09-16.json" not in g9["implementation_evidence"], g9
 assert "manifests/product_maturity_task_pack.json" not in g9["implementation_evidence"], g9
-assert (root / "manifests/history/product_maturity_task_pack-2026-09-16.json").is_file()
-assert not (root / "manifests/product_maturity_task_pack.json").exists()
+candidate = root / "docs/knowledge-candidates/llm-agent-adk-target-architecture.md"
+assert candidate.is_file()
+text = candidate.read_text(encoding="utf-8")
+assert "promotion: none" in text, text
 PY
 
 python3 - "${ROOT}" <<'PY'
@@ -85,7 +94,9 @@ for item_id in ("G10", "G13", "G14", "G15", "G17", "G18", "G19", "G20"):
     assert items[item_id]["implementation_status"] == "done", items[item_id]
     assert "blocking_condition" not in items[item_id], items[item_id]
 
-for item_id in ("G9", "G21", "G22"):
+assert items["G9"]["implementation_status"] == "blocked", items["G9"]
+assert isinstance(items["G9"].get("blocking_condition"), str) and items["G9"]["blocking_condition"], items["G9"]
+for item_id in ("G21", "G22"):
     assert items[item_id]["implementation_status"] == "in_progress", items[item_id]
 
 assert lta["maintainer_model"]["type"] == "solo", lta["maintainer_model"]
