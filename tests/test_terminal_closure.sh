@@ -41,7 +41,11 @@ if "G9" in open_ids:
     g9=value["domains"]["G9"]
     assert g9["status"]=="blocked-external-evidence", g9
     assert g9["captured_reviewing"] is True, g9
+    assert g9["owner_review_recorded"] is False, g9
     assert g9["owner_lifecycle_decision_recorded"] is False, g9
+    assert g9["evidence_index"]=="reports/runtime-evidence/knowledge-retention/evidence-index.json", g9
+    assert g9["handoff_evidence"]=="reports/runtime-evidence/knowledge-retention/g9-hub-handoff-2026-09-26.json", g9
+    assert g9["owner_decision_evidence"] is None, g9
     assert g9["hub_master_revision"]=="0fb7ed1e2dbd5f715b9b4382581d696081af1b8c", g9
     assert g9["hub_post_merge_quality_run"]==36218784210, g9
 
