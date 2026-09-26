@@ -33,7 +33,7 @@
       "security_review_run": 36215031217,
       "security_review_conclusion": "success",
       "post_merge_quality_run": 36218784210,
-      "post_merge_quality_conclusion": "pending"
+      "post_merge_quality_conclusion": "success"
     }
   },
   "capture": {
