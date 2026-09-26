@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
 from typing import Any
@@ -10,8 +11,8 @@ from .native_target_readiness import project as project_native_readiness
 
 SCHEMA = "llm-agent-terminal-closure/v1"
 BACKLOG_PATH = Path("manifests/comprehensive_optimization_backlog.json")
-G9_EVIDENCE_PATH = Path(
-    "reports/runtime-evidence/knowledge-retention/g9-hub-handoff-2026-09-26.json"
+G9_EVIDENCE_INDEX = Path(
+    "reports/runtime-evidence/knowledge-retention/evidence-index.json"
 )
 _EXTERNAL_IDS = ("G9", "G21", "G22")
 
@@ -22,6 +23,111 @@ def _load_object(path: Path, label: str) -> dict[str, Any]:
     value = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(value, dict):
         raise ValueError(f"{label} must be a JSON object")
+    return value
+
+
+def _git_blob_sha1(path: Path) -> str:
+    raw = path.read_bytes()
+    return hashlib.sha1(
+        b"blob " + str(len(raw)).encode("ascii") + b"\0" + raw
+    ).hexdigest()
+
+
+def _indexed_object(
+    root: Path,
+    evidence_root: Path,
+    entry: Any,
+    label: str,
+) -> tuple[dict[str, Any], str]:
+    if not isinstance(entry, dict) or set(entry) != {"path", "git_blob_sha1"}:
+        raise ValueError(f"{label} index entry is invalid")
+    path_value = entry.get("path")
+    expected = entry.get("git_blob_sha1")
+    if (
+        not isinstance(path_value, str)
+        or not path_value
+        or Path(path_value).is_absolute()
+        or ".." in Path(path_value).parts
+        or "\\" in path_value
+        or "\x00" in path_value
+        or "\n" in path_value
+        or "\r" in path_value
+    ):
+        raise ValueError(f"{label} path is invalid")
+    if (
+        not isinstance(expected, str)
+        or len(expected) != 40
+        or any(ch not in "0123456789abcdef" for ch in expected)
+    ):
+        raise ValueError(f"{label} git blob id is invalid")
+    path = (root / path_value).resolve()
+    if (
+        not path.is_relative_to(root)
+        or not path.is_relative_to(evidence_root)
+        or path.is_symlink()
+        or not path.is_file()
+    ):
+        raise ValueError(f"{label} path is missing or unsafe")
+    actual = _git_blob_sha1(path)
+    if actual != expected:
+        raise ValueError(f"{label} git blob identity mismatch")
+    return _load_object(path, label), path.relative_to(root).as_posix()
+
+
+def _owner_decision(value: dict[str, Any]) -> dict[str, Any]:
+    required = {
+        "schema",
+        "status",
+        "candidate_id",
+        "hub_item",
+        "hub_revision",
+        "reviewed_by",
+        "reviewed_at",
+        "lifecycle_decision",
+        "automation_generated",
+        "raw_content_stored",
+        "release_authorized",
+    }
+    if set(value) != required:
+        raise ValueError("G9 owner decision fields are invalid")
+    if (
+        value.get("schema") != "llm-agent-g9-hub-owner-decision/v1"
+        or value.get("status") != "recorded"
+        or value.get("candidate_id") != "llm-agent-adk-target-architecture"
+        or value.get("hub_item")
+        != "projects/llm-agent/architecture/llm-agent-adk-target-architecture.md"
+    ):
+        raise ValueError("G9 owner decision identity is invalid")
+    revision = value.get("hub_revision")
+    if (
+        not isinstance(revision, str)
+        or len(revision) != 40
+        or any(ch not in "0123456789abcdef" for ch in revision)
+    ):
+        raise ValueError("G9 owner decision Hub revision is invalid")
+    reviewer = value.get("reviewed_by")
+    if not isinstance(reviewer, str) or not reviewer.strip() or len(reviewer) > 128:
+        raise ValueError("G9 owner decision reviewer is invalid")
+    reviewed_at = value.get("reviewed_at")
+    if (
+        not isinstance(reviewed_at, str)
+        or "T" not in reviewed_at
+        or not reviewed_at.endswith("Z")
+    ):
+        raise ValueError("G9 owner decision timestamp is invalid")
+    if value.get("lifecycle_decision") not in {
+        "activate",
+        "continue-reviewing",
+        "archive",
+        "reject",
+    }:
+        raise ValueError("G9 owner lifecycle decision is invalid")
+    if (
+        value.get("automation_generated") is not False
+        or value.get("raw_content_stored") is not False
+        or value.get("release_authorized") is not False
+    ):
+        raise ValueError("G9 owner decision authority/privacy boundary is invalid")
     return value
 
 
@@ -83,7 +189,20 @@ def _g9_projection(root: Path, backlog: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(item, dict):
         raise ValueError("G9 is missing from optimization backlog")
 
-    evidence = _load_object(root / G9_EVIDENCE_PATH, "G9 Hub handoff evidence")
+    index_path = (root / G9_EVIDENCE_INDEX).resolve()
+    evidence_root = index_path.parent.resolve()
+    index = _load_object(index_path, "G9 knowledge-retention evidence index")
+    if (
+        set(index) != {"schema", "status", "handoff", "owner_decision"}
+        or index.get("schema")
+        != "llm-agent-knowledge-retention-evidence-index/v1"
+        or index.get("status") != "active"
+    ):
+        raise ValueError("G9 knowledge-retention evidence index is invalid")
+
+    evidence, handoff_path = _indexed_object(
+        root, evidence_root, index["handoff"], "G9 Hub handoff evidence"
+    )
     if (
         evidence.get("schema") != "llm-agent-g9-hub-handoff-evidence/v2"
         or evidence.get("status") != "pass"
@@ -109,27 +228,40 @@ def _g9_projection(root: Path, backlog: dict[str, Any]) -> dict[str, Any]:
         and capture.get("active_promotion") is False
         and capture.get("promotion_authorized") is False
         and authority.get("hub_item_captured") is True
+        and authority.get("owner_review_recorded") is False
+        and authority.get("lifecycle_decision_recorded") is False
         and authority.get("root_may_apply_or_promote") is False
         and authority.get("automation_may_fill_reviewed_by") is False
     )
     if not captured_reviewing:
         raise ValueError("G9 governed reviewing capture evidence is inconsistent")
 
-    owner_reviewed = authority.get("owner_review_recorded") is True
-    lifecycle_decided = authority.get("lifecycle_decision_recorded") is True
-    ready = owner_reviewed and lifecycle_decided
+    decision_entry = index.get("owner_decision")
+    decision_path = None
+    decision = None
+    if decision_entry is not None:
+        decision, decision_path = _indexed_object(
+            root, evidence_root, decision_entry, "G9 Hub owner decision"
+        )
+        decision = _owner_decision(decision)
+
+    ready = decision is not None
     if item["implementation_status"] == "done" and not ready:
-        raise ValueError("G9 backlog claims done without durable owner lifecycle evidence")
+        raise ValueError("G9 backlog claims done without indexed owner lifecycle evidence")
     if item["implementation_status"] == "blocked" and ready:
-        raise ValueError("G9 durable owner lifecycle evidence exists but backlog remains blocked")
+        raise ValueError("G9 owner lifecycle evidence exists but backlog remains blocked")
 
     return {
         "status": "ready" if ready else "blocked-external-evidence",
         "captured_reviewing": True,
+        "evidence_index": G9_EVIDENCE_INDEX.as_posix(),
+        "handoff_evidence": handoff_path,
+        "owner_decision_evidence": decision_path,
         "hub_master_revision": governed.get("merge_revision"),
         "hub_post_merge_quality_run": governed.get("post_merge_quality_run"),
-        "owner_review_recorded": owner_reviewed,
-        "owner_lifecycle_decision_recorded": lifecycle_decided,
+        "owner_review_recorded": ready,
+        "owner_lifecycle_decision_recorded": ready,
+        "lifecycle_decision": decision.get("lifecycle_decision") if decision else None,
         "blockers": [] if ready else ["real-human-knowledge-hub-owner-lifecycle-decision"],
     }
 
