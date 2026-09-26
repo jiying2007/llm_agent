@@ -83,3 +83,5 @@ The knowledge-retention index deliberately separates historical capture evidence
 After the Hub owner has actually reviewed the item, create a **new** Root evidence file under the same runtime-evidence directory and update `owner_decision` to its path + Git blob SHA-1. The decision document must use `llm-agent-g9-hub-owner-decision/v1`, record a real reviewer, exact Hub revision, one lifecycle decision (`activate`, `continue-reviewing`, `archive`, or `reject`), and keep `automation_generated=false`, `raw_content_stored=false`, `release_authorized=false`.
 
 Do not modify the dated handoff evidence to simulate a later owner review.
+
+A recorded `continue-reviewing` decision is valid owner evidence but intentionally keeps G9 blocked. Only `activate`, `archive`, or `reject` is a terminal lifecycle decision for `--require-terminal`.
