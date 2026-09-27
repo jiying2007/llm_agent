@@ -101,7 +101,7 @@ rc=$?
 set -e
 test "$rc" -eq 1
 
-python3 - "$TMP/source.json" "$TMP/derived-ref.json" "$TMP/bad-content.json" "$TMP/same-assets.json" <<'PY'
+python3 - "$TMP/source.json" "$TMP/derived-ref.json" "$TMP/bad-content.json" "$TMP/same-assets.json" "$TMP/reordered-same-assets.json" <<'PY'
 import json,sys
 src=json.load(open(sys.argv[1],encoding="utf-8"))
 derived=json.loads(json.dumps(src)); derived["plan"]["controls"]["environment_ref"]="ref:"+"0"*64
