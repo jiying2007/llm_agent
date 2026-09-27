@@ -502,7 +502,10 @@
         "adk.lock",
         "manifests/comprehensive_optimization_backlog.json",
         "reports/runtime-evidence/effect-value/evidence-index.json",
-        "tools/control_plane/effect_readiness.py"
+        "tools/control_plane/effect_readiness.py",
+        "tools/control_plane/effect_preregistration.py",
+        ".github/workflows/effect-preregister.yml",
+        "tools/control_plane/effect_preregistration_package.py"
       ],
       "impact_inputs": [
         "agent-dev-kit"

@@ -11,10 +11,11 @@ from pathlib import Path
 from typing import Any
 
 from .adk_interface import validate as validate_adk_interface
+from .effect_preregistration import verify_effect_preregistration
 
 SCHEMA = "llm-agent-effect-readiness/v1"
-INDEX_SCHEMA = "llm-agent-effect-value-evidence-index/v3"
-OWNER_REVIEW_SCHEMA = "llm-agent-effect-owner-review/v3"
+INDEX_SCHEMA = "llm-agent-effect-value-evidence-index/v5"
+OWNER_REVIEW_SCHEMA = "llm-agent-effect-owner-review/v5"
 RECEIPT_SET_SCHEMA = "llm-agent-effect-receipt-set/v1"
 DEFAULT_INDEX = Path("reports/runtime-evidence/effect-value/evidence-index.json")
 _REQUIRED_CONTRACT_IDS = {"agent-value", "effect-trials", "effect-trial-comparison"}
@@ -299,6 +300,7 @@ from agent_dev_kit.agent_value_trust import (
 )
 from agent_dev_kit.model import Manifest
 from agent_dev_kit.privacy_ref import opaque_ref_for_sha256
+from agent_dev_kit.sigstore_blob import verify_sigstore_blob
 root=Path(sys.argv[1]).resolve()
 manifest=Manifest.load(root)
 contract=load_contract(root/"manifests/agent_value_contracts.json")
@@ -312,6 +314,7 @@ print(json.dumps({
  "policy":{"status":policy["status"],"backend":policy["backend"],"authority_count":len(policy["authorities"])},
  "registry":{"status":registry["status"],"authority_count":len(registry["authorities"]),"enabled_authority_count":sum(1 for x in registry["authorities"].values() if isinstance(x,dict) and x.get("enabled") is True)},
  "portable_managed_verifier_available":callable(build_portable_managed_agent_value_evidence_verifier),
+ "sigstore_blob_verifier_available":callable(verify_sigstore_blob),
  "empty_measurement":{"measurement_status":measurement["measurement_status"],"reason":measurement["reason"],"asset_measurement_count":len(measurement["asset_measurements"])}
 },sort_keys=True))
 '''
@@ -370,6 +373,8 @@ def _validate_owner_review(
     authority_registry_sha256: str,
     receipts_sha256: str,
     measurement_sha256: str,
+    preregistration_package_sha256: str,
+    preregistration_bundle_sha256: str,
     observed_cases: dict[str, bool],
     measurement_assets: set[tuple[str, str]],
 ) -> dict[tuple[str, str], str]:
@@ -383,6 +388,8 @@ def _validate_owner_review(
         "authority_registry_sha256",
         "receipts_sha256",
         "measurement_sha256",
+        "preregistration_package_sha256",
+        "preregistration_bundle_sha256",
         "reviewed_at",
         "reviewed_by",
         "reviewer_role",
@@ -411,6 +418,10 @@ def _validate_owner_review(
         raise ValueError("owner review receipt-set digest mismatch")
     if review["measurement_sha256"] != measurement_sha256:
         raise ValueError("owner review measurement digest mismatch")
+    if review["preregistration_package_sha256"] != preregistration_package_sha256:
+        raise ValueError("owner review preregistration package digest mismatch")
+    if review["preregistration_bundle_sha256"] != preregistration_bundle_sha256:
+        raise ValueError("owner review preregistration bundle digest mismatch")
     reviewed_at = _parse_time(review["reviewed_at"], "owner review timestamp")
     if reviewed_at > datetime.now(timezone.utc):
         raise ValueError("owner review timestamp is in the future")
@@ -464,6 +475,10 @@ def _validate_evidence_entry(
         "id",
         "campaign_path",
         "campaign_sha256",
+        "preregistration_package_path",
+        "preregistration_package_sha256",
+        "preregistration_bundle_path",
+        "preregistration_bundle_sha256",
         "comparison_path",
         "comparison_sha256",
         "authority_contract_path",
@@ -489,7 +504,7 @@ def _validate_evidence_entry(
         raise ValueError("effect evidence entry id is invalid")
 
     docs: dict[str, tuple[Path, str]] = {}
-    for name in ("campaign", "comparison", "authority_contract", "authority_registry", "receipts", "measurement", "owner_review"):
+    for name in ("campaign", "preregistration_package", "preregistration_bundle", "comparison", "authority_contract", "authority_registry", "receipts", "measurement", "owner_review"):
         path = _safe_path(root, evidence_root, entry[f"{name}_path"], f"{name} path")
         expected = entry[f"{name}_sha256"]
         if (
@@ -504,6 +519,8 @@ def _validate_evidence_entry(
         docs[name] = (path, actual)
 
     campaign_path, campaign_sha = docs["campaign"]
+    preregistration_package_path, preregistration_package_sha = docs["preregistration_package"]
+    preregistration_bundle_path, preregistration_bundle_sha = docs["preregistration_bundle"]
     comparison_path, comparison_sha = docs["comparison"]
     authority_contract_path, authority_contract_sha = docs["authority_contract"]
     authority_registry_path, authority_registry_sha = docs["authority_registry"]
@@ -547,6 +564,18 @@ def _validate_evidence_entry(
     if replay["measurement"] != measurement:
         raise ValueError("Agent Value measurement differs from managed signed receipt replay")
     review = _load_object(review_path, "effect owner review")
+    preregistration = verify_effect_preregistration(
+        adk,
+        campaign_path,
+        preregistration_package_path,
+        preregistration_bundle_path,
+        preregistration_bundle_sha,
+        authority_registry_path,
+        receipts_path,
+        evidence_root,
+    )
+    if preregistration.get("package_sha256") != preregistration_package_sha:
+        raise ValueError("preregistration package digest differs from verified canonical package")
 
     recomputed = _recompute_effect_comparison(adk, campaign_path)
     if recomputed != comparison:
@@ -646,6 +675,16 @@ def _validate_evidence_entry(
             raise ValueError("asset measurement lacks a substantive retirement signal")
     if not assets:
         raise ValueError("Agent Value measurement covers no assets")
+    candidate_assets_raw = preregistration.get("candidate_assets")
+    if not isinstance(candidate_assets_raw, list):
+        raise ValueError("preregistration candidate bundle assets are invalid")
+    candidate_assets = {
+        (item.get("asset_kind"), item.get("asset_id"))
+        for item in candidate_assets_raw
+        if isinstance(item, dict)
+    }
+    if len(candidate_assets) != len(candidate_assets_raw) or assets != candidate_assets:
+        raise ValueError("Agent Value measurement assets differ from preregistered candidate bundle")
     missing_managed_traces = campaign_trace_refs - measurement_trace_refs
     if missing_managed_traces:
         raise ValueError(
@@ -665,6 +704,8 @@ def _validate_evidence_entry(
         authority_registry_sha256=authority_registry_sha,
         receipts_sha256=receipts_sha,
         measurement_sha256=measurement_sha,
+        preregistration_package_sha256=preregistration_package_sha,
+        preregistration_bundle_sha256=preregistration_bundle_sha,
         observed_cases=dict(replay["observed_cases"]),
         measurement_assets=assets,
     )
@@ -675,6 +716,10 @@ def _validate_evidence_entry(
         "campaign_trace_count": len(campaign_trace_refs),
         "managed_campaign_trace_coverage": True,
         "signed_receipt_replay": True,
+        "preregistration_verified": True,
+        "preregistration_package_sha256": preregistration_package_sha,
+        "candidate_bundle_asset_count": len(candidate_assets),
+        "preregistered_at": preregistration["registered_at"],
         "verified_receipt_count": replay["receipt_count"],
         "reviewed_by": review["reviewed_by"],
         "asset_count": len(assets),
@@ -778,12 +823,14 @@ def project(root: Path, evidence_index: Path = DEFAULT_INDEX) -> dict[str, Any]:
         "src/agent_dev_kit/agent_value_contracts.py",
         "src/agent_dev_kit/agent_value_receipts.py",
         "src/agent_dev_kit/agent_value_trust.py",
+        "src/agent_dev_kit/sigstore_blob.py",
         "manifests/agent_value_contracts.json",
         "manifests/agent_value_trust_registry.json",
         "docs/runbooks/effect-trials.md",
         "docs/runbooks/agent-value-lifecycle.md",
     )
     missing_files = [item for item in required_files if not (adk / item).is_file()]
+    package_validator_available = (root / "tools/control_plane/effect_preregistration_package.py").is_file()
     value = _canonical_agent_value_projection(adk)
 
     policy = value["policy"]
@@ -794,6 +841,8 @@ def project(root: Path, evidence_index: Path = DEFAULT_INDEX) -> dict[str, Any]:
         and not schema_failures
         and not missing_files
         and value.get("portable_managed_verifier_available") is True
+        and value.get("sigstore_blob_verifier_available") is True
+        and package_validator_available
         and empty_measurement["measurement_status"] == "not-measured"
         and empty_measurement["reason"] == "no-valid-receipts"
     )
@@ -845,6 +894,8 @@ def project(root: Path, evidence_index: Path = DEFAULT_INDEX) -> dict[str, Any]:
             "schema_failures": schema_failures,
             "missing_files": missing_files,
             "portable_managed_verifier_available": value.get("portable_managed_verifier_available") is True,
+            "sigstore_blob_verifier_available": value.get("sigstore_blob_verifier_available") is True,
+            "preregistration_package_validator_available": package_validator_available,
             "agent_value_contract": value["contract_report"],
         },
         "safe_defaults": {

@@ -16,6 +16,8 @@ _SURFACES = {
     "target_contract_schema": "manifests/target-contract.schema.json",
     "evidence_graph_schema": "schemas/evidence-graph-v1.schema.json",
     "runtime_control_schema": "schemas/runtime-control-decision-v2.schema.json",
+    "sigstore_blob_verifier": "src/agent_dev_kit/sigstore_blob.py",
+    "effect_campaign_materializer": "src/agent_dev_kit/effect_campaign_materializer.py",
 }
 _DEPRECATED = [
     "manifest.yaml",

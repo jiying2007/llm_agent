@@ -26,7 +26,7 @@ The default index is intentionally empty:
 
 ```json
 {
-  "schema": "llm-agent-effect-value-evidence-index/v3",
+  "schema": "llm-agent-effect-value-evidence-index/v5",
   "status": "active",
   "entries": []
 }
@@ -34,19 +34,54 @@ The default index is intentionally empty:
 
 Each future entry binds the full replay package beneath the index directory:
 
+- one canonical `llm-agent-effect-preregistration-package/v2` containing the exact plan, six content-addressed control artifacts, and baseline/candidate bundle manifests whose asset content refs bind the pinned ADK;
+- one GitHub-OIDC/Sigstore signature bundle over the **entire canonical package**, created by `.github/workflows/effect-preregister.yml` before any effect-trial run or managed observation;
 - the original ADK `adk-effect-trials/v1` campaign input;
 - the resulting ADK `adk-effect-trial-comparison/v1`;
 - one reviewed enabled Agent Value contract;
 - one reviewed managed Agent Value trust registry;
 - one `llm-agent-effect-receipt-set/v1` containing the raw sanitized runtime/field receipts plus fixed aggregation window/as-of;
 - one ADK `adk-asset-value-measurement/v1`;
-- one Root `llm-agent-effect-owner-review/v3`.
+- one Root `llm-agent-effect-owner-review/v5`.
 
-Registry signature-bundle paths are resolved relative to the evidence-index directory by ADK 7.8.0's portable managed verifier. Root replays every raw receipt through the exact contract/registry/cosign trust semantics and recomputes the measurement with ADK `emit_measurements()`. A committed aggregate measurement is accepted only when it is exactly equal to that recomputation.
+Registry signature-bundle paths are resolved relative to the evidence-index directory by ADK 7.11.0's portable managed verifier and shared digest-pinned Sigstore blob verifier. Root replays every raw receipt through the exact contract/registry/cosign trust semantics and recomputes the measurement with ADK `emit_measurements()`. A committed aggregate measurement is accepted only when it is exactly equal to that recomputation.
 
 Every path has an exact SHA-256 in the index. Root recomputes the comparison from the pinned campaign input using the exact pinned ADK and requires byte-equivalent JSON semantics. The campaign/comparison ID must equal the index entry ID.
 
+## Real campaign execution path
+
+After the content-addressed package has been committed and signed by the no-execution preregistration workflow, do not write an ad-hoc model loop. The pinned ADK 7.11.0 campaign state machine is the canonical long/paid execution path:
+
+```bash
+adk eval campaign run \
+  --contract <reviewed-campaign-contract.json> \
+  --state-dir <state-dir> \
+  --execute \
+  --approve-budget-usd <owner-approved-budget>
+
+# interrupted work resumes from digest-validated state
+adk eval campaign run \
+  --contract <reviewed-campaign-contract.json> \
+  --state-dir <state-dir> \
+  --execute --resume \
+  --approve-budget-usd <owner-approved-budget>
+
+# after the selected runtime is complete
+adk eval campaign materialize-effect \
+  --contract <reviewed-campaign-contract.json> \
+  --state-dir <state-dir> \
+  --effect-plan <frozen-effect-plan.json> \
+  --runtime <codex-or-claude> \
+  --output campaign.json
+```
+
+The campaign contract may select a bounded non-empty subset of Codex/Claude runtimes. The materializer performs no provider call: it validates campaign-plan/result digests, exact runtime/model identity, task/trial completeness and observation-window membership, then emits trace-only Run Evidence inside `adk-effect-trials/v1`. Those test-only traces are the comparison input, **not** the managed runtime/field Agent Value receipts required later by G22.
+
+A terminal-capable plan must use `model_identity=revision-bound`; alias-only model identity deliberately yields an inconclusive comparison. Provider/runtime execution therefore starts only after an immutable model identifier, budget and preregistered package are reviewable.
+
 ## Evidence required for terminal readiness
+
+Before any provider/runtime trial is accepted, Root verifies the entire canonical preregistration package through the pinned ADK shared Sigstore verifier. Before signing, the package validator also validates `package.plan` against the exact pinned ADK `effect-trials-v1` plan schema, then recomputes all six plan control refs, both bundle digests, and pinned ADK Agent/Skill/Profile content refs; baseline and candidate must also differ in their actual asset identity/content-ref sets, so condition or metadata labels alone cannot manufacture an intervention. The signature bundle must use the reviewed Root workflow certificate identity, and its verified Rekor `integratedTime` must be strictly earlier than every effect-trial Run Evidence `observed_at`, every managed receipt `observed_at`, and every corresponding verified receipt signature time. The human-readable `registered_at` field is not temporal authority; a package signed after execution cannot be repaired by backdating JSON. The no-execution workflow performs no provider/model call.
 
 A comparison is accepted only when its verdict is decisive: `improved`, `non-inferior`, or `regressed`. It remains test-only, `quality_evidence_eligible=false`, `owner_review_required=true`, `lifecycle_authority=none-evidence-only`, and `release_authorized=false`. Test-only comparison authority is not enough by itself: Root must recompute it from the indexed campaign input, then require every campaign run `trace_ref`, both baseline/candidate bundle digests, and the campaign runtime target to be covered by the same entry's managed runtime/field Agent Value measurement. This prevents a synthetic comparison from being paired with unrelated runtime-looking measurement data.
 
@@ -68,12 +103,17 @@ The owner-review document is deliberately simple and has no execution authority:
 
 ```json
 {
-  "schema": "llm-agent-effect-owner-review/v3",
+  "schema": "llm-agent-effect-owner-review/v5",
   "status": "approved",
   "campaign_id": "campaign-id",
   "campaign_sha256": "<64 hex>",
   "comparison_sha256": "<64 hex>",
+  "authority_contract_sha256": "<64 hex>",
+  "authority_registry_sha256": "<64 hex>",
+  "receipts_sha256": "<64 hex>",
   "measurement_sha256": "<64 hex>",
+  "preregistration_package_sha256": "<64 hex>",
+  "preregistration_bundle_sha256": "<64 hex>",
   "reviewed_at": "2026-09-26T00:00:00Z",
   "reviewed_by": "<real human reviewer identity>",
   "reviewer_role": "owner",
@@ -97,7 +137,7 @@ The owner-review document is deliberately simple and has no execution authority:
 }
 ```
 
-The review must bind the exact campaign/comparison, authority contract, authority registry, receipt-set and measurement digests, identify the real reviewer, set `automation_generated=false`, and cover every asset in its measurement. The `observed_cases` flags must also exactly match representative success/failure/wrong-route/abstain cases derived from the verified raw receipts. Allowed decisions are `retain`, `consolidate-candidate`, `retire-candidate`, and `reject-change`. Conflicting decisions for the same asset across active entries invalidate the index.
+The review must bind the exact preregistration package/signature bundle, campaign/comparison, authority contract, authority registry, receipt-set and measurement digests, identify the real reviewer, set `automation_generated=false`, and cover every asset in its measurement. The measured asset set must exactly equal the preregistered candidate bundle asset set. The `observed_cases` flags must also exactly match representative success/failure/wrong-route/abstain cases derived from the verified raw receipts. Allowed decisions are `retain`, `consolidate-candidate`, `retire-candidate`, and `reject-change`. Conflicting decisions for the same asset across active entries invalidate the index.
 
 A recorded decision does **not** delete an asset, merge a skill, mutate a profile, or authorize a release. Execution remains a separate reviewed change.
 
@@ -107,7 +147,7 @@ ADK intentionally keeps its canonical Agent Value contract disabled and the trus
 
 Real measurements may be produced by a separately owner-reviewed managed contract and verified receipt path. The readiness projection judges the resulting governed evidence artifacts, not whether the canonical default contract was globally enabled.
 
-ADK 7.8.0 also exposes `ManagedInvocationObservation` + `prepare_managed_receipt()` so a real runtime/field adapter can deterministically construct the manifest-bound receipt, authority attestation and receipt ID from explicit observed facts instead of hand-assembling JSON. This is producer ergonomics only: the prepared receipt is **not verified evidence** until the reviewed registry/signature bundle path is replayed by the managed verifier.
+ADK 7.11.0 also retains `ManagedInvocationObservation` + `prepare_managed_receipt()` so a real runtime/field adapter can deterministically construct the manifest-bound receipt, authority attestation and receipt ID from explicit observed facts instead of hand-assembling JSON. This is producer ergonomics only: the prepared receipt is **not verified evidence** until the reviewed registry/signature bundle path is replayed by the managed verifier.
 
 ## Exit semantics
 
@@ -128,4 +168,4 @@ effect_evidence_ready=false
 terminal_status=blocked-external-evidence
 ```
 
-Synthetic repeated trials and fake verifier fixtures validate the state machine only; they cannot be committed as canonical runtime/field evidence. Index v3 requires campaign→comparison recomputation, portable managed signature replay of every raw receipt, exact aggregate measurement recomputation, campaign trace/bundle/runtime-target coverage, and digest-bound human review.
+Synthetic repeated trials and fake verifier fixtures validate the state machine only; they cannot be committed as canonical runtime/field evidence. Index v5 requires cryptographic pre-registration of the complete content-addressed package before all effect-trial runs and managed observations/signatures, then campaign→comparison recomputation, portable managed signature replay of every raw receipt, exact aggregate measurement recomputation, exact candidate-bundle asset coverage, campaign trace/bundle/runtime-target coverage, and digest-bound human review.

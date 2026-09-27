@@ -1,9 +1,9 @@
 {
   "schema": "llm-agent-adk-interface-lock/v1",
-  "version": "7.8.0",
-  "commit": "86e1306b287b1dbe593865b4fe8cfa667743c548",
-  "tree": "a415276ae74fcc756bacc55d686a062fb9599bb7",
-  "manifest_blob": "07e40449d227ceecbc206ffd430fd8de703f1250",
+  "version": "7.11.0",
+  "commit": "2445a2cbd738698b0faea67b5b9918aad1fd56f3",
+  "tree": "70e459c23f2d7989e81d8a675e4a8858c70472c3",
+  "manifest_blob": "f59ba1feaba604e61a93a0a46ffc45b25f641a4a",
   "manifest_mode": "json-only",
   "maturity_contract": "v5",
   "surfaces": {
@@ -11,7 +11,9 @@
     "maturity_test": "tests/test_product_maturity.sh",
     "target_contract_schema": "manifests/target-contract.schema.json",
     "evidence_graph_schema": "schemas/evidence-graph-v1.schema.json",
-    "runtime_control_schema": "schemas/runtime-control-decision-v2.schema.json"
+    "runtime_control_schema": "schemas/runtime-control-decision-v2.schema.json",
+    "sigstore_blob_verifier": "src/agent_dev_kit/sigstore_blob.py",
+    "effect_campaign_materializer": "src/agent_dev_kit/effect_campaign_materializer.py"
   },
   "deprecated_surfaces": [
     "manifest.yaml",
@@ -21,5 +23,5 @@
     "tests/test_runtime_control.py",
     "src/agent_dev_kit/runtime_control"
   ],
-  "updated_at": "2026-09-26"
+  "updated_at": "2026-09-27"
 }

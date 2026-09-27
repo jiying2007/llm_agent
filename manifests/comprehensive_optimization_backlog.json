@@ -445,7 +445,7 @@
       "optimization_area": "Knowledge retention",
       "terminal_outcome": "High-value conclusions generate sanitized candidates, and active or archive promotion requires owner review.",
       "design_status": "landed",
-      "implementation_status": "blocked",
+      "implementation_status": "done",
       "implementation_targets": [
         "sanitized architecture knowledge candidate in Root",
         "deterministic Root-to-Hub dry-run handoff projection",
@@ -454,16 +454,17 @@
       ],
       "verification": [
         "rtk python3 -m tools.control_plane.knowledge_retention_handoff --root . --summary-json",
-        "rtk bash tests/test_knowledge_retention_handoff.sh"
+        "rtk bash tests/test_knowledge_retention_handoff.sh",
+        "rtk python3 -m tools.control_plane.terminal_closure --root . --summary-json"
       ],
       "implementation_evidence": [
         "docs/knowledge-candidates/llm-agent-adk-target-architecture.md",
         "docs/runbooks/knowledge-retention-handoff.md",
         "tools/control_plane/knowledge_retention_handoff.py",
         "tests/test_knowledge_retention_handoff.sh",
-        "reports/runtime-evidence/knowledge-retention/g9-hub-handoff-2026-09-26.json"
+        "reports/runtime-evidence/knowledge-retention/g9-hub-handoff-2026-09-26.json",
+        "reports/runtime-evidence/knowledge-retention/g9-hub-owner-decision-2026-09-26.json"
       ],
-      "blocking_condition": "The Root candidate has been validated, the Knowledge Hub canonical dry-run/status path succeeded, and the candidate has now been mechanically captured on Hub master as status=reviewing with promotion=none and manual_validation_pending=true (Hub PR 124 -> master 0fb7ed1e2dbd5f715b9b4382581d696081af1b8c). No active/archive promotion or owner authorization occurred. Terminal G9 completion now requires only a real human Knowledge Hub owner lifecycle decision. Automation must not fabricate reviewed_by, authorization, or lifecycle outcome.",
       "external_tracking": {
         "repository": "jiying2007/knowledge-hub",
         "issue_number": 125
@@ -779,7 +780,7 @@
         "agent-dev-kit/schemas/native-target-campaign-evidence-v2.schema.json",
         "agent-dev-kit/schemas/native-target-conformance-receipt-v2.schema.json"
       ],
-      "blocking_condition": "Software layers through ADK 7.6.0 are landed and Root-consumed, including the semantic-v2 hard-cut where exit_code=0 alone cannot satisfy discovery/load/trigger. Terminal completion requires at least one real authenticated version-pinned direct-target campaign whose three semantic assertions pass, followed by a signed v2 receipt, reviewed signature/provenance, exact managed-registry binding, production-loader verification, and owner-reviewed target promotion; synthetic/source-layout evidence cannot satisfy this condition.",
+      "blocking_condition": "The current Root ADK pin includes the semantic-v2 native campaign hard-cut introduced in ADK 7.6.0, where exit_code=0 alone cannot satisfy discovery/load/trigger. Terminal completion requires at least one real authenticated version-pinned direct-target campaign whose three semantic assertions pass, followed by a signed v2 receipt, reviewed signature/provenance, exact managed-registry binding, production-loader verification, and owner-reviewed target promotion; synthetic/source-layout evidence cannot satisfy this condition.",
       "external_tracking": {
         "repository": "jiying2007/agent-dev-kit",
         "issue_number": 153
@@ -795,10 +796,11 @@
       "implementation_targets": [
         "typed Agent/Skill/Profile value contracts and canonical invocation receipt/measurement pipeline",
         "repeated task-trial comparison with task-level uncertainty and guardrails",
+        "resumable real-runtime campaign execution reused from ADK campaign state plus campaign-state to effect-trials materialization",
         "managed Agent Value runtime/field evidence verifier and default-empty trust registry",
         "typed prepared managed receipt builder for runtime/field producer adapters",
-        "governed effect/value evidence index v3 binding original campaign, recomputed comparison, reviewed portable trust package, signed raw receipt replay, recomputed measurement and per-asset human owner review",
-        "full current Agent/Skill/Profile coverage with representative success/failure/wrong-route/abstain/outcome/retirement observations"
+        "full current Agent/Skill/Profile coverage with representative success/failure/wrong-route/abstain/outcome/retirement observations",
+        "governed effect/value evidence index v5 binding a cryptographically signed content-addressed preregistration package (plan + control artifacts + baseline/candidate bundle manifests), original campaign, recomputed comparison, reviewed portable trust package, signed raw receipt replay, recomputed measurement and per-asset human owner review"
       ],
       "verification": [
         "rtk python3 -m tools.control_plane.cli effect-readiness --root . --summary-json",
@@ -820,9 +822,12 @@
         "docs/runbooks/effect-readiness.md",
         "tools/control_plane/effect_readiness.py",
         "tests/test_effect_readiness.sh",
-        "agent-dev-kit/src/agent_dev_kit/agent_value_receipts.py"
+        "agent-dev-kit/src/agent_dev_kit/agent_value_receipts.py",
+        "agent-dev-kit/src/agent_dev_kit/effect_campaign_materializer.py",
+        "agent-dev-kit/src/agent_dev_kit/campaign.py",
+        "agent-dev-kit/src/agent_dev_kit/campaign_model.py"
       ],
-      "blocking_condition": "Software layers through ADK 7.8.0 plus Root effect evidence-index v3 are landed. Runtime/field adapters can now use the typed prepared managed receipt builder to eliminate manual manifest/attestation/receipt-id assembly, but prepared receipts remain explicitly unverified. The canonical gate recomputes comparison from the indexed campaign, replays every raw runtime/field receipt through the reviewed portable managed Agent Value contract/registry and signature bundles, recomputes the aggregate measurement, verifies campaign trace/bundle/runtime-target coverage, derives representative success/failure/wrong-route/abstain cases from verified receipts, and requires owner-review v3 with exact trust/receipt/measurement digests, real reviewed_by identity and automation_generated=false. Terminal completion still requires real external observations, signed receipts/bundles, full current Agent/Skill/Profile coverage, substantive retirement signals, and human per-asset decisions; prepared, synthetic/test-only or fabricated aggregate evidence cannot satisfy the canonical index.",
+      "blocking_condition": "The current Root ADK pin is 7.11.0 and includes the shared digest-pinned Sigstore verifier plus the resumable campaign-state to effect-trials materializer. G22 now has a mechanically complete software path: freeze a content-addressed preregistration package; sign it before execution; execute the reviewed single- or dual-runtime campaign through ADK's resumable state-dir/budget/--resume path; materialize validated campaign records into trace-only adk-effect-trials/v1 Run Evidence; recompute the comparison; then ingest separately governed managed runtime/field receipts, replay signatures, recompute Agent Value measurement, require measured assets to equal the preregistered candidate bundle, derive representative cases, and bind real owner-review v5 decisions. Terminal completion still requires real provider/runtime executions using a revision-bound model identity, real managed runtime/field observations and signatures, full current asset coverage with substantive retirement signals, and human per-asset decisions. Materialization remains test-only effect evidence and does not create managed receipts, lifecycle authority, or release authority.",
       "external_tracking": {
         "repository": "jiying2007/llm_agent",
         "issue_number": 154

@@ -27,6 +27,7 @@ assert value["software"]["missing_contract_ids"]==[], value
 assert value["software"]["schema_failures"]==[], value
 assert value["software"]["missing_files"]==[], value
 assert value["software"]["portable_managed_verifier_available"] is True, value
+assert value["software"]["sigstore_blob_verifier_available"] is True, value
 assert value["safe_defaults"]["registry_status"]=="active", value
 assert value["evidence_index"]["entry_count"]==0, value
 assert value["evidence_index"]["covered_asset_count"]==0, value
@@ -79,6 +80,78 @@ assert spec and spec.loader
 fixture=importlib.util.module_from_spec(spec)
 spec.loader.exec_module(fixture)
 campaign=fixture.document()
+
+manifest_json=json.loads((adk/"manifest.json").read_text(encoding="utf-8"))
+assets=set()
+asset_refs={}
+for asset in manifest.all_assets("agent"):
+    assets.add(("agent",asset.name))
+    asset_refs[("agent",asset.name)]="ref:"+asset.digest
+for asset in manifest.all_assets("skill"):
+    assets.add(("skill",asset.name))
+    asset_refs[("skill",asset.name)]="ref:"+asset.digest
+for name,value in manifest_json["profiles"].items():
+    assets.add(("profile",name))
+    asset_refs[("profile",name)]="ref:"+sha256_bytes(canonical_json_bytes(value))
+assert assets
+
+def ref(seed: str) -> str:
+    return opaque_ref_for_sha256(hashlib.sha256(seed.encode("utf-8")).hexdigest())
+
+control_artifacts={
+    "environment":{"schema":"fixture-control/v1","name":"environment","value":"ubuntu-24.04"},
+    "tool_policy":{"schema":"fixture-control/v1","name":"tool-policy","value":"read-write-bounded"},
+    "grader":{"schema":"fixture-control/v1","name":"grader","value":"deterministic-routing-v1"},
+    "dataset":{"schema":"fixture-control/v1","name":"dataset","value":"effect-readiness-fixture"},
+    "parameters":{"schema":"fixture-control/v1","name":"parameters","value":{"temperature":0}},
+    "provider":{"schema":"fixture-control/v1","name":"provider","value":"fixture-provider"},
+}
+control_fields={
+    "environment":"environment_ref",
+    "tool_policy":"tool_policy_ref",
+    "grader":"grader_ref",
+    "dataset":"dataset_ref",
+    "parameters":"parameters_ref",
+    "provider":"provider_ref",
+}
+for name,field in control_fields.items():
+    campaign["plan"]["controls"][field]="ref:"+sha256_bytes(canonical_json_bytes(control_artifacts[name]))
+
+candidate_assets=[
+    {"asset_kind":kind,"asset_id":asset_id,"content_ref":asset_refs[(kind,asset_id)]}
+    for kind,asset_id in sorted(assets)
+]
+bundle_manifests={
+    "baseline":{
+        "schema":"llm-agent-effect-bundle-manifest/v1",
+        "condition":"baseline",
+        "runtime_target":campaign["plan"]["controls"]["runtime_target"],
+        "assets":[],
+        "metadata":{"mode":"no-adk-assets"},
+        "raw_content_stored":False,
+        "release_authorized":False,
+    },
+    "candidate":{
+        "schema":"llm-agent-effect-bundle-manifest/v1",
+        "condition":"candidate",
+        "runtime_target":campaign["plan"]["controls"]["runtime_target"],
+        "assets":candidate_assets,
+        "metadata":{"mode":"pinned-current-adk-assets","adk_version":manifest.version},
+        "raw_content_stored":False,
+        "release_authorized":False,
+    },
+}
+for side in ("baseline","candidate"):
+    digest=sha256_bytes(canonical_json_bytes(bundle_manifests[side]))
+    campaign["plan"]["bundles"][side]=digest
+    for trial in campaign["trials"]:
+        for binding in trial[side]:
+            binding["run"]["trace_summary"]["asset_bundle_sha256"]=digest
+            binding["run"]["trace_ref"]=opaque_ref_for_sha256(
+                sha256_bytes(canonical_json_bytes(binding["run"]["trace_summary"]))
+            )
+fixture.rebind(campaign)
+
 comparison=compare_effect_trials(campaign, manifest)
 assert comparison["verdict"]=="improved", comparison
 campaign_path=fixture_dir/"campaign.json"
@@ -103,21 +176,35 @@ comparison_path.write_text(
     encoding="utf-8",
 )
 
-manifest_json=json.loads((adk/"manifest.json").read_text(encoding="utf-8"))
-assets=set()
-for key,kind in (("agents","agent"),("skills","skill"),("optional_skills","skill")):
-    for item in manifest_json.get(key,[]):
-        assets.add((kind,item["name"]))
-for name in manifest_json["profiles"]:
-    assets.add(("profile",name))
-assert assets
-
-def ref(seed: str) -> str:
-    return opaque_ref_for_sha256(hashlib.sha256(seed.encode("utf-8")).hexdigest())
+preregistration_package={
+    "schema":"llm-agent-effect-preregistration-package/v2",
+    "status":"frozen",
+    "plan":campaign["plan"],
+    "controls":control_artifacts,
+    "bundles":bundle_manifests,
+    "raw_content_stored":False,
+    "provider_execution_performed":False,
+    "release_authorized":False,
+}
+preregistration_package_path=fixture_dir/"preregistration-package.json"
+preregistration_package_path.write_bytes(canonical_json_bytes(preregistration_package))
+preregistration_registered_at=datetime(2026,9,24,9,0,tzinfo=timezone.utc)
+preregistration_bundle_path=fixture_dir/"preregistration.sigstore.json"
+preregistration_bundle_path.write_text(
+    json.dumps({
+        "verificationMaterial":{
+            "tlogEntries":[{
+                "integratedTime":str(int(preregistration_registered_at.timestamp()))
+            }]
+        }
+    },sort_keys=True)+"\n",
+    encoding="utf-8",
+)
 
 now=datetime.now(timezone.utc).replace(microsecond=0)
 window_from=now-timedelta(hours=2)
 window_through=now-timedelta(minutes=1)
+receipt_signed_at=now-timedelta(seconds=10)
 
 contract=load_contract(adk/"manifests/agent_value_contracts.json")
 contract=json.loads(json.dumps(contract))
@@ -153,7 +240,14 @@ cosign.write_text(
 )
 cosign.chmod(cosign.stat().st_mode | stat.S_IXUSR)
 bundle=fixture_dir/"receipt.sigstore.json"
-bundle.write_text('{"fixture":"portable-sigstore"}\n',encoding="utf-8")
+bundle.write_text(
+    json.dumps({
+        "verificationMaterial":{
+            "tlogEntries":[{"integratedTime":str(int(receipt_signed_at.timestamp()))}]
+        }
+    },sort_keys=True)+"\n",
+    encoding="utf-8",
+)
 manifest_ref=opaque_ref_for_sha256(manifest.digest)
 
 receipts=[]
@@ -287,7 +381,7 @@ def sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 review={
-    "schema":"llm-agent-effect-owner-review/v3",
+    "schema":"llm-agent-effect-owner-review/v5",
     "status":"approved",
     "campaign_id":comparison["campaign_id"],
     "campaign_sha256":sha(campaign_path),
@@ -296,6 +390,8 @@ review={
     "authority_registry_sha256":sha(registry_path),
     "receipts_sha256":sha(receipts_path),
     "measurement_sha256":sha(measurement_path),
+    "preregistration_package_sha256":sha(preregistration_package_path),
+    "preregistration_bundle_sha256":sha(preregistration_bundle_path),
     "reviewed_at":now.isoformat().replace("+00:00","Z"),
     "reviewed_by":"fixture-human-owner",
     "reviewer_role":"owner",
@@ -322,12 +418,16 @@ review_path.write_text(
 
 relative=lambda path: path.relative_to(root).as_posix()
 index={
-    "schema":"llm-agent-effect-value-evidence-index/v3",
+    "schema":"llm-agent-effect-value-evidence-index/v5",
     "status":"active",
     "entries":[{
         "id":comparison["campaign_id"],
         "campaign_path":relative(campaign_path),
         "campaign_sha256":sha(campaign_path),
+        "preregistration_package_path":relative(preregistration_package_path),
+        "preregistration_package_sha256":sha(preregistration_package_path),
+        "preregistration_bundle_path":relative(preregistration_bundle_path),
+        "preregistration_bundle_sha256":sha(preregistration_bundle_path),
         "comparison_path":relative(comparison_path),
         "comparison_sha256":sha(comparison_path),
         "authority_contract_path":relative(contract_path),
@@ -421,6 +521,124 @@ automated_index_path.write_text(
     encoding="utf-8",
 )
 
+# Negative 4: a plan signed after the first managed observation cannot be
+# backfilled into a campaign by editing registered_at text.
+late_bundle_path=fixture_dir/"late-preregistration.sigstore.json"
+late_registered=window_from+timedelta(minutes=1)
+late_bundle_path.write_text(
+    json.dumps({
+        "verificationMaterial":{
+            "tlogEntries":[{"integratedTime":str(int(late_registered.timestamp()))}]
+        }
+    },sort_keys=True)+"\n",
+    encoding="utf-8",
+)
+late_review=json.loads(json.dumps(review))
+late_review["preregistration_bundle_sha256"]=sha(late_bundle_path)
+late_review_path=fixture_dir/"late-preregistration-owner-review.json"
+late_review_path.write_text(
+    json.dumps(late_review,ensure_ascii=False,sort_keys=True,indent=2)+"\n",
+    encoding="utf-8",
+)
+late_index=json.loads(json.dumps(index))
+late_entry=late_index["entries"][0]
+late_entry["preregistration_bundle_path"]=relative(late_bundle_path)
+late_entry["preregistration_bundle_sha256"]=sha(late_bundle_path)
+late_entry["owner_review_path"]=relative(late_review_path)
+late_entry["owner_review_sha256"]=sha(late_review_path)
+late_index_path=fixture_dir/"late-preregistration-index.json"
+late_index_path.write_text(
+    json.dumps(late_index,ensure_ascii=False,sort_keys=True,indent=2)+"\n",
+    encoding="utf-8",
+)
+
+# Negative 5: changing a frozen control artifact while synchronizing package
+# digests must still fail because plan.controls refs bind the original content.
+control_drift_package=json.loads(json.dumps(preregistration_package))
+control_drift_package["controls"]["dataset"]["value"]="drifted-after-prereg"
+control_drift_path=fixture_dir/"control-drift-package.json"
+control_drift_path.write_bytes(canonical_json_bytes(control_drift_package))
+control_drift_review=json.loads(json.dumps(review))
+control_drift_review["preregistration_package_sha256"]=sha(control_drift_path)
+control_drift_review_path=fixture_dir/"control-drift-owner-review.json"
+control_drift_review_path.write_text(
+    json.dumps(control_drift_review,ensure_ascii=False,sort_keys=True,indent=2)+"\n",
+    encoding="utf-8",
+)
+control_drift_index=json.loads(json.dumps(index))
+control_drift_entry=control_drift_index["entries"][0]
+control_drift_entry["preregistration_package_path"]=relative(control_drift_path)
+control_drift_entry["preregistration_package_sha256"]=sha(control_drift_path)
+control_drift_entry["owner_review_path"]=relative(control_drift_review_path)
+control_drift_entry["owner_review_sha256"]=sha(control_drift_review_path)
+control_drift_index_path=fixture_dir/"control-drift-index.json"
+control_drift_index_path.write_text(
+    json.dumps(control_drift_index,ensure_ascii=False,sort_keys=True,indent=2)+"\n",
+    encoding="utf-8",
+)
+
+# Negative 6: changing a bundle manifest without updating the frozen plan bundle
+# digest must fail even if index/review package digests are synchronized.
+bundle_drift_package=json.loads(json.dumps(preregistration_package))
+bundle_drift_package["bundles"]["candidate"]["metadata"]["mode"]="drifted-candidate"
+bundle_drift_path=fixture_dir/"bundle-drift-package.json"
+bundle_drift_path.write_bytes(canonical_json_bytes(bundle_drift_package))
+bundle_drift_review=json.loads(json.dumps(review))
+bundle_drift_review["preregistration_package_sha256"]=sha(bundle_drift_path)
+bundle_drift_review_path=fixture_dir/"bundle-drift-owner-review.json"
+bundle_drift_review_path.write_text(
+    json.dumps(bundle_drift_review,ensure_ascii=False,sort_keys=True,indent=2)+"\n",
+    encoding="utf-8",
+)
+bundle_drift_index=json.loads(json.dumps(index))
+bundle_drift_entry=bundle_drift_index["entries"][0]
+bundle_drift_entry["preregistration_package_path"]=relative(bundle_drift_path)
+bundle_drift_entry["preregistration_package_sha256"]=sha(bundle_drift_path)
+bundle_drift_entry["owner_review_path"]=relative(bundle_drift_review_path)
+bundle_drift_entry["owner_review_sha256"]=sha(bundle_drift_review_path)
+bundle_drift_index_path=fixture_dir/"bundle-drift-index.json"
+bundle_drift_index_path.write_text(
+    json.dumps(bundle_drift_index,ensure_ascii=False,sort_keys=True,indent=2)+"\n",
+    encoding="utf-8",
+)
+
+# Negative 7: outer digests cannot legitimize a preregistration package whose
+# plan no longer satisfies the exact pinned ADK effect-trials schema.
+schema_drift_package=json.loads(json.dumps(preregistration_package))
+schema_drift_package["plan"]["policy"].pop("minimum_trials")
+schema_drift_path=fixture_dir/"schema-drift-package.json"
+schema_drift_path.write_bytes(canonical_json_bytes(schema_drift_package))
+schema_drift_review=json.loads(json.dumps(review))
+schema_drift_review["preregistration_package_sha256"]=sha(schema_drift_path)
+schema_drift_review_path=fixture_dir/"schema-drift-owner-review.json"
+schema_drift_review_path.write_text(
+    json.dumps(schema_drift_review,ensure_ascii=False,sort_keys=True,indent=2)+"\n",
+    encoding="utf-8",
+)
+schema_drift_index=json.loads(json.dumps(index))
+schema_drift_entry=schema_drift_index["entries"][0]
+schema_drift_entry["preregistration_package_path"]=relative(schema_drift_path)
+schema_drift_entry["preregistration_package_sha256"]=sha(schema_drift_path)
+schema_drift_entry["owner_review_path"]=relative(schema_drift_review_path)
+schema_drift_entry["owner_review_sha256"]=sha(schema_drift_review_path)
+schema_drift_index_path=fixture_dir/"schema-drift-index.json"
+schema_drift_index_path.write_text(
+    json.dumps(schema_drift_index,ensure_ascii=False,sort_keys=True,indent=2)+"\n",
+    encoding="utf-8",
+)
+
+# Negative 8: baseline/candidate labels or metadata cannot manufacture an
+# intervention when the exact asset identities/content refs are identical.
+same_assets_package=json.loads(json.dumps(preregistration_package))
+same_assets_package["bundles"]["baseline"]["assets"]=json.loads(
+    json.dumps(same_assets_package["bundles"]["candidate"]["assets"])
+)
+same_assets_package["plan"]["bundles"]["baseline"]=sha256_bytes(
+    canonical_json_bytes(same_assets_package["bundles"]["baseline"])
+)
+same_assets_path=fixture_dir/"same-assets-package.json"
+same_assets_path.write_bytes(canonical_json_bytes(same_assets_package))
+
 print(relative(index_path))
 PY
 
@@ -430,6 +648,15 @@ from pathlib import Path
 print((Path(sys.argv[2])/"evidence-index.json").resolve().relative_to(Path(sys.argv[1]).resolve()).as_posix())
 PY
 )"
+
+set +e
+PYTHONPATH="$ROOT:$ROOT/agent-dev-kit/src" python3 -m tools.control_plane.effect_preregistration_package \
+  --adk "$ROOT/agent-dev-kit" \
+  --package "$FIXTURE_DIR/same-assets-package.json" \
+  --summary-json >"$TMP"
+same_assets_rc=$?
+set -e
+test "$same_assets_rc" -eq 1
 
 python3 -m tools.control_plane.effect_readiness   --root . --evidence-index "$INDEX_REL" --require-evidence --summary-json >"$TMP"
 python3 - "$TMP" <<'PY'
@@ -449,13 +676,17 @@ assert index["owner_decision_count"]==index["expected_asset_count"], index
 assert index["entries"][0]["comparison_verdict"]=="improved", index
 assert index["entries"][0]["managed_campaign_trace_coverage"] is True, index
 assert index["entries"][0]["signed_receipt_replay"] is True, index
+assert index["entries"][0]["preregistration_verified"] is True, index
+assert index["entries"][0]["candidate_bundle_asset_count"]==index["expected_asset_count"], index
+assert index["entries"][0]["preregistration_package_sha256"], index
+assert index["entries"][0]["preregistered_at"], index
 assert index["entries"][0]["verified_receipt_count"]>index["expected_asset_count"], index
 assert index["entries"][0]["campaign_trace_count"]>0, index
 assert index["entries"][0]["reviewed_by"]=="fixture-human-owner", index
 assert value["release_authorized"] is False, value
 PY
 
-for BAD in tampered-index.json forged-index.json automated-index.json; do
+for BAD in tampered-index.json forged-index.json automated-index.json late-preregistration-index.json control-drift-index.json bundle-drift-index.json schema-drift-index.json; do
   BAD_REL="$(python3 - "$ROOT" "$FIXTURE_DIR" "$BAD" <<'PY'
 import sys
 from pathlib import Path
@@ -471,4 +702,14 @@ done
 
 python3 -m tools.control_plane.cli effect-readiness --root . --summary-json   | python3 -c 'import json,sys; v=json.load(sys.stdin); assert v["status"]=="pass" and v["software_ready"] is True and v["effect_evidence_ready"] is False, v'
 
-echo '[PASS] effect readiness requires signed receipt replay, recomputed measurement, campaign provenance, and real owner review'
+WORKFLOW="$ROOT/.github/workflows/effect-preregister.yml"
+grep -Fq 'REGISTER_REAL_EFFECT_PLAN' "$WORKFLOW"
+grep -Fq 'id-token: write' "$WORKFLOW"
+grep -Fq 'cosign sign-blob' "$WORKFLOW"
+grep -Fq 'provider_execution_performed":False' "$WORKFLOW"
+if grep -Eq 'ANTHROPIC_API_KEY|OPENAI_API_KEY|claude -p|codex exec' "$WORKFLOW"; then
+  echo '[FAIL] effect preregistration workflow must not execute a provider/model' >&2
+  exit 1
+fi
+
+echo '[PASS] effect readiness requires cryptographic preregistration, signed receipt replay, recomputed measurement, campaign provenance, and real owner review'
