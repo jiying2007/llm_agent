@@ -813,13 +813,13 @@ def project(root: Path, evidence_index: Path = DEFAULT_INDEX) -> dict[str, Any]:
         "src/agent_dev_kit/agent_value_receipts.py",
         "src/agent_dev_kit/agent_value_trust.py",
         "src/agent_dev_kit/sigstore_blob.py",
-        "../tools/control_plane/effect_preregistration_package.py",
         "manifests/agent_value_contracts.json",
         "manifests/agent_value_trust_registry.json",
         "docs/runbooks/effect-trials.md",
         "docs/runbooks/agent-value-lifecycle.md",
     )
     missing_files = [item for item in required_files if not (adk / item).is_file()]
+    package_validator_available = (root / "tools/control_plane/effect_preregistration_package.py").is_file()
     value = _canonical_agent_value_projection(adk)
 
     policy = value["policy"]
@@ -831,6 +831,7 @@ def project(root: Path, evidence_index: Path = DEFAULT_INDEX) -> dict[str, Any]:
         and not missing_files
         and value.get("portable_managed_verifier_available") is True
         and value.get("sigstore_blob_verifier_available") is True
+        and package_validator_available
         and empty_measurement["measurement_status"] == "not-measured"
         and empty_measurement["reason"] == "no-valid-receipts"
     )
@@ -883,6 +884,7 @@ def project(root: Path, evidence_index: Path = DEFAULT_INDEX) -> dict[str, Any]:
             "missing_files": missing_files,
             "portable_managed_verifier_available": value.get("portable_managed_verifier_available") is True,
             "sigstore_blob_verifier_available": value.get("sigstore_blob_verifier_available") is True,
+            "preregistration_package_validator_available": package_validator_available,
             "agent_value_contract": value["contract_report"],
         },
         "safe_defaults": {
