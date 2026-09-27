@@ -14,8 +14,8 @@ from .adk_interface import validate as validate_adk_interface
 from .effect_preregistration import verify_effect_preregistration
 
 SCHEMA = "llm-agent-effect-readiness/v1"
-INDEX_SCHEMA = "llm-agent-effect-value-evidence-index/v4"
-OWNER_REVIEW_SCHEMA = "llm-agent-effect-owner-review/v4"
+INDEX_SCHEMA = "llm-agent-effect-value-evidence-index/v5"
+OWNER_REVIEW_SCHEMA = "llm-agent-effect-owner-review/v5"
 RECEIPT_SET_SCHEMA = "llm-agent-effect-receipt-set/v1"
 DEFAULT_INDEX = Path("reports/runtime-evidence/effect-value/evidence-index.json")
 _REQUIRED_CONTRACT_IDS = {"agent-value", "effect-trials", "effect-trial-comparison"}
@@ -373,7 +373,7 @@ def _validate_owner_review(
     authority_registry_sha256: str,
     receipts_sha256: str,
     measurement_sha256: str,
-    preregistration_plan_sha256: str,
+    preregistration_package_sha256: str,
     preregistration_bundle_sha256: str,
     observed_cases: dict[str, bool],
     measurement_assets: set[tuple[str, str]],
@@ -388,7 +388,7 @@ def _validate_owner_review(
         "authority_registry_sha256",
         "receipts_sha256",
         "measurement_sha256",
-        "preregistration_plan_sha256",
+        "preregistration_package_sha256",
         "preregistration_bundle_sha256",
         "reviewed_at",
         "reviewed_by",
@@ -418,8 +418,8 @@ def _validate_owner_review(
         raise ValueError("owner review receipt-set digest mismatch")
     if review["measurement_sha256"] != measurement_sha256:
         raise ValueError("owner review measurement digest mismatch")
-    if review["preregistration_plan_sha256"] != preregistration_plan_sha256:
-        raise ValueError("owner review preregistration plan digest mismatch")
+    if review["preregistration_package_sha256"] != preregistration_package_sha256:
+        raise ValueError("owner review preregistration package digest mismatch")
     if review["preregistration_bundle_sha256"] != preregistration_bundle_sha256:
         raise ValueError("owner review preregistration bundle digest mismatch")
     reviewed_at = _parse_time(review["reviewed_at"], "owner review timestamp")
@@ -475,8 +475,8 @@ def _validate_evidence_entry(
         "id",
         "campaign_path",
         "campaign_sha256",
-        "preregistration_plan_path",
-        "preregistration_plan_sha256",
+        "preregistration_package_path",
+        "preregistration_package_sha256",
         "preregistration_bundle_path",
         "preregistration_bundle_sha256",
         "comparison_path",
@@ -504,7 +504,7 @@ def _validate_evidence_entry(
         raise ValueError("effect evidence entry id is invalid")
 
     docs: dict[str, tuple[Path, str]] = {}
-    for name in ("campaign", "preregistration_plan", "preregistration_bundle", "comparison", "authority_contract", "authority_registry", "receipts", "measurement", "owner_review"):
+    for name in ("campaign", "preregistration_package", "preregistration_bundle", "comparison", "authority_contract", "authority_registry", "receipts", "measurement", "owner_review"):
         path = _safe_path(root, evidence_root, entry[f"{name}_path"], f"{name} path")
         expected = entry[f"{name}_sha256"]
         if (
@@ -519,7 +519,7 @@ def _validate_evidence_entry(
         docs[name] = (path, actual)
 
     campaign_path, campaign_sha = docs["campaign"]
-    preregistration_plan_path, preregistration_plan_sha = docs["preregistration_plan"]
+    preregistration_package_path, preregistration_package_sha = docs["preregistration_package"]
     preregistration_bundle_path, preregistration_bundle_sha = docs["preregistration_bundle"]
     comparison_path, comparison_sha = docs["comparison"]
     authority_contract_path, authority_contract_sha = docs["authority_contract"]
@@ -567,15 +567,15 @@ def _validate_evidence_entry(
     preregistration = verify_effect_preregistration(
         adk,
         campaign_path,
-        preregistration_plan_path,
+        preregistration_package_path,
         preregistration_bundle_path,
         preregistration_bundle_sha,
         authority_registry_path,
         receipts_path,
         evidence_root,
     )
-    if preregistration.get("plan_sha256") != preregistration_plan_sha:
-        raise ValueError("preregistration plan digest differs from verified canonical plan")
+    if preregistration.get("package_sha256") != preregistration_package_sha:
+        raise ValueError("preregistration package digest differs from verified canonical package")
 
     recomputed = _recompute_effect_comparison(adk, campaign_path)
     if recomputed != comparison:
@@ -694,7 +694,7 @@ def _validate_evidence_entry(
         authority_registry_sha256=authority_registry_sha,
         receipts_sha256=receipts_sha,
         measurement_sha256=measurement_sha,
-        preregistration_plan_sha256=preregistration_plan_sha,
+        preregistration_package_sha256=preregistration_package_sha,
         preregistration_bundle_sha256=preregistration_bundle_sha,
         observed_cases=dict(replay["observed_cases"]),
         measurement_assets=assets,
@@ -707,6 +707,7 @@ def _validate_evidence_entry(
         "managed_campaign_trace_coverage": True,
         "signed_receipt_replay": True,
         "preregistration_verified": True,
+        "preregistration_package_sha256": preregistration_package_sha,
         "preregistered_at": preregistration["registered_at"],
         "verified_receipt_count": replay["receipt_count"],
         "reviewed_by": review["reviewed_by"],
@@ -812,6 +813,7 @@ def project(root: Path, evidence_index: Path = DEFAULT_INDEX) -> dict[str, Any]:
         "src/agent_dev_kit/agent_value_receipts.py",
         "src/agent_dev_kit/agent_value_trust.py",
         "src/agent_dev_kit/sigstore_blob.py",
+        "../tools/control_plane/effect_preregistration_package.py",
         "manifests/agent_value_contracts.json",
         "manifests/agent_value_trust_registry.json",
         "docs/runbooks/effect-trials.md",
