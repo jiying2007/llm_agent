@@ -110,9 +110,12 @@ bad=json.loads(json.dumps(src)); bad["bundles"]["candidate"]["assets"][-1]["cont
 json.dump(bad,open(sys.argv[3],"w",encoding="utf-8"),sort_keys=True)
 same=json.loads(json.dumps(src)); same["bundles"]["candidate"]["assets"]=json.loads(json.dumps(same["bundles"]["baseline"]["assets"]))
 json.dump(same,open(sys.argv[4],"w",encoding="utf-8"),sort_keys=True)
+reordered=json.loads(json.dumps(src))
+reordered["bundles"]["baseline"]["assets"]=list(reversed(json.loads(json.dumps(reordered["bundles"]["candidate"]["assets"]))))
+json.dump(reordered,open(sys.argv[5],"w",encoding="utf-8"),sort_keys=True)
 PY
 
-for BAD in derived-ref bad-content same-assets; do
+for BAD in derived-ref bad-content same-assets reordered-same-assets; do
   set +e
   python3 -m tools.control_plane.effect_preregistration_package --adk "$ROOT/agent-dev-kit" --source "$TMP/${BAD}.json" --output "$TMP/${BAD}.out.json" --summary-json >/dev/null
   rc=$?
