@@ -88,14 +88,17 @@ adk eval campaign run \
   --contract <reviewed-campaign-contract.json> \
   --state-dir <state-dir> \
   --execute \
-  --approve-budget-usd <owner-approved-budget>
+  --approve-budget-usd <owner-approved-budget> \
+  --max-new-results 20
 
-# interrupted work resumes from digest-validated state
+# each successful bounded batch writes a digest-validated checkpoint;
+# resume the same frozen plan/state until status=complete
 adk eval campaign run \
   --contract <reviewed-campaign-contract.json> \
   --state-dir <state-dir> \
   --execute --resume \
-  --approve-budget-usd <owner-approved-budget>
+  --approve-budget-usd <owner-approved-budget> \
+  --max-new-results 20
 
 # after the selected runtime is complete
 adk eval campaign materialize-effect \
@@ -106,7 +109,7 @@ adk eval campaign materialize-effect \
   --output campaign.json
 ```
 
-The campaign contract may select a bounded non-empty subset of Codex/Claude runtimes. The materializer performs no provider call: it validates campaign-plan/result digests, exact runtime/model identity, task/trial completeness and observation-window membership, then emits trace-only Run Evidence inside `adk-effect-trials/v1`. Those test-only traces are the comparison input, **not** the managed runtime/field Agent Value receipts required later by G22.
+The campaign contract may select a bounded non-empty subset of Codex/Claude runtimes. For long or paid execution, prefer small `--max-new-results N` batches: a bounded batch returns `status=checkpointed`, `certified=false`, and `release_authorized=false`; the same frozen state is resumed until completion, and only the complete state proceeds to materialization. The materializer performs no provider call: it validates campaign-plan/result digests, exact runtime/model identity, task/trial completeness and observation-window membership, then emits trace-only Run Evidence inside `adk-effect-trials/v1`. Those test-only traces are the comparison input, **not** the managed runtime/field Agent Value receipts required later by G22.
 
 A terminal-capable plan must use `model_identity=revision-bound`; alias-only model identity deliberately yields an inconclusive comparison. Provider/runtime execution therefore starts only after an immutable model identifier, budget and preregistered package are reviewable.
 
