@@ -1,6 +1,6 @@
 # ADK、Codex 与 Knowledge Hub 四仓交付检查点
 
-状态：`ADK-Python-3.8-branch-verified / Codex-live-verified / cross-repo-PR-review`。下文阶段检查点保留实施时的历史基线，文末列出本轮提交推送后的最新状态；源码验证、安装验收、Execution Policy 与跨仓发布分别判定。
+状态：`ADK-7.12.1-source-merged / Codex-live-already-applied / product-qualification-pending`。下文阶段检查点保留实施时的历史基线，文末列出合并后的最终状态；源码验证、安装验收、Execution Policy 与产品资格分别判定。
 
 ## 目标与边界
 
@@ -40,3 +40,11 @@
 - Codex 现有 7 个源码/测试/CI 改动已形成提交 `1bb693cb539cc199d42d74758b80db249ccbc244`，推送至 `codex/source-live-checks-20260927`，PR 为 `jiying2007/codex#41`。默认 profile 的 pre-apply 门禁通过 311 项测试、四 profile smoke 和安装 dry-run；现有 team-collab live doctor 为 0 错误/0 告警，同 profile diff=0、drift changed/stale/unmanaged=0。默认锁由正式 build 重新生成；未把临时 team-collab 锁当源码基线。
 - Knowledge Hub 既有 50 个文件已形成提交 `fcdf9d427b3ae41873265c7406fcc0fc299d60f1`，检索兼容修复追加提交 `9d1a4354cad406ba4bfd04dc83d6cf5099812e51`，推送至 `codex/hub-archive-20260927`，PR 为 `jiying2007/knowledge-hub#133`。`knowledge-check --dry-run` 为 pass、0 错误、97 条 warning；检索基准通过，远端 quality 流水线成功，PR 已进入 review。所有候选仍保持原有 reviewing 状态。
 - 根仓远端主线已前进，当前本地检出的 ADK 是尚未合并的兼容分支。本报告作为独立证据提交；根仓 `adk.lock` 与 gitlink 不锁定该未合并候选，待 ADK PR 合并并取得主线确切身份后更新。根仓原有缺失子仓、参考基线过期及其它工作树门禁失败仍单列，不视为通过。
+
+## 合并与应用终态（2026-09-27）
+
+- ADK #162 已合并为主线 `0efdac8faec3537a921d7b57e1a3750726b21ab7`，发布 `v7.12.1`；Python 3.8.20、3.11.15、3.12.13 的完整矩阵各为 92/92 测试、30/30 路由评估和依赖审计通过。本机 Python 3.8.10 的严格校验、doctor、release check 与新增 campaign 定向测试通过。
+- 根仓 #174 已合并为 `8f076c4c97bd63c5b4e88d4829e71eda5ce79563`。`adk.lock`、gitlink、接口锁及正式主线 promotion evidence/attestation 同源；artifact ZIP digest 与 GitHub 一致，Cosign 3.1.3 对签名 bundle 验证为 `Verified OK`。根仓全套测试 62/62，远端 contract、doc-sync、integration-deep 和恢复演练通过。`check-all --quick --release-clean` 仍有 12 项独立治理/产品资格失败，不能宣称全仓 release-ready；promotion receipt 的 `release_authorized=false` 保持不变。
+- Codex #41 已合并为 `259eeb14ac07fe0d0869fca434666600d8c0dcce`。对 ADK 新主线的 exact 候选审计显示 42 个启用 Skill 无文件或执行位差异，Agent/Execution Policy 路径无差异，因此不重标既有来源。`team-collab` 的安全计划为 475 keep、零内容变更，dry-run 返回 `already-applied`；绑定该计划的完整 check 通过，live doctor 为 0 错误/0 告警。用户 `~/.codex/config.toml` 段落保留，未执行整文件覆盖计划。
+- Knowledge Hub #133 已合并为 `2d960859d2919102c1f88c52610c5962ef357523`。治理检查 `pass`、0 错误、97 条 warning；已有候选保持 reviewing。Provider Adapter 的脱敏 activity receipt 返回 `status=pass, applied=true`，仅记录本轮活动，不构成 active 知识提升。
+- 当前线程 Execution Policy `apply` 因缺少真实 attested goal intake 返回 FATAL；其 Runtime Control conformance 未完成。Software M5 当前来源资格、现场/HIL 和 owner 验收继续按独立证据门禁处理。
