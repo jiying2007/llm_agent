@@ -95,6 +95,9 @@ for name,value in manifest_json["profiles"].items():
     asset_refs[("profile",name)]="ref:"+sha256_bytes(canonical_json_bytes(value))
 assert assets
 
+def ref(seed: str) -> str:
+    return opaque_ref_for_sha256(hashlib.sha256(seed.encode("utf-8")).hexdigest())
+
 control_artifacts={
     "environment":{"schema":"fixture-control/v1","name":"environment","value":"ubuntu-24.04"},
     "tool_policy":{"schema":"fixture-control/v1","name":"tool-policy","value":"read-write-bounded"},
