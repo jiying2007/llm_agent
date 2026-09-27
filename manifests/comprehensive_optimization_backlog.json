@@ -796,6 +796,7 @@
       "implementation_targets": [
         "typed Agent/Skill/Profile value contracts and canonical invocation receipt/measurement pipeline",
         "repeated task-trial comparison with task-level uncertainty and guardrails",
+        "resumable real-runtime campaign execution reused from ADK campaign state plus campaign-state to effect-trials materialization",
         "managed Agent Value runtime/field evidence verifier and default-empty trust registry",
         "typed prepared managed receipt builder for runtime/field producer adapters",
         "full current Agent/Skill/Profile coverage with representative success/failure/wrong-route/abstain/outcome/retirement observations",
@@ -821,9 +822,12 @@
         "docs/runbooks/effect-readiness.md",
         "tools/control_plane/effect_readiness.py",
         "tests/test_effect_readiness.sh",
-        "agent-dev-kit/src/agent_dev_kit/agent_value_receipts.py"
+        "agent-dev-kit/src/agent_dev_kit/agent_value_receipts.py",
+        "agent-dev-kit/src/agent_dev_kit/effect_campaign_materializer.py",
+        "agent-dev-kit/src/agent_dev_kit/campaign.py",
+        "agent-dev-kit/src/agent_dev_kit/campaign_model.py"
       ],
-      "blocking_condition": "The current Root ADK pin includes ADK 7.10.0's shared digest-pinned Sigstore blob verifier, and Root effect evidence-index v5 requires a cryptographically signed content-addressed preregistration package. The exact campaign plan, six control artifacts and baseline/candidate bundle manifests are canonical-hash bound before execution; bundle asset content refs bind pinned ADK Agent/Skill/Profile identities. Verified preregistration Rekor time must precede every effect-trial Run Evidence observed_at, every managed runtime/field receipt observed_at and every verified receipt signature. Root then recomputes comparison, replays signed receipts through the reviewed portable Agent Value trust path, recomputes measurement, requires measured assets to equal the preregistered candidate bundle, verifies campaign trace/bundle/runtime-target coverage, derives representative cases, and requires owner-review v5 with exact package/trust/receipt/measurement digests and a real reviewed_by identity. Terminal completion still requires real external executions, signatures, full current asset coverage, substantive retirement signals and human per-asset decisions; preregistration alone remains non-effect evidence.",
+      "blocking_condition": "The current Root ADK pin is 7.11.0 and includes the shared digest-pinned Sigstore verifier plus the resumable campaign-state to effect-trials materializer. G22 now has a mechanically complete software path: freeze a content-addressed preregistration package; sign it before execution; execute the reviewed single- or dual-runtime campaign through ADK's resumable state-dir/budget/--resume path; materialize validated campaign records into trace-only adk-effect-trials/v1 Run Evidence; recompute the comparison; then ingest separately governed managed runtime/field receipts, replay signatures, recompute Agent Value measurement, require measured assets to equal the preregistered candidate bundle, derive representative cases, and bind real owner-review v5 decisions. Terminal completion still requires real provider/runtime executions using a revision-bound model identity, real managed runtime/field observations and signatures, full current asset coverage with substantive retirement signals, and human per-asset decisions. Materialization remains test-only effect evidence and does not create managed receipts, lifecycle authority, or release authority.",
       "external_tracking": {
         "repository": "jiying2007/llm_agent",
         "issue_number": 154
