@@ -74,6 +74,22 @@ def validate_package(adk: Path, package_path: Path) -> tuple[bytes, dict[str, An
         raise ValueError("preregistration package authority/privacy boundary is invalid")
     validate_no_secrets(package, "effect preregistration package")
 
+    schema_path = adk / "schemas" / "effect-trials-v1.schema.json"
+    if schema_path.is_symlink() or not schema_path.is_file():
+        raise ValueError("pinned ADK effect-trials schema is missing or unsafe")
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    plan_schema = schema.get("properties", {}).get("plan") if isinstance(schema, dict) else None
+    if not isinstance(plan_schema, dict):
+        raise ValueError("pinned ADK effect-trials plan schema is invalid")
+    from jsonschema import Draft202012Validator, FormatChecker
+
+    validator = Draft202012Validator(plan_schema, format_checker=FormatChecker())
+    errors = sorted(validator.iter_errors(package["plan"]), key=lambda error: list(error.absolute_path))
+    if errors:
+        first = errors[0]
+        location = "/".join(map(str, first.absolute_path)) or "<root>"
+        raise ValueError(f"preregistration plan violates pinned ADK schema at {location}: {first.message}")
+
     plan = package["plan"]
     controls = package["controls"]
     bundles = package["bundles"]

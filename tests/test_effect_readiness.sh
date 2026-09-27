@@ -602,6 +602,31 @@ bundle_drift_index_path.write_text(
     encoding="utf-8",
 )
 
+# Negative 7: outer digests cannot legitimize a preregistration package whose
+# plan no longer satisfies the exact pinned ADK effect-trials schema.
+schema_drift_package=json.loads(json.dumps(preregistration_package))
+schema_drift_package["plan"]["policy"].pop("minimum_trials")
+schema_drift_path=fixture_dir/"schema-drift-package.json"
+schema_drift_path.write_bytes(canonical_json_bytes(schema_drift_package))
+schema_drift_review=json.loads(json.dumps(review))
+schema_drift_review["preregistration_package_sha256"]=sha(schema_drift_path)
+schema_drift_review_path=fixture_dir/"schema-drift-owner-review.json"
+schema_drift_review_path.write_text(
+    json.dumps(schema_drift_review,ensure_ascii=False,sort_keys=True,indent=2)+"\n",
+    encoding="utf-8",
+)
+schema_drift_index=json.loads(json.dumps(index))
+schema_drift_entry=schema_drift_index["entries"][0]
+schema_drift_entry["preregistration_package_path"]=relative(schema_drift_path)
+schema_drift_entry["preregistration_package_sha256"]=sha(schema_drift_path)
+schema_drift_entry["owner_review_path"]=relative(schema_drift_review_path)
+schema_drift_entry["owner_review_sha256"]=sha(schema_drift_review_path)
+schema_drift_index_path=fixture_dir/"schema-drift-index.json"
+schema_drift_index_path.write_text(
+    json.dumps(schema_drift_index,ensure_ascii=False,sort_keys=True,indent=2)+"\n",
+    encoding="utf-8",
+)
+
 print(relative(index_path))
 PY
 
@@ -640,7 +665,7 @@ assert index["entries"][0]["reviewed_by"]=="fixture-human-owner", index
 assert value["release_authorized"] is False, value
 PY
 
-for BAD in tampered-index.json forged-index.json automated-index.json late-preregistration-index.json control-drift-index.json bundle-drift-index.json; do
+for BAD in tampered-index.json forged-index.json automated-index.json late-preregistration-index.json control-drift-index.json bundle-drift-index.json schema-drift-index.json; do
   BAD_REL="$(python3 - "$ROOT" "$FIXTURE_DIR" "$BAD" <<'PY'
 import sys
 from pathlib import Path
