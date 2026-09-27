@@ -40,6 +40,37 @@ if ! cp -a "$ROOT" "$BAD"; then
   echo "[FAIL] failed to copy BAD rollover fixture" >&2
   exit 1
 fi
+# A linked worktree stores .git pointers into the source repository. Give each
+# copied fixture independent root Git metadata and resolve submodule pointers
+# before its Git commands, so the fixture cannot mutate the source index.
+python3 - "$ROOT" "$GOOD" "$BAD" <<'PY'
+import subprocess
+import sys
+from pathlib import Path
+
+source = Path(sys.argv[1])
+for fixture in (Path(sys.argv[2]), Path(sys.argv[3])):
+    clone = fixture.parent / f"{fixture.name}-git-metadata"
+    subprocess.run(
+        ["git", "clone", "--quiet", "--no-hardlinks", "--no-checkout", str(source), str(clone)],
+        check=True,
+    )
+    (fixture / ".git").unlink()
+    (clone / ".git").rename(fixture / ".git")
+    subprocess.run(["git", "-C", str(fixture), "read-tree", "HEAD"], check=True)
+for name in ("agent-dev-kit", "codex"):
+    marker = source / name / ".git"
+    if not marker.is_file():
+        continue
+    gitdir = subprocess.check_output(
+        ["git", "-C", str(source / name), "rev-parse", "--absolute-git-dir"],
+        text=True,
+    ).strip()
+    for fixture in (Path(sys.argv[2]), Path(sys.argv[3])):
+        (fixture / name / ".git").write_text(f"gitdir: {gitdir}\n", encoding="utf-8")
+for fixture in (Path(sys.argv[2]), Path(sys.argv[3])):
+    subprocess.run(["git", "-C", str(fixture), "add", "-A"], check=True)
+PY
 echo "[INFO] rollover repository fixtures copied" >&2
 
 make_evidence() {
