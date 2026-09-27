@@ -164,6 +164,13 @@ def validate_package(adk: Path, package_path: Path) -> tuple[bytes, dict[str, An
             raise ValueError(f"preregistration plan bundle digest mismatch: {side}")
     if bundle_digests["baseline"] == bundle_digests["candidate"]:
         raise ValueError("preregistration bundle manifests must be distinct")
+    baseline_assets = bundles["baseline"]["assets"]
+    candidate_assets = bundles["candidate"]["assets"]
+    if baseline_assets == candidate_assets:
+        raise ValueError(
+            "preregistration baseline/candidate asset identities must differ; "
+            "condition or metadata labels alone are not an intervention"
+        )
 
     canonical = _canonical(package)
     return canonical, {
