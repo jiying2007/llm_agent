@@ -267,10 +267,16 @@ def validate_package(adk: Path, package_path: Path) -> tuple[bytes, dict[str, An
         raise ValueError("preregistration bundle manifests must be distinct")
     baseline_assets = bundles["baseline"]["assets"]
     candidate_assets = bundles["candidate"]["assets"]
-    if baseline_assets == candidate_assets:
+    baseline_identity = sorted(
+        (item["asset_kind"], item["asset_id"], item["content_ref"]) for item in baseline_assets
+    )
+    candidate_identity = sorted(
+        (item["asset_kind"], item["asset_id"], item["content_ref"]) for item in candidate_assets
+    )
+    if baseline_identity == candidate_identity:
         raise ValueError(
             "preregistration baseline/candidate asset identities must differ; "
-            "condition or metadata labels alone are not an intervention"
+            "condition, metadata, or asset ordering alone are not an intervention"
         )
 
     canonical = _canonical(package)
