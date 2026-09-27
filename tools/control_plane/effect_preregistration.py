@@ -17,20 +17,22 @@ PREREG_CERTIFICATE_OIDC_ISSUER = "https://token.actions.githubusercontent.com"
 def verify_effect_preregistration(
     adk: Path,
     campaign_path: Path,
-    plan_path: Path,
+    package_path: Path,
     bundle_path: Path,
     bundle_sha256: str,
     authority_registry_path: Path,
     receipts_path: Path,
     bundle_root: Path,
 ) -> dict[str, Any]:
-    """Verify a signed effect plan predates every managed runtime/field observation."""
+    """Verify a signed content-addressed effect package predates all managed observations."""
+    root = Path(__file__).resolve().parents[2]
     code = r'''
 import hashlib,json,sys
 from datetime import datetime,timezone
 from pathlib import Path
 from agent_dev_kit.model import canonical_json_bytes
 from agent_dev_kit.sigstore_blob import verify_sigstore_blob
+from tools.control_plane.effect_preregistration_package import validate_package
 
 def obj(path,label):
     value=json.load(open(path,encoding="utf-8"))
@@ -58,8 +60,9 @@ def tlog_time(path,label):
         raise SystemExit(label+"-integrated-time-invalid")
     return datetime.fromtimestamp(int(raw),tz=timezone.utc)
 
+adk=Path(sys.argv[1]).resolve()
 campaign_path=Path(sys.argv[2]).resolve()
-plan_path=Path(sys.argv[3]).resolve()
+package_path=Path(sys.argv[3]).resolve()
 prereg_bundle=Path(sys.argv[4]).resolve()
 expected_prereg_bundle_sha=sys.argv[5]
 registry_path=Path(sys.argv[6]).resolve()
@@ -68,13 +71,14 @@ bundle_root=Path(sys.argv[8]).resolve()
 cert_identity=sys.argv[9]
 cert_issuer=sys.argv[10]
 
+canonical_package,package_summary=validate_package(adk,package_path)
+package=obj(package_path,"preregistration-package")
 campaign=obj(campaign_path,"campaign")
 plan=campaign.get("plan")
 if not isinstance(plan,dict):
     raise SystemExit("campaign-plan-invalid")
-canonical_plan=canonical_json_bytes(plan)
-if plan_path.read_bytes()!=canonical_plan:
-    raise SystemExit("preregistration-plan-differs-from-campaign-plan")
+if canonical_json_bytes(plan)!=canonical_json_bytes(package.get("plan")):
+    raise SystemExit("preregistration-package-plan-differs-from-campaign-plan")
 if hashlib.sha256(prereg_bundle.read_bytes()).hexdigest()!=expected_prereg_bundle_sha:
     raise SystemExit("preregistration-bundle-digest-mismatch")
 
@@ -120,7 +124,7 @@ if len(verifier_configs)!=1:
     raise SystemExit("preregistration-requires-one-verifier-binary-pin")
 cosign_binary,cosign_sha=next(iter(verifier_configs))
 if not verify_sigstore_blob(
-    canonical_plan,
+    canonical_package,
     bundle=prereg_bundle,
     expected_bundle_sha256=expected_prereg_bundle_sha,
     cosign_binary=cosign_binary,
@@ -139,7 +143,10 @@ if any(registered>=value for value in signature_times):
 
 print(json.dumps({
     "status":"pass",
-    "plan_sha256":hashlib.sha256(canonical_plan).hexdigest(),
+    "package_sha256":package_summary["package_sha256"],
+    "plan_sha256":package_summary["plan_sha256"],
+    "baseline_bundle_sha256":package_summary["bundle_sha256"]["baseline"],
+    "candidate_bundle_sha256":package_summary["bundle_sha256"]["candidate"],
     "bundle_sha256":expected_prereg_bundle_sha,
     "registered_at":registered.isoformat().replace("+00:00","Z"),
     "verified_receipt_count":len(receipts),
@@ -148,7 +155,7 @@ print(json.dumps({
 },sort_keys=True))
 '''
     env = {
-        "PYTHONPATH": str(adk / "src"),
+        "PYTHONPATH": os.pathsep.join([str(root), str(adk / "src")]),
         "PATH": os.environ.get("PATH", os.defpath),
         "LANG": "C.UTF-8",
         "LC_ALL": "C.UTF-8",
@@ -160,7 +167,7 @@ print(json.dumps({
             code,
             str(adk),
             str(campaign_path),
-            str(plan_path),
+            str(package_path),
             str(bundle_path),
             bundle_sha256,
             str(authority_registry_path),
@@ -169,7 +176,7 @@ print(json.dumps({
             PREREG_CERTIFICATE_IDENTITY,
             PREREG_CERTIFICATE_OIDC_ISSUER,
         ],
-        cwd=adk,
+        cwd=root,
         env=env,
         stdin=subprocess.DEVNULL,
         capture_output=True,
