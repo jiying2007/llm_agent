@@ -48,6 +48,37 @@ Registry signature-bundle paths are resolved relative to the evidence-index dire
 
 Every path has an exact SHA-256 in the index. Root recomputes the comparison from the pinned campaign input using the exact pinned ADK and requires byte-equivalent JSON semantics. The campaign/comparison ID must equal the index entry ID.
 
+## Build the frozen package deterministically
+
+Do not hand-maintain the six control `ref:` values or the baseline/candidate bundle SHA-256 values. Keep one source document with no derived hashes:
+
+- `schema=llm-agent-effect-preregistration-source/v1`;
+- exact campaign timing/task/trial/policy fields;
+- only the six non-derived runtime/model identity fields under `plan.controls`;
+- six canonical control artifact objects;
+- baseline/candidate bundle manifests with explicit pinned asset `content_ref` identities;
+- `provider_execution_performed=false`, `raw_content_stored=false`, `release_authorized=false`.
+
+Then build and immediately validate the frozen package against the exact pinned ADK:
+
+```bash
+rtk python3 -m tools.control_plane.effect_preregistration_package \
+  --adk agent-dev-kit \
+  --source reports/runtime-evidence/effect-value/preregistrations/<campaign>.source.json \
+  --output reports/runtime-evidence/effect-value/preregistrations/<campaign>.package.json \
+  --summary-json
+
+# independently replay validation at any time
+rtk python3 -m tools.control_plane.effect_preregistration_package \
+  --adk agent-dev-kit \
+  --package reports/runtime-evidence/effect-value/preregistrations/<campaign>.package.json \
+  --summary-json
+```
+
+The builder computes all six control refs and both bundle digests from canonical content and then calls the same v5 validator used by readiness. Source documents are rejected if they contain derived refs/digests, if pinned asset content refs drift, or if baseline/candidate differ only by labels/metadata. Existing output is not overwritten unless `--overwrite` is explicit.
+
+The builder does **not** choose a model, time window, task population, intervention, budget, or provider. Those remain explicit reviewed experiment inputs, and a decisive campaign still requires `model_identity=revision-bound`.
+
 ## Real campaign execution path
 
 After the content-addressed package has been committed and signed by the no-execution preregistration workflow, do not write an ad-hoc model loop. The pinned ADK 7.11.0 campaign state machine is the canonical long/paid execution path:
