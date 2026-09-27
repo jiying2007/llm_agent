@@ -80,6 +80,72 @@ assert spec and spec.loader
 fixture=importlib.util.module_from_spec(spec)
 spec.loader.exec_module(fixture)
 campaign=fixture.document()
+
+manifest_json=json.loads((adk/"manifest.json").read_text(encoding="utf-8"))
+assets=set()
+asset_refs={}
+for asset in manifest.all_assets("agent"):
+    assets.add(("agent",asset.name))
+    asset_refs[("agent",asset.name)]="ref:"+asset.digest
+for asset in manifest.all_assets("skill"):
+    assets.add(("skill",asset.name))
+    asset_refs[("skill",asset.name)]="ref:"+asset.digest
+for name,value in manifest_json["profiles"].items():
+    assets.add(("profile",name))
+    asset_refs[("profile",name)]="ref:"+sha256_bytes(canonical_json_bytes(value))
+assert assets
+
+control_artifacts={
+    "environment":{"schema":"fixture-control/v1","name":"environment","value":"ubuntu-24.04"},
+    "tool_policy":{"schema":"fixture-control/v1","name":"tool-policy","value":"read-write-bounded"},
+    "grader":{"schema":"fixture-control/v1","name":"grader","value":"deterministic-routing-v1"},
+    "dataset":{"schema":"fixture-control/v1","name":"dataset","value":"effect-readiness-fixture"},
+    "parameters":{"schema":"fixture-control/v1","name":"parameters","value":{"temperature":0}},
+    "provider":{"schema":"fixture-control/v1","name":"provider","value":"fixture-provider"},
+}
+control_fields={
+    "environment":"environment_ref",
+    "tool_policy":"tool_policy_ref",
+    "grader":"grader_ref",
+    "dataset":"dataset_ref",
+    "parameters":"parameters_ref",
+    "provider":"provider_ref",
+}
+for name,field in control_fields.items():
+    campaign["plan"]["controls"][field]="ref:"+sha256_bytes(canonical_json_bytes(control_artifacts[name]))
+
+candidate_assets=[
+    {"asset_kind":kind,"asset_id":asset_id,"content_ref":asset_refs[(kind,asset_id)]}
+    for kind,asset_id in sorted(assets)
+]
+bundle_manifests={
+    "baseline":{
+        "schema":"llm-agent-effect-bundle-manifest/v1",
+        "condition":"baseline",
+        "runtime_target":campaign["plan"]["controls"]["runtime_target"],
+        "assets":[],
+        "metadata":{"mode":"no-adk-assets"},
+        "raw_content_stored":False,
+        "release_authorized":False,
+    },
+    "candidate":{
+        "schema":"llm-agent-effect-bundle-manifest/v1",
+        "condition":"candidate",
+        "runtime_target":campaign["plan"]["controls"]["runtime_target"],
+        "assets":candidate_assets,
+        "metadata":{"mode":"pinned-current-adk-assets","adk_version":manifest.version},
+        "raw_content_stored":False,
+        "release_authorized":False,
+    },
+}
+for side in ("baseline","candidate"):
+    digest=sha256_bytes(canonical_json_bytes(bundle_manifests[side]))
+    campaign["plan"]["bundles"][side]=digest
+    for trial in campaign["trials"]:
+        for binding in trial[side]:
+            binding["run"]["trace_summary"]["asset_bundle_sha256"]=digest
+fixture.rebind(campaign)
+
 comparison=compare_effect_trials(campaign, manifest)
 assert comparison["verdict"]=="improved", comparison
 campaign_path=fixture_dir/"campaign.json"
@@ -104,24 +170,19 @@ comparison_path.write_text(
     encoding="utf-8",
 )
 
-manifest_json=json.loads((adk/"manifest.json").read_text(encoding="utf-8"))
-assets=set()
-for key,kind in (("agents","agent"),("skills","skill"),("optional_skills","skill")):
-    for item in manifest_json.get(key,[]):
-        assets.add((kind,item["name"]))
-for name in manifest_json["profiles"]:
-    assets.add(("profile",name))
-assert assets
-
-def ref(seed: str) -> str:
-    return opaque_ref_for_sha256(hashlib.sha256(seed.encode("utf-8")).hexdigest())
-
-now=datetime.now(timezone.utc).replace(microsecond=0)
-window_from=now-timedelta(hours=2)
-window_through=now-timedelta(minutes=1)
-preregistration_plan_path=fixture_dir/"preregistration-plan.json"
-preregistration_plan_path.write_bytes(canonical_json_bytes(campaign["plan"]))
-preregistration_registered_at=window_from-timedelta(minutes=30)
+preregistration_package={
+    "schema":"llm-agent-effect-preregistration-package/v2",
+    "status":"frozen",
+    "plan":campaign["plan"],
+    "controls":control_artifacts,
+    "bundles":bundle_manifests,
+    "raw_content_stored":False,
+    "provider_execution_performed":False,
+    "release_authorized":False,
+}
+preregistration_package_path=fixture_dir/"preregistration-package.json"
+preregistration_package_path.write_bytes(canonical_json_bytes(preregistration_package))
+preregistration_registered_at=datetime(2026,9,24,9,0,tzinfo=timezone.utc)
 preregistration_bundle_path=fixture_dir/"preregistration.sigstore.json"
 preregistration_bundle_path.write_text(
     json.dumps({
@@ -133,6 +194,10 @@ preregistration_bundle_path.write_text(
     },sort_keys=True)+"\n",
     encoding="utf-8",
 )
+
+now=datetime.now(timezone.utc).replace(microsecond=0)
+window_from=now-timedelta(hours=2)
+window_through=now-timedelta(minutes=1)
 receipt_signed_at=now-timedelta(seconds=10)
 
 contract=load_contract(adk/"manifests/agent_value_contracts.json")
