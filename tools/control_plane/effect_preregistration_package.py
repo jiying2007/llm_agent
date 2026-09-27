@@ -28,16 +28,16 @@ def _ref(value: Any) -> str:
     return "ref:" + hashlib.sha256(_canonical(value)).hexdigest()
 
 
-def _expected_assets(manifest: Any) -> set[tuple[str, str]]:
-    result: set[tuple[str, str]] = set()
-    data = manifest.data
-    for key, kind in (("agents", "agent"), ("skills", "skill"), ("optional_skills", "skill")):
-        for item in data.get(key, []):
-            if isinstance(item, dict) and isinstance(item.get("name"), str):
-                result.add((kind, item["name"]))
-    profiles = data.get("profiles", {})
+def _expected_asset_refs(manifest: Any) -> dict[tuple[str, str], str]:
+    result: dict[tuple[str, str], str] = {}
+    for asset in manifest.all_assets("agent"):
+        result[("agent", asset.name)] = "ref:" + asset.digest
+    for asset in manifest.all_assets("skill"):
+        result[("skill", asset.name)] = "ref:" + asset.digest
+    profiles = manifest.data.get("profiles", {})
     if isinstance(profiles, dict):
-        result.update(("profile", str(name)) for name in profiles)
+        for name, value in profiles.items():
+            result[("profile", str(name))] = _ref(value)
     return result
 
 
@@ -96,7 +96,7 @@ def validate_package(adk: Path, package_path: Path) -> tuple[bytes, dict[str, An
             raise ValueError(f"preregistration control ref mismatch: {field}")
 
     manifest = Manifest.load(adk)
-    known_assets = _expected_assets(manifest)
+    known_asset_refs = _expected_asset_refs(manifest)
     runtime_target = plan_controls.get("runtime_target")
     if not isinstance(runtime_target, str) or not runtime_target:
         raise ValueError("preregistration runtime_target is invalid")
@@ -136,12 +136,9 @@ def validate_package(adk: Path, package_path: Path) -> tuple[bytes, dict[str, An
             pair = (item.get("asset_kind"), item.get("asset_id"))
             content_ref = item.get("content_ref")
             if (
-                pair not in known_assets
+                pair not in known_asset_refs
                 or pair in seen
-                or not isinstance(content_ref, str)
-                or len(content_ref) != 68
-                or not content_ref.startswith("ref:")
-                or any(ch not in "0123456789abcdef" for ch in content_ref[4:])
+                or content_ref != known_asset_refs.get(pair)
             ):
                 raise ValueError(f"preregistration bundle asset identity is invalid: {side}")
             seen.add(pair)
@@ -160,6 +157,9 @@ def validate_package(adk: Path, package_path: Path) -> tuple[bytes, dict[str, An
         "plan_sha256": hashlib.sha256(_canonical(plan)).hexdigest(),
         "control_refs": {field: plan_controls[field] for field in _CONTROL_BINDINGS.values()},
         "bundle_sha256": bundle_digests,
+        "bundle_assets": {
+            side: bundles[side]["assets"] for side in ("baseline", "candidate")
+        },
         "runtime_target": runtime_target,
         "provider_execution_performed": False,
         "release_authorized": False,
