@@ -11,6 +11,12 @@ import subprocess
 import sys
 import tempfile
 root=Path(sys.argv[1]); adk=root/'agent-dev-kit'
+from agent_dev_kit.effect_campaign_materializer import materialize_effect_campaign
+assert callable(materialize_effect_campaign)
+help_run=subprocess.run([sys.executable,'-m','agent_dev_kit.cli','eval','campaign','materialize-effect','--help'],cwd=root,text=True,capture_output=True,timeout=30)
+assert help_run.returncode==0,(help_run.returncode,help_run.stdout,help_run.stderr)
+for flag in ('--contract','--state-dir','--effect-plan','--runtime','--output'):
+    assert flag in help_run.stdout,(flag,help_run.stdout)
 spec=importlib.util.spec_from_file_location('adk_effect_trial_fixture',adk/'tests/test_effect_trials.py')
 assert spec and spec.loader
 fixture=importlib.util.module_from_spec(spec);spec.loader.exec_module(fixture)
@@ -38,5 +44,5 @@ with tempfile.TemporaryDirectory(prefix='root-effect-trial-') as tmp:
         for i,binding in enumerate(trial['candidate']):
             binding['run']=fixture.fresh_run('candidate',i,j,elapsed_ms=150)
     fixture.rebind(value);run(value,1,'regressed')
-print('[PASS] pinned ADK trial CLI preserves positive, inconclusive, invalid and regression semantics; synthetic test only')
+print('[PASS] pinned ADK trial CLI + 7.11 campaign materializer surface are consumable; synthetic test only')
 PY

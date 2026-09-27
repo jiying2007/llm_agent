@@ -70,7 +70,7 @@ Each blocked terminal item carries a durable `external_tracking` entry in the op
 Current queue:
 
 - G21 → `jiying2007/agent-dev-kit#153`: authenticated version-pinned native conformance campaign;
-- G22 → `jiying2007/llm_agent#154`: governed real effect/value campaign and per-asset owner review.
+- G22 → `jiying2007/llm_agent#154`: preregistered, revision-bound real effect/value campaign through the ADK 7.11 resumable materializer path, followed by managed runtime/field receipts and per-asset owner review.
 
 G9 → `jiying2007/knowledge-hub#125` is retained as closed historical routing/evidence provenance, not as a current external blocker.
 
