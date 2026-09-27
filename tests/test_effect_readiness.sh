@@ -546,6 +546,56 @@ late_index_path.write_text(
     encoding="utf-8",
 )
 
+# Negative 5: changing a frozen control artifact while synchronizing package
+# digests must still fail because plan.controls refs bind the original content.
+control_drift_package=json.loads(json.dumps(preregistration_package))
+control_drift_package["controls"]["dataset"]["value"]="drifted-after-prereg"
+control_drift_path=fixture_dir/"control-drift-package.json"
+control_drift_path.write_bytes(canonical_json_bytes(control_drift_package))
+control_drift_review=json.loads(json.dumps(review))
+control_drift_review["preregistration_package_sha256"]=sha(control_drift_path)
+control_drift_review_path=fixture_dir/"control-drift-owner-review.json"
+control_drift_review_path.write_text(
+    json.dumps(control_drift_review,ensure_ascii=False,sort_keys=True,indent=2)+"\n",
+    encoding="utf-8",
+)
+control_drift_index=json.loads(json.dumps(index))
+control_drift_entry=control_drift_index["entries"][0]
+control_drift_entry["preregistration_package_path"]=relative(control_drift_path)
+control_drift_entry["preregistration_package_sha256"]=sha(control_drift_path)
+control_drift_entry["owner_review_path"]=relative(control_drift_review_path)
+control_drift_entry["owner_review_sha256"]=sha(control_drift_review_path)
+control_drift_index_path=fixture_dir/"control-drift-index.json"
+control_drift_index_path.write_text(
+    json.dumps(control_drift_index,ensure_ascii=False,sort_keys=True,indent=2)+"\n",
+    encoding="utf-8",
+)
+
+# Negative 6: changing a bundle manifest without updating the frozen plan bundle
+# digest must fail even if index/review package digests are synchronized.
+bundle_drift_package=json.loads(json.dumps(preregistration_package))
+bundle_drift_package["bundles"]["candidate"]["metadata"]["mode"]="drifted-candidate"
+bundle_drift_path=fixture_dir/"bundle-drift-package.json"
+bundle_drift_path.write_bytes(canonical_json_bytes(bundle_drift_package))
+bundle_drift_review=json.loads(json.dumps(review))
+bundle_drift_review["preregistration_package_sha256"]=sha(bundle_drift_path)
+bundle_drift_review_path=fixture_dir/"bundle-drift-owner-review.json"
+bundle_drift_review_path.write_text(
+    json.dumps(bundle_drift_review,ensure_ascii=False,sort_keys=True,indent=2)+"\n",
+    encoding="utf-8",
+)
+bundle_drift_index=json.loads(json.dumps(index))
+bundle_drift_entry=bundle_drift_index["entries"][0]
+bundle_drift_entry["preregistration_package_path"]=relative(bundle_drift_path)
+bundle_drift_entry["preregistration_package_sha256"]=sha(bundle_drift_path)
+bundle_drift_entry["owner_review_path"]=relative(bundle_drift_review_path)
+bundle_drift_entry["owner_review_sha256"]=sha(bundle_drift_review_path)
+bundle_drift_index_path=fixture_dir/"bundle-drift-index.json"
+bundle_drift_index_path.write_text(
+    json.dumps(bundle_drift_index,ensure_ascii=False,sort_keys=True,indent=2)+"\n",
+    encoding="utf-8",
+)
+
 print(relative(index_path))
 PY
 
@@ -575,6 +625,8 @@ assert index["entries"][0]["comparison_verdict"]=="improved", index
 assert index["entries"][0]["managed_campaign_trace_coverage"] is True, index
 assert index["entries"][0]["signed_receipt_replay"] is True, index
 assert index["entries"][0]["preregistration_verified"] is True, index
+assert index["entries"][0]["candidate_bundle_asset_count"]==index["expected_asset_count"], index
+assert index["entries"][0]["preregistration_package_sha256"], index
 assert index["entries"][0]["preregistered_at"], index
 assert index["entries"][0]["verified_receipt_count"]>index["expected_asset_count"], index
 assert index["entries"][0]["campaign_trace_count"]>0, index
@@ -582,7 +634,7 @@ assert index["entries"][0]["reviewed_by"]=="fixture-human-owner", index
 assert value["release_authorized"] is False, value
 PY
 
-for BAD in tampered-index.json forged-index.json automated-index.json late-preregistration-index.json; do
+for BAD in tampered-index.json forged-index.json automated-index.json late-preregistration-index.json control-drift-index.json bundle-drift-index.json; do
   BAD_REL="$(python3 - "$ROOT" "$FIXTURE_DIR" "$BAD" <<'PY'
 import sys
 from pathlib import Path
