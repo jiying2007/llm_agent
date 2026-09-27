@@ -375,7 +375,7 @@ def sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 review={
-    "schema":"llm-agent-effect-owner-review/v4",
+    "schema":"llm-agent-effect-owner-review/v5",
     "status":"approved",
     "campaign_id":comparison["campaign_id"],
     "campaign_sha256":sha(campaign_path),
@@ -384,7 +384,7 @@ review={
     "authority_registry_sha256":sha(registry_path),
     "receipts_sha256":sha(receipts_path),
     "measurement_sha256":sha(measurement_path),
-    "preregistration_plan_sha256":sha(preregistration_plan_path),
+    "preregistration_package_sha256":sha(preregistration_package_path),
     "preregistration_bundle_sha256":sha(preregistration_bundle_path),
     "reviewed_at":now.isoformat().replace("+00:00","Z"),
     "reviewed_by":"fixture-human-owner",
@@ -412,14 +412,14 @@ review_path.write_text(
 
 relative=lambda path: path.relative_to(root).as_posix()
 index={
-    "schema":"llm-agent-effect-value-evidence-index/v4",
+    "schema":"llm-agent-effect-value-evidence-index/v5",
     "status":"active",
     "entries":[{
         "id":comparison["campaign_id"],
         "campaign_path":relative(campaign_path),
         "campaign_sha256":sha(campaign_path),
-        "preregistration_plan_path":relative(preregistration_plan_path),
-        "preregistration_plan_sha256":sha(preregistration_plan_path),
+        "preregistration_package_path":relative(preregistration_package_path),
+        "preregistration_package_sha256":sha(preregistration_package_path),
         "preregistration_bundle_path":relative(preregistration_bundle_path),
         "preregistration_bundle_sha256":sha(preregistration_bundle_path),
         "comparison_path":relative(comparison_path),
