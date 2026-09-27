@@ -47,7 +47,7 @@ Source-layout probes and synthetic campaigns remain non-native evidence.
 
 ### G22 — Agent/Skill/Profile value lifecycle
 
-Terminal completion requires real repeated-task comparison plus managed runtime/field Agent Value measurement covering every current Agent/Skill/Profile, representative success/failure/wrong-route/abstain observations, substantive retirement signals, and digest-bound per-asset owner review.
+Terminal completion requires a cryptographically pre-registered repeated-task plan whose verified Sigstore/Rekor time predates all managed observations/signatures, then a real repeated-task comparison plus managed runtime/field Agent Value measurement covering every current Agent/Skill/Profile, representative success/failure/wrong-route/abstain observations, substantive retirement signals, and digest-bound per-asset owner review.
 
 Synthetic/test-only fixtures remain software validation only.
 
