@@ -49,7 +49,10 @@ import sys
 from pathlib import Path
 
 source = Path(sys.argv[1])
+linked_worktree = (source / ".git").is_file()
 for fixture in (Path(sys.argv[2]), Path(sys.argv[3])):
+    if not linked_worktree:
+        continue
     clone = fixture.parent / f"{fixture.name}-git-metadata"
     subprocess.run(
         ["git", "clone", "--quiet", "--no-hardlinks", "--no-checkout", str(source), str(clone)],
@@ -59,6 +62,8 @@ for fixture in (Path(sys.argv[2]), Path(sys.argv[3])):
     (clone / ".git").rename(fixture / ".git")
     subprocess.run(["git", "-C", str(fixture), "read-tree", "HEAD"], check=True)
 for name in ("agent-dev-kit", "codex"):
+    if not linked_worktree:
+        continue
     marker = source / name / ".git"
     if not marker.is_file():
         continue
