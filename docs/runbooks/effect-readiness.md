@@ -44,7 +44,7 @@ Each future entry binds the full replay package beneath the index directory:
 - one ADK `adk-asset-value-measurement/v1`;
 - one Root `llm-agent-effect-owner-review/v5`.
 
-Registry signature-bundle paths are resolved relative to the evidence-index directory by ADK 7.11.0's portable managed verifier and shared digest-pinned Sigstore blob verifier. Root replays every raw receipt through the exact contract/registry/cosign trust semantics and recomputes the measurement with ADK `emit_measurements()`. A committed aggregate measurement is accepted only when it is exactly equal to that recomputation.
+Registry signature-bundle paths are resolved relative to the evidence-index directory by the current pinned ADK's portable managed verifier and shared digest-pinned Sigstore blob verifier. Root replays every raw receipt through the exact contract/registry/cosign trust semantics and recomputes the measurement with ADK `emit_measurements()`. A committed aggregate measurement is accepted only when it is exactly equal to that recomputation.
 
 Every path has an exact SHA-256 in the index. Root recomputes the comparison from the pinned campaign input using the exact pinned ADK and requires byte-equivalent JSON semantics. The campaign/comparison ID must equal the index entry ID.
 
@@ -81,7 +81,7 @@ The builder does **not** choose a model, time window, task population, intervent
 
 ## Real campaign execution path
 
-After the content-addressed package has been committed and signed by the no-execution preregistration workflow, do not write an ad-hoc model loop. The pinned ADK 7.11.0 campaign state machine is the canonical long/paid execution path:
+After the content-addressed package has been committed and signed by the no-execution preregistration workflow, do not write an ad-hoc model loop. The current pinned ADK campaign state machine is the canonical long/paid execution path:
 
 ```bash
 adk eval campaign run \
@@ -178,7 +178,7 @@ ADK intentionally keeps its canonical Agent Value contract disabled and the trus
 
 Real measurements may be produced by a separately owner-reviewed managed contract and verified receipt path. The readiness projection judges the resulting governed evidence artifacts, not whether the canonical default contract was globally enabled.
 
-ADK 7.11.0 also retains `ManagedInvocationObservation` + `prepare_managed_receipt()` so a real runtime/field adapter can deterministically construct the manifest-bound receipt, authority attestation and receipt ID from explicit observed facts instead of hand-assembling JSON. This is producer ergonomics only: the prepared receipt is **not verified evidence** until the reviewed registry/signature bundle path is replayed by the managed verifier.
+The current pinned ADK also retains `ManagedInvocationObservation` + `prepare_managed_receipt()` so a real runtime/field adapter can deterministically construct the manifest-bound receipt, authority attestation and receipt ID from explicit observed facts instead of hand-assembling JSON. This is producer ergonomics only: the prepared receipt is **not verified evidence** until the reviewed registry/signature bundle path is replayed by the managed verifier.
 
 ## Exit semantics
 
