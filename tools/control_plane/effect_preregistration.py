@@ -147,6 +147,7 @@ print(json.dumps({
     "plan_sha256":package_summary["plan_sha256"],
     "baseline_bundle_sha256":package_summary["bundle_sha256"]["baseline"],
     "candidate_bundle_sha256":package_summary["bundle_sha256"]["candidate"],
+    "candidate_assets":package_summary["bundle_assets"]["candidate"],
     "bundle_sha256":expected_prereg_bundle_sha,
     "registered_at":registered.isoformat().replace("+00:00","Z"),
     "verified_receipt_count":len(receipts),
