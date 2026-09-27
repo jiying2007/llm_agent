@@ -675,6 +675,16 @@ def _validate_evidence_entry(
             raise ValueError("asset measurement lacks a substantive retirement signal")
     if not assets:
         raise ValueError("Agent Value measurement covers no assets")
+    candidate_assets_raw = preregistration.get("candidate_assets")
+    if not isinstance(candidate_assets_raw, list):
+        raise ValueError("preregistration candidate bundle assets are invalid")
+    candidate_assets = {
+        (item.get("asset_kind"), item.get("asset_id"))
+        for item in candidate_assets_raw
+        if isinstance(item, dict)
+    }
+    if len(candidate_assets) != len(candidate_assets_raw) or assets != candidate_assets:
+        raise ValueError("Agent Value measurement assets differ from preregistered candidate bundle")
     missing_managed_traces = campaign_trace_refs - measurement_trace_refs
     if missing_managed_traces:
         raise ValueError(
@@ -708,6 +718,7 @@ def _validate_evidence_entry(
         "signed_receipt_replay": True,
         "preregistration_verified": True,
         "preregistration_package_sha256": preregistration_package_sha,
+        "candidate_bundle_asset_count": len(candidate_assets),
         "preregistered_at": preregistration["registered_at"],
         "verified_receipt_count": replay["receipt_count"],
         "reviewed_by": review["reviewed_by"],
