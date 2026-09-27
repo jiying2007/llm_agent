@@ -144,6 +144,9 @@ for side in ("baseline","candidate"):
     for trial in campaign["trials"]:
         for binding in trial[side]:
             binding["run"]["trace_summary"]["asset_bundle_sha256"]=digest
+            binding["run"]["trace_ref"]=opaque_ref_for_sha256(
+                sha256_bytes(canonical_json_bytes(binding["run"]["trace_summary"]))
+            )
 fixture.rebind(campaign)
 
 comparison=compare_effect_trials(campaign, manifest)
