@@ -17,7 +17,7 @@ EXPECTED_WORKFLOW = "agent-dev-kit-ci"
 EXPECTED_WORKFLOW_REF = "jiying2007/agent-dev-kit/.github/workflows/ci.yml@refs/heads/main"
 HEX40 = re.compile(r"^[0-9a-f]{40}$")
 HEX64 = re.compile(r"^[0-9a-f]{64}$")
-REQUIRED_PYTHON = ["3.11", "3.12"]
+REQUIRED_PYTHON = ["3.8", "3.11", "3.12"]
 
 
 def _load_lock(path: Path) -> dict[str, str]:
@@ -136,7 +136,7 @@ def verify_evidence_claims(
     for key in ("contract_matrix", "regression_matrix"):
         matrix = ci.get(key)
         if not isinstance(matrix, Mapping) or matrix.get("status") != "success" or matrix.get("python") != REQUIRED_PYTHON:
-            raise ValueError(f"ci.{key} must prove successful Python 3.11/3.12 coverage")
+            raise ValueError(f"ci.{key} must prove successful Python 3.8/3.11/3.12 coverage")
     if ci.get("static_security") != "success" or ci.get("deterministic_eval_package") != "success":
         raise ValueError("promotion evidence required CI claims are not all successful")
 
