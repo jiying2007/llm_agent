@@ -627,6 +627,18 @@ schema_drift_index_path.write_text(
     encoding="utf-8",
 )
 
+# Negative 8: baseline/candidate labels or metadata cannot manufacture an
+# intervention when the exact asset identities/content refs are identical.
+same_assets_package=json.loads(json.dumps(preregistration_package))
+same_assets_package["bundles"]["baseline"]["assets"]=json.loads(
+    json.dumps(same_assets_package["bundles"]["candidate"]["assets"])
+)
+same_assets_package["plan"]["bundles"]["baseline"]=sha256_bytes(
+    canonical_json_bytes(same_assets_package["bundles"]["baseline"])
+)
+same_assets_path=fixture_dir/"same-assets-package.json"
+same_assets_path.write_bytes(canonical_json_bytes(same_assets_package))
+
 print(relative(index_path))
 PY
 
@@ -636,6 +648,15 @@ from pathlib import Path
 print((Path(sys.argv[2])/"evidence-index.json").resolve().relative_to(Path(sys.argv[1]).resolve()).as_posix())
 PY
 )"
+
+set +e
+PYTHONPATH="$ROOT:$ROOT/agent-dev-kit/src" python3 -m tools.control_plane.effect_preregistration_package \
+  --adk "$ROOT/agent-dev-kit" \
+  --package "$FIXTURE_DIR/same-assets-package.json" \
+  --summary-json >"$TMP"
+same_assets_rc=$?
+set -e
+test "$same_assets_rc" -eq 1
 
 python3 -m tools.control_plane.effect_readiness   --root . --evidence-index "$INDEX_REL" --require-evidence --summary-json >"$TMP"
 python3 - "$TMP" <<'PY'
