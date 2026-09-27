@@ -1,0 +1,173 @@
+name: effect-value-preregistration
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type REGISTER_REAL_EFFECT_PLAN to sign a real G22 plan without executing it
+        required: true
+        type: string
+      plan_path:
+        description: Main-branch plan JSON under reports/runtime-evidence/effect-value/preregistrations/
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: effect-preregistration-${{ github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  preregister:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      CONFIRMATION: ${{ inputs.confirmation }}
+      PLAN_PATH: ${{ inputs.plan_path }}
+    steps:
+      - name: Validate trusted main and explicit preregistration confirmation
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = "refs/heads/main" || {
+            echo "::error::effect preregistration must run from main"
+            exit 1
+          }
+          test "$CONFIRMATION" = "REGISTER_REAL_EFFECT_PLAN" || {
+            echo "::error::confirmation must be REGISTER_REAL_EFFECT_PLAN"
+            exit 1
+          }
+          case "$PLAN_PATH" in
+            reports/runtime-evidence/effect-value/preregistrations/*.json) ;;
+            *)
+              echo "::error::plan_path must stay under the governed preregistration directory"
+              exit 1
+              ;;
+          esac
+          [[ "$PLAN_PATH" != *".."* && "$PLAN_PATH" != *\\* ]] || {
+            echo "::error::plan_path is unsafe"
+            exit 1
+          }
+
+      - name: Checkout exact trusted main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Verify exact source and initialize pinned ADK
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+          git ls-files --error-unmatch "$PLAN_PATH" >/dev/null
+          git submodule update --init --depth=1 agent-dev-kit
+          bash scripts/check-adk-lock.sh . --pin-only
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+
+      - name: Install preregistration dependencies
+        shell: bash
+        run: python -m pip install 'jsonschema==4.26.0'
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+        with:
+          cosign-release: v3.1.3
+
+      - name: Canonicalize and validate bounded plan shape
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/g22-prereg"
+          PYTHONPATH="$PWD/agent-dev-kit/src" python - "$PLAN_PATH" "$RUNNER_TEMP/g22-prereg/plan.canonical.json" <<'PY'
+          import json,sys
+          from pathlib import Path
+          from jsonschema import Draft202012Validator,FormatChecker
+          from agent_dev_kit.model import canonical_json_bytes
+          from agent_dev_kit.privacy_ref import validate_no_secrets
+
+          source=Path(sys.argv[1])
+          output=Path(sys.argv[2])
+          if source.is_symlink() or source.stat().st_size>1024*1024:
+              raise SystemExit("plan file is unsafe or exceeds byte budget")
+          plan=json.loads(source.read_text(encoding="utf-8"))
+          if not isinstance(plan,dict):
+              raise SystemExit("plan must be a JSON object")
+          validate_no_secrets(plan,"effect preregistration plan")
+          schema=json.loads(Path("agent-dev-kit/schemas/effect-trials-v1.schema.json").read_text(encoding="utf-8"))
+          validator=Draft202012Validator(schema["properties"]["plan"],format_checker=FormatChecker())
+          errors=sorted(validator.iter_errors(plan),key=lambda e:list(e.absolute_path))
+          if errors:
+              first=errors[0]
+              location="/".join(map(str,first.absolute_path)) or "<root>"
+              raise SystemExit(f"plan schema failure at {location}: {first.message}")
+          output.write_bytes(canonical_json_bytes(plan))
+          PY
+
+      - name: Sign exact canonical plan with GitHub OIDC
+        shell: bash
+        env:
+          COSIGN_YES: 'true'
+        run: |
+          set -euo pipefail
+          cosign sign-blob --yes             --bundle "$RUNNER_TEMP/g22-prereg/plan.sigstore.json"             "$RUNNER_TEMP/g22-prereg/plan.canonical.json"
+          cosign verify-blob             --bundle "$RUNNER_TEMP/g22-prereg/plan.sigstore.json"             --certificate-identity "https://github.com/jiying2007/llm_agent/.github/workflows/effect-preregister.yml@refs/heads/main"             --certificate-oidc-issuer "https://token.actions.githubusercontent.com"             "$RUNNER_TEMP/g22-prereg/plan.canonical.json"
+
+      - name: Build bounded preregistration metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - "$PLAN_PATH" "$RUNNER_TEMP/g22-prereg" <<'PY'
+          import hashlib,json,os,sys
+          from pathlib import Path
+          source=Path(sys.argv[1])
+          root=Path(sys.argv[2])
+          plan=root/"plan.canonical.json"
+          bundle=root/"plan.sigstore.json"
+          value=json.loads(bundle.read_text(encoding="utf-8"))
+          entries=value.get("verificationMaterial",{}).get("tlogEntries",[])
+          if not isinstance(entries,list) or len(entries)!=1:
+              raise SystemExit("expected exactly one Rekor tlog entry")
+          integrated=entries[0].get("integratedTime")
+          if not isinstance(integrated,str) or not integrated.isdigit():
+              raise SystemExit("invalid Rekor integratedTime")
+          def sha(path):
+              return hashlib.sha256(path.read_bytes()).hexdigest()
+          metadata={
+              "schema":"llm-agent-effect-preregistration/v1",
+              "status":"signed-plan-only",
+              "source_sha":os.environ["GITHUB_SHA"],
+              "source_plan_path":source.as_posix(),
+              "plan_sha256":sha(plan),
+              "bundle_sha256":sha(bundle),
+              "rekor_integrated_time":integrated,
+              "certificate_identity":"https://github.com/jiying2007/llm_agent/.github/workflows/effect-preregister.yml@refs/heads/main",
+              "certificate_oidc_issuer":"https://token.actions.githubusercontent.com",
+              "provider_execution_performed":False,
+              "effect_evidence_ready":False,
+              "release_authorized":False,
+          }
+          (root/"preregistration.json").write_text(
+              json.dumps(metadata,sort_keys=True,indent=2)+"\n",
+              encoding="utf-8",
+          )
+          PY
+
+      - name: Upload signed preregistration package
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: g22-effect-preregistration-${{ github.sha }}
+          path: ${{ runner.temp }}/g22-prereg
+          if-no-files-found: error
+          retention-days: 90

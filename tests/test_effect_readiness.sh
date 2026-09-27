@@ -27,6 +27,7 @@ assert value["software"]["missing_contract_ids"]==[], value
 assert value["software"]["schema_failures"]==[], value
 assert value["software"]["missing_files"]==[], value
 assert value["software"]["portable_managed_verifier_available"] is True, value
+assert value["software"]["sigstore_blob_verifier_available"] is True, value
 assert value["safe_defaults"]["registry_status"]=="active", value
 assert value["evidence_index"]["entry_count"]==0, value
 assert value["evidence_index"]["covered_asset_count"]==0, value
@@ -118,6 +119,21 @@ def ref(seed: str) -> str:
 now=datetime.now(timezone.utc).replace(microsecond=0)
 window_from=now-timedelta(hours=2)
 window_through=now-timedelta(minutes=1)
+preregistration_plan_path=fixture_dir/"preregistration-plan.json"
+preregistration_plan_path.write_bytes(canonical_json_bytes(campaign["plan"]))
+preregistration_registered_at=window_from-timedelta(minutes=30)
+preregistration_bundle_path=fixture_dir/"preregistration.sigstore.json"
+preregistration_bundle_path.write_text(
+    json.dumps({
+        "verificationMaterial":{
+            "tlogEntries":[{
+                "integratedTime":str(int(preregistration_registered_at.timestamp()))
+            }]
+        }
+    },sort_keys=True)+"\n",
+    encoding="utf-8",
+)
+receipt_signed_at=now-timedelta(seconds=10)
 
 contract=load_contract(adk/"manifests/agent_value_contracts.json")
 contract=json.loads(json.dumps(contract))
@@ -153,7 +169,14 @@ cosign.write_text(
 )
 cosign.chmod(cosign.stat().st_mode | stat.S_IXUSR)
 bundle=fixture_dir/"receipt.sigstore.json"
-bundle.write_text('{"fixture":"portable-sigstore"}\n',encoding="utf-8")
+bundle.write_text(
+    json.dumps({
+        "verificationMaterial":{
+            "tlogEntries":[{"integratedTime":str(int(receipt_signed_at.timestamp()))}]
+        }
+    },sort_keys=True)+"\n",
+    encoding="utf-8",
+)
 manifest_ref=opaque_ref_for_sha256(manifest.digest)
 
 receipts=[]
@@ -287,7 +310,7 @@ def sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 review={
-    "schema":"llm-agent-effect-owner-review/v3",
+    "schema":"llm-agent-effect-owner-review/v4",
     "status":"approved",
     "campaign_id":comparison["campaign_id"],
     "campaign_sha256":sha(campaign_path),
@@ -296,6 +319,8 @@ review={
     "authority_registry_sha256":sha(registry_path),
     "receipts_sha256":sha(receipts_path),
     "measurement_sha256":sha(measurement_path),
+    "preregistration_plan_sha256":sha(preregistration_plan_path),
+    "preregistration_bundle_sha256":sha(preregistration_bundle_path),
     "reviewed_at":now.isoformat().replace("+00:00","Z"),
     "reviewed_by":"fixture-human-owner",
     "reviewer_role":"owner",
@@ -322,12 +347,16 @@ review_path.write_text(
 
 relative=lambda path: path.relative_to(root).as_posix()
 index={
-    "schema":"llm-agent-effect-value-evidence-index/v3",
+    "schema":"llm-agent-effect-value-evidence-index/v4",
     "status":"active",
     "entries":[{
         "id":comparison["campaign_id"],
         "campaign_path":relative(campaign_path),
         "campaign_sha256":sha(campaign_path),
+        "preregistration_plan_path":relative(preregistration_plan_path),
+        "preregistration_plan_sha256":sha(preregistration_plan_path),
+        "preregistration_bundle_path":relative(preregistration_bundle_path),
+        "preregistration_bundle_sha256":sha(preregistration_bundle_path),
         "comparison_path":relative(comparison_path),
         "comparison_sha256":sha(comparison_path),
         "authority_contract_path":relative(contract_path),
@@ -421,6 +450,37 @@ automated_index_path.write_text(
     encoding="utf-8",
 )
 
+# Negative 4: a plan signed after the first managed observation cannot be
+# backfilled into a campaign by editing registered_at text.
+late_bundle_path=fixture_dir/"late-preregistration.sigstore.json"
+late_registered=window_from+timedelta(minutes=1)
+late_bundle_path.write_text(
+    json.dumps({
+        "verificationMaterial":{
+            "tlogEntries":[{"integratedTime":str(int(late_registered.timestamp()))}]
+        }
+    },sort_keys=True)+"\n",
+    encoding="utf-8",
+)
+late_review=json.loads(json.dumps(review))
+late_review["preregistration_bundle_sha256"]=sha(late_bundle_path)
+late_review_path=fixture_dir/"late-preregistration-owner-review.json"
+late_review_path.write_text(
+    json.dumps(late_review,ensure_ascii=False,sort_keys=True,indent=2)+"\n",
+    encoding="utf-8",
+)
+late_index=json.loads(json.dumps(index))
+late_entry=late_index["entries"][0]
+late_entry["preregistration_bundle_path"]=relative(late_bundle_path)
+late_entry["preregistration_bundle_sha256"]=sha(late_bundle_path)
+late_entry["owner_review_path"]=relative(late_review_path)
+late_entry["owner_review_sha256"]=sha(late_review_path)
+late_index_path=fixture_dir/"late-preregistration-index.json"
+late_index_path.write_text(
+    json.dumps(late_index,ensure_ascii=False,sort_keys=True,indent=2)+"\n",
+    encoding="utf-8",
+)
+
 print(relative(index_path))
 PY
 
@@ -449,13 +509,15 @@ assert index["owner_decision_count"]==index["expected_asset_count"], index
 assert index["entries"][0]["comparison_verdict"]=="improved", index
 assert index["entries"][0]["managed_campaign_trace_coverage"] is True, index
 assert index["entries"][0]["signed_receipt_replay"] is True, index
+assert index["entries"][0]["preregistration_verified"] is True, index
+assert index["entries"][0]["preregistered_at"], index
 assert index["entries"][0]["verified_receipt_count"]>index["expected_asset_count"], index
 assert index["entries"][0]["campaign_trace_count"]>0, index
 assert index["entries"][0]["reviewed_by"]=="fixture-human-owner", index
 assert value["release_authorized"] is False, value
 PY
 
-for BAD in tampered-index.json forged-index.json automated-index.json; do
+for BAD in tampered-index.json forged-index.json automated-index.json late-preregistration-index.json; do
   BAD_REL="$(python3 - "$ROOT" "$FIXTURE_DIR" "$BAD" <<'PY'
 import sys
 from pathlib import Path
@@ -471,4 +533,14 @@ done
 
 python3 -m tools.control_plane.cli effect-readiness --root . --summary-json   | python3 -c 'import json,sys; v=json.load(sys.stdin); assert v["status"]=="pass" and v["software_ready"] is True and v["effect_evidence_ready"] is False, v'
 
-echo '[PASS] effect readiness requires signed receipt replay, recomputed measurement, campaign provenance, and real owner review'
+WORKFLOW="$ROOT/.github/workflows/effect-preregister.yml"
+grep -Fq 'REGISTER_REAL_EFFECT_PLAN' "$WORKFLOW"
+grep -Fq 'id-token: write' "$WORKFLOW"
+grep -Fq 'cosign sign-blob' "$WORKFLOW"
+grep -Fq 'provider_execution_performed":False' "$WORKFLOW"
+if grep -Eq 'ANTHROPIC_API_KEY|OPENAI_API_KEY|claude -p|codex exec' "$WORKFLOW"; then
+  echo '[FAIL] effect preregistration workflow must not execute a provider/model' >&2
+  exit 1
+fi
+
+echo '[PASS] effect readiness requires cryptographic preregistration, signed receipt replay, recomputed measurement, campaign provenance, and real owner review'
