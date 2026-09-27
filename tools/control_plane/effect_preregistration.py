@@ -77,6 +77,22 @@ campaign=obj(campaign_path,"campaign")
 plan=campaign.get("plan")
 if not isinstance(plan,dict):
     raise SystemExit("campaign-plan-invalid")
+campaign_observed_times=[]
+trials=campaign.get("trials")
+if not isinstance(trials,list) or not trials:
+    raise SystemExit("campaign-trials-invalid")
+for trial in trials:
+    if not isinstance(trial,dict):
+        raise SystemExit("campaign-trial-invalid")
+    for side in ("baseline","candidate"):
+        bindings=trial.get(side)
+        if not isinstance(bindings,list) or not bindings:
+            raise SystemExit("campaign-bindings-invalid")
+        for binding in bindings:
+            run=binding.get("run") if isinstance(binding,dict) else None
+            if not isinstance(run,dict):
+                raise SystemExit("campaign-run-invalid")
+            campaign_observed_times.append(stamp(run.get("observed_at"),"campaign-run-observed-at"))
 if canonical_json_bytes(plan)!=canonical_json_bytes(package.get("plan")):
     raise SystemExit("preregistration-package-plan-differs-from-campaign-plan")
 if hashlib.sha256(prereg_bundle.read_bytes()).hexdigest()!=expected_prereg_bundle_sha:
@@ -136,6 +152,8 @@ if not verify_sigstore_blob(
     raise SystemExit("preregistration-signature-invalid")
 
 registered=tlog_time(prereg_bundle,"preregistration-bundle")
+if any(registered>=value for value in campaign_observed_times):
+    raise SystemExit("preregistration-must-precede-all-campaign-runs")
 if any(registered>=value for value in observed_times):
     raise SystemExit("preregistration-must-precede-all-observed-at-times")
 if any(registered>=value for value in signature_times):
@@ -150,6 +168,7 @@ print(json.dumps({
     "candidate_assets":package_summary["bundle_assets"]["candidate"],
     "bundle_sha256":expected_prereg_bundle_sha,
     "registered_at":registered.isoformat().replace("+00:00","Z"),
+    "campaign_run_count":len(campaign_observed_times),
     "verified_receipt_count":len(receipts),
     "certificate_identity":cert_identity,
     "certificate_oidc_issuer":cert_issuer,
