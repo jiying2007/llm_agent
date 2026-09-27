@@ -3,10 +3,12 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import tempfile
 from pathlib import Path
 from typing import Any
 
 PACKAGE_SCHEMA = "llm-agent-effect-preregistration-package/v2"
+SOURCE_SCHEMA = "llm-agent-effect-preregistration-source/v1"
 BUNDLE_SCHEMA = "llm-agent-effect-bundle-manifest/v1"
 _CONTROL_BINDINGS = {
     "environment": "environment_ref",
@@ -39,6 +41,105 @@ def _expected_asset_refs(manifest: Any) -> dict[tuple[str, str], str]:
         for name, value in profiles.items():
             result[("profile", str(name))] = _ref(value)
     return result
+
+
+
+def build_package(adk: Path, source_path: Path) -> tuple[bytes, dict[str, Any]]:
+    if source_path.is_symlink() or not source_path.is_file():
+        raise ValueError("preregistration source is missing or unsafe")
+    if source_path.stat().st_size > 1024 * 1024:
+        raise ValueError("preregistration source exceeds byte budget")
+    source = json.loads(source_path.read_text(encoding="utf-8"))
+    if not isinstance(source, dict):
+        raise ValueError("preregistration source must be an object")
+    required = {
+        "schema",
+        "status",
+        "plan",
+        "controls",
+        "bundles",
+        "raw_content_stored",
+        "provider_execution_performed",
+        "release_authorized",
+    }
+    if set(source) != required:
+        raise ValueError("preregistration source fields are invalid")
+    if source["schema"] != SOURCE_SCHEMA or source["status"] != "draft":
+        raise ValueError("preregistration source schema/status is invalid")
+    if (
+        source["raw_content_stored"] is not False
+        or source["provider_execution_performed"] is not False
+        or source["release_authorized"] is not False
+    ):
+        raise ValueError("preregistration source authority/privacy boundary is invalid")
+
+    plan_source = source["plan"]
+    controls = source["controls"]
+    bundles = source["bundles"]
+    if not isinstance(plan_source, dict) or not isinstance(controls, dict) or not isinstance(bundles, dict):
+        raise ValueError("preregistration source plan/controls/bundles are invalid")
+    expected_plan_fields = {
+        "campaign_id",
+        "registered_at",
+        "window",
+        "task_ids",
+        "trial_ids",
+        "controls",
+        "policy",
+    }
+    if set(plan_source) != expected_plan_fields:
+        raise ValueError("preregistration source plan must omit derived bundle digests")
+    plan_controls = plan_source["controls"]
+    expected_control_fields = {
+        "runtime_target",
+        "runtime_version",
+        "model_version",
+        "prompt_version",
+        "orchestration_mode",
+        "model_identity",
+    }
+    if not isinstance(plan_controls, dict) or set(plan_controls) != expected_control_fields:
+        raise ValueError("preregistration source plan controls must omit all derived refs")
+    if set(controls) != set(_CONTROL_BINDINGS):
+        raise ValueError("preregistration source controls are incomplete")
+    if set(bundles) != {"baseline", "candidate"}:
+        raise ValueError("preregistration source bundles are invalid")
+
+    built_controls = dict(plan_controls)
+    for name, field in _CONTROL_BINDINGS.items():
+        artifact = controls[name]
+        if not isinstance(artifact, dict):
+            raise ValueError(f"preregistration source control artifact must be an object: {name}")
+        built_controls[field] = _ref(artifact)
+
+    built_bundles = {}
+    for side in ("baseline", "candidate"):
+        value = bundles[side]
+        if not isinstance(value, dict):
+            raise ValueError(f"preregistration source bundle manifest must be an object: {side}")
+        built_bundles[side] = hashlib.sha256(_canonical(value)).hexdigest()
+
+    plan = dict(plan_source)
+    plan["controls"] = built_controls
+    plan["bundles"] = built_bundles
+    package = {
+        "schema": PACKAGE_SCHEMA,
+        "status": "frozen",
+        "plan": plan,
+        "controls": controls,
+        "bundles": bundles,
+        "raw_content_stored": False,
+        "provider_execution_performed": False,
+        "release_authorized": False,
+    }
+    canonical = _canonical(package)
+    with tempfile.TemporaryDirectory(prefix="g22-prereg-build-") as temporary:
+        path = Path(temporary) / "package.json"
+        path.write_bytes(canonical)
+        verified, summary = validate_package(adk, path)
+    if verified != canonical:
+        raise ValueError("built preregistration package canonical bytes changed during validation")
+    return canonical, summary
 
 
 def validate_package(adk: Path, package_path: Path) -> tuple[bytes, dict[str, Any]]:
@@ -166,10 +267,16 @@ def validate_package(adk: Path, package_path: Path) -> tuple[bytes, dict[str, An
         raise ValueError("preregistration bundle manifests must be distinct")
     baseline_assets = bundles["baseline"]["assets"]
     candidate_assets = bundles["candidate"]["assets"]
-    if baseline_assets == candidate_assets:
+    baseline_identity = sorted(
+        (item["asset_kind"], item["asset_id"], item["content_ref"]) for item in baseline_assets
+    )
+    candidate_identity = sorted(
+        (item["asset_kind"], item["asset_id"], item["content_ref"]) for item in candidate_assets
+    )
+    if baseline_identity == candidate_identity:
         raise ValueError(
             "preregistration baseline/candidate asset identities must differ; "
-            "condition or metadata labels alone are not an intervention"
+            "condition, metadata, or asset ordering alone are not an intervention"
         )
 
     canonical = _canonical(package)
@@ -190,16 +297,40 @@ def validate_package(adk: Path, package_path: Path) -> tuple[bytes, dict[str, An
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Validate/canonicalize a frozen G22 preregistration package")
+    parser = argparse.ArgumentParser(description="Build or validate a frozen G22 preregistration package")
     parser.add_argument("--adk", default="agent-dev-kit")
-    parser.add_argument("--package", required=True)
+    mode = parser.add_mutually_exclusive_group(required=True)
+    mode.add_argument("--package")
+    mode.add_argument("--source")
+    parser.add_argument("--output")
+    parser.add_argument("--overwrite", action="store_true")
     parser.add_argument("--canonical-out")
     parser.add_argument("--summary-json", action="store_true")
     args = parser.parse_args(argv)
     try:
-        canonical, summary = validate_package(Path(args.adk).resolve(), Path(args.package).resolve())
-        if args.canonical_out:
-            Path(args.canonical_out).write_bytes(canonical)
+        adk = Path(args.adk).resolve()
+        if args.source:
+            if not args.output:
+                parser.error("--output is required with --source")
+            if args.canonical_out:
+                parser.error("--canonical-out is only valid with --package")
+            output = Path(args.output)
+            if output.exists() and not args.overwrite:
+                raise ValueError("preregistration output already exists; use --overwrite explicitly")
+            canonical, summary = build_package(adk, Path(args.source).resolve())
+            output.parent.mkdir(parents=True, exist_ok=True)
+            output.write_bytes(canonical)
+            summary = dict(summary)
+            summary["source_schema"] = SOURCE_SCHEMA
+            summary["output"] = output.as_posix()
+        else:
+            if args.output:
+                parser.error("--output is only valid with --source")
+            if args.overwrite:
+                parser.error("--overwrite is only valid with --source")
+            canonical, summary = validate_package(adk, Path(args.package).resolve())
+            if args.canonical_out:
+                Path(args.canonical_out).write_bytes(canonical)
     except (OSError, ValueError, json.JSONDecodeError) as exc:
         result = {"schema": PACKAGE_SCHEMA, "status": "fail", "error": str(exc)}
         print(json.dumps(result, sort_keys=True))
