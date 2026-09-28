@@ -1,9 +1,9 @@
 {
   "schema": "llm-agent-adk-interface-lock/v1",
-  "version": "7.12.4",
-  "commit": "35b5fb31810c654a295c25b89e04435d6a32f57c",
-  "tree": "ebe395d46a49addc28c0a986b0ac83a1c511f8ea",
-  "manifest_blob": "0685b4fa6002ebb03be10d42b4558057da795bf7",
+  "version": "7.13.0",
+  "commit": "ed688c94d3fb101c77b9f22a6c7b9a1aa90d9c40",
+  "tree": "0518b415d50258934d3ceca6f0408cc093223734",
+  "manifest_blob": "379602932a5a9d7b24eb90b2e4d60ca1035cb0fb",
   "manifest_mode": "json-only",
   "maturity_contract": "v5",
   "surfaces": {
@@ -13,6 +13,9 @@
     "evidence_graph_schema": "schemas/evidence-graph-v1.schema.json",
     "runtime_control_schema": "schemas/runtime-control-decision-v2.schema.json",
     "sigstore_blob_verifier": "src/agent_dev_kit/sigstore_blob.py",
+    "campaign_model": "src/agent_dev_kit/campaign_model.py",
+    "campaign_runtime": "src/agent_dev_kit/campaign.py",
+    "evaluation_cli": "src/agent_dev_kit/evaluation_cli.py",
     "effect_campaign_materializer": "src/agent_dev_kit/effect_campaign_materializer.py"
   },
   "deprecated_surfaces": [
