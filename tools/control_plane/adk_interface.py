@@ -17,6 +17,9 @@ _SURFACES = {
     "evidence_graph_schema": "schemas/evidence-graph-v1.schema.json",
     "runtime_control_schema": "schemas/runtime-control-decision-v2.schema.json",
     "sigstore_blob_verifier": "src/agent_dev_kit/sigstore_blob.py",
+    "campaign_model": "src/agent_dev_kit/campaign_model.py",
+    "campaign_runtime": "src/agent_dev_kit/campaign.py",
+    "evaluation_cli": "src/agent_dev_kit/evaluation_cli.py",
     "effect_campaign_materializer": "src/agent_dev_kit/effect_campaign_materializer.py",
 }
 _DEPRECATED = [

@@ -24,6 +24,10 @@ for key in ("commit", "tree", "manifest_blob"):
 assert data["gitlink"] == identity["commit"], data
 assert data["surfaces"]["manifest"] == "manifest.json", data
 assert data["surfaces"]["maturity_test"] == "tests/test_product_maturity.sh", data
+assert data["surfaces"]["campaign_model"] == "src/agent_dev_kit/campaign_model.py", data
+assert data["surfaces"]["campaign_runtime"] == "src/agent_dev_kit/campaign.py", data
+assert data["surfaces"]["evaluation_cli"] == "src/agent_dev_kit/evaluation_cli.py", data
+assert data["surfaces"]["effect_campaign_materializer"] == "src/agent_dev_kit/effect_campaign_materializer.py", data
 assert "tests/test_product_maturity_v5.sh" not in data["surfaces"].values(), data
 assert "manifest.yaml" in data["deprecated_surfaces"], data
 assert "tests/test_product_maturity_v4.sh" in data["deprecated_surfaces"], data
