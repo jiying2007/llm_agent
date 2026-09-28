@@ -23,6 +23,11 @@ assert not (root / "manifests/runtime_health_adapters.json").exists()
 assert not (root / "manifests/reference_repository_registration_policy.json").exists()
 assert not (root / "manifests/reference_repository_removal_policy.json").exists()
 assert not (root / "manifests/long_term_asset_rehearsal.json").exists()
+assert not (root / "tools/codex_assets/software_m5.py").exists()
+
+software_m5_entry = (root / "scripts/software-m5.sh").read_text(encoding="utf-8")
+assert "tools.codex_assets.software_m5_v3" in software_m5_entry
+assert "tools.codex_assets.software_m5 --root" not in software_m5_entry
 
 targets = json.loads((root / "manifests/runtime_targets.json").read_text(encoding="utf-8"))
 expected_runtimes = {"codex", "claude-code", "opencode"}
