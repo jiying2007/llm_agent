@@ -4,6 +4,18 @@
 
 本流程从已存在的 repository candidate + 独立 owner decision 开始，不负责发现、评分或 ADK 吸收。上游 intake 见 `docs/runbooks/external-practice-intake.md`。
 
+## 已登记 pin 的远端漂移观察
+
+对已批准的参考仓，先用只读入口核对远端分支。默认不联网；联网须显式给 `--allow-network`：
+
+```bash
+rtk python3 -m tools.codex_assets.reference_remote_audit --root . --summary-json
+rtk python3 -m tools.codex_assets.reference_remote_audit --root . --allow-network --summary-json
+rtk python3 -m tools.codex_assets.reference_remote_audit --root . --repo OpenSpec --allow-network --summary-json
+```
+
+输出绑定 pin/registry SHA256，逐仓区分 `same`、`different`、`unavailable`；整体 `review-required` 表示需审新 SHA，`degraded` 表示至少一个远端不可核。`different` 只证明 HEAD 变化，不证明可快进、代码质量或采纳价值。入口只调用受限 `git ls-remote`，不会 fetch/clone/pull、修改 dirty checkout、更新 pin 或启用 runtime。新仓发现仍走 external-practice intake；exact pin 更新需要独立审查和 owner decision。
+
 ## Entry Gate
 
 - Candidate 使用 `external-practice-candidate/v1`，provider 为 GitHub/GitLab/Gitee/manual 且 `repository` metadata 非空。
@@ -69,5 +81,6 @@ rtk scripts/check-reference-repository-registration.sh .
 rtk tests/test_reference_repository_registration.sh
 rtk scripts/check-reference-repository-removal.sh .
 rtk tests/test_reference_repository_removal.sh
+rtk tests/test_reference_remote_audit.sh
 rtk scripts/check-practice-intake.sh .
 ```

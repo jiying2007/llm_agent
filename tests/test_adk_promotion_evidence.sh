@@ -38,7 +38,7 @@ for retired in ("cosign initialize", "trusted_root.json", "--trusted-root", "--n
     assert retired not in script, retired
 PY
 
-python - "$TMP" <<'PY'
+python3 - "$TMP" <<'PY'
 import datetime as dt
 import json
 import pathlib
@@ -117,14 +117,14 @@ bad['issued_at'] = '2020-01-01T00:00:00Z'
 (root / 'stale.json').write_text(json.dumps(bad), encoding='utf-8')
 PY
 
-python -m tools.control_plane.adk_promotion_evidence \
+python3 -m tools.control_plane.adk_promotion_evidence \
   --evidence "$TMP/evidence.json" \
   --lock "$TMP/adk.lock" \
   --interface "$TMP/interface.json" \
   --summary-json
 
 for bad in bad-identity bad-ci bad-missing-python38 bad-ref stale; do
-  if python -m tools.control_plane.adk_promotion_evidence \
+  if python3 -m tools.control_plane.adk_promotion_evidence \
       --evidence "$TMP/$bad.json" \
       --lock "$TMP/adk.lock" \
       --interface "$TMP/interface.json" \

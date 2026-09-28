@@ -265,23 +265,22 @@ scripts/check-observe-intake-depth.sh [WORKSPACE_ROOT]
 
 ## 9. check-runtime-routing.sh
 
-**用途**: 校验 `agent-dev-kit` 的 runtime routing 资产完整性，同时调用 `check-profile-coherence.sh` 防止 profile 继承后重复声明。
+**用途**: 校验当前 ADK JSON Manifest 的核心 profile、路由矩阵、Skill 和 runbook；随后执行触发冲突检查与 ADK strict validator。
 
 **用法**:
 ```bash
-scripts/check-runtime-routing.sh [WORKSPACE_ROOT]
+rtk scripts/check-runtime-routing.sh [WORKSPACE_ROOT]
 ```
 
 **通过标准**:
-- `agent-dev-kit/manifest.yaml` 存在。
-- manifest 中定义的所有 skill 在 routing 中有对应条目。
-- routing 条目的 intent 关键词无冲突。
-- profile coherence 检查通过（无重复 Agent/Skill 声明）。
+- `agent-dev-kit/manifest.json` 存在，并声明 `core`、`embedded-fullstack`、`adk-runtime-router`、`adk-planning-execution-loop` 与非空路由矩阵。
+- 当前 routing、planning、upstream、security、team runbook 存在。
+- `check-skill-routing-conflicts.sh` 与 `devkit.sh validate --strict` 通过。
 
 **失败排查**:
-- `[FAIL] missing routing for skill: xxx` → 在 manifest 的 routing 部分为该 skill 添加路由条目。
-- `[FAIL] duplicate intent keyword` → 修正 routing 中冲突的 intent 关键词。
-- profile coherence 失败 → 运行 `agent-dev-kit/scripts/check-profile-coherence.sh` 查看详细输出，清理重复声明。
+- `[FAIL] active ADK routing contract is incomplete` → 核对 `manifest.json` 的 profile、Skill 与路由矩阵。
+- `[FAIL] skill routing conflicts found` → 核对冲突 Skill 的 `triggers`，确认 primary 触发边界。
+- strict validation 失败 → 从 ADK 仓执行 `rtk scripts/devkit.sh validate --strict` 查看实际合同失败项。
 
 ---
 
@@ -291,38 +290,36 @@ scripts/check-runtime-routing.sh [WORKSPACE_ROOT]
 
 **用法**:
 ```bash
-scripts/check-skill-metadata.sh [WORKSPACE_ROOT]
+rtk scripts/check-skill-metadata.sh [WORKSPACE_ROOT]
 ```
 
 **通过标准**:
-- `agent-dev-kit/manifest.yaml` 存在。
-- manifest 中声明的每个 skill 目录下存在 `SKILL.md`。
-- 每个 `SKILL.md` 包含必填字段：`name`、`description`、`version`、`intent_keywords`、`quality_tier`。
+- `agent-dev-kit/manifest.json` 存在，core 与 optional Skill 列表均非空，名称无重复。
+- Manifest 中每个 Skill 的 `path` 指向现存文件，`quality_tier` 已声明。
+- `SKILL.md` frontmatter 的 `name` 与 Manifest 一致，`version` 为 semver，`last_updated` 为有效日期；其余字段由 ADK strict validator 检查。
 
 **失败排查**:
-- `[FAIL] SKILL.md missing in: xxx` → 在对应 skill 目录创建 `SKILL.md`，按模板填充。
-- `[FAIL] missing field in SKILL.md: xxx` → 在 `SKILL.md` 头部 frontmatter 补充缺失字段。
-- `[FAIL] manifest missing` → 确认 `agent-dev-kit/manifest.yaml` 存在。
+- `[FAIL] ... file missing` → 核对 Manifest 中该 Skill 的 `path` 与当前目录。
+- frontmatter 字段失败 → 修改对应 `SKILL.md`，再运行 ADK strict validator。
+- `[FAIL] manifest missing` → 确认 `agent-dev-kit/manifest.json` 存在。
 
 ---
 
 ## 11. check-skill-routing-conflicts.sh
 
-**用途**: 检测 `agent-dev-kit` 中 skill 路由的 intent 关键词冲突，防止多个 skill 匹配同一意图导致歧义。
+**用途**: 检测 core 与 optional Skill frontmatter 中归一化后的 `triggers` 是否被多个 Skill 重复声明。
 
 **用法**:
 ```bash
-scripts/check-skill-routing-conflicts.sh [WORKSPACE_ROOT]
+rtk scripts/check-skill-routing-conflicts.sh [WORKSPACE_ROOT]
 ```
 
 **通过标准**:
-- `agent-dev-kit/manifest.yaml` 存在。
-- 所有 skill 的 `intent_keywords` 无完全重复项。
-- 同一 quality_tier 内的 skill 不共享相同关键词。
+- `agent-dev-kit/manifest.json` 存在。
+- Manifest 声明的 Skill 有可读取的 frontmatter `triggers`，归一化后不跨 Skill 重复。
 
 **失败排查**:
-- `[FAIL] duplicate intent keyword: "xxx" in skills [a, b]` → 修改其中一个 skill 的 intent_keywords，使其与其他 skill 区分。
-- `[FAIL] conflict in tier "xxx": skills [a, b] share keyword "yyy"` → 在 manifest 的 routing 部分调整关键词或合并 skill。
+- `[CONFLICT] trigger=... skills=...` → 修改相关 Skill 的 `triggers` 或组合路由，使 primary 边界明确。
 
 ---
 

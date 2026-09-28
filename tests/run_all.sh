@@ -2,6 +2,16 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+export PYTHONPATH="$ROOT_DIR/agent-dev-kit/src:$ROOT_DIR${PYTHONPATH:+:$PYTHONPATH}"
+if ! python3 -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 11) else 1)'; then
+  echo "[FAIL] llm_agent root tests require Python 3.11+ (see pyproject.toml)" >&2
+  exit 2
+fi
+if ! python3 -c 'import yaml, jsonschema' >/dev/null 2>&1; then
+  echo "[FAIL] llm_agent root tests require installed root and ADK Python dependencies (PyYAML, jsonschema)" >&2
+  exit 2
+fi
 
 VERBOSE=0
 FAIL_FAST=0

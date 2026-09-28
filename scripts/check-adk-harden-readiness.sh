@@ -137,13 +137,12 @@ if [[ "${CHECK_FULL_SUITE}" -eq 1 ]]; then
   fi
 fi
 
-bash "${ADK_DIR}/scripts/validate-assets.sh" --strict
+bash "${ADK_DIR}/scripts/devkit.sh" validate --strict
 bash "${ADK_DIR}/tests/test_optional_skills.sh"
 bash "${ADK_DIR}/tests/test_no_external_repo_refs.sh"
 bash "${ROOT}/scripts/check-stale-references.sh" "${ROOT}"
 bash "${ROOT}/scripts/check-file-modes.sh" "${ROOT}"
 bash "${ROOT}/scripts/check-runtime-targets.sh" "${ROOT}"
-bash "${ROOT}/scripts/check-reference-dirty-triage.sh" "${ROOT}"
 bash "${ROOT}/scripts/check-file-modes.sh" "${ADK_DIR}"
 
 echo "[PASS] adk harden baseline checks passed"
@@ -201,16 +200,12 @@ if [[ "${CHECK_FULL_SUITE}" -eq 1 && "${PARITY_RECEIPT_REUSED}" -eq 0 ]]; then
     echo "[FAIL] isolated ADK suite clone HEAD mismatch: expected=${ADK_EXPECTED_HEAD} actual=${ADK_CLONED_HEAD}" >&2
     exit 1
   fi
-  WORKSPACE_TOP="$(git -C "${ROOT}" rev-parse --show-toplevel)"
-  for sibling in OpenSpec oh-my-codex planning-with-files scale-engine superpowers vibeflow; do
-    if [[ ! -d "${WORKSPACE_TOP}/${sibling}" ]]; then
-      echo "[FAIL] isolated ADK suite sibling source missing: ${sibling}" >&2
-      exit 1
-    fi
-    ln -s "${WORKSPACE_TOP}/${sibling}" "${ADK_SUITE_TMP}/${sibling}"
-  done
   echo "[INFO] run ADK full suite from isolated exact-HEAD clone: ${ADK_CLONED_HEAD}"
-  ADK_REQUIRE_SUPPORTED_PYTHON=1 bash "${ADK_SUITE_DIR}/tests/run_all.sh"
+  (
+    cd "${ADK_SUITE_DIR}"
+    ADK_REQUIRE_SUPPORTED_PYTHON=1 PYTHONPATH="${ADK_SUITE_DIR}/src${PYTHONPATH:+:${PYTHONPATH}}" \
+      bash tests/run_all.sh
+  )
   cleanup_adk_suite_tmp
   ADK_SUITE_TMP=""
   echo "[PASS] adk full regression suite passed"

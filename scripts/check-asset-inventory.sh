@@ -4,22 +4,21 @@ set -euo pipefail
 ROOT="${1:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 HEALTH="${ROOT}/scripts/health-check.sh"
 ADK_AGENTS="${ROOT}/agent-dev-kit/AGENTS.md"
-ARCH_REPORT="${ROOT}/reports/architecture/llm-agent-adk-target-architecture-2026-07-11.md"
+GUIDE="${ROOT}/docs/llm-agent-maintenance-guide.md"
 
 [[ -x "${HEALTH}" ]] || { echo "[FAIL] health summary entry missing: ${HEALTH}" >&2; exit 1; }
 [[ -f "${ADK_AGENTS}" ]] || { echo "[FAIL] ADK AGENTS missing: ${ADK_AGENTS}" >&2; exit 1; }
-[[ -f "${ARCH_REPORT}" ]] || { echo "[FAIL] architecture report missing: ${ARCH_REPORT}" >&2; exit 1; }
+[[ -f "${GUIDE}" ]] || { echo "[FAIL] maintenance guide missing: ${GUIDE}" >&2; exit 1; }
 
 SUMMARY="$(${HEALTH} "${ROOT}" --summary-json)"
 python3 - "${ROOT}" "${SUMMARY}" <<'PY'
 import json
 import pathlib
-import re
 import sys
 
 root = pathlib.Path(sys.argv[1])
 summary = json.loads(sys.argv[2])
-manifest = (root / "agent-dev-kit/manifest.yaml").read_text(encoding="utf-8")
+manifest = json.loads((root / "agent-dev-kit/manifest.json").read_text(encoding="utf-8"))
 
 
 def files(path, pattern="*"):
@@ -30,8 +29,6 @@ def recursive_files(path, pattern="*"):
     return sum(1 for item in path.rglob(pattern) if item.is_file())
 
 
-profiles = re.search(r"^profiles:\n(.*?)^workflows:", manifest, re.M | re.S)
-workflows = re.search(r"^workflows:\n(.*?)^mcp_servers:", manifest, re.M | re.S)
 expected = {
     "root_script_files": files(root / "scripts"),
     "root_manifest_files": files(root / "manifests"),
@@ -39,8 +36,8 @@ expected = {
     "adk_agents": recursive_files(root / "agent-dev-kit/agents", "AGENTS.md"),
     "adk_core_skills": recursive_files(root / "agent-dev-kit/skills", "SKILL.md"),
     "adk_optional_skills": recursive_files(root / "agent-dev-kit/optional-skills", "SKILL.md"),
-    "adk_profiles": len(re.findall(r"^  [a-z0-9][a-z0-9-]*:$", profiles.group(1), re.M)) if profiles else 0,
-    "adk_workflows": len(re.findall(r"^  - name:", workflows.group(1), re.M)) if workflows else 0,
+    "adk_profiles": len(manifest["profiles"]),
+    "adk_workflows": len(manifest["workflows"]),
     "adk_test_files": recursive_files(root / "agent-dev-kit/tests"),
     "adk_manifest_files": files(root / "agent-dev-kit/manifests"),
 }
@@ -65,12 +62,8 @@ for stale in "Agents: 16 个角色" "Core Skills: 47 个" "Workflows: 1 个"; do
   fi
 done
 
-rg -q --fixed-strings -- "设计时资产快照" "${ARCH_REPORT}" || {
-  echo "[FAIL] architecture asset counts are not labeled as a historical snapshot" >&2
-  exit 1
-}
-rg -q --fixed-strings -- "scripts/health-check.sh . --summary-json" "${ARCH_REPORT}" || {
-  echo "[FAIL] architecture report does not route current inventory to health summary" >&2
+rg -q --fixed-strings -- "rtk scripts/health-check.sh . --summary-json" "${GUIDE}" || {
+  echo "[FAIL] maintenance guide does not route current inventory to health summary" >&2
   exit 1
 }
 

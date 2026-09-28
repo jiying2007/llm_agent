@@ -49,7 +49,9 @@ def run_pipeline(
         raise ValueError("recent-days must be between 0 and 3650")
     now = datetime.now(timezone.utc).replace(microsecond=0)
     report_root = (root / "reports").resolve()
-    if not report_root.is_relative_to(root) or any(paths_overlap(report_root, p) for p in protected_roots(root)):
+    if (report_root != root and root not in report_root.parents) or any(
+        paths_overlap(report_root, p) for p in protected_roots(root)
+    ):
         raise IntakeError("pipeline report directory overlaps a protected root")
     stem = "pipeline-report-" + now.date().isoformat()
     result: dict[str, Any] = {

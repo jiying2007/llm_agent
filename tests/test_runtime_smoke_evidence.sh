@@ -36,6 +36,13 @@ cat >"$TMP/raw-pass.json" <<'JSON'
 {
   "schema_version": 1,
   "suite": "runtime-routing",
+  "manifest_sha256": "62be23a53635c7a2b2c49fff25b82806e2e220234c31501ce31b7eabc1dacb67",
+  "task_set_sha256": "6c03017c27fb6020faa7cc44b253f7c8ffc6a96393e32188ea0bc8d800046483",
+  "task_set_identity_scope": "parsed-ordered-selected-task-sequence",
+  "task_snapshot_frozen": true,
+  "source_snapshot_atomic": false,
+  "grader_contract": "adk-runtime-routing-grader/v1",
+  "prompt_version": "adk-runtime-routing-v1",
   "runtime": "codex",
   "runtime_version": "codex-cli 0.154.0",
   "requested_model": "gpt-5.5",
@@ -53,6 +60,7 @@ cat >"$TMP/raw-pass.json" <<'JSON'
   "results": [
     {
       "id": "route-001",
+      "prompt_sha256": "d71d4457608f439bec8ff0ad3131ddb9673db2ade8d72f05925c061c65792891",
       "category": "routing",
       "status": "pass",
       "expected_skill": "adk-runtime-router",
@@ -106,6 +114,43 @@ payload = json.dumps(unsigned, ensure_ascii=False, sort_keys=True, separators=("
 assert stored == hashlib.sha256(payload).hexdigest()
 PY
 
+python3 - "$TMP/raw-pass.json" "$TMP/raw-legacy.json" "$TMP/raw-model-swap.json" "$TMP/raw-duplicate.json" "$TMP/raw-nonfinite.json" "$TMP/raw-wrong-model.json" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+source = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+legacy = json.loads(json.dumps(source))
+legacy.pop("task_set_sha256")
+Path(sys.argv[2]).write_text(json.dumps(legacy), encoding="utf-8")
+swapped = json.loads(json.dumps(source))
+swapped["results"][0]["reported_models"] = ["different-model"]
+Path(sys.argv[3]).write_text(json.dumps(swapped), encoding="utf-8")
+duplicate = Path(sys.argv[1]).read_text(encoding="utf-8").replace(
+    '"suite":', '"suite":"forged","suite":', 1,
+)
+Path(sys.argv[4]).write_text(duplicate, encoding="utf-8")
+nonfinite = Path(sys.argv[1]).read_text(encoding="utf-8").replace(
+    '"success_rate": 1.0', '"success_rate": NaN', 1,
+)
+Path(sys.argv[5]).write_text(nonfinite, encoding="utf-8")
+wrong_model = json.loads(json.dumps(source))
+wrong_model["reported_models"] = ["different-model"]
+wrong_model["results"][0]["reported_models"] = ["different-model"]
+Path(sys.argv[6]).write_text(json.dumps(wrong_model), encoding="utf-8")
+PY
+for invalid in raw-legacy raw-model-swap raw-duplicate raw-nonfinite raw-wrong-model; do
+  if python3 -m tools.codex_assets.runtime_smoke_evidence \
+    --root "$FAKE_ROOT" \
+    --raw-result "$TMP/$invalid.json" \
+    --runtime-binary "$TMP/codex" \
+    --output "$TMP/$invalid.evidence.json" >/dev/null 2>&1; then
+    echo "[FAIL] collector accepted unbound runtime report: $invalid" >&2
+    exit 1
+  fi
+  test ! -e "$TMP/$invalid.evidence.json"
+done
+
 python3 - "$TMP/raw-pass.json" "$TMP/raw-fail.json" <<'PY'
 import json
 import sys
@@ -132,6 +177,17 @@ if python3 -m tools.codex_assets.runtime_smoke_evidence \
   --runtime-binary "$TMP/codex" \
   --output "$TMP/should-not-exist-2.json" >/dev/null 2>&1; then
   echo "[FAIL] collector accepted a mismatched ADK tree" >&2
+  exit 1
+fi
+
+cp "$TMP/adk.lock.good" "$FAKE_ROOT/adk.lock"
+printf 'uncommitted fixture\n' >"$ADK/untracked.txt"
+if python3 -m tools.codex_assets.runtime_smoke_evidence \
+  --root "$FAKE_ROOT" \
+  --raw-result "$TMP/raw-pass.json" \
+  --runtime-binary "$TMP/codex" \
+  --output "$TMP/should-not-exist-dirty.json" >/dev/null 2>&1; then
+  echo "[FAIL] collector accepted a dirty ADK source" >&2
   exit 1
 fi
 

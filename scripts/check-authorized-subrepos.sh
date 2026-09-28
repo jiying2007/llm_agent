@@ -4,16 +4,26 @@ set -euo pipefail
 ROOT="${1:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 REGISTRY="${ROOT}/subrepos/registry.csv"
 GITMODULES="${ROOT}/.gitmodules"
-LIFECYCLE="${ROOT}/manifests/subrepo_lifecycle.json"
+GITLINKS="${ROOT}/manifests/gitlinks.json"
 
 [[ -f "${REGISTRY}" ]] || {
   echo "[FAIL] registry missing: ${REGISTRY}" >&2
   exit 1
 }
+[[ -f "${GITLINKS}" ]] || {
+  echo "[FAIL] gitlink manifest missing: ${GITLINKS}" >&2
+  exit 1
+}
+jq -e '.schema == "llm-agent-gitlinks/v2" and (.gitlinks | type == "array")' "${GITLINKS}" >/dev/null || {
+  echo "[FAIL] gitlink manifest is invalid" >&2
+  exit 1
+}
 
 mapfile -t authorized < <(
-  awk -F',' 'NR > 1 && $6 == "yes" && $8 == "active" {print $1}' "${REGISTRY}" | sort
+  awk -F',' 'NR > 1 && $4 == "pull" && $6 == "yes" && $8 == "active" {print $1}' "${REGISTRY}"
+  jq -r '.gitlinks[] | select(.kind == "frozen-evidence-dependency" and .required == true) | .path' "${GITLINKS}"
 )
+mapfile -t authorized < <(printf '%s\n' "${authorized[@]}" | sort -u)
 
 mapfile -t registered < <(
   if [[ -f "${GITMODULES}" ]]; then
@@ -21,37 +31,16 @@ mapfile -t registered < <(
   fi
 )
 
-mapfile -t root_local < <(
-  if [[ -f "${LIFECYCLE}" ]]; then
-    python3 - "${LIFECYCLE}" <<'PY'
-import json
-import sys
-
-with open(sys.argv[1], "r", encoding="utf-8") as fh:
-    data = json.load(fh)
-
-for entry in data.get("entries", []):
-    if entry.get("materialization") == "root-local-reference":
-        repo = entry.get("repo")
-        if repo:
-            print(repo)
-PY
-  fi | sort
-)
-
 failed=0
 
 for repo in "${authorized[@]}"; do
   if ! printf '%s\n' "${registered[@]}" | grep -Fxq "${repo}"; then
-    if printf '%s\n' "${root_local[@]}" | grep -Fxq "${repo}"; then
-      if [[ ! -d "${ROOT}/${repo}" ]] || ! git -C "${ROOT}/${repo}" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-        echo "[FAIL] root-local reference is not a git worktree: ${repo}" >&2
-        failed=1
-      fi
-    else
-      echo "[FAIL] active registry repo missing from .gitmodules: ${repo}" >&2
-      failed=1
-    fi
+    echo "[FAIL] authorized gitlink missing from .gitmodules: ${repo}" >&2
+    failed=1
+  fi
+  if ! git -C "${ROOT}" ls-files -s -- "${repo}" | awk '$1=="160000"{found=1} END{exit !found}'; then
+    echo "[FAIL] authorized submodule missing gitlink in index: ${repo}" >&2
+    failed=1
   fi
 done
 

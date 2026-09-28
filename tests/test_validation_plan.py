@@ -3,7 +3,7 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-from tools.codex_assets.validation_plan import _changed_paths, classify
+from tools.codex_assets.validation_plan import _changed_paths, _reference_roots, classify
 
 
 class ValidationPlanTests(unittest.TestCase):
@@ -30,6 +30,28 @@ class ValidationPlanTests(unittest.TestCase):
         value = classify(["OpenSpec"], "e" * 64, "working-tree")
         self.assertEqual("L1", value["tier"])
         self.assertEqual([], value["managed_paths"])
+
+    def test_registry_drives_reference_exclusion_without_hiding_product_roots(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "subrepos").mkdir()
+            (root / "subrepos" / "registry.csv").write_text(
+                "repo,group,sync_mode,enabled,status\n"
+                "new-reference,workflow-core,fetch,yes,active\n"
+                "tools,workflow-core,fetch,yes,active\n"
+                "codex,workflow-core,fetch,yes,active\n"
+                "inactive-reference,workflow-core,fetch,no,disabled\n"
+                "agent-dev-kit,adk-core,pull,yes,active\n",
+                encoding="utf-8",
+            )
+            references = _reference_roots(root)
+            self.assertEqual(references, {"new-reference"})
+            value = classify(
+                ["new-reference", "tools/source.py", "inactive-reference"],
+                "e" * 64, "working-tree", references,
+            )
+            self.assertEqual(value["excluded_paths"], ["new-reference"])
+            self.assertIn("tools/source.py", value["managed_paths"])
 
     def test_runtime_output_is_excluded(self):
         value = classify(["hermes_data"], "f" * 64, "working-tree")

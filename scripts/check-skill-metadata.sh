@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT="${1:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 ADK_DIR="${ROOT}/agent-dev-kit"
-MANIFEST="${ADK_DIR}/manifest.yaml"
+MANIFEST="${ADK_DIR}/manifest.json"
 
 if [[ ! -f "${MANIFEST}" ]]; then
   echo "[FAIL] manifest missing: ${MANIFEST}" >&2
@@ -12,16 +12,7 @@ fi
 
 collect_manifest_items() {
   local section="$1"
-  awk -v section="${section}" '
-    $0 ~ "^" section ":" {in_section=1; next}
-    in_section && $0 ~ "^[^ ]" {in_section=0}
-    in_section && $0 ~ /^  - name:/ {name=$3; quality_tier=""; next}
-    in_section && $0 ~ /^    path:/ {path=$2; next}
-    in_section && $0 ~ /^    quality_tier:/ {
-      quality_tier=$2
-      print name "|" path "|" quality_tier
-    }
-  ' "${MANIFEST}"
+  jq -r --arg section "$section" '.[$section][] | [.name, .path, (.quality_tier // "")] | join("|")' "$MANIFEST"
 }
 
 frontmatter_value() {
