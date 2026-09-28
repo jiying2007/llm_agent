@@ -66,6 +66,8 @@
 
 ### 3.1 日常健康检查
 
+当前资产数量以 `rtk scripts/health-check.sh . --summary-json` 为准；历史架构报告中的数量仅是撰写时快照。该入口从 ADK `manifest.json` 读取版本、profile 和 workflow 数量，并与当前文件系统清单分开核验。
+
 ```bash
 rtk scripts/check-doc-sync.sh .
 rtk scripts/check-agents-coverage.sh .
@@ -265,6 +267,7 @@ rtk scripts/check-adk-harden-readiness.sh . --require-pilot
 | external-practice fixture | `rtk tests/test_external_practice_intake.sh` | 七个 provider、Gitee degraded、幂等、redaction、预算和旧 schema 负例必须一致 |
 | Reference repository registration | `rtk scripts/check-reference-repository-registration.sh .` + `rtk tests/test_reference_repository_registration.sh` | 只接受 v1 candidate + 独立 `ADOPT` decision；默认 dry-run，不吸收 ADK |
 | Reference repository removal | `rtk scripts/check-reference-repository-removal.sh .` + `rtk tests/test_reference_repository_removal.sh` | 只生成/校验带 artifact hash 的 removal plan，禁止自动删除 |
+| Reference remote freshness | `rtk tests/test_reference_remote_audit.sh` | 默认离线；显式 `--allow-network` 后只观察 pin 与远端 HEAD，不更新 pin 或 dirty checkout |
 | root 门禁脚本 | `rtk scripts/check-adk-harden-readiness.sh . --require-pilot` | 影响生产放行链路 |
 | `~/codex -> ~/.codex` 部署 | `rtk scripts/check-adk-harden-readiness.sh . --require-pilot` + `~/codex` apply plan / dry-run / health 证据 | 必须保留 backup |
 
@@ -290,7 +293,7 @@ rtk scripts/check-adk-harden-readiness.sh . --require-pilot
 - 不把 `agent-dev-kit` 导出物直接作为 `~/.codex` 来源。
 - `~/codex` 侧必须维护源资产与 manifest，并运行 build / doctor / apply dry-run。
 - 真正写入 `~/.codex` 时由 `~/codex/scripts/apply.sh` 负责备份、覆盖策略和回滚计划。
-- 使用 adk `manifest.yaml` 版本和 `~/codex` apply plan 双重记录，防止误装不匹配版本。
+- 使用 ADK `manifest.json` 版本、exact source commit/tree 和 `~/codex` apply plan 共同记录，防止误装不匹配版本。
 - 安装后必须跑 `check-runtime-health.sh`；Codex adapter 为 `check-global-codex-health.sh`。
 
 ## 6. 回滚流程

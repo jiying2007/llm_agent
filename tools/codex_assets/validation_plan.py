@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import hashlib
 import json
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -27,7 +29,13 @@ TIERS = {
     ],
 }
 
-REFERENCE_ROOTS = {"OpenSpec", "superpowers", "vibeflow", "oh-my-codex", "planning-with-files", "scale-engine"}
+REFERENCE_GROUPS = {
+    "workflow-core", "agent-ecosystem", "codex-runtime", "workflow-quality", "pilot-repo",
+}
+PROTECTED_ROOTS = {
+    "tools", "scripts", "tests", "docs", "reports", "manifests", "schemas",
+    "agent-dev-kit", "codex", "subrepos", "architecture", ".github", ".git",
+}
 RUNTIME_OUTPUT_ROOTS = {"hermes", "hermes_data", "team-codex-assets"}
 RELEASE_CRITICAL = (
     "adk.lock",
@@ -71,6 +79,22 @@ def _git(root: Path, *args: str, check: bool = True) -> str:
     return result.stdout
 
 
+def _reference_roots(root: Path) -> set[str]:
+    registry = root / "subrepos" / "registry.csv"
+    if not registry.is_file() or registry.is_symlink():
+        return set()
+    with registry.open(encoding="utf-8", newline="") as stream:
+        rows = csv.DictReader(stream)
+        return {
+            name for row in rows
+            if row.get("enabled") == "yes" and row.get("status") == "active"
+            and row.get("sync_mode") == "fetch" and row.get("group") in REFERENCE_GROUPS
+            for name in [row.get("repo", "")]
+            if re.fullmatch(r"[A-Za-z][A-Za-z0-9_-]*", name)
+            and name not in PROTECTED_ROOTS
+        }
+
+
 def _changed_paths(root: Path, base: str, staged: bool, *, workspace_exclusions: bool = True) -> Tuple[List[str], str]:
     diff_args = ["diff", "--no-ext-diff", "--no-textconv", "--ignore-submodules=none"]
     untracked: List[str] = []
@@ -85,7 +109,8 @@ def _changed_paths(root: Path, base: str, staged: bool, *, workspace_exclusions:
     revision = [] if staged else [base]
     names = _git(root, *diff_args, "--name-only", "-z", "--diff-filter=ACDMRTUXB", *revision, "--").split("\0")
     paths = sorted(set(item for item in names + untracked if item))
-    managed = [path for path in paths if not workspace_exclusions or not _excluded(path)]
+    reference_roots = _reference_roots(root) if workspace_exclusions else set()
+    managed = [path for path in paths if not workspace_exclusions or not _excluded(path, reference_roots)]
     # Bind the baseline as well as the diff. A clean tree is not a universal snapshot.
     baseline_tree = _git(root, "rev-parse", "--verify", baseline + "^{tree}").strip()
     digest = hashlib.sha256()
@@ -134,16 +159,18 @@ def _changed_paths(root: Path, base: str, staged: bool, *, workspace_exclusions:
     return paths, digest.hexdigest()
 
 
-def _excluded(path: str) -> bool:
-    return path.split("/", 1)[0] in REFERENCE_ROOTS | RUNTIME_OUTPUT_ROOTS or path.startswith(".cache/")
+def _excluded(path: str, reference_roots: set[str] | None = None) -> bool:
+    if reference_roots is None:
+        reference_roots = _reference_roots(Path(__file__).resolve().parents[2])
+    return path.split("/", 1)[0] in reference_roots | RUNTIME_OUTPUT_ROOTS or path.startswith(".cache/")
 
 
 def _matches(path: str, patterns: Sequence[str]) -> bool:
     return any(path == pattern or path.startswith(pattern) for pattern in patterns)
 
 
-def classify(paths: Sequence[str], snapshot_sha256: str, scope: str) -> Dict[str, object]:
-    excluded = [path for path in paths if _excluded(path)]
+def classify(paths: Sequence[str], snapshot_sha256: str, scope: str, reference_roots: set[str] | None = None) -> Dict[str, object]:
+    excluded = [path for path in paths if _excluded(path, reference_roots)]
     managed = [path for path in paths if path not in excluded]
     release = [path for path in managed if _matches(path, RELEASE_CRITICAL)]
     contracts = [path for path in managed if _matches(path, SHARED_CONTRACT)]
@@ -210,7 +237,7 @@ def main(argv: Sequence[str] = ()) -> int:
     root = Path(args.root).resolve()
     try:
         paths, digest = _changed_paths(root, args.base, args.staged)
-        value = classify(paths, digest, "staged" if args.staged else "working-tree")
+        value = classify(paths, digest, "staged" if args.staged else "working-tree", _reference_roots(root))
     except (OSError, ValueError) as exc:
         print("[FAIL] {}".format(exc), file=sys.stderr)
         return 2

@@ -5,11 +5,6 @@ ROOT="${1:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 REGISTRY="${ROOT}/subrepos/registry.csv"
 RUNTIME_TARGETS_CHECK="${ROOT}/scripts/check-runtime-targets.sh"
 
-if [[ -d "${ROOT}/codex" ]]; then
-  echo "[FAIL] local codex directory still exists: ${ROOT}/codex" >&2
-  exit 1
-fi
-
 if [[ ! -d "$HOME/codex" ]]; then
   echo "[FAIL] ~/codex declaration repo missing: $HOME/codex" >&2
   exit 1
@@ -56,8 +51,10 @@ if ! printf "%s\n" "${notes}" | rg -q '~/.codex'; then
   exit 2
 fi
 
-if [[ -x "${RUNTIME_TARGETS_CHECK}" ]]; then
-  bash "${RUNTIME_TARGETS_CHECK}" "${ROOT}" --summary-json >/dev/null
-fi
+[[ -x "${RUNTIME_TARGETS_CHECK}" ]] || {
+  echo "[FAIL] runtime target boundary checker missing: ${RUNTIME_TARGETS_CHECK}" >&2
+  exit 1
+}
+bash "${RUNTIME_TARGETS_CHECK}" "${ROOT}" --summary-json >/dev/null
 
 echo "[PASS] global codex target policy ready"

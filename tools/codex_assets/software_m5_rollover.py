@@ -18,7 +18,7 @@ import re
 import shutil
 import subprocess
 import sys
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
@@ -111,7 +111,7 @@ def _parse_time(value: Any, label: str) -> datetime:
     return parsed.astimezone(timezone.utc)
 
 
-def _validate_runtime(path: Path, lock: Mapping[str, str]) -> dict[str, Any]:
+def _validate_runtime(path: Path, lock: Mapping[str, str], now: datetime) -> dict[str, Any]:
     evidence = _load_json(path, "measured runtime evidence")
     if evidence.get("schema") != EVIDENCE_SCHEMA:
         raise RolloverError("measured runtime evidence schema is invalid")
@@ -127,8 +127,15 @@ def _validate_runtime(path: Path, lock: Mapping[str, str]) -> dict[str, Any]:
     if evidence.get("runtime") != "codex" or evidence.get("requested_model") != "gpt-5.5":
         raise RolloverError("measured runtime evidence must be codex/gpt-5.5")
     generated = _parse_time(evidence.get("generated_at"), "measured runtime generated_at")
-    if generated > datetime.now(timezone.utc):
+    if generated > now:
         raise RolloverError("measured runtime evidence is future-dated")
+    try:
+        review_after = date.fromisoformat(evidence.get("review_after", ""))
+    except (TypeError, ValueError) as exc:
+        raise RolloverError("measured runtime review_after is invalid") from exc
+    window_days = (review_after - generated.date()).days
+    if not 1 <= window_days <= 90 or review_after < now.date():
+        raise RolloverError("measured runtime evidence review window is invalid or expired")
     result = evidence.get("result")
     if not isinstance(result, dict) or result.get("status") != "pass":
         raise RolloverError("measured runtime result is not passing")
@@ -169,6 +176,18 @@ def _validate_promotion(root: Path, lock: Mapping[str, str]) -> dict[str, Any]:
         raise RolloverError("promotion evidence run_id is invalid")
     if release.get("release_eligible") is not True or not isinstance(release.get("artifact_sha256"), str):
         raise RolloverError("promotion evidence is not release eligible")
+    verifier = root / "scripts/check-adk-promotion-evidence.sh"
+    if not verifier.is_file():
+        raise RolloverError("signed ADK promotion verifier is missing")
+    try:
+        checked = subprocess.run(
+            ["bash", str(verifier), str(root)], cwd=str(root), check=False,
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=90,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise RolloverError("signed ADK promotion verification could not complete") from exc
+    if checked.returncode != 0:
+        raise RolloverError("signed ADK promotion gate did not pass")
     return evidence
 
 
@@ -383,18 +402,22 @@ def finalize(root: Path, runtime_source: Path, root_integration_run_id: int, qua
     runtime_source = runtime_source.resolve()
     if root_integration_run_id <= 0:
         raise RolloverError("--root-integration-run-id must be positive")
+    if _git(root, "status", "--porcelain=v1", "--untracked-files=all", "--ignore-submodules=none"):
+        raise RolloverError("Software M5 rollover requires a clean root source worktree")
     source_baseline = _git(root, "rev-parse", "HEAD")
+    now = datetime.now(timezone.utc)
     lock = _read_lock(root / "adk.lock")
     promotion = _validate_promotion(root, lock)
-    runtime = _validate_runtime(runtime_source, lock)
+    runtime = _validate_runtime(runtime_source, lock, now)
     generated = _parse_time(runtime["generated_at"], "measured runtime generated_at")
-    today = generated.date().isoformat()
-    recorded_at = qualification_time or datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
-    _parse_time(recorded_at, "qualification time")
+    today = now.date().isoformat()
+    recorded_at = qualification_time or now.replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    if abs((_parse_time(recorded_at, "qualification time") - now).total_seconds()) > 300:
+        raise RolloverError("qualification time must be within five minutes of current UTC time")
 
     version = lock["agent-dev-kit.version"]
     safe_version = re.sub(r"[^0-9A-Za-z._-]+", "-", version)
-    runtime_rel = f"reports/runtime-evidence/codex-{safe_version}-runtime-smoke-{today}.json"
+    runtime_rel = f"reports/runtime-evidence/codex-{safe_version}-runtime-smoke-{generated.date().isoformat()}.json"
     qualification_rel = f"reports/runtime-evidence/software-m5-production-qualification-{safe_version}-{today}.json"
 
     policy_path = root / "manifests/software_m5_policy.json"
@@ -457,7 +480,7 @@ def finalize(root: Path, runtime_source: Path, root_integration_run_id: int, qua
         certification = software_m5_check(root)
         if certification.get("integrity_status") != "pass" or certification.get("declaration_status") != "pass" or certification.get("software_m5_certified") is not True:
             raise RolloverError("Software M5 certifier rejected rollover: " + json.dumps(certification, ensure_ascii=False, sort_keys=True))
-        projection = status_project(root, generated.date())
+        projection = status_project(root, now.date())
         baseline = projection.get("last_verified_baseline", {})
         if projection.get("status") != "pass" or projection.get("release_authorized") is not True:
             raise RolloverError("status projection did not authorize the current release")

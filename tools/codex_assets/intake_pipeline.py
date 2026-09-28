@@ -66,7 +66,8 @@ def _run(command: Sequence[str], cwd: Path | None = None) -> str:
 
 def _ensure_within(path: Path, root: Path, label: str) -> Path:
     resolved = path.resolve()
-    if not resolved.is_relative_to(root.resolve()):
+    anchor = root.resolve()
+    if resolved != anchor and anchor not in resolved.parents:
         raise IntakeError(f"{label} escapes workspace")
     return resolved
 

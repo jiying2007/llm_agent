@@ -4,6 +4,13 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
+mkdir -p "$TMP/mock-verifier" "$TMP/no-cosign"
+for tool in bash git python3 sh; do
+  ln -s "$(command -v "$tool")" "$TMP/no-cosign/$tool"
+done
+printf '#!/usr/bin/env bash\nexit 0\n' >"$TMP/mock-verifier/cosign"
+chmod +x "$TMP/mock-verifier/cosign"
+export PATH="$TMP/mock-verifier:$PATH"
 GOOD="$TMP/good"
 BAD="$TMP/bad"
 
@@ -46,6 +53,8 @@ fi
 python3 - "$ROOT" "$GOOD" "$BAD" <<'PY'
 import subprocess
 import sys
+import json
+from datetime import datetime, timezone
 from pathlib import Path
 
 source = Path(sys.argv[1])
@@ -74,7 +83,31 @@ for name in ("agent-dev-kit", "codex"):
     for fixture in (Path(sys.argv[2]), Path(sys.argv[3])):
         (fixture / name / ".git").write_text(f"gitdir: {gitdir}\n", encoding="utf-8")
 for fixture in (Path(sys.argv[2]), Path(sys.argv[3])):
+    # This positive path is a synthetic transaction fixture. The repository's
+    # historical signed promotion belongs to an older ADK commit and must not
+    # be rewritten or treated as proof for the current local candidate. The
+    # fixture uses the mock cosign verifier above solely to exercise rollover.
+    lock = {}
+    for line in (fixture / "adk.lock").read_text(encoding="utf-8").splitlines():
+        if "=" in line:
+            key, value = line.split("=", 1)
+            lock[key] = value
+    promotion_path = fixture / "reports/promotion/agent-dev-kit/promotion-evidence.json"
+    promotion = json.loads(promotion_path.read_text(encoding="utf-8"))
+    promotion["issued_at"] = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    for field in ("version", "commit", "tree", "manifest_blob"):
+        promotion["source"][field] = lock[f"agent-dev-kit.{field}"]
+    promotion["source"]["workflow_sha"] = lock["agent-dev-kit.commit"]
+    promotion["source"]["run_id"] = 1
+    promotion["release"]["artifact_sha256"] = "a" * 64
+    promotion["selftest_only"] = True
+    promotion_path.write_text(json.dumps(promotion, indent=2) + "\n", encoding="utf-8")
     subprocess.run(["git", "-C", str(fixture), "add", "-A"], check=True)
+    subprocess.run(
+        ["git", "-C", str(fixture), "-c", "user.name=Fixture",
+         "-c", "user.email=fixture@example.invalid", "commit", "-q", "-m", "fixture source"],
+        check=True,
+    )
 PY
 echo "[INFO] rollover repository fixtures copied" >&2
 
@@ -86,11 +119,13 @@ make_evidence() {
 import hashlib
 import json
 import sys
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 root = Path(sys.argv[1])
 out = Path(sys.argv[2])
 gate = sys.argv[3] == "true"
+generated = datetime.now(timezone.utc).replace(microsecond=0) - timedelta(seconds=1)
 lock = {}
 for line in (root / "adk.lock").read_text(encoding="utf-8").splitlines():
     if "=" in line:
@@ -100,8 +135,8 @@ for line in (root / "adk.lock").read_text(encoding="utf-8").splitlines():
 evidence = {
     "schema": "llm-agent-runtime-smoke-evidence/v1",
     "evidence_id": "synthetic-rollover-selftest-only",
-    "generated_at": "2026-09-12T00:00:00Z",
-    "review_after": "2026-10-12",
+    "generated_at": generated.isoformat().replace("+00:00", "Z"),
+    "review_after": (generated + timedelta(days=30)).date().isoformat(),
     "runtime": "codex",
     "runtime_version": "codex-cli selftest",
     "runtime_binary_sha256": "1" * 64,
@@ -144,7 +179,6 @@ echo "[INFO] rollover good measured evidence built" >&2
     --root . \
     --runtime-evidence "$TMP/good-evidence.json" \
     --root-integration-run-id 34703075857 \
-    --qualification-time 2026-09-12T00:10:00Z \
     --apply \
     --summary-json >"$TMP/rollover-summary.json"; then
     echo "[FAIL] Software M5 rollover command failed" >&2
@@ -158,7 +192,7 @@ echo "[INFO] rollover good measured evidence built" >&2
   fi
   if ! python3 -m tools.control_plane.status_projection \
     --root . \
-    --today 2026-09-12 \
+    --today "$(date -u +%F)" \
     --require-fresh \
     --summary-json >"$TMP/projection.json"; then
     echo "[FAIL] status projection failed after rollover" >&2
@@ -288,10 +322,84 @@ if (
   echo "[FAIL] rollover accepted failed measured-runtime quality gate" >&2
   exit 1
 fi
+if (
+  cd "$BAD"
+  PATH="$TMP/no-cosign" python3 -m tools.codex_assets.software_m5_rollover \
+    --root . --runtime-evidence "$TMP/good-evidence.json" \
+    --root-integration-run-id 34703075857 --apply >/dev/null 2>&1
+); then
+  echo "[FAIL] rollover accepted promotion without a signing verifier" >&2
+  exit 1
+fi
 after="$(git -C "$BAD" status --porcelain=v1)"
 [[ "$before" == "$after" ]] || {
   echo "[FAIL] rejected rollover left repository mutations" >&2
   diff -u <(printf '%s\n' "$before") <(printf '%s\n' "$after") || true
+  exit 1
+}
+
+python3 - "$TMP/good-evidence.json" "$TMP/stale-evidence.json" <<'PY'
+import hashlib
+import json
+import sys
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+
+value = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+generated = datetime.now(timezone.utc).replace(microsecond=0) - timedelta(days=120)
+value["generated_at"] = generated.isoformat().replace("+00:00", "Z")
+value["review_after"] = (generated + timedelta(days=30)).date().isoformat()
+value.pop("evidence_sha256")
+payload = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()
+value["evidence_sha256"] = hashlib.sha256(payload).hexdigest()
+Path(sys.argv[2]).write_text(json.dumps(value), encoding="utf-8")
+PY
+if (
+  cd "$BAD"
+  python3 -m tools.codex_assets.software_m5_rollover \
+    --root . --runtime-evidence "$TMP/stale-evidence.json" \
+    --root-integration-run-id 34703075857 --apply >/dev/null 2>&1
+); then
+  echo "[FAIL] rollover accepted expired measured runtime evidence" >&2
+  exit 1
+fi
+if (
+  cd "$BAD"
+  python3 -m tools.codex_assets.software_m5_rollover \
+    --root . --runtime-evidence "$TMP/good-evidence.json" \
+    --root-integration-run-id 34703075857 \
+    --qualification-time 2026-09-12T00:10:00Z --apply >/dev/null 2>&1
+); then
+  echo "[FAIL] rollover accepted backdated qualification time" >&2
+  exit 1
+fi
+after="$(git -C "$BAD" status --porcelain=v1)"
+[[ "$before" == "$after" ]] || {
+  echo "[FAIL] rejected temporal rollover left repository mutations" >&2
+  exit 1
+}
+
+printf 'local uncommitted fixture\n' >"$BAD/local-dirty.txt"
+before="$(git -C "$BAD" status --porcelain=v1)"
+if (
+  cd "$BAD"
+  python3 -m tools.codex_assets.software_m5_rollover \
+    --root . --runtime-evidence "$TMP/good-evidence.json" \
+    --root-integration-run-id 34703075857 --apply --summary-json >"$TMP/dirty-rejection.json"
+); then
+  echo "[FAIL] rollover accepted dirty root source" >&2
+  exit 1
+fi
+python3 - "$TMP/dirty-rejection.json" <<'PY'
+import json
+import sys
+from pathlib import Path
+value = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+assert value["error"] == "Software M5 rollover requires a clean root source worktree", value
+PY
+after="$(git -C "$BAD" status --porcelain=v1)"
+[[ "$before" == "$after" ]] || {
+  echo "[FAIL] dirty source rejection changed repository state" >&2
   exit 1
 }
 

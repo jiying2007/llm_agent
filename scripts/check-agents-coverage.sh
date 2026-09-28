@@ -40,7 +40,7 @@ active_count=0
 printf '%-28s %-10s %-10s\n' "repo" "path" "coverage"
 printf '%-28s %-10s %-10s\n' "----------------------------" "----------" "----------"
 
-while IFS=, read -r repo _group _priority _sync_mode _branch enabled _notes status _owner _last_reviewed_on _intake_policy _grade; do
+while IFS=, read -r repo _group _priority sync_mode _branch enabled _notes status _owner _last_reviewed_on _intake_policy _grade; do
   [[ "${repo}" == "repo" || -z "${repo}" ]] && continue
   [[ "${enabled}" == "yes" && "${status}" == "active" ]] || continue
 
@@ -48,8 +48,12 @@ while IFS=, read -r repo _group _priority _sync_mode _branch enabled _notes stat
 
   path_state="YES"
   if [[ ! -e "${ROOT}/${repo}" ]]; then
-    path_state="NO"
-    missing_path=$((missing_path + 1))
+    if [[ "${sync_mode}" == "fetch" ]]; then
+      path_state="CACHE"
+    else
+      path_state="NO"
+      missing_path=$((missing_path + 1))
+    fi
   fi
 
   coverage_state="ROOT-SSOT"

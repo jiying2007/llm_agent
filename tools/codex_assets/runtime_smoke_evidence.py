@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import shutil
 import subprocess
 import sys
@@ -22,6 +23,10 @@ from typing import Any, Mapping, Sequence
 EVIDENCE_SCHEMA = "llm-agent-runtime-smoke-evidence/v1"
 DEFAULT_MODEL = "gpt-5.5"
 DEFAULT_LIMIT = 1
+MAX_JSON_BYTES = 2 * 1024 * 1024
+TASK_IDENTITY_SCOPE = "parsed-ordered-selected-task-sequence"
+GRADER_CONTRACT = "adk-runtime-routing-grader/v1"
+PROMPT_VERSION = "adk-runtime-routing-v1"
 
 
 class SmokeEvidenceError(RuntimeError):
@@ -44,10 +49,35 @@ def _sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _unique_json_fields(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in result:
+            raise SmokeEvidenceError("runtime evidence input contains duplicate JSON fields")
+        result[key] = value
+    return result
+
+
+def _reject_nonfinite_number(raw: str) -> float:
+    value = float(raw)
+    if not math.isfinite(value):
+        raise SmokeEvidenceError("runtime evidence input contains a non-finite number")
+    return value
+
+
 def _load_json(path: Path, label: str) -> dict[str, Any]:
+    if path.is_symlink() or not path.is_file():
+        raise SmokeEvidenceError(f"{label} must be a regular non-symlink file")
     try:
-        value = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
+        with path.open("rb") as stream:
+            raw = stream.read(MAX_JSON_BYTES + 1)
+        if len(raw) > MAX_JSON_BYTES:
+            raise SmokeEvidenceError(f"{label} exceeds byte budget")
+        value = json.loads(
+            raw.decode("utf-8"), object_pairs_hook=_unique_json_fields,
+            parse_constant=_reject_nonfinite_number, parse_float=_reject_nonfinite_number,
+        )
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
         raise SmokeEvidenceError(f"invalid {label}: {path}") from exc
     if not isinstance(value, dict):
         raise SmokeEvidenceError(f"{label} must be a JSON object")
@@ -125,7 +155,12 @@ def _format_time(value: datetime) -> str:
 
 def _validate_source_identity(root: Path) -> tuple[dict[str, str], dict[str, Any], Path]:
     lock = _read_lock(root / "adk.lock")
-    adk_root = (root / "agent-dev-kit").resolve()
+    source_path = root / "agent-dev-kit"
+    if source_path.is_symlink() or not source_path.is_dir():
+        raise SmokeEvidenceError("agent-dev-kit source must be a local non-symlink checkout")
+    adk_root = source_path.resolve()
+    if Path(_run_git(adk_root, "rev-parse", "--show-toplevel")).resolve() != adk_root:
+        raise SmokeEvidenceError("agent-dev-kit source is not an independent checkout")
     manifest_path = adk_root / "manifest.json"
     if not manifest_path.is_file():
         raise SmokeEvidenceError("agent-dev-kit/manifest.json is missing; initialize the pinned gitlink/submodule first")
@@ -149,16 +184,71 @@ def _validate_source_identity(root: Path) -> tuple[dict[str, str], dict[str, Any
     for field, value in expected.items():
         if actual[field] != value:
             raise SmokeEvidenceError(f"checked-out ADK {field} does not match adk.lock")
+    state = subprocess.run(
+        ["git", "-C", str(adk_root), "status", "--porcelain", "--untracked-files=all"],
+        check=False, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=20,
+    )
+    if state.returncode != 0 or state.stdout.strip():
+        raise SmokeEvidenceError("checked-out ADK source must be clean for measured runtime evidence")
     return lock, manifest, adk_root
 
 
-def _validate_raw_report(report: Mapping[str, Any], model: str, limit: int) -> None:
+def _selected_tasks(path: Path, limit: int) -> tuple[list[dict[str, Any]], str]:
+    if path.is_symlink() or not path.is_file():
+        raise SmokeEvidenceError("runtime smoke task dataset is missing or unsafe")
+    try:
+        with path.open("rb") as stream:
+            raw = stream.read(1024 * 1024 + 1)
+        if len(raw) > 1024 * 1024:
+            raise SmokeEvidenceError("runtime smoke task dataset exceeds byte budget")
+        lines = raw.decode("utf-8").splitlines()
+        tasks = [json.loads(
+            line, object_pairs_hook=_unique_json_fields,
+            parse_constant=_reject_nonfinite_number, parse_float=_reject_nonfinite_number,
+        ) for line in lines if line.strip()]
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise SmokeEvidenceError("runtime smoke task dataset is invalid") from exc
+    if len(tasks) < limit or any(not isinstance(task, dict) for task in tasks):
+        raise SmokeEvidenceError("runtime smoke task dataset has insufficient valid cases")
+    selected = tasks[:limit]
+    for task in selected:
+        if any(not isinstance(task.get(field), str) or not task[field] for field in ("id", "prompt", "category", "expected_skill")):
+            raise SmokeEvidenceError("runtime smoke task labels are invalid")
+        if not isinstance(task.get("expected_safe"), bool):
+            raise SmokeEvidenceError("runtime smoke task safety label is invalid")
+    if len({task["id"] for task in selected}) != limit:
+        raise SmokeEvidenceError("runtime smoke task IDs are duplicated")
+    digest = hashlib.sha256((_canonical(selected) + b"\n")).hexdigest()
+    return selected, digest
+
+
+def _validate_raw_report(
+    report: Mapping[str, Any], model: str, limit: int, manifest_digest: str,
+    selected_tasks: Sequence[Mapping[str, Any]], task_digest: str,
+) -> None:
     if report.get("schema_version") != 1 or report.get("suite") != "runtime-routing":
         raise SmokeEvidenceError("runtime report schema/suite is invalid")
     if report.get("runtime") != "codex" or report.get("condition") != "adk":
         raise SmokeEvidenceError("runtime report must be codex/adk")
     if report.get("requested_model") != model:
         raise SmokeEvidenceError("runtime report requested_model does not match collector model")
+    if (
+        report.get("manifest_sha256") != manifest_digest
+        or report.get("task_set_sha256") != task_digest
+        or report.get("task_set_identity_scope") != TASK_IDENTITY_SCOPE
+        or report.get("task_snapshot_frozen") is not True
+        or report.get("source_snapshot_atomic") is not False
+        or report.get("grader_contract") != GRADER_CONTRACT
+        or report.get("prompt_version") != PROMPT_VERSION
+    ):
+        raise SmokeEvidenceError("runtime report source, task or grader identity is invalid")
+    reported_models = report.get("reported_models")
+    if not isinstance(reported_models, list) or not reported_models or any(
+        not isinstance(item, str) or not item for item in reported_models
+    ):
+        raise SmokeEvidenceError("runtime report has no valid observed model")
+    if reported_models != [model]:
+        raise SmokeEvidenceError("runtime report observed model differs from the exact requested model")
     if not isinstance(report.get("runtime_version"), str) or not str(report["runtime_version"]).strip():
         raise SmokeEvidenceError("runtime report runtime_version is missing")
     if report.get("status") != "pass":
@@ -175,6 +265,7 @@ def _validate_raw_report(report: Mapping[str, Any], model: str, limit: int) -> N
     results = report.get("results")
     if not isinstance(results, list) or len(results) != total:
         raise SmokeEvidenceError("runtime report result count is invalid")
+    observed_models: set[str] = set()
     for index, item in enumerate(results):
         if not isinstance(item, dict):
             raise SmokeEvidenceError(f"runtime result {index} is not an object")
@@ -182,9 +273,35 @@ def _validate_raw_report(report: Mapping[str, Any], model: str, limit: int) -> N
             raise SmokeEvidenceError(f"runtime result {index} is not a complete route+safety pass")
         if item.get("error") is not None:
             raise SmokeEvidenceError(f"runtime result {index} contains a runtime error")
+        task = selected_tasks[index]
+        prompt_digest = hashlib.sha256(task["prompt"].encode("utf-8")).hexdigest()
+        if (
+            item.get("id") != task["id"]
+            or item.get("prompt_sha256") != prompt_digest
+            or item.get("category") != task["category"]
+            or item.get("expected_skill") != task["expected_skill"]
+            or item.get("expected_safe") is not task["expected_safe"]
+            or item.get("expected_route") != task["expected_skill"]
+            or item.get("actual_skill") != task["expected_skill"]
+            or item.get("actual_safe") is not task["expected_safe"]
+            or item.get("requested_model") != model
+            or not isinstance(item.get("reported_models"), list)
+            or not item["reported_models"]
+        ):
+            raise SmokeEvidenceError(f"runtime result {index} differs from frozen task or model identity")
+        if any(not isinstance(observed, str) or not observed for observed in item["reported_models"]):
+            raise SmokeEvidenceError(f"runtime result {index} has invalid observed models")
+        observed_models.update(item["reported_models"])
         usage = item.get("usage")
-        if not isinstance(usage, dict) or not isinstance(usage.get("total_tokens"), int) or usage["total_tokens"] < 0:
+        if (
+            not isinstance(usage, dict)
+            or isinstance(usage.get("total_tokens"), bool)
+            or not isinstance(usage.get("total_tokens"), int)
+            or usage["total_tokens"] < 0
+        ):
             raise SmokeEvidenceError(f"runtime result {index} token usage is invalid")
+    if sorted(observed_models) != reported_models:
+        raise SmokeEvidenceError("runtime report observed model list differs from its cases")
 
 
 def _execute_runtime(
@@ -195,11 +312,22 @@ def _execute_runtime(
     limit: int,
     tasks: Path,
 ) -> None:
-    devkit = adk_root / "bin" / "devkit.sh"
+    devkit = adk_root / "scripts" / "devkit.sh"
     if not devkit.is_file():
         raise SmokeEvidenceError("pinned ADK devkit.sh is missing")
     if not tasks.is_file():
         raise SmokeEvidenceError(f"runtime smoke tasks are missing: {tasks}")
+    try:
+        capability = subprocess.run(
+            ["bash", str(devkit), "eval", "run", "--help"], cwd=str(adk_root),
+            check=False, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=20,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise SmokeEvidenceError("cannot inspect pinned ADK runtime eval capability") from exc
+    if capability.returncode != 0 or any(
+        option not in capability.stdout for option in ("--max-new-results", "--approve-unknown-cost")
+    ):
+        raise SmokeEvidenceError("pinned ADK runtime eval lacks the bounded-cost CLI contract")
     raw_output.parent.mkdir(parents=True, exist_ok=True)
     command = [
         "bash",
@@ -219,6 +347,9 @@ def _execute_runtime(
         "--condition",
         "adk",
         "--execute",
+        "--max-new-results",
+        str(limit),
+        "--approve-unknown-cost",
         "--output",
         str(raw_output),
     ]
@@ -245,7 +376,12 @@ def collect(
     runtime_binary: Path | None,
     generated_at: str | None,
     review_days: int,
+    approve_unknown_cost: bool = False,
 ) -> dict[str, Any]:
+    if execute and not approve_unknown_cost:
+        raise SmokeEvidenceError("--execute requires --approve-unknown-cost")
+    if not execute and approve_unknown_cost:
+        raise SmokeEvidenceError("--approve-unknown-cost requires --execute")
     root = root.resolve()
     lock, manifest, adk_root = _validate_source_identity(root)
     if execute == (raw_result is not None):
@@ -266,8 +402,12 @@ def collect(
         raw_path = raw_result.resolve()
         task_path = tasks.resolve() if tasks else adk_root / "tests" / "fixtures" / "software_m5_eval_tasks.jsonl"
 
+    selected_tasks, task_digest = _selected_tasks(task_path, limit)
     report = _load_json(raw_path, "runtime smoke report")
-    _validate_raw_report(report, model, limit)
+    _validate_raw_report(report, model, limit, _manifest_digest(manifest), selected_tasks, task_digest)
+    post_lock, post_manifest, post_adk_root = _validate_source_identity(root)
+    if post_lock != lock or _manifest_digest(post_manifest) != _manifest_digest(manifest) or post_adk_root != adk_root:
+        raise SmokeEvidenceError("ADK source identity changed during runtime smoke collection")
 
     runtime_path = runtime_binary.resolve() if runtime_binary else None
     if runtime_path is None:
@@ -319,6 +459,7 @@ def _parser() -> argparse.ArgumentParser:
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--execute", action="store_true")
     mode.add_argument("--raw-result")
+    parser.add_argument("--approve-unknown-cost", action="store_true")
     parser.add_argument("--raw-output")
     parser.add_argument("--tasks")
     parser.add_argument("--runtime-binary")
@@ -345,6 +486,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             runtime_binary=Path(args.runtime_binary) if args.runtime_binary else None,
             generated_at=args.generated_at,
             review_days=args.review_days,
+            approve_unknown_cost=bool(args.approve_unknown_cost),
         )
     except SmokeEvidenceError as exc:
         if args.summary_json:

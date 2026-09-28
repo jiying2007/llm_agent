@@ -32,6 +32,8 @@ if [[ "$PIN_ONLY" -eq 1 ]]; then
   exit 0
 fi
 [[ -d "$ROOT/codex" ]] || fail "codex worktree unavailable; initialize the locked submodule or use --pin-only"
+child_root="$(git -C "$ROOT/codex" rev-parse --show-toplevel 2>/dev/null || true)"
+[[ "$child_root" == "$(cd "$ROOT/codex" && pwd -P)" ]] || fail "codex gitlink is not an initialized independent worktree; use --pin-only for historical pin verification"
 [[ "$(git -C "$ROOT/codex" rev-parse HEAD)" == "$locked_commit" ]] || fail "codex worktree commit mismatch"
 [[ "$(git -C "$ROOT/codex" rev-parse 'HEAD^{tree}')" == "$locked_tree" ]] || fail "codex worktree tree mismatch"
 check_blob() {

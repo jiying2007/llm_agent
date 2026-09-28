@@ -126,7 +126,7 @@ emit_summary_json() {
   local branch adk_version locked_commit gitlink_commit active_repos disabled_repos gitlinks check_scripts
   local root_script_files root_manifest_files root_report_files adk_agents adk_core_skills adk_optional_skills adk_profiles adk_workflows adk_test_files adk_manifest_files
   branch="$(git -C "${ROOT_DIR}" branch --show-current 2>/dev/null || true)"
-  adk_version="$(awk -F': ' '$1=="version"{print $2; exit}' "${ROOT_DIR}/agent-dev-kit/manifest.yaml" 2>/dev/null || true)"
+  adk_version="$(jq -r '.version' "${ROOT_DIR}/agent-dev-kit/manifest.json")"
   locked_commit="$(awk -F'=' '$1=="agent-dev-kit.commit"{print $2; exit}' "${ROOT_DIR}/adk.lock" 2>/dev/null || true)"
   gitlink_commit="$(git -C "${ROOT_DIR}" ls-files -s agent-dev-kit 2>/dev/null | awk '$1=="160000"{print $2; exit}')"
   active_repos="$(awk -F',' 'NR>1 && $6=="yes" && $8=="active"{count++} END{print count+0}' "${registry}" 2>/dev/null || echo 0)"
@@ -139,8 +139,8 @@ emit_summary_json() {
   adk_agents="$(find "${ROOT_DIR}/agent-dev-kit/agents" -name AGENTS.md -type f 2>/dev/null | wc -l | tr -d ' ')"
   adk_core_skills="$(find "${ROOT_DIR}/agent-dev-kit/skills" -name SKILL.md -type f 2>/dev/null | wc -l | tr -d ' ')"
   adk_optional_skills="$(find "${ROOT_DIR}/agent-dev-kit/optional-skills" -name SKILL.md -type f 2>/dev/null | wc -l | tr -d ' ')"
-  adk_profiles="$(awk '/^profiles:/{inside=1; next} /^workflows:/{inside=0} inside && /^  [a-z0-9][a-z0-9-]*:/{count++} END{print count+0}' "${ROOT_DIR}/agent-dev-kit/manifest.yaml")"
-  adk_workflows="$(awk '/^workflows:/{inside=1; next} /^mcp_servers:/{inside=0} inside && /^  - name:/{count++} END{print count+0}' "${ROOT_DIR}/agent-dev-kit/manifest.yaml")"
+  adk_profiles="$(jq -r '.profiles | length' "${ROOT_DIR}/agent-dev-kit/manifest.json")"
+  adk_workflows="$(jq -r '.workflows | length' "${ROOT_DIR}/agent-dev-kit/manifest.json")"
   adk_test_files="$(find "${ROOT_DIR}/agent-dev-kit/tests" -type f 2>/dev/null | wc -l | tr -d ' ')"
   adk_manifest_files="$(find "${ROOT_DIR}/agent-dev-kit/manifests" -maxdepth 1 -type f 2>/dev/null | wc -l | tr -d ' ')"
 
@@ -224,7 +224,7 @@ check_structure() {
     "subrepos/adoption-matrix.md"
     "subrepos/phase-gate.env"
     "scripts/check-all.sh"
-    "agent-dev-kit/manifest.yaml"
+    "agent-dev-kit/manifest.json"
   )
 
   for dir in "${dirs[@]}"; do
