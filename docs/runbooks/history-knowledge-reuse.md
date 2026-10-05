@@ -16,7 +16,7 @@
 ## 现有命令
 
 ```bash
-rtk bash ~/knowledge-hub/tools/knowledge-context.sh \
+rtk bash ~/codex/scripts/knowledge-provider.sh context \
   --cwd /path/to/repository --project agent-dev-kit \
   --query 'Token 上下文 工作流' --task-type general \
   --context-budget small --limit 3 --summary-json

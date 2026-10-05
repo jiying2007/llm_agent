@@ -1,6 +1,6 @@
 {
   "artifact_sha256": {
-    "adoption_decision": "7b7105e4e43d00b674c2a56dd6df029fe1ad665a529b7fd0cc58e9b52a044253",
+    "adoption_decision": "ba0e19c2364656ff0877840b3a0fe7eca2707621cb775845f44afbaf98bbb983",
     "dirty_baseline_review": "d0cbc7875f678ec401bbb012502bb83fa9e3fb9c6005f4c4d2354c6bdc51d1be",
     "evidence_dependency_scan": "69d99bbe058863285665c50529ded721903eef325cf905cf473ad40eccd38bb4",
     "rollback_plan": "69d99bbe058863285665c50529ded721903eef325cf905cf473ad40eccd38bb4"

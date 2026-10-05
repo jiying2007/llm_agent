@@ -9,14 +9,34 @@ import json
 import os
 import re
 import sys
-import tempfile
 import time
 import urllib.error
 import urllib.parse
 import urllib.request
 from datetime import date, timedelta
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
+from .intake_io import (
+    IntakeError,
+    _canonical_json as _canonical_json,
+    _sha256_bytes,
+    _sha256_value,
+    _sha256_file,
+    _load_bytes as _load_bytes,
+    _load_json,
+    _load_jsonl,
+    _resolve_path,
+    _relative_ref as _relative_ref,
+    _input_reference,
+    _reject_symlink_chain,
+    _same_file as _same_file,
+    _atomic_write_many as _atomic_write_many,
+    _atomic_write as _atomic_write,
+    _transactional_write,
+    _json_bytes,
+    _jsonl_bytes,
+    decode_json,
+)
 
 
 POLICY_SCHEMA = "external-practice-source-policy/v1"
@@ -95,8 +115,6 @@ BOUNDARIES = {
 }
 
 
-class IntakeError(RuntimeError):
-    """A sanitized, fail-closed intake contract error."""
 
 
 class _NoRedirect(urllib.request.HTTPRedirectHandler):
@@ -112,25 +130,12 @@ class _NoRedirect(urllib.request.HTTPRedirectHandler):
         return None
 
 
-def _canonical_json(value: Any) -> bytes:
-    return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
 
 
-def _sha256_bytes(value: bytes) -> str:
-    return hashlib.sha256(value).hexdigest()
 
 
-def _sha256_value(value: Any) -> str:
-    return _sha256_bytes(_canonical_json(value))
 
 
-def _sha256_file(path: Path) -> str:
-    _reject_symlink_chain(path)
-    digest = hashlib.sha256()
-    with path.open("rb") as stream:
-        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
 
 
 def _parse_date(value: Any, label: str) -> str:
@@ -181,203 +186,30 @@ def _nonnegative_int(value: Any, label: str) -> Optional[int]:
     return value
 
 
-def _load_bytes(path: Path, limit: int, label: str) -> bytes:
-    _reject_symlink_chain(path)
-    if not path.is_file():
-        raise IntakeError("{} is missing or not a regular file".format(label))
-    size = path.stat().st_size
-    if size > limit:
-        raise IntakeError("{} exceeds the {} byte budget".format(label, limit))
-    try:
-        return path.read_bytes()
-    except OSError as exc:
-        raise IntakeError("cannot read {}".format(label)) from exc
 
 
-def _load_json(path: Path, limit: int, label: str) -> Any:
-    raw = _load_bytes(path, limit, label)
-    try:
-        return json.loads(raw.decode("utf-8"))
-    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
-        raise IntakeError("{} must contain valid UTF-8 JSON".format(label)) from exc
 
 
-def _load_jsonl(path: Path, limit: int, label: str) -> List[Dict[str, Any]]:
-    raw = _load_bytes(path, limit, label)
-    try:
-        text = raw.decode("utf-8")
-    except UnicodeDecodeError as exc:
-        raise IntakeError("{} must contain UTF-8 JSONL".format(label)) from exc
-    rows: List[Dict[str, Any]] = []
-    for line_number, line in enumerate(text.splitlines(), 1):
-        if not line.strip():
-            continue
-        try:
-            row = json.loads(line)
-        except json.JSONDecodeError as exc:
-            raise IntakeError("{} line {} is invalid JSON".format(label, line_number)) from exc
-        if not isinstance(row, dict):
-            raise IntakeError("{} line {} must be an object".format(label, line_number))
-        rows.append(row)
-    return rows
 
 
-def _resolve_path(root: Path, value: str, label: str) -> Path:
-    if not isinstance(value, str) or not value:
-        raise IntakeError("{} must be a non-empty path".format(label))
-    raw = Path(value)
-    path = raw if raw.is_absolute() else root / raw
-    return Path(os.path.abspath(os.fspath(path)))
 
 
-def _relative_ref(root: Path, path: Path) -> str:
-    try:
-        return path.resolve().relative_to(root.resolve()).as_posix()
-    except ValueError:
-        return str(path.resolve())
 
 
-def _input_reference(root: Path, path: Path, digest: str) -> str:
-    try:
-        return path.resolve().relative_to(root.resolve()).as_posix()
-    except ValueError:
-        return "external-input-sha256:{}".format(digest[:20])
 
 
-def _reject_symlink_chain(path: Path) -> None:
-    current = path
-    while True:
-        if current.is_symlink():
-            raise IntakeError("path must not traverse symlinks")
-        if current.parent == current:
-            return
-        current = current.parent
 
 
-def _same_file(left: Path, right: Path) -> bool:
-    if left == right:
-        return True
-    try:
-        return left.exists() and right.exists() and os.path.samefile(str(left), str(right))
-    except OSError:
-        return False
 
 
-def _atomic_write_many(outputs: Sequence[Tuple[Path, bytes]], inputs: Iterable[Path] = ()) -> None:
-    if not outputs:
-        return
-    normalized_inputs = [Path(os.path.abspath(os.fspath(item))) for item in inputs]
-    normalized_outputs: List[Tuple[Path, bytes]] = []
-    for raw_path, payload in outputs:
-        path = Path(os.path.abspath(os.fspath(raw_path)))
-        _reject_symlink_chain(path)
-        if not path.parent.is_dir():
-            raise IntakeError("output parent directory does not exist")
-        if any(_same_file(path, item) for item in normalized_inputs):
-            raise IntakeError("output must not overwrite an input")
-        if any(_same_file(path, prior) for prior, _ in normalized_outputs):
-            raise IntakeError("output paths must be unique")
-        normalized_outputs.append((path, payload))
-
-    staged: Dict[Path, Path] = {}
-    backups: Dict[Path, Optional[Path]] = {}
-    committed: List[Path] = []
-    preserve_backups = False
-    try:
-        for path, payload in normalized_outputs:
-            descriptor, temporary = tempfile.mkstemp(prefix=".practice-intake-stage-", dir=str(path.parent))
-            temp_path = Path(temporary)
-            staged[path] = temp_path
-            with os.fdopen(descriptor, "wb") as stream:
-                stream.write(payload)
-                stream.flush()
-                os.fsync(stream.fileno())
-            os.chmod(str(temp_path), 0o644)
-
-        for path, _ in normalized_outputs:
-            backup: Optional[Path] = None
-            if path.exists():
-                descriptor, temporary = tempfile.mkstemp(prefix=".practice-intake-backup-", dir=str(path.parent))
-                os.close(descriptor)
-                backup = Path(temporary)
-                backup.unlink()
-                os.replace(str(path), str(backup))
-            backups[path] = backup
-            try:
-                os.replace(str(staged[path]), str(path))
-            except Exception:
-                if backup is not None and backup.exists():
-                    os.replace(str(backup), str(path))
-                raise
-            committed.append(path)
-
-        for backup in backups.values():
-            if backup is not None and backup.exists():
-                try:
-                    backup.unlink()
-                except OSError:
-                    pass
-    except Exception as exc:
-        rollback_errors: List[OSError] = []
-        for path in reversed(committed):
-            try:
-                if path.exists():
-                    path.unlink()
-                backup = backups.get(path)
-                if backup is not None and backup.exists():
-                    os.replace(str(backup), str(path))
-            except OSError as rollback_error:
-                rollback_errors.append(rollback_error)
-        for path, backup in backups.items():
-            if path not in committed and backup is not None and backup.exists():
-                try:
-                    os.replace(str(backup), str(path))
-                except OSError as rollback_error:
-                    rollback_errors.append(rollback_error)
-        if rollback_errors:
-            preserve_backups = True
-            raise IntakeError("atomic output rollback failed; backup files were preserved") from exc
-        raise
-    finally:
-        for temp_path in staged.values():
-            if temp_path.exists():
-                try:
-                    temp_path.unlink()
-                except OSError:
-                    pass
-        if not preserve_backups:
-            for backup in backups.values():
-                if backup is not None and backup.exists():
-                    try:
-                        backup.unlink()
-                    except OSError:
-                        pass
 
 
-def _atomic_write(path: Path, payload: bytes, inputs: Iterable[Path] = ()) -> None:
-    try:
-        _atomic_write_many([(path, payload)], inputs)
-    except IntakeError:
-        raise
-    except Exception as exc:
-        raise IntakeError("atomic output transaction failed") from exc
 
 
-def _transactional_write(outputs: Sequence[Tuple[Path, bytes]], inputs: Iterable[Path] = ()) -> None:
-    try:
-        _atomic_write_many(outputs, inputs)
-    except IntakeError:
-        raise
-    except Exception as exc:
-        raise IntakeError("atomic output transaction failed") from exc
 
 
-def _json_bytes(value: Any) -> bytes:
-    return (json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n").encode("utf-8")
 
 
-def _jsonl_bytes(rows: Sequence[Mapping[str, Any]]) -> bytes:
-    return b"".join(_canonical_json(row) + b"\n" for row in rows)
 
 
 def _canonical_url(value: Any, allowed_hosts: Sequence[str], repository: bool = False) -> str:
@@ -890,7 +722,7 @@ def _network_payload(
     except TimeoutError:
         raise IntakeError("provider request timed out") from None
     try:
-        payload = json.loads(raw.decode("utf-8"))
+        payload = decode_json(raw, "provider response")
     except (UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise IntakeError("provider response is not valid UTF-8 JSON") from exc
     parsed = urllib.parse.urlsplit(endpoint)

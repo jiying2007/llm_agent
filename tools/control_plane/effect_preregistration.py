@@ -32,10 +32,11 @@ from datetime import datetime,timezone
 from pathlib import Path
 from agent_dev_kit.model import canonical_json_bytes
 from agent_dev_kit.sigstore_blob import verify_sigstore_blob
+from agent_dev_kit.strict_json import read as read_json
 from tools.control_plane.effect_preregistration_package import validate_package
 
 def obj(path,label):
-    value=json.load(open(path,encoding="utf-8"))
+    value=read_json(Path(path))
     if not isinstance(value,dict):
         raise SystemExit(label+"-not-object")
     return value

@@ -30,11 +30,11 @@
 - 项目事实、决策、runbook、release、debug 或长期结论先运行：
 
 ```bash
-rtk bash ~/knowledge-hub/tools/knowledge-context.sh --cwd "$PWD" --query "<任务>" --task-type <type> --context-budget small --limit 3 --summary-json
+rtk bash ~/codex/scripts/knowledge-provider.sh context --cwd "$PWD" --query "<任务>" --task-type <type> --context-budget small --limit 3 --summary-json
 ```
 
-- 已知项目加 `--project`；仅歧义/高风险回退 `--json` 与原文。耐久结论写 reviewing candidate，或声明无可归档结论；不得静默写 memory。
-- final/apply/目标切换前先 snapshot；`goal_status=idle` 记 `not-applicable` 并跳过 final gate，仅 active goal 按 Runtime Control 决策收口。
+- 已知项目加 `--project`；Provider unavailable / route unresolved 标记 BLOCKED 或 NEEDS_REVIEW。耐久结论经 Provider 形成 reviewing candidate，或声明无可归档结论；不得静默写 memory。
+- final/apply/目标切换前运行 `~/codex` Execution Policy；最终在该仓执行 `rtk python3 -m tools.codex_assets execution-policy --thread-id "${CODEX_THREAD_ID:?current thread id required}" gate --event final`。线程 ID 缺失时先核实；本地 conformance 不代表项目验收或产品放行。
 
 ## 5. 验证与并行
 
