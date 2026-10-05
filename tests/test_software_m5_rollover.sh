@@ -16,6 +16,7 @@ BAD="$TMP/bad"
 
 python3 - "$ROOT" <<'PY'
 import json
+import shutil
 import sys
 from pathlib import Path
 
@@ -56,6 +57,7 @@ import sys
 import json
 from datetime import datetime, timezone
 from pathlib import Path
+import shutil
 
 source = Path(sys.argv[1])
 linked_worktree = (source / ".git").is_file()
@@ -70,19 +72,57 @@ for fixture in (Path(sys.argv[2]), Path(sys.argv[3])):
     (fixture / ".git").unlink()
     (clone / ".git").rename(fixture / ".git")
     subprocess.run(["git", "-C", str(fixture), "read-tree", "HEAD"], check=True)
-for name in ("agent-dev-kit", "codex"):
-    if not linked_worktree:
-        continue
-    marker = source / name / ".git"
-    if not marker.is_file():
-        continue
-    gitdir = subprocess.check_output(
-        ["git", "-C", str(source / name), "rev-parse", "--absolute-git-dir"],
-        text=True,
-    ).strip()
-    for fixture in (Path(sys.argv[2]), Path(sys.argv[3])):
-        (fixture / name / ".git").write_text(f"gitdir: {gitdir}\n", encoding="utf-8")
 for fixture in (Path(sys.argv[2]), Path(sys.argv[3])):
+    # Never let a copied gitfile point at the user's child index/refs. Both
+    # native and linked parents get independent child metadata and synthetic
+    # clean fixture commits containing the current owned source bytes.
+    for name in ("agent-dev-kit", "codex"):
+        child_source, child = source / name, fixture / name
+        if not (child_source / ".git").exists() or not child.is_dir():
+            continue
+        metadata = fixture.parent / f"{fixture.name}-{name}-metadata"
+        subprocess.run(["git", "-c", "core.hooksPath=/dev/null", "clone", "--quiet",
+                        "--no-hardlinks", "--no-checkout", str(child_source), str(metadata)], check=True)
+        marker = child / ".git"
+        if marker.is_dir():
+            shutil.rmtree(marker)
+        elif marker.exists():
+            marker.unlink()
+        (metadata / ".git").rename(marker)
+        subprocess.run(["git", "-C", str(child), "read-tree", "HEAD"], check=True)
+        subprocess.run(["git", "-C", str(child), "add", "-A"], check=True)
+        subprocess.run(["git", "-C", str(child), "-c", "user.name=Fixture",
+                        "-c", "user.email=fixture@example.invalid", "-c", "commit.gpgsign=false",
+                        "commit", "--allow-empty", "-qm", "synthetic child fixture"], check=True)
+        if name == "agent-dev-kit":
+            identity = {
+                "version": json.loads((child / "manifest.json").read_text())["version"],
+                "commit": subprocess.check_output(["git", "-C", str(child), "rev-parse", "HEAD"], text=True).strip(),
+                "tree": subprocess.check_output(["git", "-C", str(child), "rev-parse", "HEAD^{tree}"], text=True).strip(),
+                "manifest_blob": subprocess.check_output(["git", "-C", str(child), "hash-object", "manifest.json"], text=True).strip(),
+            }
+            lock_path = fixture / "adk.lock"
+            lock_lines = lock_path.read_text().splitlines()
+            for key, value in identity.items():
+                prefix = f"agent-dev-kit.{key}="
+                lock_lines = [prefix + value if line.startswith(prefix) else line for line in lock_lines]
+            lock_path.write_text("\n".join(lock_lines) + "\n")
+            interface_path = fixture / "manifests/adk_interface.lock.json"
+            interface = json.loads(interface_path.read_text())
+            interface.update(identity)
+            interface_path.write_text(json.dumps(interface, indent=2) + "\n")
+    # References are not Root product source. Drop only these generated copies;
+    # no source repository is touched or promoted into the fixture gitlinks.
+    pins = json.loads((source / "manifests/reference_pins.json").read_text())
+    for pin in pins["pins"]:
+        name = pin["id"]
+        if name in {"agent-dev-kit", "codex"} or "/" in name or name in {".", ".."}:
+            raise AssertionError("unsafe reference fixture exclusion")
+        copied = fixture / name
+        if copied.is_symlink():
+            copied.unlink()
+        elif copied.is_dir():
+            shutil.rmtree(copied)
     # This positive path is a synthetic transaction fixture. The repository's
     # historical signed promotion belongs to an older ADK commit and must not
     # be rewritten or treated as proof for the current local candidate. The

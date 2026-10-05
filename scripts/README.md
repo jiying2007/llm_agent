@@ -482,12 +482,14 @@ scripts/cleanup-reports.sh [WORKSPACE_ROOT] [--dry-run] [--days N]
 ```
 
 功能：
-- 将 `reports/` 中超过指定天数的 `.md` 报告移入 `reports/archive/`。
-- 保留 `.template.md` 模板文件不移动。
-- `--dry-run`：只显示会移动的文件，不实际执行。
+- 默认只生成带内容 hash、依赖引用和阻塞原因的 retention plan，所有模式均不移动报告。
+- 保护 README、current-status、模板和仍有 evidence consumer 的报告；扫描不完整时 fail closed。
+- `--dry-run`：显式标注只读模式；缺省也是只读。旧“省略 --dry-run 就移动”的行为已退役，不能按修改时间自动移动证据。
 - `--days N`：自定义天数阈值，默认 30 天。
 
-示例：`scripts/cleanup-reports.sh . --dry-run`；确认后可加 `--days 60`。
+示例：`rtk scripts/cleanup-reports.sh . --dry-run --days 60`。真正归档前需独立 supersession、owner decision 和 rollback 证据；`--apply` 返回 blocked。
+
+真实任务评测准备复用现有 campaign 入口：`rtk python3 -m tools.codex_assets.effect_planning --root . --runtime claude --model <明确模型标识> --out /tmp/reviewed-campaign --summary-json`。仅生成预注册审查材料，不调用模型；实际运行、签名和 owner review 分别授权与验收。
 
 ## 13. 安装 Pre-commit Hook
 

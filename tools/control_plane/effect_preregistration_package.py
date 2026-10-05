@@ -6,6 +6,7 @@ import json
 import tempfile
 from pathlib import Path
 from typing import Any
+from tools.codex_assets.intake_io import IntakeError, _load_json
 
 PACKAGE_SCHEMA = "llm-agent-effect-preregistration-package/v2"
 SOURCE_SCHEMA = "llm-agent-effect-preregistration-source/v1"
@@ -49,7 +50,10 @@ def build_package(adk: Path, source_path: Path) -> tuple[bytes, dict[str, Any]]:
         raise ValueError("preregistration source is missing or unsafe")
     if source_path.stat().st_size > 1024 * 1024:
         raise ValueError("preregistration source exceeds byte budget")
-    source = json.loads(source_path.read_text(encoding="utf-8"))
+    try:
+        source = _load_json(source_path, 1024 * 1024, "preregistration source")
+    except IntakeError as exc:
+        raise ValueError(str(exc)) from exc
     if not isinstance(source, dict):
         raise ValueError("preregistration source must be an object")
     required = {
@@ -150,7 +154,10 @@ def validate_package(adk: Path, package_path: Path) -> tuple[bytes, dict[str, An
         raise ValueError("preregistration package is missing or unsafe")
     if package_path.stat().st_size > 1024 * 1024:
         raise ValueError("preregistration package exceeds byte budget")
-    package = json.loads(package_path.read_text(encoding="utf-8"))
+    try:
+        package = _load_json(package_path, 1024 * 1024, "preregistration package")
+    except IntakeError as exc:
+        raise ValueError(str(exc)) from exc
     if not isinstance(package, dict):
         raise ValueError("preregistration package must be an object")
     required = {

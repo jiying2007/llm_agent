@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import fnmatch
 import hashlib
 import json
 import os
@@ -45,9 +46,9 @@ RELEASE_CRITICAL = (
     "agent-dev-kit/manifest.yaml",
     "agent-dev-kit/pyproject.toml",
     "agent-dev-kit/src/agent_dev_kit/release.py",
-    "agent-dev-kit/manifests/software_m5",
-    ".github/workflows/release",
-    "manifests/software_m5",
+    "agent-dev-kit/manifests/software_m5*",
+    ".github/workflows/release*",
+    "manifests/software_m5*",
     "manifests/product_maturity_scorecard.json",
     "reports/current-status.md",
 )
@@ -57,14 +58,14 @@ SHARED_CONTRACT = (
     "agent-dev-kit/src/agent_dev_kit/runtime_control/",
     "agent-dev-kit/src/agent_dev_kit/targets.py",
     "tools/codex_assets/",
-    "scripts/check-",
+    "scripts/check-*",
 )
 CODE_PREFIXES = (
     "agent-dev-kit/src/", "agent-dev-kit/scripts/", "agent-dev-kit/tests/",
     "tools/", "scripts/", "tests/",
 )
 SSOT_EVIDENCE = (
-    "reports/current-status.md", "reports/adk-v", "reports/runtime-evidence/",
+    "reports/current-status.md", "reports/adk-v*", "reports/runtime-evidence/",
     "manifests/", "adk.lock", "agent-dev-kit",
 )
 
@@ -166,7 +167,13 @@ def _excluded(path: str, reference_roots: set[str] | None = None) -> bool:
 
 
 def _matches(path: str, patterns: Sequence[str]) -> bool:
-    return any(path == pattern or path.startswith(pattern) for pattern in patterns)
+    # Explicit globs cover filename families; ordinary paths match only that
+    # file/directory, never similarly named neighbors such as adk.lock.backup.
+    return any(
+        fnmatch.fnmatchcase(path, pattern) if "*" in pattern else
+        path == pattern.rstrip("/") or path.startswith(pattern.rstrip("/") + "/")
+        for pattern in patterns
+    )
 
 
 def classify(paths: Sequence[str], snapshot_sha256: str, scope: str, reference_roots: set[str] | None = None) -> Dict[str, object]:

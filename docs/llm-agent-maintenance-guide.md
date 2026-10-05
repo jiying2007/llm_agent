@@ -385,8 +385,8 @@ rtk scripts/check-runtime-live-footprint.sh . --strict
 长会话或上下文压力较高时，先运行：
 
 ```bash
-rtk bash ~/codex/scripts/runtime-control.sh snapshot
-rtk bash ~/codex/scripts/runtime-control.sh watch
+rtk bash -lc 'cd ~/codex && rtk python3 -m tools.codex_assets execution-policy --thread-id "${CODEX_THREAD_ID:?current thread id required}" snapshot'
+rtk bash -lc 'cd ~/codex && rtk python3 -m tools.codex_assets execution-policy --thread-id "${CODEX_THREAD_ID:?current thread id required}" watch'
 ```
 
 ### 8.2 是否可以直接更新参考子仓？

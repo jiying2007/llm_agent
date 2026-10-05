@@ -61,6 +61,20 @@ class ValidationPlanTests(unittest.TestCase):
         value = classify(["scripts/README.md"], "1" * 64, "working-tree")
         self.assertEqual("L2", value["tier"])
 
+    def test_neighbor_names_do_not_match_release_or_contract_paths(self):
+        for path in ("agent-dev-kit-notes.md", "adk.lock.backup", "tools/codex_assets_extra/readme.md"):
+            with self.subTest(path=path):
+                value = classify([path], "1" * 64, "working-tree")
+                self.assertEqual("L2", value["tier"])
+
+    def test_explicit_filename_families_keep_their_validation_tier(self):
+        self.assertEqual("L3", classify(["scripts/check-new.sh"], "1" * 64, "working-tree")["tier"])
+        for path in ("manifests/software_m5_policy.json", "agent-dev-kit/manifests/software_m5_eval_contract.json",
+                     ".github/workflows/release.yml"):
+            with self.subTest(path=path):
+                self.assertEqual("L4", classify([path], "1" * 64, "working-tree")["tier"])
+        self.assertFalse(classify(["reports/adk-v7-evidence.md"], "1" * 64, "working-tree")["evidence_only"])
+
 
 class ValidationSnapshotTests(unittest.TestCase):
     def setUp(self):
