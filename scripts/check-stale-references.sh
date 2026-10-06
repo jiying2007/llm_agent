@@ -60,9 +60,13 @@ for rel in "${SCAN_PATHS[@]}"; do
   path="${ROOT}/${rel}"
   [[ -e "${path}" ]] || continue
   for pattern in "${PATTERNS[@]}"; do
+    # Change records retain prior snapshots and negative command examples;
+    # they are provenance rather than active installation guidance.
     rg -n --pcre2 \
       -g '!reports/archive/**' \
       -g '!agent-dev-kit/reports/archive/**' \
+      -g '!**/docs/archive/**' \
+      -g '!**/docs/changes/**' \
       -- "${pattern}" "${path}" \
       >>"${tmpfile}" || true
   done
