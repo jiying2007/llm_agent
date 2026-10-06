@@ -2,6 +2,7 @@ from pathlib import Path
 import subprocess
 import tempfile
 import unittest
+import os
 
 ROOT = Path(__file__).resolve().parents[1]
 CHECKER = ROOT / "scripts/check-stale-references.sh"
@@ -44,6 +45,33 @@ class StaleReferenceScopeTest(unittest.TestCase):
             result = self.check(root)
             self.assertEqual(1, result.returncode)
             self.assertIn("validate_assets.sh", result.stderr)
+
+    def test_missing_ripgrep_fails_closed(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            env = dict(os.environ, PATH="/nonexistent-stale-reference-tools")
+            result = subprocess.run(["/bin/bash", str(CHECKER), str(root)],
+                                    env=env, text=True, capture_output=True)
+            self.assertEqual(2, result.returncode)
+            self.assertIn("ripgrep", result.stderr)
+            self.assertNotIn("[PASS]", result.stdout)
+
+    def test_scan_error_fails_closed(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp) / "workspace"
+            root.mkdir()
+            (root / "AGENTS.md").write_text("current guidance\n", encoding="utf-8")
+            bin_dir = Path(temp) / "bin"
+            bin_dir.mkdir()
+            rg = bin_dir / "rg"
+            rg.write_text("#!/bin/sh\nexit 2\n", encoding="utf-8")
+            rg.chmod(0o755)
+            env = dict(os.environ, PATH=str(bin_dir) + os.pathsep + os.environ["PATH"])
+            result = subprocess.run(["bash", str(CHECKER), str(root)],
+                                    env=env, text=True, capture_output=True)
+            self.assertEqual(2, result.returncode)
+            self.assertIn("scan failed", result.stderr)
+            self.assertNotIn("[PASS]", result.stdout)
 
 
 if __name__ == "__main__":
