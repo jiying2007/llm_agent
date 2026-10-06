@@ -40,6 +40,11 @@ declare -a SCAN_PATHS=(
   "agent-dev-kit/scripts"
 )
 
+if ! command -v rg >/dev/null 2>&1; then
+  echo '[FAIL] ripgrep (rg) is required for stale reference verification' >&2
+  exit 2
+fi
+
 declare -a PATTERNS=(
   'adk v2\.0\.0 当前状态'
   'v2\.0\.0 发布后'
@@ -60,11 +65,20 @@ for rel in "${SCAN_PATHS[@]}"; do
   path="${ROOT}/${rel}"
   [[ -e "${path}" ]] || continue
   for pattern in "${PATTERNS[@]}"; do
+    # Change records retain prior snapshots and negative command examples;
+    # they are provenance rather than active installation guidance.
+    scan_status=0
     rg -n --pcre2 \
       -g '!reports/archive/**' \
       -g '!agent-dev-kit/reports/archive/**' \
+      -g '!**/docs/archive/**' \
+      -g '!**/docs/changes/**' \
       -- "${pattern}" "${path}" \
-      >>"${tmpfile}" || true
+      >>"${tmpfile}" || scan_status=$?
+    if [[ "$scan_status" -gt 1 ]]; then
+      echo "[FAIL] stale reference scan failed: ${rel} (exit=${scan_status})" >&2
+      exit "$scan_status"
+    fi
   done
 done
 
