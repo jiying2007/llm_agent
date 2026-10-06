@@ -9,6 +9,11 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+
+from tools.codex_assets.intake_io import IntakeError, read_json
+
 EVIDENCE_SCHEMA = "adk-promotion-evidence/v1"
 EXPECTED_REPOSITORY = "jiying2007/agent-dev-kit"
 EXPECTED_REF = "refs/heads/main"
@@ -28,6 +33,8 @@ def _load_lock(path: Path) -> dict[str, str]:
         if "=" not in raw:
             raise ValueError(f"invalid lock line: {raw}")
         key, value = raw.split("=", 1)
+        if key in values:
+            raise ValueError("adk.lock contains duplicate keys")
         values[key] = value
     if values.get("schema") != "llm-agent-adk-lock/v2":
         raise ValueError("adk.lock schema must be llm-agent-adk-lock/v2")
@@ -69,8 +76,11 @@ def verify_evidence_claims(
     now: dt.datetime | None = None,
     max_age_days: int = 30,
 ) -> dict[str, Any]:
-    evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
-    interface = json.loads(interface_path.read_text(encoding="utf-8"))
+    try:
+        evidence = read_json(evidence_path, label="promotion evidence")
+        interface = read_json(interface_path, label="interface lock")
+    except IntakeError as exc:
+        raise ValueError(str(exc)) from exc
     lock = _load_lock(lock_path)
     if not isinstance(evidence, Mapping):
         raise ValueError("promotion evidence root must be an object")
@@ -127,11 +137,13 @@ def verify_evidence_claims(
         raise ValueError("promotion evidence must come from a push to main")
     if source.get("workflow") != EXPECTED_WORKFLOW or source.get("workflow_ref") != EXPECTED_WORKFLOW_REF:
         raise ValueError("promotion evidence must come from the canonical ADK CI workflow")
-    if not isinstance(source.get("run_id"), int) or int(source["run_id"]) < 1:
+    if type(source.get("run_id")) is not int or source["run_id"] < 1:
         raise ValueError("source.run_id must be a positive integer")
-    if not isinstance(source.get("run_attempt"), int) or int(source["run_attempt"]) < 1:
+    if type(source.get("run_attempt")) is not int or source["run_attempt"] < 1:
         raise ValueError("source.run_attempt must be a positive integer")
     _expect_hex(source.get("workflow_sha"), HEX40, "source.workflow_sha")
+    if source["workflow_sha"] != source["commit"]:
+        raise ValueError("main-push workflow source must match the candidate commit")
 
     for key in ("contract_matrix", "regression_matrix"):
         matrix = ci.get(key)
