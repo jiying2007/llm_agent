@@ -4,6 +4,7 @@ set -euo pipefail
 
 CODEX_ROOT="${1:-$HOME/.codex}"
 PROFILE="${2:-minimal}"
+WORKSPACE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 if [[ ! -d "${CODEX_ROOT}" ]]; then
   echo "[FAIL] global codex dir missing: ${CODEX_ROOT}" >&2
@@ -45,32 +46,17 @@ fi
 
 audit_runtime_security() {
   local config_file="${CODEX_ROOT}/config.toml"
-  local trusted_base_urls="https://api.openai.com https://api.anthropic.com ${CODEX_TRUSTED_BASE_URLS:-}"
-  local failures=()
-  local warnings=()
 
   if [[ ! -f "${config_file}" ]]; then
     echo "[FAIL] codex config missing: ${config_file}" >&2
     return 3
   fi
 
-  while IFS= read -r line; do
-    [[ -z "${line}" ]] && continue
-    failures+=("unreviewed provider/base_url: ${line}")
-  done < <(
-    rg -n '^[[:space:]]*[^#].*(OPENAI_BASE_URL|ANTHROPIC_BASE_URL|base_url[[:space:]]*=)' "${config_file}" \
-      | while IFS= read -r hit; do
-          value="$(printf "%s\n" "${hit}" | sed -E 's/.*=[[:space:]]*"?([^"#]+)"?.*/\1/' | tr -d ' ')"
-          if [[ -z "${trusted_base_urls}" || "${trusted_base_urls}" != *"${value}"* ]]; then
-            printf "%s\n" "${hit}"
-          fi
-        done || true
-  )
-
-  while IFS= read -r line; do
-    [[ -z "${line}" ]] && continue
-    warnings+=("hook configured, require declared validator/audit purpose: ${line}")
-  done < <(rg -n '^[[:space:]]*[^#].*hook' "${config_file}" || true)
+  if ! PYTHONPATH="$WORKSPACE_ROOT${PYTHONPATH:+:$PYTHONPATH}" \
+      python3 -m tools.codex_assets.runtime_security --config "$config_file"; then
+    echo '[FAIL] global codex endpoint trust audit failed; endpoint values are redacted' >&2
+    return 3
+  fi
 
   if command -v codex >/dev/null 2>&1; then
     mcp_output="$(codex mcp list 2>&1)" || {
@@ -80,18 +66,7 @@ audit_runtime_security() {
     }
     echo "${mcp_output}"
   else
-    warnings+=("codex CLI not found; MCP loaded-list audit skipped")
-  fi
-
-  if [[ "${#warnings[@]}" -gt 0 ]]; then
-    printf '[WARN] %s\n' "${warnings[@]}" >&2
-  fi
-
-  if [[ "${#failures[@]}" -gt 0 ]]; then
-    echo "[FAIL] global codex security audit failed" >&2
-    printf '  - %s\n' "${failures[@]}" >&2
-    echo "[INFO] set CODEX_TRUSTED_BASE_URLS to reviewed endpoint substrings when non-default providers are intentional" >&2
-    return 3
+    echo '[WARN] codex CLI not found; MCP loaded-list audit skipped' >&2
   fi
 
   echo "[PASS] global codex security audit ready"

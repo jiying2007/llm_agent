@@ -80,7 +80,7 @@ evidence = {
         'event': 'push',
         'workflow': 'agent-dev-kit-ci',
         'workflow_ref': 'jiying2007/agent-dev-kit/.github/workflows/ci.yml@refs/heads/main',
-        'workflow_sha': '5' * 40,
+        'workflow_sha': commit,
         'run_id': 123,
         'run_attempt': 1,
     },

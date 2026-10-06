@@ -62,6 +62,13 @@ def _load_json(path: Path, limit: int, label: str) -> Any:
         raise IntakeError("{} must contain valid UTF-8 JSON".format(label)) from exc
 
 
+def read_json(path: Path, *, label: str, max_bytes: int = 4 * 1024 * 1024) -> Any:
+    """Public, bounded strict decoder for portable consumer contracts."""
+    if isinstance(max_bytes, bool) or not isinstance(max_bytes, int) or max_bytes < 1:
+        raise IntakeError("JSON byte budget must be a positive integer")
+    return _load_json(path, max_bytes, label)
+
+
 def _load_jsonl(path: Path, limit: int, label: str) -> List[Dict[str, Any]]:
     raw = _load_bytes(path, limit, label)
     try:
