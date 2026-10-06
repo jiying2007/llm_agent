@@ -1,0 +1,13 @@
+# ADK8.0.2持久化与锁安全迭代消费候选
+
+本轮内部/tmp实证campaign固定临时路径外部覆盖、strictreader不可消费的NaN输出、actualrelease checksum临时链接覆盖，以及NaN锁等待/nullPID错误。共用atomic_io将object JSON预算前置、exclusive random temporary descriptor写入flush/fsync关闭replace，installwrapper保持；campaign/lock regular descriptor读取；source/runtime两checksum0644；private docs0600。锁finite0..300/type、metadata/PID/timezone校验，EPERM不判dead、本机unknown无论age拒clear，真正remote stale+expectedID保留。
+
+独立初复审两Major（localunknownclear与runtimechecksumsibling）已修复；旧冻结矩阵停并废弃，最终定向27和三Python各98完整+30路由及wheel/lint/type/audit通过，18paths最新wholestagedreviewPASS。same-source/index fullreceipt SHA07630a5310adfa8bdf7fed3c760b4606abf953bb6e19ab7af1695414643bd81a在actualmaincheckout复验通过。完整输入/权限/失败恢复覆盖，caller parent/sameUID/跨archive-checksum非原子及断电边界明确；未调用真实模型或宣称速度/收益提升。
+
+ADK PR178已合并actualmain4c8ff2c2bfa37667f17e5c9613d3298848182daa/version8.0.2，tree1a3576f599d99d45ac588bde4349e738e2e88c97，manifestblob7adea7e00d02bb8c4f019b7ca4513f90ea517026。mainCI37452817886九jobs、tag/release37453425947成功；immutablev8.0.2 tag480dca5ca9cdc70d2ffb8d3de1975e4cc3585630->main。actualarchive9b003708b1b5e2d328826ae21557b135a5ccb78d0957d4beca4d25889611cbd0=API/evidence/contract，fixedworkflow/issuer/trusted-root验证VerifiedOK，不重标旧签名。
+
+Rootexistingatomicpromotion六路径SDK/lock/interface/status/evidence/attestation与本工程doc候选，需Rootfreshfull74、quick串行及独立whole-staged复审；SDKsame-fullreceipt支持复验保持。现有referencebaseline过期/历史M5-current不一致仍NEEDS_REVIEW、release_authorizedfalse，不伪owner/date/qualification；RootfrozenCodex evidence pin d12和10userreference dirs不动。
+
+独立Codexsource消费保持42Skill/9Agent/4policy正文，README31和真实sourcepin/validators/adapter/tests严格期望同步，历史fixtures/license保留；actual5userdirty/journal/config/team-collab保护。SCM与真实source-to-live另receipt，不把candidate/test或SDK发行推导live/产品。回滚Root38b91b2/SDK46/8.0.1，退回安全修复会恢复实证风险。
+
+外部参考：[Python temporary](https://docs.python.org/3/library/tempfile.html)、[finite数值](https://docs.python.org/3/library/math.html#math.isfinite)、[Linux kill权限与存在](https://man7.org/linux/man-pages/man2/kill.2.html)。仅一手设计依据，不导入runtime或模型资格。
