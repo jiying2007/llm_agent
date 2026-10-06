@@ -2,9 +2,11 @@
 from __future__ import annotations
 
 import hashlib
+from contextlib import contextmanager
 import json
 import math
 import os
+import stat
 import tempfile
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
@@ -27,29 +29,57 @@ def _sha256_value(value: Any) -> str:
 
 
 def _sha256_file(path: Path) -> str:
-    _reject_symlink_chain(path)
     digest = hashlib.sha256()
-    with path.open("rb") as stream:
+    with _regular_input(path, "input digest") as stream:
         for chunk in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
 
 
-def _load_bytes(path: Path, limit: int, label: str) -> bytes:
-    _reject_symlink_chain(path)
-    if not path.is_file():
-        raise IntakeError("{} is missing or not a regular file".format(label))
-    size = path.stat().st_size
-    if size > limit:
-        raise IntakeError("{} exceeds the {} byte budget".format(label, limit))
+@contextmanager
+def _regular_input(path: Path, label: str):
+    """Bind leaf type/identity checks to the descriptor actually read.
+
+    Parent chain validation is a preflight; callers must control parent
+    directories. This does not lock out concurrent parent renames or writers.
+    """
+    descriptor = None
     try:
-        with path.open("rb") as stream:
-            payload = stream.read(limit + 1)
+        _reject_symlink_chain(path)
+        before = path.lstat()
+        if not stat.S_ISREG(before.st_mode):
+            raise IntakeError("{} is missing or not a regular file".format(label))
+        if not hasattr(os, "O_NOFOLLOW") or not hasattr(os, "O_NONBLOCK"):
+            raise IntakeError("safe regular-file reading is unavailable")
+        descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+        opened = os.fstat(descriptor)
+        if (not stat.S_ISREG(opened.st_mode)
+                or (opened.st_dev, opened.st_ino) != (before.st_dev, before.st_ino)):
+            raise IntakeError("{} changed during open".format(label))
+        with os.fdopen(descriptor, "rb", closefd=False) as stream:
+            yield stream
+    except OSError as exc:
+        raise IntakeError("cannot read {}".format(label)) from exc
+    finally:
+        if descriptor is not None:
+            os.close(descriptor)
+
+
+def _load_bytes(path: Path, limit: int, label: str) -> bytes:
+    with _regular_input(path, label) as stream:
+        if os.fstat(stream.fileno()).st_size > limit:
+            raise IntakeError("{} exceeds the {} byte budget".format(label, limit))
+        payload = stream.read(limit + 1)
         if len(payload) > limit:
             raise IntakeError("{} exceeds the {} byte budget".format(label, limit))
         return payload
-    except OSError as exc:
-        raise IntakeError("cannot read {}".format(label)) from exc
+
+
+def read_bytes(path: Path, *, label: str, max_bytes: int = 4 * 1024 * 1024) -> bytes:
+    """Public bounded regular-file input for non-JSON consumer contracts."""
+    if isinstance(max_bytes, bool) or not isinstance(max_bytes, int) or max_bytes < 1:
+        raise IntakeError("byte budget must be a positive integer")
+    return _load_bytes(path, max_bytes, label)
 
 
 def _load_json(path: Path, limit: int, label: str) -> Any:

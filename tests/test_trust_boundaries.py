@@ -9,11 +9,37 @@ from unittest.mock import patch
 
 from tools.codex_assets.runtime_security import audit, trusted_endpoint, DEFAULT_TRUSTED
 from tools.control_plane.adk_promotion_evidence import verify_evidence_claims
+from tools.codex_assets import intake_io as input_io
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
 class EndpointTrustTest(unittest.TestCase):
+    def test_configuration_preflight_error_is_normalized(self):
+        with patch.object(Path, "is_symlink", side_effect=PermissionError("PRIVATE_OS_DETAIL")):
+            with self.assertRaises(ValueError) as failure:
+                audit(Path("unopened-fixture"), DEFAULT_TRUSTED)
+        self.assertNotIn("PRIVATE_OS_DETAIL", str(failure.exception))
+
+    def test_configuration_link_replacement_fails_without_reading_secrets(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            config = root / "config.toml"
+            config.write_text('base_url="https://api.openai.com/v1"\n')
+            outside = root / "private.toml"
+            outside.write_text('base_url="https://secret:PRIVATE_TOKEN@api.openai.com"\n')
+            original_open = os.open
+
+            def replace_then_open(name, flags):
+                config.rename(root / "old.toml")
+                config.symlink_to(outside)
+                return original_open(name, flags)
+
+            with patch.object(input_io.os, "open", side_effect=replace_then_open):
+                with self.assertRaises(ValueError) as failure:
+                    audit(config, DEFAULT_TRUSTED)
+            self.assertNotIn("PRIVATE_TOKEN", str(failure.exception))
+
     def test_exact_authority_and_path_boundary(self):
         self.assertTrue(trusted_endpoint("https://api.openai.com/v1", DEFAULT_TRUSTED))
         self.assertTrue(trusted_endpoint("https://API.OPENAI.COM:443/v1", DEFAULT_TRUSTED))

@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 from urllib.parse import urlsplit
 import tomllib
+from .intake_io import IntakeError, read_bytes
 
 DEFAULT_TRUSTED = ("https://api.openai.com", "https://api.anthropic.com")
 MAX_CONFIG_BYTES = 4 * 1024 * 1024
@@ -47,12 +48,10 @@ def audit(config: Path, trusted: tuple[str, ...]) -> dict:
     # Validate all declared expectations before accepting any endpoint.
     for expected in trusted:
         endpoint_parts(expected)
-    if config.is_symlink() or not config.is_file():
-        raise ValueError("configuration must be a regular file")
-    with config.open("rb") as stream:
-        payload = stream.read(MAX_CONFIG_BYTES + 1)
-    if len(payload) > MAX_CONFIG_BYTES:
-        raise ValueError("configuration exceeds byte budget")
+    try:
+        payload = read_bytes(config, label="configuration", max_bytes=MAX_CONFIG_BYTES)
+    except IntakeError as exc:
+        raise ValueError("invalid configuration input") from exc
     data = tomllib.loads(payload.decode("utf-8"))
     pending = [data]
     endpoints: list[object] = []

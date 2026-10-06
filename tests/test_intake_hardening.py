@@ -17,6 +17,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from tools.codex_assets import intake_pipeline as intake
+from tools.codex_assets import intake_io as input_io
 from tools.control_plane import reference_pins as pins
 from tools.control_plane.process_budget import ProcessBudgetError, run_bounded
 
@@ -71,6 +72,71 @@ class ProcessTests(unittest.TestCase):
         for kwargs in ({"timeout": 0}, {"timeout": float("nan")}, {"max_stdout": True}, {"max_stderr": -1}):
             with self.subTest(kwargs=kwargs), self.assertRaises(ValueError):
                 run_bounded([sys.executable, "-c", "pass"], **kwargs)
+
+
+class DescriptorInputTests(unittest.TestCase):
+    def test_preflight_errors_are_normalized(self) -> None:
+        for reader in (lambda path: input_io.read_bytes(path, label="fixture"),
+                       input_io._sha256_file):
+            with patch.object(Path, "is_symlink", side_effect=PermissionError("PRIVATE_OS_DETAIL")):
+                with self.assertRaises(input_io.IntakeError) as failure:
+                    reader(Path("unopened-fixture"))
+            self.assertNotIn("PRIVATE_OS_DETAIL", str(failure.exception))
+
+    def test_regular_inputs_and_byte_budgets(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "input.json"
+            path.write_bytes(b"{}")
+            self.assertEqual({}, input_io.read_json(path, label="fixture"))
+            self.assertEqual(b"{}", input_io.read_bytes(path, label="fixture", max_bytes=2))
+            with self.assertRaises(input_io.IntakeError):
+                input_io.read_bytes(path, label="fixture", max_bytes=1)
+            for budget in (True, 0, -1):
+                with self.assertRaises(input_io.IntakeError):
+                    input_io.read_bytes(path, label="fixture", max_bytes=budget)
+
+    def test_leaf_replacement_rejected_and_descriptor_closed(self) -> None:
+        for replacement in ("symlink", "regular", "fifo"):
+            if replacement == "fifo" and not hasattr(os, "mkfifo"):
+                continue
+            with self.subTest(replacement=replacement), tempfile.TemporaryDirectory() as temp:
+                root = Path(temp)
+                path = root / "input.json"
+                path.write_text("{}")
+                outside = root / "outside.json"
+                outside.write_text('{"private":"DO_NOT_READ"}')
+                original_open = os.open
+                descriptors = []
+
+                def replace_then_open(name, flags):
+                    path.rename(root / "previous.json")
+                    if replacement == "symlink":
+                        path.symlink_to(outside)
+                    elif replacement == "fifo":
+                        os.mkfifo(path)
+                    else:
+                        path.write_text('{"changed":true}')
+                    descriptor = original_open(name, flags)
+                    descriptors.append(descriptor)
+                    return descriptor
+
+                with patch.object(input_io.os, "open", side_effect=replace_then_open):
+                    with self.assertRaises(input_io.IntakeError) as failure:
+                        input_io.read_json(path, label="fixture")
+                self.assertNotIn("DO_NOT_READ", str(failure.exception))
+                for descriptor in descriptors:
+                    with self.assertRaises(OSError):
+                        os.fstat(descriptor)
+                self.assertEqual('{"private":"DO_NOT_READ"}', outside.read_text())
+
+    def test_digest_reader_uses_same_open_guard(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "data"
+            path.write_bytes(b"data")
+            with patch.object(input_io.os, "open", side_effect=OSError("PRIVATE_ERROR")):
+                with self.assertRaises(input_io.IntakeError) as failure:
+                    input_io._sha256_file(path)
+            self.assertNotIn("PRIVATE_ERROR", str(failure.exception))
 
 
 class MetadataTests(unittest.TestCase):
