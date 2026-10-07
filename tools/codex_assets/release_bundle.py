@@ -8,11 +8,11 @@ import json
 import os
 import pathlib
 import subprocess
-import tempfile
 from typing import Any, Sequence, Union
 
+from .intake_io import IntakeError, _atomic_write, _reject_symlink_chain, decode_json, read_bytes
 
-BUNDLE_SCHEMA_VERSION = 1
+BUNDLE_SCHEMA_VERSION = 2
 MAX_EVIDENCE_FILES = 32
 MAX_OUTPUT_BYTES = 32 * 1024
 
@@ -112,18 +112,27 @@ def artifact_receipt(path: pathlib.Path) -> dict[str, Any]:
 
 
 def plan_receipt(path: pathlib.Path) -> dict[str, Any]:
-    receipt = artifact_receipt(path)
     try:
-        payload = json.loads(path.expanduser().read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
+        path = pathlib.Path(os.path.abspath(path.expanduser()))
+        raw = read_bytes(path, label="Codex plan")
+        payload = decode_json(raw, "Codex plan")
+    except IntakeError as exc:
         raise ValueError("invalid Codex plan: {}".format(exc)) from exc
-    target = payload.get("target_receipt") if isinstance(payload.get("target_receipt"), dict) else {}
+    if not isinstance(payload, dict):
+        raise ValueError("Codex plan must be a JSON object")
+    target = payload.get("target_receipt")
+    build = payload.get("build_receipt")
+    target = {} if target is None else target
+    build = {} if build is None else build
+    if not isinstance(target, dict) or not isinstance(build, dict):
+        raise ValueError("Codex plan receipts must be JSON objects")
+    receipt = {"path": str(path), "sha256": hashlib.sha256(raw).hexdigest(), "bytes": len(raw)}
     receipt.update(
         {
             "schema_version": payload.get("schema_version"),
             "content_changes": payload.get("content_changes"),
             "content_noop": payload.get("content_noop"),
-            "build_tree_sha256": (payload.get("build_receipt") or {}).get("tree_sha256", ""),
+            "build_tree_sha256": build.get("tree_sha256", ""),
             "target_precondition_paths_sha256": target.get("precondition_paths_sha256", ""),
             "target_precondition_paths": target.get("precondition_paths", 0),
         }
@@ -141,7 +150,6 @@ def build_bundle(args: argparse.Namespace) -> dict[str, Any]:
         "llm-agent": pathlib.Path(args.workspace_root).expanduser().resolve(),
         "agent-dev-kit": pathlib.Path(args.adk_root).expanduser().resolve(),
         "codex": pathlib.Path(args.codex_root).expanduser().resolve(),
-        "knowledge-hub": pathlib.Path(args.hub_root).expanduser().resolve(),
     }
     output_path = pathlib.Path(args.out).expanduser().resolve() if args.out else None
     excluded_by_repo: dict[str, set[str]] = {name: set() for name in roots}
@@ -153,14 +161,20 @@ def build_bundle(args: argparse.Namespace) -> dict[str, Any]:
                 continue
     payload = {
         "schema_version": BUNDLE_SCHEMA_VERSION,
-        "projection": "adk-cross-repo-release-bundle-v1",
+        "projection": "adk-cross-repo-release-bundle-v2",
         "status": "provenance-only",
         "release_authorized": False,
         "repositories": [
             repo_receipt(name, root, excluded_by_repo[name]) for name, root in roots.items()
         ],
         "codex_plan": plan_receipt(pathlib.Path(args.codex_plan)),
-        "hub_candidate": artifact_receipt(pathlib.Path(args.hub_candidate)),
+        "knowledge_candidate": artifact_receipt(pathlib.Path(args.knowledge_candidate)),
+        "knowledge_boundary": {
+            "transport": "provider-adapter",
+            "provider_persisted": False,
+            "provider_readback_required": True,
+            "archive_claim": "not-established",
+        },
         "evidence": [artifact_receipt(path) for path in evidence_paths],
         "privacy": {
             "raw_diff_stored": False,
@@ -183,9 +197,9 @@ def parser() -> argparse.ArgumentParser:
     result.add_argument("--workspace-root", default=str(root))
     result.add_argument("--adk-root", default=str(root / "agent-dev-kit"))
     result.add_argument("--codex-root", default=str(pathlib.Path.home() / "codex"))
-    result.add_argument("--hub-root", default=str(pathlib.Path.home() / "knowledge-hub"))
     result.add_argument("--codex-plan", required=True)
-    result.add_argument("--hub-candidate", required=True)
+    result.add_argument("--knowledge-candidate", required=True,
+                        help="local sanitized candidate; persistence requires Provider readback")
     result.add_argument("--evidence", action="append", default=[])
     result.add_argument("--out", default="")
     return result
@@ -195,16 +209,21 @@ def main(argv: Sequence[str] = ()) -> int:
     args = parser().parse_args(list(argv) if argv else None)
     try:
         payload = build_bundle(args)
-    except (subprocess.CalledProcessError, ValueError) as exc:
+    except (subprocess.CalledProcessError, ValueError, IntakeError) as exc:
         raise SystemExit("[FAIL] {}".format(exc))
     output = json.dumps(payload, ensure_ascii=False, indent=2) + "\n"
     if args.out:
-        target = pathlib.Path(args.out).expanduser().resolve()
-        target.parent.mkdir(parents=True, exist_ok=True)
-        with tempfile.NamedTemporaryFile("w", encoding="utf-8", dir=target.parent, delete=False) as handle:
-            handle.write(output)
-            temporary = pathlib.Path(handle.name)
-        os.replace(str(temporary), str(target))
+        target = pathlib.Path(os.path.abspath(pathlib.Path(args.out).expanduser()))
+        try:
+            _reject_symlink_chain(target)
+            if target.exists() and not target.is_file():
+                raise IntakeError("bundle output must be a regular file")
+            target.parent.mkdir(parents=True, exist_ok=True)
+            inputs = [pathlib.Path(args.codex_plan).expanduser(), pathlib.Path(args.knowledge_candidate).expanduser()]
+            inputs.extend(pathlib.Path(value).expanduser() for value in args.evidence)
+            _atomic_write(target, output.encode("utf-8"), inputs=inputs, mode=0o600)
+        except (IntakeError, OSError) as exc:
+            raise SystemExit("[FAIL] {}".format(exc)) from exc
     print(output, end="")
     return 0
 

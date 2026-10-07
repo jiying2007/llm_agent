@@ -160,7 +160,10 @@ def _same_file(left: Path, right: Path) -> bool:
         return False
 
 
-def _atomic_write_many(outputs: Sequence[Tuple[Path, bytes]], inputs: Iterable[Path] = ()) -> None:
+def _atomic_write_many(outputs: Sequence[Tuple[Path, bytes]], inputs: Iterable[Path] = (),
+                       *, mode: int = 0o644) -> None:
+    if isinstance(mode, bool) or not isinstance(mode, int) or not 0 <= mode <= 0o777:
+        raise IntakeError("invalid output permission mode")
     if not outputs:
         return
     normalized_inputs = [Path(os.path.abspath(os.fspath(item))) for item in inputs]
@@ -189,7 +192,7 @@ def _atomic_write_many(outputs: Sequence[Tuple[Path, bytes]], inputs: Iterable[P
                 stream.write(payload)
                 stream.flush()
                 os.fsync(stream.fileno())
-            os.chmod(str(temp_path), 0o644)
+            os.chmod(str(temp_path), mode)
 
         for path, _ in normalized_outputs:
             backup: Optional[Path] = None
@@ -251,9 +254,9 @@ def _atomic_write_many(outputs: Sequence[Tuple[Path, bytes]], inputs: Iterable[P
                         pass
 
 
-def _atomic_write(path: Path, payload: bytes, inputs: Iterable[Path] = ()) -> None:
+def _atomic_write(path: Path, payload: bytes, inputs: Iterable[Path] = (), *, mode: int = 0o644) -> None:
     try:
-        _atomic_write_many([(path, payload)], inputs)
+        _atomic_write_many([(path, payload)], inputs, mode=mode)
     except IntakeError:
         raise
     except Exception as exc:
