@@ -5,6 +5,8 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TMP="$(mktemp)"
 trap 'rm -f "$TMP"' EXIT
 
+PYTHONPATH="$ROOT/agent-dev-kit/src:$ROOT${PYTHONPATH:+:$PYTHONPATH}" python3 "$ROOT/tests/test_adk_archive_consumer.py"
+
 ARGS=(python3 -m tools.control_plane.adk_interface --root "$ROOT" --summary-json)
 if [[ -f "$ROOT/agent-dev-kit/manifest.json" ]]; then
   ARGS+=(--require-worktree)
