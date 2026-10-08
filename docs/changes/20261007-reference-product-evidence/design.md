@@ -1,0 +1,5 @@
+# 设计边界
+
+Snapshot以Git index+nonignored worktree为范围，Git只读命令不运行clean filter；regular fd读取有界且前后fstat，parentfd逐级NOFOLLOW，symlink只hash链接文本。两次扫描及HEAD/index/非ignored路径比对，不声称原子快照或抵抗任意sameUID ABA。
+baseline保留status指纹，新增snapshot_schema/snapshot_sha256/review_record。复审record自摘要绑定三个repo实际观察，source_approved=false/owner_approval=false/runtime_enablement=false；旧adk-maintainer只是registered role。OpenSpec lock integrity修改、superpowers symlink转regular与文档改动明确隔离needs-review；mode不重写。
+诊断默认只读并始终不产生资格授权，逐层独立报告；claims/nonempty bundle不能代替密码学验签。复用既有canonical field/reference-pin检查，JSON与KV读取收紧，不引入historical fallback。M5当前候选取lock而非尚未发布的SDK工作树，历史记录不改。

@@ -50,21 +50,47 @@ else
   JSON_REPORT=""
 fi
 
-python3 - "$ROOT" "$JSON_REPORT" "$SUMMARY_JSON" <<'PY'
+PYTHONPATH="$ROOT/agent-dev-kit/src:$ROOT${PYTHONPATH:+:$PYTHONPATH}" python3 - "$ROOT" "$JSON_REPORT" "$SUMMARY_JSON" <<'PY'
 import json
 import os
 import glob
 import datetime as dt
 import sys
+import subprocess
+import csv
+from pathlib import Path
+from tools.codex_assets.reference_worktree_identity import SCHEMA, snapshot, verify_review
+from tools.codex_assets.intake_io import IntakeError, read_json
 
 root, report_path, summary_json = sys.argv[1:4]
 summary_json = summary_json == "1"
 failures = []
 today = dt.date.today().isoformat()
+with open(os.path.join(root, "subrepos", "dirty-baseline.tsv"), encoding="utf-8", newline="") as handle:
+    baselines = {row["repo"]: row for row in csv.DictReader(handle, delimiter="\t")}
 
 def load_report(path):
-    with open(path, "r", encoding="utf-8") as handle:
-        return json.load(handle)
+    data = read_json(Path(path), label="reference triage report", max_bytes=512 * 1024)
+    if not isinstance(data, dict):
+        raise IntakeError("reference triage report must be an object")
+    items = data.get("items", [])
+    if not isinstance(items, list) or any(not isinstance(item, dict) for item in items):
+        raise IntakeError("reference triage items must be objects")
+    return data
+
+report_dirs = {Path(root) / "reports"}
+for baseline in baselines.values():
+    record = baseline.get("review_record", "")
+    if record:
+        parent = (Path(root) / record).parent.resolve()
+        if parent.is_relative_to(Path(root).resolve()):
+            report_dirs.add(parent)
+
+if report_path and not os.path.isfile(report_path):
+    name = Path(report_path).name
+    matches = sorted(str(directory / name) for directory in report_dirs if (directory / name).is_file())
+    if len(matches) == 1:
+        report_path = matches[0]
 
 def validate(path, data):
     local_failures = []
@@ -99,10 +125,29 @@ def validate(path, data):
         expires_on = item.get("expires_on") or ""
         if expires_on < today:
             local_failures.append(f"{repo} baseline expired as of {today}: {expires_on}")
+        baseline = baselines.get(repo, {})
+        if (item.get("snapshot_schema") != SCHEMA or baseline.get("snapshot_schema") != SCHEMA
+                or not baseline.get("snapshot_sha256") or not item.get("review_record")
+                or item.get("review_record") != baseline.get("review_record")):
+            local_failures.append(f"{repo} current content identity/review record required")
+            continue
+        try:
+            verify_review(Path(root), str(repo), baseline["snapshot_sha256"], baseline["review_record"])
+            identity = snapshot(Path(root), str(repo))
+        except (OSError, ValueError, subprocess.TimeoutExpired):
+            local_failures.append(f"{repo} current snapshot unavailable")
+            continue
+        if (identity["snapshot_sha256"] != baseline["snapshot_sha256"]
+                or identity["snapshot_sha256"] != item.get("snapshot_sha256")):
+            local_failures.append(f"{repo} current content identity does not match review")
+        if baseline.get("expires_on", "") < today or item.get("expires_on") != baseline.get("expires_on"):
+            local_failures.append(f"{repo} current baseline expiry does not match review")
+        if item.get("source_approved") is not False or item.get("content_disposition") != "isolated-needs-review":
+            local_failures.append(f"{repo} observed baseline must not approve reference content")
     return local_failures
 
 if not report_path:
-    candidates = sorted(glob.glob(os.path.join(root, "reports", "reference-dirty-triage-*.json")), reverse=True)
+    candidates = sorted({str(path) for directory in report_dirs for path in directory.glob("reference-dirty-triage-*.json")}, key=lambda path: (Path(path).name, path), reverse=True)
     selected = None
     selected_data = None
     selected_failures = []
@@ -131,7 +176,11 @@ elif not os.path.isfile(report_path):
     failures.append(f"missing report: {os.path.relpath(report_path, root)}")
     data = {}
 else:
-    data = load_report(report_path)
+    try:
+        data = load_report(report_path)
+    except IntakeError as exc:
+        failures.append(str(exc))
+        data = {}
 
 items = data.get("items") or []
 if data:

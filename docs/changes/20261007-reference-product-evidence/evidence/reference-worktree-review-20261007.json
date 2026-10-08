@@ -1,0 +1,37 @@
+{
+  "schema": "llm-agent-reference-worktree-review/v1",
+  "mode": "report-only",
+  "record_sha256": "f393d452816de7d5787ebb4a57277b7d7cba82932f79639869a5cbb1cecd0749",
+  "reviewed_on": "2026-10-07",
+  "expires_on": "2026-10-14",
+  "registered_role": "adk-maintainer",
+  "owner_approval": false,
+  "runtime_enablement": false,
+  "review_scope": "observed identity and isolation; no reference adoption or content approval",
+  "observations": {
+    "OpenSpec": {
+      "head": "3c7a05c5dc88b2397c478805890b55ed392b19e8",
+      "snapshot_sha256": "81ae807ec5fcd6b6b52e71fe7f517aee9be7e8d14f00b7ce3169d05026c433d7",
+      "status_fingerprint": "385f220663e442f93e150c5b1397cb334f3c99c0dbc83a44e0b7a9c475f99d23",
+      "source_approved": false,
+      "content_disposition": "isolated-needs-review",
+      "findings": ["655 mode changes retained", "AGENTS.md contains 56 local documentation lines; not imported as runtime rules", "package-lock integrity string differs by one character; unsafe to trust or install from dirty worktree"]
+    },
+    "superpowers": {
+      "head": "6efe32c9e2dd002d0c394e861e0529675d1ab32e",
+      "snapshot_sha256": "a7a191aec306af62cfa23648879fe7b3c12c270ccb5acca92aaa10b0ab1549f8",
+      "status_fingerprint": "de009e378c682c59be9ee534ac63bcfbcda952068b0ff1186cff0404f2f109a2",
+      "source_approved": false,
+      "content_disposition": "isolated-needs-review",
+      "findings": ["114 mode changes and existing documentation retained", "AGENTS.md changed from symlink to regular; exact type included in snapshot", "No upstream contribution, runtime adoption or owner approval performed"]
+    },
+    "vibeflow": {
+      "head": "0df764eff5e7b034611540da8d9f8367dfae55b2",
+      "snapshot_sha256": "5e0ed30697d089b0e40702ae03681bffbb6402e139fab3bfe502ab1e6ca50883",
+      "status_fingerprint": "d5c55b29c57e876243e20868252b49e13ec7cd06759bef596f87e03d067260cd",
+      "source_approved": false,
+      "content_disposition": "isolated-needs-review",
+      "findings": ["216 mode-only changes retained; no chmod or cleanup performed"]
+    }
+  }
+}

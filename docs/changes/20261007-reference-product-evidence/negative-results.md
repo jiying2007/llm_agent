@@ -1,0 +1,9 @@
+# 负结果
+
+新增端到端checker测试第一次因过期断言被放在错误fixture方法末尾，KeyError sample；不是生产工具缺陷。已将断言移回原fixture。此前完整Root回归提前启动，停止本轮自身process group2007564并保留输出，不将部分PASS视为整套通过；更正后冻结重新验证。
+OpenSpec lock integrity本地改动保持隔离needs-review；基线身份绑定不是内容或owner批准。
+M5当前候选诊断实际blocked：历史runtime/qualification不匹配当前源，密码学验签未从非空bundle推断；不调用模型、不覆盖历史policy/record/scorecard。
+冻结回归第二轮在maintainability失败：新增三份活动report使count323>warning320。不能放宽限额；自己的新证据需整合到change evidence目录，保留原历史报告。
+whole-staged独立复审确认三Major，进入replan：lexicalleaf后JSONL/hash读未保护、旧classifier可能运行filter/fsmonitor、新Gitfixture未隔离ambient变量/hooks。补安全descriptor读/append、strict JSONL，禁filter/fsmonitor、统一隔离Git fixture并负例；旧NEEDS_FIX不升级PASS，修补后复验并fresh复审。
+报告发现复审追加FIFO、link和无界JSON风险，已复用Root intake regular strict读取512KiB并补六类负例。classifier进一步对clean/process完整NUL key做白名单验证并禁用driver，异常名称fail-closed，保留参考仓配置。
+首次quick为47/52，含验证期间工作树变化、removal fixture旧hash及M5读取器外部依赖。fixture重新绑定真实baseline hash；M5复用Root intake避免独立入口依赖ADK路径。先前full均只作过程证据，最终冻结版本需重跑。
