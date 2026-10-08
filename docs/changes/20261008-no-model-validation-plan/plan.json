@@ -1,0 +1,105 @@
+{
+  "schema": "llm-agent-no-model-validation-plan/v1",
+  "status": "review-required",
+  "prepared_at": "2026-10-08",
+  "goal_statement": "准备 G21/G22/M5 真实证据阶段的可审查方案；本阶段禁止真实模型调用。",
+  "source_identity": {
+    "adk_version": "8.0.5",
+    "adk_commit": "ef5384305421700ca01e89b3df3b3f7878a70265",
+    "adk_tree": "ab8493d4a32b2351156658a3f340274a25f7b928",
+    "adk_manifest_blob": "a0decd974350fff11e5f263e66ab41b770afe8b1",
+    "manifest_sha256": "0afeabc982ebfb9f7172f0c63b5263e05f003734094d1b73afdd12845e51df07",
+    "root_source_base": "4fd1e42795ca1707cad571d49705b44f8c9c38fc"
+  },
+  "permissions": {
+    "real_model_calls": false,
+    "native_campaign_execution": false,
+    "paid_campaign_execution": false,
+    "signing_workflow_dispatch": false,
+    "live_apply": false,
+    "owner_review_performed": false,
+    "release_authorized": false,
+    "provider_execution_performed": false
+  },
+  "continuous_budget": {
+    "limit": 90000000,
+    "carried_prefix": 81851443,
+    "phase_allocation": 7998557,
+    "transition_reserve": 150000,
+    "reset_usage": false
+  },
+  "runtime_observations": [
+    {
+      "runtime": "codex",
+      "version": "0.159.2",
+      "method": "version-only",
+      "authenticated_execution_verified": false,
+      "binary_digest": null
+    },
+    {
+      "runtime": "claude-code",
+      "version": "2.1.138",
+      "method": "version-only",
+      "authenticated_execution_verified": false,
+      "binary_digest": null
+    }
+  ],
+  "experiment_inputs": {
+    "runtime": "pending-owner-selection",
+    "immutable_model_revision": null,
+    "execution_window": null,
+    "approved_cost_usd": 0,
+    "proposed_pilot_cost_usd": 5,
+    "proposed_pilot_cost_approved": false,
+    "baseline": "待审查：固定同一环境、模型及任务的基线控制",
+    "candidate": "待审查：具有真实资产集合差异的当前 ADK 干预；不得仅改变版本标签",
+    "comparison": "routing-and-safety-only pilot; full-task and full-asset evidence collected separately",
+    "dataset": "fixtures/effect-planning/tasks.jsonl",
+    "dataset_is_observed_user_tasks": false,
+    "proposed_task_count": 12,
+    "proposed_trials_per_task": 3,
+    "proposed_condition_count": 2,
+    "proposed_model_calls": 72,
+    "actual_model_calls": 0
+  },
+  "asset_coverage": {
+    "expected_count": 86,
+    "measured_count": 0,
+    "owner_decision_count": 0,
+    "asset_inventory": "asset-inventory.json",
+    "require_all_assets_for_terminal": true
+  },
+  "unresolved_inputs": [
+    "immutable_model_revision",
+    "reviewed experiment intervention and baseline/candidate bundle content",
+    "future observation window after trusted signing",
+    "authenticated direct-target runtime binary/version identity",
+    "reviewed enabled managed authority/registry and signer",
+    "independent human operator/reviewer and real task outcomes",
+    "separate real execution/budget authorization"
+  ],
+  "signing": {
+    "status": "not-dispatched",
+    "workflow": ".github/workflows/effect-preregister.yml",
+    "requires_reviewed_frozen_package_on_main": true,
+    "canonical_package_schema": "llm-agent-effect-preregistration-package/v2",
+    "certificate_identity": "https://github.com/jiying2007/llm_agent/.github/workflows/effect-preregister.yml@refs/heads/main",
+    "issuer": "https://token.actions.githubusercontent.com",
+    "trusted_rekor_time_must_precede_all_observations": true
+  },
+  "stop_conditions": [
+    "real model invocation remains forbidden",
+    "missing immutable revision blocks real preregistration freeze",
+    "baseline/candidate differ only in labels blocks builder",
+    "missing signed/managed receipts keeps terminal false",
+    "continuous budget cap applies across goals"
+  ],
+  "conclusion": {
+    "software_plan_reviewable": true,
+    "preregistration_ready": false,
+    "native_verified": false,
+    "effect_evidence_ready": false,
+    "software_m5_certified": false,
+    "terminal_ready": false
+  }
+}

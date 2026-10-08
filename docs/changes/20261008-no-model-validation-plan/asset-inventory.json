@@ -1,0 +1,439 @@
+{
+  "schema": "llm-agent-current-asset-content-inventory/v1",
+  "source_commit": "ef5384305421700ca01e89b3df3b3f7878a70265",
+  "manifest_sha256": "0afeabc982ebfb9f7172f0c63b5263e05f003734094d1b73afdd12845e51df07",
+  "measured": false,
+  "owner_review_performed": false,
+  "assets": [
+    {
+      "asset_id": "application-engineer",
+      "asset_kind": "agent",
+      "content_ref": "ref:0f08aa5eeb3cab15fd13b204104b04ee658a40937f310868e126e5fd7e592c09"
+    },
+    {
+      "asset_id": "architecture-planner",
+      "asset_kind": "agent",
+      "content_ref": "ref:361de81fda8dda948f91dceb79c98760662c9e69a2d36d6373cfe819b9224bc5"
+    },
+    {
+      "asset_id": "bsp-analyst",
+      "asset_kind": "agent",
+      "content_ref": "ref:e2a429bcfb005d36872609c7460553db9db932015810b145f6e7397ba9e3bc47"
+    },
+    {
+      "asset_id": "build-release-engineer",
+      "asset_kind": "agent",
+      "content_ref": "ref:7bd97f752c06321b5557276facb224e083a021f0d0a16195c6797eea0a2a07b8"
+    },
+    {
+      "asset_id": "code-review-governor",
+      "asset_kind": "agent",
+      "content_ref": "ref:b7952418eeb3ce7f7bd5a71cfe0f68f04f4190aba28991f8e50dedf32554d26b"
+    },
+    {
+      "asset_id": "component-engineer",
+      "asset_kind": "agent",
+      "content_ref": "ref:efd76f17eb65e056253c2ae4086022762b3514af768461582cf3261a03258bf5"
+    },
+    {
+      "asset_id": "driver-engineer",
+      "asset_kind": "agent",
+      "content_ref": "ref:2a18e702e99836b019d847c653e711196b20c7f382886a93ac2c74e3c1720409"
+    },
+    {
+      "asset_id": "external-practice-curator",
+      "asset_kind": "agent",
+      "content_ref": "ref:d9553a5cda6a590446e2e0ee43805dee6ff73b7bec4f3e890b17350bfe3eff71"
+    },
+    {
+      "asset_id": "hardware-debugger",
+      "asset_kind": "agent",
+      "content_ref": "ref:2c53a6130c16c635aab2c3cd4ab7fb16ff3d536f326b45f66c261fd6e4091001"
+    },
+    {
+      "asset_id": "performance-reliability-engineer",
+      "asset_kind": "agent",
+      "content_ref": "ref:2885b46d8b9a56fbf116d09e7e77bf6e4ef894bbba087f9741cea3ca428898de"
+    },
+    {
+      "asset_id": "requirements-analyst",
+      "asset_kind": "agent",
+      "content_ref": "ref:517f2eeb66c0201f0c5ef8b0a9fa08c9002a40b14afc769fb38903207ec7d458"
+    },
+    {
+      "asset_id": "security-compliance-reviewer",
+      "asset_kind": "agent",
+      "content_ref": "ref:f56ead8c590c868fd768785fefc0075df7e8aa1565d3835e51d92cc263af9c34"
+    },
+    {
+      "asset_id": "test-validation-engineer",
+      "asset_kind": "agent",
+      "content_ref": "ref:cbe32c32f51f47c7d38b92ffa5fb6c3211fe9a69782592f5cec36d0fe065c712"
+    },
+    {
+      "asset_id": "core",
+      "asset_kind": "profile",
+      "content_ref": "ref:33431156b56d025be5f5614edc71020d68f287c0d187306e7ba2d2e2d3518cbb"
+    },
+    {
+      "asset_id": "embedded-fullstack",
+      "asset_kind": "profile",
+      "content_ref": "ref:c79de7fbfb832880476572c90d178347766cdead66970b70427c7d81f1b9e5af"
+    },
+    {
+      "asset_id": "incident-response",
+      "asset_kind": "profile",
+      "content_ref": "ref:f389153e8a77f46b417c70294a32eef08e2e08984eb338f91091b3f009594f3a"
+    },
+    {
+      "asset_id": "large-refactor",
+      "asset_kind": "profile",
+      "content_ref": "ref:dd02db972f79b70d5512e56a7db32907975fc2b90ace8466d82b5944e769e57b"
+    },
+    {
+      "asset_id": "personal-core",
+      "asset_kind": "profile",
+      "content_ref": "ref:83b66373d4578c600cdf9bdf671dfafef66f09266ac760fecf2fda32ff789397"
+    },
+    {
+      "asset_id": "release-hardening",
+      "asset_kind": "profile",
+      "content_ref": "ref:eda05faeb49b9e52ed4b1a723146c47cc25b2a1f0b7bd5b50ed6f36eb8d89570"
+    },
+    {
+      "asset_id": "research-intake",
+      "asset_kind": "profile",
+      "content_ref": "ref:8433cc00893555d2ec9e5b0a9b3513a008b97222c94409addc72c78dae5cace2"
+    },
+    {
+      "asset_id": "team-core",
+      "asset_kind": "profile",
+      "content_ref": "ref:c53427a34c90717a72a8139c615b038a8d1ac2a93bc18c2a28b838bfc65467da"
+    },
+    {
+      "asset_id": "adk-adr-writer",
+      "asset_kind": "skill",
+      "content_ref": "ref:8ab6c4013ec0772e40357669895f838afa4465db46dc379dc270acd1f4c832b0"
+    },
+    {
+      "asset_id": "adk-after-action-review",
+      "asset_kind": "skill",
+      "content_ref": "ref:e345ce652c517407074b980aa28f69c2443e8c92a23a1a10520cb6ecc210651b"
+    },
+    {
+      "asset_id": "adk-archive-governance",
+      "asset_kind": "skill",
+      "content_ref": "ref:526474136dc48e80bda31ba411a278f05f533b704e2b443f20c09c33a9ebe3f9"
+    },
+    {
+      "asset_id": "adk-artifact-gating",
+      "asset_kind": "skill",
+      "content_ref": "ref:f75fd504e4fab72e70604dc96a8f3957bb48675040b98f9e1c8197af10011735"
+    },
+    {
+      "asset_id": "adk-branch-closeout",
+      "asset_kind": "skill",
+      "content_ref": "ref:2a6aac34c1cf0dbf83f80ca20fc1bd04dde3f0070eb7a8f3525b7e0a3422cf2c"
+    },
+    {
+      "asset_id": "adk-bsp-analysis",
+      "asset_kind": "skill",
+      "content_ref": "ref:bf7da8e7b834851f078902002b7781b80ccd26c821c8d15393698ae5b084e27b"
+    },
+    {
+      "asset_id": "adk-bsp-porting-playbook",
+      "asset_kind": "skill",
+      "content_ref": "ref:8da92f9a9240af2b92d4304e0cf1ce0d13e9bd19a69e2b12ec372ed9c59cfd15"
+    },
+    {
+      "asset_id": "adk-chinese-code-review",
+      "asset_kind": "skill",
+      "content_ref": "ref:8a844875a6f22d401424fef0c26dbe4a9bb86dd771bad455b1bd1e33a1a2d666"
+    },
+    {
+      "asset_id": "adk-chinese-commit-conventions",
+      "asset_kind": "skill",
+      "content_ref": "ref:26479c5fe47b237d59d2e845684661e3ef635f7372be0bae47d496faf8b13117"
+    },
+    {
+      "asset_id": "adk-cmake-cross-build",
+      "asset_kind": "skill",
+      "content_ref": "ref:13acd80e1acc6217377ad197c51d31c8f4b8da5e7459d56221e1101808b5f8bb"
+    },
+    {
+      "asset_id": "adk-code-review-loop",
+      "asset_kind": "skill",
+      "content_ref": "ref:9400e1b64502698f40e75a4d00bdeb80f911bd0dfe335b0f01b9cf11bc625fe3"
+    },
+    {
+      "asset_id": "adk-code-simplification",
+      "asset_kind": "skill",
+      "content_ref": "ref:8f44e05392ddfd40bcfda86c0550ff9f74fda4c09da118a027381b5eb013c619"
+    },
+    {
+      "asset_id": "adk-commit-pr-quality-gate",
+      "asset_kind": "skill",
+      "content_ref": "ref:6f0b5d46ed185f8b6836417457a4c9272496d80e58645fe3be1e0b1763ece1da"
+    },
+    {
+      "asset_id": "adk-component-api-stability",
+      "asset_kind": "skill",
+      "content_ref": "ref:fbd4d501ef7c67f55001ab933e6a6e452aae548fde26d055a91079817185d40c"
+    },
+    {
+      "asset_id": "adk-context-compress-handoff",
+      "asset_kind": "skill",
+      "content_ref": "ref:cbd93f23422ef14f048d6b3be865f7dd0a1ac2d5cfa8d648988cb3d673cdf160"
+    },
+    {
+      "asset_id": "adk-context-engineering",
+      "asset_kind": "skill",
+      "content_ref": "ref:0a5480fc3db8f71812bb160fad647226a7dc04a78977bc7a980c3349c0e862fa"
+    },
+    {
+      "asset_id": "adk-cross-team-handoff",
+      "asset_kind": "skill",
+      "content_ref": "ref:d8ebfd850dedbfacc208675886f83a77fa5d74836036506f8a02afa6d220a75b"
+    },
+    {
+      "asset_id": "adk-data-fetch",
+      "asset_kind": "skill",
+      "content_ref": "ref:564095f98b07efd781bf245071b0aa15686f06541d1637193e2f82b268c3f602"
+    },
+    {
+      "asset_id": "adk-driver-bringup-checklist",
+      "asset_kind": "skill",
+      "content_ref": "ref:afea6f8bba6f53c213d1fd0682c861ba4a8460dee561b4d9a66ea897db6c3fe4"
+    },
+    {
+      "asset_id": "adk-driver-implementation",
+      "asset_kind": "skill",
+      "content_ref": "ref:b8737a30571ac32757ccec7b2006b051a133b7569269679fc9512983113904c4"
+    },
+    {
+      "asset_id": "adk-email-imap-fetch",
+      "asset_kind": "skill",
+      "content_ref": "ref:ca547c27b06f9c61d67733a3ca2ea485ac9fe5ba6f0790f5ed6dd9ec6ec0bc17"
+    },
+    {
+      "asset_id": "adk-embedded-debug-transport",
+      "asset_kind": "skill",
+      "content_ref": "ref:0a405d24dec279aa020d8aa276527e6b55baf708fafd41704b303305bd6ca40f"
+    },
+    {
+      "asset_id": "adk-embedded-diagnostic-harness",
+      "asset_kind": "skill",
+      "content_ref": "ref:c341b0b22807ddb9024bd2f2c1b7db5d1e4b08df5e44406d4d3d365b00103d0d"
+    },
+    {
+      "asset_id": "adk-embedded-release-orchestration",
+      "asset_kind": "skill",
+      "content_ref": "ref:9e37be1a8687d786ce27507d91dde009555b827434668e1f8da4393b7c0724d2"
+    },
+    {
+      "asset_id": "adk-embedded-remote-debug-log-triage",
+      "asset_kind": "skill",
+      "content_ref": "ref:0a40cf80465a364ecc732393795881b490508a7c07aeee93e19cecd0f7ed4829"
+    },
+    {
+      "asset_id": "adk-embedded-storage-layout-migration",
+      "asset_kind": "skill",
+      "content_ref": "ref:8468d41d18a6a7e933d4d0cd6678dcc6373225d8ca7fa12f23aeb9ce508fe765"
+    },
+    {
+      "asset_id": "adk-engineering-growth-review",
+      "asset_kind": "skill",
+      "content_ref": "ref:2f30f5c2f9cc19157e2ac2863971a197a877d4817a7f703124669ab7126b3f94"
+    },
+    {
+      "asset_id": "adk-external-practice-absorption",
+      "asset_kind": "skill",
+      "content_ref": "ref:d30359f18f301a1b4e7573f841ba1e8766252b8f4a0862cb0238dfcd0f27f15d"
+    },
+    {
+      "asset_id": "adk-fault-injection-recovery",
+      "asset_kind": "skill",
+      "content_ref": "ref:2347db87625e5232bc57840c9c8c6ba823d696fc7ca3761c7a67c67ed08cec31"
+    },
+    {
+      "asset_id": "adk-fetch-url-content",
+      "asset_kind": "skill",
+      "content_ref": "ref:52c3fbe8623fec5a26b9b07777c95aac7719a15a75e311dd822fbb0cd9fefacb"
+    },
+    {
+      "asset_id": "adk-hardware-debugging",
+      "asset_kind": "skill",
+      "content_ref": "ref:4495e9f7f758ba5bd773152268a6b3ac21814f529e330f78a0305b719e50e572"
+    },
+    {
+      "asset_id": "adk-incident-rca-report",
+      "asset_kind": "skill",
+      "content_ref": "ref:c8085163a4d38fb068c24093ba62207b302619490fc6c87abf78453a8bde3ddf"
+    },
+    {
+      "asset_id": "adk-integration-hil-sil",
+      "asset_kind": "skill",
+      "content_ref": "ref:4f0a20626e38dcfef9b113d742c500524c0a01739d3566d2616eff1af6539a33"
+    },
+    {
+      "asset_id": "adk-interface-contract-design",
+      "asset_kind": "skill",
+      "content_ref": "ref:e9c65900562ec03c65e7832a14febd6637c7ffb0db2bb3ca715f0732372925ed"
+    },
+    {
+      "asset_id": "adk-interrupt-dma-patterns",
+      "asset_kind": "skill",
+      "content_ref": "ref:b227a3c8de858380f14c41bdaf08236ff2ce8406eccea5a3f5d070f92b2d0345"
+    },
+    {
+      "asset_id": "adk-knowledge-archive",
+      "asset_kind": "skill",
+      "content_ref": "ref:bc6e73879357acd3daed22bff86d52056e8ee4ca7a9d8cf465f086f6e56ed969"
+    },
+    {
+      "asset_id": "adk-lightweight-planning",
+      "asset_kind": "skill",
+      "content_ref": "ref:60d00efa3bb9d8371b72514ea785eeccb041bacd1d871ceefcb8cf3139b84b22"
+    },
+    {
+      "asset_id": "adk-memory-curator",
+      "asset_kind": "skill",
+      "content_ref": "ref:e9051027e1ff6bb0b7dc8c94dbc15f2171b4107135e0ed219c655c4a6264aa30"
+    },
+    {
+      "asset_id": "adk-offline-core-dump-triage",
+      "asset_kind": "skill",
+      "content_ref": "ref:58c15e0e23c0ff15e65a71e040e2bb569cccc9e41b4004459a4577db9e283c58"
+    },
+    {
+      "asset_id": "adk-parallel-agent-governance",
+      "asset_kind": "skill",
+      "content_ref": "ref:0ac64f6220009862fdcd57b9f896b53d58ffeaa68dfd3bfaa3d1ef60c637c065"
+    },
+    {
+      "asset_id": "adk-performance-profiling-embedded",
+      "asset_kind": "skill",
+      "content_ref": "ref:361ce20e4d1aecc2d962874d24f1fe447ec77ccf104684e5c4f3ece85657a270"
+    },
+    {
+      "asset_id": "adk-pilot-framework",
+      "asset_kind": "skill",
+      "content_ref": "ref:efdbeb1cf4c425d1e944ea9a13b5b5b1d58bb981885e5c7c2e9c6ea93d95de8d"
+    },
+    {
+      "asset_id": "adk-planning-execution-loop",
+      "asset_kind": "skill",
+      "content_ref": "ref:9abe4f343927c1692d9b0eb58b565ebeb75f27ba0670a71a3d09941f46a79de6"
+    },
+    {
+      "asset_id": "adk-production-field-readiness",
+      "asset_kind": "skill",
+      "content_ref": "ref:33c772f0e5e419d5ffa64ef7995d7570f0d97973ee82230647785117af01938f"
+    },
+    {
+      "asset_id": "adk-protocol-stack-integration",
+      "asset_kind": "skill",
+      "content_ref": "ref:6002a123a8233b40cb09ed5e692bab882d0a522f5699c4da3d77eb30d8a8ac42"
+    },
+    {
+      "asset_id": "adk-register-map-design",
+      "asset_kind": "skill",
+      "content_ref": "ref:035f47af52b99502e51b5345853f3b9f734c9582bcde31b34905a8347733493d"
+    },
+    {
+      "asset_id": "adk-release-versioning",
+      "asset_kind": "skill",
+      "content_ref": "ref:8ab7a7cb4da38cafdcd1e53785b5de68ee84fed747e7e0b9341f79b3b067a3fd"
+    },
+    {
+      "asset_id": "adk-repo-drift-remediation",
+      "asset_kind": "skill",
+      "content_ref": "ref:2d1112514e9ab2b3fbe87f1b6b056538a91cc1fe12011cd9ce098e70549fa1ae"
+    },
+    {
+      "asset_id": "adk-repo-prompt-analysis",
+      "asset_kind": "skill",
+      "content_ref": "ref:e3fecb55e354aac8e896b0151fe09832582e4b3cace2478d81931f71fe6b654f"
+    },
+    {
+      "asset_id": "adk-requirements-triage",
+      "asset_kind": "skill",
+      "content_ref": "ref:c0f78ed583ae8c48a7b0e81ebb9240c1cf73d9b871c7a012ebe1f681893696a2"
+    },
+    {
+      "asset_id": "adk-rtos-task-design",
+      "asset_kind": "skill",
+      "content_ref": "ref:a4a812562173bc5f0e797f09e0ead326ee0f07341c12bf53a192ccc633254461"
+    },
+    {
+      "asset_id": "adk-runtime-router",
+      "asset_kind": "skill",
+      "content_ref": "ref:b0e845b5b02bd1fddd3d1f36ea65af704fde48dfa83032ec523571e5b8c6c69d"
+    },
+    {
+      "asset_id": "adk-security-supply-chain",
+      "asset_kind": "skill",
+      "content_ref": "ref:0ed8cc4707f55e0111f745b312fcdcc1f72c0c9c736191e1164422596a0c2100"
+    },
+    {
+      "asset_id": "adk-skill-composition-governance",
+      "asset_kind": "skill",
+      "content_ref": "ref:1c3f8db8b7c342ac88a25fd75843498afcc5f25efe632845927913cd883776d7"
+    },
+    {
+      "asset_id": "adk-skill-deep-analysis",
+      "asset_kind": "skill",
+      "content_ref": "ref:e3b07451fbed9cb87e2eb0002aeffd39f03aa8bf9f5734a1f1e75b523bbe7a0b"
+    },
+    {
+      "asset_id": "adk-static-analysis-c-cpp",
+      "asset_kind": "skill",
+      "content_ref": "ref:b6800388937cb7b177887454bb93c2f419bdf515d1f2da8221b74d3e950f2a18"
+    },
+    {
+      "asset_id": "adk-structured-requirements-questioning",
+      "asset_kind": "skill",
+      "content_ref": "ref:bc1d3fddf827390c3aaa32f51204778828679b8c150250916e34abb67e5c7aab"
+    },
+    {
+      "asset_id": "adk-systematic-debugging",
+      "asset_kind": "skill",
+      "content_ref": "ref:c3c5ab2f609d721cc15e35fe4a2024dd0be399e8c407dc84fc3629ee186d63b4"
+    },
+    {
+      "asset_id": "adk-task-breakdown",
+      "asset_kind": "skill",
+      "content_ref": "ref:652b2d4c92e8039d31a6c48b05463166b72570fd04986b5a452339e6207de059"
+    },
+    {
+      "asset_id": "adk-test-flakiness-triage",
+      "asset_kind": "skill",
+      "content_ref": "ref:b3f8792abc362cf9c9224cc01b04b8b6e4cb9ca2ed7dd981853f62b8009dfe8c"
+    },
+    {
+      "asset_id": "adk-test-strategy",
+      "asset_kind": "skill",
+      "content_ref": "ref:1867a6464c2b3a36a88da4ff308300c33d1fad652319c3a368d4ba7e0c44c3c2"
+    },
+    {
+      "asset_id": "adk-token-context-governance",
+      "asset_kind": "skill",
+      "content_ref": "ref:e0a5c7af49bda05875a086daacac21822c99c8e70592acf27d0c93c7416d5566"
+    },
+    {
+      "asset_id": "adk-unit-test-embedded",
+      "asset_kind": "skill",
+      "content_ref": "ref:25be621be6184f8d1f06af81c7de6eb2d4632b380132ad6d9ae96caf8d829d42"
+    },
+    {
+      "asset_id": "adk-verification-before-completion",
+      "asset_kind": "skill",
+      "content_ref": "ref:e9cb3d1563fc472ce2dcbb9f3019c49cda10b28b1aedcf19df5280d381edea19"
+    },
+    {
+      "asset_id": "adk-worktree-governance",
+      "asset_kind": "skill",
+      "content_ref": "ref:b16793748740f43c863c7a4b34b9285a57cc745691e64adffade2c83d757ca6b"
+    }
+  ]
+}
