@@ -6,5 +6,5 @@ if [[ $# -gt 0 && "$1" != --* ]]; then
   shift
 fi
 
-export PYTHONPATH="${ROOT}${PYTHONPATH:+:${PYTHONPATH}}"
+export PYTHONPATH="${ROOT}/agent-dev-kit/src:${ROOT}${PYTHONPATH:+:${PYTHONPATH}}"
 exec python3 -m tools.codex_assets.software_m5_v3 --root "${ROOT}" check "$@"

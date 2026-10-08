@@ -66,15 +66,17 @@ python3 - "${REPO_PATH}" "${REPO}" "${FORMAT}" "${FIELD}" <<'PY'
 import hashlib
 import json
 import os
+import re
 import subprocess
 import sys
 
 repo_path, repo_name, output_format, field = sys.argv[1:5]
+filter_overrides = []
 
 
 def git(*args, text=True, input_data=None):
     return subprocess.run(
-        ["git", "-C", repo_path, *args],
+        ["git", "--no-optional-locks", "-c", "core.fsmonitor=false", "-c", "core.untrackedCache=false", *filter_overrides, "-C", repo_path, *args],
         check=False,
         text=text,
         input=input_data,
@@ -82,6 +84,17 @@ def git(*args, text=True, input_data=None):
         stderr=subprocess.PIPE,
     )
 
+
+filters = git("config", "--null", "--name-only", "--get-regexp", r"^filter\..*\.(clean|process)$")
+if filters.returncode not in (0, 1):
+    raise SystemExit(f"[FAIL] cannot inspect configured filters: {repo_name}")
+for key in filters.stdout.split("\0"):
+    if not key:
+        continue
+    if not re.fullmatch(r"filter\.[A-Za-z0-9._-]+\.(clean|process)", key):
+        raise SystemExit(f"[FAIL] unsafe filter driver requires isolated review: {repo_name}")
+    driver = key.rsplit(".", 1)[0]
+    filter_overrides.extend(["-c", driver + ".clean=", "-c", driver + ".process=", "-c", driver + ".required=false"])
 
 status_v1 = git("status", "--porcelain", "--untracked-files=all")
 if status_v1.returncode != 0:
@@ -140,7 +153,7 @@ existing = [(path, index_hash) for path, index_hash in tracked if os.path.lexist
 working_hashes = {}
 if existing:
     path_input = "".join(path + "\n" for path, _ in existing)
-    hash_proc = git("hash-object", "--stdin-paths", input_data=path_input)
+    hash_proc = git("hash-object", "--no-filters", "--stdin-paths", input_data=path_input)
     if hash_proc.returncode != 0:
         raise SystemExit(f"[FAIL] git hash-object failed for {repo_name}: {hash_proc.stderr.strip()}")
     hashes = hash_proc.stdout.splitlines()

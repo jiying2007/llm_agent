@@ -15,6 +15,7 @@ import argparse
 import hashlib
 import json
 import os
+import stat
 import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
@@ -50,16 +51,30 @@ def _digest(value: Any) -> str:
 
 def _sha256_file(path: Path) -> str:
     digest = hashlib.sha256()
-    with path.open("rb") as stream:
-        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+    descriptor = None
+    try:
+        descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+        if not stat.S_ISREG(os.fstat(descriptor).st_mode):
+            raise M5Error("field evidence must be a regular file")
+        while True:
+            chunk = os.read(descriptor, 65536)
+            if not chunk:
+                break
             digest.update(chunk)
+    except OSError as exc:
+        raise M5Error("field evidence cannot be safely read") from exc
+    finally:
+        if descriptor is not None:
+            os.close(descriptor)
     return digest.hexdigest()
 
 
 def _load_object(path: Path, label: str) -> dict[str, Any]:
     try:
-        value = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
+        from tools.codex_assets.intake_io import read_json
+
+        value = read_json(path, label=label, max_bytes=8 * 1024 * 1024)
+    except (ImportError, OSError, ValueError, RuntimeError) as exc:
         raise M5Error(f"invalid {label}: {path}") from exc
     if not isinstance(value, dict):
         raise M5Error(f"{label} must be a JSON object")
@@ -80,8 +95,8 @@ def _repo_path(root: Path, value: Any, label: str, *, must_exist: bool = True) -
     relative = Path(value)
     if relative.is_absolute() or ".." in relative.parts:
         raise M5Error(f"{label} must stay inside the repository")
-    path = (root / relative).resolve()
-    if not _inside(path, root.resolve()):
+    path = root / relative
+    if not _inside(path.parent.resolve(), root.resolve()):
         raise M5Error(f"{label} resolves outside the repository")
     if must_exist and not path.exists():
         raise M5Error(f"{label} is missing: {value}")
@@ -90,9 +105,17 @@ def _repo_path(root: Path, value: Any, label: str, *, must_exist: bool = True) -
 
 def _kv(path: Path) -> dict[str, str]:
     result: dict[str, str] = {}
-    for line in path.read_text(encoding="utf-8").splitlines():
+    try:
+        from tools.codex_assets.intake_io import read_bytes
+
+        text = read_bytes(path, label="ADK lock", max_bytes=8192).decode("utf-8")
+    except (ImportError, OSError, ValueError, RuntimeError) as exc:
+        raise M5Error("invalid or unsafe ADK lock") from exc
+    for line in text.splitlines():
         if "=" in line:
             key, value = line.split("=", 1)
+            if key.strip() in result:
+                raise M5Error("ADK lock contains duplicate keys")
             result[key.strip()] = value.strip()
     return result
 
@@ -255,12 +278,18 @@ def _validate_runtime(root: Path, policy: Mapping[str, Any]) -> dict[str, Any]:
 def _read_events(root: Path, path: Path) -> list[dict[str, Any]]:
     events: list[dict[str, Any]] = []
     previous_hash = ZERO_HASH
-    for sequence, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+    try:
+        from tools.codex_assets.intake_io import read_bytes, decode_json
+
+        lines = read_bytes(path, label="event log", max_bytes=8 * 1024 * 1024).decode("utf-8").splitlines()
+    except (ImportError, OSError, ValueError, RuntimeError) as exc:
+        raise M5Error("event log cannot be safely read") from exc
+    for sequence, line in enumerate(lines, start=1):
         if not line.strip():
             raise M5Error("event log contains blank lines")
         try:
-            event = json.loads(line)
-        except json.JSONDecodeError as exc:
+            event = decode_json(line, "event log")
+        except (ValueError, RuntimeError) as exc:
             raise M5Error("event log contains invalid JSON") from exc
         if not isinstance(event, dict) or event.get("schema") != EVENT_SCHEMA:
             raise M5Error("event log contains unsupported event schema")
@@ -489,7 +518,11 @@ def append_event(root: Path, event_values: Mapping[str, Any], recorded_at: datet
             stream.flush()
             os.fsync(stream.fileno())
         _read_events(root, Path(tmp_name))
-        with events_path.open("a", encoding="utf-8") as stream:
+        append_fd = os.open(events_path, os.O_WRONLY | os.O_APPEND | os.O_NOFOLLOW | os.O_NONBLOCK)
+        if not stat.S_ISREG(os.fstat(append_fd).st_mode):
+            os.close(append_fd)
+            raise M5Error("event log append requires a regular file")
+        with os.fdopen(append_fd, "a", encoding="utf-8") as stream:
             stream.write(json.dumps(event, ensure_ascii=False, separators=(",", ":")) + "\n")
             stream.flush()
             os.fsync(stream.fileno())

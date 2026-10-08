@@ -37,13 +37,15 @@ USAGE
   esac
 done
 
-python3 - "$ROOT" "$OUT" "$JSON_OUT" <<'PY'
+PYTHONPATH="$ROOT${PYTHONPATH:+:$PYTHONPATH}" python3 - "$ROOT" "$OUT" "$JSON_OUT" <<'PY'
 import csv
 import datetime as dt
 import json
 import os
 import subprocess
 import sys
+from pathlib import Path
+from tools.codex_assets.reference_worktree_identity import SCHEMA, snapshot
 
 root, out_path, json_out_path = sys.argv[1:4]
 baseline_path = os.path.join(root, "subrepos", "dirty-baseline.tsv")
@@ -89,6 +91,13 @@ for row in rows:
     expected_count = int(row["change_count"])
     expected_fingerprint = row["status_fingerprint"]
     expected_classification = row["expected_classification"]
+    try:
+        identity = snapshot(Path(root), repo)
+    except (OSError, ValueError, subprocess.TimeoutExpired):
+        identity = {}
+    identity_matches = (row.get("snapshot_schema") == SCHEMA
+                        and row.get("snapshot_sha256") == identity.get("snapshot_sha256")
+                        and identity.get("status") == "pass")
     analysis_policy = row["analysis_policy"]
     expires_on = row["expires_on"]
     matches = (
@@ -98,6 +107,7 @@ for row in rows:
         and actual_fingerprint == expected_fingerprint
         and actual_classification == expected_classification
         and analysis_policy == "commit-snapshot-only"
+        and identity_matches
     )
     expired = expires_on < today
     decision = "known-dirty-review"
@@ -120,6 +130,12 @@ for row in rows:
         "expected_count": expected_count,
         "actual_count": actual_count,
         "fingerprint_matches": matches,
+        "snapshot_schema": identity.get("schema"),
+        "snapshot_sha256": identity.get("snapshot_sha256"),
+        "snapshot_matches": identity_matches,
+        "source_approved": False,
+        "content_disposition": "isolated-needs-review",
+        "review_record": row.get("review_record", ""),
         "expected_classification": expected_classification,
         "actual_classification": actual_classification,
         "classification_matches": actual_classification == expected_classification,

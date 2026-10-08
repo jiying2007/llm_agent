@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PYTHONPATH="$ROOT/agent-dev-kit/src:$ROOT${PYTHONPATH:+:$PYTHONPATH}" python3 "$ROOT/tests/test_reference_content_identity.py"
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "${TMP_DIR}"' EXIT
 FIXTURE="$TMP_DIR/workspace"

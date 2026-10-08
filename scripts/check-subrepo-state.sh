@@ -134,6 +134,9 @@ while IFS=',' read -r repo group priority sync_mode branch enabled notes status 
       analysis_policy="$(baseline_field "${repo}" "analysis_policy" || true)"
       expires_on="$(baseline_field "${repo}" "expires_on" || true)"
       owner="$(baseline_field "${repo}" "owner" || true)"
+      expected_snapshot="$(baseline_field "${repo}" "snapshot_sha256" || true)"
+      snapshot_schema="$(baseline_field "${repo}" "snapshot_schema" || true)"
+      review_record="$(baseline_field "${repo}" "review_record" || true)"
       if [[ "${repo}" == "agent-dev-kit" && "${ALLOW_ADK_DIRTY}" -eq 1 ]]; then
         classifier_output=""
         if ! classifier_output="$("${CLASSIFIER}" "${ROOT}" "${repo}" --format tsv)"; then
@@ -149,6 +152,10 @@ while IFS=',' read -r repo group priority sync_mode branch enabled notes status 
           detail="${detail}; classification=${actual_classification}; mode=${mode_changes}; content=${content_changes}; type=${type_changes}; untracked=${untracked_changes}; staged=${staged_changes}; fingerprint=${actual_fingerprint}"
         fi
       elif [[ "${policy}" == "observe" && "${expected_state}" == "dirty" ]]; then
+        actual_snapshot=""
+        if ! actual_snapshot="$(PYTHONPATH="$ROOT/agent-dev-kit/src:$ROOT${PYTHONPATH:+:$PYTHONPATH}" python3 -m tools.codex_assets.reference_worktree_identity --root "$ROOT" --repository "$repo" --field snapshot_sha256 --expected-snapshot "$expected_snapshot" --review-record "$review_record")"; then
+          actual_snapshot=""
+        fi
         classifier_output=""
         if ! classifier_output="$("${CLASSIFIER}" "${ROOT}" "${repo}" --format tsv)"; then
           detail="${detail}; baseline=${baseline_ref:-unknown}; classification-failed"
@@ -179,6 +186,10 @@ while IFS=',' read -r repo group priority sync_mode branch enabled notes status 
           failed=1
         elif [[ "${analysis_policy}" != "commit-snapshot-only" ]]; then
           detail="${detail}; baseline=${baseline_ref:-unknown}; unsafe-analysis-policy=${analysis_policy}; owner=${owner}"
+          unexpected_dirty=$((unexpected_dirty + 1))
+          failed=1
+        elif [[ "$snapshot_schema" != "llm-agent-reference-worktree-identity/v1" || -z "$expected_snapshot" || -z "$review_record" || "$actual_snapshot" != "$expected_snapshot" ]]; then
+          detail="${detail}; baseline=${baseline_ref:-unknown}; content-identity-or-review-mismatch"
           unexpected_dirty=$((unexpected_dirty + 1))
           failed=1
         else
