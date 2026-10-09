@@ -22,6 +22,7 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+from tools.codex_assets.intake_io import IntakeError, read_json
 from tools.codex_assets.software_m5_v3 import check as software_m5_check
 from tools.control_plane.status_projection import (
     _projection_digest,
@@ -32,6 +33,7 @@ from tools.control_plane.status_projection import (
 
 EVIDENCE_SCHEMA = "llm-agent-runtime-smoke-evidence/v1"
 QUALIFICATION_SCHEMA = "llm-agent-m5-qualification-record/v1"
+DEFAULT_EXPECTED_MODEL = "gpt-5.5"
 
 
 class RolloverError(RuntimeError):
@@ -56,8 +58,8 @@ def _sha256_file(path: Path) -> str:
 
 def _load_json(path: Path, label: str) -> dict[str, Any]:
     try:
-        value = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
+        value = read_json(path, label=label, max_bytes=8 * 1024 * 1024)
+    except (OSError, ValueError, IntakeError) as exc:
         raise RolloverError(f"invalid {label}: {path}") from exc
     if not isinstance(value, dict):
         raise RolloverError(f"{label} must be a JSON object")
@@ -111,7 +113,11 @@ def _parse_time(value: Any, label: str) -> datetime:
     return parsed.astimezone(timezone.utc)
 
 
-def _validate_runtime(path: Path, lock: Mapping[str, str], now: datetime) -> dict[str, Any]:
+def _validate_runtime(
+    path: Path, lock: Mapping[str, str], now: datetime, *, expected_model: str = DEFAULT_EXPECTED_MODEL,
+) -> dict[str, Any]:
+    if not isinstance(expected_model, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}", expected_model):
+        raise RolloverError("expected model must be an explicit bounded model identifier")
     evidence = _load_json(path, "measured runtime evidence")
     if evidence.get("schema") != EVIDENCE_SCHEMA:
         raise RolloverError("measured runtime evidence schema is invalid")
@@ -124,8 +130,8 @@ def _validate_runtime(path: Path, lock: Mapping[str, str], now: datetime) -> dic
     for field, value in expected.items():
         if evidence.get(field) != value:
             raise RolloverError(f"measured runtime evidence {field} does not match current adk.lock")
-    if evidence.get("runtime") != "codex" or evidence.get("requested_model") != "gpt-5.5":
-        raise RolloverError("measured runtime evidence must be codex/gpt-5.5")
+    if evidence.get("runtime") != "codex" or evidence.get("requested_model") != expected_model:
+        raise RolloverError(f"measured runtime evidence must be codex/{expected_model}")
     generated = _parse_time(evidence.get("generated_at"), "measured runtime generated_at")
     if generated > now:
         raise RolloverError("measured runtime evidence is future-dated")
@@ -397,9 +403,13 @@ def _restore(snapshot: Mapping[Path, bytes | None]) -> None:
             path.write_bytes(payload)
 
 
-def finalize(root: Path, runtime_source: Path, root_integration_run_id: int, qualification_time: str | None = None) -> dict[str, Any]:
+def finalize(
+    root: Path, runtime_source: Path, root_integration_run_id: int, qualification_time: str | None = None,
+    *, expected_model: str = DEFAULT_EXPECTED_MODEL,
+) -> dict[str, Any]:
     root = root.resolve()
-    runtime_source = runtime_source.resolve()
+    # Preserve lexical input so the strict reader can reject linked parents/leaf.
+    runtime_source = runtime_source.absolute()
     if root_integration_run_id <= 0:
         raise RolloverError("--root-integration-run-id must be positive")
     if _git(root, "status", "--porcelain=v1", "--untracked-files=all", "--ignore-submodules=none"):
@@ -408,7 +418,7 @@ def finalize(root: Path, runtime_source: Path, root_integration_run_id: int, qua
     now = datetime.now(timezone.utc)
     lock = _read_lock(root / "adk.lock")
     promotion = _validate_promotion(root, lock)
-    runtime = _validate_runtime(runtime_source, lock, now)
+    runtime = _validate_runtime(runtime_source, lock, now, expected_model=expected_model)
     generated = _parse_time(runtime["generated_at"], "measured runtime generated_at")
     today = now.date().isoformat()
     recorded_at = qualification_time or now.replace(microsecond=0).isoformat().replace("+00:00", "Z")
@@ -518,6 +528,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--runtime-evidence", required=True)
     parser.add_argument("--root-integration-run-id", required=True, type=int)
     parser.add_argument("--qualification-time")
+    parser.add_argument("--expected-model", default=DEFAULT_EXPECTED_MODEL,
+                        help="Reviewed exact requested model; must match measured evidence (default: gpt-5.5)")
     parser.add_argument("--apply", action="store_true")
     parser.add_argument("--summary-json", action="store_true")
     args = parser.parse_args(argv)
@@ -526,7 +538,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(json.dumps(payload, ensure_ascii=False, separators=(",", ":")) if args.summary_json else "[FAIL] --apply is required")
         return 2
     try:
-        result = finalize(Path(args.root), Path(args.runtime_evidence), args.root_integration_run_id, args.qualification_time)
+        result = finalize(Path(args.root), Path(args.runtime_evidence), args.root_integration_run_id,
+                          args.qualification_time, expected_model=args.expected_model)
     except (OSError, ValueError, RolloverError, subprocess.SubprocessError, json.JSONDecodeError) as exc:
         payload = {"schema": "llm-agent-software-m5-rollover/v1", "status": "fail", "error": str(exc)}
         print(json.dumps(payload, ensure_ascii=False, separators=(",", ":")) if args.summary_json else f"[FAIL] {exc}")

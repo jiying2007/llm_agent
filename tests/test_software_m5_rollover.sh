@@ -2,6 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PYTHONPATH="$ROOT${PYTHONPATH:+:$PYTHONPATH}" python3 "$ROOT/tests/test_m5_rollover_model_binding.py"
 PYTHONPATH="$ROOT/agent-dev-kit/src:$ROOT${PYTHONPATH:+:$PYTHONPATH}" python3 "$ROOT/tests/test_current_m5_diagnostics.py"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
