@@ -14,6 +14,31 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class CurrentM5DiagnosticsTests(unittest.TestCase):
+    def test_verified_signature_does_not_certify_missing_runtime_or_qualification(self):
+        result = diagnostic.diagnose(ROOT, signature_verifier=lambda: {"status": "verified"})
+        self.assertEqual("pass", result["stages"]["promotion_signature"]["status"])
+        self.assertIn("runtime", result["blocking_gates"])
+        self.assertIn("qualification", result["blocking_gates"])
+        self.assertFalse(result["software_m5_certified"])
+        self.assertFalse(result["release_authorized"])
+
+    def test_signature_failure_remains_a_blocker(self):
+        def failure():
+            raise core.M5Error("signature mismatch")
+        result = diagnostic.diagnose(ROOT, signature_verifier=failure)
+        self.assertIn("promotion_signature", result["blocking_gates"])
+        self.assertEqual("fail", result["stages"]["promotion_signature"]["status"])
+
+    def test_wrong_verifier_pin_is_rejected_before_execution(self):
+        with tempfile.TemporaryDirectory() as temp:
+            binary = Path(temp) / "cosign"
+            trust = Path(temp) / "root.json"
+            binary.write_bytes(b"synthetic")
+            trust.write_bytes(b"{}")
+            with mock.patch("subprocess.run", side_effect=AssertionError("must not run")):
+                with self.assertRaises(core.M5Error):
+                    diagnostic._verify_signature(ROOT, binary, "0" * 64, trust, "0" * 64)
+
     def test_actual_diagnostics_preserve_history_and_do_not_certify(self):
         paths = [ROOT / "manifests/software_m5_policy.json", ROOT / "manifests/product_maturity_scorecard.json",
                  ROOT / "reports/runtime-evidence/software-m5-production-qualification-2026-09-12.json"]
