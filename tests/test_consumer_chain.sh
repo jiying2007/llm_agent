@@ -26,7 +26,7 @@ PY
 # A reference pin that no longer matches the already hash-bound pilot-start
 # evidence must make the end-to-end consumer chain fail closed.
 TAMPERED="$TMP/tampered"
-cp -a "$ROOT" "$TAMPERED"
+python3 "$ROOT/tests/m5_snapshot_fixture.py" "$ROOT" "$TAMPERED" --owned-only
 python3 - "$TAMPERED/manifests/reference_pins.json" <<'PY'
 import json
 import sys

@@ -26,12 +26,13 @@ for path in workflows:
     text = path.read_text(encoding="utf-8")
     if "ubuntu-latest" in text:
         failures.append(f"{path.relative_to(root)} uses floating ubuntu-latest")
-    has_trusted_root = "--trusted-root" in text
-    has_new_bundle_format = "--new-bundle-format" in text
-    if has_trusted_root and not has_new_bundle_format:
-        failures.append(
-            f"{path.relative_to(root)} uses Cosign --trusted-root without required --new-bundle-format"
-        )
+    # Inspect Cosign commands, not similarly named arguments owned by other CLIs.
+    logical_lines = re.sub(r"\\\n\s*", " ", text)
+    for command in re.findall(r"\bcosign\s+verify-blob\b[^\n]*", logical_lines):
+        if "--trusted-root" in command and "--new-bundle-format" not in command:
+            failures.append(
+                f"{path.relative_to(root)} uses Cosign --trusted-root without required --new-bundle-format"
+            )
     if "sigstore/cosign-installer" in text and "cosign-release: v3.1.3" not in text:
         failures.append(
             f"{path.relative_to(root)} must pin the verified Cosign CLI contract to v3.1.3"

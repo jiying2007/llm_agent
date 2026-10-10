@@ -183,7 +183,7 @@ def _validate_policy(policy: Mapping[str, Any]) -> None:
         raise M5Error("multi-runtime campaign must remain an advisory")
 
 
-def _validate_promotion(root: Path, policy: Mapping[str, Any]) -> dict[str, Any]:
+def _validate_promotion(root: Path, policy: Mapping[str, Any], *, verify_signature: bool = True) -> dict[str, Any]:
     release = policy["release"]
     lock = _kv(_repo_path(root, "adk.lock", "ADK lock"))
     evidence_path = _repo_path(root, release["promotion_evidence"], "promotion evidence")
@@ -223,13 +223,31 @@ def _validate_promotion(root: Path, policy: Mapping[str, Any]) -> dict[str, Any]
     if lock.get("agent-dev-kit.manifest_blob") != expected["manifest_blob"]:
         raise M5Error("ADK lock manifest blob does not match policy")
 
+    try:
+        from tools.codex_assets.intake_io import read_bytes, decode_json
+        from tools.codex_assets.m5_signature import verify
+        from tools.control_plane.adk_promotion_evidence import verify_evidence_claims
+
+        payload = read_bytes(evidence_path, label="promotion evidence", max_bytes=4 * 1024 * 1024)
+        bundle = read_bytes(attestation_path, label="promotion attestation", max_bytes=4 * 1024 * 1024)
+        if decode_json(payload, label="promotion evidence") != evidence or decode_json(bundle, label="promotion attestation") != attestation:
+            raise ValueError("promotion inputs changed during validation")
+        verify_evidence_claims(evidence_path=evidence_path, lock_path=root / "adk.lock",
+                               interface_path=root / "manifests/adk_interface.lock.json")
+        verified = (verify(payload, bundle, repository="jiying2007/agent-dev-kit") if verify_signature else
+                    {"evidence_sha256": hashlib.sha256(payload).hexdigest(),
+                     "attestation_sha256": hashlib.sha256(bundle).hexdigest()})
+        if read_bytes(evidence_path, label="promotion evidence", max_bytes=4 * 1024 * 1024) != payload:
+            raise ValueError("promotion inputs changed during verification")
+    except (OSError, ValueError, RuntimeError) as exc:
+        raise M5Error(f"promotion signature verification failed: {exc}") from exc
+
     return {
         "status": "pass",
         "commit": expected["commit"],
         "tree": expected["tree"],
         "version": expected["version"],
-        "evidence_sha256": _sha256_file(evidence_path),
-        "attestation_sha256": _sha256_file(attestation_path),
+        **verified,
     }
 
 
@@ -240,6 +258,11 @@ def _validate_runtime(root: Path, policy: Mapping[str, Any]) -> dict[str, Any]:
     for relative in runtime["measured_evidence"]:
         path = _repo_path(root, relative, "measured runtime evidence")
         evidence = _load_object(path, "measured runtime evidence")
+        try:
+            from tools.codex_assets.m5_runtime_contract import validate
+            validate(evidence, _kv(root / "adk.lock"), datetime.now(timezone.utc), source_root=root)
+        except (ValueError, TypeError, KeyError, RuntimeError, OSError) as exc:
+            raise M5Error(f"measured runtime evidence rejected: {exc}") from exc
         result = evidence.get("result")
         if evidence.get("schema") != "llm-agent-runtime-smoke-evidence/v1":
             raise M5Error("measured runtime evidence schema is invalid")
@@ -394,6 +417,39 @@ def _validate_qualification_record(root: Path, policy: Mapping[str, Any]) -> dic
         raise M5Error("M5 qualification record requires CI evidence")
     if any(not isinstance(item, dict) or item.get("conclusion") != "success" for item in required_runs):
         raise M5Error("M5 qualification record contains a non-passing required run")
+    try:
+        from tools.codex_assets.m5_ci_contract import validate_record
+        validate_record(record, _kv(root / "adk.lock"))
+        promotion_path = _repo_path(root, policy["release"]["promotion_evidence"], "promotion evidence")
+        promotion = _load_object(promotion_path, "promotion evidence")
+        adk = record["adk"]
+        if (adk.get("promotion_run_id") != promotion["source"]["run_id"]
+                or adk.get("promotion_evidence_sha256") != _sha256_file(promotion_path)
+                or adk.get("promotion_attestation_sha256") != _sha256_file(
+                    _repo_path(root, policy["release"]["promotion_attestation"], "promotion attestation"))):
+            raise ValueError("qualification promotion run/digests differ from verified promotion")
+        import subprocess
+        from tools.codex_assets.runtime_smoke_evidence import _reject_hidden_index_entries, _reject_ignored_executable_inputs
+        _reject_hidden_index_entries(root)
+        _reject_ignored_executable_inputs(root)
+        changed = subprocess.run(["git", "-C", str(root), "diff", "--name-only", record["source_baseline"], "--"],
+                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=30, check=False)
+        allowed = {"manifests/software_m5_policy.json", "manifests/product_maturity_scorecard.json",
+                   "reports/current-status.md", policy["qualification_record"],
+                   *policy["runtime_qualification"]["measured_evidence"]}
+        if changed.returncode != 0 or set(changed.stdout.splitlines()) - allowed:
+            raise ValueError("root source differs from signed CI baseline outside qualification outputs")
+        from tools.codex_assets.validation_plan import _reference_roots, _excluded
+        unknown = subprocess.run(["git", "-C", str(root), "ls-files", "--others", "-z"],
+                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=30, check=False)
+        reference_roots = _reference_roots(root)
+        if unknown.returncode != 0 or any(
+                name not in allowed and not _excluded(name, reference_roots)
+                and "__pycache__" not in Path(name).parts
+                for name in unknown.stdout.decode("utf-8").split("\0") if name):
+            raise ValueError("root source contains inputs not covered by signed CI baseline")
+    except (ValueError, TypeError, KeyError, OSError, RuntimeError) as exc:
+        raise M5Error(f"M5 qualification CI evidence rejected: {exc}") from exc
     return {"status": "pass", "record_sha256": stored, "required_runs": required_runs}
 
 
@@ -554,6 +610,8 @@ def _write(value: Mapping[str, Any], compact: bool) -> None:
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="software-m5.sh")
     parser.add_argument("--root", default=str(Path.cwd()))
+    from tools.codex_assets import m5_signature
+    m5_signature.add_arguments(parser)
     sub = parser.add_subparsers(dest="command", required=True)
 
     for name in ("status", "check", "certify"):
@@ -595,14 +653,15 @@ def main(argv: Sequence[str] | None = None) -> int:
             _write(value, args.summary_json)
             return 0
 
-        value = check(root) if args.command in {"check", "certify"} else assess(root)
+        with m5_signature.using(m5_signature.from_arguments(args)):
+            value = check(root) if args.command in {"check", "certify"} else assess(root)
         _write(value, args.summary_json)
         if args.command == "certify":
             return 0 if value.get("software_m5_certified") is True and value.get("declaration_status") == "pass" else 1
         if args.command == "check":
             return 0 if value.get("integrity_status") == "pass" and value.get("declaration_status") == "pass" else 1
         return 0 if value.get("integrity_status") == "pass" else 1
-    except M5Error as exc:
+    except (M5Error, ValueError) as exc:
         _write({"schema": STATUS_SCHEMA, "status": "fail", "error": str(exc)}, getattr(args, "summary_json", False))
         return 1
 

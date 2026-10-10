@@ -1,0 +1,22 @@
+# 当前候选模型观测与资格闭环
+
+- goal_statement: 继续修复剩余真实模型观测与当前候选资格阻塞；完成可实施的本地修复并形成可审查的真实证据，资格不足时保持 blocked。
+- primary_skill: adk-planning-execution-loop；supporting: OpenAI Docs、完成前验证。
+- scope: 默认仅根仓；ADK 保持 exact pinned source；不提交、推送、合并，不触发外部 CI，不改本机 live 配置。
+- phase_1: verified；原生 app-server ThreadStartResponse 明确不是执行 telemetry，不能作为模型观测；采用固定 TLS 上游响应 header 与同 ID 完成事件。
+- phase_2: implemented；collector 冻结 observer，consumer 校验当前 adapter 摘要；定向 50/50，包含无 EOF stdin、半发送请求取消和输出超预算负例。
+- phase_3: blocked；首次复采配置预检失败，未进入上游；无推理探针核实 openai_base_url 入口后第二次复采收到 HTTP 200，但未取得有效模型身份/完成/usage。本轮两次采集额度已使用，不追加盲重试。
+- phase_4: verified；root 74/74、ADK 56/56、独立定向 52/52 与真实签名通过；串行聚合 51/52，唯一失败为历史候选/当前资格/scorecard 声明。总体资格仍 blocked。
+- required_evidence: 原生协议实际返回、任务完成和真实 usage、实际 runtime identity、独立复审及软件回归；不能用合成或配置请求替代。
+- permission: 真实模型采集沿用用户授权；任何新增 transport 在使用前声明权限、工具、deny-path、脱敏与回退。
+- retry_budget: 同类确定性失败最多两次；真实推理最多两次，预检不调用模型；新失败先定位根因。
+- staleness_threshold: 生产源码变化后刷新定向与整批验证；共享输出与聚合验证串行。
+- stop_condition: pass / replan / blocked；本地 conformance 不代表域资格通过。
+- claimant: 主代理；verifier: 新鲜独立证据核验；completion_claim: blocked；open_items: 3（runtime 真实回执、同基线资格 CI、当前候选 field/owner 与声明验收）。
+- external_blockers: 根仓 dirty 与同基线受信签名 CI 缺失；owner 资格不可自动生成；历史 scorecard 不重标。
+- contract_change_decision: 明确 relay 生命周期后继续；单次请求总 deadline 180 秒，客户端/上游 socket 有界超时，取消主动关闭自己创建的连接，server 停止不得等待无界 handler；所有标准流有有限容量。
+- observation_contract: 只读取固定 TLS 上游实际 HTTP OpenAI-Model 或 native Codex 明确识别的 SSE response.headers.OpenAI-Model；分别标注来源，不读取 response.model、配置或模型输出文本。必须有同一 response ID 的完成事件。
+- review_round: 1；独立审查报告超时取消 major、工具 delta 与缓冲预算缺项；模型 header 来源 scope 表述需澄清并按官方 parser 核真；先修复再真实运行。
+- native_compatibility: Codex 0.159.2 拒绝覆盖 model_providers.openai；使用官方 root openai_base_url。转发器拒绝 WebSocket、编码请求及第二次上游请求；关闭 request compression 和 unbounded retries，原生本地重试不增加上游调用额度。
+- remaining_minor_fix: stdin 改为 select + os.read，总 deadline 包含等待 EOF；离线 pipe 保持打开负例通过。脱敏失败诊断仅记录阶段、请求计数、HTTP 状态与已观察模型，不保留 headers/body/stderr。
+- final_review: 独立 Spec PASS / Quality PASS，52/52 定向通过；失败诊断覆盖 major 已通过 preflight、dir_fd NOFOLLOW 与 exclusive create 修复，计数改为 prepared_requests。新增 canonical 参数白名单，拒绝 provider 覆盖和输出路径逃逸。

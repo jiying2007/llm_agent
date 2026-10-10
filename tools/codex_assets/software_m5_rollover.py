@@ -15,9 +15,7 @@ import copy
 import hashlib
 import json
 import re
-import shutil
 import subprocess
-import sys
 from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any, Mapping, Sequence
@@ -33,7 +31,9 @@ from tools.control_plane.status_projection import (
 
 EVIDENCE_SCHEMA = "llm-agent-runtime-smoke-evidence/v1"
 QUALIFICATION_SCHEMA = "llm-agent-m5-qualification-record/v1"
-DEFAULT_EXPECTED_MODEL = "gpt-5.5"
+from tools.codex_assets.runtime_smoke_evidence import DEFAULT_MODEL
+
+DEFAULT_EXPECTED_MODEL = DEFAULT_MODEL
 
 
 class RolloverError(RuntimeError):
@@ -115,10 +115,16 @@ def _parse_time(value: Any, label: str) -> datetime:
 
 def _validate_runtime(
     path: Path, lock: Mapping[str, str], now: datetime, *, expected_model: str = DEFAULT_EXPECTED_MODEL,
+    source_root: Path | None = None,
 ) -> dict[str, Any]:
     if not isinstance(expected_model, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}", expected_model):
         raise RolloverError("expected model must be an explicit bounded model identifier")
     evidence = _load_json(path, "measured runtime evidence")
+    try:
+        from tools.codex_assets.m5_runtime_contract import validate
+        validate(evidence, lock, now, expected_model=expected_model, source_root=source_root)
+    except (ValueError, TypeError, KeyError, RuntimeError, OSError) as exc:
+        raise RolloverError(f"measured runtime evidence rejected: {exc}") from exc
     if evidence.get("schema") != EVIDENCE_SCHEMA:
         raise RolloverError("measured runtime evidence schema is invalid")
     expected = {
@@ -182,18 +188,16 @@ def _validate_promotion(root: Path, lock: Mapping[str, str]) -> dict[str, Any]:
         raise RolloverError("promotion evidence run_id is invalid")
     if release.get("release_eligible") is not True or not isinstance(release.get("artifact_sha256"), str):
         raise RolloverError("promotion evidence is not release eligible")
-    verifier = root / "scripts/check-adk-promotion-evidence.sh"
-    if not verifier.is_file():
-        raise RolloverError("signed ADK promotion verifier is missing")
     try:
-        checked = subprocess.run(
-            ["bash", str(verifier), str(root)], cwd=str(root), check=False,
-            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=90,
-        )
-    except (OSError, subprocess.TimeoutExpired) as exc:
-        raise RolloverError("signed ADK promotion verification could not complete") from exc
-    if checked.returncode != 0:
-        raise RolloverError("signed ADK promotion gate did not pass")
+        from tools.codex_assets import software_m5_v3_core as core
+        core._validate_promotion(root, {"release": {
+            "candidate_version": expected["version"], "candidate_commit": expected["commit"],
+            "candidate_tree": expected["tree"], "candidate_manifest_blob": expected["manifest_blob"],
+            "promotion_evidence": "reports/promotion/agent-dev-kit/promotion-evidence.json",
+            "promotion_attestation": "reports/promotion/agent-dev-kit/promotion-attestation.json",
+        }})
+    except (OSError, ValueError, RuntimeError) as exc:
+        raise RolloverError(f"signed ADK promotion gate did not pass: {exc}") from exc
     return evidence
 
 
@@ -246,26 +250,20 @@ def _build_record(
     source_baseline: str,
     root_integration_run_id: int,
     compatibility: Sequence[str],
+    root_ci_receipt: Mapping[str, Any],
 ) -> dict[str, Any]:
+    from tools.codex_assets.m5_ci_contract import validate_receipt
+    root_run = validate_receipt(root_ci_receipt, head=source_baseline, run_id=root_integration_run_id)
     required_runs: list[dict[str, Any]] = [
         {
             "repository": "jiying2007/agent-dev-kit",
             "run_id": promotion["source"]["run_id"],
             "scope": "signed-promotion-main",
             "conclusion": "success",
+            "head_sha": lock["agent-dev-kit.commit"],
         },
-        {
-            "repository": "jiying2007/llm_agent",
-            "run_id": root_integration_run_id,
-            "scope": "current-adk-source-integration-fresh-main",
-            "conclusion": "success",
-        },
+        root_run,
     ]
-    for item in previous.get("required_runs", []):
-        if not isinstance(item, dict):
-            continue
-        if item.get("scope") in {"independent-repository-onboarding", "independent-pilot-start"} and item.get("conclusion") == "success":
-            required_runs.append(copy.deepcopy(item))
     record: dict[str, Any] = {
         "schema": QUALIFICATION_SCHEMA,
         "recorded_at": recorded_at,
@@ -281,6 +279,7 @@ def _build_record(
             "promotion_attestation_sha256": _sha256_file(root / "reports/promotion/agent-dev-kit/promotion-attestation.json"),
         },
         "required_runs": required_runs,
+        "root_ci_receipt": copy.deepcopy(root_ci_receipt),
         "field_baseline": copy.deepcopy(previous.get("field_baseline", {})),
         "runtime_baseline": {
             "measured_evidence": [runtime_rel],
@@ -406,19 +405,28 @@ def _restore(snapshot: Mapping[Path, bytes | None]) -> None:
 def finalize(
     root: Path, runtime_source: Path, root_integration_run_id: int, qualification_time: str | None = None,
     *, expected_model: str = DEFAULT_EXPECTED_MODEL,
+    root_ci_receipt: Path | None = None,
 ) -> dict[str, Any]:
     root = root.resolve()
     # Preserve lexical input so the strict reader can reject linked parents/leaf.
     runtime_source = runtime_source.absolute()
-    if root_integration_run_id <= 0:
+    if type(root_integration_run_id) is not int or root_integration_run_id <= 0:
         raise RolloverError("--root-integration-run-id must be positive")
+    if root_ci_receipt is None:
+        raise RolloverError("--root-ci-receipt is required; a run ID alone is not CI evidence")
     if _git(root, "status", "--porcelain=v1", "--untracked-files=all", "--ignore-submodules=none"):
         raise RolloverError("Software M5 rollover requires a clean root source worktree")
     source_baseline = _git(root, "rev-parse", "HEAD")
+    ci_receipt = _load_json(root_ci_receipt.absolute(), "signed root CI receipt")
+    try:
+        from tools.codex_assets.m5_ci_contract import validate_receipt
+        validate_receipt(ci_receipt, head=source_baseline, run_id=root_integration_run_id)
+    except (ValueError, TypeError, OSError, RuntimeError) as exc:
+        raise RolloverError(f"root CI receipt rejected: {exc}") from exc
     now = datetime.now(timezone.utc)
     lock = _read_lock(root / "adk.lock")
     promotion = _validate_promotion(root, lock)
-    runtime = _validate_runtime(runtime_source, lock, now, expected_model=expected_model)
+    runtime = _validate_runtime(runtime_source, lock, now, expected_model=expected_model, source_root=root)
     generated = _parse_time(runtime["generated_at"], "measured runtime generated_at")
     today = now.date().isoformat()
     recorded_at = qualification_time or now.replace(microsecond=0).isoformat().replace("+00:00", "Z")
@@ -453,7 +461,7 @@ def finalize(
     snapshot = _snapshot(touched)
     try:
         runtime_path.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(runtime_source, runtime_path)
+        _write_json(runtime_path, runtime)
         record = _build_record(
             root,
             previous_record,
@@ -464,6 +472,7 @@ def finalize(
             source_baseline,
             root_integration_run_id,
             compatibility,
+            ci_receipt,
         )
         _write_json(qualification_path, record)
         _write_json(policy_path, _update_policy(old_policy, lock, promotion, runtime_rel, qualification_rel, today))
@@ -527,9 +536,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--root", default=".")
     parser.add_argument("--runtime-evidence", required=True)
     parser.add_argument("--root-integration-run-id", required=True, type=int)
+    parser.add_argument("--root-ci-receipt", required=True)
+    from tools.codex_assets import m5_signature
+    m5_signature.add_arguments(parser)
     parser.add_argument("--qualification-time")
     parser.add_argument("--expected-model", default=DEFAULT_EXPECTED_MODEL,
-                        help="Reviewed exact requested model; must match measured evidence (default: gpt-5.5)")
+                        help=f"Reviewed exact requested model; must match measured evidence (default: {DEFAULT_EXPECTED_MODEL})")
     parser.add_argument("--apply", action="store_true")
     parser.add_argument("--summary-json", action="store_true")
     args = parser.parse_args(argv)
@@ -538,8 +550,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(json.dumps(payload, ensure_ascii=False, separators=(",", ":")) if args.summary_json else "[FAIL] --apply is required")
         return 2
     try:
-        result = finalize(Path(args.root), Path(args.runtime_evidence), args.root_integration_run_id,
-                          args.qualification_time, expected_model=args.expected_model)
+        with m5_signature.using(m5_signature.from_arguments(args)):
+            result = finalize(Path(args.root), Path(args.runtime_evidence), args.root_integration_run_id,
+                              args.qualification_time, expected_model=args.expected_model,
+                              root_ci_receipt=Path(args.root_ci_receipt))
     except (OSError, ValueError, RolloverError, subprocess.SubprocessError, json.JSONDecodeError) as exc:
         payload = {"schema": "llm-agent-software-m5-rollover/v1", "status": "fail", "error": str(exc)}
         print(json.dumps(payload, ensure_ascii=False, separators=(",", ":")) if args.summary_json else f"[FAIL] {exc}")

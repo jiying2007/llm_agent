@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """Software M5 facade with repository-governance abstraction.
 
-The v3 certification core remains stable. This facade upgrades only the field
-repository identity boundary so an independent pilot repository can be governed
+This facade upgrades the field candidate and repository identity boundary so an independent pilot repository can be governed
 by either a real managed gitlink or an immutable reference pin. Reference-pinned
 pilots must also prove the exact pinned repository/path/commit in the existing
 hash-bound pilot-start evidence.
@@ -12,7 +11,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import Any, Mapping, Sequence
+from typing import Any, Mapping
 from urllib.parse import urlparse
 
 from tools.codex_assets import software_m5_v3_core as _core
@@ -79,6 +78,7 @@ def _pilot_start_matches_pin(
     repo_id: str,
     repo_path: str,
     pin: Mapping[str, Any],
+    policy: Mapping[str, Any],
 ) -> bool:
     expected_repository = _repository_slug(str(pin["url"]))
     for relative in event.get("evidence", []):
@@ -89,6 +89,8 @@ def _pilot_start_matches_pin(
             continue
         pilot_repo = evidence.get("pilot_repository")
         if not isinstance(pilot_repo, dict):
+            continue
+        if not _candidate_source_matches(evidence, event, policy):
             continue
         if (
             pilot_repo.get("id") == repo_id
@@ -102,6 +104,31 @@ def _pilot_start_matches_pin(
     return False
 
 
+def _candidate_source_matches(evidence: Mapping[str, Any], event: Mapping[str, Any], policy: Mapping[str, Any]) -> bool:
+    source = evidence.get("adk_source")
+    operator = evidence.get("operator")
+    repository = evidence.get("pilot_repository")
+    return (evidence.get("schema") == "llm-agent-m5-independent-pilot-start/v1"
+            and evidence.get("pilot_id") == event.get("pilot_id")
+            and isinstance(operator, dict) and operator.get("id") == event.get("operator_id")
+            and operator.get("operator_type") == "human"
+            and isinstance(repository, dict) and repository.get("id") == event.get("repository_id")
+            and repository.get("classification") == "independent" and repository.get("real_software") is True
+            and isinstance(source, dict) and source.get("repository") == "jiying2007/agent-dev-kit"
+            and source.get("commit") == policy["release"]["candidate_commit"])
+
+
+def _pilot_start_matches_candidate(root: Path, event: Mapping[str, Any], policy: Mapping[str, Any], repo_path: str) -> bool:
+    for relative in event.get("evidence", []):
+        if not isinstance(relative, str) or not relative.endswith(".json"):
+            continue
+        evidence = _core._load_object(_core._repo_path(root, relative, "field evidence"), "field evidence")
+        if (_candidate_source_matches(evidence, event, policy)
+                and evidence["pilot_repository"].get("path") == repo_path):
+            return True
+    return False
+
+
 def _validate_field(root: Path, policy: Mapping[str, Any]) -> dict[str, Any]:
     field = policy["field_qualification"]
     ledger = _core._load_object(
@@ -109,6 +136,8 @@ def _validate_field(root: Path, policy: Mapping[str, Any]) -> dict[str, Any]:
     )
     if ledger.get("schema") != LEDGER_SCHEMA:
         raise M5Error("pilot ledger schema is invalid")
+    if ledger.get("candidate_version") != policy["release"]["candidate_version"]:
+        raise M5Error("pilot ledger candidate version does not match current candidate")
 
     repositories = {
         item.get("id"): item
@@ -194,8 +223,10 @@ def _validate_field(root: Path, policy: Mapping[str, Any]) -> dict[str, Any]:
             continue
         governance_kind, pin = governance[repo_id]
         repo_path = str(repositories[repo_id]["path"])
+        if not _pilot_start_matches_candidate(root, event, policy, repo_path):
+            continue
         if governance_kind == "reference-pin" and (
-            pin is None or not _pilot_start_matches_pin(root, event, repo_id, repo_path, pin)
+            pin is None or not _pilot_start_matches_pin(root, event, repo_id, repo_path, pin, policy)
         ):
             continue
         item = {
@@ -210,7 +241,7 @@ def _validate_field(root: Path, policy: Mapping[str, Any]) -> dict[str, Any]:
             item["reference_commit"] = pin["commit"]
         qualifying.append(item)
     if not qualifying:
-        raise M5Error("no real independent pilot_started field event satisfies M5 policy and repository identity")
+        raise M5Error("no real independent pilot_started field event satisfies M5 policy and candidate/repository identity")
 
     return {
         "status": "pass",
@@ -219,7 +250,7 @@ def _validate_field(root: Path, policy: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
-# Patch only the repository-governance boundary. All other v3 certification,
+# Patch the candidate and repository-governance boundary. Other v3 certification,
 # declaration, append-only event and CLI semantics remain the stable core.
 _core._validate_field = _validate_field
 
