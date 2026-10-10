@@ -45,8 +45,8 @@ cat >"$TMP/raw-pass.json" <<'JSON'
   "prompt_version": "adk-runtime-routing-v1",
   "runtime": "codex",
   "runtime_version": "codex-cli 0.154.0",
-  "requested_model": "gpt-5.5",
-  "reported_models": ["gpt-5.5"],
+  "requested_model": "gpt-6.1-sol",
+  "reported_models": ["gpt-6.1-sol"],
   "condition": "adk",
   "status": "pass",
   "total": 1,
@@ -73,8 +73,8 @@ cat >"$TMP/raw-pass.json" <<'JSON'
       "elapsed_ms": 123.0,
       "usage": {"input_tokens": 10, "cached_input_tokens": 0, "output_tokens": 5, "total_tokens": 15},
       "cost_usd": null,
-      "requested_model": "gpt-5.5",
-      "reported_models": ["gpt-5.5"],
+      "requested_model": "gpt-6.1-sol",
+      "reported_models": ["gpt-6.1-sol"],
       "error": null
     }
   ]
@@ -104,10 +104,11 @@ assert evidence["schema"] == "llm-agent-runtime-smoke-evidence/v1"
 assert evidence["manifest_version"] == "5.1.0"
 assert evidence["adk_commit"] == commit
 assert evidence["runtime_version"] == "codex-cli 0.154.0"
-assert evidence["requested_model"] == "gpt-5.5"
+assert evidence["requested_model"] == "gpt-6.1-sol"
 assert evidence["review_after"] == "2026-10-13"
 assert evidence["raw_result_sha256"] == hashlib.sha256(raw_path.read_bytes()).hexdigest()
 assert evidence["collection"]["tasks_sha256"]
+assert evidence["collection"]["runtime_identity"] == "unverified-import"
 unsigned = dict(evidence)
 stored = unsigned.pop("evidence_sha256")
 payload = json.dumps(unsigned, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()

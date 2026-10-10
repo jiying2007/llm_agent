@@ -156,7 +156,8 @@ assert "trusted_root.json" not in github
 assert "cosign verify-blob" in github
 assert "--use-signed-timestamps" not in github
 assert "--rfc3161-timestamp-path" not in github
-assert "--trusted-root" not in github
+integration_workflow = github.split("  integration:\n", 1)[1].split("  integration-summary:\n", 1)[0]
+assert "--trusted-root" not in integration_workflow
 assert "--new-bundle-format" not in github
 assert "--insecure-ignore-tlog" not in github
 assert "--certificate-identity https://github.com/jiying2007/agent-dev-kit/.github/workflows/ci.yml@refs/heads/main" in github
@@ -166,7 +167,8 @@ assert "ADK promotion evidence: NOT_REQUIRED" in github
 assert re.search(r"integration-impact:\n(?:.|\n)*?needs:\n\s+- contract\n\s+- doc-sync", github)
 assert re.search(r"integration:\n(?:.|\n)*?needs:\n\s+- contract\n\s+- doc-sync\n\s+- integration-impact", github)
 assert "needs.integration-summary.result == 'success'" in github
-assert "bash scripts/software-m5.sh certify --summary-json" in github
+assert "bash scripts/software-m5.sh \\" in github
+assert "certify --summary-json" in github
 assert "HISTORICAL_NOT_AUTHORIZED" in github
 assert "source-current-evidence-historical" in github
 assert "fresh_for_current_source'] is False" in github

@@ -6,7 +6,6 @@ import argparse
 import copy
 import hashlib
 import json
-import os
 import re
 import subprocess
 from pathlib import Path
@@ -43,15 +42,10 @@ def _verify_signature(root: Path, verifier: Path, verifier_sha256: str,
     core._load_object(bundle, "promotion attestation")
     payload = read_bytes(evidence, label="promotion evidence", max_bytes=4 * 1024 * 1024)
     bundle_sha = core._sha256_file(bundle)
-    completed = subprocess.run(
-        [str(verifier), "verify-blob", "--bundle", str(bundle), "--trusted-root", str(trusted_root),
-         "--certificate-identity", "https://github.com/jiying2007/agent-dev-kit/.github/workflows/ci.yml@refs/heads/main",
-         "--certificate-oidc-issuer", "https://token.actions.githubusercontent.com", "/dev/stdin"],
-        input=payload, cwd=root, env={"PATH": os.defpath, "LANG": "C.UTF-8", "LC_ALL": "C.UTF-8"},
-        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False, timeout=45,
-    )
-    if completed.returncode != 0:
-        raise core.M5Error("pinned promotion signature verification failed")
+    from tools.codex_assets.m5_signature import Trust, using, verify
+    bundle_bytes = read_bytes(bundle, label="promotion attestation", max_bytes=4 * 1024 * 1024)
+    with using(Trust(verifier, verifier_sha256, trusted_root, trusted_root_sha256)):
+        verify(payload, bundle_bytes, repository="jiying2007/agent-dev-kit")
     # Do not accept a durable mutation of the inputs during verification.
     if (input_sha256(verifier) != binary
             or read_bytes(trusted_root, label="pinned trusted root", max_bytes=1024 * 1024) != trust
@@ -140,7 +134,7 @@ def diagnose(root: Path, *, signature_verifier: Callable[[], Any] | None = None)
         published = promotion_stage["result"].get("release")
         if isinstance(published, dict):
             release["candidate_artifact_sha256"] = published.get("artifact_sha256")
-    stages["promotion_claims"] = _stage(lambda: core._validate_promotion(root, current))
+    stages["promotion_claims"] = _stage(lambda: core._validate_promotion(root, current, verify_signature=False))
     # Claims and a nonempty bundle never establish cryptographic verification.
     stages["promotion_signature"] = {"status": "blocked", "reason": "fresh pinned-verifier readback required"}
     if signature_verifier is not None:
@@ -154,7 +148,14 @@ def diagnose(root: Path, *, signature_verifier: Callable[[], Any] | None = None)
         status = historical_status["result"]
         stages["historical_declaration"]["observed"] = {key: status.get(key) for key in ("integrity_status", "declaration_status", "software_m5_certified")}
     result["blocking_gates"] = [name for name, value in stages.items() if value["status"] != "pass"]
-    result["next_actions"] = ["verify actual promotion with pinned identity/issuer", "collect new current-candidate measured runtime evidence after authorization", "review current qualification and declaration without overwriting history"]
+    actions = {
+        "promotion_signature": "verify actual promotion with pinned identity/issuer",
+        "runtime": "collect current-candidate measured runtime with observed model, task results and usage",
+        "field": "collect a current-candidate hash-bound independent pilot event with actual human operator evidence",
+        "qualification": "obtain current-source signed CI receipt and current-candidate qualification evidence",
+        "historical_declaration": "review current qualification and declaration without overwriting history",
+    }
+    result["next_actions"] = [action for name, action in actions.items() if name in result["blocking_gates"]]
     result["diagnostics_sha256"] = hashlib.sha256(json.dumps(result, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
     return result
 

@@ -2,6 +2,9 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+export PYTHONPATH="$ROOT/tests:$ROOT/agent-dev-kit/src:$ROOT${PYTHONPATH:+:$PYTHONPATH}"
+python3 "$ROOT/tests/test_m5_consumer_hardening.py"
+python3 "$ROOT/tests/test_codex_model_observer.py"
 PYTHONPATH="$ROOT${PYTHONPATH:+:$PYTHONPATH}" python3 "$ROOT/tests/test_m5_rollover_model_binding.py"
 PYTHONPATH="$ROOT/agent-dev-kit/src:$ROOT${PYTHONPATH:+:$PYTHONPATH}" python3 "$ROOT/tests/test_current_m5_diagnostics.py"
 TMP="$(mktemp -d)"
@@ -42,11 +45,11 @@ assert (root / "reports/field-evidence/software-m5-independent-pilot-start-2026-
 PY
 echo "[INFO] rollover baseline assertions PASS" >&2
 
-if ! cp -a "$ROOT" "$GOOD"; then
+if ! python3 "$ROOT/tests/m5_snapshot_fixture.py" "$ROOT" "$GOOD"; then
   echo "[FAIL] failed to copy GOOD rollover fixture" >&2
   exit 1
 fi
-if ! cp -a "$ROOT" "$BAD"; then
+if ! python3 "$ROOT/tests/m5_snapshot_fixture.py" "$ROOT" "$BAD"; then
   echo "[FAIL] failed to copy BAD rollover fixture" >&2
   exit 1
 fi
@@ -144,6 +147,8 @@ for fixture in (Path(sys.argv[2]), Path(sys.argv[3])):
     promotion["release"]["artifact_sha256"] = "a" * 64
     promotion["selftest_only"] = True
     promotion_path.write_text(json.dumps(promotion, indent=2) + "\n", encoding="utf-8")
+    from m5_fixtures import bind_synthetic_field
+    bind_synthetic_field(fixture, lock)
     subprocess.run(["git", "-C", str(fixture), "add", "-A"], check=True)
     subprocess.run(
         ["git", "-C", str(fixture), "-c", "user.name=Fixture",
@@ -152,6 +157,31 @@ for fixture in (Path(sys.argv[2]), Path(sys.argv[3])):
     )
 PY
 echo "[INFO] rollover repository fixtures copied" >&2
+
+# Trust and CI receipts are explicit test-only inputs, never executable PATH.
+python3 - "$GOOD" "$BAD" "$TMP" <<'PY'
+import hashlib
+import json
+import subprocess
+import sys
+from pathlib import Path
+from m5_fixtures import receipt
+good, bad, temporary = map(Path, sys.argv[1:])
+(temporary / "trusted-root.json").write_text('{"synthetic_only":true}')
+for name, repo in (("good", good), ("bad", bad)):
+    head = subprocess.check_output(["git", "-C", str(repo), "rev-parse", "HEAD"], text=True).strip()
+    (temporary / (name + "-ci.json")).write_text(json.dumps(receipt(head)))
+for label, path in (("verifier", temporary / "mock-verifier/cosign"), ("trust", temporary / "trusted-root.json")):
+    (temporary / (label + ".sha256")).write_text(hashlib.sha256(path.read_bytes()).hexdigest())
+PY
+read -r VERIFIER_SHA < "$TMP/verifier.sha256" || true
+read -r TRUST_SHA < "$TMP/trust.sha256" || true
+VERIFY_ARGS=(--cosign-binary "$TMP/mock-verifier/cosign" --cosign-sha256 "$VERIFIER_SHA"
+             --trusted-root "$TMP/trusted-root.json" --trusted-root-sha256 "$TRUST_SHA")
+CI_RECEIPT="$TMP/good-ci.json"
+rollover() {
+  python3 -m tools.codex_assets.software_m5_rollover --root-ci-receipt "$CI_RECEIPT" "${VERIFY_ARGS[@]}" "$@"
+}
 
 make_evidence() {
   local repo="$1"
@@ -174,6 +204,14 @@ for line in (root / "adk.lock").read_text(encoding="utf-8").splitlines():
         key, value = line.split("=", 1)
         lock[key] = value
 
+from m5_fixtures import runtime
+from tools.codex_assets import runtime_smoke_evidence as smoke
+tasks_path = root / "agent-dev-kit/tests/fixtures/software_m5_eval_tasks.jsonl"
+selected, task_digest = smoke._selected_tasks(tasks_path, 1)
+manifest = json.loads((root / "agent-dev-kit/manifest.json").read_text())
+complete = runtime(lock, now=generated, task=selected[0], manifest_digest=smoke._manifest_digest(manifest),
+                   task_digest=task_digest, tasks_sha256=hashlib.sha256(tasks_path.read_bytes()).hexdigest())
+
 evidence = {
     "schema": "llm-agent-runtime-smoke-evidence/v1",
     "evidence_id": "synthetic-rollover-selftest-only",
@@ -189,7 +227,8 @@ evidence = {
     "manifest_version": lock["agent-dev-kit.version"],
     "manifest_sha256": "2" * 64,
     "raw_result_sha256": "3" * 64,
-    "collection": {"collector": "selftest", "task_limit": 1, "raw_report_retained_in_repository": False},
+    "collection": {"collector": "selftest", "task_limit": 1, "raw_report_retained_in_repository": False,
+                   "runtime_identity": "selected-executable-pre-post-sha256"},
     "result": {
         "schema_version": 1,
         "suite": "runtime-routing",
@@ -207,6 +246,9 @@ evidence = {
     },
     "raw_content_stored": False,
 }
+evidence.update(complete)
+evidence["result"]["quality_gate"]["success_rate"] = gate
+evidence.pop("evidence_sha256", None)
 payload = json.dumps(evidence, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()
 evidence["evidence_sha256"] = hashlib.sha256(payload).hexdigest()
 out.write_text(json.dumps(evidence, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -217,7 +259,7 @@ make_evidence "$GOOD" "$TMP/good-evidence.json" true
 echo "[INFO] rollover good measured evidence built" >&2
 (
   cd "$GOOD"
-  if ! python3 -m tools.codex_assets.software_m5_rollover \
+  if ! rollover \
     --root . \
     --runtime-evidence "$TMP/good-evidence.json" \
     --root-integration-run-id 34703075857 \
@@ -227,7 +269,7 @@ echo "[INFO] rollover good measured evidence built" >&2
     cat "$TMP/rollover-summary.json" >&2 || true
     exit 1
   fi
-  if ! bash scripts/software-m5.sh certify --summary-json >"$TMP/certification.json"; then
+  if ! bash scripts/software-m5.sh "${VERIFY_ARGS[@]}" certify --summary-json >"$TMP/certification.json"; then
     echo "[FAIL] Software M5 certification failed after rollover" >&2
     cat "$TMP/certification.json" >&2 || true
     exit 1
@@ -291,6 +333,27 @@ then
 fi
 echo "[INFO] rollover post-apply contract assertions PASS" >&2
 
+# Direct certification must reject source outside the signed CI baseline.
+python3 - "$GOOD" <<'PY'
+import sys
+from pathlib import Path
+path = Path(sys.argv[1]) / "tools/unreviewed-ci-input.py"
+path.write_text("# synthetic untracked source injection\n")
+PY
+if (cd "$GOOD" && bash scripts/software-m5.sh "${VERIFY_ARGS[@]}" certify --summary-json >"$TMP/untracked-rejection.json"); then
+  echo "[FAIL] direct certifier accepted source not covered by signed root CI" >&2
+  exit 1
+fi
+python3 - "$GOOD" "$TMP/untracked-rejection.json" <<'PY'
+import json
+import sys
+from pathlib import Path
+result = json.loads(Path(sys.argv[2]).read_text())
+assert result["software_m5_certified"] is False, result
+assert "not covered by signed CI" in result["error"], result
+(Path(sys.argv[1]) / "tools/unreviewed-ci-input.py").unlink()
+PY
+
 # Exercise the same review-bundle contract used by the manual hosted workflow.
 BUNDLE="$TMP/rollover-candidate"
 mkdir -p "$BUNDLE"
@@ -352,10 +415,34 @@ if [[ "$bundle_count" -ne 5 ]]; then
 fi
 
 make_evidence "$BAD" "$TMP/bad-evidence.json" false
+make_evidence "$BAD" "$TMP/bad-valid-evidence.json" true
+CI_RECEIPT="$TMP/bad-ci.json"
+python3 - "$BAD" "$TMP/bad-valid-evidence.json" "$CI_RECEIPT" "$TMP/mock-verifier/cosign" "$VERIFIER_SHA" "$TMP/trusted-root.json" "$TRUST_SHA" <<'PY'
+import sys
+from pathlib import Path
+from unittest.mock import patch
+from tools.codex_assets import software_m5_rollover as rollover
+from tools.codex_assets.m5_signature import Trust, using
+root, evidence, ci, binary, binary_sha, trust_root, trust_sha = sys.argv[1:]
+root = Path(root)
+tracked = [root / name for name in ("manifests/software_m5_policy.json", "manifests/product_maturity_scorecard.json", "reports/current-status.md")]
+before = {path: path.read_bytes() for path in tracked}
+old_outputs = set((root / "reports/runtime-evidence").glob("*.json"))
+with using(Trust(Path(binary), binary_sha, Path(trust_root), trust_sha)), patch.object(
+        rollover, "software_m5_check", return_value={"integrity_status": "fail"}):
+    try:
+        rollover.finalize(root, Path(evidence), 34703075857, root_ci_receipt=Path(ci))
+    except rollover.RolloverError as error:
+        assert "certifier rejected rollover" in str(error), error
+    else:
+        raise AssertionError("late validation failure was accepted")
+assert all(path.read_bytes() == content for path, content in before.items())
+assert set((root / "reports/runtime-evidence").glob("*.json")) == old_outputs
+PY
 before="$(git -C "$BAD" status --porcelain=v1)"
 if (
   cd "$BAD"
-  python3 -m tools.codex_assets.software_m5_rollover \
+  rollover \
     --root . \
     --runtime-evidence "$TMP/bad-evidence.json" \
     --root-integration-run-id 34703075857 \
@@ -366,8 +453,8 @@ if (
 fi
 if (
   cd "$BAD"
-  PATH="$TMP/no-cosign" python3 -m tools.codex_assets.software_m5_rollover \
-    --root . --runtime-evidence "$TMP/good-evidence.json" \
+  PATH="$TMP/no-cosign" python3 -m tools.codex_assets.software_m5_rollover --root-ci-receipt "$CI_RECEIPT" \
+    --root . --runtime-evidence "$TMP/bad-valid-evidence.json" \
     --root-integration-run-id 34703075857 --apply >/dev/null 2>&1
 ); then
   echo "[FAIL] rollover accepted promotion without a signing verifier" >&2
@@ -380,7 +467,7 @@ after="$(git -C "$BAD" status --porcelain=v1)"
   exit 1
 }
 
-python3 - "$TMP/good-evidence.json" "$TMP/stale-evidence.json" <<'PY'
+python3 - "$TMP/bad-valid-evidence.json" "$TMP/stale-evidence.json" <<'PY'
 import hashlib
 import json
 import sys
@@ -398,7 +485,7 @@ Path(sys.argv[2]).write_text(json.dumps(value), encoding="utf-8")
 PY
 if (
   cd "$BAD"
-  python3 -m tools.codex_assets.software_m5_rollover \
+  rollover \
     --root . --runtime-evidence "$TMP/stale-evidence.json" \
     --root-integration-run-id 34703075857 --apply >/dev/null 2>&1
 ); then
@@ -407,8 +494,8 @@ if (
 fi
 if (
   cd "$BAD"
-  python3 -m tools.codex_assets.software_m5_rollover \
-    --root . --runtime-evidence "$TMP/good-evidence.json" \
+  rollover \
+    --root . --runtime-evidence "$TMP/bad-valid-evidence.json" \
     --root-integration-run-id 34703075857 \
     --qualification-time 2026-09-12T00:10:00Z --apply >/dev/null 2>&1
 ); then
@@ -425,8 +512,8 @@ printf 'local uncommitted fixture\n' >"$BAD/local-dirty.txt"
 before="$(git -C "$BAD" status --porcelain=v1)"
 if (
   cd "$BAD"
-  python3 -m tools.codex_assets.software_m5_rollover \
-    --root . --runtime-evidence "$TMP/good-evidence.json" \
+  rollover \
+    --root . --runtime-evidence "$TMP/bad-valid-evidence.json" \
     --root-integration-run-id 34703075857 --apply --summary-json >"$TMP/dirty-rejection.json"
 ); then
   echo "[FAIL] rollover accepted dirty root source" >&2

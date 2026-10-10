@@ -3,13 +3,15 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TMP="$(mktemp -d)"
-trap 'rm -rf "$TMP"' EXIT
+# Keep the cache-only plan outside source roots even when TMPDIR is in .cache.
+CACHE_TMP="$(mktemp -d /tmp/llm-reference-cache.XXXXXX)"
+trap 'rm -rf "$TMP" "$CACHE_TMP"' EXIT
 
 python3 -m tools.control_plane.reference_pins --root "$ROOT" --summary-json >"$TMP/check.json"
 python3 -m tools.control_plane.reference_pins \
   --root "$ROOT" \
   --plan OpenSpec \
-  --cache-root "$TMP/cache" \
+  --cache-root "$CACHE_TMP/cache" \
   --summary-json >"$TMP/plan.json"
 
 python3 - "$TMP/check.json" "$TMP/plan.json" <<'PY'
@@ -45,20 +47,20 @@ PY
 if python3 -m tools.control_plane.reference_pins \
   --root "$ROOT" \
   --plan hermes \
-  --cache-root "$TMP/cache" \
+  --cache-root "$CACHE_TMP/cache" \
   >/dev/null 2>&1; then
   echo '[FAIL] non-repository opaque pin unexpectedly produced a materialization plan' >&2
   exit 1
 fi
 
-if [[ -e "$TMP/cache/OpenSpec" ]]; then
+if [[ -e "$CACHE_TMP/cache/OpenSpec" ]]; then
   echo '[FAIL] plan-only command unexpectedly materialized a repository' >&2
   exit 1
 fi
 
 # Repository-governance identity must remain exact after physical gitlink removal.
 TAMPERED="$TMP/tampered"
-cp -a "$ROOT" "$TAMPERED"
+python3 "$ROOT/tests/m5_snapshot_fixture.py" "$ROOT" "$TAMPERED" --owned-only
 python3 - "$TAMPERED/manifests/reference_pins.json" <<'PY'
 import json
 import sys

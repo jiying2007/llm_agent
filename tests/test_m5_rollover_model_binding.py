@@ -4,10 +4,11 @@ import os
 import tempfile
 import unittest
 from unittest import mock
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from pathlib import Path
 
 from tools.codex_assets import software_m5_rollover as rollover
+from m5_fixtures import runtime
 
 
 class RolloverModelBindingTests(unittest.TestCase):
@@ -20,27 +21,20 @@ class RolloverModelBindingTests(unittest.TestCase):
                      "agent-dev-kit.tree": "b" * 40, "agent-dev-kit.manifest_blob": "c" * 40}
 
     def evidence(self, model):
-        value = {"schema": rollover.EVIDENCE_SCHEMA, "manifest_version": "8.0.5",
-                 "adk_commit": "a" * 40, "adk_tree": "b" * 40, "manifest_blob": "c" * 40,
-                 "runtime": "codex", "requested_model": model,
-                 "generated_at": self.now.isoformat().replace("+00:00", "Z"),
-                 "review_after": (self.now + timedelta(days=30)).date().isoformat(),
-                 "result": {"status": "pass", "runtime": "codex", "condition": "adk",
-                            "requested_model": model, "quality_gate": {"synthetic": True}}}
-        value["evidence_sha256"] = rollover._digest(value)
+        value = runtime(self.lock, model, self.now)
         self.path.write_text(json.dumps(value))
         return value
 
-    def test_default_preserves_historical_model_binding(self):
-        self.evidence("gpt-5.5")
+    def test_default_selects_current_model(self):
+        self.evidence("gpt-6.1-sol")
         rollover._validate_runtime(self.path, self.lock, self.now)
 
-    def test_current_model_requires_explicit_selection(self):
-        self.evidence("gpt-6.1-sol")
+    def test_historical_model_requires_explicit_selection(self):
+        self.evidence("gpt-5.5")
         with self.assertRaises(rollover.RolloverError):
             rollover._validate_runtime(self.path, self.lock, self.now)
-        result = rollover._validate_runtime(self.path, self.lock, self.now, expected_model="gpt-6.1-sol")
-        self.assertEqual("gpt-6.1-sol", result["requested_model"])
+        result = rollover._validate_runtime(self.path, self.lock, self.now, expected_model="gpt-5.5")
+        self.assertEqual("gpt-5.5", result["requested_model"])
 
     def test_wrong_model_and_invalid_selection_remain_blocked(self):
         self.evidence("gpt-6.1-sol")
@@ -83,8 +77,12 @@ class RolloverModelBindingTests(unittest.TestCase):
         with mock.patch.object(rollover, "_git", side_effect=["", "a" * 40]), \
                 mock.patch.object(rollover, "_read_lock", return_value=self.lock), \
                 mock.patch.object(rollover, "_validate_promotion", return_value={}):
-            with self.assertRaisesRegex(rollover.RolloverError, "invalid measured runtime evidence"):
-                rollover.finalize(self.path.parent, self.path, 1)
+            receipt = self.path.parent / "ci.json"
+            receipt.write_text('{}')
+            from tools.codex_assets import m5_ci_contract
+            with mock.patch.object(m5_ci_contract, "validate_receipt"):
+                with self.assertRaisesRegex(rollover.RolloverError, "invalid measured runtime evidence"):
+                    rollover.finalize(self.path.parent, self.path, 1, root_ci_receipt=receipt)
 
 
 if __name__ == "__main__":

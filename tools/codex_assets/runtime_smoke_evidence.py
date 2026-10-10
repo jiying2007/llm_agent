@@ -12,8 +12,11 @@ import argparse
 import hashlib
 import json
 import math
+import os
 import shutil
+import shlex
 import subprocess
+import tempfile
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -21,7 +24,9 @@ from typing import Any, Mapping, Sequence
 
 
 EVIDENCE_SCHEMA = "llm-agent-runtime-smoke-evidence/v1"
-DEFAULT_MODEL = "gpt-5.5"
+DEFAULT_MODEL = "gpt-6.1-sol"
+DEFAULT_REASONING_EFFORT = "medium"
+REASONING_EFFORTS = ("low", "medium", "high", "xhigh", "max")
 DEFAULT_LIMIT = 1
 MAX_JSON_BYTES = 2 * 1024 * 1024
 TASK_IDENTITY_SCOPE = "parsed-ordered-selected-task-sequence"
@@ -42,11 +47,11 @@ def _digest(value: Any) -> str:
 
 
 def _sha256_file(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as stream:
-        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
+    from tools.codex_assets.intake_io import _sha256_file as safe_hash
+    try:
+        return safe_hash(path.absolute())
+    except (OSError, ValueError, RuntimeError) as exc:
+        raise SmokeEvidenceError("cannot safely hash runtime evidence input") from exc
 
 
 def _unique_json_fields(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
@@ -66,27 +71,56 @@ def _reject_nonfinite_number(raw: str) -> float:
 
 
 def _load_json(path: Path, label: str) -> dict[str, Any]:
-    if path.is_symlink() or not path.is_file():
-        raise SmokeEvidenceError(f"{label} must be a regular non-symlink file")
+    return _load_json_snapshot(path, label)[0]
+
+
+def _load_json_snapshot(path: Path, label: str) -> tuple[dict[str, Any], bytes]:
     try:
-        with path.open("rb") as stream:
-            raw = stream.read(MAX_JSON_BYTES + 1)
+        from tools.codex_assets.intake_io import read_bytes
+        raw = read_bytes(path.absolute(), label=label, max_bytes=MAX_JSON_BYTES)
         if len(raw) > MAX_JSON_BYTES:
             raise SmokeEvidenceError(f"{label} exceeds byte budget")
         value = json.loads(
             raw.decode("utf-8"), object_pairs_hook=_unique_json_fields,
             parse_constant=_reject_nonfinite_number, parse_float=_reject_nonfinite_number,
         )
-    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+    except (OSError, UnicodeError, ValueError, RuntimeError) as exc:
         raise SmokeEvidenceError(f"invalid {label}: {path}") from exc
     if not isinstance(value, dict):
         raise SmokeEvidenceError(f"{label} must be a JSON object")
-    return value
+    return value, raw
 
 
 def _write_json(path: Path, value: Mapping[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def _preflight_new_output(path: Path) -> None:
+    if path.is_symlink() or any(parent.is_symlink() for parent in path.parents):
+        raise SmokeEvidenceError("diagnostic output contains a symbolic link")
+    if path.exists():
+        raise SmokeEvidenceError("diagnostic output already exists")
+
+
+def _write_new_json(path: Path, value: Mapping[str, Any]) -> None:
+    """Create exclusively through directory descriptors; never follow links."""
+    path = path.absolute()
+    descriptor = os.open("/", os.O_RDONLY | os.O_DIRECTORY)
+    try:
+        for part in path.parent.parts[1:]:
+            child = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=descriptor)
+            os.close(descriptor)
+            descriptor = child
+        output = os.open(path.name, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW,
+                         0o600, dir_fd=descriptor)
+        with os.fdopen(output, "w", encoding="utf-8") as stream:
+            json.dump(value, stream, ensure_ascii=False, sort_keys=True, indent=2)
+            stream.write("\n")
+    except OSError as exc:
+        raise SmokeEvidenceError("cannot safely create diagnostic output") from exc
+    finally:
+        os.close(descriptor)
 
 
 def _read_lock(path: Path) -> dict[str, str]:
@@ -153,6 +187,57 @@ def _format_time(value: datetime) -> str:
     return value.astimezone(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
+def _reject_hidden_index_entries(root: Path) -> None:
+    """A clean status cannot certify source when Git hides tracked changes."""
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(root), "ls-files", "-v", "-z"], check=False,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=20,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise SmokeEvidenceError("cannot inspect source index flags") from exc
+    if result.returncode != 0:
+        raise SmokeEvidenceError("cannot inspect source index flags")
+    if any(entry[:1] == b"S" or entry[:1].islower()
+           for entry in result.stdout.split(b"\0") if entry):
+        raise SmokeEvidenceError("source index contains assume-unchanged or skip-worktree entries")
+
+
+def _verify_pinned_bytes(adk_root: Path, relative: str, raw: bytes) -> None:
+    """Hash the consumed snapshot without invoking worktree filters."""
+    expected = _run_git(adk_root, "rev-parse", "HEAD:" + relative)
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(adk_root), "hash-object", "--no-filters", "--stdin"],
+            input=raw, check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=20,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise SmokeEvidenceError("cannot bind consumed source to pinned blob") from exc
+    if result.returncode != 0 or result.stdout.strip() != expected.encode("ascii"):
+        raise SmokeEvidenceError("consumed source bytes differ from pinned HEAD blob: " + relative)
+
+
+def _reject_ignored_executable_inputs(root: Path) -> None:
+    """Ignored sourceless modules can run despite a clean Git status."""
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(root), "ls-files", "--others", "--ignored", "--exclude-standard", "-z"],
+            check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=20,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise SmokeEvidenceError("cannot inspect ignored source inputs") from exc
+    if result.returncode != 0:
+        raise SmokeEvidenceError("cannot inspect ignored source inputs")
+    for entry in result.stdout.split(b"\0"):
+        if not entry:
+            continue
+        path = Path(entry.decode("utf-8"))
+        governed = len(path.parts) == 1 or path.parts[0] in {"src", "scripts", "tools", "tests"}
+        normal_cache = path.parent.name == "__pycache__" and path.suffix == ".pyc"
+        if governed and not normal_cache and path.suffix.lower() in {".py", ".pyc", ".pyo", ".sh", ".so", ".pyd"}:
+            raise SmokeEvidenceError("source contains ignored executable inputs")
+
+
 def _validate_source_identity(root: Path) -> tuple[dict[str, str], dict[str, Any], Path]:
     lock = _read_lock(root / "adk.lock")
     source_path = root / "agent-dev-kit"
@@ -164,7 +249,7 @@ def _validate_source_identity(root: Path) -> tuple[dict[str, str], dict[str, Any
     manifest_path = adk_root / "manifest.json"
     if not manifest_path.is_file():
         raise SmokeEvidenceError("agent-dev-kit/manifest.json is missing; initialize the pinned gitlink/submodule first")
-    manifest = _load_json(manifest_path, "ADK manifest")
+    manifest, manifest_bytes = _load_json_snapshot(manifest_path, "ADK manifest")
     if manifest.get("version") != lock["agent-dev-kit.version"]:
         raise SmokeEvidenceError("ADK manifest version does not match adk.lock")
 
@@ -184,6 +269,9 @@ def _validate_source_identity(root: Path) -> tuple[dict[str, str], dict[str, Any
     for field, value in expected.items():
         if actual[field] != value:
             raise SmokeEvidenceError(f"checked-out ADK {field} does not match adk.lock")
+    _reject_hidden_index_entries(adk_root)
+    _reject_ignored_executable_inputs(adk_root)
+    _verify_pinned_bytes(adk_root, "manifest.json", manifest_bytes)
     state = subprocess.run(
         ["git", "-C", str(adk_root), "status", "--porcelain", "--untracked-files=all"],
         check=False, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=20,
@@ -194,11 +282,14 @@ def _validate_source_identity(root: Path) -> tuple[dict[str, str], dict[str, Any
 
 
 def _selected_tasks(path: Path, limit: int) -> tuple[list[dict[str, Any]], str]:
-    if path.is_symlink() or not path.is_file():
-        raise SmokeEvidenceError("runtime smoke task dataset is missing or unsafe")
+    selected, digest, _ = _selected_task_snapshot(path, limit)
+    return selected, digest
+
+
+def _selected_task_snapshot(path: Path, limit: int) -> tuple[list[dict[str, Any]], str, bytes]:
     try:
-        with path.open("rb") as stream:
-            raw = stream.read(1024 * 1024 + 1)
+        from tools.codex_assets.intake_io import read_bytes
+        raw = read_bytes(path.absolute(), label="runtime smoke task dataset", max_bytes=1024 * 1024)
         if len(raw) > 1024 * 1024:
             raise SmokeEvidenceError("runtime smoke task dataset exceeds byte budget")
         lines = raw.decode("utf-8").splitlines()
@@ -206,7 +297,7 @@ def _selected_tasks(path: Path, limit: int) -> tuple[list[dict[str, Any]], str]:
             line, object_pairs_hook=_unique_json_fields,
             parse_constant=_reject_nonfinite_number, parse_float=_reject_nonfinite_number,
         ) for line in lines if line.strip()]
-    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+    except (OSError, UnicodeError, ValueError, RuntimeError) as exc:
         raise SmokeEvidenceError("runtime smoke task dataset is invalid") from exc
     if len(tasks) < limit or any(not isinstance(task, dict) for task in tasks):
         raise SmokeEvidenceError("runtime smoke task dataset has insufficient valid cases")
@@ -219,7 +310,7 @@ def _selected_tasks(path: Path, limit: int) -> tuple[list[dict[str, Any]], str]:
     if len({task["id"] for task in selected}) != limit:
         raise SmokeEvidenceError("runtime smoke task IDs are duplicated")
     digest = hashlib.sha256((_canonical(selected) + b"\n")).hexdigest()
-    return selected, digest
+    return selected, digest, raw
 
 
 def _validate_raw_report(
@@ -257,10 +348,11 @@ def _validate_raw_report(
     passed = report.get("passed")
     if isinstance(total, bool) or not isinstance(total, int) or total != limit:
         raise SmokeEvidenceError("runtime report total does not match requested limit")
-    if passed != total:
+    if type(passed) is not int or passed != total:
         raise SmokeEvidenceError("runtime report did not pass every measured task")
     gates = report.get("quality_gate")
-    if not isinstance(gates, dict) or not gates or not all(value is True for value in gates.values()):
+    from tools.codex_assets.m5_runtime_contract import GATES
+    if not isinstance(gates, dict) or set(gates) != GATES or not all(value is True for value in gates.values()):
         raise SmokeEvidenceError("runtime report quality gates are not all passing")
     results = report.get("results")
     if not isinstance(results, list) or len(results) != total:
@@ -311,6 +403,68 @@ def _execute_runtime(
     model: str,
     limit: int,
     tasks: Path,
+    runtime_path: Path | None = None,
+    reasoning_effort: str = DEFAULT_REASONING_EFFORT,
+    observe_provider_model: bool = False,
+) -> dict[str, Any] | None:
+    if reasoning_effort not in REASONING_EFFORTS:
+        raise SmokeEvidenceError("unsupported reasoning effort")
+    if observe_provider_model and runtime_path is None:
+        raise SmokeEvidenceError("provider observation requires a selected executable")
+    failure_path = raw_output.with_name(raw_output.stem + "-observation-failure.json")
+    if observe_provider_model:
+        _preflight_new_output(failure_path)
+    # -B only prevents cache writes; a fresh prefix also isolates cache reads.
+    with tempfile.TemporaryDirectory(prefix="m5-runtime-pycache-") as directory:
+        environment = dict(os.environ, PYTHONPYCACHEPREFIX=directory)
+        environment.pop("PYTHONPATH", None)
+        for key in list(environment):
+            if key in {"BASH_ENV", "ENV"} or key.startswith("BASH_FUNC_"):
+                environment.pop(key)
+        if runtime_path is not None:
+            # Keep the original launcher path/argv[0], including relative resources.
+            launcher = Path(directory) / "codex"
+            options = ["--ignore-user-config", "-c", 'model_reasoning_effort="' + reasoning_effort + '"']
+            quoted_runtime = shlex.quote(str(runtime_path))
+            executor = quoted_runtime + " exec "
+            if observe_provider_model:
+                from tools.codex_assets.intake_io import read_bytes
+                helper = Path(__file__).with_name("codex_model_observer.py")
+                helper_bytes = read_bytes(helper.absolute(), label="provider observer", max_bytes=256 * 1024)
+                frozen_helper = Path(directory) / "observer.py"
+                frozen_helper.write_bytes(helper_bytes)
+                receipts = Path(directory) / "observations"
+                executor = " ".join(shlex.quote(value) for value in
+                                    (sys.executable, "-I", str(frozen_helper), "--allow-network", "--binary",
+                                     str(runtime_path), "--receipt-dir", str(receipts), "--")) + " "
+            launcher.write_text('#!/bin/sh\nif [ "$1" = "exec" ]; then\nshift\nexec '
+                                + executor
+                                + " ".join(shlex.quote(option) for option in options) + ' "$@"\nfi\nexec '
+                                + quoted_runtime + ' "$@"\n')
+            launcher.chmod(0o700)
+            environment["PATH"] = directory + os.pathsep + environment.get("PATH", os.defpath)
+        try:
+            _execute_runtime_in_environment(root, adk_root, raw_output, model, limit, tasks, environment)
+        except SmokeEvidenceError:
+            if observe_provider_model:
+                failures = [_load_json(path, "provider failure diagnostics")
+                            for path in sorted(receipts.glob("*.failure.json"))]
+                _write_new_json(failure_path,
+                            {"status": "fail", "qualification": False, "diagnostics": failures})
+            raise
+        if observe_provider_model:
+            records = [_load_json(path, "provider model observation") for path in sorted(receipts.glob("*.json"))]
+            if len(records) != limit or any(record.get("model") != model or record.get("completed") is not True
+                                            for record in records):
+                raise SmokeEvidenceError("provider model observations are incomplete")
+            return {"scope": "upstream-response-openai-model-header", "adapter_sha256": hashlib.sha256(helper_bytes).hexdigest(),
+                    "records": records}
+    return None
+
+
+def _execute_runtime_in_environment(
+    root: Path, adk_root: Path, raw_output: Path, model: str, limit: int,
+    tasks: Path, environment: Mapping[str, str],
 ) -> None:
     devkit = adk_root / "scripts" / "devkit.sh"
     if not devkit.is_file():
@@ -320,7 +474,7 @@ def _execute_runtime(
     try:
         capability = subprocess.run(
             ["bash", str(devkit), "eval", "run", "--help"], cwd=str(adk_root),
-            check=False, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=20,
+            env=environment, check=False, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=20,
         )
     except (OSError, subprocess.TimeoutExpired) as exc:
         raise SmokeEvidenceError("cannot inspect pinned ADK runtime eval capability") from exc
@@ -354,7 +508,7 @@ def _execute_runtime(
         str(raw_output),
     ]
     try:
-        completed = subprocess.run(command, cwd=str(adk_root), check=False, timeout=600)
+        completed = subprocess.run(command, cwd=str(adk_root), env=environment, check=False, timeout=600)
     except (OSError, subprocess.TimeoutExpired) as exc:
         raise SmokeEvidenceError("ADK runtime smoke execution could not complete") from exc
     if completed.returncode != 0:
@@ -377,7 +531,14 @@ def collect(
     generated_at: str | None,
     review_days: int,
     approve_unknown_cost: bool = False,
+    reasoning_effort: str = DEFAULT_REASONING_EFFORT,
+    observe_provider_model: bool = False,
+    allow_network: bool = False,
 ) -> dict[str, Any]:
+    if observe_provider_model and (not execute or not allow_network or limit != 1):
+        raise SmokeEvidenceError("provider observation requires --execute --allow-network and --limit 1")
+    if reasoning_effort not in REASONING_EFFORTS:
+        raise SmokeEvidenceError("unsupported reasoning effort")
     if execute and not approve_unknown_cost:
         raise SmokeEvidenceError("--execute requires --approve-unknown-cost")
     if not execute and approve_unknown_cost:
@@ -391,32 +552,62 @@ def collect(
     if review_days < 1 or review_days > 90:
         raise SmokeEvidenceError("--review-days must be between 1 and 90")
 
+    model_observation = None
     if execute:
         if raw_output is None:
             raise SmokeEvidenceError("--raw-output is required with --execute")
-        raw_path = raw_output.resolve()
-        task_path = tasks.resolve() if tasks else adk_root / "tests" / "fixtures" / "software_m5_eval_tasks.jsonl"
-        _execute_runtime(root, adk_root, raw_path, model, limit, task_path)
+        raw_path = raw_output.absolute()
+        task_path = tasks.absolute() if tasks else adk_root / "tests" / "fixtures" / "software_m5_eval_tasks.jsonl"
+        # Validate the lexical input and output before any potentially paid eval.
+        selected_tasks, task_digest, frozen_tasks = _selected_task_snapshot(task_path, limit)
+        if task_path == adk_root / "tests/fixtures/software_m5_eval_tasks.jsonl":
+            _verify_pinned_bytes(adk_root, "tests/fixtures/software_m5_eval_tasks.jsonl", frozen_tasks)
+        if raw_path.is_symlink() or any(parent.is_symlink() for parent in raw_path.parents):
+            raise SmokeEvidenceError("runtime raw output contains a symbolic link")
+        if raw_path.exists():
+            raise SmokeEvidenceError("runtime raw output already exists")
+        from tools.codex_assets.intake_io import read_bytes
+        executable = str(runtime_binary.absolute()) if runtime_binary else shutil.which("codex")
+        if executable is None:
+            raise SmokeEvidenceError("codex runtime binary is not installed")
+        runtime_path = Path(executable).resolve()
+        if not runtime_path.is_file() or not os.access(runtime_path, os.X_OK):
+            raise SmokeEvidenceError("selected runtime binary is not an executable regular file")
+        runtime_digest = _sha256_file(runtime_path)
+        with tempfile.TemporaryDirectory(prefix="m5-runtime-tasks-") as directory:
+            execution_tasks = Path(directory) / "tasks.jsonl"
+            execution_tasks.write_bytes(frozen_tasks)
+            options = {"observe_provider_model": True} if observe_provider_model else {}
+            model_observation = _execute_runtime(root, adk_root, raw_path, model, limit, execution_tasks,
+                                                 Path(executable).absolute(), reasoning_effort, **options)
+        if Path(executable).resolve() != runtime_path or _sha256_file(runtime_path) != runtime_digest:
+            raise SmokeEvidenceError("selected runtime binary changed during execution")
+        if read_bytes(task_path, label="runtime tasks", max_bytes=1024 * 1024) != frozen_tasks:
+            raise SmokeEvidenceError("runtime task dataset changed during execution")
     else:
         assert raw_result is not None
-        raw_path = raw_result.resolve()
-        task_path = tasks.resolve() if tasks else adk_root / "tests" / "fixtures" / "software_m5_eval_tasks.jsonl"
+        raw_path = raw_result.absolute()
+        task_path = tasks.absolute() if tasks else adk_root / "tests" / "fixtures" / "software_m5_eval_tasks.jsonl"
+        selected_tasks, task_digest, frozen_tasks = _selected_task_snapshot(task_path, limit)
+        if task_path == adk_root / "tests/fixtures/software_m5_eval_tasks.jsonl":
+            _verify_pinned_bytes(adk_root, "tests/fixtures/software_m5_eval_tasks.jsonl", frozen_tasks)
 
-    selected_tasks, task_digest = _selected_tasks(task_path, limit)
-    report = _load_json(raw_path, "runtime smoke report")
+    report, raw_snapshot = _load_json_snapshot(raw_path, "runtime smoke report")
     _validate_raw_report(report, model, limit, _manifest_digest(manifest), selected_tasks, task_digest)
     post_lock, post_manifest, post_adk_root = _validate_source_identity(root)
     if post_lock != lock or _manifest_digest(post_manifest) != _manifest_digest(manifest) or post_adk_root != adk_root:
         raise SmokeEvidenceError("ADK source identity changed during runtime smoke collection")
 
-    runtime_path = runtime_binary.resolve() if runtime_binary else None
-    if runtime_path is None:
-        executable = shutil.which("codex")
-        if executable is None:
-            raise SmokeEvidenceError("codex runtime binary is not installed")
-        runtime_path = Path(executable).resolve()
-    if not runtime_path.is_file():
-        raise SmokeEvidenceError(f"runtime binary is not a regular file: {runtime_path}")
+    if not execute:
+        runtime_path = runtime_binary.resolve() if runtime_binary else None
+        if runtime_path is None:
+            executable = shutil.which("codex")
+            if executable is None:
+                raise SmokeEvidenceError("codex runtime binary is not installed")
+            runtime_path = Path(executable).resolve()
+        runtime_digest = _sha256_file(runtime_path)
+    elif _sha256_file(runtime_path) != runtime_digest:
+        raise SmokeEvidenceError("selected runtime binary changed before evidence publication")
 
     generated = _parse_generated_at(generated_at)
     review_after = (generated + timedelta(days=review_days)).date().isoformat()
@@ -430,23 +621,29 @@ def collect(
         "review_after": review_after,
         "runtime": "codex",
         "runtime_version": report["runtime_version"],
-        "runtime_binary_sha256": _sha256_file(runtime_path),
+        "runtime_binary_sha256": runtime_digest,
         "requested_model": model,
         "adk_commit": lock["agent-dev-kit.commit"],
         "adk_tree": lock["agent-dev-kit.tree"],
         "manifest_blob": lock["agent-dev-kit.manifest_blob"],
         "manifest_version": manifest_version,
         "manifest_sha256": _manifest_digest(manifest),
-        "raw_result_sha256": _sha256_file(raw_path),
+        "raw_result_sha256": hashlib.sha256(raw_snapshot).hexdigest(),
         "collection": {
             "collector": "tools.codex_assets.runtime_smoke_evidence",
+            "runtime_identity": "selected-executable-pre-post-sha256" if execute else "unverified-import",
+            "requested_reasoning_effort": reasoning_effort if execute else None,
+            "reasoning_identity_scope": "cli-config-override" if execute else "unverified-import",
+            "user_config_loaded": False if execute else None,
             "task_limit": limit,
-            "tasks_sha256": _sha256_file(task_path) if task_path.is_file() else None,
+            "tasks_sha256": hashlib.sha256(frozen_tasks).hexdigest(),
             "raw_report_retained_in_repository": False,
         },
         "result": report,
         "raw_content_stored": False,
     }
+    if observe_provider_model:
+        evidence["collection"]["model_observation"] = model_observation
     evidence["evidence_sha256"] = _digest(evidence)
     _write_json(output.resolve(), evidence)
     return evidence
@@ -460,10 +657,13 @@ def _parser() -> argparse.ArgumentParser:
     mode.add_argument("--execute", action="store_true")
     mode.add_argument("--raw-result")
     parser.add_argument("--approve-unknown-cost", action="store_true")
+    parser.add_argument("--observe-provider-model", action="store_true")
+    parser.add_argument("--allow-network", action="store_true")
     parser.add_argument("--raw-output")
     parser.add_argument("--tasks")
     parser.add_argument("--runtime-binary")
     parser.add_argument("--model", default=DEFAULT_MODEL)
+    parser.add_argument("--reasoning-effort", choices=REASONING_EFFORTS, default=DEFAULT_REASONING_EFFORT)
     parser.add_argument("--limit", type=int, default=DEFAULT_LIMIT)
     parser.add_argument("--generated-at")
     parser.add_argument("--review-days", type=int, default=30)
@@ -487,6 +687,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             generated_at=args.generated_at,
             review_days=args.review_days,
             approve_unknown_cost=bool(args.approve_unknown_cost),
+            reasoning_effort=args.reasoning_effort,
+            observe_provider_model=args.observe_provider_model,
+            allow_network=args.allow_network,
         )
     except SmokeEvidenceError as exc:
         if args.summary_json:
