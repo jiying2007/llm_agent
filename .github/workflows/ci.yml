@@ -58,6 +58,9 @@ jobs:
       - name: Validate portable ADK promotion evidence verifier
         run: bash tests/test_adk_promotion_evidence.sh
 
+      - name: Initialize pinned ADK task data for M5 tooling
+        run: git submodule update --init --depth=1 agent-dev-kit
+
       - name: Validate Software M5 qualification tooling
         run: |
           bash -n tests/test_runtime_smoke_evidence.sh

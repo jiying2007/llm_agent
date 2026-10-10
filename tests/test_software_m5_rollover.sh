@@ -53,9 +53,9 @@ if ! python3 "$ROOT/tests/m5_snapshot_fixture.py" "$ROOT" "$BAD"; then
   echo "[FAIL] failed to copy BAD rollover fixture" >&2
   exit 1
 fi
-# A linked worktree stores .git pointers into the source repository. Give each
-# copied fixture independent root Git metadata and resolve submodule pointers
-# before its Git commands, so the fixture cannot mutate the source index.
+# m5_snapshot_fixture already creates independent root Git metadata for both
+# native repositories and linked worktrees. Resolve child metadata below before
+# fixture Git commands so synthetic commits cannot mutate the source index.
 python3 - "$ROOT" "$GOOD" "$BAD" <<'PY'
 import subprocess
 import sys
@@ -65,18 +65,6 @@ from pathlib import Path
 import shutil
 
 source = Path(sys.argv[1])
-linked_worktree = (source / ".git").is_file()
-for fixture in (Path(sys.argv[2]), Path(sys.argv[3])):
-    if not linked_worktree:
-        continue
-    clone = fixture.parent / f"{fixture.name}-git-metadata"
-    subprocess.run(
-        ["git", "clone", "--quiet", "--no-hardlinks", "--no-checkout", str(source), str(clone)],
-        check=True,
-    )
-    (fixture / ".git").unlink()
-    (clone / ".git").rename(fixture / ".git")
-    subprocess.run(["git", "-C", str(fixture), "read-tree", "HEAD"], check=True)
 for fixture in (Path(sys.argv[2]), Path(sys.argv[3])):
     # Never let a copied gitfile point at the user's child index/refs. Both
     # native and linked parents get independent child metadata and synthetic

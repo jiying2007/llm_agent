@@ -142,6 +142,8 @@ assert '--step-summary "$GITHUB_STEP_SUMMARY"' in github
 assert "cross-repo-contract-change" not in github
 assert "grep -Eq '^(" not in github
 assert "git submodule update --init --depth=1 codex" in github
+contract_workflow = github.split("  contract:\n", 1)[1].split("  doc-sync:\n", 1)[0]
+assert contract_workflow.index("git submodule update --init --depth=1 agent-dev-kit") < contract_workflow.index("bash tests/test_software_m5_rollover.sh")
 assert "/tmp/runtime-chain-receipt.json" in github
 
 # Existing evidence/trust semantics must not weaken while routing through llm-ctl.
