@@ -27,8 +27,13 @@ def validate_receipt(envelope: Mapping[str, Any], *, head: str, run_id: int) -> 
     decode_json(bundle, label="root CI Sigstore bundle")
     if not isinstance(receipt, dict) or receipt.get("schema") != "llm-agent-root-ci-receipt/v1":
         raise ValueError("root CI receipt payload schema is invalid")
+    event = receipt.get("event")
+    if not isinstance(event, str) or event not in {"push", "workflow_dispatch"}:
+        raise ValueError("root CI trigger is not trusted")
+    if event == "workflow_dispatch" and receipt.get("integration_forced") is not True:
+        raise ValueError("manual root CI receipt requires signed forced integration")
     expected = {"repository": "jiying2007/llm_agent", "workflow": ".github/workflows/ci.yml",
-                "ref": "refs/heads/main", "event": "push", "head_sha": head,
+                "ref": "refs/heads/main", "event": event, "head_sha": head,
                 "run_id": run_id, "conclusion": "success"}
     if any(receipt.get(key) != value for key, value in expected.items()) or type(receipt.get("run_id")) is not int:
         raise ValueError("root CI repository/workflow/event/head/run binding is invalid")
@@ -38,7 +43,8 @@ def validate_receipt(envelope: Mapping[str, Any], *, head: str, run_id: int) -> 
     if not isinstance(jobs, dict) or set(jobs) != JOBS or any(value != "success" for value in jobs.values()):
         raise ValueError("root CI required job conclusions are incomplete")
     verify(payload, bundle, repository="jiying2007/llm_agent")
-    return {**expected, "run_attempt": receipt["run_attempt"], "jobs": jobs,
+    forced = {"integration_forced": True} if event == "workflow_dispatch" else {}
+    return {**expected, **forced, "run_attempt": receipt["run_attempt"], "jobs": jobs,
             "receipt_sha256": hashlib.sha256(payload).hexdigest()}
 
 

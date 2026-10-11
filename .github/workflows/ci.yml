@@ -312,7 +312,7 @@ jobs:
 
   software-m5-ci-receipt:
     name: software-m5-ci-receipt
-    if: ${{ always() && github.repository == 'jiying2007/llm_agent' && github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.contract.result == 'success' && needs.doc-sync.result == 'success' && needs.integration.result == 'success' && needs.integration-summary.result == 'success' }}
+    if: ${{ always() && github.repository == 'jiying2007/llm_agent' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.require_adk_integration)) && github.ref == 'refs/heads/main' && needs.contract.result == 'success' && needs.doc-sync.result == 'success' && needs.integration.result == 'success' && needs.integration-summary.result == 'success' }}
     needs: [contract, doc-sync, integration, integration-summary]
     runs-on: ubuntu-24.04
     permissions:
@@ -323,6 +323,7 @@ jobs:
       M5_JOB_DOC_SYNC: ${{ needs.doc-sync.result }}
       M5_JOB_INTEGRATION: ${{ needs.integration.result }}
       M5_JOB_INTEGRATION_SUMMARY: ${{ needs.integration-summary.result }}
+      M5_REQUIRE_ADK_INTEGRATION: ${{ github.event_name == 'workflow_dispatch' && inputs.require_adk_integration || false }}
     steps:
       - name: Checkout trusted main source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
