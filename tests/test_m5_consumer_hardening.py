@@ -150,6 +150,25 @@ class ConsumerHardeningTests(unittest.TestCase):
         return signature.Trust(binary, hashlib.sha256(binary.read_bytes()).hexdigest(),
                                trust, hashlib.sha256(trust.read_bytes()).hexdigest())
 
+    def test_manual_ci_requires_signed_force_marker_and_complete_jobs(self):
+        envelope = receipt("a" * 40, 17)
+        payload = json.loads(base64.b64decode(envelope["payload_base64"]))
+        payload.update(event="workflow_dispatch", integration_forced=True)
+        def wrap(value):
+            return dict(envelope, payload_base64=base64.b64encode(json.dumps(value).encode()).decode())
+        with mock.patch.object(ci, "verify", return_value={}) as verify:
+            result = ci.validate_receipt(wrap(payload), head="a" * 40, run_id=17)
+            self.assertEqual(result["event"], "workflow_dispatch")
+            self.assertIs(result["integration_forced"], True)
+            verify.assert_called_once()
+        for field, value in (("integration_forced", False), ("integration_forced", "true"),
+                             ("integration_forced", 1), ("event", []), ("event", "pull_request"),
+                             ("ref", "refs/heads/topic"), ("jobs", dict(payload["jobs"], integration="skipped"))):
+            with self.subTest(field=field, value=value), mock.patch.object(ci, "verify") as verify:
+                with self.assertRaises(ValueError):
+                    ci.validate_receipt(wrap(dict(payload, **{field: value})), head="a" * 40, run_id=17)
+                verify.assert_not_called()
+
     def test_missing_trust_or_wrong_pin_never_executes(self):
         with mock.patch.object(signature.subprocess, "run") as execute:
             with self.assertRaises(ValueError):
@@ -228,6 +247,15 @@ class ConsumerHardeningTests(unittest.TestCase):
                        "GITHUB_RUN_ID": "17", "GITHUB_RUN_ATTEMPT": "2"}
         environment.update({"M5_JOB_" + job.upper().replace("-", "_"): "success" for job in ci.JOBS})
         self.assertEqual(payload(environment)["run_attempt"], 2)
+        manual = dict(environment, GITHUB_EVENT_NAME="workflow_dispatch", M5_REQUIRE_ADK_INTEGRATION="true")
+        self.assertEqual(payload(manual)["event"], "workflow_dispatch")
+        self.assertIs(payload(manual)["integration_forced"], True)
+        for flag in (None, "false", "1", True):
+            with self.subTest(flag=flag), self.assertRaises(ValueError):
+                payload(dict(manual, M5_REQUIRE_ADK_INTEGRATION=flag))
+        for field, value in (("GITHUB_REF", "refs/heads/topic"), ("M5_JOB_INTEGRATION", "skipped")):
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                payload(dict(manual, **{field: value}))
         for field, value in (("GITHUB_REPOSITORY", "attacker/fork"), ("GITHUB_EVENT_NAME", "pull_request"),
                              ("GITHUB_REF", "refs/heads/topic"), ("GITHUB_SHA", "wrong"),
                              ("GITHUB_RUN_ID", "0"), ("M5_JOB_INTEGRATION", "skipped")):
@@ -262,6 +290,19 @@ class ConsumerHardeningTests(unittest.TestCase):
         self.assertIn("git submodule update --init --depth=1 agent-dev-kit", entry["run"])
         for flag in ("--cosign-binary", "--cosign-sha256", "--trusted-root", "--trusted-root-sha256"):
             self.assertIn(flag, entry["run"])
+
+    def test_manual_signed_ci_job_retains_trusted_main_and_success_gates(self):
+        import yaml
+        workflow = yaml.safe_load((Path(__file__).resolve().parents[1] / ".github/workflows/ci.yml").read_text())
+        job = workflow["jobs"]["software-m5-ci-receipt"]
+        condition = job["if"]
+        for clause in ("github.repository == 'jiying2007/llm_agent'", "github.ref == 'refs/heads/main'",
+                       "github.event_name == 'workflow_dispatch' && inputs.require_adk_integration"):
+            self.assertIn(clause, condition)
+        for name in ci.JOBS:
+            self.assertIn(f"needs.{name}.result == 'success'", condition)
+        self.assertEqual(job["env"]["M5_REQUIRE_ADK_INTEGRATION"],
+                         "${{ github.event_name == 'workflow_dispatch' && inputs.require_adk_integration || false }}")
 
     def test_snapshot_hashes_are_bound_to_parsed_bytes(self):
         raw = self.write("raw.json", {"schema_version": 1})

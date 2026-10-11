@@ -1,4 +1,4 @@
-"""Produce CI payloads from trusted main-push workflow context; never certify."""
+"""Produce CI payloads from trusted main workflows; never certify."""
 from __future__ import annotations
 
 import argparse
@@ -14,11 +14,16 @@ from tools.codex_assets.m5_ci_contract import JOBS
 
 
 def payload(environment: Mapping[str, str]) -> dict:
-    expected = {"GITHUB_REPOSITORY": "jiying2007/llm_agent", "GITHUB_EVENT_NAME": "push",
+    expected = {"GITHUB_REPOSITORY": "jiying2007/llm_agent",
                 "GITHUB_REF": "refs/heads/main",
                 "GITHUB_WORKFLOW_REF": "jiying2007/llm_agent/.github/workflows/ci.yml@refs/heads/main"}
     if any(environment.get(key) != value for key, value in expected.items()):
-        raise ValueError("CI receipt requires canonical trusted main push workflow context")
+        raise ValueError("CI receipt requires canonical trusted main workflow context")
+    event = environment.get("GITHUB_EVENT_NAME")
+    if not isinstance(event, str) or event not in {"push", "workflow_dispatch"}:
+        raise ValueError("CI receipt trigger is not trusted")
+    if event == "workflow_dispatch" and environment.get("M5_REQUIRE_ADK_INTEGRATION") != "true":
+        raise ValueError("manual CI receipt requires explicitly forced integration")
     head = environment.get("GITHUB_SHA", "")
     if re.fullmatch(r"[0-9a-f]{40}", head) is None:
         raise ValueError("CI head SHA is invalid")
@@ -31,10 +36,13 @@ def payload(environment: Mapping[str, str]) -> dict:
     jobs = {job: environment.get("M5_JOB_" + job.upper().replace("-", "_")) for job in JOBS}
     if any(value != "success" for value in jobs.values()):
         raise ValueError("CI receipt requires every required job to succeed")
-    return {"schema": "llm-agent-root-ci-receipt/v1", "repository": expected["GITHUB_REPOSITORY"],
-            "workflow": ".github/workflows/ci.yml", "ref": expected["GITHUB_REF"], "event": "push",
+    value = {"schema": "llm-agent-root-ci-receipt/v1", "repository": expected["GITHUB_REPOSITORY"],
+            "workflow": ".github/workflows/ci.yml", "ref": expected["GITHUB_REF"], "event": event,
             "head_sha": head, "run_id": integers[0], "run_attempt": integers[1],
             "conclusion": "success", "jobs": jobs}
+    if event == "workflow_dispatch":
+        value["integration_forced"] = True
+    return value
 
 
 def main(argv: Sequence[str] | None = None) -> int:
