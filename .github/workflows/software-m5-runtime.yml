@@ -1,0 +1,85 @@
+name: software-m5-runtime
+
+on:
+  workflow_dispatch:
+    inputs:
+      approve_network_and_cost:
+        description: Authorize one bounded real model request on the governed runtime runner
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: software-m5-runtime
+  cancel-in-progress: false
+
+jobs:
+  measure:
+    if: github.repository == 'jiying2007/llm_agent' && github.ref == 'refs/heads/main' && inputs.approve_network_and_cost
+    runs-on: [self-hosted, linux, x64, m5-runtime]
+    environment: software-m5-runtime
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      M5_RUNTIME_BINARY: ${{ vars.M5_RUNTIME_BINARY }}
+      M5_RUNTIME_BINARY_SHA256: ${{ vars.M5_RUNTIME_BINARY_SHA256 }}
+      M5_COSIGN_SHA256: ${{ vars.M5_COSIGN_SHA256 }}
+      M5_TRUSTED_ROOT_SHA256: ${{ vars.M5_TRUSTED_ROOT_SHA256 }}
+      M5_TRUSTED_ROOT_BASE64: ${{ vars.M5_TRUSTED_ROOT_BASE64 }}
+      PYTHONPYCACHEPREFIX: ${{ runner.temp }}/m5-runtime-python-${{ github.run_id }}-${{ github.run_attempt }}
+      PYTHONPATH: ''
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - name: Checkout trusted exact main source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          submodules: false
+          persist-credentials: false
+      - name: Set up declared Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.11'
+      - name: Install reviewed Cosign
+        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+        with:
+          cosign-release: v3.1.3
+      - name: Prepare pinned task data and public trust
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir "$PYTHONPYCACHEPREFIX"
+          git submodule update --init --depth=1 agent-dev-kit
+          python -m pip install .
+          python -m tools.codex_assets.m5_signature --ci-trusted-root-output "$RUNNER_TEMP/m5-runtime-trusted-root.json"
+          python -c 'import hashlib,os,pathlib,shutil; p=pathlib.Path(shutil.which("cosign")); assert hashlib.sha256(p.read_bytes()).hexdigest()==os.environ["M5_COSIGN_SHA256"]'
+      - name: Collect one real upstream-observed measurement
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m tools.codex_assets.m5_runtime_receipt_producer collect --root "$GITHUB_WORKSPACE" \
+            --binary "$M5_RUNTIME_BINARY" --binary-sha256 "$M5_RUNTIME_BINARY_SHA256" \
+            --evidence "$RUNNER_TEMP/m5-runtime-unsigned.json" --raw-output "$RUNNER_TEMP/m5-runtime-raw.json" \
+            --payload "$RUNNER_TEMP/m5-runtime-payload.json" --allow-network --approve-unknown-cost
+      - name: Sign and independently verify measured provenance
+        shell: bash
+        run: |
+          set -euo pipefail
+          cosign sign-blob --yes --bundle "$RUNNER_TEMP/m5-runtime-bundle.json" "$RUNNER_TEMP/m5-runtime-payload.json"
+          python -m tools.codex_assets.m5_runtime_receipt_producer envelope --root "$GITHUB_WORKSPACE" \
+            --evidence "$RUNNER_TEMP/m5-runtime-unsigned.json" --payload "$RUNNER_TEMP/m5-runtime-payload.json" \
+            --bundle "$RUNNER_TEMP/m5-runtime-bundle.json" --output "$RUNNER_TEMP/m5-runtime-signed.json" \
+            --cosign-binary "$(command -v cosign)" --cosign-sha256 "$M5_COSIGN_SHA256" \
+            --trusted-root "$RUNNER_TEMP/m5-runtime-trusted-root.json" --trusted-root-sha256 "$M5_TRUSTED_ROOT_SHA256"
+      - name: Export verified measurement only
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: software-m5-runtime-signed
+          path: ${{ runner.temp }}/m5-runtime-signed.json
+          if-no-files-found: error
+          retention-days: 14

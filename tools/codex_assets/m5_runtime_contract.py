@@ -17,7 +17,7 @@ def digest(value: Any) -> str:
                                      separators=(",", ":")).encode()).hexdigest()
 
 
-def validate(evidence: Mapping[str, Any], lock: Mapping[str, str], now: datetime,
+def validate_measurement(evidence: Mapping[str, Any], lock: Mapping[str, str], now: datetime,
              *, expected_model: str | None = None, source_root: Path | None = None) -> None:
     def require(condition: bool, message: str) -> None:
         if not condition:
@@ -61,6 +61,7 @@ def validate(evidence: Mapping[str, Any], lock: Mapping[str, str], now: datetime
             and isinstance(collection, dict) and type(collection.get("task_limit")) is int
             and collection["task_limit"] == total, "runtime task counts are invalid")
     observation = collection.get("model_observation")
+    require(isinstance(observation, dict), "upstream model observation is required for measured qualification")
     if "model_observation" in collection:
         require(isinstance(observation, dict)
                 and observation.get("scope") == "upstream-response-openai-model-header",
@@ -141,3 +142,12 @@ def validate(evidence: Mapping[str, Any], lock: Mapping[str, str], now: datetime
         post_lock, post_manifest, post_adk = smoke._validate_source_identity(source_root)
         require(post_lock == current_lock and post_manifest == manifest and post_adk == adk,
                 "runtime pinned source changed during verification")
+
+
+def validate(evidence: Mapping[str, Any], lock: Mapping[str, str], now: datetime,
+             *, expected_model: str | None = None, source_root: Path | None = None,
+             expected_source_baseline: str | None = None) -> None:
+    """Production qualification requires consistency AND authenticated execution."""
+    validate_measurement(evidence, lock, now, expected_model=expected_model, source_root=source_root)
+    from tools.codex_assets.m5_runtime_receipt import validate as authenticate
+    authenticate(evidence, source_root=source_root, expected_source_baseline=expected_source_baseline)

@@ -8,7 +8,7 @@ from tools.codex_assets.m5_runtime_contract import GATES, digest
 
 
 def runtime(lock, model="gpt-6.1-sol", now=None, task=None, manifest_digest="2" * 64,
-            task_digest="3" * 64, tasks_sha256="4" * 64):
+            task_digest="3" * 64, tasks_sha256="4" * 64, source_baseline="a" * 40):
     now = now or datetime.now(timezone.utc).replace(microsecond=0) - timedelta(seconds=1)
     task = task or {"id": "route-001", "category": "routing", "prompt": "synthetic test",
                     "expected_skill": "adk-runtime-router", "expected_safe": True}
@@ -36,6 +36,35 @@ def runtime(lock, model="gpt-6.1-sol", now=None, task=None, manifest_digest="2" 
                         "task_snapshot_frozen": True, "source_snapshot_atomic": False,
                         "grader_contract": smoke.GRADER_CONTRACT, "prompt_version": smoke.PROMPT_VERSION,
                         "results": [result]}}
+    from pathlib import Path
+    from tools.codex_assets import codex_model_observer as observer
+    scope = "upstream-response-openai-model-header"
+    value["collection"]["model_observation"] = {"scope": scope,
+        "adapter_sha256": hashlib.sha256(Path(observer.__file__).read_bytes()).hexdigest(),
+        "records": [{"scope": scope, "model": model, "completed": True, "tools_disabled": True,
+                     "response_id": "synthetic-only-response", "header_sources": ["http-response-header"],
+                     "request_sha256": "b" * 64,
+                     "upstream": "https://chatgpt.com/backend-api/codex/responses"}]}
+    return attest_runtime(value, source_baseline)
+
+
+def attest_runtime(value, source_baseline="a" * 40):
+    """Synthetic envelope; valid only under an explicitly mocked verifier."""
+    import json
+    from pathlib import Path
+    from tools.codex_assets import m5_runtime_receipt as proof
+    from tools.codex_assets import m5_runtime_receipt_producer as producer
+    value.pop("execution_receipt", None)
+    value.pop("evidence_sha256", None)
+    value["collection"].update(source_baseline=source_baseline,
+        collector_source_sha256=hashlib.sha256(Path(smoke.__file__).read_bytes()).hexdigest(),
+        producer_source_sha256=hashlib.sha256(Path(producer.__file__).read_bytes()).hexdigest())
+    payload = {"schema": proof.SCHEMA, "repository": "jiying2007/llm_agent", "workflow": proof.WORKFLOW,
+               "ref": "refs/heads/main", "event": "workflow_dispatch", "head_sha": source_baseline,
+               "run_id": 1, "run_attempt": 1, "evidence_payload_sha256": proof.measurement_digest(value)}
+    value["execution_receipt"] = {"schema": proof.ENVELOPE_SCHEMA,
+        "payload_base64": base64.b64encode(json.dumps(payload).encode()).decode(),
+        "bundle_base64": base64.b64encode(b'{"synthetic_only":true}').decode()}
     value["evidence_sha256"] = digest(value)
     return value
 

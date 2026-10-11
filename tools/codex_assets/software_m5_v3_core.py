@@ -420,6 +420,10 @@ def _validate_qualification_record(root: Path, policy: Mapping[str, Any]) -> dic
     try:
         from tools.codex_assets.m5_ci_contract import validate_record
         validate_record(record, _kv(root / "adk.lock"))
+        from tools.codex_assets.m5_runtime_receipt import validate as authenticate_runtime
+        for relative in policy["runtime_qualification"]["measured_evidence"]:
+            runtime = _load_object(_repo_path(root, relative, "runtime evidence"), "runtime evidence")
+            authenticate_runtime(runtime, source_root=root, expected_source_baseline=record["source_baseline"])
         promotion_path = _repo_path(root, policy["release"]["promotion_evidence"], "promotion evidence")
         promotion = _load_object(promotion_path, "promotion evidence")
         adk = record["adk"]
@@ -428,20 +432,22 @@ def _validate_qualification_record(root: Path, policy: Mapping[str, Any]) -> dic
                 or adk.get("promotion_attestation_sha256") != _sha256_file(
                     _repo_path(root, policy["release"]["promotion_attestation"], "promotion attestation"))):
             raise ValueError("qualification promotion run/digests differ from verified promotion")
-        import subprocess
-        from tools.codex_assets.runtime_smoke_evidence import _reject_hidden_index_entries, _reject_ignored_executable_inputs
+        from tools.codex_assets.runtime_smoke_evidence import (
+            _reject_hidden_index_entries, _reject_ignored_executable_inputs, _verify_executable_sources,
+        )
+        from tools.codex_assets.source_git import run as source_git
         _reject_hidden_index_entries(root)
         _reject_ignored_executable_inputs(root)
-        changed = subprocess.run(["git", "-C", str(root), "diff", "--name-only", record["source_baseline"], "--"],
-                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=30, check=False)
+        _verify_executable_sources(root)
+        changed = source_git(root, "diff", "--ignore-submodules=dirty", "--name-only",
+                             record["source_baseline"], "--", timeout=30)
         allowed = {"manifests/software_m5_policy.json", "manifests/product_maturity_scorecard.json",
                    "reports/current-status.md", policy["qualification_record"],
                    *policy["runtime_qualification"]["measured_evidence"]}
-        if changed.returncode != 0 or set(changed.stdout.splitlines()) - allowed:
+        if changed.returncode != 0 or set(changed.stdout.decode("utf-8").splitlines()) - allowed:
             raise ValueError("root source differs from signed CI baseline outside qualification outputs")
         from tools.codex_assets.validation_plan import _reference_roots, _excluded
-        unknown = subprocess.run(["git", "-C", str(root), "ls-files", "--others", "-z"],
-                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=30, check=False)
+        unknown = source_git(root, "ls-files", "--others", "-z", timeout=30)
         reference_roots = _reference_roots(root)
         if unknown.returncode != 0 or any(
                 name not in allowed and not _excluded(name, reference_roots)
