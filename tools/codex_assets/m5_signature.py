@@ -64,12 +64,15 @@ def from_arguments(args) -> Trust | None:
     return Trust(Path(values[0]).absolute(), values[1], Path(values[2]).absolute(), values[3])
 
 
-def verify(payload: bytes, bundle: bytes, *, repository: str) -> dict[str, str]:
+def verify(payload: bytes, bundle: bytes, *, repository: str,
+           workflow: str = "ci.yml") -> dict[str, str]:
     trust = _trust.get()
     if trust is None:
         raise ValueError("explicit pinned cosign binary and trusted root are required")
     if repository not in {"jiying2007/agent-dev-kit", "jiying2007/llm_agent"}:
         raise ValueError("signature repository is not approved")
+    if workflow != "ci.yml" and (repository, workflow) != ("jiying2007/llm_agent", "software-m5-runtime.yml"):
+        raise ValueError("signature workflow is not approved")
     for pin in (trust.verifier_sha256, trust.trusted_root_sha256):
         if not isinstance(pin, str) or re.fullmatch(r"[0-9a-f]{64}", pin) is None:
             raise ValueError("signature trust SHA256 pins are invalid")
@@ -90,7 +93,7 @@ def verify(payload: bytes, bundle: bytes, *, repository: str) -> dict[str, str]:
             completed = subprocess.run(
                 [str(executable), "verify-blob", "--offline", "--new-bundle-format", "--bundle", str(frozen / "bundle.json"),
                  "--trusted-root", str(frozen / "root.json"), "--certificate-identity",
-                 f"https://github.com/{repository}/.github/workflows/ci.yml@refs/heads/main",
+                 f"https://github.com/{repository}/.github/workflows/{workflow}@refs/heads/main",
                  "--certificate-oidc-issuer", "https://token.actions.githubusercontent.com", "/dev/stdin"],
                 input=payload, env={"PATH": os.defpath, "LANG": "C.UTF-8", "LC_ALL": "C.UTF-8"},
                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False, timeout=45,

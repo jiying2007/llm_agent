@@ -4,6 +4,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 export PYTHONPATH="$ROOT/tests:$ROOT/agent-dev-kit/src:$ROOT${PYTHONPATH:+:$PYTHONPATH}"
 python3 "$ROOT/tests/test_m5_consumer_hardening.py"
+python3 "$ROOT/tests/test_m5_execution_provenance.py"
 python3 "$ROOT/tests/test_codex_model_observer.py"
 PYTHONPATH="$ROOT${PYTHONPATH:+:$PYTHONPATH}" python3 "$ROOT/tests/test_m5_rollover_model_binding.py"
 PYTHONPATH="$ROOT/agent-dev-kit/src:$ROOT${PYTHONPATH:+:$PYTHONPATH}" python3 "$ROOT/tests/test_current_m5_diagnostics.py"
@@ -192,7 +193,7 @@ for line in (root / "adk.lock").read_text(encoding="utf-8").splitlines():
         key, value = line.split("=", 1)
         lock[key] = value
 
-from m5_fixtures import runtime
+from m5_fixtures import runtime, attest_runtime
 from tools.codex_assets import runtime_smoke_evidence as smoke
 tasks_path = root / "agent-dev-kit/tests/fixtures/software_m5_eval_tasks.jsonl"
 selected, task_digest = smoke._selected_tasks(tasks_path, 1)
@@ -236,6 +237,8 @@ evidence = {
 }
 evidence.update(complete)
 evidence["result"]["quality_gate"]["success_rate"] = gate
+import subprocess
+attest_runtime(evidence, subprocess.check_output(["git", "-C", str(root), "rev-parse", "HEAD"], text=True).strip())
 evidence.pop("evidence_sha256", None)
 payload = json.dumps(evidence, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()
 evidence["evidence_sha256"] = hashlib.sha256(payload).hexdigest()

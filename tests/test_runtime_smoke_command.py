@@ -33,10 +33,11 @@ class RuntimeSmokeCommandTests(unittest.TestCase):
             tasks = root / "tasks.jsonl"
             tasks.write_text('{}\n')
             env = {"BASH_ENV": str(startup), "ENV": str(startup),
-                   "BASH_FUNC_unused%%": "() { :; }"}
+                   "BASH_FUNC_unused%%": "() { :; }", "GIT_DIR": "/untrusted/repository",
+                   "GIT_WORK_TREE": "/untrusted/worktree"}
             original_run = subprocess.run
             def observed(command, **kwargs):
-                self.assertFalse(any(key in {"BASH_ENV", "ENV"} or key.startswith("BASH_FUNC_")
+                self.assertFalse(any(key in {"BASH_ENV", "ENV"} or key.startswith(("BASH_FUNC_", "GIT_"))
                                      for key in kwargs["env"]))
                 return original_run(command, **kwargs)
             with patch.dict(os.environ, env), patch.object(smoke.subprocess, "run", side_effect=observed):
@@ -92,7 +93,8 @@ class RuntimeSmokeCommandTests(unittest.TestCase):
                     return smoke.collect(root, output, raw_result=None, raw_output=root / "raw.json",
                                          execute=True, model="gpt-5.5", limit=1, tasks=tasks,
                                          runtime_binary=selected, generated_at=None, review_days=30,
-                                         approve_unknown_cost=True)
+                                         approve_unknown_cost=True, allow_network=True)
+
                 if mutate or nonexecutable:
                     with self.assertRaisesRegex(smoke.SmokeEvidenceError, "changed|executable regular"):
                         collect()
@@ -106,6 +108,17 @@ class RuntimeSmokeCommandTests(unittest.TestCase):
             self.assertFalse((root / "wrong-marker").exists())
             if nonexecutable:
                 self.assertFalse((root / "raw.json").exists())
+
+    def test_execute_without_network_permission_never_inspects_source_or_executes(self):
+        for observe in (False, True):
+            with patch.object(smoke, "_validate_source_identity") as source, patch.object(smoke, "_execute_runtime") as execute:
+                with self.assertRaisesRegex(smoke.SmokeEvidenceError, "allow-network"):
+                    smoke.collect(Path("/unused"), Path("/unused/evidence"), raw_result=None,
+                                  raw_output=Path("/unused/raw"), execute=True, model="gpt-6.1-sol",
+                                  limit=1, tasks=None, runtime_binary=None, generated_at=None, review_days=30,
+                                  approve_unknown_cost=True, allow_network=False, observe_provider_model=observe)
+                source.assert_not_called()
+                execute.assert_not_called()
 
     def test_execute_requires_explicit_unknown_cost_acknowledgment(self):
         with patch.object(smoke, "_validate_source_identity") as source:

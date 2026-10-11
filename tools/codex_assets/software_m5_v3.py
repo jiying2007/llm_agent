@@ -129,6 +129,60 @@ def _pilot_start_matches_candidate(root: Path, event: Mapping[str, Any], policy:
     return False
 
 
+def _git(root: Path, *arguments: str) -> str:
+    from tools.codex_assets.source_git import run
+    result = run(root, *arguments)
+    if result.returncode:
+        raise M5Error("managed pilot Git identity cannot be verified")
+    return result.stdout.decode("utf-8").strip()
+
+
+def _repository_identity(url: str) -> tuple[str, str]:
+    parsed = urlparse("ssh://" + url.replace(":", "/", 1) if url.startswith("git@") else url)
+    if not parsed.hostname or parsed.password or parsed.query or parsed.fragment:
+        raise M5Error("managed pilot repository URL is invalid")
+    if parsed.username and not (parsed.scheme == "ssh" and parsed.username == "git"):
+        raise M5Error("managed pilot repository URL contains credentials")
+    return parsed.hostname.lower(), _repository_slug(url)
+
+
+def _managed_pilot_identity(root: Path, entry: Mapping[str, Any]) -> dict[str, str]:
+    path, url = entry.get("path"), entry.get("url")
+    if not isinstance(path, str) or not isinstance(url, str):
+        raise M5Error("managed pilot registry identity is incomplete")
+    child = _core._repo_path(root, path, "managed pilot checkout")
+    if not child.is_dir() or child.is_symlink() or any(parent.is_symlink() for parent in child.parents):
+        raise M5Error("managed pilot requires a non-linked independent checkout")
+    tree = _git(root, "ls-tree", "-z", "HEAD", "--", path).rstrip("\0")
+    match = re.fullmatch(r"160000 commit ([0-9a-f]{40})\t" + re.escape(path), tree)
+    if match is None:
+        raise M5Error("managed pilot path is not an actual HEAD Gitlink")
+    commit = match.group(1)
+    if Path(_git(child, "rev-parse", "--show-toplevel")).resolve() != child.resolve():
+        raise M5Error("managed pilot checkout is not an independent repository")
+    entries = _git(child, "ls-files", "-v", "-z").split("\0")
+    if any(entry and (entry[0].islower() or entry[0] == "S") for entry in entries):
+        raise M5Error("managed pilot source index contains hidden tracked entries")
+    if _git(child, "rev-parse", "HEAD") != commit or _git(child, "status", "--porcelain", "--untracked-files=all"):
+        raise M5Error("managed pilot checkout differs from clean pinned Gitlink")
+    if _repository_identity(_git(child, "remote", "get-url", "origin")) != _repository_identity(url):
+        raise M5Error("managed pilot origin differs from registry repository")
+    return {"repository": _repository_slug(url), "commit": commit, "path": path}
+
+
+def _pilot_start_matches_managed(root: Path, event: Mapping[str, Any], policy: Mapping[str, Any],
+                                 identity: Mapping[str, str]) -> bool:
+    for relative in event.get("evidence", []):
+        if not isinstance(relative, str) or not relative.endswith(".json"):
+            continue
+        evidence = _core._load_object(_core._repo_path(root, relative, "field evidence"), "field evidence")
+        pilot = evidence.get("pilot_repository", {})
+        if (_candidate_source_matches(evidence, event, policy)
+                and all(pilot.get(key) == value for key, value in identity.items())):
+            return True
+    return False
+
+
 def _validate_field(root: Path, policy: Mapping[str, Any]) -> dict[str, Any]:
     field = policy["field_qualification"]
     ledger = _core._load_object(
@@ -177,7 +231,7 @@ def _validate_field(root: Path, policy: Mapping[str, Any]) -> dict[str, Any]:
         _core._repo_path(root, "manifests/gitlinks.json", "gitlink registry"), "gitlink registry"
     )
     managed_paths = {
-        item.get("path")
+        item.get("path"): item
         for item in gitlinks.get("gitlinks", [])
         if isinstance(item, dict)
         and item.get("kind") == "managed-dependency"
@@ -191,7 +245,7 @@ def _validate_field(root: Path, policy: Mapping[str, Any]) -> dict[str, Any]:
         if not isinstance(repo_path, str) or not repo_path:
             raise M5Error("independent M5 repository requires a repository path")
         if repo_path in managed_paths:
-            governance[repo_id] = ("managed-gitlink", None)
+            governance[repo_id] = ("managed-gitlink", _managed_pilot_identity(root, managed_paths[repo_path]))
             continue
         pin_id = repository.get("reference_pin")
         if not isinstance(pin_id, str) or not pin_id:
@@ -225,6 +279,9 @@ def _validate_field(root: Path, policy: Mapping[str, Any]) -> dict[str, Any]:
         repo_path = str(repositories[repo_id]["path"])
         if not _pilot_start_matches_candidate(root, event, policy, repo_path):
             continue
+        if governance_kind == "managed-gitlink" and (
+                pin is None or not _pilot_start_matches_managed(root, event, policy, pin)):
+            continue
         if governance_kind == "reference-pin" and (
             pin is None or not _pilot_start_matches_pin(root, event, repo_id, repo_path, pin, policy)
         ):
@@ -237,8 +294,10 @@ def _validate_field(root: Path, policy: Mapping[str, Any]) -> dict[str, Any]:
             "event_hash": event.get("event_hash"),
             "repository_governance": governance_kind,
         }
-        if pin is not None:
+        if pin is not None and governance_kind == "reference-pin":
             item["reference_commit"] = pin["commit"]
+        elif pin is not None:
+            item["gitlink_commit"] = pin["commit"]
         qualifying.append(item)
     if not qualifying:
         raise M5Error("no real independent pilot_started field event satisfies M5 policy and candidate/repository identity")

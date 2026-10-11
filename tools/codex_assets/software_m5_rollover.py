@@ -90,17 +90,11 @@ def _read_lock(path: Path) -> dict[str, str]:
 
 
 def _git(root: Path, *args: str) -> str:
-    completed = subprocess.run(
-        ["git", "-C", str(root), *args],
-        check=False,
-        text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        timeout=30,
-    )
+    from tools.codex_assets.source_git import run
+    completed = run(root, *args, timeout=30)
     if completed.returncode != 0:
-        raise RolloverError(completed.stderr.strip() or f"git {' '.join(args)} failed")
-    return completed.stdout.strip()
+        raise RolloverError(completed.stderr.decode("utf-8", errors="replace").strip() or f"git {' '.join(args)} failed")
+    return completed.stdout.decode("utf-8").strip()
 
 
 def _parse_time(value: Any, label: str) -> datetime:
@@ -116,13 +110,15 @@ def _parse_time(value: Any, label: str) -> datetime:
 def _validate_runtime(
     path: Path, lock: Mapping[str, str], now: datetime, *, expected_model: str = DEFAULT_EXPECTED_MODEL,
     source_root: Path | None = None,
+    expected_source_baseline: str | None = None,
 ) -> dict[str, Any]:
     if not isinstance(expected_model, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}", expected_model):
         raise RolloverError("expected model must be an explicit bounded model identifier")
     evidence = _load_json(path, "measured runtime evidence")
     try:
         from tools.codex_assets.m5_runtime_contract import validate
-        validate(evidence, lock, now, expected_model=expected_model, source_root=source_root)
+        validate(evidence, lock, now, expected_model=expected_model, source_root=source_root,
+                 expected_source_baseline=expected_source_baseline)
     except (ValueError, TypeError, KeyError, RuntimeError, OSError) as exc:
         raise RolloverError(f"measured runtime evidence rejected: {exc}") from exc
     if evidence.get("schema") != EVIDENCE_SCHEMA:
@@ -414,8 +410,16 @@ def finalize(
         raise RolloverError("--root-integration-run-id must be positive")
     if root_ci_receipt is None:
         raise RolloverError("--root-ci-receipt is required; a run ID alone is not CI evidence")
-    if _git(root, "status", "--porcelain=v1", "--untracked-files=all", "--ignore-submodules=none"):
+    if _git(root, "status", "--porcelain=v1", "--untracked-files=all", "--ignore-submodules=dirty"):
         raise RolloverError("Software M5 rollover requires a clean root source worktree")
+    try:
+        from tools.codex_assets import runtime_smoke_evidence as smoke
+        smoke._reject_hidden_index_entries(root)
+        smoke._reject_ignored_executable_inputs(root)
+        smoke._verify_executable_sources(root)
+        smoke._validate_source_identity(root)
+    except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as exc:
+        raise RolloverError(f"rollover pinned source rejected: {exc}") from exc
     source_baseline = _git(root, "rev-parse", "HEAD")
     ci_receipt = _load_json(root_ci_receipt.absolute(), "signed root CI receipt")
     try:
@@ -426,7 +430,8 @@ def finalize(
     now = datetime.now(timezone.utc)
     lock = _read_lock(root / "adk.lock")
     promotion = _validate_promotion(root, lock)
-    runtime = _validate_runtime(runtime_source, lock, now, expected_model=expected_model, source_root=root)
+    runtime = _validate_runtime(runtime_source, lock, now, expected_model=expected_model, source_root=root,
+                                expected_source_baseline=source_baseline)
     generated = _parse_time(runtime["generated_at"], "measured runtime generated_at")
     today = now.date().isoformat()
     recorded_at = qualification_time or now.replace(microsecond=0).isoformat().replace("+00:00", "Z")

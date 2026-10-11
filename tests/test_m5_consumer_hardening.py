@@ -5,13 +5,14 @@ import hashlib
 import json
 import os
 import subprocess
+import shutil
 import tempfile
 import unittest
 from datetime import datetime, timezone
 from pathlib import Path
 from unittest import mock
 
-from m5_fixtures import receipt, runtime
+from m5_fixtures import receipt, runtime, attest_runtime
 from tools.codex_assets import m5_ci_contract as ci
 from tools.codex_assets import m5_runtime_contract as contract
 from tools.codex_assets import m5_signature as signature
@@ -28,6 +29,14 @@ class ConsumerHardeningTests(unittest.TestCase):
         self.lock = {"agent-dev-kit.version": "8.0.5", "agent-dev-kit.commit": "a" * 40,
                      "agent-dev-kit.tree": "b" * 40, "agent-dev-kit.manifest_blob": "c" * 40}
         self.now = datetime.now(timezone.utc)
+        source = Path(__file__).resolve().parents[1] / "tools/codex_assets"
+        destination = self.root / "tools/codex_assets"
+        destination.mkdir(parents=True)
+        for name in ("codex_model_observer.py", "runtime_smoke_evidence.py", "m5_runtime_receipt_producer.py"):
+            shutil.copyfile(source / name, destination / name)
+        verifier = mock.patch("tools.codex_assets.m5_runtime_receipt.signature_verify", return_value={})
+        verifier.start()
+        self.addCleanup(verifier.stop)
 
     def write(self, name, value):
         path = self.root / name
@@ -86,6 +95,7 @@ class ConsumerHardeningTests(unittest.TestCase):
                 "header_sources": ["sse-response-header"], "request_sha256": "b" * 64,
                 "upstream": "https://chatgpt.com/backend-api/codex/responses"}]}
         self.redigest(original)
+        attest_runtime(original)
         contract.validate(original, self.lock, self.now)
         for key, value in (("model", "fallback"), ("completed", False),
                            ("tools_disabled", False), ("response_id", ""),
@@ -207,7 +217,7 @@ class ConsumerHardeningTests(unittest.TestCase):
                 smoke.collect(self.root, self.root / "out.json", raw_result=None,
                               raw_output=self.root / "raw.json", execute=True, model="gpt-5.5",
                               limit=1, tasks=link, runtime_binary=None, generated_at=None,
-                              review_days=30, approve_unknown_cost=True)
+                              review_days=30, approve_unknown_cost=True, allow_network=True)
             execute.assert_not_called()
 
     def test_ci_producer_requires_actual_trusted_context_and_full_success(self):
@@ -307,6 +317,7 @@ class ConsumerHardeningTests(unittest.TestCase):
         (self.root / "adk.lock").write_text("\n".join(k + "=" + v for k, v in lock.items()))
         evidence.update(adk_commit=lock["agent-dev-kit.commit"], adk_tree=lock["agent-dev-kit.tree"])
         self.redigest(evidence)
+        attest_runtime(evidence)
         contract.validate(evidence, lock, self.now, source_root=self.root)
         for relative in ("tests/fixtures/software_m5_eval_tasks.jsonl", "manifest.json", "scripts/devkit.sh"):
             path = adk / relative

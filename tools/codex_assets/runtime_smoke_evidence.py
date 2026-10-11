@@ -22,6 +22,8 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+from tools.codex_assets.source_git import run as _source_git
+
 
 EVIDENCE_SCHEMA = "llm-agent-runtime-smoke-evidence/v1"
 DEFAULT_MODEL = "gpt-6.1-sol"
@@ -148,22 +150,15 @@ def _read_lock(path: Path) -> dict[str, str]:
     return values
 
 
-def _run_git(adk_root: Path, *args: str) -> str:
+def _run_git(adk_root: Path, *args: str, allow_empty: bool = False) -> str:
     try:
-        completed = subprocess.run(
-            ["git", "-C", str(adk_root), *args],
-            check=False,
-            text=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            timeout=20,
-        )
-    except (OSError, subprocess.TimeoutExpired) as exc:
+        completed = _source_git(adk_root, *args)
+    except (OSError, ValueError, subprocess.TimeoutExpired) as exc:
         raise SmokeEvidenceError("cannot inspect checked-out agent-dev-kit git identity") from exc
-    if completed.returncode != 0 or not completed.stdout.strip():
-        detail = completed.stderr.strip() or completed.stdout.strip()
+    if completed.returncode != 0 or (not allow_empty and not completed.stdout.strip()):
+        detail = (completed.stderr.strip() or completed.stdout.strip()).decode("utf-8", errors="replace")
         raise SmokeEvidenceError(f"cannot inspect checked-out agent-dev-kit git identity: {detail}")
-    return completed.stdout.strip()
+    return completed.stdout.decode("utf-8").strip()
 
 
 def _manifest_digest(manifest: Mapping[str, Any]) -> str:
@@ -190,10 +185,7 @@ def _format_time(value: datetime) -> str:
 def _reject_hidden_index_entries(root: Path) -> None:
     """A clean status cannot certify source when Git hides tracked changes."""
     try:
-        result = subprocess.run(
-            ["git", "-C", str(root), "ls-files", "-v", "-z"], check=False,
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=20,
-        )
+        result = _source_git(root, "ls-files", "-v", "-z")
     except (OSError, subprocess.TimeoutExpired) as exc:
         raise SmokeEvidenceError("cannot inspect source index flags") from exc
     if result.returncode != 0:
@@ -207,10 +199,7 @@ def _verify_pinned_bytes(adk_root: Path, relative: str, raw: bytes) -> None:
     """Hash the consumed snapshot without invoking worktree filters."""
     expected = _run_git(adk_root, "rev-parse", "HEAD:" + relative)
     try:
-        result = subprocess.run(
-            ["git", "-C", str(adk_root), "hash-object", "--no-filters", "--stdin"],
-            input=raw, check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=20,
-        )
+        result = _source_git(adk_root, "hash-object", "--no-filters", "--stdin", input=raw)
     except (OSError, subprocess.TimeoutExpired) as exc:
         raise SmokeEvidenceError("cannot bind consumed source to pinned blob") from exc
     if result.returncode != 0 or result.stdout.strip() != expected.encode("ascii"):
@@ -220,10 +209,7 @@ def _verify_pinned_bytes(adk_root: Path, relative: str, raw: bytes) -> None:
 def _reject_ignored_executable_inputs(root: Path) -> None:
     """Ignored sourceless modules can run despite a clean Git status."""
     try:
-        result = subprocess.run(
-            ["git", "-C", str(root), "ls-files", "--others", "--ignored", "--exclude-standard", "-z"],
-            check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=20,
-        )
+        result = _source_git(root, "ls-files", "--others", "--ignored", "--exclude-standard", "-z")
     except (OSError, subprocess.TimeoutExpired) as exc:
         raise SmokeEvidenceError("cannot inspect ignored source inputs") from exc
     if result.returncode != 0:
@@ -236,6 +222,28 @@ def _reject_ignored_executable_inputs(root: Path) -> None:
         normal_cache = path.parent.name == "__pycache__" and path.suffix == ".pyc"
         if governed and not normal_cache and path.suffix.lower() in {".py", ".pyc", ".pyo", ".sh", ".so", ".pyd"}:
             raise SmokeEvidenceError("source contains ignored executable inputs")
+
+
+def _verify_executable_sources(root: Path) -> None:
+    """Bind executable worktree bytes even if stat caches or attributes hide edits."""
+    from tools.codex_assets.intake_io import read_bytes
+    result = _source_git(root, "ls-tree", "-r", "-z", "HEAD", "--", "src", "scripts", "tools")
+    if result.returncode:
+        raise SmokeEvidenceError("cannot inspect pinned executable source tree")
+    for entry in result.stdout.split(b"\0"):
+        if not entry:
+            continue
+        metadata, raw_path = entry.split(b"\t", 1)
+        mode, kind, blob = metadata.split(b" ")
+        relative = raw_path.decode("utf-8")
+        if kind != b"blob" or Path(relative).suffix.lower() not in {".py", ".sh", ".so", ".pyd"}:
+            continue
+        if mode not in {b"100644", b"100755"}:
+            raise SmokeEvidenceError("executable source must be a regular tracked file")
+        raw = read_bytes((root / relative).absolute(), label="pinned executable source", max_bytes=8 * 1024 * 1024)
+        actual = _source_git(root, "hash-object", "--no-filters", "--stdin", input=raw)
+        if actual.returncode or actual.stdout.strip() != blob:
+            raise SmokeEvidenceError("executable source bytes differ from pinned HEAD blob: " + relative)
 
 
 def _validate_source_identity(root: Path) -> tuple[dict[str, str], dict[str, Any], Path]:
@@ -272,10 +280,8 @@ def _validate_source_identity(root: Path) -> tuple[dict[str, str], dict[str, Any
     _reject_hidden_index_entries(adk_root)
     _reject_ignored_executable_inputs(adk_root)
     _verify_pinned_bytes(adk_root, "manifest.json", manifest_bytes)
-    state = subprocess.run(
-        ["git", "-C", str(adk_root), "status", "--porcelain", "--untracked-files=all"],
-        check=False, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=20,
-    )
+    _verify_executable_sources(adk_root)
+    state = _source_git(adk_root, "status", "--porcelain", "--untracked-files=all")
     if state.returncode != 0 or state.stdout.strip():
         raise SmokeEvidenceError("checked-out ADK source must be clean for measured runtime evidence")
     return lock, manifest, adk_root
@@ -419,7 +425,7 @@ def _execute_runtime(
         environment = dict(os.environ, PYTHONPYCACHEPREFIX=directory)
         environment.pop("PYTHONPATH", None)
         for key in list(environment):
-            if key in {"BASH_ENV", "ENV"} or key.startswith("BASH_FUNC_"):
+            if key in {"BASH_ENV", "ENV"} or key.startswith(("BASH_FUNC_", "GIT_")):
                 environment.pop(key)
         if runtime_path is not None:
             # Keep the original launcher path/argv[0], including relative resources.
@@ -543,6 +549,11 @@ def collect(
         raise SmokeEvidenceError("--execute requires --approve-unknown-cost")
     if not execute and approve_unknown_cost:
         raise SmokeEvidenceError("--approve-unknown-cost requires --execute")
+    if execute and not allow_network:
+        raise SmokeEvidenceError("--execute requires explicit --allow-network")
+    output = output.absolute()
+    _preflight_new_output(output)
+    output.parent.mkdir(parents=True, exist_ok=True)
     root = root.resolve()
     lock, manifest, adk_root = _validate_source_identity(root)
     if execute == (raw_result is not None):
@@ -645,7 +656,7 @@ def collect(
     if observe_provider_model:
         evidence["collection"]["model_observation"] = model_observation
     evidence["evidence_sha256"] = _digest(evidence)
-    _write_json(output.resolve(), evidence)
+    _write_new_json(output, evidence)
     return evidence
 
 
@@ -699,6 +710,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 1
     summary = {
         "status": "pass",
+        "qualification_eligible": False,
+        "execution_provenance": "unsigned-candidate",
         "evidence_id": evidence["evidence_id"],
         "manifest_version": evidence["manifest_version"],
         "adk_commit": evidence["adk_commit"],

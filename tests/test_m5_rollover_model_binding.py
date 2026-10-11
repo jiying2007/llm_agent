@@ -19,6 +19,9 @@ class RolloverModelBindingTests(unittest.TestCase):
         self.now = datetime.now(timezone.utc).replace(microsecond=0)
         self.lock = {"agent-dev-kit.version": "8.0.5", "agent-dev-kit.commit": "a" * 40,
                      "agent-dev-kit.tree": "b" * 40, "agent-dev-kit.manifest_blob": "c" * 40}
+        verifier = mock.patch("tools.codex_assets.m5_runtime_receipt.signature_verify", return_value={})
+        verifier.start()
+        self.addCleanup(verifier.stop)
 
     def evidence(self, model):
         value = runtime(self.lock, model, self.now)
@@ -70,13 +73,20 @@ class RolloverModelBindingTests(unittest.TestCase):
                 rollover._load_json(self.path, "fixture")
 
     def test_finalize_does_not_resolve_away_link_rejection(self):
+        from tools.codex_assets import runtime_smoke_evidence as smoke
         self.evidence("gpt-5.5")
         target = self.path.parent / "target.json"
         self.path.rename(target)
         self.path.symlink_to(target)
         with mock.patch.object(rollover, "_git", side_effect=["", "a" * 40]), \
                 mock.patch.object(rollover, "_read_lock", return_value=self.lock), \
-                mock.patch.object(rollover, "_validate_promotion", return_value={}):
+                mock.patch.object(rollover, "_validate_promotion", return_value={}), \
+                mock.patch.object(smoke, "_reject_hidden_index_entries"), \
+                mock.patch.object(smoke, "_reject_ignored_executable_inputs"), \
+                mock.patch.object(smoke, "_verify_executable_sources"), \
+                mock.patch.object(smoke, "_validate_source_identity"):
+            # This test isolates the lexical runtime reader. Real Git source
+            # preflight failures are covered by ProducerFlowTests, separately.
             receipt = self.path.parent / "ci.json"
             receipt.write_text('{}')
             from tools.codex_assets import m5_ci_contract
