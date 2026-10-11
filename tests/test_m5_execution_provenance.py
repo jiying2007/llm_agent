@@ -128,6 +128,24 @@ class RuntimeProvenanceTests(unittest.TestCase):
         self.assertEqual(len(upload), 1)
         self.assertEqual(upload[0]["with"]["path"], "${{ runner.temp }}/m5-runtime-signed.json")
 
+    def test_runtime_workflow_uses_runner_cache_only_in_step_context(self):
+        import yaml
+        root = Path(__file__).resolve().parents[1]
+        workflow = yaml.safe_load((root / proof.WORKFLOW).read_text())
+        job = workflow["jobs"]["measure"]
+        # GitHub validates job env before assigning a runner. A runner context
+        # here invalidates the whole workflow, even when the job is gated off.
+        for value in job.get("env", {}).values():
+            self.assertNotIn("runner.", str(value))
+        python_steps = [step for step in job["steps"] if "python" in step.get("run", "")]
+        self.assertEqual(len(python_steps), 3)
+        caches = [step["env"]["PYTHONPYCACHEPREFIX"] for step in python_steps]
+        self.assertEqual(len(set(caches)), 1)
+        self.assertIn("${{ runner.temp }}", caches[0])
+        self.assertIn("${{ github.run_id }}", caches[0])
+        self.assertIn("${{ github.run_attempt }}", caches[0])
+        self.assertIn('mkdir "$PYTHONPYCACHEPREFIX"', python_steps[0]["run"])
+
 
 class ProducerFlowTests(unittest.TestCase):
     """Real Git/source checks; only inference and crypto use explicit fixtures."""

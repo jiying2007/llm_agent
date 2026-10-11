@@ -101,3 +101,12 @@
 隔离工作树不包含原工作区的 reference dirty 实体；对应检查缺失不能伪造目录补齐。本地 quick 的环境与资格负结果单独保留。确定性测试、合成 verifier、独立代码复审和旧 CI 真签名各自只支持其验证范围。
 
 归档目标是 reviewing 验证记录，不代表 owner 批准、active 晋升或产品放行。回滚通过审查本轮增量实施，不恢复生产端接受 unsigned 报告的 fallback，不删除现有证据或用户 dirty。
+# PR 发布后的 workflow 上下文修复（2026-10-11）
+
+PR #194 首次提交 `674f148306b989d42150023d2681dfe8e73a4aee` 已推送。GitHub runtime workflow 的 push 记录 `38144377913` 在创建 job 前失败（jobs 为空、无可下载日志）；没有执行模型。核对 GitHub 官方 context availability 后确认 job 级 env 不允许 `runner`，原 `PYTHONPYCACHEPREFIX` 使用 `runner.temp` 不符合上下文层级。将同一按 run_id/run_attempt 隔离的缓存路径移入准备、采集和验签三个 Python run 步骤的 env；前置 mkdir、空 PYTHONPATH、字节码限制、权限与手动成本授权保持。GitHub 根 CI 与真实 runtime workflow 的验收分别报告。
+
+追加回归检查 job env 无 runner 上下文、三个 Python 步骤缓存路径一致并绑定 run/attempt、目录在准备步骤创建。实际六组定向回归 `91/91`、exit 0；workflow action compatibility exit 0。本轮只改 workflow 上下文和对应回归，原完整测试支持源码快照需与本次增量分别核验，旧90/90不作为新91/91的替代。
+
+首次提交前 Runtime gate 因目标未完成而拒绝，提交命令仍执行，属于执行顺序偏差。保留本地提交及失败记录；旧混合SCM目标已 abort，拆分准备目标，核验20文件提交内容、父main、原主仓保护后，真实commit/apply gate通过，再推送和创建PR。后续修复严格先完成准备目标、门禁允许后提交，不将事后补验描述为原提交前通过。无合并、无模型或field采集，M5资格仍blocked。
+
+官方规则：https://docs.github.com/en/actions/reference/workflows-and-actions/contexts#context-availability
