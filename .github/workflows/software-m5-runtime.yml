@@ -56,7 +56,8 @@ jobs:
           set -euo pipefail
           mkdir "$PYTHONPYCACHEPREFIX"
           git submodule update --init --depth=1 agent-dev-kit
-          python -m pip install .
+          python -m pip install . ./agent-dev-kit
+          ADK_PYTHON_BIN="$(command -v python)" bash agent-dev-kit/scripts/devkit.sh eval run --help
           python -m tools.codex_assets.m5_signature --ci-trusted-root-output "$RUNNER_TEMP/m5-runtime-trusted-root.json"
           python -c 'import hashlib,os,pathlib,shutil; p=pathlib.Path(shutil.which("cosign")); assert hashlib.sha256(p.read_bytes()).hexdigest()==os.environ["M5_COSIGN_SHA256"]'
       - name: Collect one real upstream-observed measurement
@@ -65,6 +66,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          export ADK_PYTHON_BIN="$(command -v python)"
           python -m tools.codex_assets.m5_runtime_receipt_producer collect --root "$GITHUB_WORKSPACE" \
             --binary "$M5_RUNTIME_BINARY" --binary-sha256 "$M5_RUNTIME_BINARY_SHA256" \
             --evidence "$RUNNER_TEMP/m5-runtime-unsigned.json" --raw-output "$RUNNER_TEMP/m5-runtime-raw.json" \
