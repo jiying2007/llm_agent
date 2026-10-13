@@ -19,7 +19,7 @@ from typing import Mapping
 from tools.codex_assets import m5_runtime_contract as contract
 from tools.codex_assets import m5_runtime_receipt as receipt
 from tools.codex_assets import m5_signature, runtime_smoke_evidence as smoke
-from tools.codex_assets.intake_io import read_bytes, read_json, decode_json, _sha256_file
+from tools.codex_assets.intake_io import IntakeError, read_bytes, read_json, decode_json, _sha256_file
 
 
 def context(environment: Mapping[str, str]) -> dict:
@@ -135,6 +135,71 @@ def envelope(args) -> None:
     smoke._write_new_json(output, evidence)
 
 
+def failure_summary(args) -> None:
+    """Export bounded negative diagnostics, never a signable measurement."""
+    current = context(os.environ)
+    root = Path(args.root).resolve()
+    output = Path(args.output).absolute()
+    # Reject lexical links before normalization can conceal them.
+    smoke._preflight_new_output(output)
+    if output.resolve().is_relative_to(root):
+        raise ValueError("failure summary must be outside the source checkout")
+    outputs(output)
+    path = Path(args.diagnostics).absolute()
+    if path.is_symlink():
+        raise ValueError("failure diagnostics must not be linked")
+    summaries = []
+    available = path.exists()
+    if available:
+        try:
+            value = read_json(path, label="negative observer diagnostics", max_bytes=64 * 1024)
+        except (OSError, IntakeError) as exc:
+            raise ValueError("negative observer diagnostics cannot be safely read") from exc
+        if (not isinstance(value, dict) or set(value) != {"status", "qualification", "diagnostics"}
+                or value["status"] != "fail" or value["qualification"] is not False
+                or not isinstance(value["diagnostics"], list) or len(value["diagnostics"]) > 1):
+            raise ValueError("negative diagnostics schema is invalid")
+        fields = {"status", "stages", "upstream_status", "claimed_requests", "prepared_requests",
+                  "response_content_types", "observed_models", "completed"}
+        stages = {"native-start", "request-validation", "request-encoding-denied", "upstream-request-sent",
+                  "upstream-status-or-html-rejected", "upstream-headers", "upstream-stream"}
+        for item in value["diagnostics"]:
+            if not isinstance(item, dict) or set(item) != fields or item["status"] != "fail":
+                raise ValueError("negative observer schema is invalid")
+            if (not isinstance(item["stages"], list) or len(item["stages"]) > 16
+                    or any(not isinstance(s, str) or s not in stages for s in item["stages"])):
+                raise ValueError("negative observer stages are invalid")
+            for key in ("claimed_requests", "prepared_requests"):
+                if type(item[key]) is not int or item[key] not in (0, 1):
+                    raise ValueError("negative observer request count is invalid")
+            statuses = item["upstream_status"]
+            media = item["response_content_types"]
+            models = item["observed_models"]
+            if (not isinstance(statuses, list) or len(statuses) > 1
+                    or any(type(s) is not int or not 100 <= s <= 599 for s in statuses)
+                    or not isinstance(media, list) or len(media) > 1
+                    or any(not isinstance(s, str) or s not in
+                           {"text/event-stream", "application/json", "text/html", "text/plain",
+                            "application/octet-stream", "binary/octet-stream", "application/x-ndjson",
+                            "other-or-missing"}
+                           for s in media)
+                    or not isinstance(models, list) or len(models) > 16
+                    or any(not isinstance(s, str) or len(s) > 128 for s in models)
+                    or type(item["completed"]) is not bool):
+                raise ValueError("negative observer response metadata is invalid")
+            summaries.append({"stages": item["stages"], "upstream_status": statuses,
+                              "claimed_requests": item["claimed_requests"],
+                              "prepared_requests": item["prepared_requests"],
+                              "response_content_types": media, "observed_model_count": len(models),
+                              "expected_model_observed": smoke.DEFAULT_MODEL in models,
+                              "completed": item["completed"]})
+    smoke._write_new_json(output, {**current, "schema": "llm-agent-runtime-failure-summary/v1",
+                         "status": "fail", "diagnostics_available": available,
+                         "diagnostics": summaries, "model_request_count_verified": False,
+                         "model_retry_authorized": False, "qualification": False,
+                         "software_m5_certified": False, "release_authorized": False})
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="operation", required=True)
@@ -153,13 +218,19 @@ def main(argv=None) -> int:
             command.add_argument("--bundle", required=True)
             command.add_argument("--output", required=True)
             m5_signature.add_arguments(command)
+    negative = sub.add_parser("failure-summary")
+    negative.add_argument("--root", required=True)
+    negative.add_argument("--diagnostics", required=True)
+    negative.add_argument("--output", required=True)
     args = parser.parse_args(argv)
     try:
-        (collect if args.operation == "collect" else envelope)(args)
+        {"collect": collect, "envelope": envelope, "failure-summary": failure_summary}[args.operation](args)
     except (OSError, ValueError, RuntimeError, KeyError, TypeError, subprocess.SubprocessError) as exc:
         print(json.dumps({"status": "blocked", "error": str(exc), "release_authorized": False}))
         return 1
-    print(json.dumps({"status": "measured-unsealed" if args.operation == "collect" else "signature-verified",
+    status = {"collect": "measured-unsealed", "envelope": "signature-verified",
+              "failure-summary": "negative-diagnostics-exported"}[args.operation]
+    print(json.dumps({"status": status,
                       "software_m5_certified": False, "release_authorized": False}))
     return 0
 
