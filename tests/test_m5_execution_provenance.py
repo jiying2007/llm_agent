@@ -205,6 +205,33 @@ class FailureSummaryTests(unittest.TestCase):
         self.assertFalse(result["model_request_count_verified"])
         self.assertFalse(result["model_retry_authorized"])
 
+    def test_v2_identity_presence_survives_without_values_or_qualification(self):
+        observation = observer.Observation()
+        observation.event(dict(type="response.completed", response=dict(id="fixture", status="completed",
+                                                                        model="private-sentinel", output=[])))
+        diagnostic = observation.diagnostics("gpt-6.1-sol")
+        self.value["diagnostics"][0]["identity_diagnostics"] = diagnostic
+        self.diagnostics.write_text(json.dumps(self.value))
+        result = self.invoke()
+        self.assertEqual(result["schema"], "llm-agent-runtime-failure-summary/v2")
+        self.assertEqual(result["diagnostics"][0]["identity_diagnostics"], diagnostic)
+        self.assertNotIn("private-sentinel", self.output.read_text())
+        self.assertFalse(result["qualification"])
+        self.assertFalse(result["model_request_count_verified"])
+        self.assertFalse(result["model_retry_authorized"])
+
+    def test_identity_diagnostics_unknown_fields_types_and_reason_are_rejected(self):
+        valid = observer.Observation().diagnostics("gpt-6.1-sol")
+        variants = [None, {}, dict(valid, stderr="secret"), dict(valid, failure_kind="secret"),
+                    dict(valid, http_model_header_present=1), dict(valid, response_model_field_present="true")]
+        for identity in variants:
+            with self.subTest(identity=identity):
+                self.value["diagnostics"][0]["identity_diagnostics"] = identity
+                self.diagnostics.write_text(json.dumps(self.value))
+                with self.assertRaises(ValueError):
+                    self.invoke()
+                self.assertFalse(self.output.exists())
+
     def test_actual_observer_failure_output_is_consumed_without_native_or_upstream_call(self):
         receipts = self.root / "observer-receipts"
         arguments = ["--ignore-user-config", "-c", 'model_reasoning_effort="medium"',

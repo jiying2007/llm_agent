@@ -88,14 +88,23 @@ class Observation:
         self.models = set()
         self.completed = False
         self.sources = set()
+        self.carriers = {key: False for key in (
+            "http_model_header_present", "http_model_alias_present",
+            "sse_response_model_header_present", "sse_top_level_model_header_present",
+            "unsupported_sse_model_header_present", "response_model_field_present")}
 
-    def header(self, name, value, *, source="http-response-header"):
+    def header(self, name, value, *, source="http-response-header", carrier=None):
+        if name.lower() in {"openai-model", "x-openai-model"}:
+            key = ("http_model_header_present" if name.lower() == "openai-model" else "http_model_alias_present")
+            if source == "sse-response-header":
+                key = carrier or "sse_response_model_header_present"
+            self.carriers[key] = True
         if name.lower() == "openai-model" or (source == "sse-response-header" and name.lower() == "x-openai-model"):
             if isinstance(value, list) and source == "sse-response-header":
                 if not 0 < len(value) <= 8 or not all(isinstance(item, str) for item in value):
                     raise ValueError("invalid upstream model header")
                 for item in value:
-                    self.header(name, item, source=source)
+                    self.header(name, item, source=source, carrier=carrier)
                 return
             if not isinstance(value, str) or re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}", value) is None:
                 raise ValueError("invalid upstream model header")
@@ -114,7 +123,12 @@ class Observation:
         if isinstance(item, dict) and item.get("type") not in {"message", "reasoning"}:
             raise ValueError("tool output denied")
         response = value.get("response")
+        if kind not in {"response.created", "response.in_progress", "response.completed", "response.metadata"}:
+            headers = value.get("headers")
+            if isinstance(headers, dict) and any(name.lower() in {"openai-model", "x-openai-model"} for name in headers):
+                self.carriers["unsupported_sse_model_header_present"] = True
         if isinstance(response, dict):
+            self.carriers["response_model_field_present"] |= "model" in response
             if "id" in response:
                 identifier = response["id"]
                 if not isinstance(identifier, str) or not identifier or len(identifier) > 256:
@@ -127,12 +141,16 @@ class Observation:
                 raise ValueError("invalid upstream headers")
             for name, header in headers.items():
                 self.header(name, header, source="sse-response-header")
-        if kind == "response.metadata":
+        # Native 0.159.2 reads top-level server headers beyond metadata events.
+        # Restrict this carrier to lifecycle/metadata, never generated text/items.
+        if kind in {"response.created", "response.in_progress", "response.completed", "response.metadata"}:
             headers = value.get("headers", {})
             if not isinstance(headers, dict):
                 raise ValueError("invalid upstream headers")
             for name, header in headers.items():
-                self.header(name, header, source="sse-response-header")
+                if name.lower() in {"openai-model", "x-openai-model"}:
+                    self.carriers["sse_top_level_model_header_present"] = True
+                self.header(name, header, source="sse-response-header", carrier="sse_top_level_model_header_present")
         if value.get("type") in {"response.created", "response.completed"} and isinstance(response, dict):
             identifier = response.get("id")
             if not isinstance(identifier, str) or not identifier or len(identifier) > 256:
@@ -154,6 +172,17 @@ class Observation:
         return {"scope": "upstream-response-openai-model-header", "model": expected_model,
                 "header_sources": sorted(self.sources),
                 "response_id": self.response_id, "completed": True}
+
+    def diagnostics(self, expected_model):
+        if not self.completed:
+            reason = "response-not-completed"
+        elif not self.models:
+            reason = "missing-model-header"
+        elif self.models != {expected_model}:
+            reason = "model-mismatch-or-conflict"
+        else:
+            reason = "native-or-transport-failed"
+        return dict(self.carriers, failure_kind=reason)
 
 
 def validate_arguments(arguments):
@@ -306,7 +335,8 @@ def observe_exec(binary: str, arguments: list[str], *, receipt_dir: Path) -> int
             "status": "fail", "stages": stages, "upstream_status": upstream_status,
             "claimed_requests": len(request_claimed), "prepared_requests": len(request_digests),
             "response_content_types": content_types,
-            "observed_models": sorted(observation.models), "completed": observation.completed}) + "\n")
+            "observed_models": sorted(observation.models), "completed": observation.completed,
+            "identity_diagnostics": observation.diagnostics(model)}) + "\n")
         print("[FAIL] native provider model observation unavailable", file=sys.stderr)
         return 1
     finally:
