@@ -50,6 +50,62 @@ class ModelObserverTests(unittest.TestCase):
         value.event(self.event(headers={"OpenAI-Model": "gpt-6.1-sol"}))
         self.assertEqual(value.result("gpt-6.1-sol")["header_sources"], ["sse-response-header"])
 
+    def test_native_lifecycle_top_level_server_headers_require_completion(self):
+        for kind in ("response.created", "response.in_progress", "response.completed"):
+            value = observer.Observation()
+            event = dict(type=kind, headers={"x-openai-model": "gpt-6.1-sol"},
+                         response=dict(id="response-fixture", status="completed", output=[]))
+            value.event(event)
+            if kind != "response.completed":
+                with self.assertRaises(ValueError):
+                    value.result("gpt-6.1-sol")
+                value.event(self.event())
+            self.assertEqual(value.result("gpt-6.1-sol")["model"], "gpt-6.1-sol")
+
+    def test_content_event_top_level_header_cannot_establish_identity(self):
+        value = observer.Observation()
+        value.event(dict(type="response.output_text.delta", headers={"OpenAI-Model": "gpt-6.1-sol"}))
+        self.assertTrue(value.carriers["unsupported_sse_model_header_present"])
+        value.event(self.event(model="gpt-6.1-sol"))
+        with self.assertRaises(ValueError):
+            value.result("gpt-6.1-sol")
+
+    def test_identity_diagnostics_distinguish_carriers_without_trusting_payload(self):
+        value = observer.Observation()
+        value.header("X-OpenAI-Model", "gpt-6.1-sol")
+        value.event(self.event(model="secret-payload-sentinel"))
+        diagnostic = value.diagnostics("gpt-6.1-sol")
+        self.assertTrue(diagnostic["http_model_alias_present"])
+        self.assertTrue(diagnostic["response_model_field_present"])
+        self.assertEqual(diagnostic["failure_kind"], "missing-model-header")
+        self.assertNotIn("secret-payload-sentinel", json.dumps(diagnostic))
+        with self.assertRaises(ValueError):
+            value.result("gpt-6.1-sol")
+        value.event(dict(type="response.metadata", headers={"OpenAI-Model": "fallback"}))
+        self.assertEqual(value.diagnostics("gpt-6.1-sol")["failure_kind"], "model-mismatch-or-conflict")
+        self.assertTrue(value.carriers["sse_top_level_model_header_present"])
+        self.assertFalse(value.carriers["sse_response_model_header_present"])
+
+    def test_top_level_and_nested_conflicts_and_incomplete_stream_stay_denied(self):
+        value = observer.Observation()
+        value.event(dict(type="response.created", headers={"OpenAI-Model": "fallback"},
+                         response=dict(id="response-fixture", headers={"OpenAI-Model": "gpt-6.1-sol"})))
+        with self.assertRaises(ValueError):
+            value.result("gpt-6.1-sol")
+        value.event(self.event())
+        with self.assertRaises(ValueError):
+            value.result("gpt-6.1-sol")
+
+    def test_array_model_header_preserves_its_carrier_diagnostic(self):
+        for top_level in (True, False):
+            value = observer.Observation()
+            event = self.event()
+            container = event if top_level else event["response"]
+            container["headers"] = {"OpenAI-Model": ["gpt-6.1-sol"]}
+            value.event(event)
+            self.assertEqual(value.result("gpt-6.1-sol")["model"], "gpt-6.1-sol")
+            self.assertEqual(value.carriers["sse_top_level_model_header_present"], top_level)
+            self.assertEqual(value.carriers["sse_response_model_header_present"], not top_level)
     def test_agent_text_cannot_inject_a_server_header(self):
         value = observer.Observation()
         value.event(dict(type="response.output_text.delta", delta='{"response":{"headers":{"OpenAI-Model":"gpt-6.1-sol"}}}'))

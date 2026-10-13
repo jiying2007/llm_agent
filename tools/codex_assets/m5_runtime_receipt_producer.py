@@ -164,8 +164,20 @@ def failure_summary(args) -> None:
         stages = {"native-start", "request-validation", "request-encoding-denied", "upstream-request-sent",
                   "upstream-status-or-html-rejected", "upstream-headers", "upstream-stream"}
         for item in value["diagnostics"]:
-            if not isinstance(item, dict) or set(item) != fields or item["status"] != "fail":
+            if (not isinstance(item, dict) or set(item) not in (fields, fields | {"identity_diagnostics"})
+                    or item["status"] != "fail"):
                 raise ValueError("negative observer schema is invalid")
+            identity = item.get("identity_diagnostics")
+            if "identity_diagnostics" in item:
+                flags = {"http_model_header_present", "http_model_alias_present",
+                         "sse_response_model_header_present", "sse_top_level_model_header_present",
+                         "unsupported_sse_model_header_present", "response_model_field_present"}
+                if (not isinstance(identity, dict) or set(identity) != flags | {"failure_kind"}
+                        or any(type(identity[key]) is not bool for key in flags)
+                        or not isinstance(identity["failure_kind"], str)
+                        or identity["failure_kind"] not in {"response-not-completed", "missing-model-header",
+                                                           "model-mismatch-or-conflict", "native-or-transport-failed"}):
+                    raise ValueError("negative identity diagnostics schema is invalid")
             if (not isinstance(item["stages"], list) or len(item["stages"]) > 16
                     or any(not isinstance(s, str) or s not in stages for s in item["stages"])):
                 raise ValueError("negative observer stages are invalid")
@@ -193,7 +205,10 @@ def failure_summary(args) -> None:
                               "response_content_types": media, "observed_model_count": len(models),
                               "expected_model_observed": smoke.DEFAULT_MODEL in models,
                               "completed": item["completed"]})
-    smoke._write_new_json(output, {**current, "schema": "llm-agent-runtime-failure-summary/v1",
+            if identity is not None:
+                summaries[-1]["identity_diagnostics"] = identity
+    version = "v2" if any("identity_diagnostics" in item for item in summaries) else "v1"
+    smoke._write_new_json(output, {**current, "schema": "llm-agent-runtime-failure-summary/" + version,
                          "status": "fail", "diagnostics_available": available,
                          "diagnostics": summaries, "model_request_count_verified": False,
                          "model_retry_authorized": False, "qualification": False,
