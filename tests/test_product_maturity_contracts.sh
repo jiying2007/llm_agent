@@ -73,8 +73,11 @@ assert by_id["PM-14"]["status"] == "not_required", by_id["PM-14"]
 assert not any(item["status"] in {"blocked_external", "in_progress", "pending_approval"} for item in task_pack["tasks"]), task_pack
 assert not any("clean-room recovery" in item.lower() for item in task_pack["operational_followups"]), task_pack
 
-assert "- current_product_maturity: M5" in status, status
-assert "- current_software_m5_certified: true" in status, status
+assert "- current_product_maturity: unverified" in status, status
+assert "- current_software_m5_certified: false" in status, status
+assert "- current_terminal_mature: false" in status, status
+assert "- current_field_status: not-qualified" in status, status
+assert "- software_m5_certified: true" in status, status  # Historical baseline only.
 projection_run = subprocess.run(
     [sys.executable, "-m", "tools.control_plane.status_projection", "--root", str(root), "--summary-json"],
     cwd=root,

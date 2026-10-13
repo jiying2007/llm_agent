@@ -37,17 +37,22 @@ assert projection["source"]["adk_lock_commit"] == lock["agent-dev-kit.commit"], 
 assert projection["source"]["pin_consistent"] is True, projection
 assert projection["current_projection"]["consistent"] is True, projection
 assert projection["current_projection"]["mismatches"] == {}, projection
-assert "- current_product_maturity: M5" in block, block
 assert status.count("- release_authorized: ") == 1, status
 assert "- baseline_release_authorized: true" in status, status
 
 if projection["release_authorized"] is True:
+    assert "- current_product_maturity: M5" in block, block
     assert projection["current_evidence_state"] == "verified-for-current-source", projection
     assert projection["last_verified_baseline"]["source_inputs_match"] is True, projection
     assert projection["last_verified_baseline"]["fresh_for_current_source"] is True, projection
     assert re.search(r"^- release_evidence_relation:\s*current$", block, re.MULTILINE), block
     assert re.search(r"^- release_authorized:\s*true$", block, re.MULTILINE), block
 else:
+    assert "- current_product_maturity: unverified" in block, block
+    assert "- current_software_m5_readiness: not-certified" in block, block
+    assert "- current_software_m5_certified: false" in block, block
+    assert "- current_terminal_mature: false" in block, block
+    assert "- current_field_status: not-qualified" in block, block
     assert projection["current_evidence_state"] == "source-current-evidence-historical", projection
     assert projection["last_verified_baseline"]["source_inputs_match"] is False, projection
     assert projection["last_verified_baseline"]["fresh_for_current_source"] is False, projection

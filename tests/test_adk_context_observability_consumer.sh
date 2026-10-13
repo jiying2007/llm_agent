@@ -8,7 +8,9 @@ python3 - <<'PY'
 import json
 import subprocess
 import sys
+from datetime import date
 from pathlib import Path
+from agent_dev_kit.model import Manifest
 
 root = Path.cwd()
 lock = {}
@@ -61,7 +63,23 @@ assert ratchet["status"] == "pass", ratchet
 assert ratchet["runtime_initial_context_claim"] is False, ratchet
 assert ratchet["release_authorized"] is False, ratchet
 
+manifest = Manifest.load(root / "agent-dev-kit")
+expired_targets = []
 for target in ("claude-code", "opencode"):
+    contract_path = manifest.root / manifest.target(target)["contract"]
+    contract = json.loads(contract_path.read_text(encoding="utf-8"))
+    assert contract["target"] == target, contract
+    expires_at = date.fromisoformat(contract["source"]["expires_at"])
+    if expires_at < date.today():
+        # Match the pinned production loader's date and exact stale error.
+        # Other failures must still fail this consumer regression.
+        probe = run(["target-source-probe", "--target", target, "--profile", "core"], expected=1)
+        assert set(probe) == {"schema", "status", "error"}, probe
+        assert probe["schema"] == "adk-target-source-probe/v1" and probe["status"] == "fail", probe
+        assert probe["error"] == f"target_contract_stale: target={target} expires_at={expires_at.isoformat()}", probe
+        expired_targets.append(target)
+        print(f"[PASS] Production rejects expired {target} contract; target remains unavailable/not-certified")
+        continue
     probe = run(["target-source-probe", "--target", target, "--profile", "core"])
     assert probe["schema"] == "adk-target-source-probe/v1", probe
     assert probe["status"] == "pass", probe
@@ -75,5 +93,5 @@ for target in ("claude-code", "opencode"):
 bad = run(["target-source-probe", "--target", "missing-target", "--profile", "core"], expected=1)
 assert bad["status"] == "fail", bad
 
-print(f"[PASS] Root consumes pinned ADK {expected_version} profile/source observability without upgrading evidence authority")
+print(f"[PASS] Root verifies pinned ADK {expected_version} profile/source observability and fail-closed expiry; expired_targets={expired_targets}")
 PY
