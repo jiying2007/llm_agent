@@ -117,6 +117,9 @@ def _expected_current_fields(root: Path, lock: dict[str, str], digest: str) -> d
     current_commit = lock.get("agent-dev-kit.commit", "")
     candidate_commit = str(release.get("candidate_commit") or "")
     relation = "current" if candidate_commit == current_commit else "historical"
+    # Historical scorecard declarations retain their original identity. They
+    # cannot certify the different source identity shown in the current block.
+    qualification_current = relation == "current"
     authorized = (
         software_m5.get("certified") is True
         and overall.get("terminal_mature") is True
@@ -131,11 +134,11 @@ def _expected_current_fields(root: Path, lock: dict[str, str], digest: str) -> d
         "current_adk_commit": current_commit,
         "current_adk_tree": lock.get("agent-dev-kit.tree", ""),
         "current_adk_manifest_blob": lock.get("agent-dev-kit.manifest_blob", ""),
-        "current_product_maturity": str(overall.get("level", "")),
-        "current_software_m5_readiness": str(software_m5.get("readiness_status", "")),
-        "current_software_m5_certified": _bool_text(software_m5.get("certified")),
-        "current_terminal_mature": _bool_text(overall.get("terminal_mature")),
-        "current_field_status": str(overall.get("field_status", "")),
+        "current_product_maturity": str(overall.get("level", "")) if qualification_current else "unverified",
+        "current_software_m5_readiness": str(software_m5.get("readiness_status", "")) if qualification_current else "not-certified",
+        "current_software_m5_certified": _bool_text(software_m5.get("certified")) if qualification_current else "false",
+        "current_terminal_mature": _bool_text(overall.get("terminal_mature")) if qualification_current else "false",
+        "current_field_status": str(overall.get("field_status", "")) if qualification_current else "not-qualified",
         "release_candidate_version": str(release.get("candidate_version", "")),
         "release_candidate_commit": candidate_commit,
         "release_evidence_relation": relation,
