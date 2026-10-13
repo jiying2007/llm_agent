@@ -322,8 +322,9 @@ def _selected_task_snapshot(path: Path, limit: int) -> tuple[list[dict[str, Any]
 def _validate_raw_report(
     report: Mapping[str, Any], model: str, limit: int, manifest_digest: str,
     selected_tasks: Sequence[Mapping[str, Any]], task_digest: str,
+    *, execution_only: bool = False,
 ) -> None:
-    if report.get("schema_version") != 1 or report.get("suite") != "runtime-routing":
+    if report.get("schema_version") not in ((1, 2) if execution_only else (1,)) or report.get("suite") != "runtime-routing":
         raise SmokeEvidenceError("runtime report schema/suite is invalid")
     if report.get("runtime") != "codex" or report.get("condition") != "adk":
         raise SmokeEvidenceError("runtime report must be codex/adk")
@@ -340,11 +341,11 @@ def _validate_raw_report(
     ):
         raise SmokeEvidenceError("runtime report source, task or grader identity is invalid")
     reported_models = report.get("reported_models")
-    if not isinstance(reported_models, list) or not reported_models or any(
+    if not execution_only and (not isinstance(reported_models, list) or not reported_models or any(
         not isinstance(item, str) or not item for item in reported_models
-    ):
+    )):
         raise SmokeEvidenceError("runtime report has no valid observed model")
-    if reported_models != [model]:
+    if not execution_only and reported_models != [model]:
         raise SmokeEvidenceError("runtime report observed model differs from the exact requested model")
     if not isinstance(report.get("runtime_version"), str) or not str(report["runtime_version"]).strip():
         raise SmokeEvidenceError("runtime report runtime_version is missing")
@@ -383,13 +384,14 @@ def _validate_raw_report(
             or item.get("actual_skill") != task["expected_skill"]
             or item.get("actual_safe") is not task["expected_safe"]
             or item.get("requested_model") != model
-            or not isinstance(item.get("reported_models"), list)
-            or not item["reported_models"]
+            or (not execution_only and (not isinstance(item.get("reported_models"), list)
+                                        or not item["reported_models"]))
         ):
             raise SmokeEvidenceError(f"runtime result {index} differs from frozen task or model identity")
-        if any(not isinstance(observed, str) or not observed for observed in item["reported_models"]):
+        if not execution_only and any(not isinstance(observed, str) or not observed for observed in item["reported_models"]):
             raise SmokeEvidenceError(f"runtime result {index} has invalid observed models")
-        observed_models.update(item["reported_models"])
+        if not execution_only:
+            observed_models.update(item["reported_models"])
         usage = item.get("usage")
         if (
             not isinstance(usage, dict)
@@ -398,7 +400,7 @@ def _validate_raw_report(
             or usage["total_tokens"] < 0
         ):
             raise SmokeEvidenceError(f"runtime result {index} token usage is invalid")
-    if sorted(observed_models) != reported_models:
+    if not execution_only and sorted(observed_models) != reported_models:
         raise SmokeEvidenceError("runtime report observed model list differs from its cases")
 
 
@@ -540,7 +542,10 @@ def collect(
     reasoning_effort: str = DEFAULT_REASONING_EFFORT,
     observe_provider_model: bool = False,
     allow_network: bool = False,
+    execution_only: bool = False,
 ) -> dict[str, Any]:
+    if execution_only and observe_provider_model:
+        raise SmokeEvidenceError("execution-only evidence cannot enable provider model observation")
     if observe_provider_model and (not execute or not allow_network or limit != 1):
         raise SmokeEvidenceError("provider observation requires --execute --allow-network and --limit 1")
     if reasoning_effort not in REASONING_EFFORTS:
@@ -604,7 +609,16 @@ def collect(
             _verify_pinned_bytes(adk_root, "tests/fixtures/software_m5_eval_tasks.jsonl", frozen_tasks)
 
     report, raw_snapshot = _load_json_snapshot(raw_path, "runtime smoke report")
-    _validate_raw_report(report, model, limit, _manifest_digest(manifest), selected_tasks, task_digest)
+    _validate_raw_report(report, model, limit, _manifest_digest(manifest), selected_tasks, task_digest,
+                         execution_only=execution_only)
+    if execution_only:
+        # The pinned ADK report is a legacy input. Publish only the versioned
+        # execution projection; model metadata is neither graded nor exported.
+        report = dict(report)
+        report.pop("reported_models", None)
+        report["schema_version"] = 2
+        report["results"] = [{key: value for key, value in item.items() if key != "reported_models"}
+                             for item in report["results"]]
     post_lock, post_manifest, post_adk_root = _validate_source_identity(root)
     if post_lock != lock or _manifest_digest(post_manifest) != _manifest_digest(manifest) or post_adk_root != adk_root:
         raise SmokeEvidenceError("ADK source identity changed during runtime smoke collection")
@@ -626,7 +640,7 @@ def collect(
     evidence_id = f"codex-{manifest_version}-runtime-smoke-{generated.date().strftime('%Y%m%d')}"
 
     evidence: dict[str, Any] = {
-        "schema": EVIDENCE_SCHEMA,
+        "schema": "llm-agent-runtime-smoke-evidence/v2" if execution_only else EVIDENCE_SCHEMA,
         "evidence_id": evidence_id,
         "generated_at": _format_time(generated),
         "review_after": review_after,
@@ -669,6 +683,8 @@ def _parser() -> argparse.ArgumentParser:
     mode.add_argument("--raw-result")
     parser.add_argument("--approve-unknown-cost", action="store_true")
     parser.add_argument("--observe-provider-model", action="store_true")
+    parser.add_argument("--execution-only", action="store_true",
+                        help="Produce v2 task execution evidence without actual model identity")
     parser.add_argument("--allow-network", action="store_true")
     parser.add_argument("--raw-output")
     parser.add_argument("--tasks")
@@ -701,6 +717,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             reasoning_effort=args.reasoning_effort,
             observe_provider_model=args.observe_provider_model,
             allow_network=args.allow_network,
+            execution_only=args.execution_only,
         )
     except SmokeEvidenceError as exc:
         if args.summary_json:

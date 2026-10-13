@@ -89,12 +89,12 @@ def collect(args) -> None:
     if any(path.is_relative_to(root) for path in (evidence_path, raw_path, payload_path)):
         raise ValueError("runtime producer outputs must be outside the source checkout")
     outputs(evidence_path, raw_path, payload_path)
-    # Fixed ADK task set and exactly one native upstream-observed request.
+    # Fixed ADK task set and one native execution; no actual model identity gate.
     evidence = smoke.collect(root, evidence_path, raw_result=None, raw_output=raw_path,
                              execute=True, model=smoke.DEFAULT_MODEL, limit=1, tasks=None,
                              runtime_binary=binary, generated_at=None, review_days=30,
                              approve_unknown_cost=True, reasoning_effort="medium",
-                             observe_provider_model=True, allow_network=True)
+                             execution_only=True, allow_network=True)
     clean_source(root, current["head_sha"])
     if source_hashes(root) != pins or _sha256_file(binary) != args.binary_sha256:
         raise ValueError("runtime producer inputs changed during execution")

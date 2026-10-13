@@ -150,7 +150,7 @@ def diagnose(root: Path, *, signature_verifier: Callable[[], Any] | None = None)
     result["blocking_gates"] = [name for name, value in stages.items() if value["status"] != "pass"]
     actions = {
         "promotion_signature": "verify actual promotion with pinned identity/issuer",
-        "runtime": "collect current-candidate measured runtime with observed model, task results and usage",
+        "runtime": "collect current-candidate v2 execution evidence with task quality, usage and signed provenance",
         "field": "collect a current-candidate hash-bound independent pilot event with actual human operator evidence",
         "qualification": "obtain current-source signed CI receipt and current-candidate qualification evidence",
         "historical_declaration": "review current qualification and declaration without overwriting history",

@@ -22,6 +22,110 @@ from tools.codex_assets import software_m5_v3 as field
 from tools.codex_assets import software_m5_rollover as rollover
 
 
+class ExecutionV2Tests(unittest.TestCase):
+    """Offline contract tests; synthetic signatures never certify a real run."""
+    def setUp(self):
+        self.lock = {"agent-dev-kit.version": "8.0.5", "agent-dev-kit.commit": "a" * 40,
+                     "agent-dev-kit.tree": "b" * 40, "agent-dev-kit.manifest_blob": "c" * 40}
+        self.now = datetime.now(timezone.utc)
+        self.value = runtime(self.lock)
+        self.value["schema"] = "llm-agent-runtime-smoke-evidence/v2"
+        self.value["collection"].pop("model_observation")
+        self.value["result"]["schema_version"] = 2
+        self.value["result"].pop("reported_models")
+        self.value["result"]["results"][0].pop("reported_models")
+        attest_runtime(self.value)
+
+    def test_v2_no_model_identity_calls_real_signature_boundary(self):
+        with patch.object(proof, "signature_verify") as verify:
+            contract.validate(self.value, self.lock, self.now, expected_model="gpt-6.1-sol")
+        verify.assert_called_once()
+
+    def test_v2_still_rejects_unsigned_or_invalid_signature(self):
+        unsigned = copy.deepcopy(self.value)
+        unsigned.pop("execution_receipt")
+        unsigned["evidence_sha256"] = contract.digest({k: v for k, v in unsigned.items() if k != "evidence_sha256"})
+        with self.assertRaisesRegex(ValueError, "authenticated runtime"):
+            contract.validate(unsigned, self.lock, self.now)
+        with patch.object(proof, "signature_verify", side_effect=ValueError("bad signature")), \
+                self.assertRaisesRegex(ValueError, "bad signature"):
+            contract.validate(self.value, self.lock, self.now)
+
+    def test_v2_rejects_identity_fields_and_failed_quality(self):
+        mutations = [lambda v: v["collection"].update(model_observation={}),
+                     lambda v: v["result"].update(reported_models=[]),
+                     lambda v: v["result"]["results"][0].update(reported_models=[]),
+                     lambda v: v["result"]["quality_gate"].update(route_accuracy=False),
+                     lambda v: v["result"].update(passed=0),
+                     lambda v: v["result"]["results"][0].update(error="failed"),
+                     lambda v: v["result"]["results"][0]["usage"].update(total_tokens=True)]
+        for mutate in mutations:
+            v = copy.deepcopy(self.value); mutate(v); attest_runtime(v)
+            with self.subTest(mutation=mutate), self.assertRaises(ValueError):
+                contract.validate_measurement(v, self.lock, self.now)
+
+    def test_schema_rewrite_cannot_reuse_signed_payload(self):
+        v = runtime(self.lock)
+        v["schema"] = self.value["schema"]
+        v["collection"].pop("model_observation")
+        v["result"] = copy.deepcopy(self.value["result"])
+        v["evidence_sha256"] = contract.digest({k: val for k, val in v.items() if k != "evidence_sha256"})
+        with patch.object(proof, "signature_verify") as verify, self.assertRaisesRegex(ValueError, "digest differs"):
+            contract.validate(v, self.lock, self.now)
+        verify.assert_not_called()
+
+    def test_legacy_v1_without_observation_remains_rejected(self):
+        v = runtime(self.lock); v["collection"].pop("model_observation"); attest_runtime(v)
+        with self.assertRaisesRegex(ValueError, "observation is required"):
+            contract.validate_measurement(v, self.lock, self.now)
+
+    def test_v2_collector_option_rejects_observer_before_any_execution(self):
+        with patch.object(smoke, "_execute_runtime") as execute, self.assertRaisesRegex(smoke.SmokeEvidenceError, "cannot enable"):
+            smoke.collect(Path("."), Path("unused.json"), raw_result=None, raw_output=None,
+                          execute=True, model="gpt-6.1-sol", limit=1, tasks=None,
+                          runtime_binary=None, generated_at=None, review_days=30,
+                          execution_only=True, observe_provider_model=True)
+        execute.assert_not_called()
+
+    def test_unknown_schema_and_report_versions_are_rejected(self):
+        for schema, report_version in (("llm-agent-runtime-smoke-evidence/v3", 2),
+                                       ("llm-agent-runtime-smoke-evidence/v2", 1),
+                                       ("llm-agent-runtime-smoke-evidence/v1", 2)):
+            v = copy.deepcopy(self.value)
+            v["schema"] = schema; v["result"]["schema_version"] = report_version
+            attest_runtime(v)
+            with self.subTest(schema=schema, report_version=report_version), self.assertRaises(ValueError):
+                contract.validate_measurement(v, self.lock, self.now)
+
+    def test_v2_rollover_consumer_with_synthetic_signature(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "runtime.json"
+            path.write_text(json.dumps(self.value))
+            with patch.object(proof, "signature_verify") as verify:
+                result = rollover._validate_runtime(path, self.lock, self.now)
+            self.assertEqual(result["schema"], "llm-agent-runtime-smoke-evidence/v2")
+            verify.assert_called_once()
+
+    def test_v2_current_core_consumer_with_synthetic_signature(self):
+        from tools.codex_assets import software_m5_v3_core as core
+        validate = contract.validate
+        # Exercise the current-candidate consumer and production signature
+        # boundary. Source-root validation is covered by ProducerFlowTests.
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "runtime.json").write_text(json.dumps(self.value))
+            policy = {"release": {"candidate_version": "8.0.5"},
+                      "runtime_qualification": {"measured_evidence": ["runtime.json"],
+                          "minimum_measured_runtimes": 1, "require_all_quality_gates": True,
+                          "compatibility_evidence": []}}
+            with patch.object(core, "_kv", return_value=self.lock), \
+                    patch.object(contract, "validate", side_effect=lambda v, lock, now, **kw: validate(v, lock, now)), \
+                    patch.object(proof, "signature_verify") as verify:
+                result = core._validate_runtime(root, policy)
+            verify.assert_called_once()
+            self.assertIsInstance(result, dict)
+
+
 class RuntimeProvenanceTests(unittest.TestCase):
     def setUp(self):
         self.lock = {"agent-dev-kit.version": "8.0.5", "agent-dev-kit.commit": "a" * 40,
@@ -437,18 +541,22 @@ class ProducerFlowTests(unittest.TestCase):
         def inference(root, adk, raw_output, model, limit, tasks, binary, effort, **options):
             self.assertEqual((root, adk, model, limit, effort),
                              (self.root, self.adk, "gpt-6.1-sol", 1, "medium"))
-            self.assertTrue(options["observe_provider_model"])
+            self.assertNotIn("observe_provider_model", options)
             selected, task_digest, task_bytes = smoke._selected_task_snapshot(tasks, limit)
             fixture = runtime(self.lock, model, task=selected[0],
                 manifest_digest=smoke._manifest_digest({"version": "8.0.5"}), task_digest=task_digest,
                 tasks_sha256=hashlib.sha256(task_bytes).hexdigest())
             smoke._write_new_json(raw_output, fixture["result"])
-            return fixture["collection"]["model_observation"]
+            return None
 
         with patch.dict(os.environ, self.environment), patch.object(smoke, "_execute_runtime", side_effect=inference) as execute:
             producer.collect(self.args)
         execute.assert_called_once()
         evidence = json.loads(Path(self.args.evidence).read_text())
+        self.assertEqual(evidence["schema"], "llm-agent-runtime-smoke-evidence/v2")
+        self.assertNotIn("model_observation", evidence["collection"])
+        self.assertNotIn("reported_models", evidence["result"])
+        self.assertNotIn("reported_models", evidence["result"]["results"][0])
         self.assertNotIn("execution_receipt", evidence)
         payload = json.loads(Path(self.args.payload).read_text())
         self.assertEqual(payload["evidence_payload_sha256"], proof.measurement_digest(evidence))

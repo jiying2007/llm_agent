@@ -60,7 +60,7 @@ jobs:
           ADK_PYTHON_BIN="$(command -v python)" bash agent-dev-kit/scripts/devkit.sh eval run --help
           python -m tools.codex_assets.m5_signature --ci-trusted-root-output "$RUNNER_TEMP/m5-runtime-trusted-root.json"
           python -c 'import hashlib,os,pathlib,shutil; p=pathlib.Path(shutil.which("cosign")); assert hashlib.sha256(p.read_bytes()).hexdigest()==os.environ["M5_COSIGN_SHA256"]'
-      - name: Collect one real upstream-observed measurement
+      - name: Collect one real task execution measurement
         id: collect
         env:
           PYTHONPYCACHEPREFIX: ${{ runner.temp }}/m5-runtime-python-${{ github.run_id }}-${{ github.run_attempt }}
