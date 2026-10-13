@@ -17,6 +17,7 @@ from tools.codex_assets import m5_runtime_contract as contract
 from tools.codex_assets import m5_runtime_receipt as proof
 from tools.codex_assets import m5_runtime_receipt_producer as producer
 from tools.codex_assets import runtime_smoke_evidence as smoke
+from tools.codex_assets import codex_model_observer as observer
 from tools.codex_assets import software_m5_v3 as field
 from tools.codex_assets import software_m5_rollover as rollover
 
@@ -125,8 +126,18 @@ class RuntimeProvenanceTests(unittest.TestCase):
         self.assertIn("--allow-network --approve-unknown-cost", commands)
         self.assertLess(commands.index("producer collect"), commands.index("cosign sign-blob"))
         upload = [step for step in job["steps"] if step.get("uses", "").startswith("actions/upload-artifact@")]
-        self.assertEqual(len(upload), 1)
-        self.assertEqual(upload[0]["with"]["path"], "${{ runner.temp }}/m5-runtime-signed.json")
+        self.assertEqual(len(upload), 2)
+        positive = next(step for step in upload if step["with"]["name"] == "software-m5-runtime-signed")
+        negative = next(step for step in upload if step["with"]["name"] == "software-m5-runtime-failure-summary")
+        self.assertEqual(positive["with"]["path"], "${{ runner.temp }}/m5-runtime-signed.json")
+        self.assertEqual(negative["with"]["path"], "${{ runner.temp }}/m5-runtime-failure-summary.json")
+        self.assertEqual(negative["if"], "failure() && steps.failure_summary.outcome == 'success'")
+        collector = next(step for step in job["steps"] if step.get("id") == "collect")
+        failure = next(step for step in job["steps"] if step.get("id") == "failure_summary")
+        self.assertEqual(failure["if"], "failure() && steps.collect.outcome == 'failure'")
+        self.assertIn("producer collect", collector["run"])
+        self.assertNotIn("--allow-network", failure["run"])
+        self.assertNotIn("cosign sign-blob", failure["run"])
 
     def test_runtime_workflow_uses_runner_cache_only_in_step_context(self):
         import yaml
@@ -138,13 +149,170 @@ class RuntimeProvenanceTests(unittest.TestCase):
         for value in job.get("env", {}).values():
             self.assertNotIn("runner.", str(value))
         python_steps = [step for step in job["steps"] if "python" in step.get("run", "")]
-        self.assertEqual(len(python_steps), 3)
+        self.assertEqual(len(python_steps), 4)
         caches = [step["env"]["PYTHONPYCACHEPREFIX"] for step in python_steps]
         self.assertEqual(len(set(caches)), 1)
         self.assertIn("${{ runner.temp }}", caches[0])
         self.assertIn("${{ github.run_id }}", caches[0])
         self.assertIn("${{ github.run_attempt }}", caches[0])
         self.assertIn('mkdir "$PYTHONPYCACHEPREFIX"', python_steps[0]["run"])
+
+
+class FailureSummaryTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.source = self.root / "source"
+        self.source.mkdir()
+        self.diagnostics = self.root / "diagnostics.json"
+        self.output = self.root / "summary.json"
+        self.args = SimpleNamespace(root=str(self.source), diagnostics=str(self.diagnostics), output=str(self.output))
+        self.environment = {"GITHUB_REPOSITORY": "jiying2007/llm_agent", "GITHUB_REF": "refs/heads/main",
+                            "GITHUB_EVENT_NAME": "workflow_dispatch", "GITHUB_SHA": "a" * 40,
+                            "GITHUB_RUN_ID": "123", "GITHUB_RUN_ATTEMPT": "1",
+                            "GITHUB_WORKFLOW_REF": "jiying2007/llm_agent/.github/workflows/software-m5-runtime.yml@refs/heads/main"}
+        self.value = {"status": "fail", "qualification": False, "diagnostics": [{
+            "status": "fail", "stages": ["native-start", "request-validation", "upstream-request-sent", "upstream-status-or-html-rejected"],
+            "upstream_status": [403], "claimed_requests": 1, "prepared_requests": 1,
+            "response_content_types": ["text/html"], "observed_models": [], "completed": False}]}
+
+    def invoke(self):
+        with patch.dict(os.environ, self.environment, clear=True), patch.object(smoke, "collect") as model:
+            producer.failure_summary(self.args)
+            model.assert_not_called()
+        return json.loads(self.output.read_text())
+
+    def test_negative_metadata_survives_without_promoting_qualification_or_retry(self):
+        self.value["diagnostics"][0]["observed_models"] = ["gpt-6.1-sol", "sensitive-sentinel"]
+        self.diagnostics.write_text(json.dumps(self.value))
+        result = self.invoke()
+        self.assertEqual(result["schema"], "llm-agent-runtime-failure-summary/v1")
+        self.assertEqual((result["head_sha"], result["run_id"], result["run_attempt"]), ("a" * 40, 123, 1))
+        for field_name in ("qualification", "software_m5_certified", "release_authorized",
+                           "model_retry_authorized", "model_request_count_verified"):
+            self.assertIs(result[field_name], False)
+        self.assertEqual(result["diagnostics"][0]["claimed_requests"], 1)
+        self.assertTrue(result["diagnostics"][0]["expected_model_observed"])
+        self.assertNotIn("sensitive-sentinel", self.output.read_text())
+        self.assertNotIn("execution_receipt", result)
+
+    def test_missing_diagnostics_remains_unknown_without_zero_request_claim(self):
+        result = self.invoke()
+        self.assertFalse(result["diagnostics_available"])
+        self.assertEqual(result["diagnostics"], [])
+        self.assertNotIn("claimed_requests", result)
+        self.assertFalse(result["model_request_count_verified"])
+        self.assertFalse(result["model_retry_authorized"])
+
+    def test_actual_observer_failure_output_is_consumed_without_native_or_upstream_call(self):
+        receipts = self.root / "observer-receipts"
+        arguments = ["--ignore-user-config", "-c", 'model_reasoning_effort="medium"',
+                     "--ephemeral", "--skip-git-repo-check", "--json", "--sandbox", "read-only",
+                     "--model", "gpt-6.1-sol", "--output-schema", str(self.root / "schema.json"),
+                     "--output-last-message", str(self.root / "message.json"), "-C", str(self.root), "-"]
+        with patch.object(observer, "run_bounded", return_value=subprocess.CompletedProcess([], 1, b"")) as native, \
+                patch.object(observer, "read_stdin", return_value=b"synthetic offline task"), \
+                patch.object(observer.http.client, "HTTPSConnection") as upstream:
+            self.assertEqual(observer.observe_exec("unused-fixture-binary", arguments, receipt_dir=receipts), 1)
+            native.assert_called_once()
+            upstream.assert_not_called()
+        records = [json.loads(p.read_text()) for p in receipts.glob("*.failure.json")]
+        self.assertEqual(len(records), 1)
+        self.assertEqual(records[0]["stages"], ["native-start"])
+        self.value["diagnostics"] = records
+        self.diagnostics.write_text(json.dumps(self.value))
+        result = self.invoke()
+        self.assertEqual(result["diagnostics"][0]["stages"], ["native-start"])
+        self.assertFalse(result["model_request_count_verified"])
+        self.assertFalse(result["model_retry_authorized"])
+
+    def test_all_actual_observer_media_classifications_are_consumable(self):
+        for header in ("text/event-stream", "application/json", "text/plain", "text/html",
+                       "application/octet-stream", "binary/octet-stream", "application/x-ndjson", "", "untrusted/free-text"):
+            media = observer.response_media_type(SimpleNamespace(getheader=lambda *args: header))
+            self.value["diagnostics"][0]["response_content_types"] = [media]
+            self.diagnostics.write_text(json.dumps(self.value))
+            result = self.invoke()
+            self.assertEqual(result["diagnostics"][0]["response_content_types"], [media])
+            self.output.unlink()
+
+    def test_empty_diagnostics_and_negative_summary_cannot_become_measurement(self):
+        self.value["diagnostics"] = []
+        self.diagnostics.write_text(json.dumps(self.value))
+        result = self.invoke()
+        self.assertTrue(result["diagnostics_available"])
+        self.assertFalse(result["model_request_count_verified"])
+        with patch.object(proof, "signature_verify") as verify, self.assertRaises(ValueError):
+            contract.validate(result, {}, datetime.now(timezone.utc))
+        verify.assert_not_called()
+
+    def test_sensitive_extra_fields_wrong_types_and_unbounded_lists_are_rejected(self):
+        mutations = [lambda v: v.update(token="secret-sentinel"),
+                     lambda v: v["diagnostics"][0].update(stderr="secret-sentinel"),
+                     lambda v: v["diagnostics"][0].update(claimed_requests=True),
+                     lambda v: v["diagnostics"][0].update(prepared_requests=2),
+                     lambda v: v["diagnostics"][0].update(stages=["secret-sentinel"]),
+                     lambda v: v["diagnostics"][0].update(upstream_status=[True]),
+                     lambda v: v["diagnostics"][0].update(response_content_types=["secret-sentinel"]),
+                     lambda v: v["diagnostics"][0].update(completed="true"),
+                     lambda v: v["diagnostics"][0].update(observed_models=["m"] * 17),
+                     lambda v: v.update(diagnostics=v["diagnostics"] * 2),
+                     lambda v: v.update(qualification=True)]
+        for mutate in mutations:
+            value = copy.deepcopy(self.value)
+            mutate(value)
+            self.diagnostics.write_text(json.dumps(value))
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                self.invoke()
+            self.assertFalse(self.output.exists())
+
+    def test_byte_budget_linked_input_and_existing_output_are_rejected(self):
+        self.diagnostics.write_text(" " * (64 * 1024 + 1))
+        with self.assertRaises(ValueError):
+            self.invoke()
+        self.diagnostics.unlink()
+        owned = self.root / "owned.json"
+        owned.write_text(json.dumps(self.value))
+        self.diagnostics.symlink_to(owned)
+        with self.assertRaisesRegex(ValueError, "linked"):
+            self.invoke()
+        self.diagnostics.unlink()
+        self.output.write_text("preserve")
+        with self.assertRaises(smoke.SmokeEvidenceError):
+            self.invoke()
+        self.assertEqual(self.output.read_text(), "preserve")
+
+    def test_untrusted_context_or_source_output_is_rejected(self):
+        self.environment["GITHUB_EVENT_NAME"] = "pull_request"
+        with self.assertRaises(ValueError):
+            self.invoke()
+        self.assertFalse(self.output.exists())
+        self.environment["GITHUB_EVENT_NAME"] = "workflow_dispatch"
+        self.args.output = str(self.source / "summary.json")
+        with self.assertRaisesRegex(ValueError, "outside"):
+            self.invoke()
+        (self.root / "outer").mkdir()
+        self.args.output = str(self.root / "outer" / ".." / "source" / "summary.json")
+        with self.assertRaisesRegex(ValueError, "outside"):
+            self.invoke()
+        self.assertFalse((self.source / "summary.json").exists())
+
+    def test_invalid_json_duplicate_keys_and_linked_parent_fail_closed(self):
+        for raw in ("{", '{"status":"fail","status":"fail"}', '{"x":NaN}'):
+            self.diagnostics.write_text(raw)
+            with self.subTest(raw=raw), self.assertRaises(ValueError):
+                self.invoke()
+            self.assertFalse(self.output.exists())
+        actual = self.root / "actual"
+        actual.mkdir()
+        (actual / "diagnostics.json").write_text(json.dumps(self.value))
+        linked = self.root / "linked"
+        linked.symlink_to(actual, target_is_directory=True)
+        self.args.diagnostics = str(linked / "diagnostics.json")
+        with self.assertRaises(ValueError):
+            self.invoke()
+        self.assertFalse(self.output.exists())
 
 
 class ProducerFlowTests(unittest.TestCase):

@@ -61,6 +61,7 @@ jobs:
           python -m tools.codex_assets.m5_signature --ci-trusted-root-output "$RUNNER_TEMP/m5-runtime-trusted-root.json"
           python -c 'import hashlib,os,pathlib,shutil; p=pathlib.Path(shutil.which("cosign")); assert hashlib.sha256(p.read_bytes()).hexdigest()==os.environ["M5_COSIGN_SHA256"]'
       - name: Collect one real upstream-observed measurement
+        id: collect
         env:
           PYTHONPYCACHEPREFIX: ${{ runner.temp }}/m5-runtime-python-${{ github.run_id }}-${{ github.run_attempt }}
         shell: bash
@@ -71,6 +72,25 @@ jobs:
             --binary "$M5_RUNTIME_BINARY" --binary-sha256 "$M5_RUNTIME_BINARY_SHA256" \
             --evidence "$RUNNER_TEMP/m5-runtime-unsigned.json" --raw-output "$RUNNER_TEMP/m5-runtime-raw.json" \
             --payload "$RUNNER_TEMP/m5-runtime-payload.json" --allow-network --approve-unknown-cost
+      - name: Preserve sanitized collection failure diagnostics
+        id: failure_summary
+        if: failure() && steps.collect.outcome == 'failure'
+        env:
+          PYTHONPYCACHEPREFIX: ${{ runner.temp }}/m5-runtime-python-${{ github.run_id }}-${{ github.run_attempt }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m tools.codex_assets.m5_runtime_receipt_producer failure-summary --root "$GITHUB_WORKSPACE" \
+            --diagnostics "$RUNNER_TEMP/m5-runtime-raw-observation-failure.json" \
+            --output "$RUNNER_TEMP/m5-runtime-failure-summary.json"
+      - name: Export negative diagnostics only
+        if: failure() && steps.failure_summary.outcome == 'success'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: software-m5-runtime-failure-summary
+          path: ${{ runner.temp }}/m5-runtime-failure-summary.json
+          if-no-files-found: error
+          retention-days: 14
       - name: Sign and independently verify measured provenance
         env:
           PYTHONPYCACHEPREFIX: ${{ runner.temp }}/m5-runtime-python-${{ github.run_id }}-${{ github.run_attempt }}
