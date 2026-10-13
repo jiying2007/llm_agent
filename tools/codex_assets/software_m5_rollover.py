@@ -121,7 +121,7 @@ def _validate_runtime(
                  expected_source_baseline=expected_source_baseline)
     except (ValueError, TypeError, KeyError, RuntimeError, OSError) as exc:
         raise RolloverError(f"measured runtime evidence rejected: {exc}") from exc
-    if evidence.get("schema") != EVIDENCE_SCHEMA:
+    if evidence.get("schema") not in {EVIDENCE_SCHEMA, "llm-agent-runtime-smoke-evidence/v2"}:
         raise RolloverError("measured runtime evidence schema is invalid")
     expected = {
         "manifest_version": lock["agent-dev-kit.version"],

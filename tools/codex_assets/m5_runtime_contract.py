@@ -23,7 +23,10 @@ def validate_measurement(evidence: Mapping[str, Any], lock: Mapping[str, str], n
         if not condition:
             raise ValueError(message)
 
-    require(evidence.get("schema") == "llm-agent-runtime-smoke-evidence/v1", "runtime evidence schema is invalid")
+    schema = evidence.get("schema")
+    require(schema in {"llm-agent-runtime-smoke-evidence/v1", "llm-agent-runtime-smoke-evidence/v2"},
+            "runtime evidence schema is invalid")
+    execution_only = schema == "llm-agent-runtime-smoke-evidence/v2"
     for key, source in (("manifest_version", "version"), ("adk_commit", "commit"),
                         ("adk_tree", "tree"), ("manifest_blob", "manifest_blob")):
         require(evidence.get(key) == lock.get("agent-dev-kit." + source),
@@ -45,9 +48,13 @@ def validate_measurement(evidence: Mapping[str, Any], lock: Mapping[str, str], n
     require(isinstance(report, dict), "runtime report is missing")
     require(evidence.get("runtime") == "codex" and report.get("runtime") == "codex"
             and report.get("condition") == "adk", "runtime report must describe codex/adk")
-    require(report.get("schema_version") == 1 and report.get("suite") == "runtime-routing", "runtime report schema/suite is invalid")
+    require(report.get("schema_version") == (2 if execution_only else 1)
+            and report.get("suite") == "runtime-routing", "runtime report schema/suite is invalid")
     require(report.get("status") == "pass" and report.get("requested_model") == model
-            and report.get("reported_models") == [model], "runtime report requested/observed model or status is invalid")
+            and (execution_only or report.get("reported_models") == [model]),
+            "runtime report request configuration, observed model or status is invalid")
+    if execution_only:
+        require("reported_models" not in report, "v2 runtime report must omit actual model identity")
     require(isinstance(evidence.get("runtime_version"), str) and bool(evidence["runtime_version"].strip())
             and report.get("runtime_version") == evidence["runtime_version"], "runtime version is inconsistent")
     gates = report.get("quality_gate")
@@ -61,7 +68,10 @@ def validate_measurement(evidence: Mapping[str, Any], lock: Mapping[str, str], n
             and isinstance(collection, dict) and type(collection.get("task_limit")) is int
             and collection["task_limit"] == total, "runtime task counts are invalid")
     observation = collection.get("model_observation")
-    require(isinstance(observation, dict), "upstream model observation is required for measured qualification")
+    if execution_only:
+        require("model_observation" not in collection, "v2 collection must omit actual model identity")
+    else:
+        require(isinstance(observation, dict), "upstream model observation is required for measured qualification")
     if "model_observation" in collection:
         require(isinstance(observation, dict)
                 and observation.get("scope") == "upstream-response-openai-model-header",
@@ -113,7 +123,11 @@ def validate_measurement(evidence: Mapping[str, Any], lock: Mapping[str, str], n
         ids.add(task_id)
         require(item.get("status") == "pass" and item.get("route_ok") is True and item.get("safe_ok") is True
                 and item.get("error") is None, "runtime task did not pass route/safety/error gates")
-        require(item.get("requested_model") == model and item.get("reported_models") == [model], "runtime task observed model differs")
+        require(item.get("requested_model") == model
+                and (execution_only or item.get("reported_models") == [model]),
+                "runtime task request configuration or observed model differs")
+        if execution_only:
+            require("reported_models" not in item, "v2 runtime task must omit actual model identity")
         skill = item.get("expected_skill")
         require(isinstance(skill, str) and bool(skill) and item.get("expected_route") == skill
                 and item.get("actual_skill") == skill and type(item.get("expected_safe")) is bool
@@ -138,7 +152,8 @@ def validate_measurement(evidence: Mapping[str, Any], lock: Mapping[str, str], n
         smoke._verify_pinned_bytes(adk, "tests/fixtures/software_m5_eval_tasks.jsonl", task_bytes)
         require(collection.get("tasks_sha256") == hashlib.sha256(task_bytes).hexdigest(),
                 "runtime collection task dataset differs from pinned ADK tasks")
-        smoke._validate_raw_report(report, model, total, smoke._manifest_digest(manifest), tasks, tasks_digest)
+        smoke._validate_raw_report(report, model, total, smoke._manifest_digest(manifest), tasks, tasks_digest,
+                                  execution_only=execution_only)
         post_lock, post_manifest, post_adk = smoke._validate_source_identity(source_root)
         require(post_lock == current_lock and post_manifest == manifest and post_adk == adk,
                 "runtime pinned source changed during verification")

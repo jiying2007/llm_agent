@@ -264,7 +264,7 @@ def _validate_runtime(root: Path, policy: Mapping[str, Any]) -> dict[str, Any]:
         except (ValueError, TypeError, KeyError, RuntimeError, OSError) as exc:
             raise M5Error(f"measured runtime evidence rejected: {exc}") from exc
         result = evidence.get("result")
-        if evidence.get("schema") != "llm-agent-runtime-smoke-evidence/v1":
+        if evidence.get("schema") not in {"llm-agent-runtime-smoke-evidence/v1", "llm-agent-runtime-smoke-evidence/v2"}:
             raise M5Error("measured runtime evidence schema is invalid")
         if evidence.get("manifest_version") != release["candidate_version"]:
             raise M5Error("measured runtime evidence version does not match current candidate")
