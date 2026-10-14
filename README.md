@@ -59,7 +59,6 @@ Root 控制面的统一 Python 入口是 `llm-ctl`（`pyproject.toml`）；GitHu
 - `AGENTS.md`：本工作区代理执行规则与维护记录。
 - `subrepos/registry.csv`：参考仓 intake/生命周期清单。
 - `subrepos/adoption-matrix.md`：参考仓吸收决策矩阵。
-- `manifests/runtime_targets.json`：运行态 target registry。
 - `manifests/runtime_targets.json`：运行态 target registry 与 health-adapter contract 的统一 SSOT。
 - `docs/runbooks/runtime-target-activation.md`：新增或启用 runtime target 的 checklist。
 - `reports/reference-dirty-triage-YYYY-MM-DD.md`：参考仓 dirty 分流报告。
@@ -114,3 +113,5 @@ rtk scripts/check-adk-harden-readiness.sh . --require-pilot
 5. 若评估 reference repo 更新：先更新/审查 `manifests/reference_pins.json` 的 exact commit，再显式 materialize 到 cache 执行分析；审查结构化 decision/task pack 后才允许创建 ADK change artifact。
 6. 若观察 R2：只消费 Digital Worker 当前 periodic qualification receipt/状态用于 runtime 演进分析；不得在 Root 重新认证 R2，也不得把 R2 状态写成 llm_agent terminal gate。
 7. 若推进 LTA-04：继续把真实独立 pilot 事件追加到现有 hash-chain event log；2026-10-12T04:19:00Z 之前 `llm-ctl longitudinal-operation` 必须保持 BLOCKED。到期后生成真实 `reports/long-term-assets/longitudinal-operation-current.json`，绑定当前 event-chain head 并显式汇总 incident/regression/recovery/unresolved risk，再由 certifier 决定 PASS/BLOCKED；禁止用 synthetic fixture 作为资格证据。
+
+当前源码与历史产品资格的判定规则见 `docs/runbooks/qualification-boundaries.md`；历史 M5 PASS 不自动授权新 ADK 源码。

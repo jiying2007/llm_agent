@@ -67,6 +67,8 @@ layers = {item['id']: item for item in lta['qualification_layers']}
 assert layers['source-valid']['status'] == 'pass'
 assert layers['release-qualified']['status'] == 'pass'
 assert layers['product-qualified']['status'] == 'pass'
+assert layers['product-qualified']['evidence_scope'] == 'historical-last-verified-product-m5-baseline'
+assert layers['product-qualified']['current_source_authority'] == 'reports/current-status.md::generated-current-source-projection'
 assert layers['runtime-conformant']['status'] == 'observer-aligned'
 assert layers['long-term-asset-qualified']['status'] == 'qualification_pending'
 assert layers['long-term-asset-qualified']['affects'] == ['long-term-asset-terminal-qualification']
