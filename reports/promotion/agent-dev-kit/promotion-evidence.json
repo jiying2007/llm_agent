@@ -21,32 +21,32 @@
   },
   "contracts": {
     "contract_registry_sha256": "debb162515f38b7fd8a1502ba7e581c171b8ec2a8c737ee8df88ab6fdeefbc23",
-    "release_manifest_sha256": "146a7e5dc80b9c6b302a0420c7d5fd139248ee071500bef0926cf439a8710142",
+    "release_manifest_sha256": "37a2b28b8b0fa2c879c5a42b21de6036b470766d2a5455557568a914c43d61aa",
     "schema_set_sha256": "16c3becb453ae39d19af6188763361768c38dc50e3f9af46be1ba7ea9b7de4b7"
   },
-  "issued_at": "2026-10-13T01:42:25.373232Z",
+  "issued_at": "2026-10-14T16:01:00.078372Z",
   "provenance": {
     "format": "sigstore-bundle/v1",
     "subject": "promotion-evidence.json"
   },
   "release": {
-    "artifact_sha256": "3edafe5359d082d79ae820213ef09e19a17ec3b27c4d98b83190e2cdc934cdf0",
+    "artifact_sha256": "9540c887640c34f64f73640c82e9bcc6d57f6d39b5fba3821abf8a752c5e87fb",
     "release_eligible": true
   },
   "schema": "adk-promotion-evidence/v1",
   "source": {
-    "commit": "97cf0167e837c2095d9ec6a9431f5aa8c20a812b",
+    "commit": "7746ee16f0c4eb66b01cb93544a81a483c8a9bf5",
     "event": "push",
-    "manifest_blob": "242c176db067d3040572366bda90a42f102f1dfe",
-    "manifest_sha256": "26a91a9bb84d7868af37e86ae152474dfee36c0669272a5c22e57494e37ddd9c",
+    "manifest_blob": "56cf8a8cb67ea702c3855cc5f7d644761f6ab496",
+    "manifest_sha256": "edc4cff0c2c8b128d9f2f95919ffaec929e67bdeb3d3fbeed8428bc18a971699",
     "ref": "refs/heads/main",
     "repository": "jiying2007/agent-dev-kit",
     "run_attempt": 1,
-    "run_id": 38333027685,
-    "tree": "30002831cd3e39e6f5025fd43be5307981589fe6",
-    "version": "8.0.6",
+    "run_id": 38593742511,
+    "tree": "acd2c51117dad0b747d1a74ea4b27d36074794cb",
+    "version": "8.0.8",
     "workflow": "agent-dev-kit-ci",
     "workflow_ref": "jiying2007/agent-dev-kit/.github/workflows/ci.yml@refs/heads/main",
-    "workflow_sha": "97cf0167e837c2095d9ec6a9431f5aa8c20a812b"
+    "workflow_sha": "7746ee16f0c4eb66b01cb93544a81a483c8a9bf5"
   }
 }
