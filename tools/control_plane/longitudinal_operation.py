@@ -117,6 +117,7 @@ def _read_events(root: Path, path: Path, as_of: datetime) -> list[dict[str, Any]
     events: list[dict[str, Any]] = []
     previous_hash = ZERO_HASH
     previous_recorded: datetime | None = None
+    seen_event_ids: set[str] = set()
     try:
         lines = path.read_text(encoding="utf-8").splitlines()
     except OSError as exc:
@@ -132,6 +133,10 @@ def _read_events(root: Path, path: Path, as_of: datetime) -> list[dict[str, Any]
             raise LongitudinalError(f"event log contains unsupported event schema at sequence {sequence}")
         if event.get("sequence") != sequence:
             raise LongitudinalError("event log sequence is not contiguous")
+        event_id = _require_text(event.get("event_id"), "event_id")
+        if event_id in seen_event_ids:
+            raise LongitudinalError(f"duplicate event_id in event log: {event_id}")
+        seen_event_ids.add(event_id)
         if event.get("previous_hash") != previous_hash:
             raise LongitudinalError("event log previous_hash chain is broken")
         stored = event.get("event_hash")
@@ -212,8 +217,18 @@ def _validate_category(
     event_ids = value.get("event_ids")
     if isinstance(count, bool) or not isinstance(count, int) or count < 0:
         raise LongitudinalError(f"outcomes.{name}.count must be a non-negative integer")
-    if not isinstance(event_ids, list) or len(set(event_ids)) != len(event_ids) or count != len(event_ids):
+    if not isinstance(event_ids, list) or any(not isinstance(item, str) for item in event_ids):
+        raise LongitudinalError(f"outcomes.{name}.event_ids must contain strings")
+    if len(set(event_ids)) != len(event_ids) or count != len(event_ids):
         raise LongitudinalError(f"outcomes.{name} count/event_ids are inconsistent")
+    expected_ids = {
+        event_id
+        for event_id, event in events_by_id.items()
+        if event.get("event_type") in allowed_types
+        and started <= _parse_time(event.get("occurred_at"), f"{event_id} occurred_at") <= observed_through
+    }
+    if set(event_ids) != expected_ids:
+        raise LongitudinalError(f"outcomes.{name} must exactly cover all matching field events")
     for event_id in event_ids:
         if not isinstance(event_id, str) or event_id not in events_by_id:
             raise LongitudinalError(f"outcomes.{name} references an unknown event_id")
@@ -271,7 +286,8 @@ def _validate_summary(
         and event.get("repository_id") == requirement.get("repository_id")
         and started <= _parse_time(event.get("occurred_at"), "event occurred_at") <= observed_through
     ]
-    events_by_id = {str(event.get("event_id")): event for event in relevant if isinstance(event.get("event_id"), str)}
+    # _read_events enforces global unique IDs before this scoped index is made.
+    events_by_id = {str(event["event_id"]): event for event in relevant}
     outcomes = summary.get("outcomes")
     if not isinstance(outcomes, dict):
         raise LongitudinalError("LTA-04 outcomes are missing")
@@ -314,8 +330,8 @@ def _validate_summary(
     if decision not in {"approve", "hold"}:
         raise LongitudinalError("LTA-04 review decision must be approve or hold")
     reviewed_at = _parse_time(review.get("reviewed_at"), "review.reviewed_at")
-    if reviewed_at < eligible_after or reviewed_at > as_of:
-        raise LongitudinalError("LTA-04 review must occur after the 30-day window and not in the future")
+    if reviewed_at < max(eligible_after, observed_through) or reviewed_at > as_of:
+        raise LongitudinalError("LTA-04 review must occur after the observed window and not in the future")
 
     stored = summary.get("summary_sha256")
     unsigned = dict(summary)
@@ -390,8 +406,15 @@ def main(argv: list[str] | None = None) -> int:
     try:
         as_of = _parse_time(args.as_of, "--as-of") if args.as_of else None
         result = check(Path(args.root), evidence_path=Path(args.evidence) if args.evidence else None, as_of=as_of)
+        if args.as_of:
+            # Test-time time travel can prove a code path but cannot issue a
+            # real long-term qualification receipt.
+            result = {**result, "status": "simulated_pass", "simulated": True,
+                      "terminal_qualified": False}
     except LongitudinalBlocked as exc:
         result = _blocked_payload(str(exc))
+        if args.as_of:
+            result.update(simulated=True, terminal_qualified=False)
         if args.summary_json:
             print(json.dumps(result, ensure_ascii=False, sort_keys=True))
         else:
@@ -399,6 +422,8 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     except (LongitudinalError, OSError, ValueError) as exc:
         result = {"schema": CHECK_SCHEMA, "status": "fail", "error": str(exc)}
+        if args.as_of:
+            result.update(simulated=True, terminal_qualified=False)
         if args.summary_json:
             print(json.dumps(result, ensure_ascii=False, sort_keys=True))
         else:
@@ -407,7 +432,10 @@ def main(argv: list[str] | None = None) -> int:
     if args.summary_json:
         print(json.dumps(result, ensure_ascii=False, sort_keys=True))
     else:
-        print("[PASS] LTA-04 longitudinal operation evidence is qualified")
+        if args.as_of:
+            print("[SIMULATED PASS] test-time LTA-04 validation; NOT terminally qualified")
+        else:
+            print("[PASS] LTA-04 longitudinal operation evidence is qualified")
     return 0
 
 

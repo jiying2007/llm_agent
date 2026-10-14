@@ -166,12 +166,96 @@ import json
 import sys
 from pathlib import Path
 value = json.loads(Path(sys.argv[1]).read_text())
-assert value["status"] == "pass", value
+assert value["status"] == "simulated_pass", value
+assert value["simulated"] is True and value["terminal_qualified"] is False, value
 assert value["incidents"] == 1, value
 assert value["regressions"] == 1, value
 assert value["recoveries"] == 1, value
 assert value["unresolved_risks"] == 0, value
 PY
+
+
+# Negative tests: a re-signed/hashed summary may not silently omit known
+# fault, regression, or recovery events. Run through the full validator,
+# not only the category helper.
+cp "$FIXTURE/reports/long-term-assets/longitudinal-operation-current.json" "$TMP/baseline-summary.json"
+for category in incidents regressions recoveries; do
+  python3 - "$TMP/baseline-summary.json" "$FIXTURE/reports/long-term-assets/longitudinal-operation-current.json" "$category" <<'PYNEG'
+import hashlib
+import json
+import sys
+from pathlib import Path
+source, target, category = Path(sys.argv[1]), Path(sys.argv[2]), sys.argv[3]
+value = json.loads(source.read_text())
+value["outcomes"][category] = {"count": 0, "event_ids": []}
+value.pop("summary_sha256")
+value["summary_sha256"] = hashlib.sha256(json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+target.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n")
+PYNEG
+  set +e
+  python3 -m tools.control_plane.longitudinal_operation --root "$FIXTURE" --as-of 2026-02-02T00:00:00Z --summary-json >"$TMP/omitted-$category.json"
+  OMIT_RC=$?
+  set -e
+  [[ "$OMIT_RC" -eq 1 ]] || { echo "[FAIL] omitted $category must fail" >&2; exit 1; }
+  python3 - "$TMP/omitted-$category.json" <<'PYNEG'
+import json, sys
+from pathlib import Path
+value=json.loads(Path(sys.argv[1]).read_text())
+assert value["status"] == "fail" and "exactly cover" in value["error"], value
+assert value["simulated"] is True and value["terminal_qualified"] is False, value
+PYNEG
+done
+cp "$TMP/baseline-summary.json" "$FIXTURE/reports/long-term-assets/longitudinal-operation-current.json"
+
+# A review issued before the observed-through instant must not certify later
+# events even when the summary digest is otherwise valid.
+python3 - "$TMP/baseline-summary.json" "$FIXTURE/reports/long-term-assets/longitudinal-operation-current.json" <<'PYNEG'
+import hashlib, json, sys
+from pathlib import Path
+value=json.loads(Path(sys.argv[1]).read_text())
+value["review"]["reviewed_at"]="2026-01-31T00:00:00Z"
+value.pop("summary_sha256")
+value["summary_sha256"]=hashlib.sha256(json.dumps(value,ensure_ascii=False,sort_keys=True,separators=(",",":")).encode()).hexdigest()
+Path(sys.argv[2]).write_text(json.dumps(value,ensure_ascii=False,indent=2)+"\n")
+PYNEG
+set +e
+python3 -m tools.control_plane.longitudinal_operation --root "$FIXTURE" --as-of 2026-02-02T00:00:00Z --summary-json >"$TMP/early-review.json"
+EARLY_RC=$?
+set -e
+[[ "$EARLY_RC" -eq 1 ]] || { echo "[FAIL] review before observation end must fail" >&2; exit 1; }
+python3 - "$TMP/early-review.json" <<'PYNEG'
+import json, sys
+from pathlib import Path
+value=json.loads(Path(sys.argv[1]).read_text())
+assert value["status"] == "fail" and "after the observed window" in value["error"], value
+PYNEG
+cp "$TMP/baseline-summary.json" "$FIXTURE/reports/long-term-assets/longitudinal-operation-current.json"
+
+# Duplicate IDs invalidate a correctly rehashed event chain before a summary
+# is loaded. Restore the original event log for the remaining tests.
+cp "$FIXTURE/reports/field-evidence/software-m5-v5-events.jsonl" "$TMP/baseline-events.jsonl"
+python3 - "$FIXTURE/reports/field-evidence/software-m5-v5-events.jsonl" <<'PYNEG'
+import hashlib, json, sys
+from pathlib import Path
+path=Path(sys.argv[1])
+events=[json.loads(line) for line in path.read_text().splitlines()]
+events[-1]["event_id"]=events[-2]["event_id"]
+events[-1].pop("event_hash")
+events[-1]["event_hash"]=hashlib.sha256(json.dumps(events[-1],ensure_ascii=False,sort_keys=True,separators=(",",":")).encode()).hexdigest()
+path.write_text("".join(json.dumps(e,ensure_ascii=False,separators=(",",":"))+"\n" for e in events))
+PYNEG
+set +e
+python3 -m tools.control_plane.longitudinal_operation --root "$FIXTURE" --as-of 2026-02-02T00:00:00Z --summary-json >"$TMP/duplicate-events.json"
+DUP_RC=$?
+set -e
+[[ "$DUP_RC" -eq 1 ]] || { echo "[FAIL] duplicate event IDs must fail" >&2; exit 1; }
+python3 - "$TMP/duplicate-events.json" <<'PYNEG'
+import json, sys
+from pathlib import Path
+value=json.loads(Path(sys.argv[1]).read_text())
+assert value["status"] == "fail" and "duplicate event_id" in value["error"], value
+PYNEG
+cp "$TMP/baseline-events.jsonl" "$FIXTURE/reports/field-evidence/software-m5-v5-events.jsonl"
 
 python3 - "$FIXTURE/reports/long-term-assets/longitudinal-operation-current.json" <<'PY'
 import hashlib
