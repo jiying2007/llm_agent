@@ -104,6 +104,9 @@
     {
       "id": "product-qualified",
       "status": "pass",
+      "evidence_scope": "historical-last-verified-product-m5-baseline",
+      "current_source_authority": "reports/current-status.md::generated-current-source-projection",
+      "note": "Historical product M5 evidence cannot authorize the current ADK source identity; current status projection and fresh software-m5 certification are independent.",
       "evidence": [
         "manifests/product_maturity_scorecard.json",
         "reports/runtime-evidence/software-m5-production-qualification-2026-09-12.json"

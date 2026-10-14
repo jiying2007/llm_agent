@@ -86,7 +86,10 @@ assert readiness['qualification_status'] == 'pending'
 assert readiness['pending_requirements'] == ['LTA-04']
 assert readiness['rehearsal_scope'] == ['LTA-04']
 
-layer = {item['id']: item for item in lta['qualification_layers']}['long-term-asset-qualified']
+layers = {item['id']: item for item in lta['qualification_layers']}
+assert layers['product-qualified']['evidence_scope'] == 'historical-last-verified-product-m5-baseline'
+assert layers['product-qualified']['current_source_authority'] == 'reports/current-status.md::generated-current-source-projection'
+layer = layers['long-term-asset-qualified']
 assert layer['status'] == 'qualification_pending'
 assert layer['affects'] == ['long-term-asset-terminal-qualification']
 
