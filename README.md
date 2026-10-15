@@ -48,7 +48,7 @@ Root 控制面的统一 Python 入口是 `llm-ctl`（`pyproject.toml`）；GitHu
 - `docs/llm-agent-maintenance-guide.md`：工作区持续维护和生产验证详细指南。
 - `docs/product-maturity-model.md`：M0-M5、十二维和 source/test/runtime/field 证据模型。
 - `manifests/product_maturity_scorecard.json`：当前产品成熟度机器 SSOT。
-- `manifests/product_maturity_task_pack.json`：剩余门禁与可执行任务包。
+- `manifests/gates.json`：当前验证门禁 DAG 的声明式入口；旧 Product M5 task pack 已归档到 `manifests/history/product_maturity_task_pack-2026-09-16.json`，不能当作当前剩余门禁。
 - `manifests/long_term_asset_qualification.json`：Product M5 之上的长期资产终态资格 SSOT；单人维护、LTA-01～LTA-04 与 terminal blocker 均在此 fail-closed 判定。
 - `manifests/adk_interface.lock.json`：当前 ADK 跨仓接口身份与 active/deprecated surface contract。
 - `manifests/reference_pins.json`：非 source reference repository 的 exact commit / URL SSOT。
@@ -112,6 +112,6 @@ rtk scripts/check-adk-harden-readiness.sh . --require-pilot
 4. 若影响生产部署、`~/codex` 分发或 `~/.codex`：运行 `rtk scripts/check-adk-harden-readiness.sh . --require-pilot`，并在 `~/codex` 侧执行 build/apply dry-run。
 5. 若评估 reference repo 更新：先更新/审查 `manifests/reference_pins.json` 的 exact commit，再显式 materialize 到 cache 执行分析；审查结构化 decision/task pack 后才允许创建 ADK change artifact。
 6. 若观察 R2：只消费 Digital Worker 当前 periodic qualification receipt/状态用于 runtime 演进分析；不得在 Root 重新认证 R2，也不得把 R2 状态写成 llm_agent terminal gate。
-7. 若推进 LTA-04：继续把真实独立 pilot 事件追加到现有 hash-chain event log；2026-10-12T04:19:00Z 之前 `llm-ctl longitudinal-operation` 必须保持 BLOCKED。到期后生成真实 `reports/long-term-assets/longitudinal-operation-current.json`，绑定当前 event-chain head 并显式汇总 incident/regression/recovery/unresolved risk，再由 certifier 决定 PASS/BLOCKED；禁止用 synthetic fixture 作为资格证据。
+7. 若推进 LTA-04：只可追加真实独立 pilot 的 hash-chain 现场事件，并在满足至少 30 个自然日后由负责人审核真实的 `reports/long-term-assets/longitudinal-operation-current.json`，精确绑定当前 event-chain head，显式汇总 incident/regression/recovery/unresolved risk（包括零计数）。缺少完整窗口证据或有效审核时 certifier 必须保持 BLOCKED；禁止用 synthetic fixture 作为资格证据。
 
 当前源码与历史产品资格的判定规则见 `docs/runbooks/qualification-boundaries.md`；历史 M5 PASS 不自动授权新 ADK 源码。
