@@ -36,6 +36,7 @@ assert profiles["contract"] == [
     "status-projection",
     "active-contracts",
     "native-governance-contract",
+    "longitudinal-operation-certifier",
     "status-projection-regression",
     "adk-promotion-transaction",
     "current-status-source-split",
@@ -72,6 +73,19 @@ assert gates["native-governance-contract"]["argv"] == [
 ]
 assert "tools/control_plane/native_repository_governance.py" in gates["native-governance-contract"]["inputs"]
 assert ".github/workflows/native-governance-control-plane.yml" in gates["native-governance-contract"]["inputs"]
+# LTA-04 certifier source, its real/synthetic boundary tests and longitudinal
+# contract must have an ALWAYS-RUN PR path, even when deep integration is NOT_REQUIRED.
+assert gates["longitudinal-operation-certifier"]["depends_on"] == ["native-governance-contract"]
+assert gates["longitudinal-operation-certifier"]["argv"] == [
+    "bash", "tests/test_longitudinal_operation_certifier.sh",
+]
+for path in (
+    "tools/control_plane/longitudinal_operation.py",
+    "tests/test_longitudinal_operation_certifier.sh",
+    "manifests/long_term_asset_qualification.json",
+    "reports/field-evidence/software-m5-v5-events.jsonl",
+):
+    assert path in gates["longitudinal-operation-certifier"]["inputs"], path
 assert gates["root-regression"]["depends_on"] == ["adk-promotion-evidence"]
 assert gates["harden-readiness"].get("requires") == ["runtime-source"]
 assert gates["adk-pin"]["impact_inputs"] == ["agent-dev-kit"]
