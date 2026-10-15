@@ -18,7 +18,7 @@ G9_EVIDENCE_INDEX = Path(
     "reports/runtime-evidence/knowledge-retention/evidence-index.json"
 )
 _EXTERNAL_IDS = ("G9", "G21", "G22")
-_OWNER_REVIEW_UTC = re.compile(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\\.[0-9]{1,6})?Z$")
+_OWNER_REVIEW_UTC = re.compile(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]{1,6})?Z$")
 
 
 def _external_tracking(item_id: str, item: dict[str, Any]) -> dict[str, Any] | None:
