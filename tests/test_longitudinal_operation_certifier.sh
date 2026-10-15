@@ -220,6 +220,49 @@ PYNEG
 cp "$TMP/full-window-events.jsonl" "$FIXTURE/reports/field-evidence/software-m5-v5-events.jsonl"
 cp "$TMP/full-window-summary.json" "$FIXTURE/reports/long-term-assets/longitudinal-operation-current.json"
 
+# Duplicate JSON keys can preserve the *parsed* digest while presenting
+# contradictory source bytes to reviewers. Both the summary and event ledger
+# must reject duplicates before computing any source or chain authority.
+python3 - "$FIXTURE/reports/long-term-assets/longitudinal-operation-current.json" <<'PYNEG'
+from pathlib import Path
+import sys
+path = Path(sys.argv[1])
+original = path.read_text(encoding="utf-8")
+assert original.count('"status": "complete"') == 1
+path.write_text(original.replace('"status": "complete"', '"status": "complete", "status": "complete"', 1), encoding="utf-8")
+PYNEG
+set +e
+python3 -m tools.control_plane.longitudinal_operation --root "$FIXTURE" --as-of 2026-02-02T00:00:00Z --summary-json >"$TMP/duplicate-summary-fields.json"
+DUP_SUMMARY_RC=$?
+set -e
+[[ "$DUP_SUMMARY_RC" -eq 1 ]] || { echo "[FAIL] duplicate summary fields must fail" >&2; exit 1; }
+python3 - "$TMP/duplicate-summary-fields.json" <<'PYNEG'
+import json, sys
+value=json.load(open(sys.argv[1], encoding="utf-8"))
+assert value["status"] == "fail" and "duplicate JSON object key" in value["error"], value
+PYNEG
+cp "$TMP/full-window-summary.json" "$FIXTURE/reports/long-term-assets/longitudinal-operation-current.json"
+
+python3 - "$FIXTURE/reports/field-evidence/software-m5-v5-events.jsonl" <<'PYNEG'
+from pathlib import Path
+import sys
+path = Path(sys.argv[1])
+original = path.read_text(encoding="utf-8")
+assert '"event_type":"pilot_started"' in original
+path.write_text(original.replace('"event_type":"pilot_started"', '"event_type":"pilot_started","event_type":"pilot_started"', 1), encoding="utf-8")
+PYNEG
+set +e
+python3 -m tools.control_plane.longitudinal_operation --root "$FIXTURE" --as-of 2026-02-02T00:00:00Z --summary-json >"$TMP/duplicate-event-fields.json"
+DUP_EVENT_RC=$?
+set -e
+[[ "$DUP_EVENT_RC" -eq 1 ]] || { echo "[FAIL] duplicate event fields must fail" >&2; exit 1; }
+python3 - "$TMP/duplicate-event-fields.json" <<'PYNEG'
+import json, sys
+value=json.load(open(sys.argv[1], encoding="utf-8"))
+assert value["status"] == "fail" and "duplicate JSON object key" in value["error"], value
+PYNEG
+cp "$TMP/full-window-events.jsonl" "$FIXTURE/reports/field-evidence/software-m5-v5-events.jsonl"
+
 
 # Negative tests: a re-signed/hashed summary may not silently omit known
 # fault, regression, or recovery events. Run through the full validator,
