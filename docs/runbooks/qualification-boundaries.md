@@ -41,3 +41,8 @@ observation exists, keep LTA-04 **BLOCKED** with
 clean 30-day window from no telemetry, or re-label fixture data as field
 operations. Existing owner review, full-window outcome counts, risk disposition
 and protected PR ratchet remain mandatory and independent.
+
+
+LTA-04 原始 event-log JSONL 与终态 summary 均拒绝任何层级重复 JSON key：
+原生 JSON 解析器“后值覆盖前值”会使机器 digest 与人工文本审查出现
+歧义；即使两个重复字段的值相同、哈希内容重新计算正确，也必须 FAIL。
