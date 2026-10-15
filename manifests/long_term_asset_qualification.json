@@ -1,6 +1,6 @@
 {
   "schema": "llm-agent-long-term-asset-qualification/v2",
-  "updated_at": "2026-09-21",
+  "updated_at": "2026-10-16",
   "qualification_scope": "llm_agent control plane plus pinned agent-dev-kit component",
   "purpose": "Separate engineering readiness from long-term terminal qualification while treating Digital Worker periodic R2 as an external nonblocking observation rather than a second llm_agent decision authority.",
   "rules": {
@@ -215,11 +215,11 @@
       "pilot_start_at": "2026-09-12T04:19:00Z",
       "minimum_calendar_days": 30,
       "earliest_qualification_at": "2026-10-12T04:19:00Z",
-      "acceptance": "At least 30 days of independent pilot observation are summarized with incidents, regressions, recovery events, and unresolved risks represented explicitly. Zero observed incidents/regressions/recoveries are valid only when represented explicitly; unresolved risks or a review hold keep terminal qualification pending.",
+      "acceptance": "At least 30 days of independent pilot observation are summarized with incidents, regressions, recovery events, and unresolved risks represented explicitly. The current pilot must have a real digest-bound field pilot_observed event within the last 24 hours of the summarized observation window, at or after the 30-day threshold; a start-only ledger and rehashed summary are not sufficient. Zero observed incidents/regressions/recoveries are valid only when represented explicitly; unresolved risks or a review hold keep terminal qualification pending.",
       "certifier": "tools.control_plane.longitudinal_operation",
       "certifier_command": "python3 -m tools.control_plane.cli longitudinal-operation --root . --summary-json",
       "default_evidence_path": "reports/long-term-assets/longitudinal-operation-current.json",
-      "pending_evidence": "observation-window-and-real-summary-evidence",
+      "pending_evidence": "real-end-window-field-observation-and-reviewed-summary-evidence",
       "evidence": [
         "manifests/software_m5_pilot_ledger.json",
         "reports/field-evidence/software-m5-v5-events.jsonl"
