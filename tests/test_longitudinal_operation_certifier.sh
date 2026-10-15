@@ -255,6 +255,11 @@ from pathlib import Path
 value=json.loads(Path(sys.argv[1]).read_text())
 assert value["status"] == "fail" and "duplicate event_id" in value["error"], value
 PYNEG
+cp "$TMP/baseline-events.jsonl" "$FIXTURE/reports/field-evidence/software-m5-v5-events.jsonl"
+cp "$TMP/baseline-summary.json" "$FIXTURE/reports/long-term-assets/longitudinal-operation-current.json"
+
+cp "$TMP/baseline-events.jsonl" "$FIXTURE/reports/field-evidence/software-m5-v5-events.jsonl"
+
 # A well-formed, fully rehashed non-field event must not become terminal
 # evidence simply because its type and summary category still match.
 python3 - "$FIXTURE" <<'PYNEG'
@@ -278,13 +283,13 @@ for event in events:
     event.pop("event_hash", None)
     event["event_hash"] = digest(event)
     previous = event["event_hash"]
-event_log.write_text("".join(json.dumps(e, ensure_ascii=False, separators=(",", ":")) + "\\n" for e in events))
+event_log.write_text("".join(json.dumps(e, ensure_ascii=False, separators=(",", ":")) + "\n" for e in events))
 summary = json.loads(summary_path.read_text())
 summary["source"]["event_log_sha256"] = hashlib.sha256(event_log.read_bytes()).hexdigest()
 summary["source"]["event_chain_head"] = events[-1]["event_hash"]
 summary.pop("summary_sha256", None)
 summary["summary_sha256"] = digest(summary)
-summary_path.write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\\n")
+summary_path.write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n")
 PYNEG
 set +e
 python3 -m tools.control_plane.longitudinal_operation --root "$FIXTURE" --as-of 2026-02-02T00:00:00Z --summary-json >"$TMP/non-field-event.json"
@@ -298,11 +303,6 @@ from pathlib import Path
 value = json.loads(Path(sys.argv[1]).read_text())
 assert value["status"] == "fail" and "field-only evidence" in value["error"], value
 PYNEG
-cp "$TMP/baseline-events.jsonl" "$FIXTURE/reports/field-evidence/software-m5-v5-events.jsonl"
-cp "$TMP/baseline-summary.json" "$FIXTURE/reports/long-term-assets/longitudinal-operation-current.json"
-
-cp "$TMP/baseline-events.jsonl" "$FIXTURE/reports/field-evidence/software-m5-v5-events.jsonl"
-
 python3 - "$FIXTURE/reports/long-term-assets/longitudinal-operation-current.json" <<'PY'
 import hashlib
 import json
