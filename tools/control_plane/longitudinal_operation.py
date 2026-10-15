@@ -8,6 +8,8 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Mapping
 
+from .evidence_paths import resolve_regular_evidence_path
+
 LTA_SCHEMA = "llm-agent-long-term-asset-qualification/v2"
 LEDGER_SCHEMA = "llm-agent-software-m5-pilot-ledger/v1"
 EVENT_SCHEMA = "llm-agent-software-field-event/v1"
@@ -78,9 +80,10 @@ def _repo_file(root: Path, value: Any, label: str, *, required: bool = True) -> 
     relative = Path(value)
     if relative.is_absolute() or ".." in relative.parts:
         raise LongitudinalError(f"{label} must stay inside the repository")
-    path = (root / relative).resolve()
-    if not _inside(path, root):
-        raise LongitudinalError(f"{label} resolves outside the repository")
+    try:
+        path = resolve_regular_evidence_path(root, relative, label=label)
+    except ValueError as exc:
+        raise LongitudinalError(str(exc)) from exc
     if required and (not path.is_file() or path.is_symlink()):
         raise LongitudinalError(f"{label} must reference a regular tracked file: {value}")
     return path
@@ -376,10 +379,10 @@ def check(root: Path, *, evidence_path: Path | None = None, as_of: datetime | No
         raise LongitudinalBlocked(json.dumps({**base, "reason": "observation-window-not-complete"}, ensure_ascii=False, sort_keys=True))
 
     relative = evidence_path or Path(str(requirement.get("default_evidence_path")))
-    summary_path = relative if relative.is_absolute() else (root / relative)
-    summary_path = summary_path.resolve()
-    if not _inside(summary_path, root):
-        raise LongitudinalError("LTA-04 evidence path must stay inside the repository")
+    try:
+        summary_path = resolve_regular_evidence_path(root, relative, label="LTA-04 summary evidence")
+    except ValueError as exc:
+        raise LongitudinalError(str(exc)) from exc
     if not summary_path.is_file():
         raise LongitudinalBlocked(json.dumps({**base, "reason": "summary-evidence-missing", "expected_evidence": summary_path.relative_to(root).as_posix()}, ensure_ascii=False, sort_keys=True))
     detail = _validate_summary(root, summary_path, requirement, event_log, events, started, eligible_after, now)
