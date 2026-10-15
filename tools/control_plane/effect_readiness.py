@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from .adk_interface import validate as validate_adk_interface
+from .evidence_paths import resolve_regular_evidence_path
 from .effect_preregistration import verify_effect_preregistration
 
 SCHEMA = "llm-agent-effect-readiness/v1"
@@ -55,7 +56,7 @@ def _safe_path(root: Path, base: Path, value: Any, label: str) -> Path:
         or "\r" in value
     ):
         raise ValueError(f"{label} must be a safe relative path")
-    path = (root / value).resolve()
+    path = resolve_regular_evidence_path(root, Path(value), label=label)
     if not path.is_relative_to(root.resolve()):
         raise ValueError(f"{label} escapes root")
     if not path.is_relative_to(base.resolve()):
@@ -850,7 +851,7 @@ def project(root: Path, evidence_index: Path = DEFAULT_INDEX) -> dict[str, Any]:
     index_path = evidence_index
     if not index_path.is_absolute():
         index_path = root / index_path
-    index_path = index_path.resolve()
+    index_path = resolve_regular_evidence_path(root, index_path, label="effect evidence index")
     if not index_path.is_relative_to(root):
         raise ValueError("effect evidence index escapes Root")
     evidence = _evaluate_evidence_index(

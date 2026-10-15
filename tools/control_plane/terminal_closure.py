@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from .effect_readiness import project as project_effect_readiness
+from .evidence_paths import resolve_regular_evidence_path
 from .native_target_readiness import project as project_native_readiness
 
 SCHEMA = "llm-agent-terminal-closure/v1"
@@ -86,7 +87,7 @@ def _indexed_object(
         or any(ch not in "0123456789abcdef" for ch in expected)
     ):
         raise ValueError(f"{label} git blob id is invalid")
-    path = (root / path_value).resolve()
+    path = resolve_regular_evidence_path(root, Path(path_value), label=label)
     if (
         not path.is_relative_to(root)
         or not path.is_relative_to(evidence_root)
@@ -217,7 +218,9 @@ def _g9_projection(root: Path, backlog: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(item, dict):
         raise ValueError("G9 is missing from optimization backlog")
 
-    index_path = (root / G9_EVIDENCE_INDEX).resolve()
+    index_path = resolve_regular_evidence_path(
+        root, G9_EVIDENCE_INDEX, label="G9 knowledge evidence index"
+    )
     evidence_root = index_path.parent.resolve()
     index = _load_object(index_path, "G9 knowledge-retention evidence index")
     if (
