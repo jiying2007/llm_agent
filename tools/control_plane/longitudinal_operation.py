@@ -301,6 +301,20 @@ def _validate_summary(
             "LTA-04 terminal outcomes require field-only evidence; non-field event(s): "
             + ", ".join(non_field_ids)
         )
+    # The calendar alone does not prove that the independent pilot continued.
+    # Requiring a digest-bound *real field* observation at the end prevents a
+    # start-only ledger plus a backfilled 30-day summary from being certified.
+    # Both the event evidence and its SHA-256 are verified by _read_events.
+    terminal_observation_from = max(eligible_after, observed_through - timedelta(hours=24))
+    terminal_observations = [
+        event for event in relevant
+        if event.get("event_type") == "pilot_observed"
+        and event.get("evidence_layer") == "field"
+        and terminal_observation_from <= _parse_time(event.get("occurred_at"), "pilot_observed occurred_at") <= observed_through
+        and _parse_time(event.get("recorded_at"), "pilot_observed recorded_at") >= eligible_after
+    ]
+    if not terminal_observations:
+        raise LongitudinalBlocked("end-window-field-evidence-missing")
     # _read_events enforces global unique IDs before this scoped index is made.
     events_by_id = {str(event["event_id"]): event for event in relevant}
     outcomes = summary.get("outcomes")
