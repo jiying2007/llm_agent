@@ -256,9 +256,6 @@ value=json.loads(Path(sys.argv[1]).read_text())
 assert value["status"] == "fail" and "duplicate event_id" in value["error"], value
 PYNEG
 cp "$TMP/baseline-events.jsonl" "$FIXTURE/reports/field-evidence/software-m5-v5-events.jsonl"
-cp "$TMP/baseline-summary.json" "$FIXTURE/reports/long-term-assets/longitudinal-operation-current.json"
-
-cp "$TMP/baseline-events.jsonl" "$FIXTURE/reports/field-evidence/software-m5-v5-events.jsonl"
 
 # A well-formed, fully rehashed non-field event must not become terminal
 # evidence simply because its type and summary category still match.
@@ -303,6 +300,9 @@ from pathlib import Path
 value = json.loads(Path(sys.argv[1]).read_text())
 assert value["status"] == "fail" and "field-only evidence" in value["error"], value
 PYNEG
+cp "$TMP/baseline-events.jsonl" "$FIXTURE/reports/field-evidence/software-m5-v5-events.jsonl"
+cp "$TMP/baseline-summary.json" "$FIXTURE/reports/long-term-assets/longitudinal-operation-current.json"
+
 python3 - "$FIXTURE/reports/long-term-assets/longitudinal-operation-current.json" <<'PY'
 import hashlib
 import json
