@@ -255,6 +255,52 @@ from pathlib import Path
 value=json.loads(Path(sys.argv[1]).read_text())
 assert value["status"] == "fail" and "duplicate event_id" in value["error"], value
 PYNEG
+# A well-formed, fully rehashed non-field event must not become terminal
+# evidence simply because its type and summary category still match.
+python3 - "$FIXTURE" <<'PYNEG'
+import hashlib
+import json
+import sys
+from pathlib import Path
+root = Path(sys.argv[1])
+event_log = root / "reports/field-evidence/software-m5-v5-events.jsonl"
+summary_path = root / "reports/long-term-assets/longitudinal-operation-current.json"
+events = [json.loads(line) for line in event_log.read_text().splitlines()]
+events[1]["evidence_layer"] = "synthetic"
+
+def digest(value):
+    data = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()
+    return hashlib.sha256(data).hexdigest()
+
+previous = "0" * 64
+for event in events:
+    event["previous_hash"] = previous
+    event.pop("event_hash", None)
+    event["event_hash"] = digest(event)
+    previous = event["event_hash"]
+event_log.write_text("".join(json.dumps(e, ensure_ascii=False, separators=(",", ":")) + "\\n" for e in events))
+summary = json.loads(summary_path.read_text())
+summary["source"]["event_log_sha256"] = hashlib.sha256(event_log.read_bytes()).hexdigest()
+summary["source"]["event_chain_head"] = events[-1]["event_hash"]
+summary.pop("summary_sha256", None)
+summary["summary_sha256"] = digest(summary)
+summary_path.write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\\n")
+PYNEG
+set +e
+python3 -m tools.control_plane.longitudinal_operation --root "$FIXTURE" --as-of 2026-02-02T00:00:00Z --summary-json >"$TMP/non-field-event.json"
+NON_FIELD_RC=$?
+set -e
+[[ "$NON_FIELD_RC" -eq 1 ]] || { echo "[FAIL] non-field terminal events must fail" >&2; exit 1; }
+python3 - "$TMP/non-field-event.json" <<'PYNEG'
+import json
+import sys
+from pathlib import Path
+value = json.loads(Path(sys.argv[1]).read_text())
+assert value["status"] == "fail" and "field-only evidence" in value["error"], value
+PYNEG
+cp "$TMP/baseline-events.jsonl" "$FIXTURE/reports/field-evidence/software-m5-v5-events.jsonl"
+cp "$TMP/baseline-summary.json" "$FIXTURE/reports/long-term-assets/longitudinal-operation-current.json"
+
 cp "$TMP/baseline-events.jsonl" "$FIXTURE/reports/field-evidence/software-m5-v5-events.jsonl"
 
 python3 - "$FIXTURE/reports/long-term-assets/longitudinal-operation-current.json" <<'PY'
