@@ -289,6 +289,18 @@ def _validate_summary(
         and event.get("repository_id") == requirement.get("repository_id")
         and started <= _parse_time(event.get("occurred_at"), "event occurred_at") <= observed_through
     ]
+    # Only real field-layer events may enter a terminal longitudinal summary.
+    # Checking types and digests alone permits a rehashed synthetic/rehearsal
+    # event to masquerade as a real incident, regression, or recovery.
+    non_field_ids = [
+        str(event["event_id"]) for event in relevant
+        if event.get("evidence_layer") != "field"
+    ]
+    if non_field_ids:
+        raise LongitudinalError(
+            "LTA-04 terminal outcomes require field-only evidence; non-field event(s): "
+            + ", ".join(non_field_ids)
+        )
     # _read_events enforces global unique IDs before this scoped index is made.
     events_by_id = {str(event["event_id"]): event for event in relevant}
     outcomes = summary.get("outcomes")
