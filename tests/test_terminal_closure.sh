@@ -3,6 +3,30 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
+# The owner-decision evidence is historical and immutable; exercise the
+# validator on in-memory copies rather than rewriting the canonical record.
+python3 - <<'PY'
+import json
+from pathlib import Path
+from tools.control_plane.terminal_closure import _owner_decision
+
+source = json.loads(Path("reports/runtime-evidence/knowledge-retention/g9-hub-owner-decision-2026-09-26.json").read_text(encoding="utf-8"))
+assert _owner_decision(source)["lifecycle_decision"] == "activate"
+for invalid in (
+    "bogusTgarbageZ",
+    "2026-02-31T00:00:00Z",
+    "9999-12-31T00:00:00Z",
+    "2026-09-26T15:04:50+08:00",
+):
+    candidate = dict(source, reviewed_at=invalid)
+    try:
+        _owner_decision(candidate)
+    except ValueError as exc:
+        assert "timestamp" in str(exc), (invalid, str(exc))
+    else:
+        raise AssertionError("G9 non-UTC, invalid or future owner timestamp accepted: " + invalid)
+PY
+
 TMP="$(mktemp)"
 trap 'rm -f "$TMP"' EXIT
 

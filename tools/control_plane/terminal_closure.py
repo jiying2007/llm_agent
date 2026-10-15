@@ -3,6 +3,8 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -16,6 +18,7 @@ G9_EVIDENCE_INDEX = Path(
     "reports/runtime-evidence/knowledge-retention/evidence-index.json"
 )
 _EXTERNAL_IDS = ("G9", "G21", "G22")
+_OWNER_REVIEW_UTC = re.compile(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]{1,6})?Z$")
 
 
 def _external_tracking(item_id: str, item: dict[str, Any]) -> dict[str, Any] | None:
@@ -136,12 +139,14 @@ def _owner_decision(value: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(reviewer, str) or not reviewer.strip() or len(reviewer) > 128:
         raise ValueError("G9 owner decision reviewer is invalid")
     reviewed_at = value.get("reviewed_at")
-    if (
-        not isinstance(reviewed_at, str)
-        or "T" not in reviewed_at
-        or not reviewed_at.endswith("Z")
-    ):
-        raise ValueError("G9 owner decision timestamp is invalid")
+    if not isinstance(reviewed_at, str) or _OWNER_REVIEW_UTC.fullmatch(reviewed_at) is None:
+        raise ValueError("G9 owner decision timestamp must be a valid UTC instant")
+    try:
+        reviewed_at_utc = datetime.fromisoformat(reviewed_at[:-1] + "+00:00")
+    except ValueError as exc:
+        raise ValueError("G9 owner decision timestamp is not a valid calendar instant") from exc
+    if reviewed_at_utc > datetime.now(timezone.utc) + timedelta(minutes=5):
+        raise ValueError("G9 owner decision timestamp is in the future")
     if value.get("lifecycle_decision") not in {
         "activate",
         "continue-reviewing",
