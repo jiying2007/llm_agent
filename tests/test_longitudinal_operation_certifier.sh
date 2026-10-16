@@ -264,6 +264,76 @@ PYNEG
 cp "$TMP/full-window-events.jsonl" "$FIXTURE/reports/field-evidence/software-m5-v5-events.jsonl"
 
 
+# An alternate summary is for simulated candidate review, never a real PASS.
+cp "$FIXTURE/reports/long-term-assets/longitudinal-operation-current.json" "$FIXTURE/reports/long-term-assets/unpromoted-candidate.json"
+set +e
+python3 -m tools.control_plane.longitudinal_operation --root "$FIXTURE" --evidence reports/long-term-assets/unpromoted-candidate.json --summary-json >"$TMP/noncanonical-summary.json"
+CANDIDATE_RC=$?
+set -e
+[[ "$CANDIDATE_RC" -eq 2 ]] || { echo "[FAIL] alternate summary must stay BLOCKED in real mode" >&2; exit 1; }
+python3 - "$TMP/noncanonical-summary.json" <<'PYNEG'
+import json,sys
+value=json.load(open(sys.argv[1],encoding="utf-8"))
+assert value["status"]=="blocked" and value["reason"]=="noncanonical-summary-review-only", value
+PYNEG
+python3 -m tools.control_plane.longitudinal_operation --root "$FIXTURE" --evidence reports/long-term-assets/unpromoted-candidate.json --as-of 2026-02-02T00:00:00Z --summary-json >"$TMP/candidate-simulation.json"
+python3 - "$TMP/candidate-simulation.json" <<'PYNEG'
+import json,sys
+value=json.load(open(sys.argv[1],encoding="utf-8"))
+assert value["status"]=="simulated_pass", value
+assert value["simulated"] is True and value["terminal_qualified"] is False, value
+PYNEG
+rm "$FIXTURE/reports/long-term-assets/unpromoted-candidate.json"
+
+# All official field evidence must have durable Git HEAD identity, not only
+# locally consistent JSON hashes. Use an isolated Git fixture, never a live repo.
+python3 - <<'PYNEG'
+import subprocess
+import tempfile
+from pathlib import Path
+from tools.control_plane.longitudinal_operation import (
+    _verify_committed_evidence, LongitudinalBlocked,
+)
+with tempfile.TemporaryDirectory() as temp:
+    root=Path(temp).resolve()
+    def git(*args):
+        subprocess.run(["git","-C",str(root),*args],check=True,
+                       stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+    git("init","-q")
+    tracked=root/"field.json"
+    tracked.write_text('{"source":"reviewed"}\n',encoding="utf-8")
+    special=root/"meta[1].json"
+    special.write_text("{}\n",encoding="utf-8")
+    git("add","-A")
+    git("-c","user.name=Fixture Owner","-c","user.email=owner@example.invalid","commit","-qm","fixture")
+    _verify_committed_evidence(root,{tracked,special})
+    tracked.write_text('{"source":"locally-altered"}\n',encoding="utf-8")
+    try:
+        _verify_committed_evidence(root,{tracked})
+    except LongitudinalBlocked as exc:
+        assert str(exc)=="terminal-evidence-worktree-drift", str(exc)
+    else:
+        raise AssertionError("dirty evidence was granted terminal authority")
+    git("add","-A")
+    try:
+        _verify_committed_evidence(root,{tracked})
+    except LongitudinalBlocked as exc:
+        assert str(exc)=="terminal-evidence-worktree-drift", str(exc)
+    else:
+        raise AssertionError("staged evidence was granted terminal authority")
+    tracked.write_text('{"source":"reviewed"}\n',encoding="utf-8")
+    git("add","-A")
+    _verify_committed_evidence(root,{tracked,special})
+    untracked=root/"not-promoted.json"
+    untracked.write_text("{}\n",encoding="utf-8")
+    try:
+        _verify_committed_evidence(root,{untracked})
+    except LongitudinalBlocked as exc:
+        assert str(exc)=="terminal-evidence-not-committed", str(exc)
+    else:
+        raise AssertionError("untracked evidence was granted terminal authority")
+PYNEG
+
 # A well-formed, hash-rebound terminal observation must still come from a
 # registered human operator on the configured independent pilot.
 python3 - "$FIXTURE" <<'PYNEG'
