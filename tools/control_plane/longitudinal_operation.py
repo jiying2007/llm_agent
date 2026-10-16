@@ -22,6 +22,7 @@ MAX_JSON_DOCUMENT_BYTES = 1024 * 1024
 MAX_EVENT_LOG_BYTES = 32 * 1024 * 1024
 MAX_EVENT_LINE_BYTES = 128 * 1024
 MAX_EVENT_COUNT = 50000
+MAX_EVENT_EVIDENCE_REFS = 32
 MAX_FIELD_EVIDENCE_BYTES = 16 * 1024 * 1024
 
 
@@ -281,6 +282,14 @@ def _read_events(root: Path, path: Path, as_of: datetime) -> list[dict[str, Any]
         digests = event.get("evidence_sha256")
         if not isinstance(evidence, list) or not evidence or not isinstance(digests, dict):
             raise LongitudinalError("event evidence references are incomplete")
+        if len(evidence) > MAX_EVENT_EVIDENCE_REFS:
+            raise LongitudinalError("event evidence reference count exceeds budget")
+        if not all(isinstance(relative, str) and relative for relative in evidence):
+            raise LongitudinalError("event evidence references must be nonempty paths")
+        if len(set(evidence)) != len(evidence):
+            raise LongitudinalError("event evidence references must be unique")
+        if set(digests) != set(evidence):
+            raise LongitudinalError("event evidence digest keys do not match references")
         for relative in evidence:
             evidence_path = _repo_file(root, relative, "event evidence")
             if evidence_path.stat().st_size > MAX_FIELD_EVIDENCE_BYTES:
