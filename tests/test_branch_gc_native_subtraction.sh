@@ -24,6 +24,35 @@ assert not Path("manifests/branch_gc_retired.json").exists()
 assert "explicitly retired" in workflow.lower()
 assert "merged_pr" not in workflow
 
+
+# PR-controlled code must never receive a write-capable GitHub token.
+def least_privilege_isolation(text: str) -> bool:
+    if text.count('\n  branch-gc:\n') != 1 or text.count('\n  branch-gc-apply:\n') != 1:
+        return False
+    header, jobs = text.split('\njobs:\n', 1)
+    readonly, write_job = jobs.split('\n  branch-gc-apply:\n', 1)
+    expected_apply_condition = (
+        "    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') "
+        "|| (github.event_name == 'workflow_dispatch' && inputs.apply && github.ref == 'refs/heads/main')"
+    )
+    return all((
+        'permissions:\n  contents: read\n  pull-requests: read' in header,
+        '    name: branch-gc\n    permissions:\n      contents: read\n      pull-requests: read' in readonly,
+        'contents: write' not in readonly,
+        'args+=(--apply)' not in readonly,
+        expected_apply_condition in write_job,
+        '    permissions:\n      contents: write\n      pull-requests: read' in write_job,
+        'ref: ${{ github.sha }}' in write_job,
+        'args+=(--apply)' in write_job,
+    ))
+
+
+assert least_privilege_isolation(workflow), 'Branch GC PR job must be read-only; apply must be trusted-main only'
+assert not least_privilege_isolation(workflow.replace('permissions:\n  contents: read', 'permissions:\n  contents: write', 1))
+assert not least_privilege_isolation(workflow.replace('    name: branch-gc\n    permissions:\n      contents: read', '    name: branch-gc\n    permissions:\n      contents: write', 1))
+assert not least_privilege_isolation(workflow.replace("github.event_name == 'push'", "github.event_name == 'pull_request'", 1))
+assert not least_privilege_isolation(workflow.replace('ref: ${{ github.sha }}', 'ref: main', 1))
+
 SHA = "a" * 40
 BRANCH = "codex/already-merged"
 
