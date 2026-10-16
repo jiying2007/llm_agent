@@ -264,6 +264,57 @@ PYNEG
 cp "$TMP/full-window-events.jsonl" "$FIXTURE/reports/field-evidence/software-m5-v5-events.jsonl"
 
 
+# Event evidence references are exact one-to-one declarations, not a
+# multiplier for repeated hashing of large files or hidden extra digests.
+# Recompute the *entire* chain in an isolated fixture to exercise validation.
+python3 - "$FIXTURE" <<'PYNEG'
+import hashlib
+import json
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+from tools.control_plane.longitudinal_operation import (
+    LongitudinalError, _read_events, MAX_EVENT_EVIDENCE_REFS,
+)
+root=Path(sys.argv[1])
+event_log=root/"reports/field-evidence/software-m5-v5-events.jsonl"
+baseline=event_log.read_bytes()
+def digest(value):
+    return hashlib.sha256(json.dumps(value,ensure_ascii=False,sort_keys=True,separators=(",",":")).encode()).hexdigest()
+def chain(events):
+    prev="0"*64
+    for event in events:
+        event["previous_hash"]=prev
+        event.pop("event_hash",None)
+        event["event_hash"]=digest(event)
+        prev=event["event_hash"]
+    event_log.write_text("".join(json.dumps(event,ensure_ascii=False,separators=(",",":"))+"\n" for event in events),encoding="utf-8")
+try:
+    for case,error in (
+        ("duplicate", "event evidence references must be unique"),
+        ("budget", "event evidence reference count exceeds budget"),
+        ("unlisted-digest", "event evidence digest keys do not match references"),
+    ):
+        events=[json.loads(line) for line in baseline.decode("utf-8").splitlines()]
+        original=events[0]["evidence"][0]
+        if case=="duplicate":
+            events[0]["evidence"].append(original)
+        elif case=="budget":
+            events[0]["evidence"]=[original]*(MAX_EVENT_EVIDENCE_REFS+1)
+        else:
+            events[0]["evidence_sha256"]["reports/field-evidence/unlisted-fixture.json"]="0"*64
+        chain(events)
+        try:
+            _read_events(root,event_log,datetime(2026,2,2,tzinfo=timezone.utc))
+        except LongitudinalError as exc:
+            assert error in str(exc),(case,str(exc))
+        else:
+            raise AssertionError("event evidence authorization bypass: "+case)
+finally:
+    event_log.write_bytes(baseline)
+_read_events(root,event_log,datetime(2026,2,2,tzinfo=timezone.utc))
+PYNEG
+
 # An alternate summary is for simulated candidate review, never a real PASS.
 cp "$FIXTURE/reports/long-term-assets/longitudinal-operation-current.json" "$FIXTURE/reports/long-term-assets/unpromoted-candidate.json"
 set +e
