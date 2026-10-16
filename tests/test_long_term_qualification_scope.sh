@@ -69,7 +69,7 @@ assert lta04['implementation_status'] == 'certifier-ready'
 assert lta04['pilot_start_at'] == '2026-09-12T04:19:00Z'
 assert lta04['earliest_qualification_at'] == '2026-10-12T04:19:00Z'
 assert lta04['minimum_calendar_days'] == 30
-assert lta04['pending_evidence'] == 'observation-window-and-real-summary-evidence'
+assert lta04['pending_evidence'] == 'real-end-window-field-observation-and-reviewed-summary-evidence'
 
 terminal = lta['terminal']
 assert terminal == {
