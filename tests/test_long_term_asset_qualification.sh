@@ -18,7 +18,7 @@ recovery = json.loads(recovery_path.read_text())
 runbook = root / 'docs/runbooks/solo-maintainer-continuity.md'
 
 assert lta['schema'] == 'llm-agent-long-term-asset-qualification/v2'
-assert lta['updated_at'] == '2026-09-21'
+assert lta['updated_at'] == '2026-10-16'
 assert lta['rules'] == {
     'fail_closed': True,
     'no_simulated_external_evidence': True,
@@ -121,7 +121,7 @@ assert lta04['minimum_calendar_days'] == 30
 assert lta04['earliest_qualification_at'] == '2026-10-12T04:19:00Z'
 assert lta04['certifier'] == 'tools.control_plane.longitudinal_operation'
 assert lta04['default_evidence_path'] == 'reports/long-term-assets/longitudinal-operation-current.json'
-assert lta04['pending_evidence'] == 'observation-window-and-real-summary-evidence'
+assert lta04['pending_evidence'] == 'real-end-window-field-observation-and-reviewed-summary-evidence'
 assert set(lta04['affects']) == {
     'longitudinal-terminal-qualification',
     'long-term-asset-terminal-qualification',

@@ -25,3 +25,24 @@
 ## 效果门禁与实际收益
 
 现有 `docs/runbooks/effect-readiness.md` 是 G22 唯一效果证据入口：固定相同任务/模型 revision/控制条件，比较原生运行时基线、按需 ADK 与新候选。记录最终正确性、错误路由、人工返工、耗时和真实 token。软件准备好不等于效果验证成功；不为追求“终态”生成模型未执行的 trial/receipt 或 owner decision。
+
+
+### LTA-04 end-of-window observation authority (2026-10-16)
+
+Thirty elapsed calendar days and a correctly rehashed summary alone are not
+terminal evidence. Record an actual, digest-bound `pilot_observed` field event
+from the registered independent pilot within the final 24 hours of the
+summary's `observed_through` and at or after the 30-day eligibility boundary.
+The event must reference authentic operator-reviewed field observation material
+(e.g. sanitized real pilot runtime/incident/health receipts), with a current
+SHA-256 and proper hash-chain continuity. If the pilot stopped or no genuine
+observation exists, keep LTA-04 **BLOCKED** with
+`end-window-field-evidence-missing`; never manufacture a heartbeat, claim a
+clean 30-day window from no telemetry, or re-label fixture data as field
+operations. Existing owner review, full-window outcome counts, risk disposition
+and protected PR ratchet remain mandatory and independent.
+
+
+LTA-04 原始 event-log JSONL 与终态 summary 均拒绝任何层级重复 JSON key：
+原生 JSON 解析器“后值覆盖前值”会使机器 digest 与人工文本审查出现
+歧义；即使两个重复字段的值相同、哈希内容重新计算正确，也必须 FAIL。

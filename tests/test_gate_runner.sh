@@ -27,6 +27,7 @@ assert [item["name"] for item in result["gates"]] == [
     "status-projection",
     "active-contracts",
     "native-governance-contract",
+    "longitudinal-operation-certifier",
     "status-projection-regression",
     "adk-promotion-transaction",
     "current-status-source-split",

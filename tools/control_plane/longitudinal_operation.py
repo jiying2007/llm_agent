@@ -34,6 +34,20 @@ def _digest(value: Any) -> str:
     return hashlib.sha256(_canonical(value)).hexdigest()
 
 
+def _unique_json_fields(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    """Reject duplicate fields at *all* nesting levels before hashing evidence.
+
+    Ordinary json.loads silently selects the last occurrence, allowing human
+    review tools and the machine digest to interpret the same bytes differently.
+    """
+    document: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in document:
+            raise LongitudinalError(f"duplicate JSON object key: {key}")
+        document[key] = value
+    return document
+
+
 def _sha256_file(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as stream:
@@ -58,7 +72,7 @@ def _format_time(value: datetime) -> str:
 
 def _load_object(path: Path, label: str) -> dict[str, Any]:
     try:
-        value = json.loads(path.read_text(encoding="utf-8"))
+        value = json.loads(path.read_text(encoding="utf-8"), object_pairs_hook=_unique_json_fields)
     except (OSError, json.JSONDecodeError) as exc:
         raise LongitudinalError(f"invalid {label}: {path}") from exc
     if not isinstance(value, dict):
@@ -129,7 +143,7 @@ def _read_events(root: Path, path: Path, as_of: datetime) -> list[dict[str, Any]
         if not raw.strip():
             raise LongitudinalError(f"event log contains a blank line at sequence {sequence}")
         try:
-            event = json.loads(raw)
+            event = json.loads(raw, object_pairs_hook=_unique_json_fields)
         except json.JSONDecodeError as exc:
             raise LongitudinalError(f"event log contains invalid JSON at sequence {sequence}") from exc
         if not isinstance(event, dict) or event.get("schema") != EVENT_SCHEMA:
@@ -301,6 +315,20 @@ def _validate_summary(
             "LTA-04 terminal outcomes require field-only evidence; non-field event(s): "
             + ", ".join(non_field_ids)
         )
+    # The calendar alone does not prove that the independent pilot continued.
+    # Requiring a digest-bound *real field* observation at the end prevents a
+    # start-only ledger plus a backfilled 30-day summary from being certified.
+    # Both the event evidence and its SHA-256 are verified by _read_events.
+    terminal_observation_from = max(eligible_after, observed_through - timedelta(hours=24))
+    terminal_observations = [
+        event for event in relevant
+        if event.get("event_type") == "pilot_observed"
+        and event.get("evidence_layer") == "field"
+        and terminal_observation_from <= _parse_time(event.get("occurred_at"), "pilot_observed occurred_at") <= observed_through
+        and _parse_time(event.get("recorded_at"), "pilot_observed recorded_at") >= eligible_after
+    ]
+    if not terminal_observations:
+        raise LongitudinalBlocked("end-window-field-evidence-missing")
     # _read_events enforces global unique IDs before this scoped index is made.
     events_by_id = {str(event["event_id"]): event for event in relevant}
     outcomes = summary.get("outcomes")

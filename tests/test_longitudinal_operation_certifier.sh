@@ -94,6 +94,7 @@ specs = [
     ("fault-1", "fault_observed", "2026-01-10T00:00:00Z"),
     ("regression-1", "regression_observed", "2026-01-15T00:00:00Z"),
     ("recovery-1", "recovery_completed", "2026-01-20T00:00:00Z"),
+    ("independent-observation-day31", "pilot_observed", "2026-02-01T00:00:00Z"),
 ]
 previous = "0" * 64
 events = []
@@ -173,6 +174,94 @@ assert value["regressions"] == 1, value
 assert value["recoveries"] == 1, value
 assert value["unresolved_risks"] == 0, value
 PY
+
+# A correctly rehashed, owner-reviewed *calendar-only* summary cannot prove
+# 30 days of independent field operation when the end-of-window observation
+# and its actual digest-bound source evidence are missing.
+cp "$FIXTURE/reports/field-evidence/software-m5-v5-events.jsonl" "$TMP/full-window-events.jsonl"
+cp "$FIXTURE/reports/long-term-assets/longitudinal-operation-current.json" "$TMP/full-window-summary.json"
+python3 - "$FIXTURE" <<'PYNEG'
+import hashlib
+import json
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+event_log = root / "reports/field-evidence/software-m5-v5-events.jsonl"
+summary_path = root / "reports/long-term-assets/longitudinal-operation-current.json"
+events = [json.loads(line) for line in event_log.read_text(encoding="utf-8").splitlines()]
+assert events[-1]["event_type"] == "pilot_observed"
+events.pop()
+event_log.write_text("".join(json.dumps(e, ensure_ascii=False, separators=(",", ":")) + "\n" for e in events), encoding="utf-8")
+summary = json.loads(summary_path.read_text(encoding="utf-8"))
+summary["source"]["event_log_sha256"] = hashlib.sha256(event_log.read_bytes()).hexdigest()
+summary["source"]["event_chain_head"] = events[-1]["event_hash"]
+summary["source"]["event_count"] = len(events)
+summary.pop("summary_sha256")
+summary["summary_sha256"] = hashlib.sha256(
+    json.dumps(summary, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+).hexdigest()
+summary_path.write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+PYNEG
+set +e
+python3 -m tools.control_plane.longitudinal_operation --root "$FIXTURE" --as-of 2026-02-02T00:00:00Z --summary-json >"$TMP/start-only-summary.json"
+START_ONLY_RC=$?
+set -e
+[[ "$START_ONLY_RC" -eq 2 ]] || { echo "[FAIL] rehashed calendar-only summary must stay BLOCKED" >&2; exit 1; }
+python3 - "$TMP/start-only-summary.json" <<'PYNEG'
+import json
+import sys
+from pathlib import Path
+value = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+assert value["status"] == "blocked", value
+assert value["reason"] == "end-window-field-evidence-missing", value
+assert value["simulated"] is True and value["terminal_qualified"] is False, value
+PYNEG
+cp "$TMP/full-window-events.jsonl" "$FIXTURE/reports/field-evidence/software-m5-v5-events.jsonl"
+cp "$TMP/full-window-summary.json" "$FIXTURE/reports/long-term-assets/longitudinal-operation-current.json"
+
+# Duplicate JSON keys can preserve the *parsed* digest while presenting
+# contradictory source bytes to reviewers. Both the summary and event ledger
+# must reject duplicates before computing any source or chain authority.
+python3 - "$FIXTURE/reports/long-term-assets/longitudinal-operation-current.json" <<'PYNEG'
+from pathlib import Path
+import sys
+path = Path(sys.argv[1])
+original = path.read_text(encoding="utf-8")
+assert original.count('"status": "complete"') == 1
+path.write_text(original.replace('"status": "complete"', '"status": "complete", "status": "complete"', 1), encoding="utf-8")
+PYNEG
+set +e
+python3 -m tools.control_plane.longitudinal_operation --root "$FIXTURE" --as-of 2026-02-02T00:00:00Z --summary-json >"$TMP/duplicate-summary-fields.json"
+DUP_SUMMARY_RC=$?
+set -e
+[[ "$DUP_SUMMARY_RC" -eq 1 ]] || { echo "[FAIL] duplicate summary fields must fail" >&2; exit 1; }
+python3 - "$TMP/duplicate-summary-fields.json" <<'PYNEG'
+import json, sys
+value=json.load(open(sys.argv[1], encoding="utf-8"))
+assert value["status"] == "fail" and "duplicate JSON object key" in value["error"], value
+PYNEG
+cp "$TMP/full-window-summary.json" "$FIXTURE/reports/long-term-assets/longitudinal-operation-current.json"
+
+python3 - "$FIXTURE/reports/field-evidence/software-m5-v5-events.jsonl" <<'PYNEG'
+from pathlib import Path
+import sys
+path = Path(sys.argv[1])
+original = path.read_text(encoding="utf-8")
+assert '"event_type":"pilot_started"' in original
+path.write_text(original.replace('"event_type":"pilot_started"', '"event_type":"pilot_started","event_type":"pilot_started"', 1), encoding="utf-8")
+PYNEG
+set +e
+python3 -m tools.control_plane.longitudinal_operation --root "$FIXTURE" --as-of 2026-02-02T00:00:00Z --summary-json >"$TMP/duplicate-event-fields.json"
+DUP_EVENT_RC=$?
+set -e
+[[ "$DUP_EVENT_RC" -eq 1 ]] || { echo "[FAIL] duplicate event fields must fail" >&2; exit 1; }
+python3 - "$TMP/duplicate-event-fields.json" <<'PYNEG'
+import json, sys
+value=json.load(open(sys.argv[1], encoding="utf-8"))
+assert value["status"] == "fail" and "duplicate JSON object key" in value["error"], value
+PYNEG
+cp "$TMP/full-window-events.jsonl" "$FIXTURE/reports/field-evidence/software-m5-v5-events.jsonl"
 
 
 # Negative tests: a re-signed/hashed summary may not silently omit known

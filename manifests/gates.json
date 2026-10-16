@@ -200,6 +200,28 @@
       "timeout_seconds": 30,
       "evidence_class": "test"
     },
+    "longitudinal-operation-certifier": {
+      "owner": "llm_agent",
+      "side_effect": "none",
+      "depends_on": [
+        "native-governance-contract"
+      ],
+      "inputs": [
+        "tools/control_plane/longitudinal_operation.py",
+        "tests/test_longitudinal_operation_certifier.sh",
+        "manifests/long_term_asset_qualification.json",
+        "manifests/software_m5_pilot_ledger.json",
+        "reports/field-evidence/software-m5-v5-events.jsonl"
+      ],
+      "outputs": [],
+      "cache_policy": "disabled",
+      "argv": [
+        "bash",
+        "tests/test_longitudinal_operation_certifier.sh"
+      ],
+      "timeout_seconds": 60,
+      "evidence_class": "test"
+    },
     "status-projection-regression": {
       "owner": "llm_agent",
       "side_effect": "none",
@@ -539,6 +561,7 @@
       "status-projection",
       "active-contracts",
       "native-governance-contract",
+      "longitudinal-operation-certifier",
       "status-projection-regression",
       "adk-promotion-transaction",
       "current-status-source-split",
