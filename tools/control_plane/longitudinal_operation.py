@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import json
 import math
+import subprocess
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -145,6 +146,36 @@ def _repo_file(root: Path, value: Any, label: str, *, required: bool = True) -> 
     if required and (not path.is_file() or path.is_symlink()):
         raise LongitudinalError(f"{label} must reference a regular tracked file: {value}")
     return path
+
+
+def _verify_committed_evidence(root: Path, files: set[Path]) -> None:
+    """Require terminal evidence to be Git HEAD-tracked and worktree-clean.
+
+    Git identity is necessary for reproducibility, but is not real-world
+    provenance, independently verified runtime observation, or owner review.
+    """
+    relative_paths = sorted(path.relative_to(root).as_posix() for path in files)
+    if not relative_paths:
+        raise LongitudinalError("terminal evidence file inventory is empty")
+    for offset in range(0, len(relative_paths), 128):
+        chunk = relative_paths[offset:offset + 128]
+        # Git pathspecs interpret [], * and ? unless literal matching is used.
+        specs = [":(literal)" + path for path in chunk]
+        commands = (
+            ("git", "-C", str(root), "ls-files", "-z", "--", *specs),
+            ("git", "-C", str(root), "status", "--porcelain=v1", "--untracked-files=all", "--", *specs),
+        )
+        try:
+            listed = subprocess.run(commands[0], check=False, capture_output=True, text=True, timeout=30)
+            dirty = subprocess.run(commands[1], check=False, capture_output=True, text=True, timeout=30)
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            raise LongitudinalError("cannot inspect terminal evidence Git identity") from exc
+        if listed.returncode != 0 or dirty.returncode != 0:
+            raise LongitudinalError("cannot inspect terminal evidence Git identity")
+        if set(listed.stdout.rstrip("\x00").split("\x00")) != set(chunk):
+            raise LongitudinalBlocked("terminal-evidence-not-committed")
+        if dirty.stdout:
+            raise LongitudinalBlocked("terminal-evidence-worktree-drift")
 
 
 def _require_text(value: Any, label: str) -> str:
@@ -469,14 +500,28 @@ def check(root: Path, *, evidence_path: Path | None = None, as_of: datetime | No
     if now < eligible_after:
         raise LongitudinalBlocked(json.dumps({**base, "reason": "observation-window-not-complete"}, ensure_ascii=False, sort_keys=True))
 
-    relative = evidence_path or Path(str(requirement.get("default_evidence_path")))
+    canonical_relative = Path(str(requirement.get("default_evidence_path")))
+    relative = evidence_path or canonical_relative
     try:
         summary_path = resolve_regular_evidence_path(root, relative, label="LTA-04 summary evidence")
+        canonical_path = resolve_regular_evidence_path(root, canonical_relative, label="canonical LTA-04 summary")
     except ValueError as exc:
         raise LongitudinalError(str(exc)) from exc
     if not summary_path.is_file():
         raise LongitudinalBlocked(json.dumps({**base, "reason": "summary-evidence-missing", "expected_evidence": summary_path.relative_to(root).as_posix()}, ensure_ascii=False, sort_keys=True))
+    if as_of is None and summary_path != canonical_path:
+        raise LongitudinalBlocked("noncanonical-summary-review-only")
     detail = _validate_summary(root, summary_path, requirement, event_log, events, started, eligible_after, now)
+    if as_of is None:
+        committed = {
+            root / "manifests/long_term_asset_qualification.json",
+            root / "manifests/software_m5_pilot_ledger.json",
+            event_log, summary_path,
+        }
+        for event in events:
+            for relative in event["evidence"]:
+                committed.add(_repo_file(root, relative, "terminal event evidence"))
+        _verify_committed_evidence(root, committed)
     return {**base, "status": "pass", "evidence": summary_path.relative_to(root).as_posix(), **detail}
 
 
