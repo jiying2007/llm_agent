@@ -90,3 +90,14 @@ raw bytes to the HEAD blob SHA. Staged-only differences, hidden worktree
 differences, missing files, and paths with Git glob characters fail closed.
 This is a source-integrity requirement, not proof that the field operator
 really observed what a receipt claims.
+
+
+### Event evidence references are bounded and exact
+
+Each field-event `evidence` list is limited to 32 **distinct** regular
+repository-local file paths. Its `evidence_sha256` object must contain
+**exactly** those paths, without surplus or omitted digest keys. This stops
+repeated hashing of the same large evidence file and prevents misleading
+unreferenced digests from appearing in a valid event-chain record. The
+per-file, JSONL/line and Git HEAD blob budgets remain independently enforced.
+No synthetic event is added to the real LTA-04 ledger by these checks.
