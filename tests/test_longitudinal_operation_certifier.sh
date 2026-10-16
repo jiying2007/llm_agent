@@ -648,6 +648,67 @@ PYNEG
 done
 cp "$TMP/baseline-summary.json" "$FIXTURE/reports/long-term-assets/longitudinal-operation-current.json"
 
+# A late recorded event must not be retroactively covered by an older owner
+# review, even if its occurrence was inside the observed window and all
+# event/summary SHA-256s were rehashed. The same fixture passes after a
+# genuinely later review timestamp (simulation only; no real approval).
+python3 - "$FIXTURE" <<'PYNEG'
+import hashlib, json, sys
+from pathlib import Path
+root=Path(sys.argv[1])
+event_log=root/"reports/field-evidence/software-m5-v5-events.jsonl"
+summary_path=root/"reports/long-term-assets/longitudinal-operation-current.json"
+events=[json.loads(line) for line in event_log.read_text(encoding="utf-8").splitlines()]
+assert events[-1]["event_type"]=="pilot_observed"
+events[-1]["recorded_at"]="2026-02-01T12:00:00Z"
+previous="0"*64
+def digest(data):
+    return hashlib.sha256(json.dumps(data,ensure_ascii=False,sort_keys=True,separators=(",",":")).encode()).hexdigest()
+for event in events:
+    event["previous_hash"]=previous
+    event.pop("event_hash",None)
+    event["event_hash"]=digest(event)
+    previous=event["event_hash"]
+event_log.write_text("".join(json.dumps(e,ensure_ascii=False,separators=(",",":"))+"\n" for e in events),encoding="utf-8")
+summary=json.loads(summary_path.read_text(encoding="utf-8"))
+assert summary["review"]["reviewed_at"]=="2026-02-01T00:00:00Z"
+summary["source"]["event_log_sha256"]=hashlib.sha256(event_log.read_bytes()).hexdigest()
+summary["source"]["event_chain_head"]=previous
+summary.pop("summary_sha256")
+summary["summary_sha256"]=digest(summary)
+summary_path.write_text(json.dumps(summary,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
+PYNEG
+set +e
+python3 -m tools.control_plane.longitudinal_operation --root "$FIXTURE" --as-of 2026-02-02T00:00:00Z --summary-json >"$TMP/late-record-early-review.json"
+LATE_RECORD_RC=$?
+set -e
+[[ "$LATE_RECORD_RC" -eq 1 ]] || { echo "[FAIL] owner cannot preapprove a later recorded field event" >&2; exit 1; }
+python3 - "$TMP/late-record-early-review.json" <<'PYNEG'
+import json,sys
+from pathlib import Path
+value=json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+assert value["status"]=="fail" and "review predates latest recorded field event" in value["error"],value
+assert value["simulated"] is True and value["terminal_qualified"] is False,value
+PYNEG
+python3 - "$FIXTURE/reports/long-term-assets/longitudinal-operation-current.json" <<'PYNEG'
+import hashlib,json,sys
+from pathlib import Path
+path=Path(sys.argv[1])
+summary=json.loads(path.read_text(encoding="utf-8"))
+summary["review"]["reviewed_at"]="2026-02-01T12:00:00Z"
+summary.pop("summary_sha256")
+summary["summary_sha256"]=hashlib.sha256(json.dumps(summary,ensure_ascii=False,sort_keys=True,separators=(",",":")).encode()).hexdigest()
+path.write_text(json.dumps(summary,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
+PYNEG
+python3 -m tools.control_plane.longitudinal_operation --root "$FIXTURE" --as-of 2026-02-02T00:00:00Z --summary-json >"$TMP/late-record-late-review.json"
+python3 - "$TMP/late-record-late-review.json" <<'PYNEG'
+import json,sys
+value=json.load(open(sys.argv[1],encoding="utf-8"))
+assert value["status"]=="simulated_pass" and value["terminal_qualified"] is False,value
+PYNEG
+cp "$TMP/full-window-events.jsonl" "$FIXTURE/reports/field-evidence/software-m5-v5-events.jsonl"
+cp "$TMP/full-window-summary.json" "$FIXTURE/reports/long-term-assets/longitudinal-operation-current.json"
+
 # A review issued before the observed-through instant must not certify later
 # events even when the summary digest is otherwise valid.
 python3 - "$TMP/baseline-summary.json" "$FIXTURE/reports/long-term-assets/longitudinal-operation-current.json" <<'PYNEG'
