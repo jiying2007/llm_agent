@@ -149,33 +149,71 @@ def _repo_file(root: Path, value: Any, label: str, *, required: bool = True) -> 
 
 
 def _verify_committed_evidence(root: Path, files: set[Path]) -> None:
-    """Require terminal evidence to be Git HEAD-tracked and worktree-clean.
+    """Bind every terminal file to the raw Git HEAD blob, index, and worktree.
 
-    Git identity is necessary for reproducibility, but is not real-world
-    provenance, independently verified runtime observation, or owner review.
+    Git status is advisory: assume-unchanged/skip-worktree can hide modified
+    worktree bytes from porcelain status. Compare the actual unfiltered blob
+    hash to HEAD, and compare the index blob/mode separately to reject staging.
+    Neither Git consistency nor a digest is real-world field provenance.
     """
     relative_paths = sorted(path.relative_to(root).as_posix() for path in files)
     if not relative_paths:
         raise LongitudinalError("terminal evidence file inventory is empty")
     for offset in range(0, len(relative_paths), 128):
         chunk = relative_paths[offset:offset + 128]
-        # Git pathspecs interpret [], * and ? unless literal matching is used.
-        specs = [":(literal)" + path for path in chunk]
+        # Explicit literal pathspecs prevent [], *, and ? from widening scope.
+        pathspecs = [":(literal)" + path for path in chunk]
         commands = (
-            ("git", "-C", str(root), "ls-files", "-z", "--", *specs),
-            ("git", "-C", str(root), "status", "--porcelain=v1", "--untracked-files=all", "--", *specs),
+            ("git", "-C", str(root), "ls-tree", "-r", "-z", "--full-tree", "HEAD", "--", *pathspecs),
+            ("git", "-C", str(root), "ls-files", "--stage", "-z", "--", *pathspecs),
+            ("git", "-C", str(root), "hash-object", "--", *chunk),
         )
         try:
-            listed = subprocess.run(commands[0], check=False, capture_output=True, text=True, timeout=30)
-            dirty = subprocess.run(commands[1], check=False, capture_output=True, text=True, timeout=30)
+            responses = [
+                subprocess.run(command, check=False, capture_output=True, timeout=30)
+                for command in commands
+            ]
         except (OSError, subprocess.TimeoutExpired) as exc:
             raise LongitudinalError("cannot inspect terminal evidence Git identity") from exc
-        if listed.returncode != 0 or dirty.returncode != 0:
+        if any(response.returncode != 0 for response in responses):
             raise LongitudinalError("cannot inspect terminal evidence Git identity")
-        if set(listed.stdout.rstrip("\x00").split("\x00")) != set(chunk):
+
+        head: dict[str, tuple[bytes, bytes]] = {}
+        index: dict[str, tuple[bytes, bytes]] = {}
+        try:
+            for entry in responses[0].stdout.split(b"\0"):
+                if not entry:
+                    continue
+                metadata, filename = entry.split(b"\t", 1)
+                mode, kind, blob = metadata.split(b" ", 2)
+                if kind != b"blob" or mode not in {b"100644", b"100755"}:
+                    raise LongitudinalError("terminal HEAD evidence is not a regular file")
+                name = filename.decode("utf-8")
+                if name in head:
+                    raise LongitudinalError("terminal HEAD evidence has duplicate paths")
+                head[name] = (mode, blob)
+            for entry in responses[1].stdout.split(b"\0"):
+                if not entry:
+                    continue
+                metadata, filename = entry.split(b"\t", 1)
+                mode, blob, stage = metadata.split(b" ", 2)
+                name = filename.decode("utf-8")
+                if stage != b"0" or name in index:
+                    raise LongitudinalBlocked("terminal-evidence-worktree-drift")
+                index[name] = (mode, blob)
+        except (ValueError, UnicodeError) as exc:
+            raise LongitudinalError("cannot decode terminal evidence Git identity") from exc
+        if set(head) != set(chunk) or set(index) != set(chunk):
             raise LongitudinalBlocked("terminal-evidence-not-committed")
-        if dirty.stdout:
+        if head != index:
             raise LongitudinalBlocked("terminal-evidence-worktree-drift")
+
+        actual_blobs = responses[2].stdout.splitlines()
+        if len(actual_blobs) != len(chunk):
+            raise LongitudinalError("terminal evidence raw blob inventory is incomplete")
+        for name, raw_blob in zip(chunk, actual_blobs):
+            if raw_blob != head[name][1]:
+                raise LongitudinalBlocked("terminal-evidence-worktree-drift")
 
 
 def _require_text(value: Any, label: str) -> str:
