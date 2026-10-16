@@ -446,7 +446,9 @@ jobs:
           print(json.dumps(receipt, ensure_ascii=False, sort_keys=True))
           PYRECEIPT
             cat /tmp/software-m5-certification.json
-            echo '### Software M5: HISTORICAL_NOT_AUTHORIZED' >> "$GITHUB_STEP_SUMMARY"
+            echo '### Software M5: STATE CHECK PASS / CURRENT SOURCE NOT CERTIFIED / RELEASE NOT AUTHORIZED' >> "$GITHUB_STEP_SUMMARY"
+            echo 'Historical M5 evidence belongs to a different source identity. This green required check validates the rejection; it is not a current-source certification or release approval.' >> "$GITHUB_STEP_SUMMARY"
+            echo '::warning title=Software M5 release not authorized::The required check passed historical-state validation only; current source remains not certified and release_authorized=false.'
           else
             echo "[FAIL] unexpected Software M5 qualification mode: $mode" >&2
             exit 1
