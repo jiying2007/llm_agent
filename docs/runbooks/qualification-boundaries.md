@@ -128,3 +128,16 @@ An unknown actor fails even after the event chain and summary hashes have
 been recomputed and reviewed. Registry ID equality verifies declared scope,
 not human authentication or genuine operation; provenance/owner review and
 real independent pilot evidence remain separate mandatory controls.
+
+
+### Owner review must postdate the entire recorded event lineage
+
+LTA-04 observation `occurred_at` and ingestion `recorded_at` are separate
+facts. A late field event may have occurred within the 30-day window but been
+entered later. Because the canonical summary binds the entire ledger's SHA,
+event count and chain head, the registered human owner must issue the
+review **on or after the latest `recorded_at` of all bound events**, as well
+as after `observed_through` and the 30-day eligibility time. Rehashing a
+late event cannot retroactively authorize an older owner review. The test
+fixture verifies both early-review rejection and explicitly later simulated
+approval without creating any real field record or owner decision.
