@@ -3,10 +3,11 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any, Iterator, Mapping
 
 from .evidence_paths import resolve_regular_evidence_path
 
@@ -16,6 +17,11 @@ EVENT_SCHEMA = "llm-agent-software-field-event/v1"
 EVIDENCE_SCHEMA = "llm-agent-longitudinal-operation-evidence/v1"
 CHECK_SCHEMA = "llm-agent-longitudinal-operation-check/v1"
 ZERO_HASH = "0" * 64
+MAX_JSON_DOCUMENT_BYTES = 1024 * 1024
+MAX_EVENT_LOG_BYTES = 32 * 1024 * 1024
+MAX_EVENT_LINE_BYTES = 128 * 1024
+MAX_EVENT_COUNT = 50000
+MAX_FIELD_EVIDENCE_BYTES = 16 * 1024 * 1024
 
 
 class LongitudinalError(RuntimeError):
@@ -27,7 +33,7 @@ class LongitudinalBlocked(RuntimeError):
 
 
 def _canonical(value: Any) -> bytes:
-    return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False).encode("utf-8")
 
 
 def _digest(value: Any) -> str:
@@ -46,6 +52,40 @@ def _unique_json_fields(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
             raise LongitudinalError(f"duplicate JSON object key: {key}")
         document[key] = value
     return document
+
+
+def _reject_nonfinite_json(value: str) -> Any:
+    raise LongitudinalError(f"non-finite JSON number is forbidden: {value}")
+
+
+def _finite_json_float(value: str) -> float:
+    parsed = float(value)
+    if not math.isfinite(parsed):
+        raise LongitudinalError("non-finite JSON number is forbidden")
+    return parsed
+
+
+def _strict_json_loads(raw: str) -> Any:
+    return json.loads(
+        raw, object_pairs_hook=_unique_json_fields,
+        parse_constant=_reject_nonfinite_json, parse_float=_finite_json_float,
+    )
+
+
+def _bounded_event_lines(path: Path) -> Iterator[tuple[int, str]]:
+    """Stream an append-only event log with hard byte/line/count budgets."""
+    try:
+        if path.stat().st_size > MAX_EVENT_LOG_BYTES:
+            raise LongitudinalError("event log exceeds byte budget")
+        with path.open("r", encoding="utf-8") as stream:
+            for sequence, raw in enumerate(stream, start=1):
+                if sequence > MAX_EVENT_COUNT:
+                    raise LongitudinalError("event log exceeds event-count budget")
+                if len(raw.encode("utf-8")) > MAX_EVENT_LINE_BYTES:
+                    raise LongitudinalError("event log line exceeds byte budget")
+                yield sequence, raw
+    except (OSError, UnicodeError) as exc:
+        raise LongitudinalError(f"cannot read field event log: {path}") from exc
 
 
 def _sha256_file(path: Path) -> str:
@@ -72,8 +112,12 @@ def _format_time(value: datetime) -> str:
 
 def _load_object(path: Path, label: str) -> dict[str, Any]:
     try:
-        value = json.loads(path.read_text(encoding="utf-8"), object_pairs_hook=_unique_json_fields)
-    except (OSError, json.JSONDecodeError) as exc:
+        if path.is_symlink() or not path.is_file():
+            raise LongitudinalError(f"{label} must be a regular file")
+        if path.stat().st_size > MAX_JSON_DOCUMENT_BYTES:
+            raise LongitudinalError(f"{label} exceeds JSON byte budget")
+        value = _strict_json_loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError, RecursionError) as exc:
         raise LongitudinalError(f"invalid {label}: {path}") from exc
     if not isinstance(value, dict):
         raise LongitudinalError(f"{label} must be a JSON object")
@@ -135,15 +179,11 @@ def _read_events(root: Path, path: Path, as_of: datetime) -> list[dict[str, Any]
     previous_hash = ZERO_HASH
     previous_recorded: datetime | None = None
     seen_event_ids: set[str] = set()
-    try:
-        lines = path.read_text(encoding="utf-8").splitlines()
-    except OSError as exc:
-        raise LongitudinalError(f"cannot read field event log: {path}") from exc
-    for sequence, raw in enumerate(lines, start=1):
+    for sequence, raw in _bounded_event_lines(path):
         if not raw.strip():
             raise LongitudinalError(f"event log contains a blank line at sequence {sequence}")
         try:
-            event = json.loads(raw, object_pairs_hook=_unique_json_fields)
+            event = _strict_json_loads(raw)
         except json.JSONDecodeError as exc:
             raise LongitudinalError(f"event log contains invalid JSON at sequence {sequence}") from exc
         if not isinstance(event, dict) or event.get("schema") != EVENT_SCHEMA:
@@ -174,6 +214,8 @@ def _read_events(root: Path, path: Path, as_of: datetime) -> list[dict[str, Any]
             raise LongitudinalError("event evidence references are incomplete")
         for relative in evidence:
             evidence_path = _repo_file(root, relative, "event evidence")
+            if evidence_path.stat().st_size > MAX_FIELD_EVIDENCE_BYTES:
+                raise LongitudinalError("event evidence exceeds byte budget")
             if digests.get(relative) != _sha256_file(evidence_path):
                 raise LongitudinalError(f"event evidence digest drift: {relative}")
         events.append(event)
@@ -217,6 +259,9 @@ def _ledger_state(root: Path, requirement: Mapping[str, Any], as_of: datetime) -
         raise LongitudinalError("LTA-04 requires exactly one canonical pilot_started field event")
     if _parse_time(starts[0].get("occurred_at"), "pilot_started occurred_at") != started:
         raise LongitudinalError("pilot_started event does not match ledger started_at")
+    start_operator = starts[0].get("operator_id")
+    if start_operator not in pilot.get("operators", []) or operators.get(start_operator, {}).get("operator_type") != "human":
+        raise LongitudinalError("pilot_started must be attributed to a registered human operator")
     return ledger, event_log, events, started
 
 
@@ -329,6 +374,15 @@ def _validate_summary(
     ]
     if not terminal_observations:
         raise LongitudinalBlocked("end-window-field-evidence-missing")
+    ledger = _load_object(root / "manifests/software_m5_pilot_ledger.json", "Software M5 pilot ledger")
+    operators = {item.get("id"): item for item in ledger.get("operators", []) if isinstance(item, dict)}
+    pilot = next((item for item in ledger.get("pilots", []) if isinstance(item, dict) and item.get("id") == requirement.get("pilot_id")), None)
+    if not isinstance(pilot, dict):
+        raise LongitudinalError("LTA-04 registered pilot is missing")
+    for observation in terminal_observations:
+        actor = observation.get("operator_id")
+        if actor not in pilot.get("operators", []) or operators.get(actor, {}).get("operator_type") != "human":
+            raise LongitudinalError("LTA-04 terminal observation requires registered human operator")
     # _read_events enforces global unique IDs before this scoped index is made.
     events_by_id = {str(event["event_id"]): event for event in relevant}
     outcomes = summary.get("outcomes")
@@ -362,10 +416,7 @@ def _validate_summary(
     if not isinstance(review, dict):
         raise LongitudinalError("LTA-04 review is missing")
     reviewer = _require_text(review.get("operator_id"), "review.operator_id")
-    ledger = _load_object(root / "manifests/software_m5_pilot_ledger.json", "Software M5 pilot ledger")
-    operators = {item.get("id"): item for item in ledger.get("operators", []) if isinstance(item, dict)}
-    pilot = next((item for item in ledger.get("pilots", []) if isinstance(item, dict) and item.get("id") == requirement.get("pilot_id")), None)
-    if reviewer not in operators or operators[reviewer].get("operator_type") != "human" or not isinstance(pilot, dict) or reviewer not in pilot.get("operators", []):
+    if reviewer not in operators or operators[reviewer].get("operator_type") != "human" or reviewer not in pilot.get("operators", []):
         raise LongitudinalError("LTA-04 review must be performed by a human operator registered to the pilot")
     if review.get("standard") != "solo-maintainer-long-term-asset-v1":
         raise LongitudinalError("LTA-04 review standard is invalid")
