@@ -159,9 +159,11 @@ def _verify_committed_evidence(root: Path, files: set[Path]) -> None:
         raise LongitudinalError("terminal evidence file inventory is empty")
     for offset in range(0, len(relative_paths), 128):
         chunk = relative_paths[offset:offset + 128]
+        # Git pathspecs interpret [], * and ? unless literal matching is used.
+        specs = [":(literal)" + path for path in chunk]
         commands = (
-            ("git", "-C", str(root), "ls-files", "-z", "--", *chunk),
-            ("git", "-C", str(root), "status", "--porcelain=v1", "--untracked-files=all", "--", *chunk),
+            ("git", "-C", str(root), "ls-files", "-z", "--", *specs),
+            ("git", "-C", str(root), "status", "--porcelain=v1", "--untracked-files=all", "--", *specs),
         )
         try:
             listed = subprocess.run(commands[0], check=False, capture_output=True, text=True, timeout=30)
