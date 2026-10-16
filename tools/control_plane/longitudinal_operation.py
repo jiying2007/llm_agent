@@ -532,6 +532,12 @@ def _validate_summary(
     reviewed_at = _parse_time(review.get("reviewed_at"), "review.reviewed_at")
     if reviewed_at < max(eligible_after, observed_through) or reviewed_at > as_of:
         raise LongitudinalError("LTA-04 review must occur after the observed window and not in the future")
+    # The summary binds the entire append-only ledger (digest/count/head), not
+    # merely event occurrence times. A late recorded/recovered entry must be
+    # reviewed after its material is on record, never retroactively approved.
+    last_recorded = max(_parse_time(event.get("recorded_at"), "event recorded_at") for event in events)
+    if reviewed_at < last_recorded:
+        raise LongitudinalError("LTA-04 owner review predates latest recorded field event")
 
     stored = summary.get("summary_sha256")
     unsigned = dict(summary)
