@@ -14,7 +14,7 @@ on:
         default: false
 
 permissions:
-  contents: write
+  contents: read
   pull-requests: read
 
 concurrency:
@@ -24,6 +24,9 @@ concurrency:
 jobs:
   branch-gc:
     name: branch-gc
+    permissions:
+      contents: read
+      pull-requests: read
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout root source
@@ -37,29 +40,10 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Classify GC mode
-        id: mode
-        shell: bash
-        env:
-          EVENT_NAME: ${{ github.event_name }}
-          REF_NAME: ${{ github.ref_name }}
-          DISPATCH_APPLY: ${{ github.event_name == 'workflow_dispatch' && inputs.apply || false }}
-        run: |
-          set -euo pipefail
-          apply=false
-          if [[ "$EVENT_NAME" == "push" && "$REF_NAME" == "main" ]]; then
-            apply=true
-          elif [[ "$EVENT_NAME" == "workflow_dispatch" && "$DISPATCH_APPLY" == "true" ]]; then
-            apply=true
-          fi
-          echo "apply=$apply" >> "$GITHUB_OUTPUT"
-          echo "### Branch GC mode: $([[ "$apply" == "true" ]] && echo APPLY || echo DRY_RUN)" >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Discover and clean explicitly retired branches
+      - name: Inspect exact-SHA retired branches (dry-run)
         shell: bash
         env:
           GITHUB_TOKEN: ${{ github.token }}
-          APPLY: ${{ steps.mode.outputs.apply }}
         run: |
           set -euo pipefail
           args=(
@@ -73,9 +57,6 @@ jobs:
             --retired-registry registry/branch_gc_retired.json
             --report /tmp/branch-gc-report.json
           )
-          if [[ "$APPLY" == "true" ]]; then
-            args+=(--apply)
-          fi
           python -m tools.control_plane.branch_gc "${args[@]}"
           python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
           import json
@@ -100,5 +81,70 @@ jobs:
         with:
           name: branch-gc-report
           path: /tmp/branch-gc-report.json
+          if-no-files-found: error
+          retention-days: 30
+
+  branch-gc-apply:
+    name: branch-gc-apply
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.apply && github.ref == 'refs/heads/main')
+    permissions:
+      contents: write
+      pull-requests: read
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout trusted main source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          submodules: false
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.11'
+
+      - name: Apply exact-SHA retired branch decisions
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          args=(
+            --repo "$GITHUB_REPOSITORY"
+            --token "$GITHUB_TOKEN"
+            --base main
+            --prefix 'codex/'
+            --prefix 'arch/'
+            --protected main
+            --protected master
+            --retired-registry registry/branch_gc_retired.json
+            --report /tmp/branch-gc-apply-report.json
+          )
+          args+=(--apply)
+          python -m tools.control_plane.branch_gc "${args[@]}"
+          python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          from pathlib import Path
+          report = json.loads(Path("/tmp/branch-gc-apply-report.json").read_text(encoding="utf-8"))
+          print("### Branch GC result")
+          print(f"- mode: {report['mode']}")
+          print(f"- candidate_policy: {report.get('candidate_policy', 'unknown')}")
+          print(f"- candidates: {len(report.get('candidates', []))}")
+          print(f"- deleted: {len(report.get('deleted', []))}")
+          print(f"- revalidation_skips: {len(report.get('revalidation_skips', []))}")
+          for item in report.get("deleted", []):
+              print(f"- deleted `{item['branch']}` @ `{item['sha'][:12]}` via {item.get('basis', 'explicit-retired')}")
+          if report["mode"] == "dry-run":
+              for item in report.get("candidates", []):
+                  print(f"- candidate `{item['branch']}` @ `{item['sha'][:12]}` via {item.get('basis', 'explicit-retired')}")
+          PY
+
+      - name: Upload Branch GC report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: branch-gc-apply-report
+          path: /tmp/branch-gc-apply-report.json
           if-no-files-found: error
           retention-days: 30
