@@ -101,3 +101,17 @@ repeated hashing of the same large evidence file and prevents misleading
 unreferenced digests from appearing in a valid event-chain record. The
 per-file, JSONL/line and Git HEAD blob budgets remain independently enforced.
 No synthetic event is added to the real LTA-04 ledger by these checks.
+
+
+### Cross-event field evidence budget (2026-10-16)
+
+The LTA-04 JSONL reader uses one SHA-256 verification per canonical evidence
+file across the entire event chain; referencing the same authentic receipt
+from several field events does **not** multiply full-file I/O. A single
+certification pass allows at most 8192 distinct evidence files and 512 MiB
+of cumulative unique evidence bytes, in addition to the 32 references/event
+and 16 MiB/file budgets. Noncanonical aliases such as redundant `./` or
+repeated separators are rejected even when they resolve to the same file.
+Exceeding budgets yields a hard invalid-evidence result, never a silent
+partial qualification or simulated success. Genuine field evidence and owner
+review remain required irrespective of hash-cache behavior.
