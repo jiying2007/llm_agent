@@ -486,6 +486,50 @@ with tempfile.TemporaryDirectory() as temp:
         raise AssertionError("untracked evidence was granted terminal authority")
 PYNEG
 
+# A middle incident/recovery cannot be accepted from an unregistered actor
+# merely because the terminal pilot observation and owner review are valid.
+# Rehash every affected event and the summary; test the full real certifier
+# policy in simulated isolation without inserting any genuine field record.
+python3 - "$FIXTURE" <<'PYNEG'
+import hashlib, json, sys
+from pathlib import Path
+root=Path(sys.argv[1])
+event_log=root/"reports/field-evidence/software-m5-v5-events.jsonl"
+summary_path=root/"reports/long-term-assets/longitudinal-operation-current.json"
+events=[json.loads(line) for line in event_log.read_text(encoding="utf-8").splitlines()]
+assert events[1]["event_type"]=="fault_observed"
+events[1]["operator_id"]="outside-pilot-actor"
+def digest(obj):
+    return hashlib.sha256(json.dumps(obj,ensure_ascii=False,sort_keys=True,separators=(",",":")).encode()).hexdigest()
+previous="0"*64
+for event in events:
+    event["previous_hash"]=previous
+    event.pop("event_hash",None)
+    event["event_hash"]=digest(event)
+    previous=event["event_hash"]
+event_log.write_text("".join(json.dumps(event,ensure_ascii=False,separators=(",",":"))+"\n" for event in events),encoding="utf-8")
+summary=json.loads(summary_path.read_text(encoding="utf-8"))
+summary["source"]["event_log_sha256"]=hashlib.sha256(event_log.read_bytes()).hexdigest()
+summary["source"]["event_chain_head"]=events[-1]["event_hash"]
+summary.pop("summary_sha256",None)
+summary["summary_sha256"]=digest(summary)
+summary_path.write_text(json.dumps(summary,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
+PYNEG
+set +e
+python3 -m tools.control_plane.longitudinal_operation --root "$FIXTURE" --as-of 2026-02-02T00:00:00Z --summary-json >"$TMP/unregistered-middle-event.json"
+UNREGISTERED_MIDDLE_RC=$?
+set -e
+[[ "$UNREGISTERED_MIDDLE_RC" -eq 1 ]] || { echo "[FAIL] rehashed unregistered middle field event must FAIL" >&2; exit 1; }
+python3 - "$TMP/unregistered-middle-event.json" <<'PYNEG'
+import json,sys
+from pathlib import Path
+value=json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+assert value["status"]=="fail" and "field event requires registered human operator" in value["error"], value
+assert value["simulated"] is True and value["terminal_qualified"] is False, value
+PYNEG
+cp "$TMP/full-window-events.jsonl" "$FIXTURE/reports/field-evidence/software-m5-v5-events.jsonl"
+cp "$TMP/full-window-summary.json" "$FIXTURE/reports/long-term-assets/longitudinal-operation-current.json"
+
 # A well-formed, hash-rebound terminal observation must still come from a
 # registered human operator on the configured independent pilot.
 python3 - "$FIXTURE" <<'PYNEG'
