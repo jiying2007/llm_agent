@@ -46,3 +46,17 @@ and protected PR ratchet remain mandatory and independent.
 LTA-04 原始 event-log JSONL 与终态 summary 均拒绝任何层级重复 JSON key：
 原生 JSON 解析器“后值覆盖前值”会使机器 digest 与人工文本审查出现
 歧义；即使两个重复字段的值相同、哈希内容重新计算正确，也必须 FAIL。
+
+
+### Longitudinal field evidence resource and operator boundaries
+
+The LTA-04 `pilot_started` and terminal `pilot_observed` events must
+identify a **human operator registered to the exact independent pilot**.
+Neither an unaffiliated actor nor an undeclared automation account gains
+qualification authority by rehashing event and summary JSON.
+
+The certifier streams JSONL with hard byte/line/count budgets, bounds each
+referenced field evidence file before hashing, and rejects non-standard
+`NaN`/`Infinity` and overflowing floating-point JSON values. Oversized
+or invalid evidence is `FAIL`, not an empty observation, synthetic PASS,
+or a reason to bypass the 30-day and owner-review requirements.
