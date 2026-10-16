@@ -474,10 +474,21 @@ def _validate_summary(
     pilot = next((item for item in ledger.get("pilots", []) if isinstance(item, dict) and item.get("id") == requirement.get("pilot_id")), None)
     if not isinstance(pilot, dict):
         raise LongitudinalError("LTA-04 registered pilot is missing")
-    for observation in terminal_observations:
-        actor = observation.get("operator_id")
-        if actor not in pilot.get("operators", []) or operators.get(actor, {}).get("operator_type") != "human":
-            raise LongitudinalError("LTA-04 terminal observation requires registered human operator")
+    # Every incident/regression/recovery/event included in the 30-day field
+    # summary needs the same declared human operator authority as pilot start
+    # and the terminal observation. Rehashing the chain does not grant an
+    # unregistered actor permission to contribute terminal field outcomes.
+    registered_operators = pilot.get("operators", [])
+    if not isinstance(registered_operators, list):
+        raise LongitudinalError("LTA-04 pilot registered operators must be an array")
+    for event in relevant:
+        actor = event.get("operator_id")
+        if (
+            not isinstance(actor, str)
+            or actor not in registered_operators
+            or operators.get(actor, {}).get("operator_type") != "human"
+        ):
+            raise LongitudinalError("LTA-04 field event requires registered human operator")
     # _read_events enforces global unique IDs before this scoped index is made.
     events_by_id = {str(event["event_id"]): event for event in relevant}
     outcomes = summary.get("outcomes")
