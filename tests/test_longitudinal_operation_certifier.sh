@@ -315,6 +315,73 @@ finally:
 _read_events(root,event_log,datetime(2026,2,2,tzinfo=timezone.utc))
 PYNEG
 
+# Cross-event references are validated once per canonical file, subject to a
+# bounded unique-file/cumulative-byte budget. Rehashed textual aliases do not
+# gain a second identity. This test never touches the real field event log.
+python3 - "$FIXTURE" <<'PYNEG'
+import hashlib
+import json
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+from unittest.mock import patch
+from tools.control_plane import longitudinal_operation as lta
+
+root=Path(sys.argv[1]).resolve()
+event_log=root/"reports/field-evidence/software-m5-v5-events.jsonl"
+baseline=event_log.read_bytes()
+as_of=datetime(2026,2,2,tzinfo=timezone.utc)
+def digest(obj):
+    return hashlib.sha256(json.dumps(obj,ensure_ascii=False,sort_keys=True,separators=(",",":")).encode()).hexdigest()
+def rechain(events):
+    prev="0"*64
+    for event in events:
+        event["previous_hash"]=prev
+        event.pop("event_hash",None)
+        event["event_hash"]=digest(event)
+        prev=event["event_hash"]
+    event_log.write_text("".join(json.dumps(e,ensure_ascii=False,separators=(",",":"))+"\n" for e in events),encoding="utf-8")
+def must_reject(expected, action):
+    try:
+        action()
+    except lta.LongitudinalError as exc:
+        assert expected in str(exc), (expected,str(exc))
+    else:
+        raise AssertionError("missing fail-closed control: "+expected)
+try:
+    events=[json.loads(raw) for raw in baseline.decode("utf-8").splitlines()]
+    reused=events[0]["evidence"][0]
+    events[1]["evidence"].append(reused)
+    events[1]["evidence_sha256"][reused]=events[0]["evidence_sha256"][reused]
+    rechain(events)
+    with patch.object(lta,"_sha256_file",wraps=lta._sha256_file) as counted:
+        assert len(lta._read_events(root,event_log,as_of))==len(events)
+        unique_paths={p for event in events for p in event["evidence"]}
+        assert counted.call_count==len(unique_paths), (counted.call_count,len(unique_paths))
+        assert counted.call_count < sum(len(event["evidence"]) for event in events)
+
+    # Canonical spelling is part of the evidence identity even when Path()
+    # normalizes an alias to precisely the same bytes.
+    alias="reports/field-evidence/./pilot-start.json"
+    events[0]["evidence"]=[alias]
+    events[0]["evidence_sha256"]={alias:events[0]["evidence_sha256"][reused]}
+    rechain(events)
+    must_reject("event evidence path must be canonical",lambda:lta._read_events(root,event_log,as_of))
+
+    # These budgets bound the combined effect of many individually valid
+    # events and files; use tiny test-local budgets rather than giant fixtures.
+    original=[json.loads(raw) for raw in baseline.decode("utf-8").splitlines()]
+    rechain(original)
+    with patch.object(lta,"MAX_UNIQUE_FIELD_EVIDENCE_FILES",1):
+        must_reject("event evidence unique-file budget",lambda:lta._read_events(root,event_log,as_of))
+    first=root/original[0]["evidence"][0]
+    with patch.object(lta,"MAX_TOTAL_FIELD_EVIDENCE_BYTES",first.stat().st_size):
+        must_reject("event evidence cumulative byte budget",lambda:lta._read_events(root,event_log,as_of))
+finally:
+    event_log.write_bytes(baseline)
+assert lta._read_events(root,event_log,as_of)
+PYNEG
+
 # An alternate summary is for simulated candidate review, never a real PASS.
 cp "$FIXTURE/reports/long-term-assets/longitudinal-operation-current.json" "$FIXTURE/reports/long-term-assets/unpromoted-candidate.json"
 set +e
