@@ -264,6 +264,92 @@ PYNEG
 cp "$TMP/full-window-events.jsonl" "$FIXTURE/reports/field-evidence/software-m5-v5-events.jsonl"
 
 
+# A well-formed, hash-rebound terminal observation must still come from a
+# registered human operator on the configured independent pilot.
+python3 - "$FIXTURE" <<'PYNEG'
+import hashlib, json, sys
+from pathlib import Path
+root = Path(sys.argv[1])
+event_log = root / "reports/field-evidence/software-m5-v5-events.jsonl"
+summary_path = root / "reports/long-term-assets/longitudinal-operation-current.json"
+events = [json.loads(line) for line in event_log.read_text(encoding="utf-8").splitlines()]
+assert events[-1]["event_type"] == "pilot_observed"
+events[-1]["operator_id"] = "unregistered-automation"
+unsigned = dict(events[-1])
+unsigned.pop("event_hash")
+digest = lambda obj: hashlib.sha256(json.dumps(obj, sort_keys=True, ensure_ascii=False, separators=(",", ":")).encode()).hexdigest()
+events[-1]["event_hash"] = digest(unsigned)
+event_log.write_text("".join(json.dumps(e, ensure_ascii=False, separators=(",", ":"))+"\n" for e in events), encoding="utf-8")
+summary = json.loads(summary_path.read_text(encoding="utf-8"))
+summary["source"]["event_log_sha256"] = hashlib.sha256(event_log.read_bytes()).hexdigest()
+summary["source"]["event_chain_head"] = events[-1]["event_hash"]
+summary.pop("summary_sha256")
+summary["summary_sha256"] = digest(summary)
+summary_path.write_text(json.dumps(summary, ensure_ascii=False, indent=2)+"\n", encoding="utf-8")
+PYNEG
+set +e
+python3 -m tools.control_plane.longitudinal_operation --root "$FIXTURE" --as-of 2026-02-02T00:00:00Z --summary-json >"$TMP/unregistered-observation.json"
+UNREGISTERED_RC=$?
+set -e
+[[ "$UNREGISTERED_RC" -eq 1 ]] || { echo "[FAIL] unregistered terminal observation operator must FAIL" >&2; exit 1; }
+python3 - "$TMP/unregistered-observation.json" <<'PYNEG'
+import json, sys
+value=json.load(open(sys.argv[1], encoding="utf-8"))
+assert value["status"]=="fail" and "registered human operator" in value["error"], value
+assert value["simulated"] is True and value["terminal_qualified"] is False, value
+PYNEG
+cp "$TMP/full-window-events.jsonl" "$FIXTURE/reports/field-evidence/software-m5-v5-events.jsonl"
+cp "$TMP/full-window-summary.json" "$FIXTURE/reports/long-term-assets/longitudinal-operation-current.json"
+
+# Bound memory/CPU work before parsing or hashing untrusted field receipts.
+# Sparse oversized files avoid allocating memory during the budget tests.
+python3 - "$FIXTURE" <<'PYNEG'
+import tempfile
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+from tools.control_plane.longitudinal_operation import (
+    LongitudinalError, _load_object, _read_events,
+    MAX_JSON_DOCUMENT_BYTES, MAX_EVENT_LOG_BYTES,
+    MAX_EVENT_LINE_BYTES, MAX_FIELD_EVIDENCE_BYTES,
+)
+root=Path(sys.argv[1])
+as_of=datetime(2026, 2, 2, tzinfo=timezone.utc)
+def must_reject(work, text):
+    try:
+        work()
+    except LongitudinalError as exc:
+        assert text in str(exc), (text, str(exc))
+    else:
+        raise AssertionError("unexpected acceptance: "+text)
+
+with tempfile.TemporaryDirectory() as tmp:
+    temp=Path(tmp)
+    obj=temp/"summary.json"
+    for sample in ('{"value": NaN}', '{"value": Infinity}', '{"value": 1e999}'):
+        obj.write_text(sample, encoding="utf-8")
+        must_reject(lambda: _load_object(obj, "sample"), "non-finite JSON number")
+    with obj.open("wb") as stream:
+        stream.truncate(MAX_JSON_DOCUMENT_BYTES+1)
+    must_reject(lambda: _load_object(obj, "sample"), "JSON byte budget")
+    event_log=temp/"events.jsonl"
+    event_log.write_text(" " * (MAX_EVENT_LINE_BYTES + 1)+"\n", encoding="utf-8")
+    must_reject(lambda: _read_events(root, event_log, as_of), "line exceeds byte budget")
+    with event_log.open("wb") as stream:
+        stream.truncate(MAX_EVENT_LOG_BYTES+1)
+    must_reject(lambda: _read_events(root, event_log, as_of), "event log exceeds byte budget")
+
+evidence_path = root/"reports/field-evidence/pilot-start.json"
+original = evidence_path.read_bytes()
+try:
+    with evidence_path.open("wb") as stream:
+        stream.truncate(MAX_FIELD_EVIDENCE_BYTES+1)
+    event_log=root/"reports/field-evidence/software-m5-v5-events.jsonl"
+    must_reject(lambda: _read_events(root, event_log, as_of), "event evidence exceeds byte budget")
+finally:
+    evidence_path.write_bytes(original)
+PYNEG
+
 # Negative tests: a re-signed/hashed summary may not silently omit known
 # fault, regression, or recovery events. Run through the full validator,
 # not only the category helper.
