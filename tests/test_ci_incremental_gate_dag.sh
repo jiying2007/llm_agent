@@ -88,6 +88,17 @@ for path in (
     assert path in gates["longitudinal-operation-certifier"]["inputs"], path
 assert gates["root-regression"]["depends_on"] == ["adk-promotion-evidence"]
 assert gates["harden-readiness"].get("requires") == ["runtime-source"]
+# Every declared input of an active gate must exist in source. Optional future
+# surfaces belong to explicit impact_inputs, not nonexistent input paths.
+for gate_name, gate in gates.items():
+    for declared_input in gate["inputs"]:
+        assert (root / declared_input).exists(), (gate_name, declared_input)
+assert "manifests/runtime_health_adapters.json" not in gates["harden-readiness"]["inputs"]
+assert {
+    "manifests/runtime_targets.json",
+    "scripts/check-runtime-health.sh",
+    "scripts/check-runtime-health-adapters-fixtures.sh",
+}.issubset(gates["harden-readiness"]["inputs"])
 assert gates["adk-pin"]["impact_inputs"] == ["agent-dev-kit"]
 assert gates["codex-pin"]["impact_inputs"] == ["codex"]
 assert "tools/control_plane/impact.py" in gates["ci-incremental-dag"]["inputs"]

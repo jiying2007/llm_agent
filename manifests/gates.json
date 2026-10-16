@@ -411,7 +411,8 @@
       "inputs": [
         "scripts/check-adk-harden-readiness.sh",
         "manifests/runtime_targets.json",
-        "manifests/runtime_health_adapters.json",
+        "scripts/check-runtime-health.sh",
+        "scripts/check-runtime-health-adapters-fixtures.sh",
         "reports/runtime-evidence"
       ],
       "impact_groups": [
