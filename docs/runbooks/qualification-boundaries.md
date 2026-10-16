@@ -60,3 +60,20 @@ referenced field evidence file before hashing, and rejects non-standard
 `NaN`/`Infinity` and overflowing floating-point JSON values. Oversized
 or invalid evidence is `FAIL`, not an empty observation, synthetic PASS,
 or a reason to bypass the 30-day and owner-review requirements.
+
+### Durable terminal source identity
+
+Real `longitudinal-operation` PASS accepts only the canonical
+`reports/long-term-assets/longitudinal-operation-current.json` path from
+the LTA-04 manifest. An alternate `--evidence` file is review-only: it
+must stay BLOCKED in real mode, while explicit `--as-of` may validate the
+candidate as simulated evidence without terminal authorization.
+
+Before PASS, the certifier also requires its long-term asset manifest,
+pilot ledger, append-only event log, canonical summary and every referenced
+field evidence file to be tracked and unchanged relative to Git HEAD.
+Modified, staged, ignored or untracked materials cannot silently acquire
+terminal authority from locally recomputed hashes. Git identity is still
+only source reproducibility: genuine field provenance, 30-day observations,
+owner review, signed evidence as applicable and protected PR/fresh-main
+qualification remain independent requirements.
