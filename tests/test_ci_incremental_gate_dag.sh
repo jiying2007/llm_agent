@@ -215,14 +215,21 @@ assert "name: Branch GC" in branch_gc
 assert re.search(r"^  pull_request:\s*$", branch_gc, re.MULTILINE)
 assert re.search(r"^  push:\n\s+branches:\n\s+- main", branch_gc, re.MULTILINE)
 assert "workflow_dispatch:" in branch_gc and "apply:" in branch_gc
-assert "contents: write" in branch_gc and "pull-requests: read" in branch_gc
+assert "permissions:\n  contents: read\n  pull-requests: read" in branch_gc
 assert "cancel-in-progress: false" in branch_gc
 assert "--retired-registry registry/branch_gc_retired.json" in branch_gc
 assert "manifests/branch_gc_retired.json" not in branch_gc
-assert 'EVENT_NAME" == "push" && "$REF_NAME" == "main"' in branch_gc
-assert 'EVENT_NAME" == "workflow_dispatch" && "$DISPATCH_APPLY" == "true"' in branch_gc
-assert 'args+=(--apply)' in branch_gc
-assert "name: branch-gc-report" in branch_gc
+gc_readonly = branch_gc.split("\n  branch-gc:\n", 1)[1].split("\n  branch-gc-apply:\n", 1)[0]
+gc_apply = branch_gc.split("\n  branch-gc-apply:\n", 1)[1]
+assert "    name: branch-gc\n    permissions:\n      contents: read\n      pull-requests: read" in gc_readonly
+assert "contents: write" not in gc_readonly and "args+=(--apply)" not in gc_readonly
+assert "name: branch-gc-report" in gc_readonly
+assert "    name: branch-gc-apply\n    if: (github.event_name == 'push' && github.ref == 'refs/heads/main')" in gc_apply
+assert "github.event_name == 'workflow_dispatch' && inputs.apply && github.ref == 'refs/heads/main'" in gc_apply
+assert "    permissions:\n      contents: write\n      pull-requests: read" in gc_apply
+assert "ref: ${{ github.sha }}" in gc_apply
+assert "args+=(--apply)" in gc_apply
+assert "name: branch-gc-apply-report" in gc_apply
 assert "explicitly retired" in branch_gc.lower()
 assert "merged_pr" not in branch_gc
 
