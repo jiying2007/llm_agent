@@ -24,6 +24,8 @@ MAX_EVENT_LINE_BYTES = 128 * 1024
 MAX_EVENT_COUNT = 50000
 MAX_EVENT_EVIDENCE_REFS = 32
 MAX_FIELD_EVIDENCE_BYTES = 16 * 1024 * 1024
+MAX_UNIQUE_FIELD_EVIDENCE_FILES = 8192
+MAX_TOTAL_FIELD_EVIDENCE_BYTES = 512 * 1024 * 1024
 
 
 class LongitudinalError(RuntimeError):
@@ -249,6 +251,10 @@ def _read_events(root: Path, path: Path, as_of: datetime) -> list[dict[str, Any]
     previous_hash = ZERO_HASH
     previous_recorded: datetime | None = None
     seen_event_ids: set[str] = set()
+    # Path-normalized references across different events must not cause
+    # repeated full-file hashing or unbounded cumulative repository I/O.
+    validated_evidence: dict[Path, str] = {}
+    total_evidence_bytes = 0
     for sequence, raw in _bounded_event_lines(path):
         if not raw.strip():
             raise LongitudinalError(f"event log contains a blank line at sequence {sequence}")
@@ -292,9 +298,20 @@ def _read_events(root: Path, path: Path, as_of: datetime) -> list[dict[str, Any]
             raise LongitudinalError("event evidence digest keys do not match references")
         for relative in evidence:
             evidence_path = _repo_file(root, relative, "event evidence")
-            if evidence_path.stat().st_size > MAX_FIELD_EVIDENCE_BYTES:
-                raise LongitudinalError("event evidence exceeds byte budget")
-            if digests.get(relative) != _sha256_file(evidence_path):
+            if relative != evidence_path.relative_to(root).as_posix():
+                raise LongitudinalError("event evidence path must be canonical repository-relative")
+            if evidence_path not in validated_evidence:
+                if len(validated_evidence) >= MAX_UNIQUE_FIELD_EVIDENCE_FILES:
+                    raise LongitudinalError("event evidence unique-file budget exceeded")
+                size = evidence_path.stat().st_size
+                if size > MAX_FIELD_EVIDENCE_BYTES:
+                    raise LongitudinalError("event evidence exceeds byte budget")
+                if total_evidence_bytes + size > MAX_TOTAL_FIELD_EVIDENCE_BYTES:
+                    raise LongitudinalError("event evidence cumulative byte budget exceeded")
+                verified_sha = _sha256_file(evidence_path)
+                validated_evidence[evidence_path] = verified_sha
+                total_evidence_bytes += size
+            if digests.get(relative) != validated_evidence[evidence_path]:
                 raise LongitudinalError(f"event evidence digest drift: {relative}")
         events.append(event)
         previous_hash = stored
