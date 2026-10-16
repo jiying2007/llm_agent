@@ -77,3 +77,16 @@ terminal authority from locally recomputed hashes. Git identity is still
 only source reproducibility: genuine field provenance, 30-day observations,
 owner review, signed evidence as applicable and protected PR/fresh-main
 qualification remain independent requirements.
+
+
+### HEAD blob identity independent of Git status (2026-10-16)
+
+Git `status --porcelain` is **not** sufficient to authorize terminal
+field evidence: Git index flags such as `assume-unchanged` and
+`skip-worktree` can suppress reporting of modified bytes. The certifier now
+compares the exact regular-file blob and mode from **HEAD** to the index,
+then hashes actual worktree bytes with `git hash-object` and compares those
+raw bytes to the HEAD blob SHA. Staged-only differences, hidden worktree
+differences, missing files, and paths with Git glob characters fail closed.
+This is a source-integrity requirement, not proof that the field operator
+really observed what a receipt claims.

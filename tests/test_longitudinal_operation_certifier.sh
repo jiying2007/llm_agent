@@ -324,6 +324,40 @@ with tempfile.TemporaryDirectory() as temp:
     tracked.write_text('{"source":"reviewed"}\n',encoding="utf-8")
     git("add","-A")
     _verify_committed_evidence(root,{tracked,special})
+    # Git porcelain intentionally ignores assume-unchanged/skip-worktree,
+    # but terminal evidence must still match the actual raw blob at HEAD.
+    for flag, clear_flag in (
+        ("--assume-unchanged", "--no-assume-unchanged"),
+        ("--skip-worktree", "--no-skip-worktree"),
+    ):
+        git("update-index", flag, "field.json")
+        tracked.write_text('{"source":"tampered-under-index-flag"}\n', encoding="utf-8")
+        status=subprocess.run(
+            ["git","-C",str(root),"status","--porcelain=v1","--","field.json"],
+            check=True,capture_output=True,text=True,
+        )
+        assert status.stdout == "", (flag, status.stdout)
+        try:
+            _verify_committed_evidence(root,{tracked})
+        except LongitudinalBlocked as exc:
+            assert str(exc)=="terminal-evidence-worktree-drift", (flag, str(exc))
+        else:
+            raise AssertionError("hidden raw evidence mutation bypassed HEAD identity: "+flag)
+        git("update-index", clear_flag, "field.json")
+        git("restore", "--", "field.json")
+        _verify_committed_evidence(root,{tracked})
+    # Detect a staged change even if the worktree has been restored to HEAD.
+    tracked.write_text('{"source":"different-staged-blob"}\n', encoding="utf-8")
+    git("add", "field.json")
+    tracked.write_text('{"source":"reviewed"}\n', encoding="utf-8")
+    try:
+        _verify_committed_evidence(root,{tracked})
+    except LongitudinalBlocked as exc:
+        assert str(exc)=="terminal-evidence-worktree-drift", str(exc)
+    else:
+        raise AssertionError("staged-only drift bypassed HEAD identity")
+    git("reset","-q","HEAD","--","field.json")
+    _verify_committed_evidence(root,{tracked,special})
     untracked=root/"not-promoted.json"
     untracked.write_text("{}\n",encoding="utf-8")
     try:
