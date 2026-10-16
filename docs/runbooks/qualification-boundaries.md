@@ -115,3 +115,16 @@ repeated separators are rejected even when they resolve to the same file.
 Exceeding budgets yields a hard invalid-evidence result, never a silent
 partial qualification or simulated success. Genuine field evidence and owner
 review remain required irrespective of hash-cache behavior.
+
+
+### Registered operator authority for the entire field event chain
+
+The `pilot_started` and final `pilot_observed` are not the only records
+subject to the operator registry. Every scoped field event contributing to
+an LTA-04 terminal summary—including `fault_observed`,
+`regression_observed`, `recovery_completed`, and maintenance observations—
+must declare a registered **human** operator of the exact pilot.
+An unknown actor fails even after the event chain and summary hashes have
+been recomputed and reviewed. Registry ID equality verifies declared scope,
+not human authentication or genuine operation; provenance/owner review and
+real independent pilot evidence remain separate mandatory controls.
