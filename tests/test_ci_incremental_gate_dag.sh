@@ -203,6 +203,12 @@ assert "source_inputs_match'] is False" in github
 assert "release_evidence_relation:\\s*historical" in github
 assert "release_authorized:\\s*false" in github
 assert "software-m5-certification.json" in github
+assert "name: software-m5-certify" in github, "native ruleset required check name must remain stable"
+assert "STATE CHECK PASS / CURRENT SOURCE NOT CERTIFIED / RELEASE NOT AUTHORIZED" in github
+assert "release_authorized=false" in github
+assert "::warning title=Software M5 release not authorized::" in github
+assert "'qualification_state': 'HISTORICAL_NOT_AUTHORIZED'" in github
+assert "'release_authorized': False" in github
 
 # Root now has one package/CLI identity; workflow and shell callers can converge on it.
 assert 'name = "llm-agent-control-plane"' in pyproject
