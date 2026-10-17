@@ -29,11 +29,12 @@ assert report == positional, (report, positional)
 assert report["schema"] == "llm-agent-maintainability-budget-report/v2", report
 assert report["status"] == "pass", report
 assert report["strict"] is True, report
-assert report["budget_count"] == 13, report
+assert report["budget_count"] == 14, report
 by_id = {item["id"]: item for item in report["budgets"]}
 control_plane = {
     "root-control-plane-python-count": ("file_count", 28),
     "root-control-plane-largest-python-lines": ("max_lines", 981),
+    "root-control-plane-python-import-fan-out": ("max_import_fan_out", 16),
 }
 for budget_id, (metric, baseline) in control_plane.items():
     budget = by_id[budget_id]
