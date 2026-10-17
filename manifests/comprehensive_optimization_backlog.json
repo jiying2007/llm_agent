@@ -247,7 +247,7 @@
           "*.py"
         ],
         "exclude_prefixes": [],
-        "baseline": 982,
+        "baseline": 981,
         "warning_limit": 1050,
         "hard_limit": 1200,
         "owner": "llm-agent-governance",

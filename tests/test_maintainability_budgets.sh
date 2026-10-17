@@ -33,7 +33,7 @@ assert report["budget_count"] == 13, report
 by_id = {item["id"]: item for item in report["budgets"]}
 control_plane = {
     "root-control-plane-python-count": ("file_count", 28),
-    "root-control-plane-largest-python-lines": ("max_lines", 982),
+    "root-control-plane-largest-python-lines": ("max_lines", 981),
 }
 for budget_id, (metric, baseline) in control_plane.items():
     budget = by_id[budget_id]
