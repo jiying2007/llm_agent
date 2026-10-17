@@ -14,6 +14,8 @@ The projection separates two independent questions:
 
 A default PASS only means the projection is valid. It is not an effectiveness, retirement or release claim.
 
+**输入可信边界：** G22 readiness 的已登记 Evidence Index、原始 Campaign、签名/托管收据集合、测量及 Owner 决策 JSON 均通过 Root 既有的 `intake_io.read_json` 读取，按单文件 16 MiB 预算和严格 UTF-8/JSON 语义拒绝任意层级重复键、`NaN`/`Infinity`、溢出浮点、过深结构及符号链接。不能通过重排键或改变解析器来覆盖人类审核过的证据字段；校验失败是 invalid-source，不会降级成 `not-measured` 或 PASS。相关制品的 SHA-256 也经同一普通文件/16 MiB 字节预算读取；完整 JSON 先做严格解析，再进入 Schema 子进程，避免不可信超大文档绕过预算进行提前哈希或 Schema 运算。
+
 ## Canonical evidence index
 
 The Root SSOT is:

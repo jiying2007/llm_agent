@@ -68,4 +68,84 @@ fi
 
 python3 -m tools.control_plane.cli native-readiness --root . --summary-json   | python3 -c 'import json,sys; v=json.load(sys.stdin); assert v["status"]=="pass", v'
 
+# Both G21 and G22 must reuse the one bounded, strict JSON authority.
+# Permissive JSON would let a second key silently override the field reviewed by
+# a human, or make a non-finite observation appear numeric.
+python3 - <<'PY'
+import hashlib
+import inspect
+from pathlib import Path
+from tempfile import TemporaryDirectory
+
+from tools.control_plane import effect_readiness, native_target_readiness
+
+for module in (effect_readiness, native_target_readiness):
+    with TemporaryDirectory() as directory:
+        root = Path(directory)
+        source = root / "evidence.json"
+        source.write_text('{"status":"ok","nested":{"count":1}}', encoding="utf-8")
+        assert module._load_object(source, "fixture")["nested"]["count"] == 1
+
+        invalid_documents = (
+            '{"status":"pass","status":"blocked"}',    # duplicate top-level key
+            '{"nested":{"pass":true,"pass":false}}', # duplicate nested key
+            '{"observation":NaN}',
+            '{"observation":Infinity}',
+            '{"observation":1e9999}',                 # finite JSON syntax, infinity as float
+            '[{"schema":"unexpected-list"}]',        # object contract
+            '{"depth":' + '[' * 70 + '0' + ']' * 70 + '}', # nesting budget
+        )
+        for document in invalid_documents:
+            source.write_text(document, encoding="utf-8")
+            try:
+                module._load_object(source, "fixture")
+            except ValueError:
+                pass
+            else:
+                raise AssertionError((module.__name__, "unsafe JSON accepted", document[:60]))
+
+        source.write_text('{"status":"pass"}', encoding="utf-8")
+        if module is effect_readiness:
+            assert module._sha256_file(source) == hashlib.sha256(source.read_bytes()).hexdigest()
+        link = root / "symlink.json"
+        link.symlink_to(source)
+        try:
+            module._load_object(link, "fixture")
+        except ValueError:
+            pass
+        else:
+            raise AssertionError((module.__name__, "symlink accepted"))
+        if module is effect_readiness:
+            try:
+                module._sha256_file(link)
+            except ValueError:
+                pass
+            else:
+                raise AssertionError("effect evidence digest reader accepted a symlink")
+
+        previous_limit = module._MAX_JSON_BYTES
+        try:
+            module._MAX_JSON_BYTES = 8
+            try:
+                module._load_object(source, "fixture")
+            except ValueError:
+                pass
+            else:
+                raise AssertionError((module.__name__, "oversized input accepted"))
+            if module is effect_readiness:
+                try:
+                    module._sha256_file(source)
+                except ValueError:
+                    pass
+                else:
+                    raise AssertionError("effect evidence digest reader accepted oversized input")
+        finally:
+            module._MAX_JSON_BYTES = previous_limit
+
+validation_source = inspect.getsource(effect_readiness._validate_evidence_entry)
+assert validation_source.index('campaign = _load_object(') < validation_source.index('    _schema_validate(')
+assert 'read_bytes(' in inspect.getsource(effect_readiness._sha256_file)
+print("[PASS] G21/G22 evidence parsing and digest inputs reject ambiguity, symlinks and resource amplification")
+PY
+
 echo '[PASS] native target readiness separates software readiness from real native evidence'
