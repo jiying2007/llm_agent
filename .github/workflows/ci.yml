@@ -40,6 +40,11 @@ jobs:
       - name: Install declared control-plane dependencies
         run: python -m pip install .
 
+      - name: Type-check scoped control-plane safety contracts
+        run: |
+          python -m pip install '.[quality]'
+          python -m mypy --config-file pyproject.toml
+
       - name: Verify bounded cache-only intake
         run: bash tests/test_intake_hardening.sh
 

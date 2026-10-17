@@ -14,6 +14,8 @@ SCHEMA = "llm-agent-gate-impact/v1"
 def _load_manifest(root: Path) -> dict[str, Any]:
     path = root / "manifests" / "gates.json"
     data = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(data, dict):
+        raise ValueError("gate manifest root must be an object")
     if data.get("schema") != "llm-agent-gates/v2":
         raise ValueError("gate impact requires llm-agent-gates/v2")
     gates = data.get("gates")

@@ -39,4 +39,6 @@ show_error_codes = true
 files = [
   "tools/control_plane/cli.py",
   "tools/control_plane/impact.py",
+  "tools/control_plane/process_budget.py",
+  "tools/control_plane/receipts.py",
 ]
