@@ -9,6 +9,8 @@
 
 Root 会消费前三层的软件能力，但 synthetic campaign 只验证 harness，不构成真实 native receipt、签名、registry authority、live HOME 修改或产品 release authority。
 
+**严格 JSON 输入：** G21 readiness 的 Manifest、Target Contract 和 Native Trust Registry 通过 Root 统一的 `intake_io.read_json` 限制为有界普通文件。嵌套重复 JSON key、非有限数、过深文档、符号链接或超出 16 MiB 的文件一律失败，不能出现“人工审查一值、机器解析另一值”的凭证歧义。此约束不会新增受信 authority，也不产生 native PASS。
+
 ## 当前核验命令
 
 ```bash
