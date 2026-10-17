@@ -72,6 +72,8 @@ python3 -m tools.control_plane.cli native-readiness --root . --summary-json   | 
 # Permissive JSON would let a second key silently override the field reviewed by
 # a human, or make a non-finite observation appear numeric.
 python3 - <<'PY'
+import hashlib
+import inspect
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -103,6 +105,8 @@ for module in (effect_readiness, native_target_readiness):
                 raise AssertionError((module.__name__, "unsafe JSON accepted", document[:60]))
 
         source.write_text('{"status":"pass"}', encoding="utf-8")
+        if module is effect_readiness:
+            assert module._sha256_file(source) == hashlib.sha256(source.read_bytes()).hexdigest()
         link = root / "symlink.json"
         link.symlink_to(source)
         try:
@@ -111,6 +115,13 @@ for module in (effect_readiness, native_target_readiness):
             pass
         else:
             raise AssertionError((module.__name__, "symlink accepted"))
+        if module is effect_readiness:
+            try:
+                module._sha256_file(link)
+            except ValueError:
+                pass
+            else:
+                raise AssertionError("effect evidence digest reader accepted a symlink")
 
         previous_limit = module._MAX_JSON_BYTES
         try:
@@ -121,10 +132,20 @@ for module in (effect_readiness, native_target_readiness):
                 pass
             else:
                 raise AssertionError((module.__name__, "oversized input accepted"))
+            if module is effect_readiness:
+                try:
+                    module._sha256_file(source)
+                except ValueError:
+                    pass
+                else:
+                    raise AssertionError("effect evidence digest reader accepted oversized input")
         finally:
             module._MAX_JSON_BYTES = previous_limit
 
-print("[PASS] G21/G22 JSON inputs reject duplicate keys, non-finite values, symlinks, deep and oversized documents")
+validation_source = inspect.getsource(effect_readiness._validate_evidence_entry)
+assert validation_source.index('campaign = _load_object(') < validation_source.index('    _schema_validate(')
+assert 'read_bytes(' in inspect.getsource(effect_readiness._sha256_file)
+print("[PASS] G21/G22 evidence parsing and digest inputs reject ambiguity, symlinks and resource amplification")
 PY
 
 echo '[PASS] native target readiness separates software readiness from real native evidence'
