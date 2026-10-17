@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "status": "active",
-  "last_updated": "2026-10-13",
+  "last_updated": "2026-10-18",
   "review_after": "2026-10-27",
   "review_evidence": "docs/changes/20261013-m5-fresh-promotion/backlog-review.md",
   "purpose": "Machine-readable terminal optimization backlog for llm_agent and agent-dev-kit architecture governance. The current source report is selected through manifests/report_registry.json so the backlog can evolve without rewriting historical reports.",
@@ -220,6 +220,38 @@
         "hard_limit": 5,
         "owner": "agent-dev-kit",
         "next_action": "Consolidate exact duplicate checker or test logic without weakening target-specific assertions."
+      },
+      {
+        "id": "root-control-plane-python-count",
+        "metric": "file_count",
+        "scope_paths": [
+          "tools/control_plane"
+        ],
+        "include_patterns": [
+          "*.py"
+        ],
+        "exclude_prefixes": [],
+        "baseline": 28,
+        "warning_limit": 31,
+        "hard_limit": 35,
+        "owner": "llm-agent-governance",
+        "next_action": "Review ownership and consolidate existing typed control-plane modules before adding further modules; do not hide new modules by excluding the directory."
+      },
+      {
+        "id": "root-control-plane-largest-python-lines",
+        "metric": "max_lines",
+        "scope_paths": [
+          "tools/control_plane"
+        ],
+        "include_patterns": [
+          "*.py"
+        ],
+        "exclude_prefixes": [],
+        "baseline": 982,
+        "warning_limit": 1050,
+        "hard_limit": 1200,
+        "owner": "llm-agent-governance",
+        "next_action": "Split named control-plane hotspots by bounded context with behavioral regression evidence instead of allocating unbounded line budgets."
       }
     ],
     "evidence_metrics": [
