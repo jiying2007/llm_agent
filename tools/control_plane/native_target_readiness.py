@@ -9,14 +9,20 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from tools.codex_assets.intake_io import IntakeError, read_json
+
 from .adk_interface import validate as validate_adk_interface
 
 SCHEMA = "llm-agent-native-target-readiness/v1"
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
+_MAX_JSON_BYTES = 16 * 1024 * 1024
 
 
 def _load_object(path: Path, label: str) -> dict[str, Any]:
-    value = json.loads(path.read_text(encoding="utf-8"))
+    try:
+        value = read_json(path, label=label, max_bytes=_MAX_JSON_BYTES)
+    except IntakeError as exc:
+        raise ValueError(f"invalid {label}: {exc}") from exc
     if not isinstance(value, dict):
         raise ValueError(f"{label} must be a JSON object")
     return value
