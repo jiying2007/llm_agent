@@ -68,4 +68,63 @@ fi
 
 python3 -m tools.control_plane.cli native-readiness --root . --summary-json   | python3 -c 'import json,sys; v=json.load(sys.stdin); assert v["status"]=="pass", v'
 
+# Both G21 and G22 must reuse the one bounded, strict JSON authority.
+# Permissive JSON would let a second key silently override the field reviewed by
+# a human, or make a non-finite observation appear numeric.
+python3 - <<'PY'
+from pathlib import Path
+from tempfile import TemporaryDirectory
+
+from tools.control_plane import effect_readiness, native_target_readiness
+
+for module in (effect_readiness, native_target_readiness):
+    with TemporaryDirectory() as directory:
+        root = Path(directory)
+        source = root / "evidence.json"
+        source.write_text('{"status":"ok","nested":{"count":1}}', encoding="utf-8")
+        assert module._load_object(source, "fixture")["nested"]["count"] == 1
+
+        invalid_documents = (
+            '{"status":"pass","status":"blocked"}',    # duplicate top-level key
+            '{"nested":{"pass":true,"pass":false}}', # duplicate nested key
+            '{"observation":NaN}',
+            '{"observation":Infinity}',
+            '{"observation":1e9999}',                 # finite JSON syntax, infinity as float
+            '[{"schema":"unexpected-list"}]',        # object contract
+            '{"depth":' + '[' * 70 + '0' + ']' * 70 + '}', # nesting budget
+        )
+        for document in invalid_documents:
+            source.write_text(document, encoding="utf-8")
+            try:
+                module._load_object(source, "fixture")
+            except ValueError:
+                pass
+            else:
+                raise AssertionError((module.__name__, "unsafe JSON accepted", document[:60]))
+
+        source.write_text('{"status":"pass"}', encoding="utf-8")
+        link = root / "symlink.json"
+        link.symlink_to(source)
+        try:
+            module._load_object(link, "fixture")
+        except ValueError:
+            pass
+        else:
+            raise AssertionError((module.__name__, "symlink accepted"))
+
+        previous_limit = module._MAX_JSON_BYTES
+        try:
+            module._MAX_JSON_BYTES = 8
+            try:
+                module._load_object(source, "fixture")
+            except ValueError:
+                pass
+            else:
+                raise AssertionError((module.__name__, "oversized input accepted"))
+        finally:
+            module._MAX_JSON_BYTES = previous_limit
+
+print("[PASS] G21/G22 JSON inputs reject duplicate keys, non-finite values, symlinks, deep and oversized documents")
+PY
+
 echo '[PASS] native target readiness separates software readiness from real native evidence'
