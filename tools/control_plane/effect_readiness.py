@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from tools.codex_assets.intake_io import IntakeError, read_json
+from tools.codex_assets.intake_io import IntakeError, read_bytes, read_json
 
 from .adk_interface import validate as validate_adk_interface
 from .evidence_paths import resolve_regular_evidence_path
@@ -42,11 +42,14 @@ def _load_object(path: Path, label: str) -> dict[str, Any]:
 
 
 def _sha256_file(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as stream:
-        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
+    # Hash only bytes obtained through the same bounded regular-file reader
+    # used by the strict JSON loader. Unbounded hashing must not run before
+    # evidence size/type checks.
+    try:
+        content = read_bytes(path, label="effect evidence", max_bytes=_MAX_JSON_BYTES)
+    except IntakeError as exc:
+        raise ValueError(f"invalid effect evidence: {exc}") from exc
+    return hashlib.sha256(content).hexdigest()
 
 
 def _safe_path(root: Path, base: Path, value: Any, label: str) -> Path:
@@ -534,6 +537,16 @@ def _validate_evidence_entry(
     measurement_path, measurement_sha = docs["measurement"]
     review_path, _ = docs["owner_review"]
 
+    # Strict and bounded parsing precedes schema validation subprocesses:
+    # ambiguous or oversized evidence must never reach a different parser
+    # before the canonical intake decision.
+    campaign = _load_object(campaign_path, "effect trial campaign")
+    comparison = _load_object(comparison_path, "effect trial comparison")
+    _load_object(authority_contract_path, "Agent Value authority contract")
+    _load_object(authority_registry_path, "Agent Value authority registry")
+    receipt_set = _load_object(receipts_path, "Agent Value receipt set")
+    measurement = _load_object(measurement_path, "Agent Value measurement")
+    review = _load_object(review_path, "effect owner review")
     _schema_validate(
         adk,
         "schemas/effect-trials-v1.schema.json",
@@ -552,11 +565,6 @@ def _validate_evidence_entry(
         measurement_path,
         "Agent Value measurement",
     )
-    campaign = _load_object(campaign_path, "effect trial campaign")
-    comparison = _load_object(comparison_path, "effect trial comparison")
-    _load_object(authority_contract_path, "Agent Value authority contract")
-    _load_object(authority_registry_path, "Agent Value authority registry")
-    receipt_set = _load_object(receipts_path, "Agent Value receipt set")
     if receipt_set.get("schema") != RECEIPT_SET_SCHEMA:
         raise ValueError("Agent Value receipt set schema is invalid")
     replay = _recompute_agent_value_measurement(
@@ -566,10 +574,8 @@ def _validate_evidence_entry(
         receipts_path,
         evidence_root,
     )
-    measurement = _load_object(measurement_path, "Agent Value measurement")
     if replay["measurement"] != measurement:
         raise ValueError("Agent Value measurement differs from managed signed receipt replay")
-    review = _load_object(review_path, "effect owner review")
     preregistration = verify_effect_preregistration(
         adk,
         campaign_path,
