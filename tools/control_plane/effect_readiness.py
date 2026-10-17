@@ -10,6 +10,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from tools.codex_assets.intake_io import IntakeError, read_json
+
 from .adk_interface import validate as validate_adk_interface
 from .evidence_paths import resolve_regular_evidence_path
 from .effect_preregistration import verify_effect_preregistration
@@ -30,7 +32,10 @@ def _load_object(path: Path, label: str) -> dict[str, Any]:
         raise ValueError(f"{label} is missing or unsafe: {path}")
     if path.stat().st_size > _MAX_JSON_BYTES:
         raise ValueError(f"{label} exceeds byte budget: {path}")
-    value = json.loads(path.read_text(encoding="utf-8"))
+    try:
+        value = read_json(path, label=label, max_bytes=_MAX_JSON_BYTES)
+    except IntakeError as exc:
+        raise ValueError(f"invalid {label}: {exc}") from exc
     if not isinstance(value, dict):
         raise ValueError(f"{label} must be a JSON object")
     return value
