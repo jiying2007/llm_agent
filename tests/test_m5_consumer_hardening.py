@@ -8,7 +8,7 @@ import subprocess
 import shutil
 import tempfile
 import unittest
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from unittest import mock
 
@@ -29,6 +29,9 @@ class ConsumerHardeningTests(unittest.TestCase):
         self.lock = {"agent-dev-kit.version": "8.0.5", "agent-dev-kit.commit": "a" * 40,
                      "agent-dev-kit.tree": "b" * 40, "agent-dev-kit.manifest_blob": "c" * 40}
         self.now = datetime.now(timezone.utc)
+        # One frozen clock per test: fixture construction must not advance the
+        # synthetic evidence timestamp beyond the explicit validation instant.
+        self.fixture_now = self.now - timedelta(seconds=1)
         source = Path(__file__).resolve().parents[1] / "tools/codex_assets"
         destination = self.root / "tools/codex_assets"
         destination.mkdir(parents=True)
@@ -49,7 +52,7 @@ class ConsumerHardeningTests(unittest.TestCase):
         value["evidence_sha256"] = contract.digest(value)
 
     def test_runtime_rejects_all_original_bypass_classes_after_redigest(self):
-        original = runtime(self.lock)
+        original = runtime(self.lock, now=self.fixture_now)
         mutations = [
             lambda v: v["collection"].update(runtime_identity="unverified-import"),
             lambda v: v["collection"].pop("runtime_identity"),
@@ -79,14 +82,19 @@ class ConsumerHardeningTests(unittest.TestCase):
             with self.subTest(consumer="rollover", index=index), self.assertRaises(rollover.RolloverError):
                 rollover._validate_runtime(path, self.lock, self.now)
 
+    def test_future_evidence_remains_rejected_with_frozen_test_clock(self):
+        future = runtime(self.lock, now=self.now + timedelta(seconds=5))
+        with self.assertRaisesRegex(ValueError, "future-dated"):
+            contract.validate(future, self.lock, self.now)
+
     def test_content_tampering_without_new_digest_is_rejected(self):
-        value = runtime(self.lock)
+        value = runtime(self.lock, now=self.fixture_now)
         value["evidence_sha256"] = "0" * 64
         with self.assertRaisesRegex(ValueError, "does not match content"):
             contract.validate(value, self.lock, self.now)
 
     def test_provider_observation_rejects_redigested_identity_tampering(self):
-        original = runtime(self.lock)
+        original = runtime(self.lock, now=self.fixture_now)
         scope = "upstream-response-openai-model-header"
         original["collection"]["model_observation"] = {
             "scope": scope, "adapter_sha256": "a" * 64, "records": [{
@@ -108,7 +116,7 @@ class ConsumerHardeningTests(unittest.TestCase):
                 contract.validate(mutated, self.lock, self.now)
 
     def test_core_uses_same_identity_and_expiry_contract(self):
-        value = runtime(self.lock)
+        value = runtime(self.lock, now=self.fixture_now)
         value["adk_commit"] = "f" * 40
         self.redigest(value)
         self.write("runtime.json", value)
@@ -342,7 +350,7 @@ class ConsumerHardeningTests(unittest.TestCase):
                 "agent-dev-kit.manifest_blob": git("rev-parse", "HEAD:manifest.json")}
         (self.root / "adk.lock").write_text("\n".join(k + "=" + v for k, v in lock.items()))
         selected, task_digest, raw = smoke._selected_task_snapshot(tasks, 1)
-        evidence = runtime(lock, task=selected[0], manifest_digest=smoke._manifest_digest(manifest),
+        evidence = runtime(lock, now=self.fixture_now, task=selected[0], manifest_digest=smoke._manifest_digest(manifest),
                            task_digest=task_digest, tasks_sha256=hashlib.sha256(raw).hexdigest())
         return adk, tasks, lock, evidence, git
 
@@ -380,7 +388,7 @@ class ConsumerHardeningTests(unittest.TestCase):
         task.update(prompt="injected prompt", expected_skill="injected-skill")
         tasks.write_text(json.dumps(task) + "\n")
         selected, task_digest, raw = smoke._selected_task_snapshot(tasks, 1)
-        altered = runtime(lock, task=selected[0], manifest_digest=evidence["manifest_sha256"],
+        altered = runtime(lock, now=self.fixture_now, task=selected[0], manifest_digest=evidence["manifest_sha256"],
                           task_digest=task_digest, tasks_sha256=hashlib.sha256(raw).hexdigest())
         # Isolate blob binding from Git status: never accept new local labels as pinned labels.
         with mock.patch.object(smoke, "_validate_source_identity", return_value=(lock, {"version": "8.0.5"}, adk)):
