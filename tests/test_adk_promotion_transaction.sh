@@ -295,16 +295,10 @@ for label, content in invalid.items():
 # Apply identical restrictions to the attestation bundle, not just evidence.
 bundle_value = Path(attestation_path).read_text(encoding="utf-8")
 bad_attestation = root / "bad-attestation.json"
+# Deliberately repeat the existing key: standard json.loads would retain the
+# later value, masking the ambiguity.
 bad_attestation.write_text(
     '{"mediaType":"ignored",' + bundle_value.lstrip()[1:], encoding="utf-8"
-)
-# This extra field is legal; a duplicate *existing* field must be rejected.
-bad_attestation.write_text(
-    '{"mediaType":"ignored",' + bundle_value.lstrip()[1:].replace(
-        '"mediaType":"application/vnd.dev.sigstore.bundle+json;version=0.3"',
-        '"mediaType":"application/vnd.dev.sigstore.bundle+json;version=0.3"', 1
-    ),
-    encoding="utf-8",
 )
 try:
     _validate_portable_inputs(identity, Path(evidence_path), bad_attestation)
@@ -331,7 +325,7 @@ for label, unsafe in (
         raise AssertionError("unsafe promotion path was accepted: " + label)
 
 invalid_utf8 = root / "bad-utf8.json"
-invalid_utf8.write_bytes(clean.encode("utf-8") + b"\\xff")
+invalid_utf8.write_bytes(clean.encode("utf-8") + bytes([0xff]))
 try:
     _validate_portable_inputs(identity, invalid_utf8, Path(attestation_path))
 except RuntimeError:
