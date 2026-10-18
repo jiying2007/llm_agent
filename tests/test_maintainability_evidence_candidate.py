@@ -114,6 +114,17 @@ class MaintainabilityEvidenceCandidateTest(unittest.TestCase):
         self.assertEqual("measured", report["semantic_axes"]["churn"]["status"])
         self.assertEqual(1, report["semantic_axes"]["churn"]["observed"])
 
+    def test_hosted_churn_candidate_is_read_only_review_required(self) -> None:
+        workflow = (Path(__file__).resolve().parents[1] / '.github/workflows/maintainability-candidate.yml').read_text()
+        self.assertIn('fetch-depth: 0', workflow)
+        self.assertIn('contents: read', workflow)
+        self.assertNotIn('contents: write', workflow)
+        self.assertIn('tools.codex_assets.maintainability_evidence', workflow)
+        self.assertIn('--repository-id llm-agent', workflow)
+        self.assertIn('--apply --summary-json', workflow)
+        self.assertIn('review-required', workflow)
+        self.assertIn('if-no-files-found: error', workflow)
+        self.assertIn('not-available', workflow)
     def test_ancestry_window_privacy_and_output_fail_closed(self) -> None:
         with self.assertRaisesRegex(BudgetError, "ancestor window"):
             generate_churn_candidate(
