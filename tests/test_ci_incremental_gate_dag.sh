@@ -249,6 +249,7 @@ for typed_module in (
     'tools/control_plane/evidence_paths.py',
     'tools/control_plane/longitudinal_operation.py',
     'tools/control_plane/consumer_chain.py',
+    'tools/control_plane/status_projection.py',
 ):
     assert '"' + typed_module + '"' in pyproject, typed_module
 assert 'python -m mypy --config-file pyproject.toml' in github

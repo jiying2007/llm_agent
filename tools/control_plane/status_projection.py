@@ -112,7 +112,9 @@ def _expected_current_fields(root: Path, lock: dict[str, str], digest: str) -> d
     overall = scorecard.get("overall")
     software_m5 = scorecard.get("software_m5")
     release = policy.get("release")
-    if not all(isinstance(value, dict) for value in (overall, software_m5, release)):
+    # Independent narrowing is required for each field: a combined any/all
+    # check does not prove individual dict identity to strict type analysis.
+    if not isinstance(overall, dict) or not isinstance(software_m5, dict) or not isinstance(release, dict):
         raise RuntimeError("maturity scorecard/policy is missing required objects")
     current_commit = lock.get("agent-dev-kit.commit", "")
     candidate_commit = str(release.get("candidate_commit") or "")

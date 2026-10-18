@@ -44,4 +44,5 @@ files = [
   "tools/control_plane/evidence_paths.py",
   "tools/control_plane/longitudinal_operation.py",
   "tools/control_plane/consumer_chain.py",
+  "tools/control_plane/status_projection.py",
 ]

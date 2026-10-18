@@ -60,6 +60,25 @@ Evidence window 的结束和生成时间不得在未来，且 `generated_at` 不
 
 当前 churn 风险为 medium；owner concentration 和 inactive assets 风险为 high。三项仍无 reviewed source，因此设置阈值会制造虚假精度，暂不启用预算。
 
+## 真实维护性数据采集与审核（现有入口）
+
+现有 `tools.codex_assets.maintainability_evidence` 可以只读收集固定 Git 窗口内的 churn 候选，不增加新 CLI 或平行 SSOT。先选择可验证的 `revision-start/end` 和其实际时间范围，运行以下只读命令（替换真实参数）：
+
+```bash
+rtk python3 -m tools.codex_assets.maintainability_evidence \
+  --root . --repository-id llm-agent \
+  --revision-start "<审查后的起始完整SHA>" \
+  --revision-end "<审查后的结束完整SHA>" \
+  --window-started-at "<真实UTC窗口开始时间>" \
+  --window-ended-at "<真实UTC窗口结束时间>" \
+  --output /tmp/llm-agent-maintainability-churn-candidate.json \
+  --summary-json
+```
+
+上述默认不写文件；仅在完成来源/时间/全体样本审查后，才允许显式 `--apply` 写出 review-required 候选。候选不等于 reviewed maintainability baseline，不能自动修改 `manifests/comprehensive_optimization_backlog.json`。
+
+`owner_concentration` 和 `inactive_assets` 只有在真实 reviewed ownership snapshot 和脱敏 invocation ledger 存在时才可计算。缺失时必须保留 `not-available/null`，禁止将空数据当作 0% 单点风险或 0% 闲置率。现有预算/隐私检查保持唯一执行入口。
+
 ## Privacy gate
 
 Contract 与 evidence JSON 在字段语义解析前执行递归 secret scan，覆盖：
