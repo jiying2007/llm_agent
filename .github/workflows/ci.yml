@@ -48,6 +48,9 @@ jobs:
       - name: Verify bounded cache-only intake
         run: bash tests/test_intake_hardening.sh
 
+      - name: Verify bounded Git maintainability evidence collection
+        run: bash tests/test_maintainability_git_io.sh
+
       - name: Validate pinned workflow action runtime compatibility
         run: bash tests/test_workflow_action_compatibility.sh
 
