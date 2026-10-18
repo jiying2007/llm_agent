@@ -6,13 +6,14 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 python3 - "$ROOT" <<'PY'
 import json
 import re
+import subprocess
 import sys
 from pathlib import Path
 
 root = Path(sys.argv[1])
 sys.path.insert(0, str(root))
 
-from tools.control_plane.impact import calculate_impact
+from tools.control_plane.impact import _git_changed_paths, calculate_impact
 
 manifest = json.loads((root / "manifests/gates.json").read_text(encoding="utf-8"))
 profiles = manifest["profiles"]
@@ -23,6 +24,27 @@ branch_gc_code = (root / "tools/control_plane/branch_gc.py").read_text(encoding=
 retired_gc = json.loads((root / "registry/branch_gc_retired.json").read_text(encoding="utf-8"))
 gitlab = (root / ".gitlab-ci.yml").read_text(encoding="utf-8")
 pyproject = (root / "pyproject.toml").read_text(encoding="utf-8")
+
+# The Git comparison must fail closed rather than reclassifying unavailable
+# history as an empty change and suppressing mandatory integration.
+for unavailable_base in ("", "f" * 40):
+    try:
+        _git_changed_paths(root, unavailable_base, "HEAD", "two-dot")
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("missing Git base unexpectedly produced an empty impact")
+
+unavailable_cli = subprocess.run(
+    [sys.executable, "-m", "tools.control_plane.impact", "--root", str(root),
+     "--base", "f" * 40, "--head", "HEAD", "--summary-json"],
+    cwd=root, capture_output=True, text=True, check=False,
+)
+assert unavailable_cli.returncode != 0, unavailable_cli.stdout
+assert '"required": false' not in unavailable_cli.stdout
+assert 'refusing NOT_REQUIRED' in github
+assert 'missing or invalid Git impact comparison base' in github
+assert 'Git impact comparison base is not available' in github
 
 assert manifest["schema"] == "llm-agent-gates/v2"
 assert profiles["contract"] == [

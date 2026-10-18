@@ -172,7 +172,17 @@ jobs:
           if [[ "$FORCE_REQUIRED" == "true" ]]; then
             args+=(--force)
           fi
-          if [[ -n "$base" && ! "$base" =~ ^0+$ ]] && git cat-file -e "${base}^{commit}" 2>/dev/null; then
+          # Unknown or unreadable history must not silently become NOT_REQUIRED.
+          # The main and PR triggers always require an exact, reachable comparison base.
+          if [[ "$EVENT_NAME" == "push" || "$EVENT_NAME" == "pull_request" ]]; then
+            if [[ ! "$base" =~ ^[0-9a-f]{40}$ || "$base" =~ ^0+$ ]]; then
+              echo "::error::missing or invalid Git impact comparison base for $EVENT_NAME" >&2
+              exit 1
+            fi
+            if ! git cat-file -e "${base}^{commit}" 2>/dev/null; then
+              echo "::error::Git impact comparison base is not available; refusing NOT_REQUIRED" >&2
+              exit 1
+            fi
             args+=(--base "$base")
           fi
           "${args[@]}"
