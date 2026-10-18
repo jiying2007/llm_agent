@@ -19,3 +19,6 @@ Revert via protected PR only with a documented justification and equal-or-better
 
 ## CI-discovered dependent-source typing repair
 The first hosted PR mypy run found two existing `no-untyped-def`/`no-any-return` defects in the imported `tools.codex_assets.intake_io._regular_input` context manager. Its return type is now explicitly `Iterator[BinaryIO]` rather than being untyped. This fixes both at their common source without any `type: ignore`, runtime behavior change or duplicate reader. Keep the same intake security regression and rerun the hosted matrix.
+
+## Cross-PR deep-integration regression discovered
+A full integration-deep job exposed a syntax error in an existing LTA shell-embedded Python test that had escaped the selective/fast PR path. This PR fixes the stray `.lower()` continuation and permanently calls the LTA contract test from the always-run `ci-incremental-dag` profile, so future document-state assertions cannot pass PR CI without executing.
