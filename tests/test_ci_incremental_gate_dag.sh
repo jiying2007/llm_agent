@@ -46,6 +46,14 @@ assert 'refusing NOT_REQUIRED' in github
 assert 'missing or invalid Git impact comparison base' in github
 assert 'Git impact comparison base is not available' in github
 
+# Regression guard: LTA qualification assertions must execute in the always-run
+# contract profile, not only in an optional deep-integration regression.
+lta_receipt = subprocess.run(
+    ['bash', str(root / 'tests/test_long_term_asset_qualification.sh')],
+    cwd=root, capture_output=True, text=True, timeout=30, check=False,
+)
+assert lta_receipt.returncode == 0, (lta_receipt.stdout, lta_receipt.stderr)
+
 assert manifest["schema"] == "llm-agent-gates/v2"
 assert profiles["contract"] == [
     "adk-pin",
@@ -236,6 +244,14 @@ assert "'release_authorized': False" in github
 assert 'name = "llm-agent-control-plane"' in pyproject
 assert 'llm-ctl = "tools.control_plane.cli:main"' in pyproject
 assert 'files = [' in pyproject and '"tools/control_plane/impact.py"' in pyproject
+# High-risk field and consumer evidence readers must stay in mandatory strict mypy.
+for typed_module in (
+    'tools/control_plane/evidence_paths.py',
+    'tools/control_plane/longitudinal_operation.py',
+    'tools/control_plane/consumer_chain.py',
+):
+    assert '"' + typed_module + '"' in pyproject, typed_module
+assert 'python -m mypy --config-file pyproject.toml' in github
 
 # Native delete-on-merge now owns ordinary merged PR branches. Custom Branch GC
 # remains only for exceptional, explicitly registered exact-SHA retirement proofs.

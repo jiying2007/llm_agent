@@ -31,7 +31,7 @@ assert runbook.is_file()
 runbook_text = runbook.read_text()
 assert 'clean-room recovery drill' in runbook_text.lower()
 assert 'issue #50' in runbook_text
-assert 'second-human approval' in runbook_text
+assert 'zero mandatory human approvals' in runbook_text.lower()
 # The living continuity runbook must not contradict the machine LTA authority.
 assert 'LTA-01 is currently **partially proven but still blocked**' not in runbook_text
 assert 'LTA-01 is narrowed to the native main ruleset' not in runbook_text
@@ -46,7 +46,6 @@ assert '可选团队交接/第二操作者可用性试点' in team_pilot
 assert '不向这两种资格新增' in team_pilot
 assert '历史最后一次完整认证基线' in m5_plan
 assert '当前运行源码身份与产品放行状态' in m5_plan
-.lower()
 
 maintainer = lta['maintainer_model']
 assert maintainer['type'] == 'solo'

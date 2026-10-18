@@ -9,7 +9,7 @@ import os
 import stat
 import tempfile
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
+from typing import Any, BinaryIO, Dict, Iterable, Iterator, List, Mapping, Optional, Sequence, Tuple
 
 
 class IntakeError(RuntimeError):
@@ -37,7 +37,7 @@ def _sha256_file(path: Path) -> str:
 
 
 @contextmanager
-def _regular_input(path: Path, label: str):
+def _regular_input(path: Path, label: str) -> Iterator[BinaryIO]:
     """Bind leaf type/identity checks to the descriptor actually read.
 
     Parent chain validation is a preflight; callers must control parent
