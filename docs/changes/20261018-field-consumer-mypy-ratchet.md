@@ -16,3 +16,6 @@ Extend the *existing* Root strict-mypy `pyproject.toml` file list to three high-
 
 ## Rollback
 Revert via protected PR only with a documented justification and equal-or-better static coverage; never infer runtime qualification from type-checking.
+
+## CI-discovered dependent-source typing repair
+The first hosted PR mypy run found two existing `no-untyped-def`/`no-any-return` defects in the imported `tools.codex_assets.intake_io._regular_input` context manager. Its return type is now explicitly `Iterator[BinaryIO]` rather than being untyped. This fixes both at their common source without any `type: ignore`, runtime behavior change or duplicate reader. Keep the same intake security regression and rerun the hosted matrix.
