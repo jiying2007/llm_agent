@@ -41,3 +41,11 @@ Owner 决定接受后仍必须：
 
 Ownership 和 inactive-asset candidate 需要显式受审 scope/receipt population；本工具不会从 Git 身份或缺失
 telemetry 推断它们。
+
+## Hosted review-only collection
+
+`.github/workflows/maintainability-candidate.yml` reuses the canonical Git-history candidate generator on Monday 02:17 UTC, explicit manual dispatch, or a PR that changes this workflow/generator/test. It checks out the protected main source with full Git history, selects the most recent first-parent commit at/before the seven-day cutoff, and freezes the exact two commits and their commit-time window.
+
+The job runs with `contents: read`, no external model/provider request, and no repository mutation. It records only a `review-required` candidate and compact result as temporary workflow artifacts. If no two distinct eligible revisions exist, it emits explicit `not-available` rather than inventing zero churn; source-history parse or budget errors fail the job. Artifacts expire and must not be described as a reviewed baseline.
+
+Promoting churn to a maintainability budget still requires the existing owner-review steps above. `owner_concentration` and `inactive_assets` remain `not-available` until independent reviewed ownership and genuine sanitized invocation snapshots exist. No new tool or shadow evidence authority is introduced.

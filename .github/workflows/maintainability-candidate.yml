@@ -1,0 +1,72 @@
+name: Maintainability churn candidate
+
+on:
+  schedule:
+    - cron: '17 2 * * 1'
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/maintainability-candidate.yml'
+      - 'tools/codex_assets/maintainability_evidence.py'
+      - 'tests/test_maintainability_evidence_candidate.py'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: maintainability-candidate
+  cancel-in-progress: false
+
+jobs:
+  churn-candidate:
+    if: github.repository == 'jiying2007/llm_agent'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout protected main full source history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up supported Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.11'
+
+      - name: Produce review-required Git history candidate only
+        shell: bash
+        run: |
+          set -euo pipefail
+          END_SHA="$(git rev-parse HEAD)"
+          CUTOFF="$(date -u -d '7 days ago' +'%Y-%m-%dT%H:%M:%SZ')"
+          START_SHA="$(git rev-list --first-parent --max-count=1 --before="$CUTOFF" "$END_SHA")"
+          SUMMARY=/tmp/maintainability-summary.json
+          if [[ -z "$START_SHA" || "$START_SHA" == "$END_SHA" ]]; then
+            printf '{"schema":"llm-agent-maintainability-candidate-run/v1","status":"not-available","reason":"insufficient-distinct-commits","promotion_authority":"none"}\n' > "$SUMMARY"
+            exit 0
+          fi
+          START_AT="$(git show -s --format=%cI "$START_SHA")"
+          END_AT="$(git show -s --format=%cI "$END_SHA")"
+          if [[ "$START_AT" == "$END_AT" ]]; then
+            printf '{"schema":"llm-agent-maintainability-candidate-run/v1","status":"not-available","reason":"equal-commit-timestamps","promotion_authority":"none"}\n' > "$SUMMARY"
+            exit 0
+          fi
+          CANDIDATE="/tmp/llm-maintainability-churn-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}.json"
+          python3 -m tools.codex_assets.maintainability_evidence \
+            --root . --repository-id llm-agent \
+            --revision-start "$START_SHA" --revision-end "$END_SHA" \
+            --window-started-at "$START_AT" --window-ended-at "$END_AT" \
+            --output "$CANDIDATE" --apply --summary-json | tee "$SUMMARY"
+
+      - name: Upload candidate-only evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: llm-maintainability-review-candidate
+          path: |
+            /tmp/maintainability-summary.json
+            /tmp/llm-maintainability-churn-*.json
+          if-no-files-found: error
+          retention-days: 14
