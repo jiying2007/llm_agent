@@ -5,6 +5,7 @@ import hashlib
 import json
 import re
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
@@ -13,8 +14,8 @@ from tools.codex_assets.intake_io import decode_json, read_bytes, read_json
 from tools.control_plane import runtime_chain
 from tools.control_plane.evidence_paths import resolve_regular_evidence_path
 from tools.control_plane.longitudinal_operation import (
-    MAX_EVENT_COUNT, MAX_EVENT_EVIDENCE_REFS, MAX_EVENT_LINE_BYTES,
-    MAX_EVENT_LOG_BYTES, MAX_FIELD_EVIDENCE_BYTES, MAX_JSON_DOCUMENT_BYTES,
+    MAX_EVENT_EVIDENCE_REFS, MAX_FIELD_EVIDENCE_BYTES, MAX_JSON_DOCUMENT_BYTES,
+    _read_events,
 )
 
 FULL_SHA = re.compile(r"^[0-9a-f]{40}$")
@@ -101,21 +102,11 @@ def _pilot_binding(root: Path, pin: dict[str, str]) -> dict[str, str]:
     if not isinstance(event_log, str):
         raise RuntimeError("Software-M5 pilot ledger event log is missing")
     event_path = _repo_evidence_path(root, event_log, "field event log")
-    # Share the field contract's byte, record and per-line ceilings, but do
-    # not treat the consumer pin check as LTA-04 terminal certification.
-    content = read_bytes(event_path, label="field event log", max_bytes=MAX_EVENT_LOG_BYTES)
-    if content.count(b"\n") + int(bool(content) and not content.endswith(b"\n")) > MAX_EVENT_COUNT:
-        raise RuntimeError("field event log exceeds record-count budget")
-    events: list[dict[str, Any]] = []
-    for lineno, raw in enumerate(content.split(b"\n"), 1):
-        if len(raw) > MAX_EVENT_LINE_BYTES:
-            raise RuntimeError(f"field event line {lineno} exceeds byte budget")
-        if not raw.strip():
-            continue
-        value = decode_json(raw, f"field event line {lineno}")
-        if not isinstance(value, dict):
-            raise RuntimeError(f"field event line {lineno} is not an object")
-        events.append(value)
+    # The longitudinal certifier is the canonical append-only event-chain
+    # validator (bounded stream, sequence, previous-hash, canonical event
+    # digest, timestamp and referenced-file digests). Reuse its parsing only:
+    # a verified pilot-start does NOT establish 30-day LTA-04 qualification.
+    events = _read_events(root, event_path, datetime.now(timezone.utc))
 
     candidates = [
         event for event in events

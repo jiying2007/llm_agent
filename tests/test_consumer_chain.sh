@@ -59,6 +59,9 @@ import sys
 from pathlib import Path
 
 from tools.control_plane import consumer_chain as consumer
+from tools.control_plane.longitudinal_operation import (
+    MAX_EVENT_LOG_BYTES, MAX_FIELD_EVIDENCE_BYTES, _digest,
+)
 
 source, root = map(Path, sys.argv[1:3])
 registry = root / "manifests/reference_pins.json"
@@ -94,22 +97,40 @@ try:
     event_path.write_bytes(original_events.replace(
         b'"event_hash":', b'"event_hash":"forged","event_hash":', 1
     ))
-    reject("ambiguous JSONL event", "duplicate JSON keys")
+    reject("ambiguous JSONL event", "duplicate JSON object key")
     event_path.write_bytes(original_events)
 
+    # A signed/hash-bound event can be rehashed by an attacker who controls
+    # a local fixture, but its evidence references must still be unique.
     duplicate = dict(independent, evidence=independent["evidence"] * 2)
+    duplicate.pop("event_hash")
+    duplicate["event_hash"] = _digest(duplicate)
     events[-1] = duplicate
     event_path.write_text("".join(json.dumps(e) + "\n" for e in events), encoding="utf-8")
-    reject("duplicate evidence ref", "invalid or duplicated")
+    reject("duplicate evidence ref", "event evidence references must be unique")
+    event_path.write_bytes(original_events)
+
+    changed = dict(independent, summary="tampered without event rehash")
+    events[-1] = changed
+    event_path.write_text("".join(json.dumps(e) + "\n" for e in events), encoding="utf-8")
+    reject("tampered event payload", "event_hash does not match content")
+    event_path.write_bytes(original_events)
+
+    broken = dict(independent, previous_hash="f" * 64)
+    broken.pop("event_hash")
+    broken["event_hash"] = _digest(broken)
+    events[-1] = broken
+    event_path.write_text("".join(json.dumps(e) + "\n" for e in events), encoding="utf-8")
+    reject("broken event chain", "previous_hash chain is broken")
     event_path.write_bytes(original_events)
 
     with event_path.open("wb") as handle:
-        handle.truncate(consumer.MAX_EVENT_LOG_BYTES + 1)
+        handle.truncate(MAX_EVENT_LOG_BYTES + 1)
     reject("oversized JSONL", "byte budget")
     event_path.write_bytes(original_events)
 
     with field_path.open("wb") as handle:
-        handle.truncate(consumer.MAX_FIELD_EVIDENCE_BYTES + 1)
+        handle.truncate(MAX_FIELD_EVIDENCE_BYTES + 1)
     reject("oversized evidence", "byte budget")
     field_path.write_bytes(original_field)
 
