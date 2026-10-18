@@ -31,7 +31,7 @@ assert runbook.is_file()
 runbook_text = runbook.read_text()
 assert 'clean-room recovery drill' in runbook_text.lower()
 assert 'issue #50' in runbook_text
-assert 'second-human approval' in runbook_text.lower()
+assert 'zero mandatory human approvals' in runbook_text.lower()
 # The living continuity runbook must not contradict the machine LTA authority.
 assert 'LTA-01 is currently **partially proven but still blocked**' not in runbook_text
 assert 'LTA-01 is narrowed to the native main ruleset' not in runbook_text

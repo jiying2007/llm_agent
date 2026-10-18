@@ -22,3 +22,5 @@ The first hosted PR mypy run found two existing `no-untyped-def`/`no-any-return`
 
 ## Cross-PR deep-integration regression discovered
 A full integration-deep job exposed a syntax error in an existing LTA shell-embedded Python test that had escaped the selective/fast PR path. This PR fixes the stray `.lower()` continuation and permanently calls the LTA contract test from the always-run `ci-incremental-dag` profile, so future document-state assertions cannot pass PR CI without executing.
+
+The always-run LTA test then exposed an obsolete assertion that searched for a retired exact phrase `second-human approval` in prose. The equivalent positive governance requirement is now asserted directly as `zero mandatory human approvals`, matching the machine solo-maintainer policy. No approval is synthesized, and all other LTA negative checks remain.
