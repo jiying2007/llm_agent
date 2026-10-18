@@ -2,14 +2,14 @@
 
 目标：验证第二位操作者是否能够独立安装、完成任务、识别失败并恢复；复用 Runtime Bundle、setup、Effect Comparator 和 Software M5 账本，不增加另一套认证层。
 
-状态：review-required 试点设计；尚未执行独立操作者试点。短期上手结果不能替代 [M5 认证计划](../software-m5-certification-plan.md) 的完整 campaign、两操作者及 30 天证据。
+状态：review-required **可选团队交接/第二操作者可用性试点**；尚未执行此独立试点。它不替代 Product M5 当前源码认证或 LTA-04 真实现场资格，也不向这两种资格新增“两操作者和30天”的强制条件。现行 M5 policy 只要求至少一位真实人类操作者；长期终态另按其自身机器合同认证。
 
 ## 先冻结输入
 
 | 输入 | 要求 |
 |---|---|
 | 源身份 | ADK clean commit/tree、bundle hash、Codex source/build/target、profile；由当前 policy 解析 |
-| 操作者 | 至少两位真实 human operator，使用匿名稳定 ID；不能用两个 Agent 代替 |
+| 操作者 | 本可选第二操作者交接试点需两位真实 human operator，使用匿名稳定 ID；不构成 Product M5 或 LTA-04 的强制操作者人数 |
 | 仓库 | 至少两个真实仓，其中一个符合 policy 的独立仓定义；不得从 cwd 推断独立性 |
 | 工作集 | 预先选择成功、失败、恢复、知识检索、发布准备各类任务；记录 accepted/rejected 及理由 |
 | baseline | 固定 runtime/model/环境/任务；隔离额外 Skills、Hooks、MCP、plugins，否则标记 not-comparable |
@@ -41,7 +41,7 @@ T4/T5 先在隔离目标演练，按真实观测标为 test；只有真实 field
 1. **本机候选**：修复和定向验证通过；根仓集成失败单列，不发布。
 2. **小范围试点**：明确操作者与仓库后完成 T1–T6，保持 report-only；重点验证输入、手工步骤和恢复可操作性。
 3. **效果比较**：在匹配 baseline 下比较真实任务结果；优化收益不足时逐项取消候选复杂度，保留安全与身份边界。
-4. **正式推广**：满足现有 policy 的 campaign / 周期 / 独立 review 后，由 owner 裁决。没有第二操作者或未达到周期就保持 pending，不凭 elapsed days 或模板表格升级状态。
+4. **团队交接试点结论**：缺少第二操作者时仅此可选团队试点保持 pending，不阻断正常研发或独立 Product M5/LTA-04 资格。正式推广仍依目标 policy 的真实 campaign、必要周期及真实 Owner 决策办理。
 
 ## 交付责任
 

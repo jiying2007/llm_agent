@@ -53,27 +53,13 @@ For an ADK release or promotion:
 
 ## 5. GitHub administration continuity
 
-Native repository settings are part of the operating system of the asset, not documentation-only state. LTA-01 is currently **partially proven but still blocked**.
+Native repository settings are a live control, not documentation-only state. The current machine authority is `manifests/long_term_asset_qualification.json` (`LTA-01`), checked against GitHub's actual main ruleset. **Never use this historical runbook as an independent pass/blocked status authority.**
 
-Already proven and durably recorded in `reports/long-term-assets/native-repository-governance-2026-09-15.json`:
+The LTA-01 ruleset and retirement of generic merged-PR custom deletion were completed through reviewed governance work (historical tracker issue #50). The current policy requires pull-request-mediated main changes, required status checks with strict/up-to-date enforcement, non-fast-forward/deletion protection, no unconditional bypass actors, and zero mandatory human approvals under solo maintenance. Ordinary merged-PR branch removal is native GitHub behavior; custom Branch GC is restricted to registered exact-SHA exceptional retirement proofs.
 
-- repository metadata reports `delete_branch_on_merge=true`;
-- PR #55 merged normally;
-- its merged head branch disappeared before the fresh-main custom Branch GC could delete it;
-- Branch GC run `34954493446` reported `candidates=[]` and `deleted=[]`, proving the custom GC did not perform that merged-branch deletion.
+After any ruleset, checkout, workflow, permission or branch-GC change, re-read the authoritative LTA contract and verify live ruleset settings through the existing `native-governance` checker. The relevant claim must be bound to the exact verification result. A missing API permission, changed ruleset or unverifiable check remains blocked; a prior PASS is not sufficient for a new claim.
 
-Still required before LTA-01 may become PASS:
-
-- a native repository ruleset covers `main`;
-- the ruleset requires PR-mediated normal mainline changes;
-- the ruleset preserves required automated CI/security checks;
-- the ruleset prevents destructive/non-fast-forward main updates;
-- the ruleset requires zero human approvals for the explicit solo-maintainer model;
-- the ruleset has no unconditional bypass that can silently skip automated gates.
-
-After the ruleset is directly observed, retire generic merged-PR deletion responsibility from custom Branch GC while retaining exceptional exact-SHA retirement proof paths, then require exact-head and fresh-main CI before closing issue #50.
-
-Because the repository is solo-maintained, the ruleset must not require an impossible second-human approval. Compensating automated controls must remain mandatory instead.
+The separate LTA-02 periodic R2 qualification is delegated to Digital Worker and is **nonblocking observation** in Root. LTA-03 recovery drill is already separately qualified; a historical receipt proves its own source only, and fresh recovery must be rerun when appropriate. LTA-04 continues to require authentic 30-day field outcomes and real owner review. Neither successful CI nor an immutable ADK Release grants current-source Product M5 authorization.
 
 ## 6. Account/workstation loss response
 
@@ -90,4 +76,4 @@ Secrets themselves must never be stored in this repository or in recovery receip
 
 ## 7. Terminal qualification rule
 
-Long-term asset qualification is separate from Product M5. `manifests/long_term_asset_qualification.json` is the canonical status contract. It may become terminal only when every blocking requirement has real evidence. LTA-03 clean-room recovery/rollback is qualified. LTA-01 is narrowed to the native main ruleset plus subsequent custom-GC subtraction; LTA-02 multi-runtime portability and LTA-04 longitudinal operating evidence remain independently fail-closed until their own acceptance criteria are met.
+Long-term asset qualification is separate from Product M5. `manifests/long_term_asset_qualification.json` is the canonical machine authority for current LTA-01..04 dispositions. LTA-01 governance and LTA-03 recovery have historical PASS evidence (subject to current-source/live drift checks), LTA-02 is delegated nonblocking R2 observation, and LTA-04 remains independently blocked on real field outcomes and registered human review. Product M5 remains a separate conditional current-source release gate; none of these statuses may be inferred from this prose alone.
