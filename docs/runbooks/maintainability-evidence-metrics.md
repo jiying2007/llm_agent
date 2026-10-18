@@ -30,6 +30,8 @@
 
 Evidence JSON 必须包含相同 identity/window/population、`generated_at` 和非空 records。Loader 逐级检查 root 到 evidence 文件的每个路径组件，任何 parent 或 leaf symlink 都会失败；之后再校验文件 hash、identity、source kind、revision/time window、freshness 和时间顺序。Observed value 始终从 records 重算，输入不能直接声明 observed。
 
+Git 历史候选采集使用既有 `tools.control_plane.process_budget.run_bounded`，在子进程运行时限制 stdout 16 MiB、stderr 64 KiB、完整运行和管道读取 60 秒，而非把全部 Git 输出读入内存后才比较大小。文字结果严格 UTF-8 解码，`ls-tree -z` 等 NUL 分隔结果保留原始 bytes。超限、超时和无效编码只能返回失败，不改变候选证据的身份与审核门禁。
+
 CLI 必须提供受管 `--repository-id`；root wrapper 固定为 `llm-agent`。Repository ID 必须与 `expected_repository_id` 和 source identity 一致。工具始终确认 revision start/end 都是当前 Git repository 中的 commit，并验证 start 是 end 的 ancestor。当前不支持 non-Git verifier 注入；若未来出现真实需求，必须另建 managed-verifier change，不能由普通 `evaluate()` 调用方传入 bypass callback。
 
 三类 metric 都必须覆盖 reviewed population：

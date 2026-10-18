@@ -70,6 +70,35 @@ printf '#!/usr/bin/env bash\nprintf test\n' >"$TMP_DIR/fixture/scripts/b.sh"
 git -C "$TMP_DIR/fixture" add scripts/b.sh
 git -C "$TMP_DIR/fixture" commit -q -m second
 
+# The native Git collector must enforce its stdout and time budgets while the
+# process is running, not after capturing a potentially unbounded buffer.
+PYTHONPATH="$ROOT" python3 - "$TMP_DIR/fixture" <<'PY'
+import sys
+from pathlib import Path
+from unittest.mock import patch
+
+from tools.codex_assets import maintainability_evidence as candidate
+from tools.codex_assets.maintainability_budget import BudgetError
+
+repository = Path(sys.argv[1])
+with patch.object(candidate, "run_bounded", wraps=candidate.run_bounded) as bounded:
+    revision = candidate._git(repository, ["rev-parse", "HEAD"]).strip()
+    assert len(revision) == 40, revision
+    binary = candidate._git(repository, ["ls-tree", "-r", "-z", "--name-only", "HEAD"], text=False)
+    assert isinstance(binary, bytes) and b"scripts/b.sh\0" in binary, binary
+    assert bounded.call_count == 2
+    assert bounded.call_args.kwargs["max_stdout"] == candidate.MAX_GIT_OUTPUT_BYTES
+    assert bounded.call_args.kwargs["timeout"] == candidate.MAX_GIT_SECONDS
+
+with patch.object(candidate, "MAX_GIT_OUTPUT_BYTES", 32):
+    try:
+        candidate._git(repository, ["rev-parse", "HEAD"])
+    except BudgetError as exc:
+        assert "runtime or output budget" in str(exc), str(exc)
+    else:
+        raise AssertionError("Git stdout limit was not enforced during a read")
+PY
+
 python3 - "$TMP_DIR/fixture" "$TMP_DIR/fail.json" "$TMP_DIR/warn.json" \
   "$TMP_DIR/bad-hash.json" "$TMP_DIR/bad-window.json" \
   "$TMP_DIR/evidence-budget.json" <<'PY'
