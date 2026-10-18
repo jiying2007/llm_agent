@@ -12,6 +12,7 @@ from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
+from tools.codex_assets.intake_io import IntakeError, decode_json, read_bytes
 from tools.control_plane.adk_interface import render_interface_lock
 from tools.control_plane.receipts import bind_receipt, write_receipt
 from tools.control_plane.status_projection import project, refresh_current_status
@@ -21,6 +22,9 @@ PROMOTION_SCHEMA = "llm-agent-adk-promotion/v4"
 INTERFACE_PATH = "manifests/adk_interface.lock.json"
 EVIDENCE_PATH = "reports/promotion/agent-dev-kit/promotion-evidence.json"
 ATTESTATION_PATH = "reports/promotion/agent-dev-kit/promotion-attestation.json"
+# Matches the shared Sigstore bundle input budget. Avoid unbounded or ambiguous
+# local staging even when the protected CI separately verifies the signature.
+MAX_PROMOTION_JSON_BYTES = 1024 * 1024
 PROMOTION_PATHS = (
     "agent-dev-kit",
     "adk.lock",
@@ -146,9 +150,17 @@ def _restore(path: Path, previous: str | None) -> None:
 
 
 def _read_json_text(path: Path, label: str) -> tuple[str, Mapping[str, object]]:
-    text = path.read_text(encoding="utf-8")
-    value = json.loads(text)
-    if not isinstance(value, Mapping):
+    # Reuse the canonical bounded descriptor-based reader; it rejects parent and
+    # leaf symlinks, non-regular files and concurrent file identity changes.
+    # Decode strict UTF-8 before JSON validation; preserve exact original text
+    # because the immutable Sigstore attestation signs those original bytes.
+    try:
+        raw = read_bytes(path, label=label, max_bytes=MAX_PROMOTION_JSON_BYTES)
+        text = raw.decode("utf-8", errors="strict")
+        value = decode_json(text, label)
+    except (IntakeError, UnicodeError) as exc:
+        raise RuntimeError(f"{label} is invalid or unsafe JSON") from exc
+    if not isinstance(value, dict):
         raise RuntimeError(f"{label} root must be a JSON object")
     return text, value
 
