@@ -62,7 +62,12 @@ def _load_object(path: Path, label: str) -> dict[str, Any]:
     return value
 
 
-def _git_blob_sha1(raw: bytes) -> str:
+def _git_blob_sha1(raw: bytes | Path) -> str:
+    # Preserve the existing internal Path helper used by symlink regression.
+    # Indexed evidence passes its already read bytes so hashing and parsing
+    # still consume one identical snapshot.
+    if isinstance(raw, Path):
+        raw = read_bytes(raw, label="Git blob evidence", max_bytes=MAX_TERMINAL_JSON_BYTES)
     digest = hashlib.sha1(usedforsecurity=False)
     digest.update(b"blob " + str(len(raw)).encode("ascii") + b"\0" + raw)
     return digest.hexdigest()
