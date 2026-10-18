@@ -56,7 +56,7 @@ def _path_matches(spec: str, changed: str) -> bool:
 
 def _git_changed_paths(root: Path, base: str, head: str, mode: str) -> list[str]:
     if not base or not head:
-        return []
+        raise ValueError("Git impact comparison requires both base and head")
     exists = subprocess.run(
         ["git", "-C", str(root), "cat-file", "-e", f"{base}^{{commit}}"],
         check=False,
@@ -64,7 +64,7 @@ def _git_changed_paths(root: Path, base: str, head: str, mode: str) -> list[str]
         stderr=subprocess.DEVNULL,
     )
     if exists.returncode != 0:
-        return []
+        raise ValueError("Git impact comparison base commit is unavailable")
     separator = "..." if mode == "three-dot" else ".."
     completed = subprocess.run(
         ["git", "-C", str(root), "diff", "--name-only", f"{base}{separator}{head}"],
