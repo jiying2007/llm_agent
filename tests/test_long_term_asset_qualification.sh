@@ -31,7 +31,22 @@ assert runbook.is_file()
 runbook_text = runbook.read_text()
 assert 'clean-room recovery drill' in runbook_text.lower()
 assert 'issue #50' in runbook_text
-assert 'second-human approval' in runbook_text.lower()
+assert 'second-human approval' in runbook_text
+# The living continuity runbook must not contradict the machine LTA authority.
+assert 'LTA-01 is currently **partially proven but still blocked**' not in runbook_text
+assert 'LTA-01 is narrowed to the native main ruleset' not in runbook_text
+assert 'delegated nonblocking R2 observation' in runbook_text
+assert 'LTA-04 remains independently blocked' in runbook_text
+assert 'canonical machine authority' in runbook_text
+team_pilot = (root / 'docs/runbooks/team-pilot-acceptance.md').read_text(encoding='utf-8')
+m5_plan = (root / 'docs/software-m5-certification-plan.md').read_text(encoding='utf-8')
+m5_policy = json.loads((root / 'manifests/software_m5_policy.json').read_text(encoding='utf-8'))
+assert m5_policy['field_qualification']['minimum_human_operators'] == 1
+assert '可选团队交接/第二操作者可用性试点' in team_pilot
+assert '不向这两种资格新增' in team_pilot
+assert '历史最后一次完整认证基线' in m5_plan
+assert '当前运行源码身份与产品放行状态' in m5_plan
+.lower()
 
 maintainer = lta['maintainer_model']
 assert maintainer['type'] == 'solo'

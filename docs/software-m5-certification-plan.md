@@ -2,16 +2,19 @@
 
 Software M5 采用 `llm-agent-software-m5-policy/v3`，目标是 **Production-qualified**。初次 M5 证明产品当前版本已经具备可发布的软件质量与真实使用证据；长期现场观察继续作为运营治理，不再阻塞首次 M5。
 
-## 当前认证基线
+## 历史最后一次完整认证基线
 
 - ADK：`251edf2b6654cf8719ad1d8a1b7c81ffd64ffe1c`
 - ADK tree：`6fc560322a64c9660e75cc568fded98927954283`
-- 当前版本：`5.0.0-rc.2`
+- 历史认证版本：`5.0.0-rc.2`
 - 独立真实软件仓：`digital-worker@4a94231d26df1aeaeba336e6a4e2327db5a3bd44`
 - 独立 pilot：`software-m5-v5-independent-pilot-20260912`
 - measured runtime：Codex runtime smoke
 - compatibility evidence：Claude Code owner attestation
 - qualification record：`reports/runtime-evidence/software-m5-production-qualification-2026-09-12.json`
+
+当前运行源码身份与产品放行状态必须从 `reports/current-status.md` 的自动生成区块及当次真实认证器读取。
+历史认证清单不能授权后续 ADK commit；当前研究工作区无需为继续开发伪造新的 Product M5 证据。
 
 ## 必须通过的硬门禁
 

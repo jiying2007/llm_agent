@@ -58,9 +58,12 @@ The durable Root evidence record is:
 
 `reports/runtime-evidence/knowledge-retention/g9-hub-handoff-2026-09-26.json`
 
-### Remaining authority
+### Historical capture versus current G9 decision
 
-The governed capture was subsequently applied through Knowledge Hub PR #124 and merged to Hub master `0fb7ed1e2dbd5f715b9b4382581d696081af1b8c`. The item is now `reviewing`, `manual-entry-pending-review`, `manual_validation_pending=true`, and `promotion=none`.\n\nG9 no longer has a software, dry-run, or mechanical-capture blocker. The only remaining blocker is a **real human Knowledge Hub owner lifecycle decision**. Automation must not fill `reviewed_by`, fabricate authorization, promote to active/archive, or infer a lifecycle outcome.
+The original Knowledge Hub PR #124 capture initially recorded a `reviewing` item without Owner approval. Its historical receipt and `remaining_blocker` field remain immutable; they describe the **past capture**, not current G9 status.
 
+A later genuine Owner lifecycle decision was independently recorded and is bound in `reports/runtime-evidence/knowledge-retention/evidence-index.json` alongside the historical handoff. The indexed decision was `activate`. **G9 is complete in the current terminal-closure backlog**; G21 and G22 remain separate external-evidence blockers.
+
+For current status run `llm-ctl terminal-closure --root . --summary-json` and verify the indexed decision. No future automation may generate `reviewed_by`, infer authorization or silently promote Knowledge Hub assets.
 
 Hub master post-merge Quality run `36218784210` completed successfully across Python 3.8–3.14, MCP 2026, engineering/supply-chain, and the final Quality gate. This validates the merged reviewing capture without changing its owner-review boundary.

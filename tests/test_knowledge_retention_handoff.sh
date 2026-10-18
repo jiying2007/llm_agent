@@ -60,4 +60,21 @@ assert value["authority_boundary"]["root_may_apply_or_promote"] is False, value
 assert value["remaining_blocker"]=="real-human-owner-lifecycle-decision-in-knowledge-hub", value
 PY
 
+python3 - "$ROOT" <<'PY'
+import json, sys
+from pathlib import Path
+root = Path(sys.argv[1])
+index = json.loads((root / 'reports/runtime-evidence/knowledge-retention/evidence-index.json').read_text())
+assert index['schema'] == 'llm-agent-knowledge-retention-evidence-index/v1'
+decision_ref = index['owner_decision']
+assert isinstance(decision_ref, dict) and decision_ref['git_blob_sha1']
+decision = json.loads((root / decision_ref['path']).read_text())
+assert decision['schema'] == 'llm-agent-g9-hub-owner-decision/v1'
+assert decision['lifecycle_decision'] in ('activate', 'archive', 'reject')
+assert decision['automation_generated'] is False
+doc = (root / 'docs/runbooks/knowledge-retention-handoff.md').read_text()
+assert 'G9 is complete in the current terminal-closure backlog' in doc
+assert 'only remaining blocker is a **real human' not in doc
+PY
+
 echo '[PASS] knowledge retention handoff is sanitized, Hub-evidenced, and owner-review bounded'
