@@ -59,7 +59,9 @@ import sys
 from pathlib import Path
 
 from tools.control_plane import consumer_chain as consumer
-from tools.control_plane.longitudinal_operation import _digest
+from tools.control_plane.longitudinal_operation import (
+    MAX_EVENT_LOG_BYTES, MAX_FIELD_EVIDENCE_BYTES, _digest,
+)
 
 source, root = map(Path, sys.argv[1:3])
 registry = root / "manifests/reference_pins.json"
@@ -123,12 +125,12 @@ try:
     event_path.write_bytes(original_events)
 
     with event_path.open("wb") as handle:
-        handle.truncate(consumer.MAX_EVENT_LOG_BYTES + 1)
+        handle.truncate(MAX_EVENT_LOG_BYTES + 1)
     reject("oversized JSONL", "byte budget")
     event_path.write_bytes(original_events)
 
     with field_path.open("wb") as handle:
-        handle.truncate(consumer.MAX_FIELD_EVIDENCE_BYTES + 1)
+        handle.truncate(MAX_FIELD_EVIDENCE_BYTES + 1)
     reject("oversized evidence", "byte budget")
     field_path.write_bytes(original_field)
 
