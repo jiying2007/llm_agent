@@ -9,14 +9,32 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
+from tools.codex_assets.intake_io import decode_json, read_bytes, read_json
 from tools.control_plane import runtime_chain
+from tools.control_plane.evidence_paths import resolve_regular_evidence_path
+from tools.control_plane.longitudinal_operation import (
+    MAX_EVENT_COUNT, MAX_EVENT_EVIDENCE_REFS, MAX_EVENT_LINE_BYTES,
+    MAX_EVENT_LOG_BYTES, MAX_FIELD_EVIDENCE_BYTES, MAX_JSON_DOCUMENT_BYTES,
+)
 
 FULL_SHA = re.compile(r"^[0-9a-f]{40}$")
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
 
 
 def _json(path: Path) -> Any:
-    return json.loads(path.read_text(encoding="utf-8"))
+    return read_json(path, label="consumer-chain JSON", max_bytes=MAX_JSON_DOCUMENT_BYTES)
+
+
+def _repo_evidence_path(root: Path, raw: str, label: str) -> Path:
+    if not isinstance(raw, str) or not raw or Path(raw).is_absolute() or ".." in Path(raw).parts:
+        raise RuntimeError(f"{label} must be a repository-relative path")
+    try:
+        path = resolve_regular_evidence_path(root, Path(raw), label=label)
+    except ValueError as exc:
+        raise RuntimeError(str(exc)) from exc
+    if path.relative_to(root).as_posix() != raw:
+        raise RuntimeError(f"{label} must use its canonical relative path")
+    return path
 
 
 def _repository_slug(url: str) -> str:
@@ -37,6 +55,8 @@ def _repository_slug(url: str) -> str:
 
 def _digital_worker_pin(root: Path) -> dict[str, str]:
     registry = _json(root / "manifests/reference_pins.json")
+    if not isinstance(registry, dict):
+        raise RuntimeError("reference pin registry must be a JSON object")
     if registry.get("schema") != "llm-agent-reference-pins/v2":
         raise RuntimeError("consumer chain requires reference-pins/v2")
     policy = registry.get("policy", {})
@@ -62,6 +82,8 @@ def _digital_worker_pin(root: Path) -> dict[str, str]:
 
 def _pilot_binding(root: Path, pin: dict[str, str]) -> dict[str, str]:
     ledger = _json(root / "manifests/software_m5_pilot_ledger.json")
+    if not isinstance(ledger, dict):
+        raise RuntimeError("Software M5 pilot ledger must be a JSON object")
     repositories = {
         item.get("id"): item
         for item in ledger.get("repositories", [])
@@ -78,11 +100,19 @@ def _pilot_binding(root: Path, pin: dict[str, str]) -> dict[str, str]:
     event_log = ledger.get("event_log")
     if not isinstance(event_log, str):
         raise RuntimeError("Software-M5 pilot ledger event log is missing")
+    event_path = _repo_evidence_path(root, event_log, "field event log")
+    # Share the field contract's byte, record and per-line ceilings, but do
+    # not treat the consumer pin check as LTA-04 terminal certification.
+    content = read_bytes(event_path, label="field event log", max_bytes=MAX_EVENT_LOG_BYTES)
+    if content.count(b"\n") + int(bool(content) and not content.endswith(b"\n")) > MAX_EVENT_COUNT:
+        raise RuntimeError("field event log exceeds record-count budget")
     events: list[dict[str, Any]] = []
-    for lineno, raw in enumerate((root / event_log).read_text(encoding="utf-8").splitlines(), 1):
+    for lineno, raw in enumerate(content.split(b"\n"), 1):
+        if len(raw) > MAX_EVENT_LINE_BYTES:
+            raise RuntimeError(f"field event line {lineno} exceeds byte budget")
         if not raw.strip():
             continue
-        value = json.loads(raw)
+        value = decode_json(raw, f"field event line {lineno}")
         if not isinstance(value, dict):
             raise RuntimeError(f"field event line {lineno} is not an object")
         events.append(value)
@@ -104,21 +134,29 @@ def _pilot_binding(root: Path, pin: dict[str, str]) -> dict[str, str]:
     evidence_digests = event.get("evidence_sha256")
     if not isinstance(evidence_paths, list) or not isinstance(evidence_digests, dict):
         raise RuntimeError("digital-worker pilot event evidence binding is invalid")
+    if (
+        not evidence_paths or len(evidence_paths) > MAX_EVENT_EVIDENCE_REFS
+        or not all(isinstance(ref, str) and ref for ref in evidence_paths)
+        or len(set(evidence_paths)) != len(evidence_paths)
+        or set(evidence_digests) != set(evidence_paths)
+    ):
+        raise RuntimeError("digital-worker pilot evidence references are invalid or duplicated")
 
     matched: list[str] = []
     for relative in evidence_paths:
-        if not isinstance(relative, str):
-            continue
-        path = root / relative
-        actual_sha256 = hashlib.sha256(path.read_bytes()).hexdigest()
+        path = _repo_evidence_path(root, relative, "field evidence")
+        content = read_bytes(path, label="field evidence", max_bytes=MAX_FIELD_EVIDENCE_BYTES)
+        actual_sha256 = hashlib.sha256(content).hexdigest()
         if evidence_digests.get(relative) != actual_sha256:
             raise RuntimeError(f"field evidence digest drift: {relative}")
         if path.suffix != ".json":
             continue
-        evidence = _json(path)
-        if evidence.get("schema") != "llm-agent-m5-independent-pilot-start/v1":
+        evidence = decode_json(content, "independent pilot start evidence")
+        if not isinstance(evidence, dict) or evidence.get("schema") != "llm-agent-m5-independent-pilot-start/v1":
             continue
         pilot_repo = evidence.get("pilot_repository", {})
+        if not isinstance(pilot_repo, dict):
+            continue
         if (
             pilot_repo.get("id") == pin["id"]
             and pilot_repo.get("path") == pin["path"]

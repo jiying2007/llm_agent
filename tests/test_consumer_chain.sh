@@ -51,4 +51,95 @@ if (
   exit 1
 fi
 
-echo '[PASS] ADK release -> Codex -> digital-worker consumer identity is exact and fail-closed'
+# Deliberately mutate only the disposable copied repository. The consumer
+# chain must not read arbitrary host paths, symlinks, or unbounded evidence.
+PYTHONPATH="$ROOT" python3 - "$ROOT" "$TAMPERED" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+from tools.control_plane import consumer_chain as consumer
+
+source, root = map(Path, sys.argv[1:3])
+registry = root / "manifests/reference_pins.json"
+registry.write_bytes((source / "manifests/reference_pins.json").read_bytes())
+pin = consumer._digital_worker_pin(root)
+baseline = consumer._pilot_binding(root, pin)
+assert len(baseline["event_hash"]) == 64, baseline
+
+ledger_path = root / "manifests/software_m5_pilot_ledger.json"
+original_ledger = ledger_path.read_bytes()
+ledger = json.loads(original_ledger)
+event_path = root / ledger["event_log"]
+original_events = event_path.read_bytes()
+events = [json.loads(line) for line in original_events.splitlines()]
+independent = next(event for event in events if event.get("repository_id") == "digital-worker")
+field_path = root / independent["evidence"][0]
+original_field = field_path.read_bytes()
+
+def reject(label, expected):
+    try:
+        consumer._pilot_binding(root, pin)
+    except (OSError, ValueError, RuntimeError) as exc:
+        assert expected in str(exc), (label, str(exc))
+    else:
+        raise AssertionError(f"{label} incorrectly passed consumer evidence binding")
+
+try:
+    modified = dict(ledger, event_log="../outside.jsonl")
+    ledger_path.write_text(json.dumps(modified), encoding="utf-8")
+    reject("event-log traversal", "repository-relative path")
+    ledger_path.write_bytes(original_ledger)
+
+    event_path.write_bytes(original_events.replace(
+        b'"event_hash":', b'"event_hash":"forged","event_hash":', 1
+    ))
+    reject("ambiguous JSONL event", "duplicate JSON keys")
+    event_path.write_bytes(original_events)
+
+    duplicate = dict(independent, evidence=independent["evidence"] * 2)
+    events[-1] = duplicate
+    event_path.write_text("".join(json.dumps(e) + "\n" for e in events), encoding="utf-8")
+    reject("duplicate evidence ref", "invalid or duplicated")
+    event_path.write_bytes(original_events)
+
+    with event_path.open("wb") as handle:
+        handle.truncate(consumer.MAX_EVENT_LOG_BYTES + 1)
+    reject("oversized JSONL", "byte budget")
+    event_path.write_bytes(original_events)
+
+    with field_path.open("wb") as handle:
+        handle.truncate(consumer.MAX_FIELD_EVIDENCE_BYTES + 1)
+    reject("oversized evidence", "byte budget")
+    field_path.write_bytes(original_field)
+
+    alias = event_path.with_name("consumer-chain-symlink-original.jsonl")
+    alias.write_bytes(original_events)
+    event_path.unlink()
+    event_path.symlink_to(alias.name)
+    reject("event-log symlink", "symlink")
+    event_path.unlink()
+    event_path.write_bytes(original_events)
+    alias.unlink()
+
+    alias = field_path.with_name("consumer-chain-symlink-original.json")
+    alias.write_bytes(original_field)
+    field_path.unlink()
+    field_path.symlink_to(alias.name)
+    reject("field-evidence symlink", "symlink")
+    field_path.unlink()
+    field_path.write_bytes(original_field)
+    alias.unlink()
+finally:
+    ledger_path.write_bytes(original_ledger)
+    if event_path.is_symlink():
+        event_path.unlink()
+    event_path.write_bytes(original_events)
+    if field_path.is_symlink():
+        field_path.unlink()
+    field_path.write_bytes(original_field)
+
+assert consumer._pilot_binding(root, pin) == baseline
+PY
+
+echo '[PASS] ADK release -> Codex -> digital-worker consumer identity is exact, bounded and fail-closed'
