@@ -239,4 +239,100 @@ fi
   exit 1
 }
 
+
+# Portable promotion inputs are untrusted until the *same* strict JSON and
+# bounded regular-file contract used by the evidence verifier accepts them.
+# These all previously parsed under json.loads/read_text and must fail before
+# any six-path transaction is staged.
+python3 - "$EVIDENCE" "$ATTESTATION" "$NEW_ADK" "$NEW_TREE" "$NEW_MANIFEST" "$TMP_DIR" <<'PY'
+import json
+import sys
+from pathlib import Path
+from tools.control_plane.adk_promotion import (
+    CandidateIdentity, MAX_PROMOTION_JSON_BYTES, _validate_portable_inputs,
+)
+evidence_path, attestation_path, commit, tree, manifest_blob, tmpdir = sys.argv[1:]
+root = Path(tmpdir)
+identity = CandidateIdentity(
+    version="5.0.0-rc.2", commit=commit, tree=tree, manifest_blob=manifest_blob,
+)
+clean = Path(evidence_path).read_text(encoding="utf-8")
+good_evidence, good_attestation = _validate_portable_inputs(
+    identity, Path(evidence_path), Path(attestation_path),
+)
+assert good_evidence == clean
+assert good_attestation == Path(attestation_path).read_text(encoding="utf-8")
+
+invalid = {
+    "duplicate-top-level": clean.replace(
+        '"schema":"adk-promotion-evidence/v1"',
+        '"schema":"ignored","schema":"adk-promotion-evidence/v1"', 1,
+    ),
+    "duplicate-nested-source": clean.replace(
+        '"commit":"' + commit + '"',
+        '"commit":"' + "0" * 40 + '","commit":"' + commit + '"', 1,
+    ),
+    "nonfinite-literal": clean.replace(
+        '"schema":"adk-promotion-evidence/v1"',
+        '"untrusted":NaN,"schema":"adk-promotion-evidence/v1"', 1,
+    ),
+    "nonfinite-overflow": clean.replace(
+        '"schema":"adk-promotion-evidence/v1"',
+        '"untrusted":1e999,"schema":"adk-promotion-evidence/v1"', 1,
+    ),
+    "oversized-input": clean + (" " * (MAX_PROMOTION_JSON_BYTES + 1)),
+}
+for label, content in invalid.items():
+    filename = root / ("bad-promotion-" + label + ".json")
+    filename.write_text(content, encoding="utf-8")
+    try:
+        _validate_portable_inputs(identity, filename, Path(attestation_path))
+    except RuntimeError:
+        pass
+    else:
+        raise AssertionError("unsafe promotion evidence was accepted: " + label)
+
+# Apply identical restrictions to the attestation bundle, not just evidence.
+bundle_value = Path(attestation_path).read_text(encoding="utf-8")
+bad_attestation = root / "bad-attestation.json"
+# Deliberately repeat the existing key: standard json.loads would retain the
+# later value, masking the ambiguity.
+bad_attestation.write_text(
+    '{"mediaType":"ignored",' + bundle_value.lstrip()[1:], encoding="utf-8"
+)
+try:
+    _validate_portable_inputs(identity, Path(evidence_path), bad_attestation)
+except RuntimeError:
+    pass
+else:
+    raise AssertionError("duplicate attestation key accepted")
+
+leaf_link = root / "bad-evidence-link.json"
+leaf_link.symlink_to(Path(evidence_path))
+nested_link = root / "bad-parent-link"
+nested_link.symlink_to(root, target_is_directory=True)
+for label, unsafe in (
+    ("symlink-leaf", leaf_link),
+    ("symlink-parent", nested_link / Path(evidence_path).name),
+):
+    if label == "symlink-parent":
+        (root / Path(evidence_path).name).write_text(clean, encoding="utf-8")
+    try:
+        _validate_portable_inputs(identity, unsafe, Path(attestation_path))
+    except RuntimeError:
+        pass
+    else:
+        raise AssertionError("unsafe promotion path was accepted: " + label)
+
+invalid_utf8 = root / "bad-utf8.json"
+invalid_utf8.write_bytes(clean.encode("utf-8") + bytes([0xff]))
+try:
+    _validate_portable_inputs(identity, invalid_utf8, Path(attestation_path))
+except RuntimeError:
+    pass
+else:
+    raise AssertionError("invalid UTF-8 promotion evidence accepted")
+print("[PASS] promotion preflight rejects duplicate/nonfinite/oversized/symlinked JSON")
+PY
+
 echo '[PASS] ADK promotion stages one six-path source+evidence transaction and rolls back atomically'
