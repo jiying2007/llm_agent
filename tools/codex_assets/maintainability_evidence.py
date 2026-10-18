@@ -13,6 +13,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Mapping, Optional, Sequence
 
+from tools.control_plane.process_budget import ProcessBudgetError, run_bounded
+
 from .maintainability_budget import (
     BudgetError,
     EVIDENCE_SCHEMA,
@@ -25,23 +27,31 @@ from .maintainability_budget import (
 CANDIDATE_SCHEMA = "llm-agent-maintainability-evidence-candidate/v1"
 UTC = timezone.utc
 MAX_GIT_OUTPUT_BYTES = 16 * 1024 * 1024
+MAX_GIT_STDERR_BYTES = 64 * 1024
+MAX_GIT_SECONDS = 60
 
 
 def _git(root: Path, args: Sequence[str], *, text: bool = True) -> Any:
-    result = subprocess.run(
-        ["git", "-C", str(root), *args],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        check=False,
-        text=text,
-    )
+    # Do not capture an unbounded Git response and only check its size after
+    # subprocess.run has already allocated it. Enforce the byte and wall-clock
+    # budgets during concurrent pipe reads, including inherited descriptors.
+    try:
+        result = run_bounded(
+            ["git", "-C", str(root), *args],
+            timeout=MAX_GIT_SECONDS,
+            max_stdout=MAX_GIT_OUTPUT_BYTES,
+            max_stderr=MAX_GIT_STDERR_BYTES,
+        )
+    except ProcessBudgetError as exc:
+        raise BudgetError("Git evidence command exceeded runtime or output budget: {}".format(args[0])) from exc
     if result.returncode != 0:
         raise BudgetError("Git evidence command failed: {}".format(args[0]))
-    output = result.stdout
-    size = len(output.encode("utf-8")) if isinstance(output, str) else len(output)
-    if size > MAX_GIT_OUTPUT_BYTES:
-        raise BudgetError("Git evidence output exceeds bounded size")
-    return output
+    if not text:
+        return result.stdout
+    try:
+        return result.stdout.decode("utf-8", errors="strict")
+    except UnicodeDecodeError as exc:
+        raise BudgetError("Git evidence output is not valid UTF-8") from exc
 
 
 def _commit(root: Path, revision: str) -> str:
