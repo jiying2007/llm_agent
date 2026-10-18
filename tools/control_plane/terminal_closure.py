@@ -8,11 +8,14 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
+from tools.codex_assets.intake_io import IntakeError, decode_json, read_bytes, read_json
+
 from .effect_readiness import project as project_effect_readiness
 from .evidence_paths import resolve_regular_evidence_path
 from .native_target_readiness import project as project_native_readiness
 
 SCHEMA = "llm-agent-terminal-closure/v1"
+MAX_TERMINAL_JSON_BYTES = 4 * 1024 * 1024
 BACKLOG_PATH = Path("manifests/comprehensive_optimization_backlog.json")
 G9_EVIDENCE_INDEX = Path(
     "reports/runtime-evidence/knowledge-retention/evidence-index.json"
@@ -48,16 +51,18 @@ def _external_tracking(item_id: str, item: dict[str, Any]) -> dict[str, Any] | N
 
 
 def _load_object(path: Path, label: str) -> dict[str, Any]:
-    if path.is_symlink() or not path.is_file():
-        raise ValueError(f"{label} is missing or unsafe: {path}")
-    value = json.loads(path.read_text(encoding="utf-8"))
+    # The existing intake authority enforces regular-file identity, symlink
+    # rejection and bounded strict JSON (including nested duplicate keys).
+    try:
+        value = read_json(path, label=label, max_bytes=MAX_TERMINAL_JSON_BYTES)
+    except IntakeError as exc:
+        raise ValueError(f"{label} is missing, invalid or unsafe") from exc
     if not isinstance(value, dict):
         raise ValueError(f"{label} must be a JSON object")
     return value
 
 
-def _git_blob_sha1(path: Path) -> str:
-    raw = path.read_bytes()
+def _git_blob_sha1(raw: bytes) -> str:
     digest = hashlib.sha1(usedforsecurity=False)
     digest.update(b"blob " + str(len(raw)).encode("ascii") + b"\0" + raw)
     return digest.hexdigest()
@@ -98,10 +103,22 @@ def _indexed_object(
         or not path.is_file()
     ):
         raise ValueError(f"{label} path is missing or unsafe")
-    actual = _git_blob_sha1(path)
-    if actual != expected:
-        raise ValueError(f"{label} git blob identity mismatch")
-    return _load_object(path, label), path.relative_to(root).as_posix()
+    canonical_path = path.relative_to(root).as_posix()
+    if path_value != canonical_path:
+        raise ValueError(f"{label} path must be canonical")
+    try:
+        # Verify the Git blob and parse the exact same bounded bytes. Reopening
+        # after hashing permits a separate parser view if a file changes.
+        raw = read_bytes(path, label=label, max_bytes=MAX_TERMINAL_JSON_BYTES)
+        actual = _git_blob_sha1(raw)
+        if actual != expected:
+            raise ValueError(f"{label} git blob identity mismatch")
+        value = decode_json(raw, label)
+    except IntakeError as exc:
+        raise ValueError(f"{label} evidence is invalid or unsafe") from exc
+    if not isinstance(value, dict):
+        raise ValueError(f"{label} must be a JSON object")
+    return value, canonical_path
 
 
 def _owner_decision(value: dict[str, Any]) -> dict[str, Any]:

@@ -48,6 +48,9 @@ jobs:
       - name: Verify bounded cache-only intake
         run: bash tests/test_intake_hardening.sh
 
+      - name: Verify bounded terminal evidence snapshot
+        run: bash tests/test_terminal_closure_input_bounds.sh
+
       - name: Verify bounded Git maintainability evidence collection
         run: bash tests/test_maintainability_git_io.sh
 
