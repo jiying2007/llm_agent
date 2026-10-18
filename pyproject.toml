@@ -41,4 +41,7 @@ files = [
   "tools/control_plane/impact.py",
   "tools/control_plane/process_budget.py",
   "tools/control_plane/receipts.py",
+  "tools/control_plane/evidence_paths.py",
+  "tools/control_plane/longitudinal_operation.py",
+  "tools/control_plane/consumer_chain.py",
 ]

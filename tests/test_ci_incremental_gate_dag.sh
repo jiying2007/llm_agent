@@ -236,6 +236,14 @@ assert "'release_authorized': False" in github
 assert 'name = "llm-agent-control-plane"' in pyproject
 assert 'llm-ctl = "tools.control_plane.cli:main"' in pyproject
 assert 'files = [' in pyproject and '"tools/control_plane/impact.py"' in pyproject
+# High-risk field and consumer evidence readers must stay in mandatory strict mypy.
+for typed_module in (
+    'tools/control_plane/evidence_paths.py',
+    'tools/control_plane/longitudinal_operation.py',
+    'tools/control_plane/consumer_chain.py',
+):
+    assert '"' + typed_module + '"' in pyproject, typed_module
+assert 'python -m mypy --config-file pyproject.toml' in github
 
 # Native delete-on-merge now owns ordinary merged PR branches. Custom Branch GC
 # remains only for exceptional, explicitly registered exact-SHA retirement proofs.
