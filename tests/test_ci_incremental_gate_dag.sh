@@ -173,6 +173,22 @@ assert workflow["required"] is True and "ci-incremental-dag" in workflow["group_
 runtime = impact("manifests/runtime_targets.json")
 assert runtime["required"] is True and "harden-readiness" in runtime["group_gates"], runtime
 
+# Implementation, test, script and manifest changes must not skip deep integration.
+# The existing root-regression Gate owns these inputs, not a parallel path list.
+for critical_path in (
+    "tools/codex_assets/practice_intake.py",
+    "tools/codex_assets/runtime_smoke_evidence.py",
+    "tools/control_plane/longitudinal_operation.py",
+    "tests/test_practice_intake.sh",
+    "scripts/check-adk-harden-readiness.sh",
+    "manifests/software_m5_policy.json",
+):
+    critical = impact(critical_path)
+    assert critical["required"] is True, (critical_path, critical)
+    assert "root-regression" in critical["group_gates"], (critical_path, critical)
+    assert critical["reason"].startswith("gate-impact:"), (critical_path, critical)
+
+
 docs = impact("docs/architecture/something.md")
 assert docs["required"] is False, docs
 

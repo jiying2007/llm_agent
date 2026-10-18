@@ -396,7 +396,10 @@
         "--fail-fast"
       ],
       "timeout_seconds": 1800,
-      "evidence_class": "test"
+      "evidence_class": "test",
+      "impact_groups": [
+        "integration-deep"
+      ]
     },
     "harden-readiness": {
       "owner": "llm_agent",
