@@ -6,9 +6,9 @@ import os
 import subprocess
 import tempfile
 import unittest
-from unittest.mock import patch
 from datetime import datetime, timezone
 from pathlib import Path
+from unittest.mock import patch
 
 from tools.codex_assets.maintainability_budget import BudgetError, evaluate
 from tools.codex_assets import maintainability_budget as budget
