@@ -30,6 +30,9 @@
 
 Evidence JSON 必须包含相同 identity/window/population、`generated_at` 和非空 records。Loader 逐级检查 root 到 evidence 文件的每个路径组件，任何 parent 或 leaf symlink 都会失败；之后再校验文件 hash、identity、source kind、revision/time window、freshness 和时间顺序。Observed value 始终从 records 重算，输入不能直接声明 observed。
 
+所有维护性 evidence JSON 使用现有 `intake_io.read_bytes` 一次性读取且**至多 16 MiB**，读出的同一字节序列同时用于 SHA-256 与 `decode_json`；拒绝重复 JSON 键（包括嵌套重复键）、`NaN`/`Infinity`、非 UTF-8、超深 JSON、非普通文件、符号链接以及读取期间文件身份变化。不能用相互矛盾的两次文件快照组成一个看似正确的收据。该收紧只影响存在真实 evidence source 的消费方；当前三个缺失的维护性输入继续报告 `not-available`，不会伪造观测值。
+
+
 Churn 计算改为**first-parent 主线窗口内逐提交 `--numstat` 累加**，而非起止提交的净 `git diff`。撤销后的返工仍被计数，窗口内新建又删除的文件不再从人口集合中消失；merge 按 first-parent diff 仅计一次。起始版本必须位于终点的 first-parent 历史，否则 fail-closed。候选版本升级为 `llm-agent-maintainability-evidence-candidate/v2` 并携带计算语义供复核；既有未经复核、采用端点差异的旧候选不应冒充当前维护性基线。
 
 Git 历史候选采集使用既有 `tools.control_plane.process_budget.run_bounded`，在子进程运行时限制 stdout 16 MiB、stderr 64 KiB、完整运行和管道读取 60 秒，而非把全部 Git 输出读入内存后才比较大小。文字结果严格 UTF-8 解码，`ls-tree -z` 等 NUL 分隔结果保留原始 bytes。超限、超时和无效编码只能返回失败，不改变候选证据的身份与审核门禁。

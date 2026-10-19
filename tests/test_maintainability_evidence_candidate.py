@@ -8,8 +8,10 @@ import tempfile
 import unittest
 from datetime import datetime, timezone
 from pathlib import Path
+from unittest.mock import patch
 
 from tools.codex_assets.maintainability_budget import BudgetError, evaluate
+from tools.codex_assets import maintainability_budget as budget
 from tools.codex_assets.maintainability_evidence import generate_churn_candidate, write_candidate
 
 
@@ -113,6 +115,44 @@ class MaintainabilityEvidenceCandidateTest(unittest.TestCase):
         report = evaluate(self.root, config_path, False, "fixture-repo", as_of=AS_OF)
         self.assertEqual("measured", report["semantic_axes"]["churn"]["status"])
         self.assertEqual(1, report["semantic_axes"]["churn"]["observed"])
+
+        # A self-consistent source SHA does NOT authorize ambiguous evidence.
+        # Mutate the evidence and its declared digest together to bypass
+        # a mere hash mismatch and reach the actual strict decoder.
+        original = evidence_path.read_bytes()
+        duplicate = json.dumps(evidence, ensure_ascii=False).replace(
+            '"population": {', '"population": {"count": 2, ', 1,
+        ).encode("utf-8")
+        self.assertNotEqual(original, duplicate)
+        nan = json.dumps(evidence, ensure_ascii=False).replace(
+            '"additions": 1', '"additions": NaN', 1,
+        ).encode("utf-8")
+        self.assertIn(b"NaN", nan)
+
+        for label, invalid in (("duplicate-key", duplicate), ("nonfinite", nan)):
+            with self.subTest(label=label):
+                evidence_path.write_bytes(invalid)
+                config["maintainability_budgets"]["evidence_metrics"][0]["source"]["sha256"] = (
+                    hashlib.sha256(invalid).hexdigest()
+                )
+                config_path.write_text(json.dumps(config), encoding="utf-8")
+                with self.assertRaisesRegex(BudgetError, "invalid JSON"):
+                    evaluate(self.root, config_path, False, "fixture-repo", as_of=AS_OF)
+
+        # Size budget is checked on a bounded regular-file descriptor before
+        # any duplicate full-file read; no allocation of giant test blobs.
+        evidence_path.write_bytes(original)
+        config["maintainability_budgets"]["evidence_metrics"][0]["source"]["sha256"] = (
+            hashlib.sha256(original).hexdigest()
+        )
+        config_path.write_text(json.dumps(config), encoding="utf-8")
+        with patch.object(budget, "MAX_EVIDENCE_JSON_BYTES", len(original) - 1):
+            with self.assertRaisesRegex(BudgetError, "byte budget"):
+                evaluate(self.root, config_path, False, "fixture-repo", as_of=AS_OF)
+        # Return to original bytes to prove source identity and schema survived.
+        self.assertEqual(
+            1, evaluate(self.root, config_path, False, "fixture-repo", as_of=AS_OF)["semantic_axes"]["churn"]["observed"]
+        )
 
     def test_reverts_and_transient_files_count_as_real_churn(self) -> None:
         # All endpoint file contents match the baseline after the revert.

@@ -14,6 +14,8 @@ import time
 from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from pathlib import Path
+
+from .intake_io import IntakeError, decode_json, read_bytes
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
 
@@ -24,6 +26,7 @@ EVIDENCE_METRICS = {
     "inactive_assets": "sanitized-invocation-ledger",
 }
 EVIDENCE_SCHEMA = "llm-agent-maintainability-evidence/v1"
+MAX_EVIDENCE_JSON_BYTES = 16 * 1024 * 1024
 HEX64 = re.compile(r"^[0-9a-f]{64}$")
 IDENTIFIER = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$")
 UTC = timezone.utc
@@ -508,13 +511,19 @@ def _load_evidence(
     path = _contained_path(root, str(source["path"]))
     if path.is_symlink() or not path.is_file():
         raise BudgetError("evidence source is missing or unsafe: {0}".format(source["path"]))
-    actual_sha256 = hashlib.sha256(path.read_bytes()).hexdigest()
+    # Bind the SHA-256 and strict JSON decoder to ONE bounded descriptor read:
+    # never hash one file snapshot and parse a second, potentially replaced one.
+    try:
+        raw = read_bytes(path, label="maintainability evidence", max_bytes=MAX_EVIDENCE_JSON_BYTES)
+    except IntakeError as exc:
+        raise BudgetError("maintainability evidence source is unsafe or exceeds its byte budget") from exc
+    actual_sha256 = hashlib.sha256(raw).hexdigest()
     if actual_sha256 != source["sha256"]:
         raise BudgetError("evidence source digest mismatch: {0}".format(source["path"]))
     try:
-        value = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
-        raise BudgetError("evidence source is invalid JSON: {0}".format(source["path"])) from exc
+        value = decode_json(raw, "maintainability evidence")
+    except IntakeError as exc:
+        raise BudgetError("evidence source is invalid JSON (ambiguous or malformed)") from exc
     _reject_secrets(value, "maintainability evidence")
     required = {
         "schema", "metric", "repository_id", "source_kind", "window", "population",
