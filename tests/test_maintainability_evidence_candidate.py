@@ -114,6 +114,80 @@ class MaintainabilityEvidenceCandidateTest(unittest.TestCase):
         self.assertEqual("measured", report["semantic_axes"]["churn"]["status"])
         self.assertEqual(1, report["semantic_axes"]["churn"]["observed"])
 
+    def test_reverts_and_transient_files_count_as_real_churn(self) -> None:
+        # All endpoint file contents match the baseline after the revert.
+        third_env = dict(
+            os.environ, GIT_AUTHOR_DATE="2026-08-29T12:15:00Z",
+            GIT_COMMITTER_DATE="2026-08-29T12:15:00Z",
+        )
+        (self.root / "temporary.txt").write_text("present\n", encoding="utf-8")
+        run(self.root, "add", "-A")
+        run(self.root, "commit", "-q", "-m", "create temporary", env=third_env)
+
+        fourth_env = dict(
+            os.environ, GIT_AUTHOR_DATE="2026-08-29T12:30:00Z",
+            GIT_COMMITTER_DATE="2026-08-29T12:30:00Z",
+        )
+        (self.root / "a.txt").write_text("one\n", encoding="utf-8")
+        (self.root / "b.txt").unlink()
+        (self.root / "temporary.txt").unlink()
+        run(self.root, "add", "-A")
+        run(self.root, "commit", "-q", "-m", "revert all", env=fourth_env)
+        final = run(self.root, "rev-parse", "HEAD")
+        self.assertEqual("", run(self.root, "diff", "--numstat", self.start, final))
+
+        candidate = generate_churn_candidate(
+            self.root, "fixture-repo", self.start, final,
+            WINDOW_START, WINDOW_END, generated_at=AS_OF,
+        )
+        self.assertEqual("llm-agent-maintainability-evidence-candidate/v2", candidate["schema"])
+        self.assertEqual("sum-per-commit-numstat", candidate["computation"]["churn_semantics"])
+        records = {item["path"]: item for item in candidate["evidence"]["records"]}
+        self.assertEqual({"a.txt", "b.txt", "temporary.txt"}, set(records))
+        for path in records:
+            self.assertEqual((1, 1), (records[path]["additions"], records[path]["deletions"]))
+        self.assertEqual(3, candidate["evidence"]["population"]["count"])
+
+    def test_merged_changes_count_once_and_second_parent_window_is_rejected(self) -> None:
+        primary = run(self.root, "branch", "--show-current")
+        run(self.root, "checkout", "-qb", "fixture-topic")
+        (self.root / "merged.txt").write_text("real change\n", encoding="utf-8")
+        run(self.root, "add", "-A")
+        side_env = dict(
+            os.environ, GIT_AUTHOR_DATE="2026-08-29T12:15:00Z",
+            GIT_COMMITTER_DATE="2026-08-29T12:15:00Z",
+        )
+        run(self.root, "commit", "-q", "-m", "side change", env=side_env)
+        side = run(self.root, "rev-parse", "HEAD")
+        run(self.root, "checkout", "-q", primary)
+        merge_env = dict(
+            os.environ, GIT_AUTHOR_DATE="2026-08-29T12:35:00Z",
+            GIT_COMMITTER_DATE="2026-08-29T12:35:00Z",
+        )
+        run(self.root, "merge", "--no-ff", "-q", "-m", "merge topic", "fixture-topic", env=merge_env)
+        final = run(self.root, "rev-parse", "HEAD")
+
+        candidate = generate_churn_candidate(
+            self.root, "fixture-repo", self.start, final,
+            WINDOW_START, WINDOW_END, generated_at=AS_OF,
+        )
+        records = {item["path"]: item for item in candidate["evidence"]["records"]}
+        self.assertEqual((1, 0), (
+            records["merged.txt"]["additions"], records["merged.txt"]["deletions"],
+        ))
+        with self.assertRaisesRegex(BudgetError, "first-parent window"):
+            generate_churn_candidate(
+                self.root, "fixture-repo", side, final,
+                WINDOW_START, WINDOW_END, generated_at=AS_OF,
+            )
+
+    def test_same_commit_window_is_not_a_churn_candidate(self) -> None:
+        with self.assertRaisesRegex(BudgetError, "distinct start and end"):
+            generate_churn_candidate(
+                self.root, "fixture-repo", self.end, self.end,
+                WINDOW_START, WINDOW_END, generated_at=AS_OF,
+            )
+
     def test_hosted_churn_candidate_is_read_only_review_required(self) -> None:
         workflow = (Path(__file__).resolve().parents[1] / '.github/workflows/maintainability-candidate.yml').read_text()
         self.assertIn('fetch-depth: 0', workflow)

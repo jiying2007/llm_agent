@@ -24,7 +24,7 @@ from .maintainability_budget import (
 )
 
 
-CANDIDATE_SCHEMA = "llm-agent-maintainability-evidence-candidate/v1"
+CANDIDATE_SCHEMA = "llm-agent-maintainability-evidence-candidate/v2"
 UTC = timezone.utc
 MAX_GIT_OUTPUT_BYTES = 16 * 1024 * 1024
 MAX_GIT_STDERR_BYTES = 64 * 1024
@@ -102,10 +102,20 @@ def _tracked_paths(root: Path, revision: str) -> set[str]:
 
 
 def _numstat(root: Path, start: str, end: str, population: set[str]) -> Dict[str, Dict[str, int]]:
+    """Sum actual first-parent changes instead of the net endpoint diff.
+
+    A reverted change is still churn; a file added and deleted inside the
+    window must stay visible. Merge commits are compared to first parent once.
+    The existing bounded Git process protects the complete output.
+    """
     records = {path: {"additions": 0, "deletions": 0} for path in population}
     raw = _git(
         root,
-        ["diff", "--numstat", "--no-renames", "-z", start, end, "--"],
+        [
+            "log", "--first-parent", "--diff-merges=first-parent",
+            "--format=", "--numstat", "--no-renames", "-z",
+            start + ".." + end, "--",
+        ],
         text=False,
     )
     for item in raw.split(b"\0"):
@@ -113,19 +123,25 @@ def _numstat(root: Path, start: str, end: str, population: set[str]) -> Dict[str
             continue
         parts = item.split(b"\t", 2)
         if len(parts) != 3:
-            raise BudgetError("Git numstat record is malformed")
+            raise BudgetError("Git first-parent numstat record is malformed")
         additions_raw, deletions_raw, path_raw = parts
         if additions_raw == b"-" or deletions_raw == b"-":
             raise BudgetError("Binary churn requires a separate reviewed metric")
         try:
-            path = Path(path_raw.decode("utf-8")).as_posix()
+            candidate = Path(path_raw.decode("utf-8"))
+            path = candidate.as_posix()
             additions = int(additions_raw)
             deletions = int(deletions_raw)
         except (UnicodeDecodeError, ValueError) as exc:
-            raise BudgetError("Git numstat record is invalid") from exc
-        if path not in records or additions < 0 or deletions < 0:
-            raise BudgetError("Git numstat path is outside the reviewed population")
-        records[path] = {"additions": additions, "deletions": deletions}
+            raise BudgetError("Git first-parent numstat record is invalid") from exc
+        if (
+            not path_raw or path == "." or candidate.is_absolute()
+            or ".." in candidate.parts or additions < 0 or deletions < 0
+        ):
+            raise BudgetError("Git first-parent numstat path or counts are invalid")
+        counts = records.setdefault(path, {"additions": 0, "deletions": 0})
+        counts["additions"] += additions
+        counts["deletions"] += deletions
     return records
 
 
@@ -154,6 +170,13 @@ def generate_churn_candidate(
     )
     if ancestry.returncode != 0:
         raise BudgetError("candidate revisions do not form an ancestor window")
+    if start == end:
+        raise BudgetError("churn candidate requires distinct start and end commits")
+    # A second-parent ancestor would include changes outside the declared
+    # first-parent observation window, so reject it rather than under/overcount.
+    first_parent_history = _git(root, ["rev-list", "--first-parent", end]).splitlines()
+    if start not in first_parent_history:
+        raise BudgetError("candidate revisions do not form a first-parent window")
     window_start = _timestamp(window_started_at, "window_started_at")
     window_end = _timestamp(window_ended_at, "window_ended_at")
     now = _timestamp(generated_at or datetime.now(UTC), "generated_at")
@@ -164,9 +187,11 @@ def generate_churn_candidate(
     if not window_start <= start_time <= end_time <= window_end:
         raise BudgetError("candidate window does not contain the revision commit times")
     population = _tracked_paths(root, start) | _tracked_paths(root, end)
+    measured = _numstat(root, start, end, population)
+    # Include intermediate-only paths created and deleted within the window.
+    population.update(measured)
     if not population:
         raise BudgetError("candidate Git population must not be empty")
-    measured = _numstat(root, start, end, population)
     records = [
         {"path": path, "additions": measured[path]["additions"], "deletions": measured[path]["deletions"]}
         for path in sorted(population)
@@ -196,6 +221,12 @@ def generate_churn_candidate(
     candidate = {
         "schema": CANDIDATE_SCHEMA,
         "status": "review-required",
+        "computation": {
+            "history": "first-parent",
+            "merge_diff": "first-parent",
+            "churn_semantics": "sum-per-commit-numstat",
+            "population": "endpoints-plus-intermediate-touched",
+        },
         "candidate_id": "churn-{}-{}".format(end[:12], evidence_content_sha256[:12]),
         "evidence_content_sha256": evidence_content_sha256,
         "evidence": evidence,
