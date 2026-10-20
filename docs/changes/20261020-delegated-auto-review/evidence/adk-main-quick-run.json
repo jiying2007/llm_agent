@@ -1,0 +1,28 @@
+{
+  "command": [
+    "bash",
+    "tests/run_all.sh",
+    "--quick",
+    "--verbose",
+    "--timing-json",
+    "/workspace/scratch/77add259d49b/adk-main-quick-timing.json"
+  ],
+  "cwd": "/workspace/scratch/77add259d49b/agent-dev-kit",
+  "started_at": "2026-10-20T12:44:39.369171+00:00",
+  "completed_at": "2026-10-20T12:47:33.463203+00:00",
+  "elapsed_seconds": 174.114,
+  "exit_code": 0,
+  "log_bytes": 33205,
+  "log_sha256": "41218ffc17e7bcb8bade98af2c990f878c9cd319f136dfc2d3087f30606bc20b",
+  "source_before": {
+    "head": "42ae95d146ceb441ff91ea33dbbed581c33de305",
+    "tree": "4a034da631afbfb4b6b4d3a48310789ae85dcdbe",
+    "status": ""
+  },
+  "source_after": {
+    "head": "42ae95d146ceb441ff91ea33dbbed581c33de305",
+    "tree": "4a034da631afbfb4b6b4d3a48310789ae85dcdbe",
+    "status": ""
+  },
+  "source_unchanged": true
+}

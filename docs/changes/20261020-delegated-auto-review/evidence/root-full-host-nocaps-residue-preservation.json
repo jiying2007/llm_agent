@@ -1,0 +1,41 @@
+{
+  "at": "2026-10-20T14:38:54.719251+00:00",
+  "path": "/workspace/scratch/77add259d49b/llm_agent/agent-dev-kit/reports/runtime/root-native-campaign-76ikaqjd/receipt.json",
+  "mode": "0o600",
+  "uid": 0,
+  "nlink": 1,
+  "mtime": "2026-10-20T14:24:34.492494+00:00",
+  "ctime": "2026-10-20T14:24:42.290567+00:00",
+  "bytes": 5196,
+  "sha256": "5d39beec6ad71e66227ae1869c4d59143111ea41bdc0b2e4a0580290fb23daed",
+  "copies": [
+    {
+      "path": "/workspace/scratch/77add259d49b/root-promotion-validation/20261020-formal-8.0.36/synthetic-native-fixture-third-run.json",
+      "bytes": 5196,
+      "sha256": "5d39beec6ad71e66227ae1869c4d59143111ea41bdc0b2e4a0580290fb23daed"
+    },
+    {
+      "path": "/workspace/scratch/77add259d49b/root-promotion-validation/20261020-formal-8.0.36/synthetic-native-fixture-third-run-original.json",
+      "bytes": 5196,
+      "sha256": "5d39beec6ad71e66227ae1869c4d59143111ea41bdc0b2e4a0580290fb23daed"
+    }
+  ],
+  "tracked_files_equal": {
+    "adk": true,
+    "root": true
+  },
+  "stable_fields": {
+    "adk": true,
+    "root": true
+  },
+  "status_difference": {
+    "adk": {
+      "before": "",
+      "after": "?? reports/runtime/root-native-campaign-76ikaqjd/receipt.json\n"
+    },
+    "root": {
+      "before": "M  adk.lock\nM  agent-dev-kit\nM  manifests/adk_interface.lock.json\nM  reports/current-status.md\nM  reports/promotion/agent-dev-kit/promotion-attestation.json\nM  reports/promotion/agent-dev-kit/promotion-evidence.json\n",
+      "after": "M  adk.lock\nMM agent-dev-kit\nM  manifests/adk_interface.lock.json\nM  reports/current-status.md\nM  reports/promotion/agent-dev-kit/promotion-attestation.json\nM  reports/promotion/agent-dev-kit/promotion-evidence.json\n"
+    }
+  }
+}

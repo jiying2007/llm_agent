@@ -1,0 +1,180 @@
+{
+  "schema": "root-original-main-triage-identity-comparison/v1",
+  "baseline_commit": "2722715dc44b5226d0eaf488aa00734bdade4345",
+  "source_and_baseline_files": [
+    {
+      "path": "scripts/check-reference-dirty-triage.sh",
+      "baseline_blob": "5a60f3fddd45c0346afae3d6de34a5a365a1e7f8",
+      "current_blob": "5a60f3fddd45c0346afae3d6de34a5a365a1e7f8",
+      "bytes": 8018,
+      "sha256": "7405834daa03a50743b988250c811f0f6367e3452969f6b6e3d0f81cc563a4b3",
+      "identical_baseline_current_worktree": true
+    },
+    {
+      "path": "scripts/generate-reference-dirty-triage.sh",
+      "baseline_blob": "e830268887717b587544854b5a768fd5bb0b0051",
+      "current_blob": "e830268887717b587544854b5a768fd5bb0b0051",
+      "bytes": 8868,
+      "sha256": "106545255548e392988e2dc0bceba385efe24d6a5962c0bbd2919e1d9f4da828",
+      "identical_baseline_current_worktree": true
+    },
+    {
+      "path": "scripts/classify-repo-worktree.sh",
+      "baseline_blob": "357707386c1aaa36ccd9fde934f26c95a1de511e",
+      "current_blob": "357707386c1aaa36ccd9fde934f26c95a1de511e",
+      "bytes": 6755,
+      "sha256": "60257a0d35041fe9eb5efba63d7954efcf61a8080cc48eb53f4c1adc20aa9f23",
+      "identical_baseline_current_worktree": true
+    },
+    {
+      "path": "tools/codex_assets/reference_worktree_identity.py",
+      "baseline_blob": "d2d3b2a5cd0bae23a6f80c96ae0ce09d96e3f949",
+      "current_blob": "d2d3b2a5cd0bae23a6f80c96ae0ce09d96e3f949",
+      "bytes": 11177,
+      "sha256": "8afe37bacc3e1d7776134cc9b04f055ff3479d760501648adbdad8e14e9a11f9",
+      "identical_baseline_current_worktree": true
+    },
+    {
+      "path": "tools/codex_assets/intake_io.py",
+      "baseline_blob": "388119d7a22b8fb8b61ede18e63026aa98efd2c4",
+      "current_blob": "388119d7a22b8fb8b61ede18e63026aa98efd2c4",
+      "bytes": 12095,
+      "sha256": "68942fca3e9a4985b6967eda10a1c0844446fc632e5a7d891bb376d21e95d761",
+      "identical_baseline_current_worktree": true
+    },
+    {
+      "path": "subrepos/dirty-baseline.tsv",
+      "baseline_blob": "70b4f2053529afc94771347e66ef74c963e55f0d",
+      "current_blob": "70b4f2053529afc94771347e66ef74c963e55f0d",
+      "bytes": 1412,
+      "sha256": "5eb456e565c67dde22b0e63559846c2059f3ed1ad3e29caf95d8a14402001150",
+      "identical_baseline_current_worktree": true
+    },
+    {
+      "path": "docs/changes/20261007-reference-product-evidence/evidence/reference-worktree-review-20261007.json",
+      "baseline_blob": "a0abbcc2ee630faf406a44a30af37c6b145176c3",
+      "current_blob": "a0abbcc2ee630faf406a44a30af37c6b145176c3",
+      "bytes": 2071,
+      "sha256": "b675bff806c83f6dbe02e15cab5305953953e0595d1823e38c6d37d706b91c25",
+      "identical_baseline_current_worktree": true
+    }
+  ],
+  "triage_reports": [
+    {
+      "path": "docs/changes/20261007-reference-product-evidence/evidence/reference-dirty-triage-2026-10-07.json",
+      "sha256": "402648c16bc7d9fd6aff414950436a3a4732a2c41a3661d00f6781d670605e31",
+      "identical_baseline_current_worktree": true,
+      "report_date": "2026-10-07",
+      "expiry_dates": [
+        "2026-10-14"
+      ]
+    },
+    {
+      "path": "reports/reference-dirty-triage-2026-07-08.json",
+      "sha256": "5a3e5ef0944829addca1df18f5d0d430f7d7e4d9cd5870487a4d8f8582865fbc",
+      "identical_baseline_current_worktree": true,
+      "report_date": "2026-07-08",
+      "expiry_dates": [
+        "2026-07-10"
+      ]
+    },
+    {
+      "path": "reports/reference-dirty-triage-2026-07-11.json",
+      "sha256": "1e23f032f3bd79028ee1886a230350a0c12acb38f3445bab3fad5398c3727b67",
+      "identical_baseline_current_worktree": true,
+      "report_date": "2026-07-11",
+      "expiry_dates": [
+        "2026-07-18"
+      ]
+    },
+    {
+      "path": "reports/reference-dirty-triage-2026-07-13.json",
+      "sha256": "a24dd9fff1c18445ae60bb2ab46869e7d6f4bd2b45995fbcc5c02b97f642e9cc",
+      "identical_baseline_current_worktree": true,
+      "report_date": "2026-07-13",
+      "expiry_dates": [
+        "2026-07-20"
+      ]
+    },
+    {
+      "path": "reports/reference-dirty-triage-2026-07-23.json",
+      "sha256": "665c8366963f39aef0775f34e7cafe0e75da667fe16cc40eb991a754badd428c",
+      "identical_baseline_current_worktree": true,
+      "report_date": "2026-07-23",
+      "expiry_dates": [
+        "2026-07-30"
+      ]
+    },
+    {
+      "path": "reports/reference-dirty-triage-2026-07-31.json",
+      "sha256": "4fdfe5125dd7a3572056fb085c66ad4c36cdf4d0b85373e8253a9b54b03c42bd",
+      "identical_baseline_current_worktree": true,
+      "report_date": "2026-07-31",
+      "expiry_dates": [
+        "2026-08-07"
+      ]
+    },
+    {
+      "path": "reports/reference-dirty-triage-2026-08-24.json",
+      "sha256": "d70e8b736b75a5b49af0d813882fab980c9425c4ba038b8e2a2de51ab07e87ae",
+      "identical_baseline_current_worktree": true,
+      "report_date": "2026-08-24",
+      "expiry_dates": [
+        "2026-08-31"
+      ]
+    }
+  ],
+  "canonical_review": {
+    "reviewed_on": "2026-10-07",
+    "expires_on": "2026-10-14",
+    "record_sha256": "f393d452816de7d5787ebb4a57277b7d7cba82932f79639869a5cbb1cecd0749",
+    "source_approved": false,
+    "runtime_enablement": false,
+    "owner_approval": false
+  },
+  "execution_scope": "original main checker bytes on stdin with current identical baseline, review, reports and imported helper files; current actual date and environment; no checkout or file writes",
+  "observed_at": "2026-10-20T14:49:42.085919+00:00",
+  "current_source_probes": [
+    {
+      "repo": "OpenSpec",
+      "worktree_exists": false,
+      "review": {
+        "exception": "IdentityError",
+        "reason": "review-record-expired-or-future"
+      },
+      "snapshot": {
+        "exception": "IdentityError",
+        "reason": "repository-unavailable"
+      }
+    },
+    {
+      "repo": "superpowers",
+      "worktree_exists": false,
+      "review": {
+        "exception": "IdentityError",
+        "reason": "review-record-expired-or-future"
+      },
+      "snapshot": {
+        "exception": "IdentityError",
+        "reason": "repository-unavailable"
+      }
+    },
+    {
+      "repo": "vibeflow",
+      "worktree_exists": false,
+      "review": {
+        "exception": "IdentityError",
+        "reason": "review-record-expired-or-future"
+      },
+      "snapshot": {
+        "exception": "IdentityError",
+        "reason": "repository-unavailable"
+      }
+    }
+  ],
+  "interpretation": "The original main checker and all compared policy/report/helper bytes are unchanged; its actual execution on the current date and environment reproduces the same six failures. A clean immutable upstream checkout cannot stand in for the absent dirty worktree identities.",
+  "limitations": [
+    "No old full checkout was executed; the original checker Git blob was run from stdin against the current, byte-identical relevant files.",
+    "No repository files, baseline dates, review records, snapshots or live runtime were changed. No materialization or network fetch was performed."
+  ]
+}

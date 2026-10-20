@@ -1,0 +1,25 @@
+{
+  "command": [
+    "bash",
+    "scripts/check-adk-promotion-evidence.sh",
+    "."
+  ],
+  "cwd": "/workspace/scratch/77add259d49b/llm_agent",
+  "started_at": "2026-10-20T12:57:50.493165+00:00",
+  "completed_at": "2026-10-20T12:57:51.270549+00:00",
+  "elapsed_seconds": 0.81,
+  "exit_code": 0,
+  "log_bytes": 599,
+  "log_sha256": "6b47b11be6ccca6476750ea0569b819d856fa24c4f60eabaaa84b28eddb8783d",
+  "source_before": {
+    "head": "5170d970e3a69ba8d8938e968fb82bee1ff37a7d",
+    "tree": "d01282d4ef2c2c5b1c534042f5c10ef5c7ca7613",
+    "status": "M  adk.lock\nM  agent-dev-kit\nM  manifests/adk_interface.lock.json\nM  reports/current-status.md\nM  reports/promotion/agent-dev-kit/promotion-attestation.json\nM  reports/promotion/agent-dev-kit/promotion-evidence.json"
+  },
+  "source_after": {
+    "head": "5170d970e3a69ba8d8938e968fb82bee1ff37a7d",
+    "tree": "d01282d4ef2c2c5b1c534042f5c10ef5c7ca7613",
+    "status": "M  adk.lock\nM  agent-dev-kit\nM  manifests/adk_interface.lock.json\nM  reports/current-status.md\nM  reports/promotion/agent-dev-kit/promotion-attestation.json\nM  reports/promotion/agent-dev-kit/promotion-evidence.json"
+  },
+  "source_unchanged": true
+}

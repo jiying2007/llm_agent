@@ -1,0 +1,9 @@
+{
+  "at": "2026-10-20T14:39:39.237065+00:00",
+  "restored_snapshot_path": "/workspace/scratch/77add259d49b/root-promotion-validation/20261020-formal-8.0.36/root-full-host-nocaps-restored.json",
+  "bytes": 892851,
+  "sha256": "24a936111d3d6cbd2965b4e0149c3c57e8a22d9c32925d7f7ad43d918cfadc09",
+  "matches_original": true,
+  "tracked_entries": 2387,
+  "test_residue_absent": true
+}

@@ -1,0 +1,3 @@
+{"candidate": {"commit": "42ae95d146ceb441ff91ea33dbbed581c33de305", "manifest_blob": "da1a8ca2f764b6b98d79870eefa6f3fc35cfd3f8", "tree": "4a034da631afbfb4b6b4d3a48310789ae85dcdbe", "version": "8.0.36"}, "issued_at": "2026-10-20T12:47:54.553938Z", "release_eligible": true, "schema": "llm-agent-adk-promotion-evidence-verification/v1", "source_repository": "jiying2007/agent-dev-kit", "source_run_attempt": 1, "source_run_id": 39424392443, "source_workflow": "agent-dev-kit-ci", "status": "pass"}
+Verified OK
+[PASS] ADK promotion evidence claims and producer-compatible Sigstore provenance verified
