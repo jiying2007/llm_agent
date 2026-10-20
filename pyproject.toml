@@ -45,4 +45,5 @@ files = [
   "tools/control_plane/longitudinal_operation.py",
   "tools/control_plane/consumer_chain.py",
   "tools/control_plane/status_projection.py",
+  "tools/control_plane/qualification_followup.py",
 ]

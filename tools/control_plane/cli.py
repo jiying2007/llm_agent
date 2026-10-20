@@ -16,6 +16,7 @@ _COMMAND_MODULES = {
     "effect-readiness": "tools.control_plane.effect_readiness",
     "terminal-closure": "tools.control_plane.terminal_closure",
     "longitudinal-operation": "tools.control_plane.longitudinal_operation",
+    "qualification-followup": "tools.control_plane.qualification_followup",
     "long-term-rehearsal": "tools.control_plane.long_term_asset_rehearsal",
     "promotion-evidence": "tools.control_plane.adk_promotion_evidence",
     "reference-pins": "tools.control_plane.reference_pins",
