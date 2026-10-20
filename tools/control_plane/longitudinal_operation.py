@@ -169,7 +169,7 @@ def _verify_committed_evidence(root: Path, files: set[Path]) -> None:
         commands = (
             ("git", "-C", str(root), "ls-tree", "-r", "-z", "--full-tree", "HEAD", "--", *pathspecs),
             ("git", "-C", str(root), "ls-files", "--stage", "-z", "--", *pathspecs),
-            ("git", "-C", str(root), "hash-object", "--", *chunk),
+            ("git", "-C", str(root), "hash-object", "--no-filters", "--", *chunk),
         )
         try:
             responses = [

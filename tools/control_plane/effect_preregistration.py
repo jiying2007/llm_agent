@@ -160,6 +160,11 @@ if any(registered>=value for value in observed_times):
 if any(registered>=value for value in signature_times):
     raise SystemExit("preregistration-must-precede-all-receipt-signatures")
 
+# Receipt signatures have already passed managed replay in effect readiness.
+# Preserve their times with the bound observations for the downstream owner
+# review order check; a content digest alone cannot establish review chronology.
+latest_evidence_at=max([registered]+campaign_observed_times+observed_times+signature_times)
+
 print(json.dumps({
     "status":"pass",
     "package_sha256":package_summary["package_sha256"],
@@ -169,6 +174,7 @@ print(json.dumps({
     "candidate_assets":package_summary["bundle_assets"]["candidate"],
     "bundle_sha256":expected_prereg_bundle_sha,
     "registered_at":registered.isoformat().replace("+00:00","Z"),
+    "latest_evidence_at":latest_evidence_at.isoformat().replace("+00:00","Z"),
     "campaign_run_count":len(campaign_observed_times),
     "verified_receipt_count":len(receipts),
     "certificate_identity":cert_identity,

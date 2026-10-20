@@ -448,6 +448,61 @@ index_path.write_text(
     encoding="utf-8",
 )
 
+def write_review_variant(label, reviewed_at, review_document, evidence_index):
+    early_review=json.loads(json.dumps(review_document))
+    early_review["reviewed_at"]=reviewed_at.isoformat().replace("+00:00","Z")
+    early_review_path=fixture_dir/(label+"-owner-review.json")
+    early_review_path.write_text(
+        json.dumps(early_review,ensure_ascii=False,sort_keys=True,indent=2)+"\n",
+        encoding="utf-8",
+    )
+    early_index=json.loads(json.dumps(evidence_index))
+    early_index["entries"][0]["owner_review_path"]=relative(early_review_path)
+    early_index["entries"][0]["owner_review_sha256"]=sha(early_review_path)
+    (fixture_dir/(label+"-index.json")).write_text(
+        json.dumps(early_index,ensure_ascii=False,sort_keys=True,indent=2)+"\n",
+        encoding="utf-8",
+    )
+
+# Only the owner-review timestamp and its outer index digest change. Signed
+# observations, preregistration, receipts and measured values remain identical.
+# A past timestamp is insufficient if any reviewed evidence was completed later.
+for label, reviewed_at in (
+    ("before-registration", datetime(2000,1,1,tzinfo=timezone.utc)),
+    ("before-signature", receipt_signed_at-timedelta(seconds=1)),
+    ("before-measurement", now-timedelta(seconds=1)),
+):
+    write_review_variant(label,reviewed_at,review,index)
+
+# Isolate a signature recorded after the aggregation's as_of time. This valid
+# aggregation cannot be approved until the signed receipt evidence is complete.
+signature_receipt_set=json.loads(json.dumps(receipt_set))
+signature_receipt_set["as_of"]=window_through.isoformat().replace("+00:00","Z")
+signature_measurement=emit_measurements(
+    receipts,
+    manifest,
+    contract,
+    evidence_verifier=verifier,
+    aggregation_window={"from":window_from,"through":window_through},
+    as_of=window_through,
+)
+signature_review=json.loads(json.dumps(review))
+signature_index=json.loads(json.dumps(index))
+for field,document in (("receipts",signature_receipt_set),("measurement",signature_measurement)):
+    path=fixture_dir/("signature-bound-"+field+".json")
+    path.write_text(
+        json.dumps(document,ensure_ascii=False,sort_keys=True,indent=2)+"\n",
+        encoding="utf-8",
+    )
+    signature_review[field+"_sha256"]=sha(path)
+    signature_index["entries"][0][field+"_path"]=relative(path)
+    signature_index["entries"][0][field+"_sha256"]=sha(path)
+write_review_variant("at-signature",receipt_signed_at,signature_review,signature_index)
+write_review_variant(
+    "before-late-signature",receipt_signed_at-timedelta(seconds=1),
+    signature_review,signature_index,
+)
+
 # Negative 1: an aggregate measurement cannot be hand-edited after signed receipt replay.
 tampered_measurement=json.loads(json.dumps(measurement))
 tampered_measurement["asset_measurements"][0]["metrics"]["task-success-rate"]["value"]=0.123
@@ -683,6 +738,7 @@ assert index["entries"][0]["preregistered_at"], index
 assert index["entries"][0]["verified_receipt_count"]>index["expected_asset_count"], index
 assert index["entries"][0]["campaign_trace_count"]>0, index
 assert index["entries"][0]["reviewed_by"]=="fixture-human-owner", index
+assert index["entries"][0]["evidence_completed_at"]==index["entries"][0]["reviewed_at"], index
 assert value["release_authorized"] is False, value
 PY
 
@@ -698,6 +754,32 @@ PY
   bad_rc=$?
   set -e
   test "$bad_rc" -eq 1
+done
+
+SIGNATURE_REL="$(dirname "$INDEX_REL")/at-signature-index.json"
+python3 -m tools.control_plane.effect_readiness --root . --evidence-index "$SIGNATURE_REL" --require-evidence --summary-json >"$TMP"
+python3 - "$TMP" <<'PY'
+import json,sys
+value=json.load(open(sys.argv[1],encoding="utf-8"))
+assert value["status"]=="pass" and value["effect_evidence_ready"] is True, value
+entry=value["evidence_index"]["entries"][0]
+assert entry["evidence_completed_at"]==entry["reviewed_at"], entry
+assert value["release_authorized"] is False, value
+PY
+
+for BAD in before-registration before-signature before-measurement before-late-signature; do
+  BAD_REL="$(dirname "$INDEX_REL")/$BAD-index.json"
+  set +e
+  python3 -m tools.control_plane.effect_readiness --root . --evidence-index "$BAD_REL" --require-evidence --summary-json >"$TMP"
+  bad_rc=$?
+  set -e
+  test "$bad_rc" -eq 1
+  python3 - "$TMP" <<'PY'
+import json,sys
+value=json.load(open(sys.argv[1],encoding="utf-8"))
+assert value["status"]=="fail" and value["effect_evidence_ready"] is False, value
+assert "owner review predates completed evidence" in value["failures"], value
+PY
 done
 
 python3 -m tools.control_plane.cli effect-readiness --root . --summary-json   | python3 -c 'import json,sys; v=json.load(sys.stdin); assert v["status"]=="pass" and v["software_ready"] is True and v["effect_evidence_ready"] is False, v'

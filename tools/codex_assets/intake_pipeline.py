@@ -8,7 +8,6 @@ import hashlib
 import json
 import os
 import re
-import shutil
 import sys
 import tarfile
 import tempfile
@@ -23,7 +22,11 @@ import yaml
 
 from tools.control_plane.process_budget import ProcessBudgetError, run_bounded
 from tools.control_plane.reference_pins import (
-    git_command, git_environment, paths_overlap, protected_roots, resolve_source,
+    git_command,
+    git_environment,
+    paths_overlap,
+    protected_roots,
+    resolve_source,
 )
 
 REPO_NAME = re.compile(r"^[A-Za-z0-9_][A-Za-z0-9._-]*$")
@@ -88,19 +91,40 @@ def _atomic_text(path: Path, content: str) -> None:
             os.unlink(temp_name)
 
 
-def _safe_extract_archive(repository: Path, commit: str, destination: Path, budget: IntakeBudget) -> int:
+def _snapshot_seconds_left(deadline: float) -> float:
+    remaining = deadline - time.monotonic()
+    if remaining <= 0:
+        raise ProcessBudgetError("snapshot time budget exceeded")
+    return remaining
+
+
+def _safe_extract_archive(
+    repository: Path, commit: str, destination: Path, budget: IntakeBudget, deadline: float | None = None,
+) -> int:
     skipped_links, expanded = 0, 0
-    deadline = time.monotonic() + budget.command_seconds
+    deadline = deadline if deadline is not None else time.monotonic() + budget.command_seconds
     with tempfile.TemporaryFile() as stream:
         result = run_bounded(
             git_command(repository, "archive", "--format=tar", commit),
-            timeout=budget.command_seconds, max_stdout=budget.archive_bytes,
+            timeout=_snapshot_seconds_left(deadline), max_stdout=budget.archive_bytes,
             stdout_sink=stream, env=git_environment(),
         )
         if result.returncode:
             raise IntakeError("git archive failed: " + result.stderr.decode(errors="replace")[-500:])
         stream.seek(0)
-        with tarfile.open(fileobj=stream, mode="r:") as archive:
+        first = stream.read(tarfile.BLOCKSIZE)
+        stream.seek(0)
+        if first[156:157] == tarfile.XGLTYPE:
+            header = tarfile.TarInfo.frombuf(first, "utf-8", "surrogateescape")
+            comment = f"{len(commit) + 12} comment={commit}\n".encode("ascii")
+            stream.seek(tarfile.BLOCKSIZE)
+            # Python tarfile rejects a global PAX header with no following member.
+            # Only skip Git's validated, exact-commit provenance header; parse all remaining bytes normally.
+            if header.size == len(comment) and stream.read(header.size) == comment:
+                stream.seek(tarfile.BLOCKSIZE * 2)
+            else:
+                stream.seek(0)
+        with tarfile.open(fileobj=stream, mode="r|") as archive:
             for count, member in enumerate(archive, 1):
                 if count > budget.archive_members or time.monotonic() > deadline:
                     raise ProcessBudgetError("archive member/time budget exceeded")
@@ -124,8 +148,106 @@ def _safe_extract_archive(repository: Path, commit: str, destination: Path, budg
                 if source is None:
                     raise IntakeError("archive member data is unavailable")
                 with source, target.open("xb") as output:
-                    shutil.copyfileobj(source, output, length=64 * 1024)
+                    while True:
+                        _snapshot_seconds_left(deadline)
+                        block = source.read(64 * 1024)
+                        if not block:
+                            break
+                        output.write(block)
+    _snapshot_seconds_left(deadline)
     return skipped_links
+
+
+def _snapshot_coverage(
+    repository: Path, commit: str, snapshot: Path, budget: IntakeBudget, deadline: float,
+) -> tuple[dict[str, Any], set[str]]:
+    """Reconcile archive files with exact tree leaves without reading source worktree bytes."""
+    remaining = {p.relative_to(snapshot).as_posix() for p in snapshot.rglob("*")
+                 if p.is_file() and not p.is_symlink()}
+    counts: Counter[str] = Counter()
+    examples: dict[str, list[str]] = {}
+    seen: set[str] = set()
+    transformed: set[str] = set()
+    total = hashed = 0
+    with tempfile.TemporaryFile() as stream:
+        result = run_bounded(
+            git_command(repository, "ls-tree", "-r", "-z", "--full-tree", commit),
+            timeout=_snapshot_seconds_left(deadline), max_stdout=budget.archive_bytes,
+            stdout_sink=stream, env=git_environment(),
+        )
+        if result.returncode:
+            raise IntakeError("git tree inventory failed: " + result.stderr.decode(errors="replace")[-500:])
+        stream.seek(0)
+        pending = b""
+        while True:
+            _snapshot_seconds_left(deadline)
+            block = stream.read(64 * 1024)
+            if not block:
+                if pending:
+                    raise IntakeError("git tree inventory is truncated")
+                break
+            records = (pending + block).split(b"\0")
+            pending = records.pop()
+            if len(pending) > 64 * 1024 or any(len(record) > 64 * 1024 for record in records):
+                raise ProcessBudgetError("git tree entry byte budget exceeded")
+            for record in records:
+                _snapshot_seconds_left(deadline)
+                total += 1
+                if total > budget.archive_members:
+                    raise ProcessBudgetError("git tree member budget exceeded")
+                metadata, separator, raw_name = record.partition(b"\t")
+                fields = metadata.split(b" ")
+                if not separator or not raw_name or len(fields) != 3:
+                    raise IntakeError("invalid git tree entry")
+                mode, kind, object_id = fields
+                expected_kind = {b"100644": b"blob", b"100755": b"blob",
+                                 b"120000": b"blob", b"160000": b"commit"}.get(mode)
+                if (kind != expected_kind or not re.fullmatch(rb"(?:[0-9a-f]{40}|[0-9a-f]{64})", object_id)
+                        or len(object_id) != len(commit)):
+                    raise IntakeError("unsupported git tree entry or object format")
+                name = os.fsdecode(raw_name)
+                pure = PurePosixPath(name)
+                if pure.is_absolute() or ".." in pure.parts or "\\" in name or pure.as_posix() != name:
+                    raise IntakeError("unsafe git tree entry")
+                if name in seen:
+                    raise IntakeError("duplicate git tree entry")
+                seen.add(name)
+                path = _ensure_within(snapshot / name, snapshot, "git tree entry")
+                if mode in (b"120000", b"160000"):
+                    if name in remaining:
+                        raise IntakeError("archive file replaces a non-file git tree entry")
+                    status = "skipped-symlink" if mode == b"120000" else "skipped-gitlink"
+                elif name not in remaining:
+                    status = "archive-omitted"
+                else:
+                    remaining.remove(name)
+                    digest = hashlib.new("sha1" if len(object_id) == 40 else "sha256")
+                    digest.update(b"blob " + str(path.stat().st_size).encode("ascii") + b"\0")
+                    with path.open("rb") as content:
+                        while True:
+                            _snapshot_seconds_left(deadline)
+                            data = content.read(64 * 1024)
+                            if not data:
+                                break
+                            hashed += len(data)
+                            if hashed > budget.archive_bytes:
+                                raise ProcessBudgetError("snapshot verification byte budget exceeded")
+                            digest.update(data)
+                    status = "matched-blob" if digest.hexdigest().encode("ascii") == object_id else "archive-transformed"
+                    if status == "archive-transformed":
+                        transformed.add(name)
+                counts[status] += 1
+                if status != "matched-blob" and len(examples.setdefault(status, [])) < 20:
+                    examples[status].append(name)
+    _snapshot_seconds_left(deadline)
+    if remaining:
+        raise IntakeError("archive contains files outside the pinned git tree")
+    return {
+        "scope": "git-tree-leaf-entries", "identity_check": "git-blob-object-id",
+        "status": "complete" if counts["matched-blob"] == total else "partial",
+        "total_entries": total, "by_status": dict(counts), "gap_path_examples": examples,
+        "gap_examples_truncated": {status: counts[status] > len(paths) for status, paths in examples.items()},
+    }, transformed
 
 
 def _read_text(path: Path, limit: int) -> tuple[str, str]:
@@ -187,7 +309,9 @@ def _frontmatter(content: str) -> tuple[str, dict[str, Any]]:
         return "invalid", {}
 
 
-def _scan_snapshot(snapshot: Path, budget: IntakeBudget) -> dict[str, Any]:
+def _scan_snapshot(
+    snapshot: Path, budget: IntakeBudget, transformed_paths: set[str] | None = None,
+) -> dict[str, Any]:
     deadline = time.monotonic() + budget.analysis_seconds
     files = sorted(path for path in snapshot.rglob("*") if path.is_file() and not path.is_symlink())
     coverage: Counter[str] = Counter()
@@ -201,7 +325,8 @@ def _scan_snapshot(snapshot: Path, budget: IntakeBudget) -> dict[str, Any]:
             raise ProcessBudgetError("analysis time budget exceeded")
         relative = path.relative_to(snapshot)
         name = relative.as_posix()
-        status, content = _read_text(path, budget.text_bytes)
+        status, content = (("archive-transformed", "") if transformed_paths and name in transformed_paths
+                           else _read_text(path, budget.text_bytes))
         coverage[status] += 1
         suffix = path.suffix.lower() or "<none>"
         by_suffix.setdefault(suffix, Counter())[status] += 1
@@ -211,7 +336,7 @@ def _scan_snapshot(snapshot: Path, budget: IntakeBudget) -> dict[str, Any]:
         if path.name.lower() in ("license", "license.md", "license.txt", "copying"):
             licenses.append(name)
         if path.name == "SKILL.md":
-            fm_status, metadata = _frontmatter(content)
+            fm_status, metadata = ("not-read", {}) if status == "archive-transformed" else _frontmatter(content)
             invalid_metadata += int(fm_status == "invalid")
             # Files larger than the text budget are not silently hashed/read again.
             skills.append({
@@ -263,7 +388,7 @@ def _scan_snapshot(snapshot: Path, budget: IntakeBudget) -> dict[str, Any]:
             "skill_files": len(skills), "agent_files": sum(p.name == "AGENTS.md" for p in files),
             "script_files": sum(p.suffix.lower() in SCRIPT_SUFFIXES for p in files), "test_or_eval_files": eval_count,
         },
-        "coverage": {"total_files": len(files), "by_status": dict(coverage),
+        "coverage": {"scope": "extracted-archive-files", "total_files": len(files), "by_status": dict(coverage),
                      "by_suffix": {key: dict(value) for key, value in sorted(by_suffix.items())},
                      "skipped_path_examples": skipped, "invalid_skill_frontmatter": invalid_metadata},
         "skills": skills, "license_evidence": licenses,
@@ -358,11 +483,14 @@ def analyze(
     with tempfile.TemporaryDirectory(prefix="llm-agent-intake-") as temp:
         snapshot = Path(temp) / "source"
         snapshot.mkdir()
-        source["skipped_archive_links"] = _safe_extract_archive(repository, source["commit"], snapshot, budget)
-        scanned = _scan_snapshot(snapshot, budget)
+        deadline = time.monotonic() + budget.command_seconds
+        source["skipped_archive_links"] = _safe_extract_archive(repository, source["commit"], snapshot, budget, deadline)
+        source["snapshot_coverage"], transformed = _snapshot_coverage(repository, source["commit"], snapshot, budget, deadline)
+        scanned = _scan_snapshot(snapshot, budget, transformed)
     coverage = scanned["coverage"]
     complete = (coverage["by_status"].get("analyzed", 0) == coverage["total_files"]
-                and not coverage["invalid_skill_frontmatter"] and not source["skipped_archive_links"])
+                and not coverage["invalid_skill_frontmatter"] and not source["skipped_archive_links"]
+                and source["snapshot_coverage"]["status"] == "complete")
     names = {item["name"] for item in scanned["skills"]}
     adk_names = _adk_skill_names(root)
     analysis = {
@@ -374,7 +502,8 @@ def analyze(
                        "adk_catalog_size": len(adk_names), "exact_name_overlap": sorted(names & adk_names),
                        "novel_name_candidates": sorted(names - adk_names)},
         "limitations": ["static evidence is not semantic or runtime proof", "structure counts are not effectiveness scores",
-                        "unsupported/oversized/invalid files and truncated evidence are explicitly reported"],
+                        "unsupported/oversized/invalid files and truncated evidence are explicitly reported",
+                        "archive omissions, transformed bytes, symlinks and gitlinks are source coverage gaps"],
     }
     decision = {
         "schema": "llm-agent-adoption-decision/v1", "status": "review-required", "repository": repository_name,
@@ -404,7 +533,8 @@ def analyze(
         "analysis.json": json.dumps(analysis, ensure_ascii=False, indent=2) + "\n",
         "decision-candidate.json": json.dumps(decision, ensure_ascii=False, indent=2) + "\n",
         "task-pack.json": json.dumps(task_pack, ensure_ascii=False, indent=2) + "\n",
-        "README.md": _report(analysis, "分析索引", {"coverage": coverage, "auto_apply": False}),
+        "README.md": _report(analysis, "分析索引", {"snapshot_coverage": source["snapshot_coverage"],
+                                                 "coverage": coverage, "auto_apply": False}),
     }
     if mode in ("all", "prompt"):
         outputs["prompt-analysis.md"] = _report(analysis, "Prompt 静态证据分析", scanned["prompt_evidence"])
