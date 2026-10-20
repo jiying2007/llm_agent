@@ -384,6 +384,7 @@ def _validate_owner_review(
     measurement_sha256: str,
     preregistration_package_sha256: str,
     preregistration_bundle_sha256: str,
+    evidence_completed_at: datetime,
     observed_cases: dict[str, bool],
     measurement_assets: set[tuple[str, str]],
 ) -> dict[tuple[str, str], str]:
@@ -434,6 +435,8 @@ def _validate_owner_review(
     reviewed_at = _parse_time(review["reviewed_at"], "owner review timestamp")
     if reviewed_at > datetime.now(timezone.utc):
         raise ValueError("owner review timestamp is in the future")
+    if reviewed_at < evidence_completed_at:
+        raise ValueError("owner review predates completed evidence")
     reviewer = review.get("reviewed_by")
     if not isinstance(reviewer, str) or not reviewer.strip() or len(reviewer) > 128:
         raise ValueError("owner review requires a real reviewed_by identity")
@@ -707,6 +710,14 @@ def _validate_evidence_entry(
     if campaign_runtime_target not in measurement_runtime_targets:
         raise ValueError("effect trial campaign runtime target is not measurement-backed")
 
+    # Review must follow every verified observation/signature and the completed
+    # aggregation, including receipts recorded or signed after their observation.
+    # Replay above validates the receipt-set window and as_of contract.
+    evidence_completed_at = max(
+        _parse_time(preregistration.get("latest_evidence_at"), "latest verified effect evidence"),
+        _parse_time(receipt_set["as_of"], "Agent Value measurement as_of"),
+        _parse_time(receipt_set["aggregation_window"]["through"], "Agent Value aggregation through"),
+    )
     decisions = _validate_owner_review(
         review,
         campaign_id=campaign_id,
@@ -718,6 +729,7 @@ def _validate_evidence_entry(
         measurement_sha256=measurement_sha,
         preregistration_package_sha256=preregistration_package_sha,
         preregistration_bundle_sha256=preregistration_bundle_sha,
+        evidence_completed_at=evidence_completed_at,
         observed_cases=dict(replay["observed_cases"]),
         measurement_assets=assets,
     )
@@ -734,6 +746,7 @@ def _validate_evidence_entry(
         "preregistered_at": preregistration["registered_at"],
         "verified_receipt_count": replay["receipt_count"],
         "reviewed_by": review["reviewed_by"],
+        "evidence_completed_at": evidence_completed_at.isoformat().replace("+00:00", "Z"),
         "asset_count": len(assets),
         "reviewed_at": review["reviewed_at"],
     }

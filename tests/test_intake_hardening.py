@@ -16,8 +16,9 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from tools.codex_assets import intake_pipeline as intake
 from tools.codex_assets import intake_io as input_io
+from tools.codex_assets import intake_pipeline as intake
+from tools.codex_assets import update_pipeline
 from tools.control_plane import reference_pins as pins
 from tools.control_plane.process_budget import ProcessBudgetError, run_bounded
 
@@ -205,6 +206,15 @@ class ReferenceTests(unittest.TestCase):
     def save_manifest(self) -> None:
         (self.root / "manifests" / "reference_pins.json").write_text(json.dumps(self.manifest), encoding="utf-8")
 
+    def repin_source(self) -> None:
+        self.commit = git(self.source, "rev-parse", "HEAD")
+        self.tree = git(self.source, "rev-parse", "HEAD^{tree}")
+        moved = self.source.parent / self.commit
+        self.source.rename(moved)
+        self.source = moved
+        self.manifest["pins"][0]["commit"] = self.commit
+        self.save_manifest()
+
     def analyze(self, **kwargs):
         return intake.analyze(self.root, "Reference", "HEAD", "all", self.reports, cache_root=str(self.cache), **kwargs)
 
@@ -217,6 +227,12 @@ class ReferenceTests(unittest.TestCase):
         self.assertEqual(report["schema"], "llm-agent-intake-analysis/v2")
         self.assertEqual((report["source"]["commit"], report["source"]["tree"]), (self.commit, self.tree))
         self.assertEqual(report["status"], "static-complete")
+        self.assertEqual(report["source"]["snapshot_coverage"], {
+            "scope": "git-tree-leaf-entries", "identity_check": "git-blob-object-id", "status": "complete",
+            "total_entries": 4, "by_status": {"matched-blob": 4},
+            "gap_path_examples": {}, "gap_examples_truncated": {},
+        })
+        self.assertEqual(report["coverage"]["scope"], "extracted-archive-files")
         self.assertEqual(report["coverage"]["by_suffix"][".rs"]["analyzed"], 1)
         self.assertEqual(report["coverage"]["by_suffix"][".go"]["analyzed"], 1)
         self.assertEqual(report["prompt_evidence"]["code_signal_count"], 2)
@@ -320,16 +336,152 @@ class ReferenceTests(unittest.TestCase):
         (self.source / "external-link").symlink_to("/etc/passwd")
         git(self.source, "add", ".")
         git(self.source, "commit", "-qm", "link fixture")
-        new_commit = git(self.source, "rev-parse", "HEAD")
-        moved = self.source.parent / new_commit
-        self.source.rename(moved)
-        self.source = moved
-        self.manifest["pins"][0]["commit"] = new_commit
-        self.save_manifest()
+        self.repin_source()
         result = self.analyze()
         report = json.loads((Path(result["report_dir"]) / "analysis.json").read_text())
         self.assertEqual(report["source"]["skipped_archive_links"], 1)
+        self.assertEqual(report["source"]["snapshot_coverage"]["by_status"],
+                         {"matched-blob": 4, "skipped-symlink": 1})
         self.assertEqual(report["status"], "static-partial")
+
+    def test_export_ignore_preserves_distinct_source_and_archive_totals(self) -> None:
+        (self.source / ".gitattributes").write_text("skills export-ignore\n.gitattributes export-ignore\n")
+        git(self.source, "add", ".")
+        git(self.source, "commit", "-qm", "omitted fixture")
+        self.repin_source()
+        result = self.analyze()
+        report = json.loads((Path(result["report_dir"]) / "analysis.json").read_text())
+        source_coverage = report["source"]["snapshot_coverage"]
+        self.assertEqual((result["analysis_status"], report["status"], source_coverage["status"]),
+                         ("static-partial", "static-partial", "partial"))
+        self.assertEqual(source_coverage["total_entries"], 5)
+        self.assertEqual(source_coverage["by_status"], {"matched-blob": 3, "archive-omitted": 2})
+        self.assertEqual(source_coverage["gap_path_examples"]["archive-omitted"],
+                         [".gitattributes", "skills/sample/SKILL.md"])
+        self.assertEqual(report["coverage"]["total_files"], 3)
+        self.assertEqual(report["coverage"]["by_status"], {"analyzed": 3})
+        self.assertEqual(report["skills"], [])
+
+    def test_export_ignore_cannot_make_empty_archive_complete(self) -> None:
+        (self.source / ".gitattributes").write_text("* export-ignore\n")
+        git(self.source, "add", ".")
+        git(self.source, "commit", "-qm", "empty archive fixture")
+        self.repin_source()
+        result = self.analyze()
+        report = json.loads((Path(result["report_dir"]) / "analysis.json").read_text())
+        self.assertEqual(report["status"], "static-partial")
+        self.assertEqual(report["source"]["snapshot_coverage"]["by_status"], {"archive-omitted": 5})
+        self.assertEqual(report["coverage"]["total_files"], 0)
+        self.assertEqual(report["coverage"]["by_status"], {})
+
+    def test_export_subst_bytes_are_not_source_analysis(self) -> None:
+        (self.source / ".gitattributes").write_text("* export-subst\n")
+        (self.source / "skills/sample/SKILL.md").write_text(
+            '---\nname: "$Format:%H$"\ndescription: "$Format:%s$"\n---\n$Format:%B$\n')
+        (self.source / "prompt.rs").write_text('// $Format:%s$\n')
+        git(self.source, "add", ".")
+        git(self.source, "commit", "-qm", "system_prompt approval must not auto-adopt")
+        self.repin_source()
+        result = self.analyze()
+        report = json.loads((Path(result["report_dir"]) / "analysis.json").read_text())
+        source_coverage = report["source"]["snapshot_coverage"]
+        self.assertEqual(report["status"], "static-partial")
+        self.assertEqual(source_coverage["total_entries"], 5)
+        self.assertEqual(source_coverage["by_status"], {"matched-blob": 3, "archive-transformed": 2})
+        self.assertEqual(source_coverage["gap_path_examples"]["archive-transformed"],
+                         ["prompt.rs", "skills/sample/SKILL.md"])
+        self.assertEqual(report["coverage"]["by_status"],
+                         {"analyzed": 2, "archive-transformed": 2, "unsupported": 1})
+        skill = report["skills"][0]
+        self.assertEqual((skill["name"], skill["read_status"], skill["frontmatter_status"]),
+                         ("sample", "archive-transformed", "not-read"))
+        self.assertIsNone(skill["sha256"])
+        self.assertIsNone(skill["lines"])
+        self.assertEqual(skill["description"], "")
+        self.assertEqual(report["prompt_evidence"]["code_signal_locations"], [{"path": "prompt.go", "line": 1}])
+        guardrails = next(item for item in report["pattern_signals"] if item["signal"] == "explicit-guardrails")
+        self.assertFalse(guardrails["present"])
+
+    def test_gitlinks_are_source_coverage_gaps(self) -> None:
+        git(self.source, "update-index", "--add", "--cacheinfo", "160000," + self.commit + ",nested")
+        git(self.source, "commit", "-qm", "gitlink fixture")
+        self.repin_source()
+        result = self.analyze()
+        report = json.loads((Path(result["report_dir"]) / "analysis.json").read_text())
+        self.assertEqual(report["status"], "static-partial")
+        self.assertEqual(report["source"]["snapshot_coverage"]["by_status"],
+                         {"matched-blob": 4, "skipped-gitlink": 1})
+        self.assertEqual(report["source"]["snapshot_coverage"]["gap_path_examples"], {"skipped-gitlink": ["nested"]})
+        self.assertEqual(report["coverage"]["total_files"], 4)
+
+    def test_empty_git_tree_is_complete(self) -> None:
+        git(self.source, "read-tree", "--empty")
+        git(self.source, "commit", "-qm", "empty tree fixture")
+        self.repin_source()
+        result = self.analyze()
+        report = json.loads((Path(result["report_dir"]) / "analysis.json").read_text())
+        self.assertEqual(report["status"], "static-complete")
+        self.assertEqual(report["source"]["snapshot_coverage"]["status"], "complete")
+        self.assertEqual(report["source"]["snapshot_coverage"]["total_entries"], 0)
+        self.assertEqual(report["source"]["snapshot_coverage"]["by_status"], {})
+        self.assertEqual(report["coverage"]["total_files"], 0)
+
+    def test_tab_and_newline_paths_preserve_blob_identity(self) -> None:
+        for name in ("has\ttab.md", "has\nnewline.md"):
+            (self.source / name).write_bytes(b"original\r\nbytes\r\n")
+        git(self.source, "add", ".")
+        git(self.source, "commit", "-qm", "unquoted path fixture")
+        self.repin_source()
+        result = self.analyze()
+        report = json.loads((Path(result["report_dir"]) / "analysis.json").read_text())
+        self.assertEqual(report["status"], "static-complete")
+        self.assertEqual(report["source"]["snapshot_coverage"]["by_status"], {"matched-blob": 6})
+        self.assertEqual(report["coverage"]["by_status"], {"analyzed": 6})
+
+    def test_ignored_tree_member_limit(self) -> None:
+        (self.source / ".gitattributes").write_text("* export-ignore\n")
+        git(self.source, "add", ".")
+        git(self.source, "commit", "-qm", "ignored budget fixture")
+        self.repin_source()
+        with self.assertRaisesRegex(ProcessBudgetError, "git tree member"):
+            self.analyze(budget=intake.IntakeBudget(archive_members=4))
+        self.assertFalse(self.reports.exists())
+
+    def test_ignored_inventory_output_is_byte_bounded(self) -> None:
+        (self.source / ".gitattributes").write_text("* export-ignore\n")
+        for index in range(100):
+            (self.source / (str(index) + "x" * 200 + ".md")).write_text("")
+        git(self.source, "add", ".")
+        git(self.source, "commit", "-qm", "ignored byte budget fixture")
+        self.repin_source()
+        with self.assertRaisesRegex(ProcessBudgetError, "stdout byte"):
+            self.analyze(budget=intake.IntakeBudget(archive_bytes=20 * 1024))
+        self.assertFalse(self.reports.exists())
+
+    def test_coverage_gap_examples_are_bounded(self) -> None:
+        (self.source / ".gitattributes").write_text("* export-ignore\n")
+        for index in range(25):
+            (self.source / ("hidden-" + str(index) + ".md")).write_text("")
+        git(self.source, "add", ".")
+        git(self.source, "commit", "-qm", "bounded examples fixture")
+        self.repin_source()
+        result = self.analyze()
+        report = json.loads((Path(result["report_dir"]) / "analysis.json").read_text())
+        source_coverage = report["source"]["snapshot_coverage"]
+        self.assertEqual(source_coverage["total_entries"], 30)
+        self.assertEqual(sum(source_coverage["by_status"].values()), 30)
+        self.assertEqual(len(source_coverage["gap_path_examples"]["archive-omitted"]), 20)
+        self.assertEqual(source_coverage["gap_examples_truncated"], {"archive-omitted": True})
+
+    def test_source_gaps_propagate_to_pipeline_partial_count(self) -> None:
+        (self.source / ".gitattributes").write_text("* export-ignore\n")
+        git(self.source, "add", ".")
+        git(self.source, "commit", "-qm", "pipeline coverage fixture")
+        self.repin_source()
+        result = update_pipeline.run_pipeline(self.root, False, 3650, ["Reference"], str(self.cache))
+        self.assertEqual(result["status"], "pass")
+        self.assertEqual(result["analyzed"][0]["analysis_status"], "static-partial")
+        self.assertEqual(result["analysis_coverage"]["partial"], 1)
 
     def test_archive_generation_byte_limit(self) -> None:
         with self.assertRaises(ProcessBudgetError):
@@ -350,6 +502,53 @@ class ReferenceTests(unittest.TestCase):
 
 
 class SnapshotTests(unittest.TestCase):
+    def test_sha256_blobs_and_unexpected_archive_files(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repository, snapshot = Path(tmp) / "repository", Path(tmp) / "snapshot"
+            repository.mkdir()
+            initialized = subprocess.run(["git", "-C", str(repository), "init", "--object-format=sha256", "-q"],
+                                         capture_output=True, timeout=10)
+            if initialized.returncode:
+                self.skipTest("installed Git does not support SHA-256 repositories")
+            git(repository, "config", "user.name", "Offline Test")
+            git(repository, "config", "user.email", "offline@example.invalid")
+            (repository / "source.txt").write_bytes(b"original\r\nbytes\r\n")
+            git(repository, "add", ".")
+            git(repository, "commit", "-qm", "sha256 fixture")
+            commit = git(repository, "rev-parse", "HEAD")
+            self.assertEqual(len(commit), 64)
+            snapshot.mkdir()
+            budget = intake.IntakeBudget()
+            deadline = time.monotonic() + budget.command_seconds
+            self.assertEqual(intake._safe_extract_archive(repository, commit, snapshot, budget, deadline), 0)
+            coverage, transformed = intake._snapshot_coverage(repository, commit, snapshot, budget, deadline)
+            self.assertEqual((coverage["status"], coverage["by_status"], transformed),
+                             ("complete", {"matched-blob": 1}, set()))
+            (snapshot / "extra.txt").write_text("not in the pinned tree")
+            with self.assertRaisesRegex(intake.IntakeError, "outside the pinned git tree"):
+                intake._snapshot_coverage(repository, commit, snapshot, budget, deadline)
+
+    def test_invalid_empty_pax_archives_are_not_accepted(self) -> None:
+        commit = "a" * 40
+        for damage in ("wrong-commit", "checksum", "truncated-member"):
+            with self.subTest(damage=damage), tempfile.TemporaryDirectory() as tmp:
+                data = io.BytesIO()
+                with tarfile.open(fileobj=data, mode="w", format=tarfile.PAX_FORMAT,
+                                  pax_headers={"comment": "b" * 40 if damage == "wrong-commit" else commit}):
+                    pass
+                raw = bytearray(data.getvalue())
+                if damage == "checksum":
+                    raw[0] ^= 1
+                elif damage == "truncated-member":
+                    raw = raw[:1024] + b"damaged member"
+
+                def fake_run(command, raw=raw, **kwargs):
+                    kwargs["stdout_sink"].write(raw)
+                    return subprocess.CompletedProcess(command, 0, b"", b"")
+
+                with patch.object(intake, "run_bounded", side_effect=fake_run), self.assertRaises(tarfile.TarError):
+                    intake._safe_extract_archive(Path(tmp), commit, Path(tmp), intake.IntakeBudget())
+
     def test_coverage_is_explicit(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

@@ -476,6 +476,39 @@ with tempfile.TemporaryDirectory() as temp:
         raise AssertionError("staged-only drift bypassed HEAD identity")
     git("reset","-q","HEAD","--","field.json")
     _verify_committed_evidence(root,{tracked,special})
+    # A clean filter can normalize different worktree bytes back to the HEAD
+    # blob. Neither EOL normalization nor a content filter grants raw identity.
+    reviewed_bytes=tracked.read_bytes()
+    head_blob=subprocess.check_output(
+        ["git","-C",str(root),"rev-parse","HEAD:field.json"],text=True,
+    ).strip()
+    attributes=root/"filter-attributes"
+    attributes.write_text("field.json filter=reviewed\n",encoding="utf-8")
+    for case in ("autocrlf", "clean-filter"):
+        if case == "autocrlf":
+            git("config", "core.autocrlf", "true")
+            tracked.write_bytes(reviewed_bytes.replace(b"\n", b"\r\n"))
+        else:
+            git("config", "core.autocrlf", "false")
+            git("config", "core.attributesFile", str(attributes))
+            git("config", "filter.reviewed.clean", "git show HEAD:field.json")
+            tracked.write_text('{"source":"locally-altered"}\n',encoding="utf-8")
+        filtered_blob=subprocess.check_output(
+            ["git","-C",str(root),"hash-object","--","field.json"],text=True,
+        ).strip()
+        assert filtered_blob == head_blob, (case, filtered_blob, head_blob)
+        assert tracked.read_bytes() != reviewed_bytes, case
+        try:
+            _verify_committed_evidence(root,{tracked})
+        except LongitudinalBlocked as exc:
+            assert str(exc)=="terminal-evidence-worktree-drift", (case, str(exc))
+        else:
+            raise AssertionError("Git filter concealed different raw evidence: "+case)
+        tracked.write_bytes(reviewed_bytes)
+        _verify_committed_evidence(root,{tracked,special})
+    git("config", "--unset", "core.attributesFile")
+    git("config", "--remove-section", "filter.reviewed")
+    attributes.unlink()
     untracked=root/"not-promoted.json"
     untracked.write_text("{}\n",encoding="utf-8")
     try:
