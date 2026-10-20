@@ -1,0 +1,126 @@
+name: qualification-followup
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/qualification-followup.yml'
+      - 'tools/control_plane/**'
+      - 'tools/codex_assets/**'
+      - 'tests/test_qualification_followup*'
+      - 'manifests/**'
+      - 'reports/field-evidence/**'
+      - 'reports/long-term-assets/**'
+      - 'reports/runtime-evidence/**'
+      - 'docs/changes/20261020-qualification-followup/**'
+      - 'agent-dev-kit'
+      - 'adk.lock'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/qualification-followup.yml'
+      - 'tools/control_plane/**'
+      - 'tools/codex_assets/**'
+      - 'tests/test_qualification_followup*'
+      - 'manifests/**'
+      - 'reports/field-evidence/**'
+      - 'reports/long-term-assets/**'
+      - 'reports/runtime-evidence/**'
+      - 'docs/changes/20261020-qualification-followup/**'
+      - 'agent-dev-kit'
+      - 'adk.lock'
+  schedule:
+    - cron: '23 1 * * *' # 09:23 Asia/Shanghai; not a real-time execution guarantee.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qualification-followup-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  followup:
+    name: qualification-followup
+    if: github.repository == 'jiying2007/llm_agent'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      TZ: UTC
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - name: Checkout exact candidate or protected source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          submodules: false
+          persist-credentials: false
+
+      - name: Set up supported Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.11'
+
+      - name: Install the pinned existing control-plane dependencies
+        run: |
+          git submodule update --init --depth=1 agent-dev-kit
+          python -m pip install . ./agent-dev-kit
+
+      - name: Verify diagnostic authority boundaries
+        run: bash tests/test_qualification_followup.sh
+
+      - name: Collect all six current-source qualification checks
+        id: collect
+        shell: bash
+        run: |
+          set -euo pipefail
+          report="$RUNNER_TEMP/qualification-followup.json"
+          code=0
+          python -m tools.control_plane.cli qualification-followup --root . --summary-json > "$report" || code=$?
+          printf 'exit_code=%s\n' "$code" >> "$GITHUB_OUTPUT"
+          exit "$code"
+
+      - name: Summarize collection and qualification separately
+        if: ${{ always() && steps.collect.outcome != 'skipped' }}
+        shell: bash
+        run: |
+          python - "$RUNNER_TEMP/qualification-followup.json" "$GITHUB_STEP_SUMMARY" <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+
+          report_path, summary_path = map(Path, sys.argv[1:])
+          if not report_path.is_file() or report_path.stat().st_size == 0:
+              raise SystemExit("qualification collection produced no report")
+          report = json.loads(report_path.read_text())
+          def cell(value):
+              return str(value).replace("|", "\\|").replace("\n", " ").replace("<", "&lt;").replace(">", "&gt;")
+          lines = [
+              "## Six existing qualification tasks",
+              "",
+              "This is a read-only diagnostic report. A successful scan does not certify the product or record Owner approval.",
+              "",
+              f"Collected at: {cell(report['generated_at'])}",
+              f"Scan status: {cell(report['scan_status'])}",
+              f"All qualification requirements ready: {cell(report['qualification_all_ready'])}",
+              "Release authorized by this report: **false**",
+              "",
+              "| Task | Diagnostic | Qualification state | Actual exit |",
+              "| --- | --- | --- | --- |",
+          ]
+          for item in report['items']:
+              lines.append("| {} | {} | {} | {} |".format(
+                  cell(item['id']), cell(item['scan_status']), cell(item['status']), cell(item['command_exit'])))
+          lines.extend(["", "The artifact contains exact source identities, original results, missing evidence, and next actions."])
+          with summary_path.open("a") as stream:
+              stream.write("\n".join(lines) + "\n")
+          PY
+
+      - name: Upload bounded current-source diagnostics
+        if: ${{ always() && steps.collect.outcome != 'skipped' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: qualification-followup-${{ github.sha }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/qualification-followup.json
+          if-no-files-found: error
+          retention-days: 30

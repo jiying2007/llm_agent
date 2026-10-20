@@ -27,6 +27,9 @@ rtk scripts/check-upstream-intake-readiness.sh .
 # LTA-04 30 天纵向运营只读认证；窗口未满或真实 summary 缺失时必须返回 BLOCKED
 rtk python -m tools.control_plane.cli longitudinal-operation --root . --summary-json
 
+# 六项既有资格任务的只读复核；scan 完整与资格通过分别报告
+rtk python -m tools.control_plane.cli qualification-followup --root . --summary-json
+
 # reference repo 默认只校验 exact pins，不拉取源码
 rtk python -m tools.control_plane.reference_pins --root . --summary-json
 
@@ -38,6 +41,8 @@ rtk python -m tools.control_plane.reference_pins --root . --materialize OpenSpec
 ```
 
 Root 控制面的统一 Python 入口是 `llm-ctl`（`pyproject.toml`）；GitHub Actions 和本地脚本逐步收敛到同一组 `tools.control_plane` 实现。Reference materialization 永远不把第三方仓重新写回 Root working tree。
+
+`qualification-followup` 复用六项既有判据，收集精确来源、实际退出码、剩余证据与下一步。只读 workflow 在相关源码变更及每日北京时间 09:23 复核并保留 30 天 artifact；定时执行可能延迟，必须检查报告实际采集时间。退出 0 仅表示扫描完整，真实 Owner、native/field/effect 证据与 Product M5 授权仍以各自 canonical gate 为准。详见 [资格复核](docs/runbooks/qualification-followup.md)。
 
 `digital-worker` 是 periodic R2 runtime replaceability 的唯一 qualification authority；`llm_agent` 只观察其 fresh qualification receipt、runtime health 与长期演进，不再对 provider evidence 做第二次 R2 认证。R2 blocked/stale/not-run 不阻塞 llm_agent 日常开发，也不成为 llm_agent 的 terminal blocker。
 

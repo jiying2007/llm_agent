@@ -57,6 +57,9 @@ jobs:
       - name: Validate pinned workflow action runtime compatibility
         run: bash tests/test_workflow_action_compatibility.sh
 
+      - name: Verify report-only qualification follow-up boundaries
+        run: bash tests/test_qualification_followup.sh
+
       - name: Validate terminal consumer pin chain
         run: bash tests/test_consumer_chain.sh
 
