@@ -58,3 +58,5 @@ rtk bash tests/test_adk_agent_value_trust_consumer.sh
 ```
 
 真实 G22 证据必须来自版本固定的 repeated-trial campaign 与脱敏 invocation receipts，覆盖成功和失败、wrong-route、abstain、人工介入、outcome 与 retirement signal。受管 verifier 只证明 receipt 来源/范围可信，不自动证明资产有价值，也不授权 consolidation/retirement。
+
+已授权的摘要/资产决策审核依 ADK 唯一 `.adk/review-policy.json` 使用独立 AI Spec/Quality 记录，诚实声明 `owner-delegated-ai`，不再强制额外人工 verdict。Root G22 v6 消费精确记录摘要及全部原材料；真实签名、managed authority、完整资产测量和运行事实仍按 [effect readiness](effect-readiness.md) 原合同验证。AI 审核者身份不会成为 LTA 真实 field event 的注册人类操作者，也不产生尚未运行的 trial 或 observation。

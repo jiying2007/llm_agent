@@ -1,0 +1,30 @@
+# Negative findings and retained limits
+
+## Diagnosed defects corrected in source
+
+1. **A matching historical head did not fix the reviewed diff.** An arbitrary base, including the head itself, could describe an empty or different change. The consumer now requires the independently checked original base and head pair for each historical subject.
+2. **Commit strings alone did not bind original material.** A review could attach unrelated bytes to the right strings. The shared validator requires a retained nonempty record-relative `evidence/original.patch`; Root checks its SHA against the three original complete Git diffs. This establishes retained byte identity, not external identity authentication.
+3. **An archived state alone did not establish lifecycle provenance.** Missing or contradictory `provenance.md` could be treated as complete. Root now checks the existing provenance schema, source/final stages, exact reviewer and review digest, unique metadata and chronology. `archived_by` remains the actual coordinator and can differ from the reviewer.
+4. **An installed ADK could validate a receipt using its own old module bytes.** A correct checkout lock did not constrain Python import origin. All three Root consumers now use the shared bridge to compare actual loaded module fingerprints with the explicit pinned source files before invoking the sole API. Missing, symlinked or mismatched sources fail closed.
+5. **Candidate PYTHONPATH concealed a default typing failure.** The initial bridge statically imported the optional ADK and returned an unconstrained Any value. The default Root mypy gate exposed import-not-found and no-any-return. A dynamic optional import and a string-keyed dictionary result guard fixed those errors without duplicating review semantics. Runtime dependency absence still fails.
+6. **`ROOT-DELEGATED-AUTHORITY-001` — current authority bytes were not bound to the pinned Git commit.** Fresh independent review of the recovered candidate found a major even though its 72 focused tests passed. Matching loaded/worktree validator bytes and an ADK HEAD label still allowed an uncommitted policy/authorization rewrite plus receipt rehashing. The shared bridge now verifies the parent Root index gitlink against ADK HEAD, and policy/authorization/three-module regular HEAD blobs against index and raw worktree bytes before and after the shared API. Seven new real temporary Git negative cases cover dirty/staged/rehashed authority, mismatched ADK HEAD and the historical consumer. The expanded 79-test suite actually passed; independent closure requires the review of this changed byte set.
+
+The final independent review by `ai/root/external_methods` at `2026-10-20T12:20:25.352831Z` marked `ROOT-DELEGATED-AUTHORITY-001` **fixed** and returned separate Spec=pass / Quality=pass for the current source. The reviewer actually reran 79 tests, ending at `12:16:09.271615Z`, with source hashes unchanged before/after and at review completion. Its new review, not the prior 72-test result, closes this finding. The additional read-only LTA/bridge peer review at `12:14:27Z` also passed; that peer did not claim test execution.
+
+## Deterministic negative coverage
+
+The focused fixtures cover wrong historical heads/bases/patches, missing lifecycle, duplicate active/archive locations, missing/duplicated/mismatched archive metadata, archive time before review or in the future, unsafe references, policy/source drift, author/reviewer equality, malformed API results and all three installed-versus-pinned module mismatches.
+
+G22 rejects omitted original experiment/decision documents, mismatched review identity or time, incomplete observed cases, missing per-asset decisions, false claims of human/unautomated review and review before evidence completion. LTA rejects a missing final field observation, synthetic evidence layers, an AI reviewer pretending to be a registered human field operator, digest drift, wrong pilot scope, missing source contracts and a review hold. The original LTA shell suite continues to check the full event and committed-source boundaries.
+
+## Environment recovery
+
+At approximately `2026-10-20T11:44:00Z` the session had a new filesystem and the previous worktrees/RTK/venv were absent. Root main and tooling were restored. An independent reviewer had retained the collector and initial bridge diff, allowing those two final files to match their old reviewed SHA exactly after the final importlib increment. No complete old copy of every other changed file was recovered. Those files and this seven-document package were reconstructed and treated as new source for validation and independent review.
+
+The historical independent results at `07:30:28.390771Z` and `07:34:48.744294Z` remain historical; they are not evidence that recovery succeeded. New tests actually ran on the reconstructed candidate. The [verification report](verify-report.md) records both sets separately. Root's knowledge provider executable was unavailable in the restored environment; that integration was not silently claimed as passed.
+
+The prescribed final Execution Policy command was also actually attempted through RTK using the current thread ID. It exited 1 because the restored Root `tools.codex_assets` package has no `__main__` and cannot be executed with `python -m tools.codex_assets`. This existing environment/governance entry-point failure is reported to the delivery coordinator; it is not bypassed by creating another approval policy, and it is not relabeled as an application test failure or successful runtime gate.
+
+## Work that remains genuinely incomplete
+
+Formal ADK release and Root pin promotion, full G22 integration against that exact new pin, protected Root CI and fresh-main qualification remain pending until actually executed. The canonical effect index is empty, the real LTA summary has not been supplied, and source fixtures do not prove Native provider authentication. There is no added real runtime/field event, owner impersonation, generated human verdict or paid provider execution in this change.

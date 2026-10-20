@@ -381,7 +381,7 @@ def sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 review={
-    "schema":"llm-agent-effect-owner-review/v5",
+    "schema":"llm-agent-effect-owner-review/v6",
     "status":"approved",
     "campaign_id":comparison["campaign_id"],
     "campaign_sha256":sha(campaign_path),
@@ -393,9 +393,9 @@ review={
     "preregistration_package_sha256":sha(preregistration_package_path),
     "preregistration_bundle_sha256":sha(preregistration_bundle_path),
     "reviewed_at":now.isoformat().replace("+00:00","Z"),
-    "reviewed_by":"fixture-human-owner",
-    "reviewer_role":"owner",
-    "automation_generated":False,
+    "reviewed_by":"fixture-ai-reviewer",
+    "reviewer_role":"owner-delegated-ai",
+    "automation_generated":True,
     "observed_cases":{
         "success":True,
         "failure":True,
@@ -416,9 +416,18 @@ review_path.write_text(
     encoding="utf-8",
 )
 
+sys.path.insert(0, str(root / "tests"))
+from delegated_review_fixtures import review_fixture
+
+review_evidence_path=fixture_dir/"review-evidence.json"
+review_fixture(root, review_evidence_path, subject=comparison["campaign_id"], scope="effect-value-review",
+               sources=[campaign_path, comparison_path, contract_path, registry_path, receipts_path,
+                        measurement_path, preregistration_package_path, preregistration_bundle_path, review_path],
+               reviewed_at=now, completed_at=now, policy_root=adk)
+
 relative=lambda path: path.relative_to(root).as_posix()
 index={
-    "schema":"llm-agent-effect-value-evidence-index/v5",
+    "schema":"llm-agent-effect-value-evidence-index/v6",
     "status":"active",
     "entries":[{
         "id":comparison["campaign_id"],
@@ -440,6 +449,8 @@ index={
         "measurement_sha256":sha(measurement_path),
         "owner_review_path":relative(review_path),
         "owner_review_sha256":sha(review_path),
+        "review_evidence_path":relative(review_evidence_path),
+        "review_evidence_sha256":sha(review_evidence_path),
     }],
 }
 index_path=fixture_dir/"evidence-index.json"
@@ -459,12 +470,21 @@ def write_review_variant(label, reviewed_at, review_document, evidence_index):
     early_index=json.loads(json.dumps(evidence_index))
     early_index["entries"][0]["owner_review_path"]=relative(early_review_path)
     early_index["entries"][0]["owner_review_sha256"]=sha(early_review_path)
+    early_entry=early_index["entries"][0]
+    early_record_path=fixture_dir/(label+"-review-evidence.json")
+    review_fixture(root, early_record_path, subject=early_entry["id"], scope="effect-value-review",
+                   sources=[root/early_entry[name+"_path"] for name in (
+                       "campaign", "comparison", "authority_contract", "authority_registry", "receipts",
+                       "measurement", "preregistration_package", "preregistration_bundle", "owner_review")],
+                   reviewed_at=reviewed_at, completed_at=reviewed_at, policy_root=adk)
+    early_entry["review_evidence_path"]=relative(early_record_path)
+    early_entry["review_evidence_sha256"]=sha(early_record_path)
     (fixture_dir/(label+"-index.json")).write_text(
         json.dumps(early_index,ensure_ascii=False,sort_keys=True,indent=2)+"\n",
         encoding="utf-8",
     )
 
-# Only the owner-review timestamp and its outer index digest change. Signed
+# Only review timestamps and their bound decision/record/index digests change. Signed
 # observations, preregistration, receipts and measured values remain identical.
 # A past timestamp is insufficient if any reviewed evidence was completed later.
 for label, reviewed_at in (
@@ -558,9 +578,9 @@ forged_index_path.write_text(
     encoding="utf-8",
 )
 
-# Negative 3: an automated placeholder cannot stand in for the human owner.
+# Negative 3: a delegated AI review must not falsely deny its automated origin.
 automated_review=json.loads(json.dumps(review))
-automated_review["automation_generated"]=True
+automated_review["automation_generated"]=False
 automated_review_path=fixture_dir/"automated-owner-review.json"
 automated_review_path.write_text(
     json.dumps(automated_review,ensure_ascii=False,sort_keys=True,indent=2)+"\n",
@@ -737,7 +757,9 @@ assert index["entries"][0]["preregistration_package_sha256"], index
 assert index["entries"][0]["preregistered_at"], index
 assert index["entries"][0]["verified_receipt_count"]>index["expected_asset_count"], index
 assert index["entries"][0]["campaign_trace_count"]>0, index
-assert index["entries"][0]["reviewed_by"]=="fixture-human-owner", index
+assert index["entries"][0]["reviewed_by"]=="fixture-ai-reviewer", index
+assert index["entries"][0]["reviewer_role"]=="owner-delegated-ai", index
+assert index["entries"][0]["delegated_review_verified"] is True, index
 assert index["entries"][0]["evidence_completed_at"]==index["entries"][0]["reviewed_at"], index
 assert value["release_authorized"] is False, value
 PY
@@ -794,4 +816,4 @@ if grep -Eq 'ANTHROPIC_API_KEY|OPENAI_API_KEY|claude -p|codex exec' "$WORKFLOW";
   exit 1
 fi
 
-echo '[PASS] effect readiness requires cryptographic preregistration, signed receipt replay, recomputed measurement, campaign provenance, and real owner review'
+echo '[PASS] effect readiness requires cryptographic preregistration, signed receipt replay, recomputed measurement, campaign provenance, and independent delegated review'

@@ -126,7 +126,7 @@ event_log = field / "software-m5-v5-events.jsonl"
 event_log.write_text("".join(json.dumps(item, ensure_ascii=False, separators=(",", ":")) + "\n" for item in events), encoding="utf-8")
 
 summary = {
-    "schema": "llm-agent-longitudinal-operation-evidence/v1",
+    "schema": "llm-agent-longitudinal-operation-evidence/v2",
     "qualification": "LTA-04",
     "status": "complete",
     "pilot_id": "pilot-independent",
@@ -148,6 +148,7 @@ summary = {
         "unresolved_risks": []
     },
     "review": {
+        "mode": "registered-human",
         "operator_id": "operator-primary",
         "standard": "solo-maintainer-long-term-asset-v1",
         "decision": "approve",

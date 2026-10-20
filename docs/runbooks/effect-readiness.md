@@ -14,7 +14,7 @@ The projection separates two independent questions:
 
 A default PASS only means the projection is valid. It is not an effectiveness, retirement or release claim.
 
-**输入可信边界：** G22 readiness 的已登记 Evidence Index、原始 Campaign、签名/托管收据集合、测量及 Owner 决策 JSON 均通过 Root 既有的 `intake_io.read_json` 读取，按单文件 16 MiB 预算和严格 UTF-8/JSON 语义拒绝任意层级重复键、`NaN`/`Infinity`、溢出浮点、过深结构及符号链接。不能通过重排键或改变解析器来覆盖人类审核过的证据字段；校验失败是 invalid-source，不会降级成 `not-measured` 或 PASS。相关制品的 SHA-256 也经同一普通文件/16 MiB 字节预算读取；完整 JSON 先做严格解析，再进入 Schema 子进程，避免不可信超大文档绕过预算进行提前哈希或 Schema 运算。
+**输入可信边界：** G22 readiness 的已登记 Evidence Index、原始 Campaign、签名/托管收据集合、测量及 Owner 决策 JSON 均通过 Root 既有的 `intake_io.read_json` 读取，按单文件 16 MiB 预算和严格 UTF-8/JSON 语义拒绝任意层级重复键、`NaN`/`Infinity`、溢出浮点、过深结构及符号链接。不能通过重排键或改变解析器来覆盖已审核的证据字段；校验失败是 invalid-source，不会降级成 `not-measured` 或 PASS。相关制品的 SHA-256 也经同一普通文件/16 MiB 字节预算读取；完整 JSON 先做严格解析，再进入 Schema 子进程，避免不可信超大文档绕过预算进行提前哈希或 Schema 运算。
 
 ## Canonical evidence index
 
@@ -28,7 +28,7 @@ The default index is intentionally empty:
 
 ```json
 {
-  "schema": "llm-agent-effect-value-evidence-index/v5",
+  "schema": "llm-agent-effect-value-evidence-index/v6",
   "status": "active",
   "entries": []
 }
@@ -44,7 +44,8 @@ Each future entry binds the full replay package beneath the index directory:
 - one reviewed managed Agent Value trust registry;
 - one `llm-agent-effect-receipt-set/v1` containing the raw sanitized runtime/field receipts plus fixed aggregation window/as-of;
 - one ADK `adk-asset-value-measurement/v1`;
-- one Root `llm-agent-effect-owner-review/v5`.
+- one Root `llm-agent-effect-owner-review/v6`;
+- one independent `adk-review-evidence/v1`, indexed by `review_evidence_path` and `review_evidence_sha256`, with scope `effect-value-review` and subject equal to the campaign ID.
 
 Registry signature-bundle paths are resolved relative to the evidence-index directory by the current pinned ADK's portable managed verifier and shared digest-pinned Sigstore blob verifier. Root replays every raw receipt through the exact contract/registry/cosign trust semantics and recomputes the measurement with ADK `emit_measurements()`. A committed aggregate measurement is accepted only when it is exactly equal to that recomputation.
 
@@ -77,7 +78,7 @@ rtk python3 -m tools.control_plane.effect_preregistration_package \
   --summary-json
 ```
 
-The builder computes all six control refs and both bundle digests from canonical content and then calls the same v5 validator used by readiness. Source documents are rejected if they contain derived refs/digests, if pinned asset content refs drift, or if baseline/candidate differ only by labels/metadata. Existing output is not overwritten unless `--overwrite` is explicit.
+The builder computes all six control refs and both bundle digests from canonical content and then calls the same pinned package validator used by readiness. Source documents are rejected if they contain derived refs/digests, if pinned asset content refs drift, or if baseline/candidate differ only by labels/metadata. Existing output is not overwritten unless `--overwrite` is explicit.
 
 The builder does **not** choose a model, time window, task population, intervention, budget, or provider. Those remain explicit reviewed experiment inputs, and a decisive campaign still requires `model_identity=revision-bound`.
 
@@ -133,13 +134,13 @@ A measurement is accepted only when:
 
 The union of accepted measurements must cover **every current** Agent, Skill, optional Skill, and Profile in the pinned ADK manifest. Unknown assets are rejected; stale manifest measurements are rejected.
 
-## Owner review contract
+## Owner-delegated review contract
 
-The owner-review document is deliberately simple and has no execution authority:
+The decision document remains named owner-review for the owner responsibility it records. Under the explicit ADK delegation policy it identifies the actual AI reviewer and has no execution authority:
 
 ```json
 {
-  "schema": "llm-agent-effect-owner-review/v5",
+  "schema": "llm-agent-effect-owner-review/v6",
   "status": "approved",
   "campaign_id": "campaign-id",
   "campaign_sha256": "<64 hex>",
@@ -150,10 +151,10 @@ The owner-review document is deliberately simple and has no execution authority:
   "measurement_sha256": "<64 hex>",
   "preregistration_package_sha256": "<64 hex>",
   "preregistration_bundle_sha256": "<64 hex>",
-  "reviewed_at": "2026-09-26T00:00:00Z",
-  "reviewed_by": "<real human reviewer identity>",
-  "reviewer_role": "owner",
-  "automation_generated": false,
+  "reviewed_at": "<actual UTC timestamp after authorization and completed evidence>",
+  "reviewed_by": "<actual independent AI reviewer identity>",
+  "reviewer_role": "owner-delegated-ai",
+  "automation_generated": true,
   "observed_cases": {
     "success": true,
     "failure": true,
@@ -173,7 +174,13 @@ The owner-review document is deliberately simple and has no execution authority:
 }
 ```
 
-The review must bind the exact preregistration package/signature bundle, campaign/comparison, authority contract, authority registry, receipt-set and measurement digests, identify the real reviewer, set `automation_generated=false`, and cover every asset in its measurement. The measured asset set must exactly equal the preregistered candidate bundle asset set. The `observed_cases` flags must also exactly match representative success/failure/wrong-route/abstain cases derived from the verified raw receipts. Allowed decisions are `retain`, `consolidate-candidate`, `retire-candidate`, and `reject-change`. Conflicting decisions for the same asset across active entries invalidate the index.
+The review must bind the exact preregistration package/signature bundle, campaign/comparison, authority contract, authority registry, receipt-set and measurement digests, identify the actual reviewer, set `automation_generated=true`, and cover every asset in its measurement. The measured asset set must exactly equal the preregistered candidate bundle asset set. The `observed_cases` flags must also exactly match representative success/failure/wrong-route/abstain cases derived from the verified raw receipts. Allowed decisions are `retain`, `consolidate-candidate`, `retire-candidate`, and `reject-change`. Conflicting decisions for the same asset across active entries invalidate the index.
+
+The separate delegated review record binds **all nine original documents**, including this decision document. Root's shared pinned bridge checks the actual loaded validator's three source files against the explicit ADK worktree, then invokes the one ADK review validator using `policy_root=agent-dev-kit`; Root remains the base for its source references. The record must match the index digest, reviewer ID and review timestamp, and its evidence completion must cover the latest verified observation, signature and aggregation time. It records independent Spec/Quality pass only after that review actually runs. Policy and validator fingerprints must remain current.
+
+The bridge also binds the policy, its authorization and all three validators to the actual ADK HEAD selected by the parent Root gitlink. Their regular HEAD blobs, staged index entries and unfiltered worktree bytes must agree before and after API validation. Rehashing a receipt against locally changed or staged authority does not make that authority part of the fixed component.
+
+The index points to both documents. The decision document does not contain the digest of a review that in turn hashes it; this prevents circular digest dependencies. Index and decision schema v6 is an explicit migration: old v5 records do not silently inherit delegated authority. The canonical index was empty at migration, so no real evidence was rewritten or claimed as reviewed.
 
 A recorded decision does **not** delete an asset, merge a skill, mutate a profile, or authorize a release. Execution remains a separate reviewed change.
 
@@ -204,4 +211,4 @@ effect_evidence_ready=false
 terminal_status=blocked-external-evidence
 ```
 
-Synthetic repeated trials and fake verifier fixtures validate the state machine only; they cannot be committed as canonical runtime/field evidence. Index v5 requires cryptographic pre-registration of the complete content-addressed package before all effect-trial runs and managed observations/signatures, then campaign→comparison recomputation, portable managed signature replay of every raw receipt, exact aggregate measurement recomputation, exact candidate-bundle asset coverage, campaign trace/bundle/runtime-target coverage, and digest-bound human review.
+Synthetic repeated trials and fake verifier fixtures validate the state machine only; they cannot be committed as canonical runtime/field evidence. Index v6 requires cryptographic pre-registration of the complete content-addressed package before all effect-trial runs and managed observations/signatures, then campaign→comparison recomputation, portable managed signature replay of every raw receipt, exact aggregate measurement recomputation, exact candidate-bundle asset coverage, campaign trace/bundle/runtime-target coverage, and a digest-bound independent delegated review. Changing the review subject does not create missing measurements, signatures or runtime observations.
