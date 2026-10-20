@@ -12,8 +12,11 @@ import tempfile
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
 from dataclasses import replace
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from unittest.mock import patch
+
+from delegated_review_fixtures import policy_fixture, review_fixture, write_json
 
 from tools.control_plane import qualification_followup as followup
 
@@ -78,7 +81,7 @@ class QualificationFollowupTest(unittest.TestCase):
         self.assertEqual([item["command_exit"] for item in report["items"]], [2, 2, 2, 2, 2, None])
         self.assertTrue(report["report_only"])
         for key in ("qualification_all_ready", "release_authorized", "may_fill_owner",
-                    "provider_execution_performed"):
+                    "provider_execution_performed", "required_qualification_ready"):
             self.assertFalse(report[key])
         for check, item in zip(self.checks, report["items"], strict=False):
             self.assertEqual(item["result"], blocked(check))
@@ -288,20 +291,20 @@ class QualificationFollowupTest(unittest.TestCase):
             with self.subTest(name=name), self.assertRaises(RuntimeError):
                 followup._file_identity(self.root, name)
 
-    def test_human_inventory_does_not_interpret_stage_or_review_content_as_approval(self) -> None:
+    def test_inventory_does_not_interpret_stage_or_review_content_as_approval(self) -> None:
         change = self.root / "agent-dev-kit/docs/changes" / followup.CHANGE_IDS[0]
         change.mkdir(parents=True)
         (change / "state.yaml").write_text("stage: reviewed\nowner_verdict: approved\n", encoding="utf-8")
         (change / "review-report.md").write_text(CANARY, encoding="utf-8")
         item = followup._review_inventory(self.root)
-        self.assertEqual(item["status"], "human-review-required")
+        self.assertEqual(item["status"], "review-evidence-required")
         self.assertFalse(item["qualification_ready"])
-        self.assertFalse(item["result"]["owner_verdict_verified"])
+        self.assertFalse(item["result"]["delegated_review_verified"])
         self.assertFalse(item["result"]["semantic_review_performed"])
         self.assertIsNone(item["command_exit"])
         self.assertNotIn(CANARY, json.dumps(item))
         self.assertTrue(item["result"]["changes"][0]["files"]["review-report.md"]["present"])
-        self.assertFalse(item["result"]["changes"][1]["files"]["review-report.md"]["present"])
+        self.assertEqual(item["result"]["changes"][1]["reason"], "change-package-missing")
 
     def test_human_inventory_unsafe_input_is_scan_error(self) -> None:
         change = self.root / "agent-dev-kit/docs/changes" / followup.CHANGE_IDS[0]
@@ -327,7 +330,233 @@ class QualificationFollowupTest(unittest.TestCase):
         self.assertFalse(item["component_signature_reverified"])
         self.assertTrue(item["diagnostics_only"])
         self.assertFalse(item["qualification_ready"])
+        self.assertFalse(item["required_in_current_scope"])
+        self.assertEqual(item["status"], "conditional")
+        self.assertEqual(item["assessment"], "not-assessed")
         self.assertEqual(item["result"]["stages"]["promotion_signature"]["status"], "blocked")
+
+    def reviewed_changes(self) -> list[Path]:
+        adk = self.root / "agent-dev-kit"
+        now = datetime.now(UTC)
+        policy_fixture(adk, now)
+        changes = []
+        synthetic_patch_digests = {}
+        for change_id, head in followup.CHANGE_HEADS.items():
+            change = adk / "docs/changes" / change_id
+            change.mkdir(parents=True)
+            (change / "state.yaml").write_text("stage: review-passed\n", encoding="utf-8")
+            source = change / "requirements.md"
+            source.write_text("Synthetic frozen source requirements.\n", encoding="utf-8")
+            record = review_fixture(adk, change / "review-evidence.json", subject=change_id, scope="source-change",
+                                    sources=[source], reviewed_at=now, target={"base_commit": followup.CHANGE_BASES[change_id], "head_commit": head})
+            synthetic_patch_digests[change_id] = record["target"]["original_patch_sha256"]
+            changes.append(change)
+        # The disposable fixture has a small synthetic diff, not historical ADK
+        # source. Preserve production's pinned targets and replace only this test
+        # consumer's expected diff bytes; mismatch tests still enforce equality.
+        expected_patches = patch.dict(followup.CHANGE_PATCHES, synthetic_patch_digests)
+        expected_patches.start()
+        self.addCleanup(expected_patches.stop)
+        return changes
+
+    def archive_fixture(self, first: Path) -> Path:
+        archive = first.parent / "archive" / ("20261020-" + first.name)
+        archive.parent.mkdir(exist_ok=True)
+        first.rename(archive)
+        (archive / "state.yaml").write_text("stage: archived\nowner: ai/fixture-coordinator\n", encoding="utf-8")
+        record_path = archive / "review-evidence.json"
+        record = json.loads(record_path.read_text(encoding="utf-8"))
+        fields = {
+            "schema": "adk-change-provenance/v1", "authority": "ADK Canonical Change Contract",
+            "change_id": first.name, "source_stage": "review-passed", "final_stage": "archived",
+            "archived_by": "ai/fixture-coordinator", "archived_at": record["reviewed_at"],
+            "reviewer_id": record["reviewer"]["id"], "review_verdict": "pass",
+            "review_record_sha256": hashlib.sha256(record_path.read_bytes()).hexdigest(),
+        }
+        (archive / "provenance.md").write_text("# Archive provenance\n\n" + "".join(
+            f"- {key}: {value}\n" for key, value in fields.items()), encoding="utf-8")
+        return archive
+
+    def test_valid_delegated_reviews_have_a_reachable_ready_path(self) -> None:
+        self.reviewed_changes()
+        item = followup._review_inventory(self.root)
+        self.assertEqual(item["status"], "ready", item)
+        self.assertTrue(item["qualification_ready"])
+        self.assertTrue(item["result"]["delegated_review_verified"])
+        self.assertFalse(item["result"]["semantic_review_performed"], "collector does not perform the review itself")
+        self.assertTrue(all(change["reviewer"]["kind"] == "ai" for change in item["result"]["changes"]))
+
+    def test_historical_inventory_rejects_rehashed_dirty_adk_authority(self) -> None:
+        changes = self.reviewed_changes()
+        policy = self.root / "agent-dev-kit/.adk/review-policy.json"
+        policy.write_bytes(policy.read_bytes() + b"\n")
+        for change in changes:
+            path = change / "review-evidence.json"
+            record = json.loads(path.read_text(encoding="utf-8"))
+            record["policy_sha256"] = hashlib.sha256(policy.read_bytes()).hexdigest()
+            write_json(path, record)
+        result = followup._review_inventory(self.root)
+        self.assertEqual(result["scan_status"], "error")
+        self.assertFalse(result["qualification_ready"])
+
+    def test_historical_inventory_rejects_an_adk_head_outside_the_root_pin(self) -> None:
+        self.reviewed_changes()
+        adk = self.root / "agent-dev-kit"
+        subprocess.run(["git", "-C", str(adk), "-c", "user.name=Synthetic Fixture", "-c", "user.email=fixture@example.invalid",
+                        "commit", "--allow-empty", "-qm", "Unpinned historical review fixture"], check=True, capture_output=True)
+        result = followup._review_inventory(self.root)
+        self.assertEqual(result["scan_status"], "error")
+        self.assertFalse(result["qualification_ready"])
+
+    def test_archived_review_resolves_once_without_rewriting_its_record(self) -> None:
+        first, *_ = self.reviewed_changes()
+        self.archive_fixture(first)
+        item = followup._review_inventory(self.root)
+        self.assertTrue(item["qualification_ready"], item)
+        self.assertEqual(item["result"]["changes"][0]["stage"], "archived")
+        first.mkdir()
+        duplicate = followup._review_inventory(self.root)
+        self.assertEqual(duplicate["scan_status"], "error")
+        self.assertFalse(duplicate["qualification_ready"])
+        with self.assertRaises(ValueError):
+            followup._review_paths(self.root)
+
+    def test_archive_requires_matching_unambiguous_provenance(self) -> None:
+        first, *_ = self.reviewed_changes()
+        archive = self.archive_fixture(first)
+        path = archive / "provenance.md"
+        baseline = path.read_text(encoding="utf-8")
+        variants = (
+            "", baseline.replace("source_stage: review-passed", "source_stage: verified"),
+            baseline.replace("review_verdict: pass", "review_verdict: fail"),
+            baseline.replace("reviewer_id: fixture-ai-reviewer", "reviewer_id: ai/wrong-reviewer"),
+            baseline.replace("review_record_sha256: ", "review_record_sha256: 0"),
+            baseline + "- review_verdict: pass\n",
+        )
+        for value in variants:
+            with self.subTest(value=value):
+                path.write_text(value, encoding="utf-8")
+                item = followup._review_inventory(self.root)
+                self.assertEqual(item["scan_status"], "error")
+                self.assertFalse(item["qualification_ready"])
+        path.unlink()
+        self.assertFalse(followup._review_inventory(self.root)["qualification_ready"])
+
+    def test_archive_provenance_cannot_predate_review_or_claim_the_future(self) -> None:
+        first, *_ = self.reviewed_changes()
+        archive = self.archive_fixture(first)
+        path = archive / "provenance.md"
+        baseline = path.read_text(encoding="utf-8")
+        record = json.loads((archive / "review-evidence.json").read_text(encoding="utf-8"))
+        reviewed = datetime.fromisoformat(record["reviewed_at"].replace("Z", "+00:00"))
+        for value in (reviewed - timedelta(seconds=1), datetime.now(UTC) + timedelta(days=1)):
+            path.write_text(baseline.replace("archived_at: " + record["reviewed_at"],
+                                             "archived_at: " + value.isoformat().replace("+00:00", "Z")), encoding="utf-8")
+            self.assertFalse(followup._review_inventory(self.root)["qualification_ready"])
+
+    def test_wrong_historical_head_cannot_reuse_a_valid_receipt(self) -> None:
+        first, *_ = self.reviewed_changes()
+        path = first / "review-evidence.json"
+        value = json.loads(path.read_text())
+        value["target"]["head_commit"] = "b" * 40
+        write_json(path, value)
+        item = followup._review_inventory(self.root)
+        self.assertFalse(item["qualification_ready"])
+        self.assertEqual(item["scan_status"], "error")
+
+    def test_wrong_base_or_empty_diff_cannot_reuse_a_historical_review(self) -> None:
+        first, *_ = self.reviewed_changes()
+        record_path = first / "review-evidence.json"
+        record = json.loads(record_path.read_text(encoding="utf-8"))
+        for base in ("c" * 40, followup.CHANGE_HEADS[first.name]):
+            with self.subTest(base=base):
+                record["target"]["base_commit"] = base
+                write_json(record_path, record)
+                result = followup._review_inventory(self.root)
+                self.assertEqual(result["scan_status"], "error")
+                self.assertFalse(result["qualification_ready"])
+
+    def test_an_arbitrary_patch_cannot_claim_the_fixed_historical_target(self) -> None:
+        first, *_ = self.reviewed_changes()
+        record_path = first / "review-evidence.json"
+        record = json.loads(record_path.read_text(encoding="utf-8"))
+        patch = first / "evidence/original.patch"
+        patch.write_text("diff --git a/unrelated b/unrelated\n+synthetic unrelated\n", encoding="utf-8")
+        digest = hashlib.sha256(patch.read_bytes()).hexdigest()
+        record["target"]["original_patch_sha256"] = digest
+        for source in record["sources"]:
+            if source["path"] == "evidence/original.patch":
+                source["sha256"] = digest
+        write_json(record_path, record)
+        result = followup._review_inventory(self.root)
+        self.assertEqual(result["scan_status"], "error")
+        self.assertFalse(result["qualification_ready"])
+
+    def test_review_does_not_skip_the_canonical_lifecycle(self) -> None:
+        first, *_ = self.reviewed_changes()
+        (first / "state.yaml").write_text("stage: verified\n", encoding="utf-8")
+        item = followup._review_inventory(self.root)
+        self.assertEqual(item["scan_status"], "complete")
+        self.assertFalse(item["qualification_ready"])
+        self.assertIn("canonical-review-lifecycle-incomplete", item["remaining_evidence"][0])
+
+    def test_review_input_snapshot_includes_authorization_and_all_declared_inputs(self) -> None:
+        first, *_ = self.reviewed_changes()
+        paths = followup._review_input_paths(self.root, followup._review_paths(self.root))
+        self.assertIn("agent-dev-kit/authorization.txt", paths)
+        self.assertIn((first / "requirements.md").relative_to(self.root).as_posix(), paths)
+        self.assertIn((first / "review-evidence-observations.txt").relative_to(self.root).as_posix(), paths)
+        receipt = first / "review-evidence.json"
+        value = json.loads(receipt.read_text())
+        value["sources"][0]["path"] = "../outside"
+        write_json(receipt, value)
+        with self.assertRaises(ValueError):
+            followup._review_input_paths(self.root, followup._review_paths(self.root))
+
+    def test_scope_aware_readiness_does_not_turn_m5_diagnostics_into_certification(self) -> None:
+        self.reviewed_changes()
+        results = []
+        for check in self.checks:
+            data = blocked(check)
+            if check.id == "root-236":
+                results.append(completed(check, data, 2))
+                continue
+            if check.id in ("root-154", "adk-153"):
+                data["effect_evidence_ready" if check.id == "root-154" else "native_verified"] = True
+                data["terminal_status"] = "ready"
+            elif check.id == "root-67":
+                data["status"] = "pass"
+            else:
+                data["overall_status"] = "pass"
+            results.append(completed(check, data, 0))
+        with patch.object(followup, "_snapshot", return_value=self.source), \
+                patch.object(followup, "run_bounded", side_effect=results):
+            report = followup.collect(self.root)
+        self.assertTrue(report["required_qualification_ready"], report)
+        self.assertFalse(report["qualification_all_ready"])
+        self.assertFalse(report["items"][0]["qualification_ready"])
+        self.assertFalse(report["release_authorized"])
+
+    def test_effect_and_longitudinal_review_snapshot_uses_root_source_authority(self) -> None:
+        self.reviewed_changes()
+        source = self.root / "manifests/fixture-source.json"
+        write_json(source, {"synthetic": True})
+        records = []
+        for scope, subject in (("effect-value-review", "fixture-campaign"), ("longitudinal-review", "lta-04/fixture-pilot")):
+            path = self.root / "reports" / scope / "review.json"
+            review_fixture(self.root, path, subject=subject, scope=scope, sources=[source],
+                           reviewed_at=datetime.now(UTC), policy_root=self.root / "agent-dev-kit")
+            records.append(path)
+        write_json(self.root / "reports/runtime-evidence/effect-value/evidence-index.json",
+                   {"entries": [{"review_evidence_path": records[0].relative_to(self.root).as_posix()}]})
+        write_json(self.root / "reports/long-term-assets/longitudinal-operation-current.json",
+                   {"review": {"mode": "owner-delegated-ai", "evidence_path": records[1].relative_to(self.root).as_posix()}})
+        paths = followup._review_input_paths(self.root, followup._review_paths(self.root))
+        self.assertIn("manifests/fixture-source.json", paths)
+        self.assertNotIn("agent-dev-kit/manifests/fixture-source.json", paths)
+        for path in records:
+            self.assertIn(path.relative_to(self.root).as_posix(), paths)
+            self.assertIn(path.with_name("review-observations.txt").relative_to(self.root).as_posix(), paths)
 
     def test_m5_cannot_cross_read_only_or_qualification_boundary(self) -> None:
         for field, value in (("read_only", False), ("write_performed", True), ("model_invocations", 1),

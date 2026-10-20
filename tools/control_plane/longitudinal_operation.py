@@ -6,16 +6,18 @@ import json
 import math
 import subprocess
 import sys
-from datetime import datetime, timedelta, timezone
+from collections.abc import Iterator, Mapping
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Any, Iterator, Mapping
+from typing import Any
 
+from .adk_interface import validate_delegated_review
 from .evidence_paths import resolve_regular_evidence_path
 
 LTA_SCHEMA = "llm-agent-long-term-asset-qualification/v2"
 LEDGER_SCHEMA = "llm-agent-software-m5-pilot-ledger/v1"
 EVENT_SCHEMA = "llm-agent-software-field-event/v1"
-EVIDENCE_SCHEMA = "llm-agent-longitudinal-operation-evidence/v1"
+EVIDENCE_SCHEMA = "llm-agent-longitudinal-operation-evidence/v2"
 CHECK_SCHEMA = "llm-agent-longitudinal-operation-check/v1"
 ZERO_HASH = "0" * 64
 MAX_JSON_DOCUMENT_BYTES = 1024 * 1024
@@ -107,11 +109,11 @@ def _parse_time(value: Any, label: str) -> datetime:
         parsed = datetime.fromisoformat(value[:-1] + "+00:00")
     except ValueError as exc:
         raise LongitudinalError(f"{label} is invalid") from exc
-    return parsed.astimezone(timezone.utc)
+    return parsed.astimezone(UTC)
 
 
 def _format_time(value: datetime) -> str:
-    return value.astimezone(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    return value.astimezone(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def _load_object(path: Path, label: str) -> dict[str, Any]:
@@ -214,7 +216,7 @@ def _verify_committed_evidence(root: Path, files: set[Path]) -> None:
         actual_blobs = responses[2].stdout.splitlines()
         if len(actual_blobs) != len(chunk):
             raise LongitudinalError("terminal evidence raw blob inventory is incomplete")
-        for name, raw_blob in zip(chunk, actual_blobs):
+        for name, raw_blob in zip(chunk, actual_blobs, strict=True):
             if raw_blob != head[name][1]:
                 raise LongitudinalBlocked("terminal-evidence-worktree-drift")
 
@@ -521,11 +523,23 @@ def _validate_summary(
     review = summary.get("review")
     if not isinstance(review, dict):
         raise LongitudinalError("LTA-04 review is missing")
-    reviewer = _require_text(review.get("operator_id"), "review.operator_id")
-    if reviewer not in operators or operators[reviewer].get("operator_type") != "human" or reviewer not in pilot.get("operators", []):
-        raise LongitudinalError("LTA-04 review must be performed by a human operator registered to the pilot")
-    if review.get("standard") != "solo-maintainer-long-term-asset-v1":
-        raise LongitudinalError("LTA-04 review standard is invalid")
+    mode = review.get("mode")
+    if mode == "registered-human":
+        if set(review) != {"mode", "operator_id", "standard", "decision", "reviewed_at"}:
+            raise LongitudinalError("LTA-04 registered human review fields are invalid")
+        reviewer = _require_text(review.get("operator_id"), "review.operator_id")
+        if reviewer not in operators or operators[reviewer].get("operator_type") != "human" or reviewer not in pilot.get("operators", []):
+            raise LongitudinalError("LTA-04 review must be performed by a human operator registered to the pilot")
+        if review.get("standard") != "solo-maintainer-long-term-asset-v1":
+            raise LongitudinalError("LTA-04 review standard is invalid")
+    elif mode == "owner-delegated-ai":
+        if set(review) != {"mode", "reviewer_id", "standard", "decision", "reviewed_at", "evidence_path"}:
+            raise LongitudinalError("LTA-04 delegated review fields are invalid")
+        reviewer = _require_text(review.get("reviewer_id"), "review.reviewer_id")
+        if review.get("standard") != "owner-delegated-ai-review-v1":
+            raise LongitudinalError("LTA-04 delegated review standard is invalid")
+    else:
+        raise LongitudinalError("LTA-04 review mode is invalid")
     decision = review.get("decision")
     if decision not in {"approve", "hold"}:
         raise LongitudinalError("LTA-04 review decision must be approve or hold")
@@ -538,6 +552,36 @@ def _validate_summary(
     last_recorded = max(_parse_time(event.get("recorded_at"), "event recorded_at") for event in events)
     if reviewed_at < last_recorded:
         raise LongitudinalError("LTA-04 owner review predates latest recorded field event")
+
+    review_evidence_files: list[str] = []
+    review_record_sha256 = None
+    if mode == "owner-delegated-ai":
+        # Delegation replaces the summary reviewer only. Registered human field
+        # actors, genuine event material and the complete observation window are
+        # still checked above. The record binds this summary (including outcomes
+        # and its event-log digest); the summary references its path, not its
+        # hash, so the two artifacts do not contain a circular digest dependency.
+        record_path = _repo_file(root, review["evidence_path"], "LTA-04 delegated review")
+        try:
+            delegated = validate_delegated_review(root, record_path, policy_root=root / "agent-dev-kit",
+                                                  expected_subject="lta-04/" + str(requirement["pilot_id"]),
+                                                  expected_scope="longitudinal-review", now=as_of)
+        except ValueError as exc:
+            raise LongitudinalError("LTA-04 delegated review evidence is invalid") from exc
+        if delegated["reviewer"]["id"] != reviewer or delegated["reviewed_at"] != review["reviewed_at"]:
+            raise LongitudinalError("LTA-04 review identity or time differs from delegated record")
+        if _parse_time(delegated["evidence_completed_at"], "delegated evidence completion") < max(observed_through, last_recorded):
+            raise LongitudinalError("LTA-04 delegated review predates completed field evidence")
+        bound = {
+            ((root if ref["base"] == "repository" else record_path.parent) / ref["path"]).resolve(): ref["sha256"]
+            for ref in delegated["sources"] + delegated["evidence"]
+        }
+        for source_path in (summary_path, root / "manifests/software_m5_pilot_ledger.json",
+                            root / "manifests/long_term_asset_qualification.json"):
+            if bound.get(source_path.resolve()) != _sha256_file(source_path):
+                raise LongitudinalError("LTA-04 delegated review omits its summary or source contracts")
+        review_record_sha256 = delegated["record_sha256"]
+        review_evidence_files = sorted(path.relative_to(root).as_posix() for path in {record_path, *bound})
 
     stored = summary.get("summary_sha256")
     unsigned = dict(summary)
@@ -555,12 +599,16 @@ def _validate_summary(
         "recoveries": recoveries["count"],
         "unresolved_risks": len(risks),
         "event_chain_head": chain_head,
+        "review_mode": mode,
+        "reviewer_id": reviewer,
+        "review_record_sha256": review_record_sha256,
+        "review_evidence_files": review_evidence_files,
     }
 
 
 def check(root: Path, *, evidence_path: Path | None = None, as_of: datetime | None = None) -> dict[str, Any]:
     root = root.resolve()
-    now = (as_of or datetime.now(timezone.utc)).astimezone(timezone.utc).replace(microsecond=0)
+    now = (as_of or datetime.now(UTC)).astimezone(UTC).replace(microsecond=0)
     requirement = _lta04(root)
     _, event_log, events, started = _ledger_state(root, requirement, now)
     minimum_days = int(requirement["minimum_calendar_days"])
@@ -594,6 +642,11 @@ def check(root: Path, *, evidence_path: Path | None = None, as_of: datetime | No
         raise LongitudinalBlocked("noncanonical-summary-review-only")
     detail = _validate_summary(root, summary_path, requirement, event_log, events, started, eligible_after, now)
     if as_of is None:
+        if detail["review_mode"] == "owner-delegated-ai":
+            from .adk_interface import validate as validate_adk_interface
+
+            if validate_adk_interface(root, require_worktree=True).get("status") != "pass":
+                raise LongitudinalError("LTA-04 delegated review requires the exact pinned ADK policy")
         committed = {
             root / "manifests/long_term_asset_qualification.json",
             root / "manifests/software_m5_pilot_ledger.json",
@@ -602,6 +655,8 @@ def check(root: Path, *, evidence_path: Path | None = None, as_of: datetime | No
         for event in events:
             for relative in event["evidence"]:
                 committed.add(_repo_file(root, relative, "terminal event evidence"))
+        for relative in detail["review_evidence_files"]:
+            committed.add(_repo_file(root, relative, "terminal delegated review evidence"))
         _verify_committed_evidence(root, committed)
     return {**base, "status": "pass", "evidence": summary_path.relative_to(root).as_posix(), **detail}
 

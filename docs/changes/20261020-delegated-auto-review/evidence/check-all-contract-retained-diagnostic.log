@@ -1,0 +1,37 @@
++ set -euo pipefail
++ ROOT=/workspace/scratch/77add259d49b/llm_agent
+++ mktemp -d
++ TMP_DIR=/tmp/tmp.lGD1OmV6S4
++ printf 'diagnostic_fixture=%s\\n' /tmp/tmp.lGD1OmV6S4
++ mkdir -p /tmp/tmp.lGD1OmV6S4/scripts
+diagnostic_fixture=/tmp/tmp.lGD1OmV6S4\n+ mkdir -p /tmp/tmp.lGD1OmV6S4/scripts/lib
++ cp /workspace/scratch/77add259d49b/llm_agent/scripts/check-all.sh /tmp/tmp.lGD1OmV6S4/scripts/check-all.sh
++ cp /workspace/scratch/77add259d49b/llm_agent/scripts/lib/same-run-evidence.sh /tmp/tmp.lGD1OmV6S4/scripts/lib/same-run-evidence.sh
++ cat
++ cat
++ git -C /tmp/tmp.lGD1OmV6S4 init -q
++ git -C /tmp/tmp.lGD1OmV6S4 add scripts
++ git -C /tmp/tmp.lGD1OmV6S4 -c 'user.name=Check All Contract' -c user.email=check-all@example.invalid commit -q -m fixture
++ result_json=/tmp/tmp.lGD1OmV6S4/result.json
++ output=/tmp/tmp.lGD1OmV6S4/output.txt
++ bash /tmp/tmp.lGD1OmV6S4/scripts/check-all.sh --full --result-json /tmp/tmp.lGD1OmV6S4/result.json --max-failure-lines 2
++ rg -q --fixed-strings -- 'check-fail.sh failure log (last 2 lines)' /tmp/tmp.lGD1OmV6S4/output.txt
++ rg -q --fixed-strings -- 'line two' /tmp/tmp.lGD1OmV6S4/output.txt
++ rg -q --fixed-strings -- 'line three' /tmp/tmp.lGD1OmV6S4/output.txt
++ rg -q --fixed-strings -- 'line one' /tmp/tmp.lGD1OmV6S4/output.txt
++ python3 - /tmp/tmp.lGD1OmV6S4/result.json
++ bash /tmp/tmp.lGD1OmV6S4/scripts/check-all.sh --max-failure-lines nope
++ rg -q --fixed-strings -- '--max-failure-lines must be numeric' /tmp/tmp.lGD1OmV6S4/bad.out
++ integration_root=/tmp/tmp.lGD1OmV6S4/integration
++ mkdir -p /tmp/tmp.lGD1OmV6S4/integration/scripts/lib
++ cp /workspace/scratch/77add259d49b/llm_agent/scripts/check-all.sh /tmp/tmp.lGD1OmV6S4/integration/scripts/check-all.sh
++ cp /workspace/scratch/77add259d49b/llm_agent/scripts/lib/same-run-evidence.sh /tmp/tmp.lGD1OmV6S4/integration/scripts/lib/same-run-evidence.sh
++ cat
++ cat
++ chmod +x /tmp/tmp.lGD1OmV6S4/integration/scripts/check-all.sh /tmp/tmp.lGD1OmV6S4/integration/scripts/check-leaf.sh /tmp/tmp.lGD1OmV6S4/integration/scripts/check-workspace-entrypoints.sh
++ git -C /tmp/tmp.lGD1OmV6S4/integration init -q
++ git -C /tmp/tmp.lGD1OmV6S4/integration add scripts
++ git -C /tmp/tmp.lGD1OmV6S4/integration -c 'user.name=Same Run Contract' -c user.email=same-run@example.invalid commit -q -m fixture
++ integration_result=/tmp/tmp.lGD1OmV6S4/integration-result.json
++ integration_output=/tmp/tmp.lGD1OmV6S4/integration-output.txt
++ bash /tmp/tmp.lGD1OmV6S4/integration/scripts/check-all.sh --full --result-json /tmp/tmp.lGD1OmV6S4/integration-result.json

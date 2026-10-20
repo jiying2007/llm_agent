@@ -1,0 +1,32 @@
+Traceback (most recent call last):
+  File "<stdin>", line 5, in <module>
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/pathlib.py", line 1027, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/pathlib.py", line 1013, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/proc/159/stat'
+[WARN] same-run evidence initialization failed; full gate will execute without reuse
+==============================================
+ llm_agent 一键门禁检查
+ 2026-10-20 06:55:34
+ 模式: --full（全部脚本）
+ 门禁: release
+==============================================
+
+▶ check-leaf.sh ... PASS
+▶ check-workspace-entrypoints.sh ... FAIL (exit=1)
+
+==============================================
+ 检查汇总
+==============================================
+脚本                                     状态   耗时(s)
+------------------------------------------ -------- -------
+check-leaf.sh                              PASS     0   ✅
+check-workspace-entrypoints.sh             FAIL     0   ❌
+------------------------------------------
+总计: 2   通过: 1   失败: 1
+同运行证据复用: 0（eligible=false）
+
+⚠️  有 1 项未通过，请检查上方详细输出。

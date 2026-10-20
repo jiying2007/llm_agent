@@ -1,0 +1,20 @@
+{
+  "schema_version": 3,
+  "status": "pass",
+  "previous_version": "8.0.35",
+  "candidate_version": "8.0.36",
+  "previous_sha256": "db3af64feab4bc52a48980b264141736a0dab7294f4da30103e92d19017574b6",
+  "candidate_sha256": "8b0ca59998370a4fb0f67dd0f6f259ffd82eb4d0dc6b777c5f6f7478f06d0c2d",
+  "previous_manifest_sha256": "1d125469cf8f5466d62f690eec4f69266908576465a76d5c3f5f61c3d673536b",
+  "candidate_manifest_sha256": "f2fd9b08ea3623445bc5313e818ad9f4ac306900843f153f8d6125e938adb6e7",
+  "previous_installed": 39,
+  "candidate_installed": 39,
+  "rollback": {
+    "status": "pass",
+    "removed": 39,
+    "restored": 39
+  },
+  "restored_assets": 39,
+  "remote_publish": "not-in-scope",
+  "report_sha256": "a9b0ab4e0689826f03549471baec7bcac4aeb54717c103827cb4bc1510a9c90d"
+}

@@ -103,14 +103,16 @@ jobs:
               f"Collected at: {cell(report['generated_at'])}",
               f"Scan status: {cell(report['scan_status'])}",
               f"All qualification requirements ready: {cell(report['qualification_all_ready'])}",
+              f"Current-scope requirements ready: {cell(report['required_qualification_ready'])}",
               "Release authorized by this report: **false**",
               "",
-              "| Task | Diagnostic | Qualification state | Actual exit |",
-              "| --- | --- | --- | --- |",
+              "| Task | Required in current scope | Diagnostic | Qualification state | Actual exit |",
+              "| --- | --- | --- | --- | --- |",
           ]
           for item in report['items']:
-              lines.append("| {} | {} | {} | {} |".format(
-                  cell(item['id']), cell(item['scan_status']), cell(item['status']), cell(item['command_exit'])))
+              lines.append("| {} | {} | {} | {} | {} |".format(
+                  cell(item['id']), cell(item['required_in_current_scope']), cell(item['scan_status']),
+                  cell(item['status']), cell(item['command_exit'])))
           lines.extend(["", "The artifact contains exact source identities, original results, missing evidence, and next actions."])
           with summary_path.open("a") as stream:
               stream.write("\n".join(lines) + "\n")

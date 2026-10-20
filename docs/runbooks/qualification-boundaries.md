@@ -8,7 +8,7 @@
 - **当前消费资格**：`reports/current-status.md` 的 generated-current-source-projection，结合真实 `software-m5-certify` 校验；`release_authorized=false` 不得被 historical scorecard 代替。
 - **历史产品 M5**：`manifests/product_maturity_scorecard.json` 及 `reports/current-status.md` 的 Last Verified Product Baseline，只适用于其固定源码和当时的证据。
 - **组件发布**：ADK GitHub immutable Release、签名推广与精确制品 digest；不自动产生新的 field/product 资格。
-- **长期资格**：`manifests/long_term_asset_qualification.json`。LTA-04 只接受实际独立现场日志、完整摘要和注册人类 owner 审核。
+- **长期资格**：`manifests/long_term_asset_qualification.json`。LTA-04 只接受实际独立现场日志、完整摘要和可验证审核；摘要审核支持注册人类或同一 ADK 政策委派的独立 AI，真实 field event 操作者仍须是试点登记的人类。
 
 ## GitHub 必需检查的绿色状态不等于产品授权
 
@@ -45,6 +45,31 @@ observation exists, keep LTA-04 **BLOCKED** with
 clean 30-day window from no telemetry, or re-label fixture data as field
 operations. Existing owner review, full-window outcome counts, risk disposition
 and protected PR ratchet remain mandatory and independent.
+
+The summary schema is `llm-agent-longitudinal-operation-evidence/v2` and requires
+an explicit review mode. `registered-human` retains the registered human
+`operator_id`, standard `solo-maintainer-long-term-asset-v1`, decision and time.
+`owner-delegated-ai` instead supplies `reviewer_id`, standard
+`owner-delegated-ai-review-v1`, decision, time and `evidence_path` pointing to an
+`adk-review-evidence/v1` record. The shared ADK validator must accept that record
+for scope `longitudinal-review` and subject `lta-04/<pilot_id>` under the one
+pinned ADK policy. Reviewer identity comes from the validated record; it does
+not add the reviewer to the pilot's human operator registry.
+
+The record hashes the entire summary plus the pilot ledger and LTA manifest.
+The summary names the review record path without its digest, preventing a
+circular hash. Its event-log digest, chain head and exact event count continue
+to bind the raw event lineage. Delegated review completion must follow all
+bound evidence, including late-recorded events; review time must match the
+summary. Real mode also checks the exact pinned ADK interface and requires the
+review record and every source/evidence reference to be committed with the
+summary and field materials. Legacy v1 summaries require an explicit migration;
+no implicit mode or invented human approval is supplied.
+
+The shared bridge separately checks ADK policy, authorization and validator
+files against the ADK commit selected by Root's gitlink. Their actual HEAD,
+index and raw worktree identities must match; Root's field-file Git verifier
+does not incorrectly treat submodule files as blobs of the Root tree.
 
 
 LTA-04 原始 event-log JSONL 与终态 summary 均拒绝任何层级重复 JSON key：
@@ -139,7 +164,7 @@ real independent pilot evidence remain separate mandatory controls.
 LTA-04 observation `occurred_at` and ingestion `recorded_at` are separate
 facts. A late field event may have occurred within the 30-day window but been
 entered later. Because the canonical summary binds the entire ledger's SHA,
-event count and chain head, the registered human owner must issue the
+event count and chain head, the authorized summary reviewer must issue the
 review **on or after the latest `recorded_at` of all bound events**, as well
 as after `observed_through` and the 30-day eligibility time. Rehashing a
 late event cannot retroactively authorize an older owner review. The test

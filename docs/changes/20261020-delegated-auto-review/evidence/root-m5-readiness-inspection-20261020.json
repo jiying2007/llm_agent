@@ -1,0 +1,746 @@
+{
+  "all_12_original_main_files_byte_identical": true,
+  "c2_original_qualification_artifact": {
+    "artifact_id": 12274085571,
+    "artifact_name": "qualification-followup-8cbe7a85d4a1077d5ae8e7a64afd434afb567e2e-1",
+    "candidate_head": "ee47d8597aabe1ab7530905c8076dcebe13aa1cc",
+    "candidate_tree_equals_merge_tree": true,
+    "limitation": "C2 PR merge-source evidence, not final C3 exact-head or protected-main qualification. Full 81168-byte report is retained separately and not copied into this summary.",
+    "m5_item_projection": {
+      "blocking_gates": [
+        "promotion_signature",
+        "runtime",
+        "field",
+        "qualification",
+        "historical_declaration"
+      ],
+      "command_exit": 2,
+      "current_candidate": {
+        "commit": "42ae95d146ceb441ff91ea33dbbed581c33de305",
+        "manifest_blob": "da1a8ca2f764b6b98d79870eefa6f3fc35cfd3f8",
+        "tree": "4a034da631afbfb4b6b4d3a48310789ae85dcdbe",
+        "version": "8.0.36"
+      },
+      "historical_candidate_version": "5.0.0-rc.2",
+      "id": "root-236",
+      "release_authorized": false,
+      "required_in_current_scope": false,
+      "software_m5_certified": false,
+      "stages": {
+        "candidate": {
+          "status": "pass"
+        },
+        "field": {
+          "reason": "pilot ledger candidate version does not match current candidate",
+          "status": "fail"
+        },
+        "historical_declaration": {
+          "reason": "historical declaration is not current qualification",
+          "status": "fail"
+        },
+        "policy": {
+          "status": "pass"
+        },
+        "policy_contract": {
+          "status": "pass"
+        },
+        "promotion_claims": {
+          "status": "pass"
+        },
+        "promotion_signature": {
+          "reason": "fresh pinned-verifier readback required",
+          "status": "blocked"
+        },
+        "qualification": {
+          "reason": "M5 qualification CI evidence rejected: qualification ADK identity differs from lock",
+          "status": "fail"
+        },
+        "runtime": {
+          "reason": "measured runtime evidence rejected: runtime evidence manifest_version does not match current adk.lock",
+          "status": "fail"
+        }
+      },
+      "status": "conditional"
+    },
+    "merge_commit_api_readback": {
+      "api_url": "https://api.github.com/repos/jiying2007/llm_agent/commits/8cbe7a85d4a1077d5ae8e7a64afd434afb567e2e",
+      "observed_at": "2026-10-20 14:56:25 UTC",
+      "parents": [
+        "2722715dc44b5226d0eaf488aa00734bdade4345",
+        "ee47d8597aabe1ab7530905c8076dcebe13aa1cc"
+      ],
+      "sha": "8cbe7a85d4a1077d5ae8e7a64afd434afb567e2e",
+      "tree": "92e835c84609cbb3ab82cc0b6ee227e7470e5e7a"
+    },
+    "original_report": {
+      "bytes": 81168,
+      "path": "/workspace/scratch/77add259d49b/pr265-c2-qualification-original/qualification-followup.json",
+      "sha256": "73a6ff40b56818f79779827e5aefd7ad76d3d40282901fccf1dc56e0635b759d"
+    },
+    "original_zip": {
+      "bytes": 14907,
+      "github_digest": "sha256:f8bfa07444ed8d9588bb143192ac2d13427ac72482a50c2e16c0ee3b771cf180",
+      "matches_recorded_github_digest": true,
+      "path": "/workspace/scratch/77add259d49b/pr265-c2-qualification-original/qualification-followup.zip",
+      "sha256": "f8bfa07444ed8d9588bb143192ac2d13427ac72482a50c2e16c0ee3b771cf180"
+    },
+    "pull_request": 265,
+    "qualification_all_ready": false,
+    "release_authorized": false,
+    "report_generated_at": "2026-10-20T14:35:39.892354Z",
+    "repository": "jiying2007/llm_agent",
+    "required_qualification_ready": false,
+    "scope": "research-control-workspace",
+    "source_before_equals_source_after": true,
+    "source_consistent": true,
+    "source_git": {
+      "agent-dev-kit": {
+        "head": "42ae95d146ceb441ff91ea33dbbed581c33de305",
+        "tree": "4a034da631afbfb4b6b4d3a48310789ae85dcdbe"
+      },
+      "codex": {
+        "materialized": false
+      },
+      "root": {
+        "head": "8cbe7a85d4a1077d5ae8e7a64afd434afb567e2e",
+        "tree": "92e835c84609cbb3ab82cc0b6ee227e7470e5e7a"
+      }
+    },
+    "source_input_digest": "3cb6df35cf7f90e4c6196afbdeab1e6620c61c0c9eb7d2001d079b6ae9e04ed8",
+    "workflow_run_attempt": 1,
+    "workflow_run_id": 39440579166
+  },
+  "causal_analysis": {
+    "actual_subcheck_remains_failed": true,
+    "basis": "Original main promotion was already 8.0.35 while its identical M5 policy expected 5.0.0-rc.2. Current promotion advances consistently to 8.0.36. Identical validator code rejects source.version before signature/runtime/field/qualification validation.",
+    "classification": "pre-existing-historical-evidence-invalid-for-current-source",
+    "downstream_declarations": {
+      "changing_only_stale_fields_does_not_establish_current_qualification": true,
+      "does_not_prove_five_independent_new_evidence_corruptions": true,
+      "flow": [
+        "_validate_promotion rejects identity",
+        "assess catches M5Error and sets not-ready/blocked/false with evidence_integrity",
+        "check compares the resulting status to five scorecard declarations"
+      ],
+      "module": "tools/codex_assets/software_m5_v3_core.py",
+      "stale_fields": [
+        {
+          "assessor_result_field": "readiness_status",
+          "declared": "m5-ready",
+          "observed_assessor_value": "not-ready",
+          "scorecard_field": "software_m5.readiness_status"
+        },
+        {
+          "assessor_result_field": "eligibility_status",
+          "declared": "release-qualified",
+          "observed_assessor_value": "blocked",
+          "scorecard_field": "software_m5.eligibility_status"
+        },
+        {
+          "assessor_result_field": "certification_status",
+          "declared": "pass",
+          "observed_assessor_value": "blocked",
+          "scorecard_field": "software_m5.certification_status"
+        },
+        {
+          "assessor_result_field": "software_m5_certified",
+          "declared": true,
+          "observed_assessor_value": false,
+          "scorecard_field": "software_m5.certified"
+        },
+        {
+          "assessor_result_field": "blocking_gates",
+          "declared": [],
+          "observed_assessor_value": [
+            "evidence_integrity"
+          ],
+          "scorecard_field": "software_m5.blocking_gates"
+        }
+      ]
+    },
+    "first_rejection": {
+      "comparison": "promotion.source.version != policy.release.candidate_version",
+      "error": "promotion evidence source.version does not match current candidate",
+      "function": "_validate_promotion",
+      "module": "tools/codex_assets/software_m5_v3_core.py"
+    },
+    "signature_boundary": "The first identity error occurs before the signature branch. It does not establish current promotion signature failure. C2 current-candidate diagnostics separately reported promotion_claims pass and default promotion_signature blocked because no fresh pinned-verifier readback was requested there."
+  },
+  "comparison_count": 12,
+  "continuation_boundaries": {
+    "canonical_rollover_module": "tools.codex_assets.software_m5_rollover",
+    "canonical_rollover_not_executed": true,
+    "current_product_m5_not_ready": true,
+    "historical_policy_and_scorecard_preserved": true,
+    "missing_current_facts": [
+      "current-source signed real runtime task execution",
+      "current-candidate independent pilot evidence",
+      "current-source signed qualification record"
+    ],
+    "no_paid_runtime_started": true,
+    "real_available_followups": [
+      "read-only current diagnostics and pinned-verifier readback",
+      "final protected-main signed Root CI receipt when actually produced"
+    ],
+    "strict_m5_fail_preserved": true
+  },
+  "evidence_kind": "source-and-existing-artifact-inspection",
+  "file_comparisons": [
+    {
+      "bytes_identical": true,
+      "current_worktree": {
+        "absolute_path": "/workspace/scratch/77add259d49b/llm_agent/scripts/check-software-m5-readiness.sh",
+        "bytes": 313,
+        "mode": "0755",
+        "path": "scripts/check-software-m5-readiness.sh",
+        "sha256": "229f6b5cd361fe20cebc33b6757831e1c86fa659e0ffec71f3d1f78359cf905a"
+      },
+      "original_main": {
+        "blob": "aa2dd5d6f44944a3bc453f6fb0e14d78cae6aaa6",
+        "bytes": 313,
+        "commit": "2722715dc44b5226d0eaf488aa00734bdade4345",
+        "path": "scripts/check-software-m5-readiness.sh",
+        "sha256": "229f6b5cd361fe20cebc33b6757831e1c86fa659e0ffec71f3d1f78359cf905a"
+      },
+      "path": "scripts/check-software-m5-readiness.sh"
+    },
+    {
+      "bytes_identical": true,
+      "current_worktree": {
+        "absolute_path": "/workspace/scratch/77add259d49b/llm_agent/tools/codex_assets/software_m5_v3.py",
+        "bytes": 14686,
+        "mode": "0644",
+        "path": "tools/codex_assets/software_m5_v3.py",
+        "sha256": "0206a65976eb7157d4b0e9feceffcf69e262230535526fa4c26bb08887941d6d"
+      },
+      "original_main": {
+        "blob": "77a10b180c493d375934e2b4d682ec82c24d5ee3",
+        "bytes": 14686,
+        "commit": "2722715dc44b5226d0eaf488aa00734bdade4345",
+        "path": "tools/codex_assets/software_m5_v3.py",
+        "sha256": "0206a65976eb7157d4b0e9feceffcf69e262230535526fa4c26bb08887941d6d"
+      },
+      "path": "tools/codex_assets/software_m5_v3.py"
+    },
+    {
+      "bytes_identical": true,
+      "current_worktree": {
+        "absolute_path": "/workspace/scratch/77add259d49b/llm_agent/tools/codex_assets/software_m5_v3_core.py",
+        "bytes": 33640,
+        "mode": "0644",
+        "path": "tools/codex_assets/software_m5_v3_core.py",
+        "sha256": "ef9430abaaca02f3c2d2032bca193b006a63e5a5eb51d21422fc6442d31e3ff7"
+      },
+      "original_main": {
+        "blob": "b1ed2c0c6233dffb71fc77131f2ed04a70bb3039",
+        "bytes": 33640,
+        "commit": "2722715dc44b5226d0eaf488aa00734bdade4345",
+        "path": "tools/codex_assets/software_m5_v3_core.py",
+        "sha256": "ef9430abaaca02f3c2d2032bca193b006a63e5a5eb51d21422fc6442d31e3ff7"
+      },
+      "path": "tools/codex_assets/software_m5_v3_core.py"
+    },
+    {
+      "bytes_identical": true,
+      "current_worktree": {
+        "absolute_path": "/workspace/scratch/77add259d49b/llm_agent/tools/codex_assets/software_m5_diagnostics.py",
+        "bytes": 10421,
+        "mode": "0644",
+        "path": "tools/codex_assets/software_m5_diagnostics.py",
+        "sha256": "f87b3a7952008b9de3265f35a4e993f033821f342c63837e4460bf4128112621"
+      },
+      "original_main": {
+        "blob": "eed01c72c26db7a3a83f112a799ae5a1ce0abefe",
+        "bytes": 10421,
+        "commit": "2722715dc44b5226d0eaf488aa00734bdade4345",
+        "path": "tools/codex_assets/software_m5_diagnostics.py",
+        "sha256": "f87b3a7952008b9de3265f35a4e993f033821f342c63837e4460bf4128112621"
+      },
+      "path": "tools/codex_assets/software_m5_diagnostics.py"
+    },
+    {
+      "bytes_identical": true,
+      "current_worktree": {
+        "absolute_path": "/workspace/scratch/77add259d49b/llm_agent/tools/codex_assets/software_m5_rollover.py",
+        "bytes": 27135,
+        "mode": "0755",
+        "path": "tools/codex_assets/software_m5_rollover.py",
+        "sha256": "c2d875f38cb87da06a4fd33463dc61609315bdb6293dd2d0c2fac03a4ec1dd49"
+      },
+      "original_main": {
+        "blob": "1be7d4768e7488eeb2c55b71fab92c3b8ad8acdd",
+        "bytes": 27135,
+        "commit": "2722715dc44b5226d0eaf488aa00734bdade4345",
+        "path": "tools/codex_assets/software_m5_rollover.py",
+        "sha256": "c2d875f38cb87da06a4fd33463dc61609315bdb6293dd2d0c2fac03a4ec1dd49"
+      },
+      "path": "tools/codex_assets/software_m5_rollover.py"
+    },
+    {
+      "bytes_identical": true,
+      "current_worktree": {
+        "absolute_path": "/workspace/scratch/77add259d49b/llm_agent/manifests/software_m5_policy.json",
+        "bytes": 2269,
+        "mode": "0644",
+        "path": "manifests/software_m5_policy.json",
+        "sha256": "5375d045f5a5214220d5f2a0375aaa86399233497a07de2f3801e89701f61246"
+      },
+      "original_main": {
+        "blob": "fbd4bde37746bf843aef1a240ec3e7def249d856",
+        "bytes": 2269,
+        "commit": "2722715dc44b5226d0eaf488aa00734bdade4345",
+        "path": "manifests/software_m5_policy.json",
+        "sha256": "5375d045f5a5214220d5f2a0375aaa86399233497a07de2f3801e89701f61246"
+      },
+      "path": "manifests/software_m5_policy.json"
+    },
+    {
+      "bytes_identical": true,
+      "current_worktree": {
+        "absolute_path": "/workspace/scratch/77add259d49b/llm_agent/manifests/product_maturity_scorecard.json",
+        "bytes": 8882,
+        "mode": "0644",
+        "path": "manifests/product_maturity_scorecard.json",
+        "sha256": "8adcd4db0f22cbef50b6c54243bffbdcd133fd4b974bbfd886920a71eba6f893"
+      },
+      "original_main": {
+        "blob": "47b9efcfe47d028a5481e3d9babf209199ff3b37",
+        "bytes": 8882,
+        "commit": "2722715dc44b5226d0eaf488aa00734bdade4345",
+        "path": "manifests/product_maturity_scorecard.json",
+        "sha256": "8adcd4db0f22cbef50b6c54243bffbdcd133fd4b974bbfd886920a71eba6f893"
+      },
+      "path": "manifests/product_maturity_scorecard.json"
+    },
+    {
+      "bytes_identical": true,
+      "current_worktree": {
+        "absolute_path": "/workspace/scratch/77add259d49b/llm_agent/manifests/software_m5_pilot_ledger.json",
+        "bytes": 1833,
+        "mode": "0644",
+        "path": "manifests/software_m5_pilot_ledger.json",
+        "sha256": "ad1182d5384b22cfa8e0b679967f74c583ebbb18a40fbf38da4dbed5f6e5c799"
+      },
+      "original_main": {
+        "blob": "19b7ca6d1e0d3790e7d649f26e08f58f63758afc",
+        "bytes": 1833,
+        "commit": "2722715dc44b5226d0eaf488aa00734bdade4345",
+        "path": "manifests/software_m5_pilot_ledger.json",
+        "sha256": "ad1182d5384b22cfa8e0b679967f74c583ebbb18a40fbf38da4dbed5f6e5c799"
+      },
+      "path": "manifests/software_m5_pilot_ledger.json"
+    },
+    {
+      "bytes_identical": true,
+      "current_worktree": {
+        "absolute_path": "/workspace/scratch/77add259d49b/llm_agent/reports/field-evidence/software-m5-v5-events.jsonl",
+        "bytes": 1796,
+        "mode": "0644",
+        "path": "reports/field-evidence/software-m5-v5-events.jsonl",
+        "sha256": "accea1869c9cce11615dab657d9fd02884af47c74e86506544ee8f898ec6be22"
+      },
+      "original_main": {
+        "blob": "9d016c7a385d347ba080f3b737d3062320a4f410",
+        "bytes": 1796,
+        "commit": "2722715dc44b5226d0eaf488aa00734bdade4345",
+        "path": "reports/field-evidence/software-m5-v5-events.jsonl",
+        "sha256": "accea1869c9cce11615dab657d9fd02884af47c74e86506544ee8f898ec6be22"
+      },
+      "path": "reports/field-evidence/software-m5-v5-events.jsonl"
+    },
+    {
+      "bytes_identical": true,
+      "current_worktree": {
+        "absolute_path": "/workspace/scratch/77add259d49b/llm_agent/reports/runtime-evidence/codex-v5-runtime-smoke-2026-08-30.json",
+        "bytes": 2170,
+        "mode": "0644",
+        "path": "reports/runtime-evidence/codex-v5-runtime-smoke-2026-08-30.json",
+        "sha256": "35aec6c2e1db0993ebe37235368e516c2b5e6fa792575e5df9f342808821d7ab"
+      },
+      "original_main": {
+        "blob": "ffe1d421f0e650b3eb9479bea885c5492302bf33",
+        "bytes": 2170,
+        "commit": "2722715dc44b5226d0eaf488aa00734bdade4345",
+        "path": "reports/runtime-evidence/codex-v5-runtime-smoke-2026-08-30.json",
+        "sha256": "35aec6c2e1db0993ebe37235368e516c2b5e6fa792575e5df9f342808821d7ab"
+      },
+      "path": "reports/runtime-evidence/codex-v5-runtime-smoke-2026-08-30.json"
+    },
+    {
+      "bytes_identical": true,
+      "current_worktree": {
+        "absolute_path": "/workspace/scratch/77add259d49b/llm_agent/reports/runtime-evidence/codex-execution-v2-8.0.6-2026-10-13.json",
+        "bytes": 18187,
+        "mode": "0644",
+        "path": "reports/runtime-evidence/codex-execution-v2-8.0.6-2026-10-13.json",
+        "sha256": "4fa9f025ab6fde9122ecce2010d39ab2c32733ccb00ade0c4bfb73545fb10663"
+      },
+      "original_main": {
+        "blob": "a5ad415a386e32da31e1db3c2e9490517109cb26",
+        "bytes": 18187,
+        "commit": "2722715dc44b5226d0eaf488aa00734bdade4345",
+        "path": "reports/runtime-evidence/codex-execution-v2-8.0.6-2026-10-13.json",
+        "sha256": "4fa9f025ab6fde9122ecce2010d39ab2c32733ccb00ade0c4bfb73545fb10663"
+      },
+      "path": "reports/runtime-evidence/codex-execution-v2-8.0.6-2026-10-13.json"
+    },
+    {
+      "bytes_identical": true,
+      "current_worktree": {
+        "absolute_path": "/workspace/scratch/77add259d49b/llm_agent/reports/runtime-evidence/software-m5-production-qualification-2026-09-12.json",
+        "bytes": 1923,
+        "mode": "0644",
+        "path": "reports/runtime-evidence/software-m5-production-qualification-2026-09-12.json",
+        "sha256": "7370cd346029eebeb1f30c3308ca75ce6f9bea57cb1ce9e09ed39801b2d94014"
+      },
+      "original_main": {
+        "blob": "6b64511349e97ce6be3b1802f9f64acb1f83ff41",
+        "bytes": 1923,
+        "commit": "2722715dc44b5226d0eaf488aa00734bdade4345",
+        "path": "reports/runtime-evidence/software-m5-production-qualification-2026-09-12.json",
+        "sha256": "7370cd346029eebeb1f30c3308ca75ce6f9bea57cb1ce9e09ed39801b2d94014"
+      },
+      "path": "reports/runtime-evidence/software-m5-production-qualification-2026-09-12.json"
+    }
+  ],
+  "historical_evidence_bindings": {
+    "event_log": {
+      "chain_head": "9db7bbea9f7c4184ca9ca3221638b0b683c576e4465e9828c2b7df8d1f8ac8ad",
+      "event_count": 2,
+      "file": {
+        "absolute_path": "/workspace/scratch/77add259d49b/llm_agent/reports/field-evidence/software-m5-v5-events.jsonl",
+        "bytes": 1796,
+        "mode": "0644",
+        "path": "reports/field-evidence/software-m5-v5-events.jsonl",
+        "sha256": "accea1869c9cce11615dab657d9fd02884af47c74e86506544ee8f898ec6be22"
+      },
+      "independent_event_evidence": [
+        "reports/field-evidence/software-m5-independent-pilot-start-2026-09-12.json"
+      ],
+      "independent_event_evidence_sha256": {
+        "reports/field-evidence/software-m5-independent-pilot-start-2026-09-12.json": "8578a7635b698f85d1ccabe6106c72a7c81080774ac035cc4184c4f2c9cb0db6"
+      },
+      "independent_event_id": "v5-independent-pilot-start-20260912"
+    },
+    "other_existing_runtime": {
+      "adk_commit": "97cf0167e837c2095d9ec6a9431f5aa8c20a812b",
+      "file": {
+        "absolute_path": "/workspace/scratch/77add259d49b/llm_agent/reports/runtime-evidence/codex-execution-v2-8.0.6-2026-10-13.json",
+        "bytes": 18187,
+        "mode": "0644",
+        "path": "reports/runtime-evidence/codex-execution-v2-8.0.6-2026-10-13.json",
+        "sha256": "4fa9f025ab6fde9122ecce2010d39ab2c32733ccb00ade0c4bfb73545fb10663"
+      },
+      "generated_at": "2026-10-13T11:51:39Z",
+      "manifest_version": "8.0.6",
+      "not_reusable_for_current_8_0_36_identity": true,
+      "schema": "llm-agent-runtime-smoke-evidence/v2"
+    },
+    "pilot_evidence": {
+      "adk_source": {
+        "commit": "251edf2b6654cf8719ad1d8a1b7c81ffd64ffe1c",
+        "repository": "jiying2007/agent-dev-kit"
+      },
+      "file": {
+        "absolute_path": "/workspace/scratch/77add259d49b/llm_agent/reports/field-evidence/software-m5-independent-pilot-start-2026-09-12.json",
+        "bytes": 1272,
+        "mode": "0644",
+        "path": "reports/field-evidence/software-m5-independent-pilot-start-2026-09-12.json",
+        "sha256": "8578a7635b698f85d1ccabe6106c72a7c81080774ac035cc4184c4f2c9cb0db6"
+      },
+      "occurred_at": "2026-09-12T04:19:00Z",
+      "operator": {
+        "id": "operator-primary",
+        "independent_reviewer": false,
+        "operator_type": "human"
+      },
+      "pilot_repository": {
+        "classification": "independent",
+        "commit": "4a94231d26df1aeaeba336e6a4e2327db5a3bd44",
+        "id": "digital-worker",
+        "path": "digital-worker",
+        "real_software": true,
+        "repository": "jiying2007/digital-worker",
+        "tree": "40afb376faa58c4cd754b5eb8e7d08c8659b8f91"
+      },
+      "root_source": {
+        "commit": "8ad04d96e916a352d738cff5e7892a7d7c55e527",
+        "repository": "jiying2007/llm_agent"
+      }
+    },
+    "pilot_ledger": {
+      "candidate_version": "5.0.0-rc.2",
+      "file": {
+        "absolute_path": "/workspace/scratch/77add259d49b/llm_agent/manifests/software_m5_pilot_ledger.json",
+        "bytes": 1833,
+        "mode": "0644",
+        "path": "manifests/software_m5_pilot_ledger.json",
+        "sha256": "ad1182d5384b22cfa8e0b679967f74c583ebbb18a40fbf38da4dbed5f6e5c799"
+      }
+    },
+    "qualification_record": {
+      "adk": {
+        "commit": "251edf2b6654cf8719ad1d8a1b7c81ffd64ffe1c",
+        "promotion_artifact_digest": "sha256:87cabc601123cbd91634a627c81b6d748bec60d880d9581cd608d23995247819",
+        "promotion_artifact_id": 10290804322,
+        "promotion_run_id": 34671247658,
+        "tree": "6fc560322a64c9660e75cc568fded98927954283"
+      },
+      "current_contract_note": "m5_ci_contract requires exact current ADK version/commit/tree/manifest_blob, exactly two runs (ADK promotion plus signed Root main CI), and a verified root_ci_receipt; historical record does not supply those current-source facts.",
+      "file": {
+        "absolute_path": "/workspace/scratch/77add259d49b/llm_agent/reports/runtime-evidence/software-m5-production-qualification-2026-09-12.json",
+        "bytes": 1923,
+        "mode": "0644",
+        "path": "reports/runtime-evidence/software-m5-production-qualification-2026-09-12.json",
+        "sha256": "7370cd346029eebeb1f30c3308ca75ce6f9bea57cb1ce9e09ed39801b2d94014"
+      },
+      "recorded_at": "2026-09-12T04:30:00Z",
+      "required_run_count": 4,
+      "root_ci_receipt_present": false,
+      "source_baseline": "6b9dce21312b36cad93d9f2bd0fc1c757374f7d7"
+    },
+    "selected_runtime": {
+      "file": {
+        "absolute_path": "/workspace/scratch/77add259d49b/llm_agent/reports/runtime-evidence/codex-v5-runtime-smoke-2026-08-30.json",
+        "bytes": 2170,
+        "mode": "0644",
+        "path": "reports/runtime-evidence/codex-v5-runtime-smoke-2026-08-30.json",
+        "sha256": "35aec6c2e1db0993ebe37235368e516c2b5e6fa792575e5df9f342808821d7ab"
+      },
+      "generated_at": "2026-08-30T09:17:44Z",
+      "manifest_version": "5.0.0-rc.2",
+      "schema": "llm-agent-runtime-smoke-evidence/v1"
+    }
+  },
+  "identity_sources": {
+    "current_lock": {
+      "fields": {
+        "agent-dev-kit.commit": "42ae95d146ceb441ff91ea33dbbed581c33de305",
+        "agent-dev-kit.manifest_blob": "da1a8ca2f764b6b98d79870eefa6f3fc35cfd3f8",
+        "agent-dev-kit.tree": "4a034da631afbfb4b6b4d3a48310789ae85dcdbe",
+        "agent-dev-kit.version": "8.0.36",
+        "schema": "llm-agent-adk-lock/v2",
+        "updated_at": "2026-10-20"
+      },
+      "file": {
+        "absolute_path": "/workspace/scratch/77add259d49b/llm_agent/adk.lock",
+        "bytes": 271,
+        "mode": "0600",
+        "path": "adk.lock",
+        "sha256": "2a42121e2e3f7b3760cfd14a5b8830f37b01ff24e1929d08e3d73d0f75b3b0d5"
+      }
+    },
+    "current_promotion": {
+      "file": {
+        "absolute_path": "/workspace/scratch/77add259d49b/llm_agent/reports/promotion/agent-dev-kit/promotion-evidence.json",
+        "bytes": 1648,
+        "mode": "0600",
+        "path": "reports/promotion/agent-dev-kit/promotion-evidence.json",
+        "sha256": "5c96e9c5e9aaa0fabf09372365852707a02399526c248ad2aeb2893443817488"
+      },
+      "release": {
+        "artifact_sha256": "8b0ca59998370a4fb0f67dd0f6f259ffd82eb4d0dc6b777c5f6f7478f06d0c2d",
+        "release_eligible": true
+      },
+      "source": {
+        "commit": "42ae95d146ceb441ff91ea33dbbed581c33de305",
+        "event": "push",
+        "manifest_blob": "da1a8ca2f764b6b98d79870eefa6f3fc35cfd3f8",
+        "manifest_sha256": "f2fd9b08ea3623445bc5313e818ad9f4ac306900843f153f8d6125e938adb6e7",
+        "ref": "refs/heads/main",
+        "repository": "jiying2007/agent-dev-kit",
+        "run_attempt": 1,
+        "run_id": 39424392443,
+        "tree": "4a034da631afbfb4b6b4d3a48310789ae85dcdbe",
+        "version": "8.0.36",
+        "workflow": "agent-dev-kit-ci",
+        "workflow_ref": "jiying2007/agent-dev-kit/.github/workflows/ci.yml@refs/heads/main",
+        "workflow_sha": "42ae95d146ceb441ff91ea33dbbed581c33de305"
+      }
+    },
+    "field_comparison": [
+      {
+        "current_promotion_actual": "8.0.36",
+        "historical_policy_expected": "5.0.0-rc.2",
+        "original_main_promotion_actual": "8.0.35",
+        "policy_field": "release.candidate_version",
+        "promotion_field": "source.version"
+      },
+      {
+        "current_promotion_actual": "42ae95d146ceb441ff91ea33dbbed581c33de305",
+        "historical_policy_expected": "251edf2b6654cf8719ad1d8a1b7c81ffd64ffe1c",
+        "original_main_promotion_actual": "a17e7e61a01845cc1b1165c9f9137b689bb2e1de",
+        "policy_field": "release.candidate_commit",
+        "promotion_field": "source.commit"
+      },
+      {
+        "current_promotion_actual": "4a034da631afbfb4b6b4d3a48310789ae85dcdbe",
+        "historical_policy_expected": "6fc560322a64c9660e75cc568fded98927954283",
+        "original_main_promotion_actual": "acf1f6d2274dae27ea349c7de16cdabce610756d",
+        "policy_field": "release.candidate_tree",
+        "promotion_field": "source.tree"
+      },
+      {
+        "current_promotion_actual": "da1a8ca2f764b6b98d79870eefa6f3fc35cfd3f8",
+        "historical_policy_expected": "823ee268e16116b1ec56aa9033c41c49efb11bd0",
+        "original_main_promotion_actual": "3c8077577cc06166634aaf497f6a89102e40403c",
+        "policy_field": "release.candidate_manifest_blob",
+        "promotion_field": "source.manifest_blob"
+      }
+    ],
+    "original_main_lock": {
+      "fields": {
+        "agent-dev-kit.commit": "a17e7e61a01845cc1b1165c9f9137b689bb2e1de",
+        "agent-dev-kit.manifest_blob": "3c8077577cc06166634aaf497f6a89102e40403c",
+        "agent-dev-kit.tree": "acf1f6d2274dae27ea349c7de16cdabce610756d",
+        "agent-dev-kit.version": "8.0.35",
+        "schema": "llm-agent-adk-lock/v2",
+        "updated_at": "2026-10-20"
+      },
+      "file": {
+        "blob": "8d600be863ca2d9387e9ee962419384e3e4ca426",
+        "bytes": 271,
+        "commit": "2722715dc44b5226d0eaf488aa00734bdade4345",
+        "path": "adk.lock",
+        "sha256": "cabbf02114f5637ab0b3aaeb99ae18f0e697b2429fd4e0ae8de3785a27f84112"
+      }
+    },
+    "original_main_promotion": {
+      "file": {
+        "blob": "764a8e7b8faea5c58e09415114923a1a70c836ec",
+        "bytes": 1648,
+        "commit": "2722715dc44b5226d0eaf488aa00734bdade4345",
+        "path": "reports/promotion/agent-dev-kit/promotion-evidence.json",
+        "sha256": "acbb625c2767b948dc3005be20504e45add7428e58f1d2efa6b2ce61b543e472"
+      },
+      "release": {
+        "artifact_sha256": "db3af64feab4bc52a48980b264141736a0dab7294f4da30103e92d19017574b6",
+        "release_eligible": true
+      },
+      "source": {
+        "commit": "a17e7e61a01845cc1b1165c9f9137b689bb2e1de",
+        "event": "push",
+        "manifest_blob": "3c8077577cc06166634aaf497f6a89102e40403c",
+        "manifest_sha256": "1d125469cf8f5466d62f690eec4f69266908576465a76d5c3f5f61c3d673536b",
+        "ref": "refs/heads/main",
+        "repository": "jiying2007/agent-dev-kit",
+        "run_attempt": 1,
+        "run_id": 39368160395,
+        "tree": "acf1f6d2274dae27ea349c7de16cdabce610756d",
+        "version": "8.0.35",
+        "workflow": "agent-dev-kit-ci",
+        "workflow_ref": "jiying2007/agent-dev-kit/.github/workflows/ci.yml@refs/heads/main",
+        "workflow_sha": "a17e7e61a01845cc1b1165c9f9137b689bb2e1de"
+      }
+    },
+    "policy": {
+      "file": {
+        "absolute_path": "/workspace/scratch/77add259d49b/llm_agent/manifests/software_m5_policy.json",
+        "bytes": 2269,
+        "mode": "0644",
+        "path": "manifests/software_m5_policy.json",
+        "sha256": "5375d045f5a5214220d5f2a0375aaa86399233497a07de2f3801e89701f61246"
+      },
+      "original_main_file": {
+        "blob": "fbd4bde37746bf843aef1a240ec3e7def249d856",
+        "bytes": 2269,
+        "commit": "2722715dc44b5226d0eaf488aa00734bdade4345",
+        "path": "manifests/software_m5_policy.json",
+        "sha256": "5375d045f5a5214220d5f2a0375aaa86399233497a07de2f3801e89701f61246"
+      },
+      "release": {
+        "candidate_artifact_sha256": "844dd6b3d14cc8a505206473d9af6a39a3b585aae3928bf2f9327f60e657a0c8",
+        "candidate_artifact_status": "available",
+        "candidate_commit": "251edf2b6654cf8719ad1d8a1b7c81ffd64ffe1c",
+        "candidate_manifest_blob": "823ee268e16116b1ec56aa9033c41c49efb11bd0",
+        "candidate_release_eligible": true,
+        "candidate_tree": "6fc560322a64c9660e75cc568fded98927954283",
+        "candidate_version": "5.0.0-rc.2",
+        "historical_continuity": "advisory",
+        "promotion_attestation": "reports/promotion/agent-dev-kit/promotion-attestation.json",
+        "promotion_evidence": "reports/promotion/agent-dev-kit/promotion-evidence.json",
+        "release_train_target": "5.1.0"
+      }
+    }
+  },
+  "inspection_completed_at": "2026-10-20T14:57:44.995202Z",
+  "inspection_started_at": "2026-10-20T14:57:44.672240Z",
+  "inspector": {
+    "agent_path": "/root/qualification_audit",
+    "id": "ai/root/qualification_audit",
+    "kind": "ai"
+  },
+  "local_source_observed": {
+    "head": "5170d970e3a69ba8d8938e968fb82bee1ff37a7d",
+    "note": "Local HEAD/worktree identity is recorded as observed; it is not relabeled as the remote C2 commit.",
+    "root": "/workspace/scratch/77add259d49b/llm_agent",
+    "status_porcelain_v1": "M  adk.lock\nM  agent-dev-kit\nM  manifests/adk_interface.lock.json\nM  reports/current-status.md\nM  reports/promotion/agent-dev-kit/promotion-attestation.json\nM  reports/promotion/agent-dev-kit/promotion-evidence.json\n?? docs/changes/20261020-delegated-auto-review/evidence/\n"
+  },
+  "observed_existing_check_all": {
+    "executed_by_this_inspection": false,
+    "file": {
+      "bytes": 22206,
+      "path": "/workspace/scratch/77add259d49b/root-promotion-validation/20261020-formal-8.0.36/check-all-host-nocaps.log",
+      "sha256": "e466fbbc07a017952d9857a61304a48cb62de4dd8edcb02e726da07a18dc9185"
+    },
+    "raw_status": {
+      "advisories": [],
+      "blocking_gates": [
+        "evidence_integrity"
+      ],
+      "candidate_version": "5.0.0-rc.2",
+      "certification_status": "blocked",
+      "declaration_failures": [
+        {
+          "id": "scorecard_readiness_status",
+          "message": "scorecard software_m5.readiness_status is stale"
+        },
+        {
+          "id": "scorecard_eligibility_status",
+          "message": "scorecard software_m5.eligibility_status is stale"
+        },
+        {
+          "id": "scorecard_certification_status",
+          "message": "scorecard software_m5.certification_status is stale"
+        },
+        {
+          "id": "scorecard_certified",
+          "message": "scorecard software_m5.certified is stale"
+        },
+        {
+          "id": "scorecard_blocking_gates",
+          "message": "scorecard software_m5.blocking_gates is stale"
+        }
+      ],
+      "declaration_status": "fail",
+      "definition": "production-qualified",
+      "eligibility_status": "blocked",
+      "error": "promotion evidence source.version does not match current candidate",
+      "integrity_status": "fail",
+      "readiness_status": "not-ready",
+      "release_train_target": "5.1.0",
+      "schema": "llm-agent-software-m5-status/v2",
+      "scope": "software-only",
+      "software_m5_certified": false,
+      "status_sha256": "5019dc01f4ec3696116135cf9b2d106cb18fd4c75b9a06aeb5cf5d060fa0f024"
+    },
+    "reported_exit_code": 1,
+    "subcheck": "software-m5-readiness"
+  },
+  "original_main": {
+    "commit": "2722715dc44b5226d0eaf488aa00734bdade4345",
+    "repository": "jiying2007/llm_agent"
+  },
+  "schema": "llm-agent-m5-readonly-inspection-summary/v1",
+  "scope": {
+    "current_certifier_executed_by_this_inspection": false,
+    "description": "Read-only source and original artifact inspection. This summary does not certify current Product M5 or assert a baseline test was rerun.",
+    "live_runtime_modified": false,
+    "model_invocations": 0,
+    "new_runtime_executed": false,
+    "original_main_certifier_executed": false,
+    "output_is_qualification_receipt": false,
+    "remote_write_performed": false,
+    "source_or_historical_evidence_modified": false
+  }
+}

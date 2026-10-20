@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "suite": "llm-agent-check-all",
+  "mode": "full",
+  "gate_mode": "release",
+  "workspace_fingerprint": "e786c3c97c68a6985823c20bb20f19ad2a33eaacc860c95839ebb6c777272553",
+  "status": "fail",
+  "total": 2,
+  "pass": 1,
+  "fail": 1,
+  "elapsed_seconds": 0,
+  "same_run_reuse": {
+    "eligible": false,
+    "count": 0,
+    "checks": [
+
+    ]
+  },
+  "checks": [
+    {"name": "check-leaf.sh", "status": "pass", "exit_code": 0, "elapsed_seconds": 0},
+    {"name": "check-workspace-entrypoints.sh", "status": "fail", "exit_code": 1, "elapsed_seconds": 0}
+  ]
+}

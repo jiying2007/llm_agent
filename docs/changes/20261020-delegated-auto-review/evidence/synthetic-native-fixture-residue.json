@@ -1,0 +1,112 @@
+{
+  "bundle_sha256": "ee1abcb5f82af7d99de56b098c6c26feefef6c966996af91dbc272adbee62c35",
+  "contract_sha256": "2377fc04df65f132cee2c29499583fa82c5072bcc630e87754928469408a09c7",
+  "receipt_id": "native-claude-code-f712a75f2573ec8a8bcc",
+  "runtime": {
+    "binary": "python3.12",
+    "binary_sha256": "fa67443527ed9647f760d807e2a38f26340757123e643c4639cf273ed15d5ea7",
+    "version": "3.12.14",
+    "version_pin": "3.12.14"
+  },
+  "schema": "adk-native-target-conformance-receipt/v2",
+  "stages": [
+    {
+      "assertion_result_sha256": "30c32b154c36010b725ea2d2cbea02ff27d91ebb1b8f4c3b8ad91c70f1dc795b",
+      "assertion_sha256": "30af042d9ca78cf34ba79a9900681c3a15c5422c89f70928ba067d561f27512e",
+      "authority": {
+        "attestation_sha256": "9f2a5f2064fde05bf9ec052c67057e98a3bb0aa5219c40c33f23f2000de0b58f",
+        "authority_id": "ci-native-conformance",
+        "execution_authority": "ci-approved",
+        "scope": "discovery"
+      },
+      "command_sha256": "bb149d1db717570b95d6b1d14a1290e7a9a703d9c73b2e63164c2e6fd82b47b9",
+      "completed_at": "2026-10-20T13:57:54Z",
+      "duration_ms": 44,
+      "environment": {
+        "architecture": "x86_64",
+        "bundle_sha256": "ee1abcb5f82af7d99de56b098c6c26feefef6c966996af91dbc272adbee62c35",
+        "contract_sha256": "2377fc04df65f132cee2c29499583fa82c5072bcc630e87754928469408a09c7",
+        "cwd_sha256": "180a9ca5ca187feb27fcd6cc9ace93e1727c5282b3485f502527ba0eb21f2146",
+        "environment_sha256": "b478b74d075899aac22470dc317538c8ea2b4e98d47a0538dd7b3bc156d0352d",
+        "platform": "linux",
+        "runtime_binary_sha256": "fa67443527ed9647f760d807e2a38f26340757123e643c4639cf273ed15d5ea7"
+      },
+      "exit_code": 0,
+      "privacy": {
+        "raw_content_stored": false,
+        "sanitized": true,
+        "secrets_stored": false
+      },
+      "result_sha256": "c54ce5682e41a19a8742f27f0b2e16297533277e50fec9b6b5604e4e7e5d764d",
+      "semantic_assertion_status": "pass",
+      "stage": "discovery",
+      "started_at": "2026-10-20T13:57:54Z"
+    },
+    {
+      "assertion_result_sha256": "ab75140203acc7ca1de45b50aba43f791dd2848b1d57f0f3dd804e3ac6ed74f1",
+      "assertion_sha256": "40afb9df2f4d5293a5161b955058ca40ecf2a20831e58c7d099e09649d1f7a08",
+      "authority": {
+        "attestation_sha256": "a2039e27e1001408322367d432fd9d5327e45dd1142b910d4128eb03c97db318",
+        "authority_id": "ci-native-conformance",
+        "execution_authority": "ci-approved",
+        "scope": "load"
+      },
+      "command_sha256": "e9edc1676a20b015c6bc8d5c92fcc908e54c6d697227c189316d3737edc54070",
+      "completed_at": "2026-10-20T13:57:54Z",
+      "duration_ms": 34,
+      "environment": {
+        "architecture": "x86_64",
+        "bundle_sha256": "ee1abcb5f82af7d99de56b098c6c26feefef6c966996af91dbc272adbee62c35",
+        "contract_sha256": "2377fc04df65f132cee2c29499583fa82c5072bcc630e87754928469408a09c7",
+        "cwd_sha256": "180a9ca5ca187feb27fcd6cc9ace93e1727c5282b3485f502527ba0eb21f2146",
+        "environment_sha256": "b478b74d075899aac22470dc317538c8ea2b4e98d47a0538dd7b3bc156d0352d",
+        "platform": "linux",
+        "runtime_binary_sha256": "fa67443527ed9647f760d807e2a38f26340757123e643c4639cf273ed15d5ea7"
+      },
+      "exit_code": 0,
+      "privacy": {
+        "raw_content_stored": false,
+        "sanitized": true,
+        "secrets_stored": false
+      },
+      "result_sha256": "cf8c7857620b03aad8f9242a08c84718f68f642781cf7cc0a687e5a9be2dc28a",
+      "semantic_assertion_status": "pass",
+      "stage": "load",
+      "started_at": "2026-10-20T13:57:54Z"
+    },
+    {
+      "assertion_result_sha256": "13838f49ea2af6fd4fb9f823c9d582358be950cf6d24d4b33505554b5c38a61e",
+      "assertion_sha256": "4f87d28b97b16d211d5a14385779023a2646bcfdc20b5704451201296e687f03",
+      "authority": {
+        "attestation_sha256": "b99b64ec0e4a041744e05573c53961573ee1aef485ca75ff359db118fe25b584",
+        "authority_id": "ci-native-conformance",
+        "execution_authority": "ci-approved",
+        "scope": "trigger"
+      },
+      "command_sha256": "5116a80fadd2ecf9532da3ec4efc7e470b887079e6a09ba35ac58b5ce8f20c2d",
+      "completed_at": "2026-10-20T13:57:54Z",
+      "duration_ms": 39,
+      "environment": {
+        "architecture": "x86_64",
+        "bundle_sha256": "ee1abcb5f82af7d99de56b098c6c26feefef6c966996af91dbc272adbee62c35",
+        "contract_sha256": "2377fc04df65f132cee2c29499583fa82c5072bcc630e87754928469408a09c7",
+        "cwd_sha256": "180a9ca5ca187feb27fcd6cc9ace93e1727c5282b3485f502527ba0eb21f2146",
+        "environment_sha256": "b478b74d075899aac22470dc317538c8ea2b4e98d47a0538dd7b3bc156d0352d",
+        "platform": "linux",
+        "runtime_binary_sha256": "fa67443527ed9647f760d807e2a38f26340757123e643c4639cf273ed15d5ea7"
+      },
+      "exit_code": 0,
+      "privacy": {
+        "raw_content_stored": false,
+        "sanitized": true,
+        "secrets_stored": false
+      },
+      "result_sha256": "3ad20d59bd432b074bc1f457df0af5e73a1812af6215e7e863c24303813ad4e9",
+      "semantic_assertion_status": "pass",
+      "stage": "trigger",
+      "started_at": "2026-10-20T13:57:54Z"
+    }
+  ],
+  "target": "claude-code",
+  "verified_at": "2026-10-20T13:57:54Z"
+}

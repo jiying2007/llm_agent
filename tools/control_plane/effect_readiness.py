@@ -6,19 +6,20 @@ import json
 import os
 import subprocess
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 from tools.codex_assets.intake_io import IntakeError, read_bytes, read_json
 
 from .adk_interface import validate as validate_adk_interface
-from .evidence_paths import resolve_regular_evidence_path
+from .adk_interface import validate_delegated_review
 from .effect_preregistration import verify_effect_preregistration
+from .evidence_paths import resolve_regular_evidence_path
 
 SCHEMA = "llm-agent-effect-readiness/v1"
-INDEX_SCHEMA = "llm-agent-effect-value-evidence-index/v5"
-OWNER_REVIEW_SCHEMA = "llm-agent-effect-owner-review/v5"
+INDEX_SCHEMA = "llm-agent-effect-value-evidence-index/v6"
+OWNER_REVIEW_SCHEMA = "llm-agent-effect-owner-review/v6"
 RECEIPT_SET_SCHEMA = "llm-agent-effect-receipt-set/v1"
 DEFAULT_INDEX = Path("reports/runtime-evidence/effect-value/evidence-index.json")
 _REQUIRED_CONTRACT_IDS = {"agent-value", "effect-trials", "effect-trial-comparison"}
@@ -81,7 +82,7 @@ def _parse_time(value: Any, label: str) -> datetime:
         raise ValueError(f"{label} is invalid") from exc
     if parsed.tzinfo is None:
         raise ValueError(f"{label} must include a timezone")
-    return parsed.astimezone(timezone.utc)
+    return parsed.astimezone(UTC)
 
 
 def _schema_validate(adk: Path, schema_relative: str, document: Path, label: str) -> None:
@@ -375,6 +376,11 @@ def _expected_assets(adk: Path) -> set[tuple[str, str]]:
 def _validate_owner_review(
     review: dict[str, Any],
     *,
+    root: Path,
+    adk: Path,
+    review_evidence_path: Path,
+    review_evidence_sha256: str,
+    reviewed_sources: dict[Path, str],
     campaign_id: str,
     campaign_sha256: str,
     comparison_sha256: str,
@@ -433,17 +439,15 @@ def _validate_owner_review(
     if review["preregistration_bundle_sha256"] != preregistration_bundle_sha256:
         raise ValueError("owner review preregistration bundle digest mismatch")
     reviewed_at = _parse_time(review["reviewed_at"], "owner review timestamp")
-    if reviewed_at > datetime.now(timezone.utc):
+    if reviewed_at > datetime.now(UTC):
         raise ValueError("owner review timestamp is in the future")
     if reviewed_at < evidence_completed_at:
         raise ValueError("owner review predates completed evidence")
     reviewer = review.get("reviewed_by")
     if not isinstance(reviewer, str) or not reviewer.strip() or len(reviewer) > 128:
         raise ValueError("owner review requires a real reviewed_by identity")
-    if review["reviewer_role"] != "owner":
-        raise ValueError("owner review must use reviewer_role=owner")
-    if review["automation_generated"] is not False:
-        raise ValueError("owner review must not be automation generated")
+    if review["reviewer_role"] != "owner-delegated-ai" or review["automation_generated"] is not True:
+        raise ValueError("effect review must honestly identify delegated AI review")
     observed = review["observed_cases"]
     if (
         not isinstance(observed, dict)
@@ -473,6 +477,24 @@ def _validate_owner_review(
         result[pair] = item["decision"]
     if set(result) != measurement_assets:
         raise ValueError("owner review must cover every measured asset")
+    # The same pinned ADK authority validates source reviews, Harness and this
+    # runtime-evidence review. Root owns the reviewed data; ADK owns the policy.
+    # The index binds the review record, whose inputs include this decision
+    # document. Keeping the reference outside this document avoids hash cycles.
+    delegated = validate_delegated_review(root, review_evidence_path, policy_root=adk,
+                                         expected_subject=campaign_id, expected_scope="effect-value-review")
+    if delegated["record_sha256"] != review_evidence_sha256:
+        raise ValueError("delegated effect review digest differs from index")
+    if delegated["reviewer"]["id"] != reviewer or delegated["reviewed_at"] != review["reviewed_at"]:
+        raise ValueError("effect review identity or timestamp differs from delegated record")
+    if _parse_time(delegated["evidence_completed_at"], "delegated review evidence timestamp") < evidence_completed_at:
+        raise ValueError("delegated review predates completed effect evidence")
+    bound = {
+        ((root if ref["base"] == "repository" else review_evidence_path.parent) / ref["path"]).resolve(): ref["sha256"]
+        for ref in delegated["sources"] + delegated["evidence"]
+    }
+    if any(bound.get(path.resolve()) != digest for path, digest in reviewed_sources.items()):
+        raise ValueError("delegated review does not bind the complete effect decision and evidence")
     return result
 
 
@@ -503,6 +525,8 @@ def _validate_evidence_entry(
         "measurement_sha256",
         "owner_review_path",
         "owner_review_sha256",
+        "review_evidence_path",
+        "review_evidence_sha256",
     }
     if set(entry) != required:
         raise ValueError("effect evidence entry fields are invalid")
@@ -516,7 +540,7 @@ def _validate_evidence_entry(
         raise ValueError("effect evidence entry id is invalid")
 
     docs: dict[str, tuple[Path, str]] = {}
-    for name in ("campaign", "preregistration_package", "preregistration_bundle", "comparison", "authority_contract", "authority_registry", "receipts", "measurement", "owner_review"):
+    for name in ("campaign", "preregistration_package", "preregistration_bundle", "comparison", "authority_contract", "authority_registry", "receipts", "measurement", "owner_review", "review_evidence"):
         path = _safe_path(root, evidence_root, entry[f"{name}_path"], f"{name} path")
         expected = entry[f"{name}_sha256"]
         if (
@@ -720,6 +744,11 @@ def _validate_evidence_entry(
     )
     decisions = _validate_owner_review(
         review,
+        root=root,
+        adk=adk,
+        review_evidence_path=docs["review_evidence"][0],
+        review_evidence_sha256=docs["review_evidence"][1],
+        reviewed_sources={path: digest for name, (path, digest) in docs.items() if name != "review_evidence"},
         campaign_id=campaign_id,
         campaign_sha256=campaign_sha,
         comparison_sha256=comparison_sha,
@@ -746,6 +775,9 @@ def _validate_evidence_entry(
         "preregistered_at": preregistration["registered_at"],
         "verified_receipt_count": replay["receipt_count"],
         "reviewed_by": review["reviewed_by"],
+        "reviewer_role": "owner-delegated-ai",
+        "delegated_review_verified": True,
+        "review_evidence_sha256": docs["review_evidence"][1],
         "evidence_completed_at": evidence_completed_at.isoformat().replace("+00:00", "Z"),
         "asset_count": len(assets),
         "reviewed_at": review["reviewed_at"],
@@ -849,6 +881,10 @@ def project(root: Path, evidence_index: Path = DEFAULT_INDEX) -> dict[str, Any]:
         "src/agent_dev_kit/agent_value_receipts.py",
         "src/agent_dev_kit/agent_value_trust.py",
         "src/agent_dev_kit/sigstore_blob.py",
+        "src/agent_dev_kit/review_evidence.py",
+        "src/agent_dev_kit/strict_json.py",
+        "src/agent_dev_kit/readiness_evidence.py",
+        ".adk/review-policy.json",
         "manifests/agent_value_contracts.json",
         "manifests/agent_value_trust_registry.json",
         "docs/runbooks/effect-trials.md",

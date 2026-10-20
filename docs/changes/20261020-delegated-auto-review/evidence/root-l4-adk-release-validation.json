@@ -1,0 +1,163 @@
+{
+  "scope": "ADK clean source release build and isolated original artifact upgrade/rollback rehearsal",
+  "interpreter": "/workspace/scratch/77add259d49b/qualification-venv/bin/python",
+  "temporary_workspace_parent": "/workspace/scratch/77add259d49b/root-l4-release-workspaces",
+  "artifact_inputs": {
+    "8.0.35": {
+      "path": "/workspace/scratch/77add259d49b/adk-8.0.35-release-original/agent-dev-kit-8.0.35.tar.gz",
+      "sha256": "db3af64feab4bc52a48980b264141736a0dab7294f4da30103e92d19017574b6",
+      "checksum_path": "/workspace/scratch/77add259d49b/adk-8.0.35-release-original/agent-dev-kit-8.0.35.tar.gz.sha256",
+      "checksum_sha256": "a89e7135b4c55eeee55e6f7288af8c3830153776dc10da41af920fa89b0a999b"
+    },
+    "8.0.36": {
+      "path": "/workspace/scratch/77add259d49b/adk-8.0.36-release-original/agent-dev-kit-8.0.36.tar.gz",
+      "sha256": "8b0ca59998370a4fb0f67dd0f6f259ffd82eb4d0dc6b777c5f6f7478f06d0c2d",
+      "checksum_path": "/workspace/scratch/77add259d49b/adk-8.0.36-release-original/agent-dev-kit-8.0.36.tar.gz.sha256",
+      "checksum_sha256": "8781ae22e0a319f0d762017337c87d8589ef0409768f87ba9e436be1a98b0c2e"
+    }
+  },
+  "build": {
+    "command": [
+      "/workspace/scratch/77add259d49b/tooling/rtk",
+      "proxy",
+      "bash",
+      "agent-dev-kit/scripts/devkit.sh",
+      "release",
+      "build",
+      "--out",
+      "/workspace/scratch/77add259d49b/root-l4-adk-release-build",
+      "--summary-json"
+    ],
+    "cwd": "/workspace/scratch/77add259d49b/llm_agent",
+    "started_at": "2026-10-20T13:47:38.662638Z",
+    "completed_at": "2026-10-20T13:47:43.397796Z",
+    "elapsed_seconds": 4.735157301998697,
+    "exit_code": 0,
+    "stdout_path": "/workspace/scratch/77add259d49b/root-l4-adk-release-build.log",
+    "stdout_bytes": 838,
+    "stdout_sha256": "da93efc8aed68886e77d8ab8ca0d73be1246e1167ccef8ffe421dd0cb246bf8d",
+    "result": {
+      "schema_version": 1,
+      "status": "pass",
+      "version": "8.0.36",
+      "artifact": "/workspace/scratch/77add259d49b/root-l4-adk-release-build/agent-dev-kit-8.0.36.tar.gz",
+      "sha256": "8b0ca59998370a4fb0f67dd0f6f259ffd82eb4d0dc6b777c5f6f7478f06d0c2d",
+      "checksum": "/workspace/scratch/77add259d49b/root-l4-adk-release-build/agent-dev-kit-8.0.36.tar.gz.sha256",
+      "direct_targets": [
+        {
+          "target": "claude-code",
+          "agents": 9,
+          "skills": 42
+        },
+        {
+          "target": "opencode",
+          "agents": 9,
+          "skills": 42
+        }
+      ],
+      "external_targets": [
+        "codex"
+      ],
+      "source_distribution": true,
+      "source_file_count": 1442,
+      "release_eligible": true,
+      "source_provenance": {
+        "kind": "git-clean-commit",
+        "release_eligible": true,
+        "commit": "42ae95d146ceb441ff91ea33dbbed581c33de305",
+        "tree": "4a034da631afbfb4b6b4d3a48310789ae85dcdbe",
+        "dirty": false,
+        "source_distribution_sha256": "09759d2ddb581f9d2d69a4ec08be8cd90d35e5d3a86dfdcb34155ca21462cf5f"
+      }
+    }
+  },
+  "rehearsal": {
+    "command": [
+      "/workspace/scratch/77add259d49b/tooling/rtk",
+      "proxy",
+      "bash",
+      "agent-dev-kit/scripts/devkit.sh",
+      "release",
+      "rehearse",
+      "--previous-artifact",
+      "/workspace/scratch/77add259d49b/adk-8.0.35-release-original/agent-dev-kit-8.0.35.tar.gz",
+      "--candidate-artifact",
+      "/workspace/scratch/77add259d49b/adk-8.0.36-release-original/agent-dev-kit-8.0.36.tar.gz",
+      "--output",
+      "/workspace/scratch/77add259d49b/root-l4-adk-release-rehearsal-report.json",
+      "--summary-json"
+    ],
+    "cwd": "/workspace/scratch/77add259d49b/llm_agent",
+    "started_at": "2026-10-20T13:47:43.782593Z",
+    "completed_at": "2026-10-20T13:47:47.037584Z",
+    "elapsed_seconds": 3.254994609997084,
+    "exit_code": 0,
+    "stdout_path": "/workspace/scratch/77add259d49b/root-l4-adk-release-rehearsal.log",
+    "stdout_bytes": 695,
+    "stdout_sha256": "176e6204f7522481b05df37710b85dac9d45b6c16a3c884d6f0d2ef3c4cb5fa2",
+    "result": {
+      "schema_version": 3,
+      "status": "pass",
+      "previous_version": "8.0.35",
+      "candidate_version": "8.0.36",
+      "previous_sha256": "db3af64feab4bc52a48980b264141736a0dab7294f4da30103e92d19017574b6",
+      "candidate_sha256": "8b0ca59998370a4fb0f67dd0f6f259ffd82eb4d0dc6b777c5f6f7478f06d0c2d",
+      "previous_manifest_sha256": "1d125469cf8f5466d62f690eec4f69266908576465a76d5c3f5f61c3d673536b",
+      "candidate_manifest_sha256": "f2fd9b08ea3623445bc5313e818ad9f4ac306900843f153f8d6125e938adb6e7",
+      "previous_installed": 39,
+      "candidate_installed": 39,
+      "rollback": {
+        "status": "pass",
+        "removed": 39,
+        "restored": 39
+      },
+      "restored_assets": 39,
+      "remote_publish": "not-in-scope",
+      "report_sha256": "a9b0ab4e0689826f03549471baec7bcac4aeb54717c103827cb4bc1510a9c90d"
+    }
+  },
+  "rebuild_equals_formal_artifact": true,
+  "boundary_before": {
+    "observed_at": "2026-10-20T13:47:38.488993Z",
+    "root_head": "5170d970e3a69ba8d8938e968fb82bee1ff37a7d",
+    "root_status": "M  adk.lock\nM  agent-dev-kit\nM  manifests/adk_interface.lock.json\nM  reports/current-status.md\nM  reports/promotion/agent-dev-kit/promotion-attestation.json\nM  reports/promotion/agent-dev-kit/promotion-evidence.json\n?? tests/fixtures/\n",
+    "staged_diff_sha256": "c68007f5051b14b1b16550bca725e9ba53824d3a6f024921ea900f6377cd6107",
+    "adk_head": "42ae95d146ceb441ff91ea33dbbed581c33de305",
+    "adk_tree": "4a034da631afbfb4b6b4d3a48310789ae85dcdbe",
+    "adk_status": "",
+    "source_files": 1581,
+    "source_bytes": 7151965,
+    "source_inventory_sha256": "f99ce28f536ae648469151f849a4420dff1e9fa94d0c55d61c89e13cb5a8e21b",
+    "inventory_path": "/workspace/scratch/77add259d49b/root-l4-release-boundary-before.json"
+  },
+  "boundary_after_build": {
+    "observed_at": "2026-10-20T13:47:43.644968Z",
+    "root_head": "5170d970e3a69ba8d8938e968fb82bee1ff37a7d",
+    "root_status": "M  adk.lock\nM  agent-dev-kit\nM  manifests/adk_interface.lock.json\nM  reports/current-status.md\nM  reports/promotion/agent-dev-kit/promotion-attestation.json\nM  reports/promotion/agent-dev-kit/promotion-evidence.json\n?? tests/fixtures/\n",
+    "staged_diff_sha256": "c68007f5051b14b1b16550bca725e9ba53824d3a6f024921ea900f6377cd6107",
+    "adk_head": "42ae95d146ceb441ff91ea33dbbed581c33de305",
+    "adk_tree": "4a034da631afbfb4b6b4d3a48310789ae85dcdbe",
+    "adk_status": "",
+    "source_files": 1581,
+    "source_bytes": 7151965,
+    "source_inventory_sha256": "f99ce28f536ae648469151f849a4420dff1e9fa94d0c55d61c89e13cb5a8e21b",
+    "inventory_path": "/workspace/scratch/77add259d49b/root-l4-release-boundary-after-build.json"
+  },
+  "boundary_after": {
+    "observed_at": "2026-10-20T13:47:47.109093Z",
+    "root_head": "5170d970e3a69ba8d8938e968fb82bee1ff37a7d",
+    "root_status": "M  adk.lock\nM  agent-dev-kit\nM  manifests/adk_interface.lock.json\nM  reports/current-status.md\nM  reports/promotion/agent-dev-kit/promotion-attestation.json\nM  reports/promotion/agent-dev-kit/promotion-evidence.json\n?? tests/fixtures/\n",
+    "staged_diff_sha256": "c68007f5051b14b1b16550bca725e9ba53824d3a6f024921ea900f6377cd6107",
+    "adk_head": "42ae95d146ceb441ff91ea33dbbed581c33de305",
+    "adk_tree": "4a034da631afbfb4b6b4d3a48310789ae85dcdbe",
+    "adk_status": "",
+    "source_files": 1581,
+    "source_bytes": 7151965,
+    "source_inventory_sha256": "f99ce28f536ae648469151f849a4420dff1e9fa94d0c55d61c89e13cb5a8e21b",
+    "inventory_path": "/workspace/scratch/77add259d49b/root-l4-release-boundary-after.json"
+  },
+  "boundaries_unchanged": true,
+  "docker_parity_status": "not-verified",
+  "root_release_clean_status": "not-executed",
+  "completed_at": "2026-10-20T13:47:47.237603Z"
+}

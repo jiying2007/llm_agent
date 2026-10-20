@@ -1,0 +1,2 @@
+tests/fixtures/effect-readiness-7U0znp/evidence-index.json
+[PASS] effect readiness requires cryptographic preregistration, signed receipt replay, recomputed measurement, campaign provenance, and independent delegated review

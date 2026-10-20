@@ -1,0 +1,436 @@
+{
+  "baseline": {
+    "bytes": 892851,
+    "path": "g22-before.json",
+    "sha256": "24a936111d3d6cbd2965b4e0149c3c57e8a22d9c32925d7f7ad43d918cfadc09"
+  },
+  "baseline_equals_final": true,
+  "final": {
+    "bytes": 892851,
+    "path": "check-all-host-nocaps-after.json",
+    "sha256": "24a936111d3d6cbd2965b4e0149c3c57e8a22d9c32925d7f7ad43d918cfadc09"
+  },
+  "generated_at": "2026-10-20T14:45:45.007540+00:00",
+  "limitations": [
+    "Raw run reports are preserved unchanged, including both capture source_unchanged=false observations.",
+    "For those two observations all tracked entries and every field except Git status were identical; each status delta names exactly one test-generated untracked canary receipt.",
+    "Exact cleanup restored the baseline only after each completed run; that restoration does not change the original captured result.",
+    "The original canary cleanup errno was not observed. Residue and host/sandbox synchronization observations do not prove a source-code cleanup bug.",
+    "The retained check-all diagnostic is a scratch copy with only its Root path and cleanup trap adjusted; it is failure diagnosis, not canonical PASS evidence.",
+    "UTC started_at/completed_at fields in the capture reports are the execution times. Console date banners retain the host local timezone."
+  ],
+  "repositories": {
+    "adk": {
+      "head": "42ae95d146ceb441ff91ea33dbbed581c33de305",
+      "index_entries_sha256": "3baeac521a4b259d0d187d5e52ce7019a74c4253ee878e6904967db332207c12",
+      "path": "/workspace/scratch/77add259d49b/llm_agent/agent-dev-kit",
+      "staged_names": [],
+      "status": "",
+      "tree": "4a034da631afbfb4b6b4d3a48310789ae85dcdbe",
+      "unstaged_names": []
+    },
+    "root": {
+      "head": "5170d970e3a69ba8d8938e968fb82bee1ff37a7d",
+      "index_entries_sha256": "1f4f971489c303888e5db05892887045d9645882fea57b7bd545af280a2e752a",
+      "path": "/workspace/scratch/77add259d49b/llm_agent",
+      "staged_names": [
+        "adk.lock",
+        "agent-dev-kit",
+        "manifests/adk_interface.lock.json",
+        "reports/current-status.md",
+        "reports/promotion/agent-dev-kit/promotion-attestation.json",
+        "reports/promotion/agent-dev-kit/promotion-evidence.json"
+      ],
+      "status": "M  adk.lock\nM  agent-dev-kit\nM  manifests/adk_interface.lock.json\nM  reports/current-status.md\nM  reports/promotion/agent-dev-kit/promotion-attestation.json\nM  reports/promotion/agent-dev-kit/promotion-evidence.json\n",
+      "tree": "d01282d4ef2c2c5b1c534042f5c10ef5c7ca7613",
+      "unstaged_names": []
+    }
+  },
+  "runs": [
+    {
+      "all_fields_except_status_equal": {
+        "adk": true,
+        "root": true
+      },
+      "canonical_command_exit_code": 0,
+      "capture_exit_code": 0,
+      "completed_at": "2026-10-20T13:52:07.255248+00:00",
+      "elapsed_seconds": 485.933,
+      "log": {
+        "bytes": 224,
+        "path": "g22.log",
+        "sha256": "0434f828df83e290b2f7e2c5101006dd03b8179ce82a08489608edbbf912faf3"
+      },
+      "name": "g22",
+      "report": {
+        "bytes": 1368,
+        "path": "g22-run.json",
+        "sha256": "ec4aa094f0ef4a3526bcfdb209bf832d99181c3c1ffb1fcecc429cabc99cfbd8"
+      },
+      "source_after_sha256": "24a936111d3d6cbd2965b4e0149c3c57e8a22d9c32925d7f7ad43d918cfadc09",
+      "source_before_sha256": "24a936111d3d6cbd2965b4e0149c3c57e8a22d9c32925d7f7ad43d918cfadc09",
+      "source_unchanged": true,
+      "started_at": "2026-10-20T13:44:01.322771+00:00",
+      "status_delta": {},
+      "tracked_entries_equal": {
+        "adk": true,
+        "root": true
+      }
+    },
+    {
+      "all_fields_except_status_equal": {
+        "adk": true,
+        "root": true
+      },
+      "canonical_command_exit_code": 1,
+      "capture_exit_code": 1,
+      "completed_at": "2026-10-20T13:52:50.150669+00:00",
+      "elapsed_seconds": 20.03,
+      "log": {
+        "bytes": 5058,
+        "path": "root-full.log",
+        "sha256": "1eedaf8dae436d608862b7629faa6a2708168ef1e0943c482205b7c2ec7ae0d1"
+      },
+      "name": "root-full",
+      "report": {
+        "bytes": 1539,
+        "path": "root-full-run.json",
+        "sha256": "b0540ab2900d0c98249f0b047fac4ae131a758fc1835fca45b7a201ede8094cd"
+      },
+      "source_after_sha256": "24a936111d3d6cbd2965b4e0149c3c57e8a22d9c32925d7f7ad43d918cfadc09",
+      "source_before_sha256": "24a936111d3d6cbd2965b4e0149c3c57e8a22d9c32925d7f7ad43d918cfadc09",
+      "source_unchanged": true,
+      "started_at": "2026-10-20T13:52:30.120319+00:00",
+      "status_delta": {},
+      "tests": {
+        "fail": 1,
+        "pass": 17,
+        "status": "fail",
+        "total": 18
+      },
+      "timing": {
+        "bytes": 1735,
+        "path": "root-tests-timing.json",
+        "sha256": "f61876d8bb544940dcc399841abb4e4dab6457f06e445f2436f4f303cd6e0687"
+      },
+      "tracked_entries_equal": {
+        "adk": true,
+        "root": true
+      }
+    },
+    {
+      "all_fields_except_status_equal": {
+        "adk": true,
+        "root": true
+      },
+      "canonical_command_exit_code": 1,
+      "capture_exit_code": 1,
+      "completed_at": "2026-10-20T13:54:02.380751+00:00",
+      "elapsed_seconds": 2.062,
+      "log": {
+        "bytes": 2572,
+        "path": "check-all-contract-trace.log",
+        "sha256": "83777bc7fd9f05173706477a3325ba778bd300d020ee0aeba50e2ffddb3505b6"
+      },
+      "name": "check-all-contract-trace",
+      "report": {
+        "bytes": 1442,
+        "path": "check-all-contract-trace-run.json",
+        "sha256": "df9a9926c3ae5eb1c1aa2534606588670e99d90947e06397f3f330185e0ca3ca"
+      },
+      "source_after_sha256": "24a936111d3d6cbd2965b4e0149c3c57e8a22d9c32925d7f7ad43d918cfadc09",
+      "source_before_sha256": "24a936111d3d6cbd2965b4e0149c3c57e8a22d9c32925d7f7ad43d918cfadc09",
+      "source_unchanged": true,
+      "started_at": "2026-10-20T13:54:00.319084+00:00",
+      "status_delta": {},
+      "tracked_entries_equal": {
+        "adk": true,
+        "root": true
+      }
+    },
+    {
+      "all_fields_except_status_equal": {
+        "adk": true,
+        "root": true
+      },
+      "canonical_command_exit_code": 1,
+      "capture_exit_code": 1,
+      "completed_at": "2026-10-20T13:55:34.834398+00:00",
+      "elapsed_seconds": 0.772,
+      "log": {
+        "bytes": 2538,
+        "path": "check-all-contract-retained-diagnostic.log",
+        "sha256": "8a38f1a70b7c9891617a4431f461b84592f8d709f4382fe7d4c59b9b8d80b9ab"
+      },
+      "name": "check-all-contract-retained-diagnostic",
+      "report": {
+        "bytes": 1494,
+        "path": "check-all-contract-retained-diagnostic-run.json",
+        "sha256": "9caa64584b5e136b17cdb8599cef0d08bc316ae83983263e7f50a6b6fd09f558"
+      },
+      "source_after_sha256": "24a936111d3d6cbd2965b4e0149c3c57e8a22d9c32925d7f7ad43d918cfadc09",
+      "source_before_sha256": "24a936111d3d6cbd2965b4e0149c3c57e8a22d9c32925d7f7ad43d918cfadc09",
+      "source_unchanged": true,
+      "started_at": "2026-10-20T13:55:34.062339+00:00",
+      "status_delta": {},
+      "tracked_entries_equal": {
+        "adk": true,
+        "root": true
+      }
+    },
+    {
+      "all_fields_except_status_equal": {
+        "adk": true,
+        "root": true
+      },
+      "canonical_command_exit_code": 0,
+      "capture_exit_code": 0,
+      "completed_at": "2026-10-20T13:57:19.321959+00:00",
+      "elapsed_seconds": 2.14,
+      "log": {
+        "bytes": 64,
+        "path": "check-all-contract-host.log",
+        "sha256": "0b731466bbb8acd9cbed0698c5858aa42ac2dce8cf1f47c1cebfee24ab3edde1"
+      },
+      "name": "check-all-contract-host",
+      "report": {
+        "bytes": 1426,
+        "path": "check-all-contract-host-run.json",
+        "sha256": "67a809642f4cb9c716b0157e62ead08834f1d5f3a18920709e396c49b83e70f0"
+      },
+      "source_after_sha256": "24a936111d3d6cbd2965b4e0149c3c57e8a22d9c32925d7f7ad43d918cfadc09",
+      "source_before_sha256": "24a936111d3d6cbd2965b4e0149c3c57e8a22d9c32925d7f7ad43d918cfadc09",
+      "source_unchanged": true,
+      "started_at": "2026-10-20T13:57:17.182185+00:00",
+      "status_delta": {},
+      "tracked_entries_equal": {
+        "adk": true,
+        "root": true
+      }
+    },
+    {
+      "all_fields_except_status_equal": {
+        "adk": true,
+        "root": true
+      },
+      "canonical_command_exit_code": 1,
+      "capture_exit_code": 3,
+      "completed_at": "2026-10-20T14:09:04.791854+00:00",
+      "elapsed_seconds": 679.146,
+      "log": {
+        "bytes": 43591,
+        "path": "root-full-host.log",
+        "sha256": "a66fc1657959ff7bae19ced07105a2a49fa05910d77f4da4fd859d1b2decbbe7"
+      },
+      "name": "root-full-host",
+      "report": {
+        "bytes": 1563,
+        "path": "root-full-host-run.json",
+        "sha256": "5ebb9f2ea36423ffc3ff5fe4047bb541dbd974dcb6bcb12a386148a90549a10b"
+      },
+      "source_after_sha256": "55631034bebfb43e854a475aa97c2d51ef600ba2954092895850a5f79d8af9d4",
+      "source_before_sha256": "24a936111d3d6cbd2965b4e0149c3c57e8a22d9c32925d7f7ad43d918cfadc09",
+      "source_unchanged": false,
+      "started_at": "2026-10-20T13:57:45.646402+00:00",
+      "status_delta": {
+        "adk": {
+          "after": "?? reports/runtime/root-native-campaign-e0sdwhww/receipt.json\n",
+          "before": ""
+        },
+        "root": {
+          "after": "M  adk.lock\nMM agent-dev-kit\nM  manifests/adk_interface.lock.json\nM  reports/current-status.md\nM  reports/promotion/agent-dev-kit/promotion-attestation.json\nM  reports/promotion/agent-dev-kit/promotion-evidence.json\n",
+          "before": "M  adk.lock\nM  agent-dev-kit\nM  manifests/adk_interface.lock.json\nM  reports/current-status.md\nM  reports/promotion/agent-dev-kit/promotion-attestation.json\nM  reports/promotion/agent-dev-kit/promotion-evidence.json\n"
+        }
+      },
+      "tests": {
+        "fail": 1,
+        "pass": 53,
+        "status": "fail",
+        "total": 54
+      },
+      "timing": {
+        "bytes": 4841,
+        "path": "root-tests-host-timing.json",
+        "sha256": "3970213a2b5267a41f38f75f43f14c2796925b987a9eabc58273a42e97b4acf6"
+      },
+      "tracked_entries_equal": {
+        "adk": true,
+        "root": true
+      }
+    },
+    {
+      "all_fields_except_status_equal": {
+        "adk": true,
+        "root": true
+      },
+      "canonical_command_exit_code": 0,
+      "capture_exit_code": 0,
+      "completed_at": "2026-10-20T14:22:52.139965+00:00",
+      "elapsed_seconds": 6.381,
+      "log": {
+        "bytes": 1248,
+        "path": "reference-registration-host-nocaps.log",
+        "sha256": "2256551f5647e16597a23b3bf24a8e6d4f6ef2d7e8520c5e429957e216ea58ba"
+      },
+      "name": "reference-registration-host-nocaps",
+      "report": {
+        "bytes": 1477,
+        "path": "reference-registration-host-nocaps-run.json",
+        "sha256": "0ef53bfe6d14a3c28f0bce706c51a08b640dd7a03645304a7e3cce2f7d8e4c4a"
+      },
+      "source_after_sha256": "24a936111d3d6cbd2965b4e0149c3c57e8a22d9c32925d7f7ad43d918cfadc09",
+      "source_before_sha256": "24a936111d3d6cbd2965b4e0149c3c57e8a22d9c32925d7f7ad43d918cfadc09",
+      "source_unchanged": true,
+      "started_at": "2026-10-20T14:22:45.759155+00:00",
+      "status_delta": {},
+      "tracked_entries_equal": {
+        "adk": true,
+        "root": true
+      }
+    },
+    {
+      "all_fields_except_status_equal": {
+        "adk": true,
+        "root": true
+      },
+      "canonical_command_exit_code": 0,
+      "capture_exit_code": 3,
+      "completed_at": "2026-10-20T14:37:16.119656+00:00",
+      "elapsed_seconds": 772.612,
+      "log": {
+        "bytes": 49316,
+        "path": "root-full-host-nocaps.log",
+        "sha256": "ae8ff321b76090abb49d5d5f999f7341b60c207217eaece2ee1667467eb4d18f"
+      },
+      "name": "root-full-host-nocaps",
+      "report": {
+        "bytes": 1591,
+        "path": "root-full-host-nocaps-run.json",
+        "sha256": "c9838f2feb9da680b236f3f633aa69388bae03a9f840e1f874f2c76cc060832f"
+      },
+      "source_after_sha256": "ac6227b4d3d276aa58d317378e924ec72a797c885e14618c53a149a6b4b3fe25",
+      "source_before_sha256": "24a936111d3d6cbd2965b4e0149c3c57e8a22d9c32925d7f7ad43d918cfadc09",
+      "source_unchanged": false,
+      "started_at": "2026-10-20T14:24:23.507792+00:00",
+      "status_delta": {
+        "adk": {
+          "after": "?? reports/runtime/root-native-campaign-76ikaqjd/receipt.json\n",
+          "before": ""
+        },
+        "root": {
+          "after": "M  adk.lock\nMM agent-dev-kit\nM  manifests/adk_interface.lock.json\nM  reports/current-status.md\nM  reports/promotion/agent-dev-kit/promotion-attestation.json\nM  reports/promotion/agent-dev-kit/promotion-evidence.json\n",
+          "before": "M  adk.lock\nM  agent-dev-kit\nM  manifests/adk_interface.lock.json\nM  reports/current-status.md\nM  reports/promotion/agent-dev-kit/promotion-attestation.json\nM  reports/promotion/agent-dev-kit/promotion-evidence.json\n"
+        }
+      },
+      "tests": {
+        "fail": 0,
+        "pass": 79,
+        "status": "pass",
+        "total": 79
+      },
+      "timing": {
+        "bytes": 6906,
+        "path": "root-tests-host-nocaps-timing.json",
+        "sha256": "e53e559f32830de2b5e1973e16ab9551851be4832536225419c6f9d8fa45a3d4"
+      },
+      "tracked_entries_equal": {
+        "adk": true,
+        "root": true
+      }
+    },
+    {
+      "all_fields_except_status_equal": {
+        "adk": true,
+        "root": true
+      },
+      "canonical_command_exit_code": 1,
+      "capture_exit_code": 1,
+      "completed_at": "2026-10-20T14:40:51.381544+00:00",
+      "elapsed_seconds": 50.968,
+      "log": {
+        "bytes": 22206,
+        "path": "check-all-host-nocaps.log",
+        "sha256": "e466fbbc07a017952d9857a61304a48cb62de4dd8edcb02e726da07a18dc9185"
+      },
+      "name": "check-all-host-nocaps",
+      "report": {
+        "bytes": 1599,
+        "path": "check-all-host-nocaps-run.json",
+        "sha256": "d8b7524decebb82461d852d83025e056326b493eac70dfc7ef017ae8bb921fce"
+      },
+      "source_after_sha256": "24a936111d3d6cbd2965b4e0149c3c57e8a22d9c32925d7f7ad43d918cfadc09",
+      "source_before_sha256": "24a936111d3d6cbd2965b4e0149c3c57e8a22d9c32925d7f7ad43d918cfadc09",
+      "source_unchanged": true,
+      "started_at": "2026-10-20T14:40:00.413087+00:00",
+      "status_delta": {},
+      "tracked_entries_equal": {
+        "adk": true,
+        "root": true
+      }
+    }
+  ],
+  "schema": "root-formal-validation-source-identity/v1",
+  "six_staged_promotion_entries": [
+    {
+      "blob": "8d576c4ac1529aee43f380f281df20584bc99208",
+      "bytes": 271,
+      "executable": false,
+      "mode": "100644",
+      "path": "adk.lock",
+      "stage": "0",
+      "worktree_kind": "file",
+      "worktree_sha256": "2a42121e2e3f7b3760cfd14a5b8830f37b01ff24e1929d08e3d73d0f75b3b0d5"
+    },
+    {
+      "blob": "42ae95d146ceb441ff91ea33dbbed581c33de305",
+      "mode": "160000",
+      "path": "agent-dev-kit",
+      "stage": "0",
+      "worktree_kind": "directory"
+    },
+    {
+      "blob": "efd9632e4afce027e0cce5d13060d8d3f2b828ee",
+      "bytes": 1252,
+      "executable": false,
+      "mode": "100644",
+      "path": "manifests/adk_interface.lock.json",
+      "stage": "0",
+      "worktree_kind": "file",
+      "worktree_sha256": "489088f6aa87210bfdd87ddaf914c131403c36c043acbf27f422a25abe9d82da"
+    },
+    {
+      "blob": "5f0b49e2ed3caeca6a0eeb5c29e6fcb6dc65f5fa",
+      "bytes": 5839,
+      "executable": false,
+      "mode": "100644",
+      "path": "reports/current-status.md",
+      "stage": "0",
+      "worktree_kind": "file",
+      "worktree_sha256": "eafa9afa59a460a5520a8170346c76c29ea81690ebdadb3a594a67390a9fe8f9"
+    },
+    {
+      "blob": "ceff3bfc281c1067987e2230569df06e5baac188",
+      "bytes": 10345,
+      "executable": false,
+      "mode": "100644",
+      "path": "reports/promotion/agent-dev-kit/promotion-attestation.json",
+      "stage": "0",
+      "worktree_kind": "file",
+      "worktree_sha256": "ad41d2a91b2eaac851c9f044f48b2dc4c255fda54014a1be30fc1c77c1639a7b"
+    },
+    {
+      "blob": "5f52a4318e56bcf45785c54e4b4720132201e878",
+      "bytes": 1648,
+      "executable": false,
+      "mode": "100644",
+      "path": "reports/promotion/agent-dev-kit/promotion-evidence.json",
+      "stage": "0",
+      "worktree_kind": "file",
+      "worktree_sha256": "5c96e9c5e9aaa0fabf09372365852707a02399526c248ad2aeb2893443817488"
+    }
+  ],
+  "tracked_entry_counts": {
+    "adk": 1581,
+    "root": 806
+  }
+}

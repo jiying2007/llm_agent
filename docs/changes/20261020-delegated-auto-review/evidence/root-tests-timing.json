@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "suite": "llm-agent-root-regression",
+  "status": "fail",
+  "total": 18,
+  "pass": 17,
+  "fail": 1,
+  "elapsed_ms": 19527,
+  "slow_threshold_sec": 30,
+  "tests": [
+    {"name": "test_active_contracts", "status": "pass", "elapsed_ms": 203},
+    {"name": "test_adk_agent_value_trust_consumer", "status": "pass", "elapsed_ms": 1543},
+    {"name": "test_adk_context_observability_consumer", "status": "pass", "elapsed_ms": 3740},
+    {"name": "test_adk_goal_capability_contract", "status": "pass", "elapsed_ms": 28},
+    {"name": "test_adk_interface_lock", "status": "pass", "elapsed_ms": 785},
+    {"name": "test_adk_lock_worktree_integration", "status": "pass", "elapsed_ms": 443},
+    {"name": "test_adk_native_campaign_consumer", "status": "pass", "elapsed_ms": 5113},
+    {"name": "test_adk_native_trust_consumer", "status": "pass", "elapsed_ms": 1232},
+    {"name": "test_adk_promotion", "status": "pass", "elapsed_ms": 491},
+    {"name": "test_adk_promotion_evidence", "status": "pass", "elapsed_ms": 600},
+    {"name": "test_adk_promotion_transaction", "status": "pass", "elapsed_ms": 1461},
+    {"name": "test_adoption_real_assets", "status": "pass", "elapsed_ms": 299},
+    {"name": "test_agents_coverage_contract", "status": "pass", "elapsed_ms": 158},
+    {"name": "test_architecture_reports", "status": "pass", "elapsed_ms": 1576},
+    {"name": "test_asset_inventory_contract", "status": "pass", "elapsed_ms": 484},
+    {"name": "test_authorized_subrepos_contract", "status": "pass", "elapsed_ms": 322},
+    {"name": "test_branch_gc_native_subtraction", "status": "pass", "elapsed_ms": 142},
+    {"name": "test_check_all_contract", "status": "fail", "elapsed_ms": 719}
+  ],
+  "slow_tests": [
+
+  ]
+}

@@ -1,0 +1,93 @@
+=== RUN test_active_contracts ===
+[PASS] active governance references are fresh and retired runtime surfaces are absent
+[PASS] test_active_contracts
+=== RUN test_adk_agent_value_trust_consumer ===
+[PASS] pinned ADK 8.0.36 Agent Value trust + prepared receipt software is available while prepared receipts remain unverified, canonical authority remains disabled, and measurements remain not-measured
+[PASS] test_adk_agent_value_trust_consumer
+=== RUN test_adk_context_observability_consumer ===
+[PASS] Root verifies pinned ADK 8.0.36 profile/source observability and fail-closed expiry; expired_targets=[]
+[PASS] test_adk_context_observability_consumer
+=== RUN test_adk_goal_capability_contract ===
+[PASS] ADK goal capability gate covers the canonical Execution Policy engine
+[PASS] test_adk_goal_capability_contract
+=== RUN test_adk_interface_lock ===
+...
+----------------------------------------------------------------------
+Ran 3 tests in 0.023s
+
+OK
+[PASS] pinned ADK interface identity is coherent
+[PASS] test_adk_interface_lock
+=== RUN test_adk_lock_worktree_integration ===
+[PASS] ADK lock distinguishes working-tree integration from release-clean identity
+[PASS] test_adk_lock_worktree_integration
+=== RUN test_adk_native_campaign_consumer ===
+[PASS] Root consumes pinned ADK 8.0.36 semantic native campaign v2 without upgrading trust or target authority
+[PASS] test_adk_native_campaign_consumer
+=== RUN test_adk_native_trust_consumer ===
+[PASS] pinned ADK 8.0.36 managed native trust enables no authority or target
+[PASS] Root static target consumer preserves native certification boundary
+[PASS] test_adk_native_trust_consumer
+=== RUN test_adk_promotion ===
+[PASS] ADK promotion receipt binds lock, interface identity and rejects tampering
+[PASS] test_adk_promotion
+=== RUN test_adk_promotion_evidence ===
+{"candidate": {"commit": "1111111111111111111111111111111111111111", "manifest_blob": "3333333333333333333333333333333333333333", "tree": "2222222222222222222222222222222222222222", "version": "5.0.0-rc.2"}, "issued_at": "2026-10-20T13:52:44.337268Z", "release_eligible": false, "schema": "llm-agent-adk-promotion-evidence-verification/v1", "source_repository": "jiying2007/agent-dev-kit", "source_run_attempt": 1, "source_run_id": 123, "source_workflow": "agent-dev-kit-ci", "status": "pass"}
+{"error": "promotion evidence source.commit does not match adk.lock", "schema": "llm-agent-adk-promotion-evidence-verification/v1", "status": "fail"}
+{"error": "ci.regression_matrix must prove successful Python 3.8/3.11/3.12 coverage", "schema": "llm-agent-adk-promotion-evidence-verification/v1", "status": "fail"}
+{"error": "ci.regression_matrix must prove successful Python 3.8/3.11/3.12 coverage", "schema": "llm-agent-adk-promotion-evidence-verification/v1", "status": "fail"}
+{"error": "promotion evidence must come from a push to main", "schema": "llm-agent-adk-promotion-evidence-verification/v1", "status": "fail"}
+{"error": "promotion evidence is stale", "schema": "llm-agent-adk-promotion-evidence-verification/v1", "status": "fail"}
+[PASS] portable ADK promotion evidence verifier
+[PASS] test_adk_promotion_evidence
+=== RUN test_adk_promotion_transaction ===
+warning: adding embedded git repository: agent-dev-kit
+hint: You've added another git repository inside your current repository.
+hint: Clones of the outer repository will not contain the contents of
+hint: the embedded repository and will not know how to obtain it.
+hint: If you meant to add a submodule, use:
+hint:
+hint: 	git submodule add <url> agent-dev-kit
+hint:
+hint: If you added this path by mistake, you can remove it from the
+hint: index with:
+hint:
+hint: 	git rm --cached agent-dev-kit
+hint:
+hint: See "git help submodule" for more information.
+hint: Disable this message with "git config set advice.addEmbeddedRepo false"
+[PASS] promotion preflight rejects duplicate/nonfinite/oversized/symlinked JSON
+[PASS] ADK promotion stages one six-path source+evidence transaction and rolls back atomically
+[PASS] test_adk_promotion_transaction
+=== RUN test_adoption_real_assets ===
+[PASS] adoption real asset fixtures behave as expected
+[PASS] test_adoption_real_assets
+=== RUN test_agents_coverage_contract ===
+.
+----------------------------------------------------------------------
+Ran 1 test in 0.043s
+
+OK
+[PASS] test_agents_coverage_contract
+=== RUN test_architecture_reports ===
+[PASS] architecture report checks behave as expected
+[PASS] test_architecture_reports
+=== RUN test_asset_inventory_contract ===
+.
+----------------------------------------------------------------------
+Ran 1 test in 0.393s
+
+OK
+[PASS] test_asset_inventory_contract
+=== RUN test_authorized_subrepos_contract ===
+.
+----------------------------------------------------------------------
+Ran 1 test in 0.242s
+
+OK
+[PASS] test_authorized_subrepos_contract
+=== RUN test_branch_gc_native_subtraction ===
+[PASS] generic merged-PR GC is retired; explicit exact-SHA retirement remains fail-closed
+[PASS] test_branch_gc_native_subtraction
+=== RUN test_check_all_contract ===
+[FAIL] test_check_all_contract

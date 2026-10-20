@@ -1,0 +1,38 @@
+{
+  "command": [
+    "/workspace/scratch/77add259d49b/tooling/rtk",
+    "proxy",
+    "bash",
+    "agent-dev-kit/scripts/run-local-ci-parity.sh",
+    "--python",
+    "all",
+    "--mode",
+    "full"
+  ],
+  "cwd": "/workspace/scratch/77add259d49b/llm_agent",
+  "started_at": "2026-10-20T13:43:22.978326Z",
+  "completed_at": "2026-10-20T13:43:22.993640Z",
+  "elapsed_seconds": 0.01528366599814035,
+  "exit_code": 2,
+  "stdout_path": "/workspace/scratch/77add259d49b/root-l4-local-ci-parity.log",
+  "stdout_bytes": 765,
+  "stdout_sha256": "b32f6faee1c0b8206d38101a6b5f4aea84c4f9d7398dac7c36157220f6c2e50b",
+  "boundary_before": {
+    "root_head": "5170d970e3a69ba8d8938e968fb82bee1ff37a7d",
+    "root_status": "M  adk.lock\nM  agent-dev-kit\nM  manifests/adk_interface.lock.json\nM  reports/current-status.md\nM  reports/promotion/agent-dev-kit/promotion-attestation.json\nM  reports/promotion/agent-dev-kit/promotion-evidence.json\n",
+    "staged_diff_sha256": "c68007f5051b14b1b16550bca725e9ba53824d3a6f024921ea900f6377cd6107",
+    "staged_name_status": "M\tadk.lock\nM\tagent-dev-kit\nM\tmanifests/adk_interface.lock.json\nM\treports/current-status.md\nM\treports/promotion/agent-dev-kit/promotion-attestation.json\nM\treports/promotion/agent-dev-kit/promotion-evidence.json\n",
+    "adk_head": "42ae95d146ceb441ff91ea33dbbed581c33de305"
+  },
+  "boundary_after": {
+    "root_head": "5170d970e3a69ba8d8938e968fb82bee1ff37a7d",
+    "root_status": "M  adk.lock\nM  agent-dev-kit\nM  manifests/adk_interface.lock.json\nM  reports/current-status.md\nM  reports/promotion/agent-dev-kit/promotion-attestation.json\nM  reports/promotion/agent-dev-kit/promotion-evidence.json\n",
+    "staged_diff_sha256": "c68007f5051b14b1b16550bca725e9ba53824d3a6f024921ea900f6377cd6107",
+    "staged_name_status": "M\tadk.lock\nM\tagent-dev-kit\nM\tmanifests/adk_interface.lock.json\nM\treports/current-status.md\nM\treports/promotion/agent-dev-kit/promotion-attestation.json\nM\treports/promotion/agent-dev-kit/promotion-evidence.json\n",
+    "adk_head": "42ae95d146ceb441ff91ea33dbbed581c33de305"
+  },
+  "boundary_unchanged": true,
+  "docker": null,
+  "podman": null,
+  "status": "not-verified"
+}

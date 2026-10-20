@@ -1,0 +1,41 @@
++ set -euo pipefail
++++ dirname tests/test_check_all_contract.sh
+++ cd tests/..
+++ pwd
++ ROOT=/workspace/scratch/77add259d49b/llm_agent
+++ mktemp -d
++ TMP_DIR=/tmp/tmp.VUMMRDnp1t
++ trap 'rm -rf "${TMP_DIR}"' EXIT
++ mkdir -p /tmp/tmp.VUMMRDnp1t/scripts
++ mkdir -p /tmp/tmp.VUMMRDnp1t/scripts/lib
++ cp /workspace/scratch/77add259d49b/llm_agent/scripts/check-all.sh /tmp/tmp.VUMMRDnp1t/scripts/check-all.sh
++ cp /workspace/scratch/77add259d49b/llm_agent/scripts/lib/same-run-evidence.sh /tmp/tmp.VUMMRDnp1t/scripts/lib/same-run-evidence.sh
++ cat
++ cat
++ git -C /tmp/tmp.VUMMRDnp1t init -q
++ git -C /tmp/tmp.VUMMRDnp1t add scripts
++ git -C /tmp/tmp.VUMMRDnp1t -c 'user.name=Check All Contract' -c user.email=check-all@example.invalid commit -q -m fixture
++ result_json=/tmp/tmp.VUMMRDnp1t/result.json
++ output=/tmp/tmp.VUMMRDnp1t/output.txt
++ bash /tmp/tmp.VUMMRDnp1t/scripts/check-all.sh --full --result-json /tmp/tmp.VUMMRDnp1t/result.json --max-failure-lines 2
++ rg -q --fixed-strings -- 'check-fail.sh failure log (last 2 lines)' /tmp/tmp.VUMMRDnp1t/output.txt
++ rg -q --fixed-strings -- 'line two' /tmp/tmp.VUMMRDnp1t/output.txt
++ rg -q --fixed-strings -- 'line three' /tmp/tmp.VUMMRDnp1t/output.txt
++ rg -q --fixed-strings -- 'line one' /tmp/tmp.VUMMRDnp1t/output.txt
++ python3 - /tmp/tmp.VUMMRDnp1t/result.json
++ bash /tmp/tmp.VUMMRDnp1t/scripts/check-all.sh --max-failure-lines nope
++ rg -q --fixed-strings -- '--max-failure-lines must be numeric' /tmp/tmp.VUMMRDnp1t/bad.out
++ integration_root=/tmp/tmp.VUMMRDnp1t/integration
++ mkdir -p /tmp/tmp.VUMMRDnp1t/integration/scripts/lib
++ cp /workspace/scratch/77add259d49b/llm_agent/scripts/check-all.sh /tmp/tmp.VUMMRDnp1t/integration/scripts/check-all.sh
++ cp /workspace/scratch/77add259d49b/llm_agent/scripts/lib/same-run-evidence.sh /tmp/tmp.VUMMRDnp1t/integration/scripts/lib/same-run-evidence.sh
++ cat
++ cat
++ chmod +x /tmp/tmp.VUMMRDnp1t/integration/scripts/check-all.sh /tmp/tmp.VUMMRDnp1t/integration/scripts/check-leaf.sh /tmp/tmp.VUMMRDnp1t/integration/scripts/check-workspace-entrypoints.sh
++ git -C /tmp/tmp.VUMMRDnp1t/integration init -q
++ git -C /tmp/tmp.VUMMRDnp1t/integration add scripts
++ git -C /tmp/tmp.VUMMRDnp1t/integration -c 'user.name=Same Run Contract' -c user.email=same-run@example.invalid commit -q -m fixture
++ integration_result=/tmp/tmp.VUMMRDnp1t/integration-result.json
++ integration_output=/tmp/tmp.VUMMRDnp1t/integration-output.txt
++ bash /tmp/tmp.VUMMRDnp1t/integration/scripts/check-all.sh --full --result-json /tmp/tmp.VUMMRDnp1t/integration-result.json
++ rm -rf /tmp/tmp.VUMMRDnp1t

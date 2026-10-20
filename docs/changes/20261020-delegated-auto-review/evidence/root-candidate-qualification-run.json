@@ -1,0 +1,29 @@
+{
+  "command": [
+    "python3",
+    "-m",
+    "tools.control_plane.cli",
+    "qualification-followup",
+    "--root",
+    ".",
+    "--summary-json"
+  ],
+  "cwd": "/workspace/scratch/77add259d49b/llm_agent",
+  "started_at": "2026-10-20T13:43:43.188078+00:00",
+  "completed_at": "2026-10-20T13:43:44.608152+00:00",
+  "elapsed_seconds": 1.448,
+  "exit_code": 0,
+  "log_bytes": 81281,
+  "log_sha256": "189fce9a0278e61ca3bdcba7e77d8a3322d908b239f832db2d908dfe5f451e5f",
+  "source_before": {
+    "head": "5170d970e3a69ba8d8938e968fb82bee1ff37a7d",
+    "tree": "d01282d4ef2c2c5b1c534042f5c10ef5c7ca7613",
+    "status": "M  adk.lock\nM  agent-dev-kit\nM  manifests/adk_interface.lock.json\nM  reports/current-status.md\nM  reports/promotion/agent-dev-kit/promotion-attestation.json\nM  reports/promotion/agent-dev-kit/promotion-evidence.json"
+  },
+  "source_after": {
+    "head": "5170d970e3a69ba8d8938e968fb82bee1ff37a7d",
+    "tree": "d01282d4ef2c2c5b1c534042f5c10ef5c7ca7613",
+    "status": "M  adk.lock\nM  agent-dev-kit\nM  manifests/adk_interface.lock.json\nM  reports/current-status.md\nM  reports/promotion/agent-dev-kit/promotion-attestation.json\nM  reports/promotion/agent-dev-kit/promotion-evidence.json"
+  },
+  "source_unchanged": true
+}

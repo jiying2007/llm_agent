@@ -1,0 +1,231 @@
+{
+  "aggregate_check_failures": [
+    {
+      "elapsed_seconds": 0,
+      "exit_code": 2,
+      "name": "check-global-codex-health.sh",
+      "status": "fail"
+    },
+    {
+      "elapsed_seconds": 0,
+      "exit_code": 1,
+      "name": "check-global-codex-target-policy.sh",
+      "status": "fail"
+    },
+    {
+      "elapsed_seconds": 0,
+      "exit_code": 1,
+      "name": "check-reference-dirty-triage.sh",
+      "status": "fail"
+    },
+    {
+      "elapsed_seconds": 0,
+      "exit_code": 2,
+      "name": "check-runtime-health.sh",
+      "status": "fail"
+    },
+    {
+      "elapsed_seconds": 0,
+      "exit_code": 1,
+      "name": "check-software-m5-readiness.sh",
+      "status": "fail"
+    }
+  ],
+  "aggregate_failure_causes": {
+    "check-global-codex-health.sh": "Required /root/codex/scripts/doctor.sh is unavailable.",
+    "check-global-codex-target-policy.sh": "Required /root/codex declaration repository is unavailable.",
+    "check-reference-dirty-triage.sh": "OpenSpec, superpowers and vibeflow baselines expired on 2026-10-14 and their current snapshots are unavailable.",
+    "check-runtime-health.sh": "Runtime adapter requires the unavailable /root/codex/scripts/doctor.sh.",
+    "check-software-m5-readiness.sh": "Promotion evidence source.version differs from the current candidate; five scorecard declarations are stale."
+  },
+  "final_status": {
+    "aggregate_check": {
+      "fail": 5,
+      "pass": 47,
+      "status": "fail",
+      "total": 52
+    },
+    "final_source_equals_original": true,
+    "g22_contract_test_exit_code": 0,
+    "real_native_g22_lta_qualification_not_established_by_these_tests": true,
+    "root_full_regression_scripts": {
+      "canonical_exit_code": 0,
+      "capture_exit_code": 3,
+      "fail": 0,
+      "pass": 79,
+      "total": 79
+    }
+  },
+  "generated_at": "2026-10-20T14:45:45.010453+00:00",
+  "notes": [
+    "g22-before.json and check-all-host-nocaps-after.json have identical bytes; all intermediate duplicate full snapshots may be omitted. The source-identity summary records every original snapshot digest and exact status delta.",
+    "Only one of each double-backed-up synthetic receipt is selected; these are unit-test fixtures, not real Native provider evidence.",
+    "No tests, source files, index entries, locks, runtime configuration, or HOME settings were changed to obtain passing results.",
+    "The later canonical host runs used real /proc and setpriv --bounding-set=-all --no-new-privs. Earlier failed runs remain independently recorded.",
+    "Raw source_unchanged=false reports must not be rewritten after fixture cleanup."
+  ],
+  "recommended_raw_files": [
+    {
+      "bytes": 224,
+      "path": "g22.log",
+      "sha256": "0434f828df83e290b2f7e2c5101006dd03b8179ce82a08489608edbbf912faf3"
+    },
+    {
+      "bytes": 1368,
+      "path": "g22-run.json",
+      "sha256": "ec4aa094f0ef4a3526bcfdb209bf832d99181c3c1ffb1fcecc429cabc99cfbd8"
+    },
+    {
+      "bytes": 5058,
+      "path": "root-full.log",
+      "sha256": "1eedaf8dae436d608862b7629faa6a2708168ef1e0943c482205b7c2ec7ae0d1"
+    },
+    {
+      "bytes": 1539,
+      "path": "root-full-run.json",
+      "sha256": "b0540ab2900d0c98249f0b047fac4ae131a758fc1835fca45b7a201ede8094cd"
+    },
+    {
+      "bytes": 1735,
+      "path": "root-tests-timing.json",
+      "sha256": "f61876d8bb544940dcc399841abb4e4dab6457f06e445f2436f4f303cd6e0687"
+    },
+    {
+      "bytes": 2572,
+      "path": "check-all-contract-trace.log",
+      "sha256": "83777bc7fd9f05173706477a3325ba778bd300d020ee0aeba50e2ffddb3505b6"
+    },
+    {
+      "bytes": 1442,
+      "path": "check-all-contract-trace-run.json",
+      "sha256": "df9a9926c3ae5eb1c1aa2534606588670e99d90947e06397f3f330185e0ca3ca"
+    },
+    {
+      "bytes": 2538,
+      "path": "check-all-contract-retained-diagnostic.log",
+      "sha256": "8a38f1a70b7c9891617a4431f461b84592f8d709f4382fe7d4c59b9b8d80b9ab"
+    },
+    {
+      "bytes": 1494,
+      "path": "check-all-contract-retained-diagnostic-run.json",
+      "sha256": "9caa64584b5e136b17cdb8599cef0d08bc316ae83983263e7f50a6b6fd09f558"
+    },
+    {
+      "bytes": 1551,
+      "path": "check-all-contract-retained-integration-output.log",
+      "sha256": "74988c09ee2efface97850d5c0cbd55c5820dd76ed6d652d14a80e6a9666fe6e"
+    },
+    {
+      "bytes": 581,
+      "path": "check-all-contract-retained-integration-result.json",
+      "sha256": "b688d1baec017c33c4cc1ef48874f2ca113f4f639f0bfc06fad0017e73507de2"
+    },
+    {
+      "bytes": 243,
+      "path": "host-pid-probe.json",
+      "sha256": "22c9a68f515c7221986b596dc2a9253fc53158d0ed0fd9c0255079b24d51dde8"
+    },
+    {
+      "bytes": 64,
+      "path": "check-all-contract-host.log",
+      "sha256": "0b731466bbb8acd9cbed0698c5858aa42ac2dce8cf1f47c1cebfee24ab3edde1"
+    },
+    {
+      "bytes": 1426,
+      "path": "check-all-contract-host-run.json",
+      "sha256": "67a809642f4cb9c716b0157e62ead08834f1d5f3a18920709e396c49b83e70f0"
+    },
+    {
+      "bytes": 43591,
+      "path": "root-full-host.log",
+      "sha256": "a66fc1657959ff7bae19ced07105a2a49fa05910d77f4da4fd859d1b2decbbe7"
+    },
+    {
+      "bytes": 1563,
+      "path": "root-full-host-run.json",
+      "sha256": "5ebb9f2ea36423ffc3ff5fe4047bb541dbd974dcb6bcb12a386148a90549a10b"
+    },
+    {
+      "bytes": 4841,
+      "path": "root-tests-host-timing.json",
+      "sha256": "3970213a2b5267a41f38f75f43f14c2796925b987a9eabc58273a42e97b4acf6"
+    },
+    {
+      "bytes": 1248,
+      "path": "reference-registration-host-nocaps.log",
+      "sha256": "2256551f5647e16597a23b3bf24a8e6d4f6ef2d7e8520c5e429957e216ea58ba"
+    },
+    {
+      "bytes": 1477,
+      "path": "reference-registration-host-nocaps-run.json",
+      "sha256": "0ef53bfe6d14a3c28f0bce706c51a08b640dd7a03645304a7e3cce2f7d8e4c4a"
+    },
+    {
+      "bytes": 49316,
+      "path": "root-full-host-nocaps.log",
+      "sha256": "ae8ff321b76090abb49d5d5f999f7341b60c207217eaece2ee1667467eb4d18f"
+    },
+    {
+      "bytes": 1591,
+      "path": "root-full-host-nocaps-run.json",
+      "sha256": "c9838f2feb9da680b236f3f633aa69388bae03a9f840e1f874f2c76cc060832f"
+    },
+    {
+      "bytes": 6906,
+      "path": "root-tests-host-nocaps-timing.json",
+      "sha256": "e53e559f32830de2b5e1973e16ab9551851be4832536225419c6f9d8fa45a3d4"
+    },
+    {
+      "bytes": 22206,
+      "path": "check-all-host-nocaps.log",
+      "sha256": "e466fbbc07a017952d9857a61304a48cb62de4dd8edcb02e726da07a18dc9185"
+    },
+    {
+      "bytes": 1599,
+      "path": "check-all-host-nocaps-run.json",
+      "sha256": "d8b7524decebb82461d852d83025e056326b493eac70dfc7ef017ae8bb921fce"
+    },
+    {
+      "bytes": 5740,
+      "path": "check-all-results.json",
+      "sha256": "7208c1b315960a69f87ca89fbf91b098522ba3038546ec89df4f166e7c88b202"
+    },
+    {
+      "bytes": 5193,
+      "path": "synthetic-native-fixture-residue.json",
+      "sha256": "f2559c0c7cf9cf67e44ab5dc728e3341922b3482db703948efd4feba94165af9"
+    },
+    {
+      "bytes": 5196,
+      "path": "synthetic-native-fixture-third-run.json",
+      "sha256": "5d39beec6ad71e66227ae1869c4d59143111ea41bdc0b2e4a0580290fb23daed"
+    },
+    {
+      "bytes": 1727,
+      "path": "root-full-host-nocaps-residue-preservation.json",
+      "sha256": "e8aeb7d7608e74735f79854e1663653c44932958b12f523965a2f4949ffbaa68"
+    },
+    {
+      "bytes": 380,
+      "path": "root-full-host-nocaps-restoration.json",
+      "sha256": "d123da0c053c23fad0e73aecabdbf63209ba1b7aedb1379377b1080352cc92e6"
+    },
+    {
+      "bytes": 892851,
+      "path": "g22-before.json",
+      "sha256": "24a936111d3d6cbd2965b4e0149c3c57e8a22d9c32925d7f7ad43d918cfadc09"
+    },
+    {
+      "bytes": 892851,
+      "path": "check-all-host-nocaps-after.json",
+      "sha256": "24a936111d3d6cbd2965b4e0149c3c57e8a22d9c32925d7f7ad43d918cfadc09"
+    },
+    {
+      "bytes": 16381,
+      "path": "source-identity-summary.json",
+      "sha256": "14a50198a474fefe11686df1b375e5504828f63360d68975b3f610d7871798f9"
+    }
+  ],
+  "schema": "root-formal-validation-evidence-handoff/v1",
+  "source_directory": "/workspace/scratch/77add259d49b/root-promotion-validation/20261020-formal-8.0.36"
+}

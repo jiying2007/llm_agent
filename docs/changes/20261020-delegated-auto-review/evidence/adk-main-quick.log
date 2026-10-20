@@ -1,0 +1,501 @@
+=== RUN test_validate ===
+[PASS] validate
+[PASS] test_validate
+=== RUN test_manifest_contract ===
+[PASS] single Manifest SSOT contract
+............
+----------------------------------------------------------------------
+Ran 12 tests in 1.621s
+
+OK
+[PASS] test_manifest_contract
+=== RUN test_strict_json ===
+..............
+----------------------------------------------------------------------
+Ran 14 tests in 0.074s
+
+OK
+{"schema": "adk-promotion-evidence-generation/v1", "status": "pass", "out": "/tmp/tmp_31wuvz1/evidence.json"}
+{"schema": "adk-promotion-evidence-generation/v1", "status": "fail", "error": "probe"}
+{"schema": "adk-promotion-evidence-generation/v1", "status": "fail", "error": "document output must be a regular file"}
+{"schema": "adk-promotion-evidence-generation/v1", "status": "fail", "error": "JSON contains duplicate object keys"}
+{"schema": "adk-promotion-evidence-generation/v1", "status": "fail", "error": "JSON input cannot be read"}
+{"schema": "adk-promotion-evidence-generation/v1", "status": "fail", "error": "JSON input must be a regular file"}
+[PASS] test_strict_json
+=== RUN test_contract_hardening ===
+.........................................
+----------------------------------------------------------------------
+Ran 41 tests in 14.914s
+
+OK
+........
+----------------------------------------------------------------------
+Ran 8 tests in 2.053s
+
+OK
+.....
+----------------------------------------------------------------------
+Ran 5 tests in 0.112s
+
+OK
+[PASS] test_contract_hardening
+=== RUN test_boundary_rehearsal ===
+...
+----------------------------------------------------------------------
+Ran 3 tests in 0.262s
+
+OK
+[PASS] test_boundary_rehearsal
+=== RUN test_contract_registry ===
+test_contract_schema_rejects_unknown_top_level_field (tests.test_phase_context.PhaseContextContractTests.test_contract_schema_rejects_unknown_top_level_field) ... ok
+test_delivery_lifecycle_is_review_then_completion_then_commit_then_closeout (tests.test_phase_context.PhaseContextContractTests.test_delivery_lifecycle_is_review_then_completion_then_commit_then_closeout) ... ok
+test_driver_phase_contains_implementation_bringup_and_interrupt_dma (tests.test_phase_context.PhaseContextContractTests.test_driver_phase_contains_implementation_bringup_and_interrupt_dma) ... ok
+test_manifest_has_no_phase_to_skill_path_mirror (tests.test_phase_context.PhaseContextContractTests.test_manifest_has_no_phase_to_skill_path_mirror) ... ok
+test_non_unique_group_cannot_be_promoted_to_exactly_one_primary (tests.test_phase_context.PhaseContextContractTests.test_non_unique_group_cannot_be_promoted_to_exactly_one_primary) ... ok
+test_phase_resource_cannot_escape_repository_root (tests.test_phase_context.PhaseContextContractTests.test_phase_resource_cannot_escape_repository_root) ... ok
+test_review_phase_resolves_primary_plus_language_overlay (tests.test_phase_context.PhaseContextContractTests.test_review_phase_resolves_primary_plus_language_overlay) ... ok
+test_skill_selector_fails_closed_on_role_drift (tests.test_phase_context.PhaseContextContractTests.test_skill_selector_fails_closed_on_role_drift) ... ok
+test_unknown_skill_fails_closed (tests.test_phase_context.PhaseContextContractTests.test_unknown_skill_fails_closed) ... ok
+test_verify_phase_separates_test_execution_from_completion_gate (tests.test_phase_context.PhaseContextContractTests.test_verify_phase_separates_test_execution_from_completion_gate) ... ok
+test_context_prerequisite_graph_is_acyclic (tests.test_skill_relationships.SkillRelationshipContractTests.test_context_prerequisite_graph_is_acyclic) ... ok
+test_delivery_precedence_must_exactly_match_adjacent_lifecycle (tests.test_skill_relationships.SkillRelationshipContractTests.test_delivery_precedence_must_exactly_match_adjacent_lifecycle) ... ok
+test_inverted_terminal_stage_order_fails_closed (tests.test_skill_relationships.SkillRelationshipContractTests.test_inverted_terminal_stage_order_fails_closed) ... ok
+test_manifest_has_no_parallel_dependency_graph (tests.test_skill_relationships.SkillRelationshipContractTests.test_manifest_has_no_parallel_dependency_graph) ... ok
+test_only_delivery_precedence_can_claim_sequencing_authority (tests.test_skill_relationships.SkillRelationshipContractTests.test_only_delivery_precedence_can_claim_sequencing_authority) ... ok
+test_terminal_lifecycle_has_single_typed_authority (tests.test_skill_relationships.SkillRelationshipContractTests.test_terminal_lifecycle_has_single_typed_authority) ... ok
+test_typed_relationships_are_the_only_relationship_authority (tests.test_skill_relationships.SkillRelationshipContractTests.test_typed_relationships_are_the_only_relationship_authority) ... ok
+test_unknown_typed_endpoint_fails_closed (tests.test_skill_relationships.SkillRelationshipContractTests.test_unknown_typed_endpoint_fails_closed) ... ok
+
+----------------------------------------------------------------------
+Ran 18 tests in 0.366s
+
+OK
+[PASS] v2 semantic contracts + single canonical ADK CLI are fail-closed
+[PASS] test_contract_registry
+=== RUN test_schema_resource_sync ===
+[PASS] packaged schemas are generated/checkable mirrors of canonical root schemas
+[PASS] test_schema_resource_sync
+=== RUN test_manifest_consumer_boundary ===
+[PASS] active Manifest consumers are JSON-only with zero legacy execution surface
+[PASS] test_manifest_consumer_boundary
+=== RUN test_manifest_composition_contract ===
+{"authoring_mode": "single-canonical-json", "canonical_source": "manifest.json", "manifest_digest": "f2fd9b08ea3623445bc5313e818ad9f4ac306900843f153f8d6125e938adb6e7", "owner_domain_count": 12, "reference_composer_mode": "pure-in-memory-only", "reference_composer_runtime_enabled": false, "required_section_count": 28, "round_trip_digest": "f2fd9b08ea3623445bc5313e818ad9f4ac306900843f153f8d6125e938adb6e7", "runtime_consumer_mode": "canonical-json-only", "schema": "adk-manifest-composition-policy/v2", "status": "pass"}
+[PASS] manifest composition and bounded-context ownership contract pass
+[PASS] test_manifest_composition_contract
+=== RUN test_manifest_composition_cli ===
+[PASS] manifest composition CLI is read-only and fail-closed
+[PASS] test_manifest_composition_cli
+=== RUN test_test_registry ===
+[PASS] shell test registry closed: files=106 full=101 quick=59 workflow_only=5
+[PASS] test_test_registry
+=== RUN test_python_launcher ===
+[PASS] ADK Python launcher selection and fail-fast contract hold
+[PASS] test_python_launcher
+=== RUN test_runtime_boundary ===
+[PASS] runtime boundary check
+[PASS] runtime boundary
+[PASS] test_runtime_boundary
+=== RUN test_profile_context_footprint ===
+.....
+----------------------------------------------------------------------
+Ran 5 tests in 1.746s
+
+OK
+[PASS] test_profile_context_footprint
+=== RUN test_target_contracts ===
+[PASS] target contracts
+[PASS] test_target_contracts
+=== RUN test_target_adapter_spi ===
+[PASS] target adapter SPI matches target-contract/v2 capability vocabulary
+[PASS] test_target_adapter_spi
+=== RUN test_native_trust ===
+......
+----------------------------------------------------------------------
+Ran 6 tests in 0.357s
+
+OK
+[PASS] test_native_trust
+=== RUN test_sigstore_blob ===
+..
+----------------------------------------------------------------------
+Ran 2 tests in 0.197s
+
+OK
+[PASS] test_sigstore_blob
+=== RUN test_native_campaign ===
+...../opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_subprocess.py:125: ResourceWarning: unclosed transport <_UnixSubprocessTransport pid=2710 returncode=0 stdout=<_UnixReadPipeTransport fd=7 open> stderr=<_UnixReadPipeTransport fd=9 open>>
+  _warn(f"unclosed transport {self!r}", ResourceWarning, source=self)
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+Exception ignored in: <function BaseSubprocessTransport.__del__ at 0x7faa49703920>
+Traceback (most recent call last):
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_subprocess.py", line 126, in __del__
+    self.close()
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_subprocess.py", line 104, in close
+    proto.pipe.close()
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/unix_events.py", line 568, in close
+    self._close(None)
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/unix_events.py", line 592, in _close
+    self._loop.call_soon(self._call_connection_lost, exc)
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 799, in call_soon
+    self._check_closed()
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 545, in _check_closed
+    raise RuntimeError('Event loop is closed')
+RuntimeError: Event loop is closed
+<frozen abc>:117: ResourceWarning: unclosed file <_io.FileIO name=7 mode='rb' closefd=True>
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+<frozen abc>:117: ResourceWarning: unclosed file <_io.FileIO name=9 mode='rb' closefd=True>
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/unix_events.py:572: ResourceWarning: unclosed transport <_UnixReadPipeTransport closing fd=7 open>
+  _warn(f"unclosed transport {self!r}", ResourceWarning, source=self)
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/unix_events.py:572: ResourceWarning: unclosed transport <_UnixReadPipeTransport fd=9 open>
+  _warn(f"unclosed transport {self!r}", ResourceWarning, source=self)
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+...............
+----------------------------------------------------------------------
+Ran 20 tests in 8.050s
+
+OK
+[PASS] test_native_campaign
+=== RUN test_native_campaign_boundaries ===
+...
+----------------------------------------------------------------------
+Ran 3 tests in 0.025s
+
+OK
+[PASS] test_native_campaign_boundaries
+=== RUN test_native_campaign_diagnostics ===
+.........................
+----------------------------------------------------------------------
+Ran 25 tests in 0.870s
+
+OK
+[PASS] test_native_campaign_diagnostics
+=== RUN test_target_source_probe ===
+..
+----------------------------------------------------------------------
+Ran 2 tests in 1.157s
+
+OK
+[PASS] test_target_source_probe
+=== RUN test_effect_eval ===
+[PASS] effect evaluation contracts passed
+[PASS] test_effect_eval
+=== RUN test_completion_coverage ===
+test_complete_structural_coverage_never_grants_completion (tests.test_completion_coverage.CompletionCoverageTests.test_complete_structural_coverage_never_grants_completion) ... ok
+test_duplicate_ids_and_invalid_skip_reason_are_rejected (tests.test_completion_coverage.CompletionCoverageTests.test_duplicate_ids_and_invalid_skip_reason_are_rejected) ... ok
+test_duplicate_json_field_is_rejected_by_cli (tests.test_completion_coverage.CompletionCoverageTests.test_duplicate_json_field_is_rejected_by_cli) ... ok
+test_failed_additional_check_still_blocks_coverage (tests.test_completion_coverage.CompletionCoverageTests.test_failed_additional_check_still_blocks_coverage) ... ok
+test_missing_required_and_skipped_required_are_visible (tests.test_completion_coverage.CompletionCoverageTests.test_missing_required_and_skipped_required_are_visible) ... ok
+test_snapshot_mismatch_and_future_time_are_invalid (tests.test_completion_coverage.CompletionCoverageTests.test_snapshot_mismatch_and_future_time_are_invalid) ... ok
+test_stale_required_evidence_does_not_cover_check (tests.test_completion_coverage.CompletionCoverageTests.test_stale_required_evidence_does_not_cover_check) ... ok
+test_status_exit_code_ref_and_unknown_fields_are_invalid (tests.test_completion_coverage.CompletionCoverageTests.test_status_exit_code_ref_and_unknown_fields_are_invalid) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.065s
+
+OK
+usage: completion_coverage.py [-h] --input INPUT [--summary-json]
+
+Audit command-check coverage without completion authority
+
+options:
+  -h, --help      show this help message and exit
+  --input INPUT
+  --summary-json
+{"additional_checks": [], "as_of_utc": "2026-09-28T12:00:00Z", "command_executed_by_auditor": false, "completion_allowed": false, "counts": {"covered_required": 2, "failed": 0, "missing_required": 0, "required": 2, "skipped_required": 0, "stale": 0}, "covered_required": ["build", "test"], "evidence_authenticated": false, "failed_checks": [], "missing_required": [], "normalized_input_sha256": "8ab5083b38568d10cb13ae80a365e1f1ba74df818d1549d68b707a52636008eb", "observed_checks": ["build", "test"], "release_authorized": false, "required_checks": ["build", "test"], "schema": "adk-completion-coverage-result/v1", "skipped_additional": [], "skipped_required": [], "source_snapshot_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "stale_checks": [], "status": "pass", "verifier_authenticated": false}
+[PASS] test_completion_coverage
+=== RUN test_eval_catalog ===
+test_duplicate_manifest_fixture_cannot_report_alignment_pass (tests.test_eval_catalog.EvalCatalogAuditTests.test_duplicate_manifest_fixture_cannot_report_alignment_pass) ... ok
+test_duplicate_suite_and_case_ids_fail (tests.test_eval_catalog.EvalCatalogAuditTests.test_duplicate_suite_and_case_ids_fail) ... ok
+test_hidden_execution_fields_and_duplicate_json_keys_fail_closed (tests.test_eval_catalog.EvalCatalogAuditTests.test_hidden_execution_fields_and_duplicate_json_keys_fail_closed) ... ok
+test_manifest_fixture_drift_and_wrong_outcome_fail (tests.test_eval_catalog.EvalCatalogAuditTests.test_manifest_fixture_drift_and_wrong_outcome_fail) ... ok
+test_missing_dataset_and_path_traversal_fail_closed (tests.test_eval_catalog.EvalCatalogAuditTests.test_missing_dataset_and_path_traversal_fail_closed) ... ok
+test_oversized_guardrail_dataset_is_rejected (tests.test_eval_catalog.EvalCatalogAuditTests.test_oversized_guardrail_dataset_is_rejected) ... ok
+test_repository_catalog_is_valid_without_claiming_runtime_eval (tests.test_eval_catalog.EvalCatalogAuditTests.test_repository_catalog_is_valid_without_claiming_runtime_eval) ... ok
+test_symlink_dataset_is_rejected (tests.test_eval_catalog.EvalCatalogAuditTests.test_symlink_dataset_is_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.032s
+
+OK
+usage: eval_catalog.py [-h] [--root ROOT] [--summary-json]
+
+Audit ADK evaluation catalog integrity
+
+options:
+  -h, --help      show this help message and exit
+  --root ROOT
+  --summary-json
+{"catalog_sha256": "f8c77405ee0ae55a33caaffa5b31ba4118d6e7d17afd38db7c49b93eb34914b1", "catalog_valid": true, "contract_only_suite_count": 9, "dataset_fixture_alignment_scope": ["governance-eval-guardrail-regression-dataset"], "guardrail_case_count": 8, "issues": [], "release_authorized": false, "runtime_eval_executed": false, "schema": "adk-eval-catalog-audit/v1", "snapshot_atomic": false, "status": "pass", "suite_count": 10, "suite_reports": [{"dataset_path": "tests/fixtures/skill_trigger_cases.tsv", "dataset_present": true, "dataset_readable": true, "dataset_sha256": "d3bc5b672436c649a17bc8aa9e6f0c8ac4904f1410846510c03dd0fdd07d3e94", "fixture_count": 10, "fixture_dataset_alignment": "not-checked", "grader_executed": false, "id": "routing-eval-core-skill-selection", "runtime_eval_executed": false}, {"dataset_path": "manifests/official_docs_freshness_gates.json", "dataset_present": true, "dataset_readable": true, "dataset_sha256": "9ec9fc63efd71fbc867e69535907928cbe64802f4bfd0ecbffa4a926c1492214", "fixture_count": 2, "fixture_dataset_alignment": "not-checked", "grader_executed": false, "id": "governance-eval-official-docs-freshness", "runtime_eval_executed": false}, {"dataset_path": "docs/runbooks/evidence-index-delivery.md", "dataset_present": true, "dataset_readable": true, "dataset_sha256": "b1b434d3497b581e174062ce3a16872ca3132c17476e6cd697c9b3537951ff80", "fixture_count": 2, "fixture_dataset_alignment": "not-checked", "grader_executed": false, "id": "completion-eval-evidence-index", "runtime_eval_executed": false}, {"dataset_path": "manifests/trace_eval_contracts.json", "dataset_present": true, "dataset_readable": true, "dataset_sha256": "2cd7547def2a5a07bad9616a607ec1141e347ed8495a5517e1a3ff4102c86bff", "fixture_count": 2, "fixture_dataset_alignment": "not-checked", "grader_executed": false, "id": "macro-eval-recurring-agentic-patterns", "runtime_eval_executed": false}, {"dataset_path": "tests/fixtures/skill_trigger_cases.tsv", "dataset_present": true, "dataset_readable": true, "dataset_sha256": "d3bc5b672436c649a17bc8aa9e6f0c8ac4904f1410846510c03dd0fdd07d3e94", "fixture_count": 3, "fixture_dataset_alignment": "not-checked", "grader_executed": false, "id": "routing-eval-golden-skill-trigger-regression", "runtime_eval_executed": false}, {"dataset_path": "manifests/agent_improvement_loop_contracts.json", "dataset_present": true, "dataset_readable": true, "dataset_sha256": "80fe905e90f017bc2218e80e8baa5eeca896d6180c30a6e0664f6b3ff04660a3", "fixture_count": 2, "fixture_dataset_alignment": "not-checked", "grader_executed": false, "id": "completion-eval-iterative-repair-loop-closure", "runtime_eval_executed": false}, {"dataset_path": "tests/fixtures/guardrail_regression_cases.tsv", "dataset_present": true, "dataset_readable": true, "dataset_sha256": "9f50a3b0bb9a6d8bf18a4752efc477eb5e76f7ffbf307d4aaf7319d59a0841b5", "fixture_count": 8, "fixture_dataset_alignment": "pass", "grader_executed": false, "id": "governance-eval-guardrail-regression-dataset", "runtime_eval_executed": false}, {"dataset_path": "manifests/trace_eval_contracts.json", "dataset_present": true, "dataset_readable": true, "dataset_sha256": "2cd7547def2a5a07bad9616a607ec1141e347ed8495a5517e1a3ff4102c86bff", "fixture_count": 3, "fixture_dataset_alignment": "not-checked", "grader_executed": false, "id": "macro-eval-stored-session-regression-monitoring", "runtime_eval_executed": false}, {"dataset_path": "manifests/adk_goal_contracts.json", "dataset_present": true, "dataset_readable": true, "dataset_sha256": "376dad79722ba22b3dd6339d5222b1c9261ff8da19690d250c7e545e9efe3beb", "fixture_count": 3, "fixture_dataset_alignment": "not-checked", "grader_executed": false, "id": "completion-eval-goal-done-when-negative-fixtures", "runtime_eval_executed": false}, {"dataset_path": "tests/fixtures/repository_runtime_eval_tasks.jsonl", "dataset_present": true, "dataset_readable": true, "dataset_sha256": "008b7b3f21e2adc458e5f48a6af65e54ba89fdef322f42f3cc58e3681853f396", "fixture_count": 4, "fixture_dataset_alignment": "not-checked", "grader_executed": false, "id": "repository-runtime-outcome-process-resource-eval", "runtime_eval_executed": false}]}
+[PASS] test_eval_catalog
+=== RUN test_external_reference_binding ===
+test_current_method_only_reference_bindings_pass (tests.test_external_reference_binding.ExternalReferenceBindingTests.test_current_method_only_reference_bindings_pass) ... ok
+test_manifest_reader_rejects_duplicate_fields_links_and_oversize (tests.test_external_reference_binding.ExternalReferenceBindingTests.test_manifest_reader_rejects_duplicate_fields_links_and_oversize) ... ok
+test_missing_or_inconsistent_exact_identity_is_rejected (tests.test_external_reference_binding.ExternalReferenceBindingTests.test_missing_or_inconsistent_exact_identity_is_rejected) ... ok
+test_observation_freshness_is_explicit_and_bounded (tests.test_external_reference_binding.ExternalReferenceBindingTests.test_observation_freshness_is_explicit_and_bounded) ... ok
+test_optional_parent_lock_matches_exact_repository_and_pin (tests.test_external_reference_binding.ExternalReferenceBindingTests.test_optional_parent_lock_matches_exact_repository_and_pin) ... ok
+test_unapproved_host_and_inconsistent_duplicate_source_are_rejected (tests.test_external_reference_binding.ExternalReferenceBindingTests.test_unapproved_host_and_inconsistent_duplicate_source_are_rejected) ... ok
+test_unreviewed_date_is_rejected (tests.test_external_reference_binding.ExternalReferenceBindingTests.test_unreviewed_date_is_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 1.308s
+
+OK
+[PASS] test_external_reference_binding
+=== RUN test_runtime_comparison_contract ===
+test_aggregate_gain_cannot_hide_case_regression (tests.test_runtime_comparison_contract.RuntimeComparisonContractTests.test_aggregate_gain_cannot_hide_case_regression) ... ok
+test_dataset_prompt_and_labels_must_match (tests.test_runtime_comparison_contract.RuntimeComparisonContractTests.test_dataset_prompt_and_labels_must_match) ... ok
+test_deterministic_report_uses_pre_execution_task_snapshot (tests.test_runtime_comparison_contract.RuntimeComparisonContractTests.test_deterministic_report_uses_pre_execution_task_snapshot) ... ok
+test_direct_runtime_cli_requires_count_and_cost_acknowledgment (tests.test_runtime_comparison_contract.RuntimeComparisonContractTests.test_direct_runtime_cli_requires_count_and_cost_acknowledgment) ... ok
+test_direct_runtime_rejects_duplicate_ids_before_model_call (tests.test_runtime_comparison_contract.RuntimeComparisonContractTests.test_direct_runtime_rejects_duplicate_ids_before_model_call) ... ok
+test_invalid_runtime_json_error_omits_model_content (tests.test_runtime_comparison_contract.RuntimeComparisonContractTests.test_invalid_runtime_json_error_omits_model_content) ... ok
+test_legacy_and_forged_reports_fail_closed (tests.test_runtime_comparison_contract.RuntimeComparisonContractTests.test_legacy_and_forged_reports_fail_closed) ... ok
+test_malformed_provider_result_fails_without_leaking_error (tests.test_runtime_comparison_contract.RuntimeComparisonContractTests.test_malformed_provider_result_fails_without_leaking_error) ... ok
+test_missing_case_model_cannot_pass_comparison (tests.test_runtime_comparison_contract.RuntimeComparisonContractTests.test_missing_case_model_cannot_pass_comparison) ... ok
+test_per_case_model_swap_with_same_union_is_rejected (tests.test_runtime_comparison_contract.RuntimeComparisonContractTests.test_per_case_model_swap_with_same_union_is_rejected) ... ok
+test_provider_failure_does_not_echo_cli_output (tests.test_runtime_comparison_contract.RuntimeComparisonContractTests.test_provider_failure_does_not_echo_cli_output) ... ok
+test_provider_prompts_stay_out_of_command_arguments (tests.test_runtime_comparison_contract.RuntimeComparisonContractTests.test_provider_prompts_stay_out_of_command_arguments) ... ok
+test_runtime_report_emits_bound_identity_without_provider (tests.test_runtime_comparison_contract.RuntimeComparisonContractTests.test_runtime_report_emits_bound_identity_without_provider) ... ok
+test_same_inputs_and_no_case_regression_can_pass (tests.test_runtime_comparison_contract.RuntimeComparisonContractTests.test_same_inputs_and_no_case_regression_can_pass) ... ok
+
+----------------------------------------------------------------------
+Ran 14 tests in 0.371s
+
+OK
+[PASS] test_runtime_comparison_contract
+=== RUN test_runtime_bundle ===
+.....
+----------------------------------------------------------------------
+Ran 5 tests in 2.119s
+
+OK
+[PASS] isolated runtime bundle identity and dirty-source rejection; no production receipt emitted
+[PASS] test_runtime_bundle
+=== RUN test_release_manifest_contract ===
+......................
+----------------------------------------------------------------------
+Ran 22 tests in 0.105s
+
+OK
+....
+----------------------------------------------------------------------
+Ran 4 tests in 0.051s
+
+OK
+{"verified_main_ci_reuse": true, "run_id": "1234"}
+{"verified_main_ci_reuse": false, "run_id": null}
+[PASS] canonical Python release control plane and release manifest identities are fail-closed
+.
+----------------------------------------------------------------------
+Ran 1 test in 13.666s
+
+OK
+[PASS] test_release_manifest_contract
+=== RUN test_software_m5_ready ===
+[PASS] ADK software M5-ready contracts hold
+[PASS] test_software_m5_ready
+=== RUN test_repository_runtime_evidence ===
+[PASS] repository runtime evidence contract
+[PASS] test_repository_runtime_evidence
+=== RUN test_token_budget ===
+[INFO] agents_bytes=2914 soft=2975 hard=3500 estimated_tokens=729 budget_status=within-soft-limit
+[INFO] skill_files=65 max_skill_lines=140 max_skill_file=skills/adk-task-breakdown/SKILL.md limit=140
+[INFO] doc_files=640 max_doc_lines=547 max_doc_file=docs/comprehensive-analysis-embedded-harness.md limit=560
+[INFO] summary_json_scripts=3
+[INFO] compact_test_runner=1
+[INFO] context_governance_assets=11
+[PASS] token budget checks passed
+[INFO] role_agent_files=13 role_agents_bytes=23636/64000 estimated_tokens=5909
+[INFO] max_role_agent=agents/architecture-planner/AGENTS.md bytes=2009/6000
+[PASS] token budget
+[PASS] test_token_budget
+=== RUN test_execution_policy ===
+...................
+----------------------------------------------------------------------
+Ran 19 tests in 0.116s
+
+OK
+[PASS] execution_policy is the sole Python namespace for execution decisions
+[PASS] test_execution_policy
+=== RUN test_intent_boundary_governance ===
+[PASS] intent boundary governance
+[PASS] test_intent_boundary_governance
+=== RUN test_official_docs_timezone ===
+[PASS] official docs freshness uses declared +08:00 date across host timezones and rejects future dates
+[PASS] test_official_docs_timezone
+=== RUN test_agent_ecosystem_standards ===
+[PASS] Agent ecosystem standards test
+[PASS] test_agent_ecosystem_standards
+=== RUN test_agent_value ===
+..................
+----------------------------------------------------------------------
+Ran 18 tests in 4.219s
+
+OK
+[PASS] Agent value lifecycle contract test
+[PASS] test_agent_value
+=== RUN test_agent_value_trust ===
+.......
+----------------------------------------------------------------------
+Ran 7 tests in 1.315s
+
+OK
+[PASS] test_agent_value_trust
+=== RUN test_trace_summary ===
+.............
+----------------------------------------------------------------------
+Ran 13 tests in 0.176s
+
+OK
+[PASS] test_trace_summary
+=== RUN test_run_evidence ===
+....
+----------------------------------------------------------------------
+Ran 4 tests in 0.971s
+
+OK
+[PASS] run evidence composition
+[PASS] test_run_evidence
+=== RUN test_evidence_envelope ===
+[PASS] evidence envelope is content-addressed, privacy-safe, RFC3339-valid and tamper-evident
+[PASS] test_evidence_envelope
+=== RUN test_evidence_bridge ===
+[PASS] evidence bridge is reference-only, authority-bounded and fail-closed
+[PASS] test_evidence_bridge
+=== RUN test_effect_comparator ===
+...
+----------------------------------------------------------------------
+Ran 3 tests in 0.168s
+
+OK
+[PASS] effect comparator
+[PASS] test_effect_comparator
+=== RUN test_workflow_contract ===
+[PASS] workflow contract
+[PASS] test_workflow_contract
+=== RUN test_workflow_ir ===
+.....
+----------------------------------------------------------------------
+Ran 5 tests in 0.453s
+
+OK
+[PASS] test_workflow_ir
+=== RUN test_workflow_closure ===
+[PASS] workflow closure check profiles=core workflows=4
+[PASS] workflow closure
+[PASS] test_workflow_closure
+=== RUN test_workflow_verify_fail_closed ===
+[PASS] workflow verify propagates the first failed sub-gate
+[PASS] test_workflow_verify_fail_closed
+=== RUN test_goal_contracts ===
+[PASS] ADK goal contracts goals=4
+[PASS] goal contracts
+[PASS] test_goal_contracts
+=== RUN test_evidence_graph ===
+.....
+----------------------------------------------------------------------
+Ran 5 tests in 0.399s
+
+OK
+[PASS] test_evidence_graph
+=== RUN test_capability_health ===
+[PASS] ADK capability health capabilities=8
+[PASS] capability health
+[PASS] test_capability_health
+=== RUN test_harness_readiness ===
+[PASS] Harness readiness deterministic report, gate, negative fixture, and redaction
+[PASS] test_harness_readiness
+=== RUN test_review_evidence ===
+...........................................
+----------------------------------------------------------------------
+Ran 43 tests in 2.024s
+
+OK
+[PASS] test_review_evidence
+=== RUN test_archive_restore ===
+........
+----------------------------------------------------------------------
+Ran 8 tests in 0.609s
+
+OK
+[PASS] test_archive_restore
+=== RUN test_local_ci_parity ===
+Local CI parity contract tests passed
+[PASS] test_local_ci_parity
+=== RUN test_hosted_workflow_hygiene ===
+[PASS] GitHub governance admin remediation
+[PASS] hosted workflow hygiene
+[PASS] test_hosted_workflow_hygiene
+=== RUN test_performance_budgets ===
+[PASS] ADK performance budgets budgets=4
+[PASS] ADK performance budgets budgets=4
+[PASS] performance budgets
+[PASS] test_performance_budgets
+=== RUN test_skill_trigger_matrix ===
+....
+----------------------------------------------------------------------
+Ran 4 tests in 0.878s
+
+OK
+[PASS] test_skill_trigger_matrix
+=== RUN test_skill_governance ===
+test_bsp_porting_exposes_flash_and_storage_escalation (tests.test_skill_governance.SkillGovernanceTests.test_bsp_porting_exposes_flash_and_storage_escalation) ... ok
+test_driver_bringup_exposes_live_device_escalation_without_granting_it (tests.test_skill_governance.SkillGovernanceTests.test_driver_bringup_exposes_live_device_escalation_without_granting_it) ... ok
+test_driver_implementation_declares_runtime_model_and_live_device_handoff (tests.test_skill_governance.SkillGovernanceTests.test_driver_implementation_declares_runtime_model_and_live_device_handoff) ... ok
+test_e1_requires_explicit_low_risk_and_workspace_boundary (tests.test_skill_governance.SkillGovernanceTests.test_e1_requires_explicit_low_risk_and_workspace_boundary) ... ok
+test_effort_is_a_conservative_route_projection_not_a_permission (tests.test_skill_governance.SkillGovernanceTests.test_effort_is_a_conservative_route_projection_not_a_permission) ... ok
+test_embedded_skills_do_not_embed_unauthorized_live_mutation_commands (tests.test_skill_governance.SkillGovernanceTests.test_embedded_skills_do_not_embed_unauthorized_live_mutation_commands) ... ok
+test_field_readiness_stays_read_only (tests.test_skill_governance.SkillGovernanceTests.test_field_readiness_stays_read_only) ... ok
+test_high_risk_falsification_and_legal_e1_change_contract (tests.test_skill_governance.SkillGovernanceTests.test_high_risk_falsification_and_legal_e1_change_contract) ... ok
+test_manifest_has_no_legacy_dependency_metadata (tests.test_skill_governance.SkillGovernanceTests.test_manifest_has_no_legacy_dependency_metadata) ... ok
+test_profiling_requires_valid_comparable_alternating_ab (tests.test_skill_governance.SkillGovernanceTests.test_profiling_requires_valid_comparable_alternating_ab) ... ok
+test_realtime_skills_use_target_budgets_not_fixed_thresholds (tests.test_skill_governance.SkillGovernanceTests.test_realtime_skills_use_target_budgets_not_fixed_thresholds) ... ok
+test_release_orchestration_requires_separate_publish_and_device_authority (tests.test_skill_governance.SkillGovernanceTests.test_release_orchestration_requires_separate_publish_and_device_authority) ... ok
+test_requirements_supporting_trigger_promotes_only_to_requirements_primary (tests.test_skill_governance.SkillGovernanceTests.test_requirements_supporting_trigger_promotes_only_to_requirements_primary) ... ok
+test_review_routing_uses_review_loop_not_language_overlay (tests.test_skill_governance.SkillGovernanceTests.test_review_routing_uses_review_loop_not_language_overlay) ... ok
+test_routing_primaries_resolve_to_primary_runtime_role (tests.test_skill_governance.SkillGovernanceTests.test_routing_primaries_resolve_to_primary_runtime_role) ... ok
+test_supporting_implicit_promotion_has_exactly_one_same_group_primary (tests.test_skill_governance.SkillGovernanceTests.test_supporting_implicit_promotion_has_exactly_one_same_group_primary) ... ok
+
+----------------------------------------------------------------------
+Ran 16 tests in 0.254s
+
+OK
+[PASS] test_skill_governance
+=== RUN test_scripts_smoke ===
+=== Script Smoke Tests ===
+
+  PASS  devkit.sh help (rc=0)
+  PASS  health-check.sh (rc=1)
+  PASS  lib-manifest.sh (source) (rc=0)
+  PASS  version-manager.sh (rc=1)
+  PASS  version-manager.sh verify (rc=0)
+  PASS  backup-rollback.sh (rc=1)
+  PASS  auto-ops.sh (rc=1)
+  PASS  monitoring.sh (rc=1)
+  PASS  performance.sh (rc=1)
+  PASS  security.sh (rc=1)
+  PASS  token budget help (rc=0)
+  PASS  devkit codify governance (rc=2)
+  PASS  devkit knowledge compile (rc=2)
+  PASS  devkit reuse before rebuild (rc=2)
+  PASS  devkit context experience (rc=2)
+  PASS  devkit goal check (rc=0)
+  PASS  devkit capability health (rc=0)
+  PASS  devkit perf budget (rc=2)
+  PASS  official docs governance help (rc=0)
+  PASS  runtime capabilities help (rc=0)
+  PASS  run_all help (rc=0)
+  PASS  production field pilot help (rc=0)
+  PASS  workflow pilots help (rc=0)
+
+=== Version Identity Strict Test ===
+  PASS  version identity verify returned zero
+
+=== Version Changelog Placeholder Test ===
+  PASS  changelog has no placeholder text
+
+=== Summary: 25/25 PASS, 0 FAIL ===
+[PASS] test_scripts_smoke
+[SUMMARY] tests=59 pass=59 fail=0
+All tests passed

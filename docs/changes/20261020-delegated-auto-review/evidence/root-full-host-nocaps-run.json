@@ -1,0 +1,31 @@
+{
+  "adk_head": "42ae95d146ceb441ff91ea33dbbed581c33de305",
+  "adk_tree": "4a034da631afbfb4b6b4d3a48310789ae85dcdbe",
+  "command": [
+    "/workspace/scratch/77add259d49b/tooling/rtk",
+    "proxy",
+    "bash",
+    "tests/run_all.sh",
+    "--verbose",
+    "--fail-fast",
+    "--timing-json",
+    "/workspace/scratch/77add259d49b/root-promotion-validation/20261020-formal-8.0.36/root-tests-host-nocaps-timing.json"
+  ],
+  "completed_at": "2026-10-20T14:37:16.119656+00:00",
+  "cwd": "/workspace/scratch/77add259d49b/llm_agent",
+  "elapsed_seconds": 772.612,
+  "exit_code": 0,
+  "log_bytes": 49316,
+  "log_path": "/workspace/scratch/77add259d49b/root-promotion-validation/20261020-formal-8.0.36/root-full-host-nocaps.log",
+  "log_sha256": "ae8ff321b76090abb49d5d5f999f7341b60c207217eaece2ee1667467eb4d18f",
+  "paid_provider_execution_requested": false,
+  "root_environment": "/workspace/scratch/77add259d49b/root-qualification-venv",
+  "root_head": "5170d970e3a69ba8d8938e968fb82bee1ff37a7d",
+  "schema": "root-formal-promotion-validation/v1",
+  "source_after_path": "/workspace/scratch/77add259d49b/root-promotion-validation/20261020-formal-8.0.36/root-full-host-nocaps-after.json",
+  "source_after_sha256": "ac6227b4d3d276aa58d317378e924ec72a797c885e14618c53a149a6b4b3fe25",
+  "source_before_path": "/workspace/scratch/77add259d49b/root-promotion-validation/20261020-formal-8.0.36/root-full-host-nocaps-before.json",
+  "source_before_sha256": "24a936111d3d6cbd2965b4e0149c3c57e8a22d9c32925d7f7ad43d918cfadc09",
+  "source_unchanged": false,
+  "started_at": "2026-10-20T14:24:23.507792+00:00"
+}

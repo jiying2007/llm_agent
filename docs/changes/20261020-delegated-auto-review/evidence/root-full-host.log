@@ -1,0 +1,356 @@
+=== RUN test_active_contracts ===
+[PASS] active governance references are fresh and retired runtime surfaces are absent
+[PASS] test_active_contracts
+=== RUN test_adk_agent_value_trust_consumer ===
+[PASS] pinned ADK 8.0.36 Agent Value trust + prepared receipt software is available while prepared receipts remain unverified, canonical authority remains disabled, and measurements remain not-measured
+[PASS] test_adk_agent_value_trust_consumer
+=== RUN test_adk_context_observability_consumer ===
+[PASS] Root verifies pinned ADK 8.0.36 profile/source observability and fail-closed expiry; expired_targets=[]
+[PASS] test_adk_context_observability_consumer
+=== RUN test_adk_goal_capability_contract ===
+[PASS] ADK goal capability gate covers the canonical Execution Policy engine
+[PASS] test_adk_goal_capability_contract
+=== RUN test_adk_interface_lock ===
+...
+----------------------------------------------------------------------
+Ran 3 tests in 0.016s
+
+OK
+[PASS] pinned ADK interface identity is coherent
+[PASS] test_adk_interface_lock
+=== RUN test_adk_lock_worktree_integration ===
+[PASS] ADK lock distinguishes working-tree integration from release-clean identity
+[PASS] test_adk_lock_worktree_integration
+=== RUN test_adk_native_campaign_consumer ===
+[PASS] Root consumes pinned ADK 8.0.36 semantic native campaign v2 without upgrading trust or target authority
+[PASS] test_adk_native_campaign_consumer
+=== RUN test_adk_native_trust_consumer ===
+[PASS] pinned ADK 8.0.36 managed native trust enables no authority or target
+[PASS] Root static target consumer preserves native certification boundary
+[PASS] test_adk_native_trust_consumer
+=== RUN test_adk_promotion ===
+[PASS] ADK promotion receipt binds lock, interface identity and rejects tampering
+[PASS] test_adk_promotion
+=== RUN test_adk_promotion_evidence ===
+{"candidate": {"commit": "1111111111111111111111111111111111111111", "manifest_blob": "3333333333333333333333333333333333333333", "tree": "2222222222222222222222222222222222222222", "version": "5.0.0-rc.2"}, "issued_at": "2026-10-20T13:57:59.224106Z", "release_eligible": false, "schema": "llm-agent-adk-promotion-evidence-verification/v1", "source_repository": "jiying2007/agent-dev-kit", "source_run_attempt": 1, "source_run_id": 123, "source_workflow": "agent-dev-kit-ci", "status": "pass"}
+{"error": "promotion evidence source.commit does not match adk.lock", "schema": "llm-agent-adk-promotion-evidence-verification/v1", "status": "fail"}
+{"error": "ci.regression_matrix must prove successful Python 3.8/3.11/3.12 coverage", "schema": "llm-agent-adk-promotion-evidence-verification/v1", "status": "fail"}
+{"error": "ci.regression_matrix must prove successful Python 3.8/3.11/3.12 coverage", "schema": "llm-agent-adk-promotion-evidence-verification/v1", "status": "fail"}
+{"error": "promotion evidence must come from a push to main", "schema": "llm-agent-adk-promotion-evidence-verification/v1", "status": "fail"}
+{"error": "promotion evidence is stale", "schema": "llm-agent-adk-promotion-evidence-verification/v1", "status": "fail"}
+[PASS] portable ADK promotion evidence verifier
+[PASS] test_adk_promotion_evidence
+=== RUN test_adk_promotion_transaction ===
+warning: adding embedded git repository: agent-dev-kit
+hint: You've added another git repository inside your current repository.
+hint: Clones of the outer repository will not contain the contents of
+hint: the embedded repository and will not know how to obtain it.
+hint: If you meant to add a submodule, use:
+hint:
+hint: 	git submodule add <url> agent-dev-kit
+hint:
+hint: If you added this path by mistake, you can remove it from the
+hint: index with:
+hint:
+hint: 	git rm --cached agent-dev-kit
+hint:
+hint: See "git help submodule" for more information.
+hint: Disable this message with "git config set advice.addEmbeddedRepo false"
+[PASS] promotion preflight rejects duplicate/nonfinite/oversized/symlinked JSON
+[PASS] ADK promotion stages one six-path source+evidence transaction and rolls back atomically
+[PASS] test_adk_promotion_transaction
+=== RUN test_adoption_real_assets ===
+[PASS] adoption real asset fixtures behave as expected
+[PASS] test_adoption_real_assets
+=== RUN test_agents_coverage_contract ===
+.
+----------------------------------------------------------------------
+Ran 1 test in 0.069s
+
+OK
+[PASS] test_agents_coverage_contract
+=== RUN test_architecture_reports ===
+[PASS] architecture report checks behave as expected
+[PASS] test_architecture_reports
+=== RUN test_asset_inventory_contract ===
+.
+----------------------------------------------------------------------
+Ran 1 test in 1.407s
+
+OK
+[PASS] test_asset_inventory_contract
+=== RUN test_authorized_subrepos_contract ===
+.
+----------------------------------------------------------------------
+Ran 1 test in 1.179s
+
+OK
+[PASS] test_authorized_subrepos_contract
+=== RUN test_branch_gc_native_subtraction ===
+[PASS] generic merged-PR GC is retired; explicit exact-SHA retirement remains fail-closed
+[PASS] test_branch_gc_native_subtraction
+=== RUN test_check_all_contract ===
+[PASS] check-all diagnostics and result JSON behave as expected
+[PASS] test_check_all_contract
+=== RUN test_ci_incremental_gate_dag ===
+[PASS] CI uses gate-derived integration impact, typed control-plane entrypoints, and native-deletion-aware fail-closed GC semantics
+[PASS] test_ci_incremental_gate_dag
+=== RUN test_consumer_chain ===
+[PASS] ADK release -> Codex -> digital-worker consumer identity is exact, bounded and fail-closed
+[PASS] test_consumer_chain
+=== RUN test_cross_repo_release_bundle ===
+........{
+  "status": "provenance-only",
+  "release_authorized": false
+}
+.
+----------------------------------------------------------------------
+Ran 9 tests in 0.203s
+
+OK
+cross-repo release bundle tests passed
+[PASS] test_cross_repo_release_bundle
+=== RUN test_current_status_consistency ===
+[PASS] current-status consistency is derived from current projection, Product M5, and separate LTA state
+[PASS] test_current_status_consistency
+=== RUN test_current_status_source_split ===
+[PASS] source-only status projection preserves explicit current-vs-historical qualification semantics
+[PASS] test_current_status_source_split
+=== RUN test_digital_worker_runtime_pilot_contract ===
+[PASS] llm_agent observes Digital Worker periodic R2 qualification without duplicate certifier authority
+[PASS] test_digital_worker_runtime_pilot_contract
+=== RUN test_effect_planning ===
+...
+----------------------------------------------------------------------
+Ran 3 tests in 1.684s
+
+OK
+[PASS] test_effect_planning
+=== RUN test_effect_preregistration_builder ===
+[PASS] G22 preregistration builder derives refs/digests from source content and fails closed on drift
+[PASS] test_effect_preregistration_builder
+=== RUN test_effect_readiness ===
+tests/fixtures/effect-readiness-QrYOd7/evidence-index.json
+[PASS] effect readiness requires cryptographic preregistration, signed receipt replay, recomputed measurement, campaign provenance, and independent delegated review
+[PASS] test_effect_readiness
+=== RUN test_effect_trial_consumer ===
+[PASS] pinned ADK campaign-root + effect materializer surfaces are consumable; synthetic test only
+[PASS] test_effect_trial_consumer
+=== RUN test_evidence_path_symlinks ===
+[PASS] evidence file paths reject leaf and parent symlinks
+[PASS] test_evidence_path_symlinks
+=== RUN test_external_practice_intake ===
+[PASS] external practice intake contracts, providers, security and idempotence passed
+[PASS] test_external_practice_intake
+=== RUN test_file_modes_worktree ===
+[PASS] file-mode checker supports linked worktrees and preserves mode policy
+[PASS] test_file_modes_worktree
+=== RUN test_gate_runner ===
+[PASS] declarative gate runner contract
+[PASS] test_gate_runner
+=== RUN test_gate_runner_contract ===
+[PASS] gate runner content-addressed receipt and blocked-capability semantics
+[PASS] test_gate_runner_contract
+=== RUN test_gitlink_registry ===
+[PASS] tracked gitlinks distinguish current managed dependencies from frozen evidence dependencies
+[PASS] test_gitlink_registry
+=== RUN test_intake_active_docs ===
+[PASS] active intake documentation matches canonical CLI; historical facts stay archived
+[PASS] test_intake_active_docs
+=== RUN test_intake_hardening ===
+..............................................{"metric": "scanner-python-allocation-peak", "peak_bytes": 1361393, "input_text_bytes": 16778432, "scope": "offline-synthetic-test"}
+.
+----------------------------------------------------------------------
+Ran 47 tests in 7.146s
+
+OK
+[PASS] test_intake_hardening
+=== RUN test_knowledge_retention_handoff ===
+[PASS] knowledge retention handoff is sanitized, Hub-evidenced, and owner-review bounded
+[PASS] test_knowledge_retention_handoff
+=== RUN test_long_term_asset_qualification ===
+LTA v2 qualification contract PASS
+[PASS] long-term asset qualification v2 cleanly separates iteration readiness from terminal qualification
+[PASS] test_long_term_asset_qualification
+=== RUN test_long_term_asset_rehearsal ===
+[PASS] LTA v2 rehearsal preserves simulated/real separation without blocker compatibility state
+[PASS] test_long_term_asset_rehearsal
+=== RUN test_long_term_qualification_scope ===
+LTA v2 qualification scope PASS: iteration ready; terminal qualification pending only
+[PASS] test_long_term_qualification_scope
+=== RUN test_longitudinal_operation_certifier ===
+[PASS] LTA-04 longitudinal operation certifier
+[PASS] test_longitudinal_operation_certifier
+=== RUN test_maintainability_budgets ===
+[PASS] maintainability budgets enforce static and evidence metrics with honest availability
+[PASS] test_maintainability_budgets
+=== RUN test_maintainability_evidence_candidate ===
+......
+----------------------------------------------------------------------
+Ran 6 tests in 2.373s
+
+OK
+[PASS] maintainability evidence candidate
+[PASS] test_maintainability_evidence_candidate
+=== RUN test_maintainability_git_io ===
+[PASS] Git history evidence subprocess I/O and runtime budgets
+[PASS] test_maintainability_git_io
+=== RUN test_native_repository_governance_admin ===
+[PASS] local LTA-01 governance admin planner/apply is fail-closed, manifest-bound, shared-token-only, and evidence-ratcheted
+[PASS] test_native_repository_governance_admin
+=== RUN test_native_repository_governance_certifier ===
+{"active_rulesets":[{"bypass_actors":[],"id":50,"name":"llm_agent main governance"}],"branch":"main","checks":{"active_main_ruleset":true,"all_required_checks_enforced":true,"branch_deletion_blocked":true,"default_branch_is_main":true,"delete_branch_on_merge":true,"force_push_blocked":true,"main_protected":true,"no_ruleset_bypass":true,"pull_request_required":true,"required_status_checks_present":true,"ruleset_squash_only":true,"solo_zero_required_approvals":true,"strict_required_status_checks":true},"desired_ruleset":{"bypass_actors":[],"conditions":{"ref_name":{"exclude":[],"include":["refs/heads/main"]}},"enforcement":"active","name":"llm_agent main governance","rules":[{"parameters":{"allowed_merge_methods":["squash"],"dismiss_stale_reviews_on_push":false,"require_code_owner_review":false,"require_last_push_approval":false,"required_approving_review_count":0,"required_review_thread_resolution":false},"type":"pull_request"},{"parameters":{"do_not_enforce_on_create":false,"required_status_checks":[{"context":"contract"},{"context":"doc-sync"},{"context":"integration-impact"},{"context":"integration-summary"},{"context":"software-m5-certify"},{"context":"branch-gc"}],"strict_required_status_checks_policy":true},"type":"required_status_checks"},{"type":"non_fast_forward"},{"type":"deletion"}],"target":"branch"},"full_checks":{"active_main_ruleset":true,"all_required_checks_enforced":true,"branch_deletion_blocked":true,"default_branch_is_main":true,"delete_branch_on_merge":true,"force_push_blocked":true,"main_protected":true,"no_ruleset_bypass":true,"pull_request_required":true,"required_status_checks_present":true,"ruleset_squash_only":true,"solo_zero_required_approvals":true,"strict_required_status_checks":true},"full_compliant":true,"hosted_checks":{"active_main_ruleset":true,"all_required_checks_enforced":true,"branch_deletion_blocked":true,"default_branch_is_main":true,"force_push_blocked":true,"main_protected":true,"no_ruleset_bypass":true,"pull_request_required":true,"required_status_checks_present":true,"ruleset_squash_only":true,"solo_zero_required_approvals":true,"strict_required_status_checks":true},"implementation_status":"certifier-ready","missing_status_checks":[],"observed_pull_request_merge_methods":[["squash"]],"observed_required_approval_counts":[0],"observed_status_checks":["branch-gc","contract","doc-sync","integration-impact","integration-summary","software-m5-certify"],"observed_strict_required_status_checks_policies":[true],"qualification":"LTA-01","remediation":[],"repository":"jiying2007/llm_agent","repository_admin_settings_authoritative":true,"required_status_checks":["contract","doc-sync","integration-impact","integration-summary","software-m5-certify","branch-gc"],"schema":"llm-agent-native-repository-governance-check/v2","scope":"full","status":"pass","violations":[]}
+{"active_rulesets":[{"bypass_actors":[],"id":50,"name":"llm_agent main governance"}],"branch":"main","checks":{"active_main_ruleset":true,"all_required_checks_enforced":true,"branch_deletion_blocked":true,"default_branch_is_main":true,"delete_branch_on_merge":false,"force_push_blocked":true,"main_protected":true,"no_ruleset_bypass":true,"pull_request_required":true,"required_status_checks_present":true,"ruleset_squash_only":true,"solo_zero_required_approvals":true,"strict_required_status_checks":true},"desired_ruleset":{"bypass_actors":[],"conditions":{"ref_name":{"exclude":[],"include":["refs/heads/main"]}},"enforcement":"active","name":"llm_agent main governance","rules":[{"parameters":{"allowed_merge_methods":["squash"],"dismiss_stale_reviews_on_push":false,"require_code_owner_review":false,"require_last_push_approval":false,"required_approving_review_count":0,"required_review_thread_resolution":false},"type":"pull_request"},{"parameters":{"do_not_enforce_on_create":false,"required_status_checks":[{"context":"contract"},{"context":"doc-sync"},{"context":"integration-impact"},{"context":"integration-summary"},{"context":"software-m5-certify"},{"context":"branch-gc"}],"strict_required_status_checks_policy":true},"type":"required_status_checks"},{"type":"non_fast_forward"},{"type":"deletion"}],"target":"branch"},"full_checks":{"active_main_ruleset":true,"all_required_checks_enforced":true,"branch_deletion_blocked":true,"default_branch_is_main":true,"delete_branch_on_merge":false,"force_push_blocked":true,"main_protected":true,"no_ruleset_bypass":true,"pull_request_required":true,"required_status_checks_present":true,"ruleset_squash_only":true,"solo_zero_required_approvals":true,"strict_required_status_checks":true},"full_compliant":false,"hosted_checks":{"active_main_ruleset":true,"all_required_checks_enforced":true,"branch_deletion_blocked":true,"default_branch_is_main":true,"force_push_blocked":true,"main_protected":true,"no_ruleset_bypass":true,"pull_request_required":true,"required_status_checks_present":true,"ruleset_squash_only":true,"solo_zero_required_approvals":true,"strict_required_status_checks":true},"implementation_status":"certifier-ready","missing_status_checks":[],"observed_pull_request_merge_methods":[["squash"]],"observed_required_approval_counts":[0],"observed_status_checks":["branch-gc","contract","doc-sync","integration-impact","integration-summary","software-m5-certify"],"observed_strict_required_status_checks_policies":[true],"qualification":"LTA-01","remediation":["enable delete_branch_on_merge"],"repository":"jiying2007/llm_agent","repository_admin_settings_authoritative":true,"required_status_checks":["contract","doc-sync","integration-impact","integration-summary","software-m5-certify","branch-gc"],"schema":"llm-agent-native-repository-governance-check/v2","scope":"full","status":"blocked_external_admin","violations":["native delete_branch_on_merge is not enabled"]}
+{"active_rulesets":[{"bypass_actors":[],"id":50,"name":"llm_agent main governance"}],"branch":"main","checks":{"active_main_ruleset":true,"all_required_checks_enforced":true,"branch_deletion_blocked":true,"default_branch_is_main":true,"force_push_blocked":true,"main_protected":true,"no_ruleset_bypass":true,"pull_request_required":true,"required_status_checks_present":true,"ruleset_squash_only":true,"solo_zero_required_approvals":true,"strict_required_status_checks":true},"desired_ruleset":{"bypass_actors":[],"conditions":{"ref_name":{"exclude":[],"include":["refs/heads/main"]}},"enforcement":"active","name":"llm_agent main governance","rules":[{"parameters":{"allowed_merge_methods":["squash"],"dismiss_stale_reviews_on_push":false,"require_code_owner_review":false,"require_last_push_approval":false,"required_approving_review_count":0,"required_review_thread_resolution":false},"type":"pull_request"},{"parameters":{"do_not_enforce_on_create":false,"required_status_checks":[{"context":"contract"},{"context":"doc-sync"},{"context":"integration-impact"},{"context":"integration-summary"},{"context":"software-m5-certify"},{"context":"branch-gc"}],"strict_required_status_checks_policy":true},"type":"required_status_checks"},{"type":"non_fast_forward"},{"type":"deletion"}],"target":"branch"},"full_checks":{"active_main_ruleset":true,"all_required_checks_enforced":true,"branch_deletion_blocked":true,"default_branch_is_main":true,"delete_branch_on_merge":false,"force_push_blocked":true,"main_protected":true,"no_ruleset_bypass":true,"pull_request_required":true,"required_status_checks_present":true,"ruleset_squash_only":true,"solo_zero_required_approvals":true,"strict_required_status_checks":true},"full_compliant":null,"hosted_checks":{"active_main_ruleset":true,"all_required_checks_enforced":true,"branch_deletion_blocked":true,"default_branch_is_main":true,"force_push_blocked":true,"main_protected":true,"no_ruleset_bypass":true,"pull_request_required":true,"required_status_checks_present":true,"ruleset_squash_only":true,"solo_zero_required_approvals":true,"strict_required_status_checks":true},"implementation_status":"certifier-ready","missing_status_checks":[],"observed_pull_request_merge_methods":[["squash"]],"observed_required_approval_counts":[0],"observed_status_checks":["branch-gc","contract","doc-sync","integration-impact","integration-summary","software-m5-certify"],"observed_strict_required_status_checks_policies":[true],"qualification":"LTA-01","remediation":[],"repository":"jiying2007/llm_agent","repository_admin_settings_authoritative":false,"required_status_checks":["contract","doc-sync","integration-impact","integration-summary","software-m5-certify","branch-gc"],"schema":"llm-agent-native-repository-governance-check/v2","scope":"hosted-ruleset","status":"pass","violations":[]}
+{"active_rulesets":[],"branch":"main","checks":{"active_main_ruleset":false,"all_required_checks_enforced":false,"branch_deletion_blocked":false,"default_branch_is_main":true,"force_push_blocked":false,"main_protected":false,"no_ruleset_bypass":false,"pull_request_required":false,"required_status_checks_present":false,"ruleset_squash_only":false,"solo_zero_required_approvals":false,"strict_required_status_checks":false},"desired_ruleset":{"bypass_actors":[],"conditions":{"ref_name":{"exclude":[],"include":["refs/heads/main"]}},"enforcement":"active","name":"llm_agent main governance","rules":[{"parameters":{"allowed_merge_methods":["squash"],"dismiss_stale_reviews_on_push":false,"require_code_owner_review":false,"require_last_push_approval":false,"required_approving_review_count":0,"required_review_thread_resolution":false},"type":"pull_request"},{"parameters":{"do_not_enforce_on_create":false,"required_status_checks":[{"context":"contract"},{"context":"doc-sync"},{"context":"integration-impact"},{"context":"integration-summary"},{"context":"software-m5-certify"},{"context":"branch-gc"}],"strict_required_status_checks_policy":true},"type":"required_status_checks"},{"type":"non_fast_forward"},{"type":"deletion"}],"target":"branch"},"full_checks":{"active_main_ruleset":false,"all_required_checks_enforced":false,"branch_deletion_blocked":false,"default_branch_is_main":true,"delete_branch_on_merge":false,"force_push_blocked":false,"main_protected":false,"no_ruleset_bypass":false,"pull_request_required":false,"required_status_checks_present":false,"ruleset_squash_only":false,"solo_zero_required_approvals":false,"strict_required_status_checks":false},"full_compliant":null,"hosted_checks":{"active_main_ruleset":false,"all_required_checks_enforced":false,"branch_deletion_blocked":false,"default_branch_is_main":true,"force_push_blocked":false,"main_protected":false,"no_ruleset_bypass":false,"pull_request_required":false,"required_status_checks_present":false,"ruleset_squash_only":false,"solo_zero_required_approvals":false,"strict_required_status_checks":false},"implementation_status":"certifier-ready","missing_status_checks":["branch-gc","contract","doc-sync","integration-impact","integration-summary","software-m5-certify"],"observed_pull_request_merge_methods":[],"observed_required_approval_counts":[],"observed_status_checks":[],"observed_strict_required_status_checks_policies":[],"qualification":"LTA-01","remediation":["create or enable an active native ruleset covering main","create the canonical solo-maintainer main ruleset","add a pull_request rule","set required_approving_review_count to 0","remove unconditional ruleset bypass actors","set allowed merge methods to squash only","add a required_status_checks rule","enable strict_required_status_checks_policy","require every canonical llm_agent PR qualification context","add a non_fast_forward rule","add a deletion rule"],"repository":"jiying2007/llm_agent","repository_admin_settings_authoritative":false,"required_status_checks":["contract","doc-sync","integration-impact","integration-summary","software-m5-certify","branch-gc"],"schema":"llm-agent-native-repository-governance-check/v2","scope":"hosted-ruleset","status":"blocked_external_admin","violations":["main is not protected by native GitHub governance","no active native repository ruleset covers main","native ruleset does not require pull requests","native ruleset does not preserve zero required human approvals","native ruleset has a bypass actor","native ruleset does not restrict merge methods to squash","native ruleset does not require status checks","required status checks do not require an up-to-date branch","required status checks missing: branch-gc, contract, doc-sync, integration-impact, integration-summary, software-m5-certify","native ruleset does not block non-fast-forward updates","native ruleset does not block main branch deletion"]}
+[PASS] LTA-01 native repository governance certifier authority scopes
+[PASS] local LTA-01 governance admin planner/apply is fail-closed, manifest-bound, shared-token-only, and evidence-ratcheted
+[PASS] test_native_repository_governance_certifier
+=== RUN test_native_target_readiness ===
+[PASS] G21/G22 evidence parsing and digest inputs reject ambiguity, symlinks and resource amplification
+[PASS] native target readiness separates software readiness from real native evidence
+[PASS] test_native_target_readiness
+=== RUN test_official_docs_adoption_review ===
+[PASS] official docs adoption review fixtures behave as expected
+[PASS] test_official_docs_adoption_review
+=== RUN test_optimization_boundaries ===
+...
+----------------------------------------------------------------------
+Ran 3 tests in 0.013s
+
+OK
+[PASS] test_optimization_boundaries
+=== RUN test_product_maturity_contracts ===
+[PASS] Product M5 baseline is preserved while current 7.x source remains historical-not-authorized
+[PASS] test_product_maturity_contracts
+=== RUN test_qualification_followup ===
+test_all_blocked_is_complete_read_only_scan (test_qualification_followup.QualificationFollowupTest.test_all_blocked_is_complete_read_only_scan) ... ok
+test_an_arbitrary_patch_cannot_claim_the_fixed_historical_target (test_qualification_followup.QualificationFollowupTest.test_an_arbitrary_patch_cannot_claim_the_fixed_historical_target) ... ok
+test_archive_provenance_cannot_predate_review_or_claim_the_future (test_qualification_followup.QualificationFollowupTest.test_archive_provenance_cannot_predate_review_or_claim_the_future) ... ok
+test_archive_requires_matching_unambiguous_provenance (test_qualification_followup.QualificationFollowupTest.test_archive_requires_matching_unambiguous_provenance) ... ok
+test_archived_review_resolves_once_without_rewriting_its_record (test_qualification_followup.QualificationFollowupTest.test_archived_review_resolves_once_without_rewriting_its_record) ... ok
+test_calendar_elapsed_does_not_supply_longitudinal_observation (test_qualification_followup.QualificationFollowupTest.test_calendar_elapsed_does_not_supply_longitudinal_observation) ... ok
+test_checker_error_retains_all_other_results (test_qualification_followup.QualificationFollowupTest.test_checker_error_retains_all_other_results) ... ok
+test_cli_exit_is_scan_status_not_qualification_readiness (test_qualification_followup.QualificationFollowupTest.test_cli_exit_is_scan_status_not_qualification_readiness) ... ok
+test_cli_has_no_simulated_time_or_output_mutation_options (test_qualification_followup.QualificationFollowupTest.test_cli_has_no_simulated_time_or_output_mutation_options) ... ok
+test_command_start_error_does_not_echo_exception (test_qualification_followup.QualificationFollowupTest.test_command_start_error_does_not_echo_exception) ... ok
+test_conditional_m5_diagnostics_do_not_claim_bad_signature_or_activation (test_qualification_followup.QualificationFollowupTest.test_conditional_m5_diagnostics_do_not_claim_bad_signature_or_activation) ... ok
+test_effect_and_longitudinal_review_snapshot_uses_root_source_authority (test_qualification_followup.QualificationFollowupTest.test_effect_and_longitudinal_review_snapshot_uses_root_source_authority) ... ok
+test_file_identity_rejects_symlink_and_nonregular_inputs (test_qualification_followup.QualificationFollowupTest.test_file_identity_rejects_symlink_and_nonregular_inputs) ... ok
+test_fixed_commands_and_environment_use_current_root_and_utc (test_qualification_followup.QualificationFollowupTest.test_fixed_commands_and_environment_use_current_root_and_utc) ... ok
+test_harness_partial_and_not_applicable_do_not_refresh_human_dates (test_qualification_followup.QualificationFollowupTest.test_harness_partial_and_not_applicable_do_not_refresh_human_dates) ... ok
+test_historical_inventory_rejects_an_adk_head_outside_the_root_pin (test_qualification_followup.QualificationFollowupTest.test_historical_inventory_rejects_an_adk_head_outside_the_root_pin) ... ok
+test_historical_inventory_rejects_rehashed_dirty_adk_authority (test_qualification_followup.QualificationFollowupTest.test_historical_inventory_rejects_rehashed_dirty_adk_authority) ... ok
+test_human_inventory_unsafe_input_is_scan_error (test_qualification_followup.QualificationFollowupTest.test_human_inventory_unsafe_input_is_scan_error) ... ok
+test_incomplete_harness_scan_is_error (test_qualification_followup.QualificationFollowupTest.test_incomplete_harness_scan_is_error) ... ok
+test_inconsistent_software_block_is_error (test_qualification_followup.QualificationFollowupTest.test_inconsistent_software_block_is_error) ... ok
+test_invalid_exit_output_is_sanitized (test_qualification_followup.QualificationFollowupTest.test_invalid_exit_output_is_sanitized) ... ok
+test_invalid_json_duplicate_keys_and_nonfinite_are_sanitized (test_qualification_followup.QualificationFollowupTest.test_invalid_json_duplicate_keys_and_nonfinite_are_sanitized) ... ok
+test_invalid_source_snapshot_fails_closed (test_qualification_followup.QualificationFollowupTest.test_invalid_source_snapshot_fails_closed) ... ok
+test_inventory_does_not_interpret_stage_or_review_content_as_approval (test_qualification_followup.QualificationFollowupTest.test_inventory_does_not_interpret_stage_or_review_content_as_approval) ... ok
+test_m5_cannot_cross_read_only_or_qualification_boundary (test_qualification_followup.QualificationFollowupTest.test_m5_cannot_cross_read_only_or_qualification_boundary) ... ok
+test_non_git_root_never_executes_target_collectors (test_qualification_followup.QualificationFollowupTest.test_non_git_root_never_executes_target_collectors) ... ok
+test_raw_file_digest_distinguishes_lf_from_crlf (test_qualification_followup.QualificationFollowupTest.test_raw_file_digest_distinguishes_lf_from_crlf) ... ok
+test_ready_flags_require_exact_boolean_and_matching_exit (test_qualification_followup.QualificationFollowupTest.test_ready_flags_require_exact_boolean_and_matching_exit) ... ok
+test_real_child_stderr_overflow_does_not_leak_environment (test_qualification_followup.QualificationFollowupTest.test_real_child_stderr_overflow_does_not_leak_environment) ... ok
+test_real_child_stdout_overflow_is_bounded (test_qualification_followup.QualificationFollowupTest.test_real_child_stdout_overflow_is_bounded) ... ok
+test_real_child_timeout_is_bounded_without_fabricated_exit (test_qualification_followup.QualificationFollowupTest.test_real_child_timeout_is_bounded_without_fabricated_exit) ... ok
+test_report_budget_error_retains_six_exits_without_raw_results (test_qualification_followup.QualificationFollowupTest.test_report_budget_error_retains_six_exits_without_raw_results) ... ok
+test_review_does_not_skip_the_canonical_lifecycle (test_qualification_followup.QualificationFollowupTest.test_review_does_not_skip_the_canonical_lifecycle) ... ok
+test_review_input_snapshot_includes_authorization_and_all_declared_inputs (test_qualification_followup.QualificationFollowupTest.test_review_input_snapshot_includes_authorization_and_all_declared_inputs) ... ok
+test_scope_aware_readiness_does_not_turn_m5_diagnostics_into_certification (test_qualification_followup.QualificationFollowupTest.test_scope_aware_readiness_does_not_turn_m5_diagnostics_into_certification) ... ok
+test_source_drift_invalidates_status_but_preserves_valid_observations (test_qualification_followup.QualificationFollowupTest.test_source_drift_invalidates_status_but_preserves_valid_observations) ... ok
+test_source_projection_exit_zero_cannot_mean_effect_ready (test_qualification_followup.QualificationFollowupTest.test_source_projection_exit_zero_cannot_mean_effect_ready) ... ok
+test_symlink_root_never_starts_any_command (test_qualification_followup.QualificationFollowupTest.test_symlink_root_never_starts_any_command) ... ok
+test_unknown_schema_canary_is_not_copied_to_report (test_qualification_followup.QualificationFollowupTest.test_unknown_schema_canary_is_not_copied_to_report) ... ok
+test_unreadable_after_snapshot_is_error_with_all_results (test_qualification_followup.QualificationFollowupTest.test_unreadable_after_snapshot_is_error_with_all_results) ... ok
+test_valid_delegated_reviews_have_a_reachable_ready_path (test_qualification_followup.QualificationFollowupTest.test_valid_delegated_reviews_have_a_reachable_ready_path) ... ok
+test_valid_result_preserved_but_stderr_is_only_digest (test_qualification_followup.QualificationFollowupTest.test_valid_result_preserved_but_stderr_is_only_digest) ... ok
+test_wrong_base_or_empty_diff_cannot_reuse_a_historical_review (test_qualification_followup.QualificationFollowupTest.test_wrong_base_or_empty_diff_cannot_reuse_a_historical_review) ... ok
+test_wrong_historical_head_cannot_reuse_a_valid_receipt (test_qualification_followup.QualificationFollowupTest.test_wrong_historical_head_cannot_reuse_a_valid_receipt) ... ok
+test_ai_review_cannot_claim_to_be_human_or_unautomated (test_qualification_followup_reviews.EffectDelegatedReviewTests.test_ai_review_cannot_claim_to_be_human_or_unautomated) ... ok
+test_author_cannot_act_as_independent_reviewer (test_qualification_followup_reviews.EffectDelegatedReviewTests.test_author_cannot_act_as_independent_reviewer) ... ok
+test_changed_decision_is_not_covered_by_an_older_review (test_qualification_followup_reviews.EffectDelegatedReviewTests.test_changed_decision_is_not_covered_by_an_older_review) ... ok
+test_delegated_review_accepts_complete_bound_effect_decisions (test_qualification_followup_reviews.EffectDelegatedReviewTests.test_delegated_review_accepts_complete_bound_effect_decisions) ... ok
+test_delegated_review_cannot_predate_completed_evidence (test_qualification_followup_reviews.EffectDelegatedReviewTests.test_delegated_review_cannot_predate_completed_evidence) ... ok
+test_every_measured_asset_still_requires_a_decision (test_qualification_followup_reviews.EffectDelegatedReviewTests.test_every_measured_asset_still_requires_a_decision) ... ok
+test_installed_validator_must_equal_all_three_pinned_modules (test_qualification_followup_reviews.EffectDelegatedReviewTests.test_installed_validator_must_equal_all_three_pinned_modules) ... ok
+test_missing_or_symlinked_pinned_module_fails_closed (test_qualification_followup_reviews.EffectDelegatedReviewTests.test_missing_or_symlinked_pinned_module_fails_closed) ... ok
+test_observed_cases_must_still_cover_actual_verified_receipts (test_qualification_followup_reviews.EffectDelegatedReviewTests.test_observed_cases_must_still_cover_actual_verified_receipts) ... ok
+test_policy_bytes_cannot_drift_after_review (test_qualification_followup_reviews.EffectDelegatedReviewTests.test_policy_bytes_cannot_drift_after_review) ... ok
+test_rehashed_authorization_cannot_replace_the_pinned_owner_grant (test_qualification_followup_reviews.EffectDelegatedReviewTests.test_rehashed_authorization_cannot_replace_the_pinned_owner_grant) ... ok
+test_rehashed_dirty_policy_is_not_the_committed_authority (test_qualification_followup_reviews.EffectDelegatedReviewTests.test_rehashed_dirty_policy_is_not_the_committed_authority) ... ok
+test_rehashed_loaded_validator_still_requires_its_committed_blob (test_qualification_followup_reviews.EffectDelegatedReviewTests.test_rehashed_loaded_validator_still_requires_its_committed_blob) ... ok
+test_review_identity_and_timestamp_match_the_decision (test_qualification_followup_reviews.EffectDelegatedReviewTests.test_review_identity_and_timestamp_match_the_decision) ... ok
+test_review_must_bind_all_original_material_and_decision_bytes (test_qualification_followup_reviews.EffectDelegatedReviewTests.test_review_must_bind_all_original_material_and_decision_bytes) ... ok
+test_shared_review_api_must_return_a_string_keyed_object (test_qualification_followup_reviews.EffectDelegatedReviewTests.test_shared_review_api_must_return_a_string_keyed_object) ... ok
+test_staged_authority_is_not_the_committed_pin (test_qualification_followup_reviews.EffectDelegatedReviewTests.test_staged_authority_is_not_the_committed_pin) ... ok
+test_uninstalled_optional_adk_fails_closed_at_runtime (test_qualification_followup_reviews.EffectDelegatedReviewTests.test_uninstalled_optional_adk_fails_closed_at_runtime) ... ok
+test_unmatched_adk_commit_is_not_the_parent_gitlink (test_qualification_followup_reviews.EffectDelegatedReviewTests.test_unmatched_adk_commit_is_not_the_parent_gitlink) ... ok
+test_wrong_scope_or_record_digest_fails (test_qualification_followup_reviews.EffectDelegatedReviewTests.test_wrong_scope_or_record_digest_fails) ... ok
+test_ai_review_cannot_replace_a_terminal_field_observation (test_qualification_followup_reviews.LongitudinalDelegatedReviewTests.test_ai_review_cannot_replace_a_terminal_field_observation) ... ok
+test_ai_reviewer_does_not_become_a_registered_field_actor (test_qualification_followup_reviews.LongitudinalDelegatedReviewTests.test_ai_reviewer_does_not_become_a_registered_field_actor) ... ok
+test_ai_summary_review_has_a_reachable_valid_path (test_qualification_followup_reviews.LongitudinalDelegatedReviewTests.test_ai_summary_review_has_a_reachable_valid_path) ... ok
+test_field_material_digest_drift_cannot_be_approved_by_summary_review (test_qualification_followup_reviews.LongitudinalDelegatedReviewTests.test_field_material_digest_drift_cannot_be_approved_by_summary_review) ... ok
+test_live_review_requires_exact_adk_and_committed_review_inputs (test_qualification_followup_reviews.LongitudinalDelegatedReviewTests.test_live_review_requires_exact_adk_and_committed_review_inputs) ... ok
+test_review_identity_completion_and_hold_remain_enforced (test_qualification_followup_reviews.LongitudinalDelegatedReviewTests.test_review_identity_completion_and_hold_remain_enforced) ... ok
+test_review_must_bind_summary_and_both_source_contracts (test_qualification_followup_reviews.LongitudinalDelegatedReviewTests.test_review_must_bind_summary_and_both_source_contracts) ... ok
+test_summary_pilot_and_review_scope_must_match (test_qualification_followup_reviews.LongitudinalDelegatedReviewTests.test_summary_pilot_and_review_scope_must_match) ... ok
+test_synthetic_layer_is_rejected_even_with_rehashed_ai_review (test_qualification_followup_reviews.LongitudinalDelegatedReviewTests.test_synthetic_layer_is_rejected_even_with_rehashed_ai_review) ... ok
+test_time_travel_cli_cannot_claim_terminal_qualification (test_qualification_followup_reviews.LongitudinalDelegatedReviewTests.test_time_travel_cli_cannot_claim_terminal_qualification) ... ok
+test_exact_event_source_and_credentials_not_retained (test_qualification_followup_workflow.QualificationWorkflowBoundaryTests.test_exact_event_source_and_credentials_not_retained) ... ok
+test_only_explicit_report_uploaded_even_after_scan_failure (test_qualification_followup_workflow.QualificationWorkflowBoundaryTests.test_only_explicit_report_uploaded_even_after_scan_failure) ... ok
+test_only_read_permission_and_no_privileged_trigger (test_qualification_followup_workflow.QualificationWorkflowBoundaryTests.test_only_read_permission_and_no_privileged_trigger) ... ok
+test_scan_failure_cannot_be_converted_to_success (test_qualification_followup_workflow.QualificationWorkflowBoundaryTests.test_scan_failure_cannot_be_converted_to_success) ... ok
+test_summary_does_not_relabel_scan_as_qualification (test_qualification_followup_workflow.QualificationWorkflowBoundaryTests.test_summary_does_not_relabel_scan_as_qualification) ... ok
+
+----------------------------------------------------------------------
+Ran 79 tests in 11.901s
+
+OK
+[PASS] test_qualification_followup
+=== RUN test_reference_pins ===
+[PASS] reference repositories are exact-pin, cache-only, explicit materialization inputs and M5 field identity stays fail-closed
+[PASS] test_reference_pins
+=== RUN test_reference_remote_audit ===
+test_empty_remote_and_git_failure_are_degraded (tests.test_reference_remote_audit.ReferenceRemoteAuditTests.test_empty_remote_and_git_failure_are_degraded) ... ok
+test_exact_pin_selection_rejects_unknown_id (tests.test_reference_remote_audit.ReferenceRemoteAuditTests.test_exact_pin_selection_rejects_unknown_id) ... ok
+test_live_same_and_different_are_not_called_fast_forward (tests.test_reference_remote_audit.ReferenceRemoteAuditTests.test_live_same_and_different_are_not_called_fast_forward) ... ok
+test_offline_does_not_inspect_remote_or_mutate_workspace (tests.test_reference_remote_audit.ReferenceRemoteAuditTests.test_offline_does_not_inspect_remote_or_mutate_workspace) ... ok
+test_pin_drift_during_remote_call_is_rejected (tests.test_reference_remote_audit.ReferenceRemoteAuditTests.test_pin_drift_during_remote_call_is_rejected) ... ok
+test_symlinked_registry_parent_is_rejected (tests.test_reference_remote_audit.ReferenceRemoteAuditTests.test_symlinked_registry_parent_is_rejected) ... ok
+test_unapproved_host_and_missing_registry_row_fail_before_network (tests.test_reference_remote_audit.ReferenceRemoteAuditTests.test_unapproved_host_and_missing_registry_row_fail_before_network) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.208s
+
+OK
+{"ancestry_checked": false, "counts": {"different": 0, "selected": 8, "unavailable": 0}, "mutation_performed": false, "network_requested": false, "observed_at_utc": "2026-10-20T14:08:59Z", "pin_is_evidence_not_source": true, "pin_manifest_sha256": "0b12798f00db011d0a5a3fa919ee667ac960b8294435653bfd8af651947bca1c", "registry_sha256": "9ebb5e25882ccaea7d4852954924883e1bf0c8588154dbf23fa5ec3331d3cc6f", "repositories": [{"ancestry_checked": false, "branch": "main", "id": "OpenSpec", "pin": "3c7a05c5dc88b2397c478805890b55ed392b19e8", "relation": "not-run-network-disabled", "remote_head": null, "url": "https://github.com/Fission-AI/OpenSpec"}, {"ancestry_checked": false, "branch": "main", "id": "digital-worker", "pin": "4a94231d26df1aeaeba336e6a4e2327db5a3bd44", "relation": "not-run-network-disabled", "remote_head": null, "url": "https://github.com/jiying2007/digital-worker.git"}, {"ancestry_checked": false, "branch": "main", "id": "mattpocock-skills", "pin": "ed37663cc5fbef691ddfecd080dff42f7e7e350d", "relation": "not-run-network-disabled", "remote_head": null, "url": "https://github.com/mattpocock/skills"}, {"ancestry_checked": false, "branch": "main", "id": "oh-my-codex", "pin": "f947e3a41c062c25fd107686862b68ee5d1b66a5", "relation": "not-run-network-disabled", "remote_head": null, "url": "https://github.com/Yeachan-Heo/oh-my-codex.git"}, {"ancestry_checked": false, "branch": "master", "id": "planning-with-files", "pin": "d71b3be47b62fe49d60fb2ede800e1907ebea3d9", "relation": "not-run-network-disabled", "remote_head": null, "url": "https://github.com/OthmanAdi/planning-with-files.git"}, {"ancestry_checked": false, "branch": "master", "id": "scale-engine", "pin": "ace49169c4191db656989b738f31edb19a380a63", "relation": "not-run-network-disabled", "remote_head": null, "url": "https://gitee.com/hongmaple/scale-engine.git"}, {"ancestry_checked": false, "branch": "main", "id": "superpowers", "pin": "6efe32c9e2dd002d0c394e861e0529675d1ab32e", "relation": "not-run-network-disabled", "remote_head": null, "url": "https://github.com/obra/superpowers"}, {"ancestry_checked": false, "branch": "main", "id": "vibeflow", "pin": "0df764eff5e7b034611540da8d9f8367dfae55b2", "relation": "not-run-network-disabled", "remote_head": null, "url": "https://github.com/ttttstc/vibeflow.git"}], "runtime_enablement": false, "schema": "llm-agent-reference-remote-audit/v1", "status": "not-run-network-disabled"}
+[PASS] test_reference_remote_audit
+=== RUN test_reference_repository_registration ===
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+hint:
+hint: Disable this message with "git config set advice.defaultBranchName false"
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+hint:
+hint: Disable this message with "git config set advice.defaultBranchName false"
+[FAIL] forced metadata transaction failure unexpectedly applied
+[FAIL] test_reference_repository_registration

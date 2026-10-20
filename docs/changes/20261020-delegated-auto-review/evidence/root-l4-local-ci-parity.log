@@ -1,0 +1,13 @@
+transport=docker
+source_mount=read-only
+work_copy=isolated-tmpfs
+network=gates-none,audit-bridge,prepare-build-network
+credentials=not-mounted
+release_authority=none
+file_mode_inventory=git-index-bound
+container_user=65532:65532
+mode=full
+python=3.8 base_image=python:3.8-slim-bullseye@sha256:104d2d37ef880b95d0109d9a8b5cfb032c0e541ed8bc0a70028f16b72e5830ba tool_image=agent-dev-kit-local-ci:python-3.8
+python=3.11 base_image=python:3.11-slim@sha256:db3ff2e1800a8581e2c48a27c3995339d47bdf046da21c7627accd3d51053a93 tool_image=agent-dev-kit-local-ci:python-3.11
+python=3.12 base_image=python:3.12-slim@sha256:57cd7c3a7a273101a6485ba99423ee568157882804b1124b4dd04266317710de tool_image=agent-dev-kit-local-ci:python-3.12
+[FAIL] docker is required for local CI parity
