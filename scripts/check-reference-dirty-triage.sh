@@ -133,6 +133,10 @@ def validate(path, data):
             continue
         try:
             verify_review(Path(root), str(repo), baseline["snapshot_sha256"], baseline["review_record"])
+        except (OSError, ValueError, subprocess.TimeoutExpired):
+            local_failures.append(f"{repo} review record invalid or unavailable")
+            continue
+        try:
             identity = snapshot(Path(root), str(repo))
         except (OSError, ValueError, subprocess.TimeoutExpired):
             local_failures.append(f"{repo} current snapshot unavailable")

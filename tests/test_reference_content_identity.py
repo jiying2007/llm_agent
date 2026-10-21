@@ -1,11 +1,13 @@
 """Actual Git fixtures for working-tree identity drift and link boundaries."""
 
 import hashlib
+import io
 import json
 import os
 import subprocess
 import shutil
 import csv
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -198,6 +200,64 @@ class ReferenceIdentityTests(unittest.TestCase):
             self.git("commit", "-q", "-m", "safe")
         self.assertFalse(marker.exists())
         self.assertEqual(b"unchanged", sentinel.read_bytes())
+
+    def test_checker_separates_review_validation_from_snapshot_failures(self):
+        source = Path(__file__).resolve().parents[1]
+        script = source / "scripts/check-reference-dirty-triage.sh"
+        program = script.read_text().split("<<'PY'\n", 1)[1].rsplit("\nPY", 1)[0]
+        (self.root / "subrepos").mkdir()
+        (self.root / "reports").mkdir()
+        report = self.root / "reports/reference-dirty-triage-fixture.json"
+        review = self.root / "reports/review.json"
+        expires = (date.today() + timedelta(days=7)).isoformat()
+        rows = [{"repo": name, "snapshot_schema": identity.SCHEMA,
+                 "snapshot_sha256": "a" * 64, "review_record": "reports/review.json",
+                 "expires_on": expires} for name in ("OpenSpec", "superpowers", "vibeflow")]
+        with (self.root / "subrepos/dirty-baseline.tsv").open("w", newline="") as output:
+            writer = csv.DictWriter(output, fieldnames=list(rows[0]), delimiter="\t")
+            writer.writeheader()
+            writer.writerows(rows)
+        items = [dict(row, decision="known-dirty-review", fingerprint_matches=True,
+                      classification_matches=True, analysis_policy="commit-snapshot-only",
+                      actual_classification="content", mode_changes=0, content_changes=1,
+                      type_changes=0, untracked_changes=0, staged_changes=0, expired=False,
+                      source_approved=False, content_disposition="isolated-needs-review")
+                 for row in rows]
+        report.write_text(json.dumps({"schema_version": 2, "mode": "report-only",
+                                      "status": "pass", "items": items}))
+        for kind in ("expired-review", "invalid-review-digest", "unavailable-snapshot"):
+            with self.subTest(kind=kind):
+                record = {"schema": "llm-agent-reference-worktree-review/v1", "mode": "report-only",
+                          "owner_approval": False, "runtime_enablement": False,
+                          "reviewed_on": (date.today() - timedelta(days=7)).isoformat(),
+                          "expires_on": (date.today() - timedelta(days=1)).isoformat()
+                          if kind == "expired-review" else expires,
+                          "observations": {row["repo"]: {"snapshot_sha256": "a" * 64,
+                                                         "source_approved": False} for row in rows}}
+                record["record_sha256"] = hashlib.sha256(json.dumps(
+                    record, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()).hexdigest()
+                if kind == "invalid-review-digest":
+                    record["record_sha256"] = "0" * 64
+                review.write_text(json.dumps(record))
+                output = io.StringIO()
+                failure = (identity.IdentityError("repository-unavailable")
+                           if kind == "unavailable-snapshot"
+                           else AssertionError("unvalidated review reached snapshot"))
+                # Execute the actual embedded checker, with the worktree reader
+                # observed independently from real review validation.
+                with mock.patch.object(identity, "snapshot", side_effect=failure) as snapshot, \
+                     mock.patch.object(sys, "argv", ["checker", str(self.root), str(report), "1"]), \
+                     mock.patch.object(sys, "stdout", output), self.assertRaises(SystemExit) as stopped:
+                    exec(compile(program, str(script), "exec"), {})
+                self.assertEqual(1, stopped.exception.code)
+                result = json.loads(output.getvalue())
+                self.assertEqual("fail", result["status"])
+                if kind == "unavailable-snapshot":
+                    self.assertEqual([mock.call(self.root, row["repo"]) for row in rows], snapshot.call_args_list)
+                    self.assertEqual([row["repo"] + " current snapshot unavailable" for row in rows], result["failures"])
+                else:
+                    snapshot.assert_not_called()
+                    self.assertEqual([row["repo"] + " review record invalid or unavailable" for row in rows], result["failures"])
 
     def test_checker_rejects_unsafe_discovered_reports(self):
         source = Path(__file__).resolve().parents[1]

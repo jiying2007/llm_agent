@@ -14,6 +14,8 @@ rtk python3 -m tools.control_plane.cli qualification-followup --root . --summary
 - `llm-agent-qualification-followup/v2` 报告将 `required_in_current_scope` 标到每项。`required_qualification_ready` 只汇总当前研究/控制工作区必需的五项；`qualification_all_ready` 仍要求六项全部就绪。两者与扫描成功是不同事实。
 - #236 在本范围保持 `status=conditional`、`assessment=not-assessed`、`required_in_current_scope=false`。诊断原始输出继续保留，但不签发 M5；`release_authorized=false`、`may_fill_owner=false` 固定表示本报告没有授权。
 - `generated_at` 使用真实 UTC。报告保留前后来源身份、输入摘要和一致性，必须核对实际来源再使用，不能仅凭 artifact 名称或 workflow 绿色下结论。
+- 最终 UTF-8 JSON 连同 CLI 末尾换行受 4 MiB 上限约束。超限报告保持 `scan_status=error`，所有资格就绪为 false，并标记 `report_truncated=true`；六项实际退出码和已有 stdout/stderr 摘要保留。
+- 超限时完整 `result` 与快照的逐项 `inputs` 可被显式省略。`inputs_omitted=true` 的快照保留原 Git 身份、原完整 `git + inputs` 的 `sha256`、包含缺失项的 `input_count` 及已读取文件的 `input_file_bytes` 合计；这些值不是压缩对象的重新摘要。`source_consistent` 仍是省略前实际比较结果。若继续超限，`diagnostics_omitted=true` 表示命令参数及人工可读说明也已省略；不能把缺失字段当作完整证据或无阻塞。
 
 ## 六项权威
 

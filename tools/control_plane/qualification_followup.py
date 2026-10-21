@@ -481,6 +481,37 @@ def _not_run(identifier: str, title: str, command: tuple[str, ...] | None) -> di
             "next_actions": ["Restore the verified source, then rerun the read-only collection."]}
 
 
+def _bounded_report(report: dict[str, Any]) -> dict[str, Any]:
+    """Bound actual UTF-8 stdout, including its newline, without partial JSON."""
+    if len(_json(report)) + 1 <= MAX_REPORT:
+        return report
+    report.update(scan_status="error", qualification_all_ready=False,
+                  required_qualification_ready=False, report_truncated=True)
+    if "aggregate-report-byte-budget-exceeded" not in report["errors"]:
+        report["errors"].append("aggregate-report-byte-budget-exceeded")
+    for item in report["items"]:
+        item.update(result_omitted=item["result"] is not None, result=None,
+                    scan_status="error", status="error", qualification_ready=False)
+    for name in ("source_before", "source_after"):
+        snapshot = report[name]
+        if snapshot is not None:
+            inputs = snapshot["inputs"]
+            # sha256 still identifies the original git + inputs, not this summary.
+            report[name] = {
+                "git": snapshot["git"], "scope": snapshot["scope"], "sha256": snapshot["sha256"],
+                "inputs_omitted": True, "input_count": len(inputs),
+                "input_file_bytes": sum(value.get("bytes", 0) for value in inputs.values()),
+            }
+    if len(_json(report)) + 1 > MAX_REPORT:
+        for item in report["items"]:
+            item.update(command=None, remaining_evidence=[], next_actions=[], diagnostics_omitted=True)
+    if len(_json(report)) + 1 > MAX_REPORT:
+        # MAX_REPORT is fixed in production; an impossible internal limit must
+        # never leak an oversized or syntactically truncated JSON report.
+        raise ValueError("report byte budget cannot contain the minimal diagnostic")
+    return report
+
+
 def collect(root: Path) -> dict[str, Any]:
     root = root.absolute()
     report: dict[str, Any] = {
@@ -501,7 +532,7 @@ def collect(root: Path) -> dict[str, Any]:
         report["scan_status"] = "error"
         report["items"] = [_not_run(check.id, check.title, check.command) for check in _checks(root)]
         report["items"].append(_not_run("adk-201", "Delegated semantic review of three historical changes", None))
-        return report
+        return _bounded_report(report)
     env = dict(os.environ)
     env.update(PYTHONPATH=os.pathsep.join((str(root), str(root / "agent-dev-kit/src"))),
                PYTHONDONTWRITEBYTECODE="1", TZ="UTC")
@@ -525,12 +556,7 @@ def collect(root: Path) -> dict[str, Any]:
         item["qualification_ready"] for item in report["items"])
     report["required_qualification_ready"] = report["scan_status"] == "complete" and all(
         item["qualification_ready"] for item in report["items"] if item["required_in_current_scope"])
-    if len(_json(report)) > MAX_REPORT:
-        report.update(scan_status="error", qualification_all_ready=False, required_qualification_ready=False)
-        report["errors"].append("aggregate-report-byte-budget-exceeded")
-        for item in report["items"]:
-            item.update(result=None, scan_status="error", status="error", qualification_ready=False)
-    return report
+    return _bounded_report(report)
 
 
 def main(argv: Sequence[str] | None = None) -> int:
