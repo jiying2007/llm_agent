@@ -583,13 +583,110 @@ class QualificationFollowupTest(unittest.TestCase):
             self.assertEqual(self.run_item(self.checks[4], data)["scan_status"], "error")
 
     def test_report_budget_error_retains_six_exits_without_raw_results(self) -> None:
-        with patch.object(followup, "MAX_REPORT", 128):
+        budget = len(followup._json(self.collect_blocked()))
+        with patch.object(followup, "MAX_REPORT", budget):
             report = self.collect_blocked()
         self.assertEqual(report["scan_status"], "error")
         self.assertIn("aggregate-report-byte-budget-exceeded", report["errors"])
         self.assertEqual(len(report["items"]), 6)
         self.assertTrue(all(item["result"] is None for item in report["items"]))
         self.assertEqual([item["command_exit"] for item in report["items"]], [2, 2, 2, 2, 2, None])
+        self.assertLessEqual(len(followup._json(report)) + 1, budget)
+
+    def test_report_budget_bounds_large_source_inventory_and_preserves_identity(self) -> None:
+        source = copy.deepcopy(self.source)
+        source["inputs"] = {
+            "synthetic/{:04d}/".format(index) + "x" * 144 + "/" + "y" * 143: {"present": False}
+            for index in range(8192)
+        }
+        source["inputs"]["synthetic/present.json"] = {
+            "present": True, "bytes": 17, "sha256": "d" * 64,
+        }
+        source["sha256"] = followup._digest({"git": source["git"], "inputs": source["inputs"]})
+        original = copy.deepcopy(source)
+        report = self.collect_blocked([source, source])
+        self.assertLessEqual(len(followup._json(report)) + 1, followup.MAX_REPORT)
+        self.assertEqual(report["scan_status"], "error")
+        self.assertTrue(report["source_consistent"])
+        self.assertTrue(report["report_truncated"])
+        self.assertEqual(report["input_digest"], original["sha256"])
+        self.assertEqual(source, original, "summarizing must not mutate the observed snapshot")
+        for key in ("source_before", "source_after"):
+            snapshot = report[key]
+            self.assertEqual(snapshot["git"], original["git"])
+            self.assertEqual(snapshot["sha256"], original["sha256"])
+            self.assertNotIn("inputs", snapshot)
+            self.assertTrue(snapshot["inputs_omitted"])
+            self.assertEqual(snapshot["input_count"], 8193)
+            self.assertEqual(snapshot["input_file_bytes"], 17)
+        self.assertEqual([item["command_exit"] for item in report["items"]], [2, 2, 2, 2, 2, None])
+        self.assertTrue(all(item["scan_status"] == "error" and not item["qualification_ready"]
+                            for item in report["items"]))
+        for item, check in zip(report["items"], self.checks, strict=False):
+            raw = completed(check, blocked(check)).stdout
+            self.assertEqual(item["stdout"], {"bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest()})
+            self.assertIsNone(item["result"])
+        for key in ("qualification_all_ready", "required_qualification_ready", "release_authorized",
+                    "may_fill_owner", "provider_execution_performed"):
+            self.assertIs(report[key], False)
+        output = io.StringIO()
+        with patch.object(followup, "collect", return_value=report), redirect_stdout(output):
+            code = followup.main(["--root", str(self.root), "--summary-json"])
+        self.assertEqual(code, 1)
+        self.assertLessEqual(len(output.getvalue().encode("utf-8")), followup.MAX_REPORT)
+        self.assertEqual(json.loads(output.getvalue()), report)
+
+    def test_report_budget_counts_utf8_and_final_newline_at_exact_boundary(self) -> None:
+        report = self.collect_blocked()
+        report["items"][0]["remaining_evidence"] = ["真实证据仍缺失"]
+        original = copy.deepcopy(report)
+        encoded = followup._json(report)
+        self.assertGreater(len(encoded), len(encoded.decode("utf-8")))
+        with patch.object(followup, "MAX_REPORT", len(encoded) + 1):
+            self.assertIs(followup._bounded_report(report), report)
+        self.assertEqual(report, original)
+        with patch.object(followup, "MAX_REPORT", len(encoded)):
+            limited = followup._bounded_report(report)
+        self.assertEqual(limited["scan_status"], "error")
+        self.assertLessEqual(len(followup._json(limited)) + 1, len(encoded))
+
+    def test_report_budget_compacts_large_metadata_without_losing_actual_exits(self) -> None:
+        results = [completed(check, blocked(check)) for check in self.checks]
+        data = blocked(self.checks[1])
+        data["blockers"] = ["界" * 1024 for _ in range(32)]
+        results[1] = completed(self.checks[1], data)
+        with patch.object(followup, "MAX_REPORT", 16 * 1024), \
+                patch.object(followup, "_snapshot", return_value=self.source), \
+                patch.object(followup, "run_bounded", side_effect=results):
+            report = followup.collect(self.root)
+        self.assertLessEqual(len(followup._json(report)) + 1, 16 * 1024)
+        self.assertEqual(report["scan_status"], "error")
+        self.assertIn("aggregate-report-byte-budget-exceeded", report["errors"])
+        self.assertEqual([item["command_exit"] for item in report["items"]], [2, 2, 2, 2, 2, None])
+        self.assertEqual(report["items"][1]["stdout"]["sha256"], hashlib.sha256(results[1].stdout).hexdigest())
+        self.assertTrue(report["items"][1]["diagnostics_omitted"])
+        self.assertEqual(report["items"][1]["remaining_evidence"], [])
+        self.assertFalse(report["release_authorized"])
+
+    def test_report_budget_also_bounds_invalid_source_early_return(self) -> None:
+        with patch.object(followup, "MAX_REPORT", 12 * 1024), \
+                patch.object(followup, "_collect_command") as runner:
+            report = followup.collect(self.root / ("x" * 4096))
+        runner.assert_not_called()
+        self.assertLessEqual(len(followup._json(report)) + 1, 12 * 1024)
+        self.assertEqual(report["scan_status"], "error")
+        self.assertIn("source-before-invalid", report["errors"])
+        self.assertIn("aggregate-report-byte-budget-exceeded", report["errors"])
+        self.assertIsNone(report["input_digest"])
+        self.assertEqual(len(report["items"]), 6)
+        self.assertTrue(all(item["execution_status"] == "not-run" and item["command_exit"] is None
+                            for item in report["items"]))
+
+    def test_report_budget_rejects_impossibly_small_internal_limit(self) -> None:
+        report = self.collect_blocked()
+        with patch.object(followup, "MAX_REPORT", 128), \
+                self.assertRaisesRegex(ValueError, "cannot contain the minimal diagnostic"):
+            followup._bounded_report(report)
 
     def test_cli_exit_is_scan_status_not_qualification_readiness(self) -> None:
         for status, expected in (("complete", 0), ("error", 1)):
