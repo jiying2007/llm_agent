@@ -59,7 +59,7 @@ The LTA-01 ruleset and retirement of generic merged-PR custom deletion were comp
 
 After any ruleset, checkout, workflow, permission or branch-GC change, re-read the authoritative LTA contract and verify live ruleset settings through the existing `native-governance` checker. The relevant claim must be bound to the exact verification result. A missing API permission, changed ruleset or unverifiable check remains blocked; a prior PASS is not sufficient for a new claim.
 
-The separate LTA-02 periodic R2 qualification is delegated to Digital Worker and is **nonblocking observation** in Root. LTA-03 recovery drill is already separately qualified; a historical receipt proves its own source only, and fresh recovery must be rerun when appropriate. LTA-04 continues to require authentic 30-day field outcomes and real owner review. Neither successful CI nor an immutable ADK Release grants current-source Product M5 authorization.
+The separate LTA-02 periodic R2 qualification is delegated to Digital Worker and is **nonblocking observation** in Root. LTA-03 recovery drill is already separately qualified; a historical receipt proves its own source only, and fresh recovery must be rerun when appropriate. LTA-04 continues to require authentic 30-day field outcomes and verifiable summary review. Neither successful CI nor an immutable ADK Release grants current-source Product M5 authorization.
 
 ## 6. Account/workstation loss response
 
@@ -76,4 +76,4 @@ Secrets themselves must never be stored in this repository or in recovery receip
 
 ## 7. Terminal qualification rule
 
-Long-term asset qualification is separate from Product M5. `manifests/long_term_asset_qualification.json` is the canonical machine authority for current LTA-01..04 dispositions. LTA-01 governance and LTA-03 recovery have historical PASS evidence (subject to current-source/live drift checks), LTA-02 is delegated nonblocking R2 observation, and LTA-04 remains independently blocked on real field outcomes and registered human review. Product M5 remains a separate conditional current-source release gate; none of these statuses may be inferred from this prose alone.
+Long-term asset qualification is separate from Product M5. `manifests/long_term_asset_qualification.json` is the canonical machine authority for current LTA-01..04 dispositions. LTA-01 governance and LTA-03 recovery have historical PASS evidence (subject to current-source/live drift checks), LTA-02 is delegated nonblocking R2 observation, and LTA-04 remains independently blocked on real field outcomes and a verifiable summary review in either registered-human or policy-authorized owner-delegated-ai mode. Product M5 remains a separate conditional current-source release gate; none of these statuses may be inferred from this prose alone.
