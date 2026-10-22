@@ -2,4 +2,4 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
-python3 -m unittest discover -s tests -p test_intake_hardening.py
+python3 -m unittest discover -s tests -p 'test_intake_*.py'

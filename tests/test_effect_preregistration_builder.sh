@@ -123,4 +123,6 @@ for BAD in derived-ref bad-content same-assets reordered-same-assets; do
   test "$rc" -eq 1
 done
 
+python3 -m unittest discover -s "$ROOT/tests" -p 'test_effect_preregistration_paths.py' -v
+
 echo "[PASS] G22 preregistration builder derives refs/digests from source content and fails closed on drift"
