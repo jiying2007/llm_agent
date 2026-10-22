@@ -6,7 +6,7 @@ import json
 import tempfile
 from pathlib import Path
 from typing import Any
-from tools.codex_assets.intake_io import IntakeError, _load_json
+from tools.codex_assets.intake_io import IntakeError, _atomic_write, _load_json, _reject_symlink_chain
 
 PACKAGE_SCHEMA = "llm-agent-effect-preregistration-package/v2"
 SOURCE_SCHEMA = "llm-agent-effect-preregistration-source/v1"
@@ -322,11 +322,13 @@ def main(argv: list[str] | None = None) -> int:
             if args.canonical_out:
                 parser.error("--canonical-out is only valid with --package")
             output = Path(args.output)
+            _reject_symlink_chain(output)
             if output.exists() and not args.overwrite:
                 raise ValueError("preregistration output already exists; use --overwrite explicitly")
-            canonical, summary = build_package(adk, Path(args.source).resolve())
+            source = Path(args.source)
+            canonical, summary = build_package(adk, source)
             output.parent.mkdir(parents=True, exist_ok=True)
-            output.write_bytes(canonical)
+            _atomic_write(output, canonical, inputs=[source], overwrite=args.overwrite)
             summary = dict(summary)
             summary["source_schema"] = SOURCE_SCHEMA
             summary["output"] = output.as_posix()
@@ -335,10 +337,11 @@ def main(argv: list[str] | None = None) -> int:
                 parser.error("--output is only valid with --source")
             if args.overwrite:
                 parser.error("--overwrite is only valid with --source")
-            canonical, summary = validate_package(adk, Path(args.package).resolve())
+            package = Path(args.package)
+            canonical, summary = validate_package(adk, package)
             if args.canonical_out:
-                Path(args.canonical_out).write_bytes(canonical)
-    except (OSError, ValueError, json.JSONDecodeError) as exc:
+                _atomic_write(Path(args.canonical_out), canonical, inputs=[package])
+    except (OSError, ValueError, IntakeError, json.JSONDecodeError) as exc:
         result = {"schema": PACKAGE_SCHEMA, "status": "fail", "error": str(exc)}
         print(json.dumps(result, sort_keys=True))
         return 1

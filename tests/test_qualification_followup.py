@@ -196,6 +196,47 @@ class QualificationFollowupTest(unittest.TestCase):
                                          "sha256": hashlib.sha256(CANARY.encode()).hexdigest()})
         self.assertNotIn(CANARY, json.dumps(item))
 
+    def test_real_invalid_unicode_child_preserves_full_error_report(self) -> None:
+        malformed = []
+        for value in ({"notes": [CANARY + "\ud800"]}, {"nested": {CANARY + "\udfff": 1}}):
+            data = blocked(self.checks[1])
+            data.update(value)
+            malformed.append(json.dumps(data, ensure_ascii=True).encode("utf-8"))
+        for encoding in ("utf-16", "utf-16-le", "utf-32", "utf-32-be"):
+            malformed.append(json.dumps(blocked(self.checks[1])).encode(encoding))
+        child = ("import sys;sys.stdout.buffer.write(bytes.fromhex(sys.argv[1]));"
+                 "sys.stderr.buffer.write(bytes.fromhex(sys.argv[2]));sys.exit(2)")
+        for raw in malformed:
+            with self.subTest(payload_sha256=hashlib.sha256(raw).hexdigest()):
+                commands = []
+                for check in self.checks:
+                    payload = raw if check.id == "root-154" else json.dumps(blocked(check)).encode("utf-8")
+                    commands.append(replace(check, command=(sys.executable, "-c", child,
+                                                             payload.hex(), CANARY.encode().hex())))
+                output = io.StringIO()
+                with patch.object(followup, "_checks", return_value=tuple(commands)), \
+                        patch.object(followup, "_snapshot", return_value=self.source), redirect_stdout(output):
+                    code = followup.main(["--root", str(self.root), "--summary-json"])
+                encoded = output.getvalue().encode("utf-8")
+                report = json.loads(encoded)
+                self.assertEqual(code, 1)
+                self.assertEqual(report["scan_status"], "error")
+                self.assertTrue(report["source_consistent"])
+                self.assertEqual(len(report["items"]), 6)
+                failed = report["items"][1]
+                self.assertEqual(failed["error"], "invalid-checker-json")
+                self.assertEqual(failed["command_exit"], 2)
+                self.assertEqual(failed["stdout"], {"bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest()})
+                self.assertEqual(failed["stderr"], {"bytes": len(CANARY),
+                                                    "sha256": hashlib.sha256(CANARY.encode()).hexdigest()})
+                self.assertIsNone(failed["result"])
+                for index in (0, 2, 3, 4):
+                    self.assertEqual(report["items"][index]["result"], blocked(self.checks[index]))
+                    self.assertEqual(report["items"][index]["command_exit"], 2)
+                for flag in ("qualification_all_ready", "required_qualification_ready", "release_authorized"):
+                    self.assertFalse(report[flag])
+                self.assertNotIn(CANARY.encode(), encoded)
+
     def test_command_start_error_does_not_echo_exception(self) -> None:
         with patch.object(followup, "run_bounded", side_effect=OSError(CANARY)):
             item = followup._collect_command(self.root, self.checks[1], {})

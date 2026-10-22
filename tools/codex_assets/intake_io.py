@@ -160,17 +160,34 @@ def _same_file(left: Path, right: Path) -> bool:
         return False
 
 
+def _output_exists(path: Path, *, overwrite: bool) -> bool:
+    """Reject unsafe leaves before staging and again before publication."""
+    _reject_symlink_chain(path)
+    try:
+        info = path.lstat()
+    except FileNotFoundError:
+        return False
+    if not stat.S_ISREG(info.st_mode):
+        raise IntakeError("existing output must be a regular file")
+    if not overwrite:
+        raise IntakeError("output already exists; overwrite is disabled")
+    return True
+
+
 def _atomic_write_many(outputs: Sequence[Tuple[Path, bytes]], inputs: Iterable[Path] = (),
-                       *, mode: int = 0o644) -> None:
+                       *, mode: int = 0o644, overwrite: bool = True) -> None:
     if isinstance(mode, bool) or not isinstance(mode, int) or not 0 <= mode <= 0o777:
         raise IntakeError("invalid output permission mode")
+    if not isinstance(overwrite, bool):
+        raise IntakeError("output overwrite policy must be a boolean")
     if not outputs:
         return
     normalized_inputs = [Path(os.path.abspath(os.fspath(item))) for item in inputs]
     normalized_outputs: List[Tuple[Path, bytes]] = []
     for raw_path, payload in outputs:
+        _reject_symlink_chain(raw_path)
         path = Path(os.path.abspath(os.fspath(raw_path)))
-        _reject_symlink_chain(path)
+        _output_exists(path, overwrite=overwrite)
         if not path.parent.is_dir():
             raise IntakeError("output parent directory does not exist")
         if any(_same_file(path, item) for item in normalized_inputs):
@@ -195,8 +212,16 @@ def _atomic_write_many(outputs: Sequence[Tuple[Path, bytes]], inputs: Iterable[P
             os.chmod(str(temp_path), mode)
 
         for path, _ in normalized_outputs:
+            exists = _output_exists(path, overwrite=overwrite)
+            if not overwrite:
+                # Publishing a completed sibling stage must not replace a
+                # destination created after preflight. On collision this path
+                # never enters the rollback set, preserving the competing file.
+                os.link(str(staged[path]), str(path))
+                committed.append(path)
+                continue
             backup: Optional[Path] = None
-            if path.exists():
+            if exists:
                 descriptor, temporary = tempfile.mkstemp(prefix=".practice-intake-backup-", dir=str(path.parent))
                 os.close(descriptor)
                 backup = Path(temporary)
@@ -221,6 +246,18 @@ def _atomic_write_many(outputs: Sequence[Tuple[Path, bytes]], inputs: Iterable[P
         rollback_errors: List[OSError] = []
         for path in reversed(committed):
             try:
+                if not overwrite:
+                    # A competing writer may replace an earlier publication.
+                    # Compare the leaf itself with our retained hard-link stage;
+                    # callers must coordinate replacements after this check.
+                    try:
+                        current = path.lstat()
+                    except FileNotFoundError:
+                        continue
+                    stage = staged[path].lstat()
+                    if (current.st_dev, current.st_ino) == (stage.st_dev, stage.st_ino):
+                        path.unlink()
+                    continue
                 if path.exists():
                     path.unlink()
                 backup = backups.get(path)
@@ -254,18 +291,20 @@ def _atomic_write_many(outputs: Sequence[Tuple[Path, bytes]], inputs: Iterable[P
                         pass
 
 
-def _atomic_write(path: Path, payload: bytes, inputs: Iterable[Path] = (), *, mode: int = 0o644) -> None:
+def _atomic_write(path: Path, payload: bytes, inputs: Iterable[Path] = (), *, mode: int = 0o644,
+                  overwrite: bool = True) -> None:
     try:
-        _atomic_write_many([(path, payload)], inputs, mode=mode)
+        _atomic_write_many([(path, payload)], inputs, mode=mode, overwrite=overwrite)
     except IntakeError:
         raise
     except Exception as exc:
         raise IntakeError("atomic output transaction failed") from exc
 
 
-def _transactional_write(outputs: Sequence[Tuple[Path, bytes]], inputs: Iterable[Path] = ()) -> None:
+def _transactional_write(outputs: Sequence[Tuple[Path, bytes]], inputs: Iterable[Path] = (),
+                         *, overwrite: bool = True) -> None:
     try:
-        _atomic_write_many(outputs, inputs)
+        _atomic_write_many(outputs, inputs, overwrite=overwrite)
     except IntakeError:
         raise
     except Exception as exc:
@@ -281,10 +320,17 @@ def _jsonl_bytes(rows: Sequence[Mapping[str, Any]]) -> bytes:
 
 
 def decode_json(raw: bytes | str, label: str) -> Any:
-    """Reject ambiguous keys and non-finite numbers without echoing content."""
+    """Require UTF-8 scalar text, unique keys and finite numbers without echoing input."""
+    def unicode_text(text: str) -> None:
+        try:
+            text.encode("utf-8")
+        except UnicodeError as exc:
+            raise IntakeError("{} contains invalid Unicode scalar values".format(label)) from exc
+
     def unique(pairs: Sequence[Tuple[str, Any]]) -> Dict[str, Any]:
         value: Dict[str, Any] = {}
         for key, item in pairs:
+            unicode_text(key)
             if key in value:
                 raise IntakeError("{} contains duplicate JSON keys".format(label))
             value[key] = item
@@ -294,7 +340,8 @@ def decode_json(raw: bytes | str, label: str) -> Any:
         raise IntakeError("{} contains non-finite JSON numbers".format(label))
 
     try:
-        value = json.loads(raw, object_pairs_hook=unique, parse_constant=constant)
+        text = raw.decode("utf-8") if isinstance(raw, bytes) else raw
+        value = json.loads(text, object_pairs_hook=unique, parse_constant=constant)
     except IntakeError:
         raise
     except (ValueError, UnicodeError, RecursionError) as exc:
@@ -306,6 +353,8 @@ def decode_json(raw: bytes | str, label: str) -> Any:
             raise IntakeError("{} exceeds JSON nesting budget".format(label))
         if isinstance(item, float) and not math.isfinite(item):
             raise IntakeError("{} contains non-finite JSON numbers".format(label))
+        if isinstance(item, str):
+            unicode_text(item)
         if isinstance(item, dict):
             pending.extend((child, depth + 1) for child in item.values())
         elif isinstance(item, list):
