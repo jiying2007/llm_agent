@@ -1,0 +1,72 @@
+{
+  "schema": "llm-agent-independent-gate-review/v1",
+  "reviewed_at_utc": "2026-10-23T12:06:51Z",
+  "reviewer": "ai/root/remote_governance",
+  "implementation_author": "ai/root/implement_gates",
+  "review_kind": ["spec", "quality"],
+  "status": "changes-requested",
+  "branch": "fix/audit-gates-20261023",
+  "base_commit": "7ba2d71e210955464839d5177c0f7d6a86ac072b",
+  "source_sha256": {
+    "tools/control_plane/impact.py": "b173f03885e34ee9c83de9d529228161a4d0eaec349e43d33de6fcf9726c298c",
+    "tools/control_plane/gate_runner.py": "d4da8de1bf5140fa8830bb817e9ae5c97f0cba0bafcd3b551e586ae7ee038606",
+    "tools/control_plane/process_budget.py": "9173dd8a1d757cf07fd1d07206b952625ac77a72964f382850b45303607cf887",
+    "manifests/gates.json": "404d3857d05c79ed8dc310b201dde9d4f41eebb28b85bee172dc199bc58bedd5",
+    "tests/test_gate_boundaries.py": "e79b2fbf62f8e8db26d88b9a12c41cf9532009e478dd9930013c18ac8e71e6aa",
+    "tests/test_gate_runner_contract.sh": "1aba4076782ea45cfbdddbe1e003c0d4ccfc12a60c59a6c9f8bd0a1e2b265d03"
+  },
+  "findings": [
+    {
+      "id": "ROOT-REVIEW-01",
+      "priority": "P2",
+      "status": "open",
+      "title": "Explicit empty --base still produces a successful NOT_REQUIRED receipt",
+      "location": "tools/control_plane/impact.py:main",
+      "cause": "The CLI guards comparison with if args.base, so an explicitly supplied empty string bypasses _git_changed_paths and its new nonempty-base validation.",
+      "requirement": "Invalid Git comparisons must fail closed rather than become an empty changed-path set.",
+      "reproduction": {
+        "cwd": "/workspace/scratch/694941d81014/llm_agent",
+        "argv": ["/workspace/scratch/694941d81014/tooling/rtk", "bypass", "/workspace/scratch/694941d81014/tooling/venv/bin/python", "-m", "tools.control_plane.cli", "impact", "--root", ".", "--base", "", "--head", "HEAD", "--summary-json"],
+        "exit_code": 0,
+        "stdout_json": {
+          "changed_paths": [],
+          "direct_gates": [],
+          "downstream_group_gates": [],
+          "group": "integration-deep",
+          "group_gates": [],
+          "impacted_gates": [],
+          "matched_paths": {},
+          "reason": "not-required",
+          "required": false,
+          "schema": "llm-agent-gate-impact/v1",
+          "status": "pass"
+        }
+      },
+      "recommended_fix": "Distinguish omitted base from explicitly supplied empty base with args.base is not None; add a CLI-level regression while retaining changed-file-only invocation.",
+      "reachability_limit": "Existing .github/workflows/ci.yml already validates a nonzero exact 40-hex reachable comparison base for push and pull_request events. This finding does not establish a bypass of that current CI shell guard."
+    }
+  ],
+  "static_review_completed": [
+    "Read repository AGENTS.md, change requirements/design/tasks/negative-results, and implementation-verification.json.",
+    "Read all three changed control-plane modules, new boundary tests, contract shell test, and nine cache-policy changes.",
+    "Git diff uses NUL framing, --no-renames, strict UTF-8 decoding, and literal path matching; old and new rename surfaces are retained and non-UTF-8 paths fail closed at the Git reader.",
+    "Gate execution reuses bounded subprocess helper with a POSIX process group, separate stdout/stderr byte limits, timeout/output-budget/nonzero failure reasons, and existing receipt shape.",
+    "Exactly nine manifest policies change from content-addressed to disabled; graph, dependency, capability, and declared I/O fields are otherwise unchanged in the reviewed diff. Cache reading and writing both require content-addressed policy.",
+    "Reviewed Root CI impact precheck, exact pin/interface checks, keyless promotion bundle verification, and fail-closed required integration summary.",
+    "Reviewed ADK promotion workflow's successful push-main CI trigger, exact current-main comparison, immutable annotated tag behavior, and reusable release entrypoint; deeper release check remains pending."
+  ],
+  "independent_execution_completed": ["One CLI reproduction of ROOT-REVIEW-01; no implementation files changed."],
+  "pending_review": [
+    "Recheck ROOT-REVIEW-01 after the implementer fixes it, including omitted-base compatibility.",
+    "Independently exercise CLI three-dot raw Unicode/tab/newline/backslash paths, rename-out coverage, and safe GitHub output framing.",
+    "Independently exercise inherited-pipe descendant timeout, output-limit cleanup, and exact stdout/stderr thresholds.",
+    "Independently verify disabled-policy stale-pass rejection and complete-input fixture cache compatibility.",
+    "Finish read-only protected publishing and Root pin workflow review."
+  ],
+  "limits": [
+    "This interim record requests a concrete correction; it is not an independent PASS or full L3 validation.",
+    "Implementer-reported 14 boundary tests and 47 bounded-I/O regressions were read as evidence, not independently rerun in this interim round.",
+    "No remote mutation, paid model run, release operation, or runtime/product qualification occurred.",
+    "The review is paused at parent request to release the implementation slot for the correction."
+  ]
+}

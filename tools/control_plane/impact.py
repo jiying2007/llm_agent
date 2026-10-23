@@ -5,8 +5,9 @@ import fnmatch
 import json
 import subprocess
 from collections import defaultdict, deque
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 SCHEMA = "llm-agent-gate-impact/v1"
 
@@ -38,7 +39,9 @@ def _load_manifest(root: Path) -> dict[str, Any]:
 
 
 def _normalize_path(value: str) -> str:
-    normalized = value.strip().replace("\\", "/")
+    # Git emits repository-relative POSIX paths. Whitespace and backslashes
+    # can be literal filename bytes, so treating them as formatting loses identity.
+    normalized = value
     while normalized.startswith("./"):
         normalized = normalized[2:]
     return normalized.rstrip("/")
@@ -67,15 +70,18 @@ def _git_changed_paths(root: Path, base: str, head: str, mode: str) -> list[str]
         raise ValueError("Git impact comparison base commit is unavailable")
     separator = "..." if mode == "three-dot" else ".."
     completed = subprocess.run(
-        ["git", "-C", str(root), "diff", "--name-only", f"{base}{separator}{head}"],
+        ["git", "-C", str(root), "diff", "--name-only", "-z", "--no-renames",
+         f"{base}{separator}{head}", "--"],
         check=False,
-        text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
     )
     if completed.returncode != 0:
-        raise ValueError(completed.stderr.strip() or "unable to calculate changed paths")
-    return sorted({_normalize_path(line) for line in completed.stdout.splitlines() if _normalize_path(line)})
+        raise ValueError(completed.stderr.decode("utf-8", errors="replace").strip()
+                         or "unable to calculate changed paths")
+    if completed.stdout and not completed.stdout.endswith(b"\0"):
+        raise ValueError("Git changed paths are not NUL terminated")
+    return sorted({path.decode("utf-8", errors="strict")
+                   for path in completed.stdout.split(b"\0") if path})
 
 
 def _direct_impacts(gates: dict[str, Any], changed_paths: Iterable[str]) -> tuple[set[str], dict[str, list[str]]]:
@@ -195,7 +201,7 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     root = Path(args.root).resolve()
     changed = list(args.changed_file)
-    if args.base:
+    if args.base is not None:
         changed.extend(_git_changed_paths(root, args.base, args.head, args.mode))
     receipt = calculate_impact(root, changed, group=args.group, force=args.force)
     if args.github_output:

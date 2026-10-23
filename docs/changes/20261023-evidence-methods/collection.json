@@ -1,0 +1,37 @@
+{
+  "as_of": "2026-10-23",
+  "auto_actions": [],
+  "boundaries": {
+    "adk_modified": false,
+    "article_body_persisted": false,
+    "credentials_persisted": false,
+    "decision_generated": false,
+    "external_code_executed": false,
+    "live_runtime_modified": false,
+    "network_write": false,
+    "repository_modified": false
+  },
+  "candidate_count": 12,
+  "deduplicated_count": 0,
+  "jobs": [
+    {
+      "candidate_count": 12,
+      "deduplicated_count": 0,
+      "duration_ms": 3,
+      "error_code": null,
+      "id": "manual-collect",
+      "input_ref": "docs/changes/20261023-evidence-methods/source-metadata.jsonl",
+      "input_sha256": "4bad3191fac50362d3f30ff8290741cd258702c243ddb413da6e2d1e3b3372f6",
+      "mode": "manual",
+      "provider": "manual",
+      "rate_limit": {},
+      "request": null,
+      "status": "complete",
+      "transport": "ledger-only"
+    }
+  ],
+  "ledger_sha256": "0ba319379f12ee1b3d454fbd5ac622699d8b9ad1550173735cc71d3433de6010",
+  "mode": "report-only",
+  "schema": "external-practice-cycle-evidence/v1",
+  "status": "complete"
+}

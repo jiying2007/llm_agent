@@ -1,0 +1,212 @@
+{
+  "schema": "llm-agent-methods-independent-review/v1",
+  "subject_id": "20261023-evidence-methods",
+  "scope": "method-intake-and-adoption",
+  "owner": "leiwenjun",
+  "authors": [
+    "ai/root",
+    "ai/root/implement_gates"
+  ],
+  "reviewer": {
+    "id": "ai/root/external_methods",
+    "kind": "ai",
+    "implementation_independence": "independent",
+    "prior_source_research_participation": true
+  },
+  "reviewed_at": "2026-10-23T12:32:03Z",
+  "evidence_completed_at": "2026-10-23T12:31:17.999986Z",
+  "status": "pass",
+  "verdicts": {
+    "spec": "pass",
+    "quality": "pass"
+  },
+  "findings": [
+    {
+      "id": "METHODS-REVIEW-01",
+      "severity": "minor",
+      "disposition": "fixed",
+      "reason": "The existing manual collector now derives github.com owner/repository separately from the full resource URL. Independent public replay produces the frozen twelve-row ledger byte-for-byte; restoring only the four old full_name values reproduces the original entire ledger SHA-256. Candidate IDs, complete URLs, revisions, source metadata, decisions and trust boundaries remain unchanged.",
+      "evidence": [
+        "review-findings.md",
+        "evidence/independent-review-execution.json",
+        "evidence/independent-review-probes.py"
+      ]
+    }
+  ],
+  "assessed_boundaries": {
+    "source_count": 12,
+    "candidate_count": 12,
+    "decision_count": 12,
+    "matrix_row_count": 12,
+    "enhance_count": 9,
+    "observe_count": 3,
+    "observe_source_ids": [
+      "EXT-02",
+      "EXT-10",
+      "EXT-12"
+    ],
+    "candidate_trust": "unverified-metadata",
+    "candidate_review_status": "review-required",
+    "article_body_persisted": false,
+    "automatic_adoption": false,
+    "upstream_code_executed": false,
+    "new_paid_resources": false,
+    "hosted_platform_deprecation": "selection constraint only; static scanned scope has no active dependency found",
+    "workflow_lockfiles": "observe-only; public preview and Enterprise Cloud eligibility; keep full SHA pins; no new fees",
+    "matrix_done": "method or observation decision, documented operating steps and implementation mapping completed; does not assert runtime, field, effect or product qualification",
+    "engineering_outcome": "Four incorrect GitHub repository identities are corrected with all candidate bindings preserved.",
+    "actual_task_benefit": "not-measured",
+    "remote_delivery": "separate evidence required",
+    "product_release_authorized": false
+  },
+  "source_binding_kind": "sha256-file-snapshot",
+  "source_set_sha256": "fa0b05cf637db56fc0d2b7a48c2de2c10a0babf93a6081394f0f901d6080c167",
+  "sources": [
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/requirements.md",
+      "sha256": "caa6b8ff71120e6ab362ec8cc51c337bc3d06ecf2e5df6757553750c37a557cd"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/design.md",
+      "sha256": "a06522ed1fa37b273fa72d820b5a93302a6bc3f0885ac686bacbaab639666d4e"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/tasks.md",
+      "sha256": "8a1a4243f50fdb39c7442b1dfd096ea28ce4949d89de4fb7b400c38943f354e3"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/sources.json",
+      "sha256": "ba7da4f4bb46e59b835e0dc5dedfba487639b27d861100e6de305d9edfc692aa"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/source-metadata.jsonl",
+      "sha256": "4bad3191fac50362d3f30ff8290741cd258702c243ddb413da6e2d1e3b3372f6"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/candidates.jsonl",
+      "sha256": "0ba319379f12ee1b3d454fbd5ac622699d8b9ad1550173735cc71d3433de6010"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/collection.json",
+      "sha256": "4eb4e6743c8c699f60782431d380480c602b3c799fa9b1cd0a9b3c39f5de2320"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/decisions.jsonl",
+      "sha256": "3d3582391dc2fdf9fd79e67a9a3dbfc4174392df07965b7d0aac0e3294a4109b"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/owner-decision.md",
+      "sha256": "b0c1c6af3f247b10fb83582ea2b2a22ebc0fc201032b5957ff43fdbfafc5caaf"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/implementation-map.md",
+      "sha256": "6c3129d755e8eb90ba3f21efae0cdc9a8ea5c5e963d3b83b0ca4747e99426e92"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/negative-results.md",
+      "sha256": "431ea8d117b19eaf4388e2f5ea59a2a9b08bba518e32f33de4dbb9b1fa8e25f9"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/evidence/methods-review-01-implementation.json",
+      "sha256": "0c806bbd8a0063dde45db19a8a96a43340042a90263a7f3f53dc1da0b3a83f4f"
+    },
+    {
+      "base": "repository",
+      "path": "docs/runbooks/evidence-driven-optimization.md",
+      "sha256": "a539a3d38841b4568096c42fd274529a31365a8a8a30a485a4791f1a9de197aa"
+    },
+    {
+      "base": "repository",
+      "path": "manifests/external_practice_sources.json",
+      "sha256": "30631fb6937629bfe7a2cc1428773e20cf58058820bca8ca93107cd2fbe459ea"
+    },
+    {
+      "base": "repository",
+      "path": "subrepos/adoption-matrix.md",
+      "sha256": "8e33bf87ba1323ad194942537f510c758bd2c31181f68d1f85f23a93565b1c6b"
+    },
+    {
+      "base": "repository",
+      "path": "subrepos/adoption-matrix.jsonl",
+      "sha256": "65025c0dc8928e74f4d82462b6817e7d0542ad31fd1848780112b312e9bf492c"
+    },
+    {
+      "base": "repository",
+      "path": "tools/codex_assets/practice_intake.py",
+      "sha256": "9917a67e87c76419df23b7ab69dd3b1f8134f86de7d3eec80923a74e8fddabfb"
+    },
+    {
+      "base": "repository",
+      "path": "tools/codex_assets/intake_io.py",
+      "sha256": "2ccdd060dd64284aab8b1a39c4384de64879e278ed8ae3a7fe20ca974fc31e49"
+    },
+    {
+      "base": "repository",
+      "path": "scripts/practice-intake.sh",
+      "sha256": "c4fd70e1411558d9c8eed04cb7fa8ad8cc126232dea681b800ae00adebb6f998"
+    },
+    {
+      "base": "repository",
+      "path": "tests/test_external_practice_intake.sh",
+      "sha256": "c6196a4bd8c0ae45495436788f1c5cde1942aa7dab93be22f193a8118c139c89"
+    },
+    {
+      "base": "repository",
+      "path": "scripts/check-adoption-matrix-structured.sh",
+      "sha256": "e667d41e99f8bb80a190bf0fa1772968898e25b7ac4f60a85c812e55314bfcff"
+    },
+    {
+      "base": "repository",
+      "path": "scripts/export-adoption-matrix-jsonl.sh",
+      "sha256": "802e1fa030c5a119eda87f20937def013e120909cee55b8668e9092f7490916d"
+    },
+    {
+      "base": "repository",
+      "path": "scripts/check-adoption-matrix-status.sh",
+      "sha256": "76bf28768a2a9dd2c0be7fa973875a8a2a2e9f9764602340b075424e20cccdef"
+    },
+    {
+      "base": "repository",
+      "path": "scripts/check-adoption-real-assets.sh",
+      "sha256": "4b8691db4873c423e939cb6bbdafc68d4c6f9883982534ad58762205fc443cf8"
+    }
+  ],
+  "evidence": [
+    {
+      "base": "record",
+      "path": "review-findings.md",
+      "sha256": "64cb910798ed3817b57fa90cecc30e4f433d4ebd990c377dec21b1696b6bed26"
+    },
+    {
+      "base": "record",
+      "path": "evidence/independent-review-execution.json",
+      "sha256": "b4679c8aba80b5da61f91ff041d56264295b0726fb043f2481ed0ac3153b21fb"
+    },
+    {
+      "base": "record",
+      "path": "evidence/independent-review-probes.py",
+      "sha256": "a9bdb843bb1b95e8c5cf8eaef7fcce433f4bc34ac9b18a5d2b7a574646c2b17b"
+    }
+  ],
+  "limitations": [
+    "The reviewer participated in the initial external source research but did not implement this method-intake change. Independence applies to integration, mapping and boundary review, not a second independent upstream-source attestation.",
+    "This record binds actual reviewed file bytes. SHA-256 checks do not authenticate the reviewer, the owner, upstream identities, licenses or source statements.",
+    "The implementation fix is scoped to github.com repository derivation. GitLab and Gitee retain previous behavior; universal forge URL semantic correction is not claimed.",
+    "Deterministic collector replay, metadata regression and matrix checks do not measure real Agent task benefit, model cost, field behavior, G22, Native, LTA or Product M5.",
+    "Matrix value/cost/risk levels are design judgments. No causal performance gain, paid model evaluation, new framework or third-party runtime installation is asserted.",
+    "Complete integration gates, exact-commit CI, remote component release and Root promotion remain separately evidenced. Later ADK implementation/source metadata updates require their own appropriate review and do not gain authorization from this methods record.",
+    "The frozen tasks snapshot retains pending downstream review/delivery items and directs later status to separate review/CI/closure records. No source snapshot or task history was rewritten to fabricate delivery completion."
+  ]
+}

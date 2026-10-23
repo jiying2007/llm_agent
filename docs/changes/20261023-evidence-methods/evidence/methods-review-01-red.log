@@ -1,0 +1,4 @@
+[PASS] provider=manual status=complete candidates=8 ledger=/tmp/tmp.aX4NXXkXHC/manual-repository-boundaries.jsonl
+Traceback (most recent call last):
+  File "<stdin>", line 44, in <module>
+AssertionError: ('github-blob-first', 'example/agent/blob/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/first.md', 'example/agent')

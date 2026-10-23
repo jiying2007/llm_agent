@@ -1034,11 +1034,20 @@ def _manual_repository(url: str) -> Optional[Mapping[str, Any]]:
     host = parsed.hostname
     if host not in {"github.com", "gitlab.com", "gitee.com"}:
         return None
-    full_name = parsed.path.strip("/")
-    if full_name.endswith(".git"):
-        full_name = full_name[:-4]
-    if "/" not in full_name:
-        return None
+    if host == "github.com":
+        parts = [part for part in parsed.path.split("/") if part]
+        if len(parts) < 2:
+            return None
+        repository_name = parts[1].removesuffix(".git")
+        if not repository_name:
+            return None
+        full_name = "/".join((parts[0], repository_name))
+    else:
+        full_name = parsed.path.strip("/")
+        if full_name.endswith(".git"):
+            full_name = full_name[:-4]
+        if "/" not in full_name:
+            return None
     return {
         "full_name": full_name,
         "host": host,

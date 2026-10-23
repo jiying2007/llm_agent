@@ -1,0 +1,138 @@
+{
+  "schema": "llm-agent-independent-gate-review/v1",
+  "reviewed_at_utc": "2026-10-23T12:25:14Z",
+  "reviewer": "ai/root/remote_governance",
+  "implementation_author": "ai/root/implement_gates",
+  "review_kind": [
+    "spec",
+    "quality"
+  ],
+  "status": "pass",
+  "scope": "Root gate correctness repairs ROOT-R1/ROOT-R2/ROOT-R3 and independent finding ROOT-REVIEW-01; six source/test/manifest files only.",
+  "branch": "fix/audit-gates-20261023",
+  "base_commit": "7ba2d71e210955464839d5177c0f7d6a86ac072b",
+  "commit_binding": {
+    "state": "working-tree-bytes-reviewed",
+    "final_integrated_commit": null,
+    "requirement": "The parent must bind the final integrated commit to these same six file hashes, or request re-review for changed reviewed files."
+  },
+  "source_sha256": {
+    "tools/control_plane/impact.py": "73e4dddb9c984081ef6ae07cc9ac0182839f87e43181261067a89ce835a25392",
+    "tools/control_plane/gate_runner.py": "d4da8de1bf5140fa8830bb817e9ae5c97f0cba0bafcd3b551e586ae7ee038606",
+    "tools/control_plane/process_budget.py": "9173dd8a1d757cf07fd1d07206b952625ac77a72964f382850b45303607cf887",
+    "manifests/gates.json": "404d3857d05c79ed8dc310b201dde9d4f41eebb28b85bee172dc199bc58bedd5",
+    "tests/test_gate_boundaries.py": "f760ff8d89dec9fbec49dcee7d1c76ac0b58ed715adde16417424c35e4ab0e37",
+    "tests/test_gate_runner_contract.sh": "1aba4076782ea45cfbdddbe1e003c0d4ccfc12a60c59a6c9f8bd0a1e2b265d03"
+  },
+  "source_unchanged_during_probes": true,
+  "findings": [
+    {
+      "id": "ROOT-REVIEW-01",
+      "priority": "P2",
+      "status": "closed",
+      "title": "Explicit empty --base must not produce NOT_REQUIRED",
+      "initial_evidence": "docs/changes/20261023-gate-correctness/evidence/independent-review-initial.json",
+      "initial_evidence_sha256": "5f54c3eda37afb63a78374e2f0e156480470fcc496c42161adad7987c8856264",
+      "initial_record_preserved": true,
+      "resolution": "The implementer changed impact.main to test args.base is not None and added a public CLI regression. Omitted-base changed-file mode remains supported.",
+      "independently_verified": "Explicit empty base, nonexistent base and nonexistent head all return nonzero without stdout receipt or GitHub output; omitted base with an owned changed-file returns required=true.",
+      "closure_evidence": "docs/changes/20261023-gate-correctness/evidence/independent-review-probe-results.json",
+      "closure_probe": "cli_base_boundary"
+    }
+  ],
+  "open_findings": [],
+  "spec_checks": [
+    {
+      "requirement": "Git raw-path correctness and fail-closed comparison",
+      "status": "pass",
+      "evidence": "CLI three-dot comparison against a divergent base returned exactly five expected raw paths, including Unicode/tab/quote/literal-backslash/trailing-space and old/new rename surfaces; newline-containing names did not add GitHub output lines. Literal unowned names remained unowned. Non-UTF8 paths and invalid refs failed without emitting a receipt.",
+      "nul_scope": "Git filenames cannot contain NUL; the code uses Git's NUL framing to preserve filename boundaries. Real Git fixtures exercised that framing."
+    },
+    {
+      "requirement": "Bounded gate process lifecycle and output",
+      "status": "pass",
+      "evidence": "Exact 2 MiB stdout plus 64 KiB stderr succeeds; exceeding either limit by one byte fails with output-budget. A parent that already exited while a child retained inherited pipes failed with timeout in 1.0136 seconds and the child did not write its delayed marker. The output-overflow path failed in 0.0752 seconds and also removed the descendant.",
+      "boundary": "POSIX same-process-group cleanup only; deliberately detached sessions and Windows process trees are outside this reviewed guarantee."
+    },
+    {
+      "requirement": "No stale pass from production gates with undeclared inputs",
+      "status": "pass",
+      "evidence": "The manifest differs from the baseline only in exactly nine content-addressed -> disabled policies, with zero remaining content-addressed production gates. Disabled policy neither writes nor reads a same-key pass record; changing an undeclared dynamic input fails at unchanged HEAD even after inserting a pass record.",
+      "production_case": "The independently rerun boundary suite exercised real source-hygiene and gitlink gates after staged forbidden paths and gitlink removal at unchanged HEAD; cached and uncached paths fail and no cache hits are accepted."
+    },
+    {
+      "requirement": "Complete-input cache and established contracts remain usable",
+      "status": "pass",
+      "evidence": "A pure declared-input fixture misses, then hits, then invalidates and fails when the input changes. Nonzero exit, dependency blocking, malformed configurations/cache records, failure_lines=0 and receipt digest assertions pass in the 15-test suite. A stdout_sink consumer retains its exact-limit contract and rejects overflow; the old ProcessBudgetError(message) constructor remains valid.",
+      "limit": "This focused review does not substitute for the parent's integrated L3/full-regression evidence."
+    },
+    {
+      "requirement": "No new graph, capability, receipt or qualification authority",
+      "status": "pass",
+      "evidence": "All manifest fields other than the nine cache policies and all profile definitions match the baseline. Gate dependencies/capability checks and v2 receipt structure remain in place; the change does not grant runtime, product or release authority."
+    }
+  ],
+  "independent_validation": [
+    {
+      "name": "Reviewer-authored supplemental probes",
+      "script": "docs/changes/20261023-gate-correctness/evidence/independent-review-probes.py",
+      "script_sha256": "5737223cd1a2502d1e6711bcdaad151d30b41a857ddaef28b71d164d4174606f",
+      "command": "rtk bypass env PYTHONDONTWRITEBYTECODE=1 PATH=/workspace/scratch/694941d81014/tooling/venv/bin:/usr/local/bin:/usr/bin:/bin /workspace/scratch/694941d81014/tooling/venv/bin/python docs/changes/20261023-gate-correctness/evidence/independent-review-probes.py /workspace/scratch/694941d81014/llm_agent",
+      "started_at_utc": "2026-10-23T12:21:20.253217+00:00",
+      "completed_at_utc": "2026-10-23T12:21:25.591711+00:00",
+      "probe_groups": 8,
+      "passed": 8,
+      "exit_code": 0,
+      "result": "docs/changes/20261023-gate-correctness/evidence/independent-review-probe-results.json",
+      "result_sha256": "703ed5903224d255088509db950bc0b018b8e5f7dcdf40c98a7cff16ba25191d"
+    },
+    {
+      "name": "Independent rerun of implementer boundary suite",
+      "command": "rtk bypass env PYTHONDONTWRITEBYTECODE=1 PATH=/workspace/scratch/694941d81014/tooling/venv/bin:/usr/local/bin:/usr/bin:/bin /workspace/scratch/694941d81014/tooling/venv/bin/python -m unittest discover -s tests -p test_gate_boundaries.py -v",
+      "observation_window_utc": [
+        "2026-10-23T12:21:20Z",
+        "2026-10-23T12:21:26Z"
+      ],
+      "tests": 15,
+      "passed": 15,
+      "elapsed_seconds": 4.291,
+      "exit_code": 0,
+      "log": "docs/changes/20261023-gate-correctness/evidence/independent-review-boundary.log",
+      "log_sha256": "f7d77780d44ed3ad8275b0878133a2b114d0c15d24af46b294a18cd5f88c9aeb"
+    },
+    {
+      "name": "Scoped tracked diff whitespace check",
+      "command": "rtk bypass git diff --check -- tools/control_plane/impact.py tools/control_plane/gate_runner.py tools/control_plane/process_budget.py manifests/gates.json tests/test_gate_boundaries.py tests/test_gate_runner_contract.sh",
+      "exit_code": 0
+    }
+  ],
+  "supporting_publish_pin_review": {
+    "record": "docs/changes/20261023-gate-correctness/evidence/independent-review-publish-pin.json",
+    "record_sha256": "5a1cbd9419a4c4af91894bc455efcacf21c9bc43f2e0372bc58a32bd7da8c349",
+    "status": "read-only-checks-complete",
+    "local_workflows_matching_remote_main": 20,
+    "root_canonical_entrypoint": "scripts/promote-adk.sh -> tools.control_plane.adk_promotion",
+    "three_identity_entries": [
+      "agent-dev-kit (gitlink)",
+      "adk.lock",
+      "manifests/adk_interface.lock.json"
+    ],
+    "complete_transaction_entry_count": 6,
+    "automatic_root_pin_pr_workflow_found": false,
+    "current_open_root_pr_count": 0,
+    "remote_rulesets": {
+      "agent_dev_kit": 23394761,
+      "llm_agent": 23516987
+    },
+    "distinction": "Source/config checks and existing canonical workflow constraints only; no new release, remote signing run or Root pin apply was performed."
+  },
+  "evidence_boundaries": [
+    "No implementation, manifest or task-list modification was performed by this reviewer; only independent-review-* evidence files were added.",
+    "Other concurrent practice_intake, external methods and ADK changes are outside this six-file gate verdict and remain assigned to their independent owners/reviewers.",
+    "This is an independent local Spec/Quality PASS for the bound bytes. The parent still owns integrated L3 checks, final commit binding, protected PR checks and fresh-main evidence.",
+    "The 47 existing bounded-I/O regressions and pre-review production contract run were read from implementer evidence; they were not rerun by this reviewer and are not counted in the independent 15 tests or eight supplemental probe groups.",
+    "No canonical Knowledge Provider or Execution Policy PASS is manufactured. Their availability/final gate remains parent-owned; this record is review evidence rather than a replacement policy authority.",
+    "No remote mutation, workflow dispatch, publish, paid model run, runtime qualification, real-effect claim or product/release authorization occurred.",
+    "The initial changes-requested record remains unchanged as historical evidence; this final record closes its sole finding after independent recheck."
+  ]
+}

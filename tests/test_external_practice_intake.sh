@@ -75,6 +75,60 @@ done
   --evidence-out "${TMP_DIR}/manual-evidence.json" >/dev/null
 "${CLI}" check --kind candidate --input "${TMP_DIR}/manual.jsonl" >/dev/null
 
+python3 - "${CLI}" "${TMP_DIR}" "${AS_OF}" <<'PY'
+import json
+import pathlib
+import subprocess
+import sys
+
+cli, directory, as_of = sys.argv[1:]
+root = pathlib.Path(directory)
+revision = "a" * 40
+first = f"https://github.com/example/agent/blob/{revision}/first.md"
+second = f"https://github.com/example/agent/blob/{revision}/second.md"
+git_blob = f"https://github.com/example/agent.git/blob/{revision}/third.md"
+gitlab_blob = f"https://gitlab.com/group/subgroup/agent/-/blob/{revision}/guide.md"
+cases = [
+    ("github-repo", "https://github.com/example/agent.git", "https://github.com/example/agent", "example/agent"),
+    ("github-blob-first", first, first, "example/agent"),
+    ("github-blob-second", second, second, "example/agent"),
+    ("github-git-blob", git_blob, git_blob, "example/agent"),
+    ("github-owner-only", "https://github.com/example", "https://github.com/example", None),
+    ("gitlab-subgroup", "https://gitlab.com/group/subgroup/agent.git",
+     "https://gitlab.com/group/subgroup/agent", "group/subgroup/agent"),
+    ("gitlab-blob", gitlab_blob, gitlab_blob, f"group/subgroup/agent/-/blob/{revision}/guide.md"),
+    ("gitee-repo", "https://gitee.com/example/agent", "https://gitee.com/example/agent", "example/agent"),
+]
+source = root / "manual-repository-boundaries-input.jsonl"
+source.write_text("".join(
+    json.dumps({"source_id": name, "url": raw_url, "revision": revision}) + "\n"
+    for name, raw_url, _, _ in cases
+), encoding="utf-8")
+ledger = root / "manual-repository-boundaries.jsonl"
+evidence = root / "manual-repository-boundaries-evidence.json"
+subprocess.run([
+    cli, "collect", "--provider", "manual", "--input", str(source), "--as-of", as_of,
+    "--out", str(ledger), "--evidence-out", str(evidence),
+], check=True, timeout=30)
+rows = {row["source_id"]: row for row in (
+    json.loads(line) for line in ledger.read_text(encoding="utf-8").splitlines()
+)}
+assert len(rows) == len(cases), rows
+for name, _, canonical_url, full_name in cases:
+    row = rows[name]
+    assert row["canonical_url"] == canonical_url, row
+    assert row["revision"] == revision, row
+    actual_name = row["repository"]["full_name"] if row["repository"] is not None else None
+    assert actual_name == full_name, (name, actual_name, full_name)
+    assert row["review_status"] == "review-required", row
+    assert row["trust_status"] == "unverified-metadata", row
+    assert row["body_persisted"] is False and row["auto_actions"] == [], row
+assert rows["github-blob-first"]["candidate_id"] == "epc-3b500ac488ee880804db"
+assert rows["github-blob-second"]["candidate_id"] == "epc-0e822f9edbb1ea4e36e0"
+assert rows["github-blob-first"]["candidate_id"] != rows["github-blob-second"]["candidate_id"]
+print("[PASS] manual repository identity, file URL/revision and candidate ID boundaries")
+PY
+
 if GITEE_TOKEN="fixture-secret-must-not-leak" "${CLI}" collect \
   --provider gitee \
   --query agent \

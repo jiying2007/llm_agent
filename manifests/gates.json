@@ -17,7 +17,7 @@
         "integration-deep"
       ],
       "outputs": [],
-      "cache_policy": "content-addressed",
+      "cache_policy": "disabled",
       "argv": [
         "bash",
         "scripts/check-adk-lock.sh",
@@ -42,7 +42,7 @@
         "integration-deep"
       ],
       "outputs": [],
-      "cache_policy": "content-addressed",
+      "cache_policy": "disabled",
       "argv": [
         "python3",
         "-m",
@@ -69,7 +69,7 @@
         "integration-deep"
       ],
       "outputs": [],
-      "cache_policy": "content-addressed",
+      "cache_policy": "disabled",
       "argv": [
         "python3",
         "-m",
@@ -91,7 +91,7 @@
         "tools/control_plane/reference_pins.py"
       ],
       "outputs": [],
-      "cache_policy": "content-addressed",
+      "cache_policy": "disabled",
       "argv": [
         "python3",
         "-m",
@@ -113,7 +113,7 @@
         ".gitignore"
       ],
       "outputs": [],
-      "cache_policy": "content-addressed",
+      "cache_policy": "disabled",
       "argv": [
         "python3",
         "-m",
@@ -142,7 +142,7 @@
         "integration-deep"
       ],
       "outputs": [],
-      "cache_policy": "content-addressed",
+      "cache_policy": "disabled",
       "argv": [
         "python3",
         "-m",
@@ -167,7 +167,7 @@
         "tools/control_plane/active_contracts.py"
       ],
       "outputs": [],
-      "cache_policy": "content-addressed",
+      "cache_policy": "disabled",
       "argv": [
         "python3",
         "-m",
@@ -448,7 +448,7 @@
         "integration-deep"
       ],
       "outputs": [],
-      "cache_policy": "content-addressed",
+      "cache_policy": "disabled",
       "argv": [
         "bash",
         "scripts/check-codex-lock.sh",
@@ -475,7 +475,7 @@
         "integration-deep"
       ],
       "outputs": [],
-      "cache_policy": "content-addressed",
+      "cache_policy": "disabled",
       "argv": [
         "python3",
         "-m",
