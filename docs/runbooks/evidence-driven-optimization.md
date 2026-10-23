@@ -46,6 +46,8 @@ checkpoint 只能保存已记录状态；未确认的外部副作用不自动具
 
 ## 7. 关闭与复审
 
+candidate/decision ledger 保留全部来源与选择；生产 adoption matrix 只投影符合现有生产 intake 合同的真实资产承接。单纯研究方法或选型观察留在 decision、implementation map 和 runbook，不因已写说明就登记生产 done。生产 adopt 必须具有 ADK/Codex 真实落点；observe intake 如需进入生产矩阵，仍须通过原 Agent/Skill/Workflow 深度、报告和退出条件检查。不得用尾注改变 done 的既有含义。
+
 工程变更的关闭证据包括：原失败样例、修复后结果、正常控制、独立 Spec/Quality 审核、精确 SHA CI、实际发布/接入读回。没有执行的环节记录 not-run，不补造签名、测量或现场事件。
 
 方法复审沿已有工作节奏进行，建议下一次变更或 2026-11-22 之前核对时效。若出现重复能力、无可验证增益、成本超约束或副作用不收敛，停止推广并按原 change 回退/退役。这个复审日期不是已创建的定时任务。

@@ -1,0 +1,358 @@
+{
+  "schema": "llm-agent-methods-independent-review/v1",
+  "subject_id": "20261023-evidence-methods",
+  "scope": "production-projection-correction",
+  "owner": "leiwenjun",
+  "authors": [
+    "ai/root"
+  ],
+  "reviewer": {
+    "id": "ai/root/architecture_audit",
+    "kind": "ai",
+    "implementation_independence": "independent",
+    "prior_related_adk_review_participation": true,
+    "scope_note": "The reviewer did not implement the six-file Root projection correction. Prior ADK path, release and Root integration review is disclosed; this is not a second full upstream-source attestation."
+  },
+  "reviewed_at": "2026-10-23T13:53:51Z",
+  "evidence_completed_at": "2026-10-23T13:49:54.969229+00:00",
+  "status": "pass",
+  "verdicts": {
+    "spec": "pass",
+    "quality": "pass"
+  },
+  "reviewed_parent_head": "9fd3324b3142990a8351b4b3949941f4c70c2e59",
+  "reviewed_parent_remote_head": "bc6f7a093ef61f0701fea6acef7b0f2ae217e9d5",
+  "reviewed_parent_tree": "7ea992639a9a2b941c10d454283601a2bc88ca84",
+  "implementation_commit_at_review": "not-yet-created",
+  "findings": [
+    {
+      "id": "METHODS-PROJECTION-01",
+      "severity": "major",
+      "disposition": "fixed",
+      "reason": "The previous twelve llm_agent/done rows conflicted with the existing production intake contract. Only EXT-06, EXT-08, EXT-09 and EXT-11 now project real published ADK implementation into adopt/done/agent-dev-kit. Five research ENHANCE methods and three OBSERVE selections retain their original candidate and decision records without claiming production intake completion. The original upstream and observe gates pass independently.",
+      "evidence": [
+        "review-projection-correction-findings.md",
+        "evidence/projection-correction-independent-execution.json"
+      ]
+    },
+    {
+      "id": "METHODS-PROJECTION-02",
+      "severity": "minor",
+      "disposition": "fixed",
+      "reason": "The production matrix changes the adoption_decision artifact hash. The fixture changes only that field, matches the canonical planner object, passes the unchanged regression, and the prior hash is still rejected by the unchanged validator with exit 2.",
+      "evidence": [
+        "review-projection-correction-findings.md",
+        "evidence/projection-correction-independent-execution.json"
+      ]
+    }
+  ],
+  "assessed_boundaries": {
+    "source_count": 12,
+    "candidate_count": 12,
+    "decision_count": 12,
+    "enhance_count": 9,
+    "observe_count": 3,
+    "production_method_count": 4,
+    "production_source_ids": [
+      "EXT-06",
+      "EXT-08",
+      "EXT-09",
+      "EXT-11"
+    ],
+    "research_enhance_source_ids": [
+      "EXT-01",
+      "EXT-03",
+      "EXT-04",
+      "EXT-05",
+      "EXT-07"
+    ],
+    "observe_source_ids": [
+      "EXT-02",
+      "EXT-10",
+      "EXT-12"
+    ],
+    "matrix_total_rows_before": 218,
+    "matrix_total_rows_after": 210,
+    "other_matrix_rows_unchanged": true,
+    "candidate_ids_and_decisions_preserved": true,
+    "candidate_trust": "unverified-metadata",
+    "candidate_review_status": "review-required",
+    "article_body_persisted": false,
+    "automatic_adoption": false,
+    "upstream_code_executed": false,
+    "new_paid_resources": false,
+    "published_adk_commit": "415590db44e88979185efb850e2339a3f95411ef",
+    "published_adk_tree": "51d400e80ba555a49ca85fcfefbd74f7fe499072",
+    "asw_semantics": "Existing responsibility contracts read and mapped to actual published implementation; no new ASW execution receipt and no claim that every workflow step ran.",
+    "canonical_export_byte_match": true,
+    "removal_fixture_canonical_object_match": true,
+    "removal_prior_digest_rejected": true,
+    "relevant_guard_and_validator_files_unchanged": 15,
+    "preserved_history_files_unchanged": 14,
+    "original_required_entrypoints_passed": 7,
+    "total_independent_command_invocations": 10,
+    "actual_task_benefit": "not-measured",
+    "product_release_authorized": false,
+    "future_commit_and_ci": "separate exact-identity evidence required",
+    "existing_dirty_and_m5_quick_blockers": "unchanged; targeted passes do not imply full quick or current product qualification"
+  },
+  "source_binding_kind": "sha256-file-snapshot",
+  "source_set_serialization": "UTF-8 JSON of the sources array with sort_keys=true, separators=(',', ':'), ensure_ascii=false; includes base, path, bytes and sha256.",
+  "source_set_sha256": "afcff8336de94f6277f6d06350995ac37a5ac9f0178615fd8645b6ee2fc82284",
+  "sources": [
+    {
+      "base": "repository",
+      "path": "subrepos/adoption-matrix.md",
+      "bytes": 85486,
+      "sha256": "46ca2f731f41b4ab2ad8422bc0eba996749404e8528a37117e4794e0f3e2fcb2"
+    },
+    {
+      "base": "repository",
+      "path": "subrepos/adoption-matrix.jsonl",
+      "bytes": 103809,
+      "sha256": "8e7bda3478a4ee15328aa269622724946b155d6a970fe95099bf1e89d1cc7e00"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/implementation-map.md",
+      "bytes": 7721,
+      "sha256": "c84300d2e6f21f7986bdd4eaef6fb8f9a9ff9a0e4d29c8ba27876a355148708c"
+    },
+    {
+      "base": "repository",
+      "path": "docs/runbooks/evidence-driven-optimization.md",
+      "bytes": 4858,
+      "sha256": "821f69318d9608b6f96fc13406707eee2d3040bdfc251e48133063d5f6666ffa"
+    },
+    {
+      "base": "repository",
+      "path": "reports/evidence-methods-absorption-2026-10-23.md",
+      "bytes": 10280,
+      "sha256": "50662a903fe77a7915265025f45ab3a62bff4dfccf825b4649c9c034451239f4"
+    },
+    {
+      "base": "repository",
+      "path": "fixtures/reference-repository/removal/pass/removal-plan.json",
+      "bytes": 2327,
+      "sha256": "b12a3bc22d44f2e550c66bade3b4a946ea928651903b487036949cbd77434a3f"
+    }
+  ],
+  "context_binding_location": "evidence/projection-correction-independent-execution.json: unchanged_guards, preserved_history and published_adk.source_bindings",
+  "evidence": [
+    {
+      "base": "record",
+      "path": "evidence/projection-correction-independent-execution.json",
+      "bytes": 23245,
+      "sha256": "2e1c1c3f9e2d3c5366ff4e28ce9087f12d83ce7904d65c1e0c52a33d048ad617"
+    },
+    {
+      "base": "record",
+      "path": "review-projection-correction-findings.md",
+      "bytes": 6707,
+      "sha256": "d22660328b7f785ed0b814cf2e762deca8843837af85ab3f3023a7486ad99d98"
+    }
+  ],
+  "executions": [
+    {
+      "argv": [
+        "/workspace/scratch/694941d81014/tooling/rtk",
+        "bypass",
+        "bash",
+        "scripts/check-upstream-intake-readiness.sh",
+        "."
+      ],
+      "cwd": "/workspace/scratch/694941d81014/llm_agent",
+      "started_at": "2026-10-23T13:49:48.728376+00:00",
+      "completed_at": "2026-10-23T13:49:48.816533+00:00",
+      "returncode": 0,
+      "expected_returncode": 0,
+      "stdout": "[PASS] upstream intake readiness checks passed (164 adopt rows)\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/694941d81014/tooling/rtk",
+        "bypass",
+        "bash",
+        "scripts/check-observe-intake-depth.sh",
+        "."
+      ],
+      "cwd": "/workspace/scratch/694941d81014/llm_agent",
+      "started_at": "2026-10-23T13:49:48.816729+00:00",
+      "completed_at": "2026-10-23T13:49:48.830345+00:00",
+      "returncode": 0,
+      "expected_returncode": 0,
+      "stdout": "[PASS] observe intake depth checks passed (11 rows)\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/694941d81014/tooling/rtk",
+        "bypass",
+        "bash",
+        "scripts/check-adoption-matrix-structured.sh",
+        "."
+      ],
+      "cwd": "/workspace/scratch/694941d81014/llm_agent",
+      "started_at": "2026-10-23T13:49:48.830524+00:00",
+      "completed_at": "2026-10-23T13:49:48.897651+00:00",
+      "returncode": 0,
+      "expected_returncode": 0,
+      "stdout": "[PASS] structured adoption matrix synchronized\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/694941d81014/tooling/rtk",
+        "bypass",
+        "bash",
+        "scripts/check-adoption-matrix-status.sh",
+        "."
+      ],
+      "cwd": "/workspace/scratch/694941d81014/llm_agent",
+      "started_at": "2026-10-23T13:49:48.897869+00:00",
+      "completed_at": "2026-10-23T13:49:48.921228+00:00",
+      "returncode": 0,
+      "expected_returncode": 0,
+      "stdout": "[PASS] adoption-matrix status checks passed\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/694941d81014/tooling/rtk",
+        "bypass",
+        "bash",
+        "scripts/check-adoption-evidence-integrity.sh",
+        "."
+      ],
+      "cwd": "/workspace/scratch/694941d81014/llm_agent",
+      "started_at": "2026-10-23T13:49:48.921757+00:00",
+      "completed_at": "2026-10-23T13:49:53.541136+00:00",
+      "returncode": 0,
+      "expected_returncode": 0,
+      "stdout": "[PASS] adoption evidence integrity checks passed (rows=210 paths=621)\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/694941d81014/tooling/rtk",
+        "bypass",
+        "bash",
+        "scripts/check-adoption-real-assets.sh",
+        ".",
+        "--summary-json"
+      ],
+      "cwd": "/workspace/scratch/694941d81014/llm_agent",
+      "started_at": "2026-10-23T13:49:53.541696+00:00",
+      "completed_at": "2026-10-23T13:49:53.579501+00:00",
+      "returncode": 0,
+      "expected_returncode": 0,
+      "stdout": "{\"status\":\"pass\",\"checked\":234,\"real_asset_ok\":233,\"matrix_asset_exceptions\":1,\"failures\":[]}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/694941d81014/tooling/rtk",
+        "bypass",
+        "bash",
+        "tests/test_reference_repository_removal.sh"
+      ],
+      "cwd": "/workspace/scratch/694941d81014/llm_agent",
+      "started_at": "2026-10-23T13:49:53.579646+00:00",
+      "completed_at": "2026-10-23T13:49:54.555760+00:00",
+      "returncode": 0,
+      "expected_returncode": 0,
+      "stdout": "[PASS] reference repository removal plans are hashed, dry-run, and non-destructive\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/694941d81014/tooling/rtk",
+        "bypass",
+        "bash",
+        "scripts/export-adoption-matrix-jsonl.sh",
+        ".",
+        "/workspace/scratch/694941d81014/closure20261023/root-methods-projection-independent/canonical-adoption-matrix.jsonl"
+      ],
+      "cwd": "/workspace/scratch/694941d81014/llm_agent",
+      "started_at": "2026-10-23T13:49:54.555970+00:00",
+      "completed_at": "2026-10-23T13:49:54.571324+00:00",
+      "returncode": 0,
+      "expected_returncode": 0,
+      "stdout": "[OK] adoption matrix jsonl exported: /workspace/scratch/694941d81014/closure20261023/root-methods-projection-independent/canonical-adoption-matrix.jsonl\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/694941d81014/tooling/rtk",
+        "bypass",
+        "/workspace/scratch/694941d81014/tooling/venv/bin/python",
+        "-m",
+        "tools.codex_assets.reference_repository",
+        "--root",
+        "/workspace/scratch/694941d81014/llm_agent",
+        "plan-removal",
+        "--repo",
+        "codex",
+        "--as-of",
+        "2026-07-19",
+        "--adoption-decision",
+        "subrepos/adoption-matrix.md",
+        "--evidence-dependency-scan",
+        "reports/subrepo-removal-plan-codex-2026-06-16.md",
+        "--dirty-baseline-review",
+        "subrepos/dirty-baseline.tsv",
+        "--rollback-plan",
+        "reports/subrepo-removal-plan-codex-2026-06-16.md",
+        "--out-json",
+        "/workspace/scratch/694941d81014/closure20261023/root-methods-projection-independent/canonical-removal-plan.json",
+        "--out-md",
+        "/workspace/scratch/694941d81014/closure20261023/root-methods-projection-independent/canonical-removal-plan.md"
+      ],
+      "cwd": "/workspace/scratch/694941d81014/llm_agent",
+      "started_at": "2026-10-23T13:49:54.579888+00:00",
+      "completed_at": "2026-10-23T13:49:54.764908+00:00",
+      "returncode": 0,
+      "expected_returncode": 0,
+      "stdout": "[PASS] reference repository removal dry-run plan written: /workspace/scratch/694941d81014/closure20261023/root-methods-projection-independent/canonical-removal-plan.json\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/694941d81014/tooling/rtk",
+        "bypass",
+        "/workspace/scratch/694941d81014/tooling/venv/bin/python",
+        "-m",
+        "tools.codex_assets.reference_repository",
+        "--root",
+        "/workspace/scratch/694941d81014/llm_agent",
+        "check-removal",
+        "--plan",
+        "/workspace/scratch/694941d81014/closure20261023/root-methods-projection-independent/prior-removal-fixture.json",
+        "--no-fixtures",
+        "--summary-json"
+      ],
+      "cwd": "/workspace/scratch/694941d81014/llm_agent",
+      "started_at": "2026-10-23T13:49:54.773491+00:00",
+      "completed_at": "2026-10-23T13:49:54.966027+00:00",
+      "returncode": 2,
+      "expected_returncode": 2,
+      "stdout": "{\"checked\": 0, \"failures\": 1, \"status\": \"fail\"}\n",
+      "stderr": "[FAIL] /workspace/scratch/694941d81014/closure20261023/root-methods-projection-independent/prior-removal-fixture.json: reference repository removal artifact hash is stale\n"
+    }
+  ],
+  "historical_review": {
+    "path": "review-evidence.json",
+    "sha256": "ade3d294f05deb506fc9d72ff8f0be53feee2346d420372ba05b02139fa83a4f",
+    "disposition": "preserved-byte-identical historical snapshot; its former twelve-row production projection conclusion and omitted two intake gates are not inherited as acceptance of the corrected matrix"
+  },
+  "limitations": [
+    "This record binds the actual frozen source files before their implementation commit. It neither invents that commit nor proves future PR/main checks or authorizes merge.",
+    "SHA-256 bindings establish file identity and internal consistency, not reviewer authentication, upstream identity, license validity or the truth of every source statement.",
+    "Related published ADK files were read for semantic mapping and matched to commit 415590db44e88979185efb850e2339a3f95411ef. No additional ADK build, test suite or Harness/source review renewal was performed or required for this Root-only metadata correction.",
+    "Existing ASW contracts are responsibility references. This review did not execute all ASW workflow steps, download or run third-party Skill bodies, make paid model calls, measure task benefit, or certify runtime, field or Product M5 readiness.",
+    "The five research ENHANCE and three OBSERVE decisions remain in the original ledger/map with their actual limits; removing their production rows does not change the canonical nine/three decision counts.",
+    "Existing dirty-triage expiry and historical Product M5/current candidate mismatch remain governed by their original checks. No dates, qualification policies, validators or tests were loosened, and no full quick green result is asserted.",
+    "Old source, task, review and execution records remain historical byte-for-byte. This additive review corrects the production projection claim without rewriting prior outcomes."
+  ]
+}
