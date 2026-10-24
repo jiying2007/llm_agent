@@ -1,0 +1,571 @@
+{
+  "reviewer": "ai/root/adk_code_audit",
+  "recorded_at": "2026-10-24T17:28:21.976213+00:00",
+  "scope": "Root canonical six-path ADK 8.0.40 promotion; identity and evidence binding, not an independent ADK F1 implementation review",
+  "base_commit": "33878cc1dac2faa28a32f4899afa7e0397fe1d0f",
+  "base_tree": "86bb51390add584478bea6e1ca09edeb3c2f82c6",
+  "head_commit": "4de6364d18d65d3ae43364dc4625a0c2c4be3bb6",
+  "head_tree": "e1b213fe444c5d5cdeeac1381b3a05f6a56762f9",
+  "main_base": "9c5dd7840548a36dd78969e5fd7dbd208cf78a21",
+  "repository_clean": true,
+  "source_refs": [
+    {
+      "path": "adk.lock",
+      "mode": "100644",
+      "git_type": "blob",
+      "object_id": "337ead36133f2f1a0d722c6524d464b889d0c3dd",
+      "bytes": 271,
+      "sha256": "5c518db684b00d084d486eb6c3e55d5f5b41a15d2f8750d006667eca269254d5"
+    },
+    {
+      "path": "agent-dev-kit",
+      "mode": "160000",
+      "git_type": "commit",
+      "object_id": "80ba8954c7d9f6225a2c5a4a2f0d805e8eb157c4"
+    },
+    {
+      "path": "manifests/adk_interface.lock.json",
+      "mode": "100644",
+      "git_type": "blob",
+      "object_id": "b87f177f346942e6862f051ef43ccdb6beae5dda",
+      "bytes": 1252,
+      "sha256": "3d92a1d27f6c2df2da24399146e48ed4b3edee8ea26709120381b94faa2adf93"
+    },
+    {
+      "path": "reports/current-status.md",
+      "mode": "100644",
+      "git_type": "blob",
+      "object_id": "63aa9197cef7d7b6423c7ae0bc07d606aef147f7",
+      "bytes": 5839,
+      "sha256": "6444497fd1ad3057966ca6a2f3527b50ab33aafb540cce1aa180278b2819a319"
+    },
+    {
+      "path": "reports/promotion/agent-dev-kit/promotion-attestation.json",
+      "mode": "100644",
+      "git_type": "blob",
+      "object_id": "b9d504e81f77b34ff09a92acc9e254afed100f47",
+      "bytes": 10353,
+      "sha256": "e93dc0fb335dc6b68cf668a70d11003bcf8c02f0c6b3a18e554397629da19b1a"
+    },
+    {
+      "path": "reports/promotion/agent-dev-kit/promotion-evidence.json",
+      "mode": "100644",
+      "git_type": "blob",
+      "object_id": "6e7879280d787937840faac6887aa7511581a7cb",
+      "bytes": 1648,
+      "sha256": "20fe84342225f36fdd9f4e79105bcb8d5f390bf1392419d4a3e5cd3373481904"
+    }
+  ],
+  "frozen_planning_refs": [
+    {
+      "path": "docs/changes/20261024-audit-delivery/requirements.md",
+      "git_blob": "b77701ff50a9037cc222f30aef66d8a59abdae56",
+      "bytes": 2002,
+      "sha256": "2e9428ac6f13cf0f267750ef39427c69dbffb01b36986d4eaec77aa4db52809c"
+    },
+    {
+      "path": "docs/changes/20261024-audit-delivery/design.md",
+      "git_blob": "b920d00438a04c7bfc0b376f8f4f18b2164b3896",
+      "bytes": 1381,
+      "sha256": "e52ab30e7e295e5ff063d2483c365e5b81ffdfa473806ad6091cbd04f6328708"
+    },
+    {
+      "path": "docs/changes/20261024-audit-delivery/tasks.md",
+      "git_blob": "d479fe63db1ab1ed5e2001905074b1344b42432a",
+      "bytes": 583,
+      "sha256": "daf8a1812613d87f0143017f2b17dc460b6af1cb87247ed98f9a6dd1f6cbf325"
+    }
+  ],
+  "patch": {
+    "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root8040/six-path-promotion.patch",
+    "bytes": 26331,
+    "sha256": "474a166f9f082fc2474bb514b5c807a34d680f975ee2f9901d39d8df331b37f8",
+    "argv": [
+      "git",
+      "diff",
+      "--binary",
+      "--full-index",
+      "--no-ext-diff",
+      "33878cc1dac2faa28a32f4899afa7e0397fe1d0f",
+      "4de6364d18d65d3ae43364dc4625a0c2c4be3bb6"
+    ]
+  },
+  "remote_observations": {
+    "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root8040/github-observations.json",
+    "bytes": 65590,
+    "sha256": "6eaee5dfe7192f4d25ac79e8885b349c2d4d48329268cd1c5a9e04b43ce824b6"
+  },
+  "remote_observed_at": "2026-10-24T17:21:54.730Z",
+  "adk_candidate": {
+    "commit": "80ba8954c7d9f6225a2c5a4a2f0d805e8eb157c4",
+    "tree": "cda8f8223beb236bebb08df17908168a883fad90",
+    "manifest_blob": "6cfa5195870bfec04ca5f298661c8fa531d649c8",
+    "version": "8.0.40"
+  },
+  "main_ci": {
+    "run_id": 40114372768,
+    "head": "80ba8954c7d9f6225a2c5a4a2f0d805e8eb157c4",
+    "jobs": 9,
+    "success": 9
+  },
+  "release": {
+    "id": 422869029,
+    "tag": "v8.0.40",
+    "immutable": true
+  },
+  "promotion_zip": {
+    "path": "/workspace/scratch/712af632e2a5/apply20261024/github/adk8040-promotion-40114372768.zip",
+    "bytes": 8108,
+    "sha256": "61ea192d400614bb5a3ece26ad60d3f845ed374df44e98328e9f42b346045b46"
+  },
+  "promotion_zip_api_artifact": 12567828449,
+  "signed_json_and_attestation_preserved_byte_for_byte": true,
+  "official_assets": [
+    {
+      "asset_id": 672837029,
+      "official": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/official/agent-dev-kit-8.0.40.tar.gz",
+        "bytes": 2768685,
+        "sha256": "b5e6220337bc34d326bfaa781a23cf144e1689be8c65d997cda3caac539f9196"
+      },
+      "rebuilt": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/rebuilt/agent-dev-kit-8.0.40.tar.gz",
+        "bytes": 2768685,
+        "sha256": "b5e6220337bc34d326bfaa781a23cf144e1689be8c65d997cda3caac539f9196"
+      },
+      "api_digest": "sha256:b5e6220337bc34d326bfaa781a23cf144e1689be8c65d997cda3caac539f9196",
+      "bytes_equal": true
+    },
+    {
+      "asset_id": 672837028,
+      "official": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/official/agent-dev-kit-8.0.40.tar.gz.sha256",
+        "bytes": 94,
+        "sha256": "a48f8f606fc1136b7e682833c61504b4272b2a94685a7928b13d40eb049e2796"
+      },
+      "rebuilt": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/rebuilt/agent-dev-kit-8.0.40.tar.gz.sha256",
+        "bytes": 94,
+        "sha256": "a48f8f606fc1136b7e682833c61504b4272b2a94685a7928b13d40eb049e2796"
+      },
+      "api_digest": "sha256:a48f8f606fc1136b7e682833c61504b4272b2a94685a7928b13d40eb049e2796",
+      "bytes_equal": true
+    },
+    {
+      "asset_id": 672837030,
+      "official": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/official/release-contract.json",
+        "bytes": 592,
+        "sha256": "3349c4feb92c5ff3906bf50ede0df0413ba8ebf43139187b976026d5c7d1c39a"
+      },
+      "rebuilt": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/rebuilt/release-contract.json",
+        "bytes": 592,
+        "sha256": "3349c4feb92c5ff3906bf50ede0df0413ba8ebf43139187b976026d5c7d1c39a"
+      },
+      "api_digest": "sha256:3349c4feb92c5ff3906bf50ede0df0413ba8ebf43139187b976026d5c7d1c39a",
+      "bytes_equal": true
+    }
+  ],
+  "source_manifest_digest": {
+    "raw_sha256": "1b02751baa1ebad3070ddc156b258b384a907bee44637bfdcc5f36e44a6799f6",
+    "canonical_manifest_sha256": "9139c22ad2800a8e0dd8d382372942472bed4558808532f61664c01d6ac16a45",
+    "canonical_owner": "agent_dev_kit.distribution.release_contract._canonical_manifest_sha256"
+  },
+  "interface_contract_outside_identity_unchanged": true,
+  "current_status_outside_five_source_projection_lines_unchanged": true,
+  "promotion_receipts": [
+    {
+      "artifact": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/root8040-promotion-dry-run-receipt.json",
+        "bytes": 1390,
+        "sha256": "a673fc96c96d3a705ae692ae8b53b91c8f8f2d2feb04e62678de9f345192ae2c"
+      },
+      "original_status": "planned",
+      "receipt_sha256": "ca129338f312249ed9af44906ce63768796b7acee3666daef4742c104f520574"
+    },
+    {
+      "artifact": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/root8040-promotion-apply-receipt.json",
+        "bytes": 1609,
+        "sha256": "4fe37b662f8e775e339ded994bcf18c0b1b3dcd6f7bc0704f6e77aba5c601a86"
+      },
+      "original_status": "applied-not-verified",
+      "receipt_sha256": "f82719ba2dc30f1aeb8dfe7cc86f5faaa4f32ed2f0f384a41d32f92463e6ab69"
+    }
+  ],
+  "original_promotion_executions": [
+    {
+      "label": "root8040-promotion-dry-run",
+      "record": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/root8040-promotion-dry-run.json",
+        "bytes": 3226,
+        "sha256": "36f4f5e679f7399b30f2e81f44271d3c9cf710a02c7b18bc1cd0915897be5a63"
+      },
+      "stdout": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/root8040-promotion-dry-run.stdout",
+        "bytes": 1442,
+        "sha256": "281acb53649a6a8b16b8f60cd00fb822b648fe0e69671f39ef8598a8e52a77bd"
+      },
+      "stderr": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/root8040-promotion-dry-run.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "started_at": "2026-10-24T17:13:36.284410+00:00",
+      "completed_at": "2026-10-24T17:13:36.433070+00:00",
+      "exit_code": 0,
+      "snapshot_stable": true,
+      "argv": [
+        "python3",
+        "-m",
+        "tools.control_plane.adk_promotion",
+        "--root",
+        ".",
+        "--candidate-dir",
+        "agent-dev-kit",
+        "--ref",
+        "80ba8954c7d9f6225a2c5a4a2f0d805e8eb157c4",
+        "--updated-at",
+        "2026-10-24",
+        "--promotion-evidence",
+        "/workspace/scratch/712af632e2a5/apply20261024/github/adk8040-promotion-40114372768/promotion-evidence.json",
+        "--promotion-attestation",
+        "/workspace/scratch/712af632e2a5/apply20261024/github/adk8040-promotion-40114372768/promotion-attestation.json",
+        "--receipt-out",
+        "/workspace/scratch/712af632e2a5/apply20261024/root8040-promotion-dry-run-receipt.json",
+        "--summary-json"
+      ]
+    },
+    {
+      "label": "root8040-promotion-apply",
+      "record": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/root8040-promotion-apply.json",
+        "bytes": 3680,
+        "sha256": "daa683493f6cfd525c1b664afd817a0111cd6a35ad8eba50d09e703fe7c8cc09"
+      },
+      "stdout": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/root8040-promotion-apply.stdout",
+        "bytes": 1666,
+        "sha256": "8c3f05fd4249c1ed6387debb3721c3f6692463eb52d4d0ac203da51c135a5866"
+      },
+      "stderr": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/root8040-promotion-apply.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "started_at": "2026-10-24T17:17:42.180906+00:00",
+      "completed_at": "2026-10-24T17:17:42.373427+00:00",
+      "exit_code": 0,
+      "snapshot_stable": false,
+      "argv": [
+        "python3",
+        "-m",
+        "tools.control_plane.adk_promotion",
+        "--root",
+        ".",
+        "--candidate-dir",
+        "agent-dev-kit",
+        "--ref",
+        "80ba8954c7d9f6225a2c5a4a2f0d805e8eb157c4",
+        "--updated-at",
+        "2026-10-24",
+        "--promotion-evidence",
+        "/workspace/scratch/712af632e2a5/apply20261024/github/adk8040-promotion-40114372768/promotion-evidence.json",
+        "--promotion-attestation",
+        "/workspace/scratch/712af632e2a5/apply20261024/github/adk8040-promotion-40114372768/promotion-attestation.json",
+        "--apply",
+        "--receipt-out",
+        "/workspace/scratch/712af632e2a5/apply20261024/root8040-promotion-apply-receipt.json",
+        "--summary-json"
+      ]
+    }
+  ],
+  "upstream_independent_release": {
+    "summary": {
+      "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/verification-summary.json",
+      "bytes": 32658,
+      "sha256": "1863a3ff4c440e5d880feffc14e06d39b1c6cb2b074c77dcc20ef6992e86acf2"
+    },
+    "rehearsal": {
+      "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/rehearsal-8.0.39-to-8.0.40.json",
+      "bytes": 773,
+      "sha256": "d1b2ba155519329ab958851466b92dcedd50bdb272e6535edceb1f6f1824a830"
+    },
+    "execution_records_validated": 12,
+    "reexecution_by_this_reviewer": false
+  },
+  "targeted_executions": [
+    {
+      "label": "root8040-review-validation-plan-4de",
+      "record": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/root8040-review-validation-plan-4de.json",
+        "bytes": 2496,
+        "sha256": "dd5b95d9fdb817667b4f592dab04413337e12119c5fbc48d09db19635ea4d3df"
+      },
+      "stdout": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/root8040-review-validation-plan-4de.stdout",
+        "bytes": 1201,
+        "sha256": "bd463d75495e17f6347b2f0fb926179a1779b2c579ffa1dfc2bafc279e9e0c66"
+      },
+      "stderr": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/root8040-review-validation-plan-4de.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "started_at": "2026-10-24T17:22:44.522202+00:00",
+      "completed_at": "2026-10-24T17:22:44.676557+00:00",
+      "exit_code": 0,
+      "snapshot_stable": true,
+      "argv": [
+        "env",
+        "PYTHONPATH=agent-dev-kit/src:.",
+        "python3",
+        "-m",
+        "tools.codex_assets.validation_plan",
+        "--root",
+        ".",
+        "--base",
+        "33878cc1dac2faa28a32f4899afa7e0397fe1d0f",
+        "--summary-json"
+      ]
+    },
+    {
+      "label": "root8040-review-pin-4de",
+      "record": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/root8040-review-pin-4de.json",
+        "bytes": 1098,
+        "sha256": "03bc224babce6e8bf470199c771a5289ccfb5f43ed9258d36e6f8612fae01c9f"
+      },
+      "stdout": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/root8040-review-pin-4de.stdout",
+        "bytes": 56,
+        "sha256": "0d7b9476524b6a3c6573d0f99b22675f602b3f8343340557af359539534b27fb"
+      },
+      "stderr": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/root8040-review-pin-4de.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "started_at": "2026-10-24T17:23:00.432740+00:00",
+      "completed_at": "2026-10-24T17:23:00.532974+00:00",
+      "exit_code": 0,
+      "snapshot_stable": true,
+      "argv": [
+        "bash",
+        "scripts/check-adk-lock.sh",
+        "."
+      ]
+    },
+    {
+      "label": "root8040-review-interface-4de",
+      "record": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/root8040-review-interface-4de.json",
+        "bytes": 2468,
+        "sha256": "7574bddd0a609164aff6170a664eea5f90557887685d4282b60ecd95bc6e13fb"
+      },
+      "stdout": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/root8040-review-interface-4de.stdout",
+        "bytes": 1202,
+        "sha256": "740723894a6846b89087f4cdece10c3e12d1d7a6fc9bee6bddbc9b5318f036c3"
+      },
+      "stderr": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/root8040-review-interface-4de.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "started_at": "2026-10-24T17:23:00.426444+00:00",
+      "completed_at": "2026-10-24T17:23:00.526652+00:00",
+      "exit_code": 0,
+      "snapshot_stable": true,
+      "argv": [
+        "env",
+        "PYTHONPATH=agent-dev-kit/src:.",
+        "python3",
+        "-m",
+        "tools.control_plane.adk_interface",
+        "--root",
+        ".",
+        "--require-worktree",
+        "--summary-json"
+      ]
+    },
+    {
+      "label": "root8040-review-status-4de",
+      "record": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/root8040-review-status-4de.json",
+        "bytes": 1186,
+        "sha256": "01d77453549a4844e2a699d8919aa5010131d34f82404049ea6fcce569db3aee"
+      },
+      "stdout": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/root8040-review-status-4de.stdout",
+        "bytes": 75,
+        "sha256": "0c8f522a77ecefde22f8d923cacb346bd7ab9f30c207e9cde418fa87b0355a97"
+      },
+      "stderr": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/root8040-review-status-4de.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "started_at": "2026-10-24T17:23:00.440615+00:00",
+      "completed_at": "2026-10-24T17:23:00.584356+00:00",
+      "exit_code": 0,
+      "snapshot_stable": true,
+      "argv": [
+        "env",
+        "PYTHONPATH=agent-dev-kit/src:.",
+        "bash",
+        "scripts/check-current-status-consistency.sh",
+        "."
+      ]
+    },
+    {
+      "label": "root8040-review-promotion-transaction-4de",
+      "record": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/root8040-review-promotion-transaction-4de.json",
+        "bytes": 1930,
+        "sha256": "2dad64014e43496c6c63fc25a8ccf1b4ab55faf82f6767eb3423ff5a1c2a9f69"
+      },
+      "stdout": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/root8040-review-promotion-transaction-4de.stdout",
+        "bytes": 175,
+        "sha256": "4055a9e4abd4f37729e09b2b32c266399c0773c875730ebc70570ced902e4c7a"
+      },
+      "stderr": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/root8040-review-promotion-transaction-4de.stderr",
+        "bytes": 632,
+        "sha256": "ac44232ad2d066f430c2c79f0eb769891220eceb6c663175f8f24d4680f86572"
+      },
+      "started_at": "2026-10-24T17:23:00.447430+00:00",
+      "completed_at": "2026-10-24T17:23:01.101281+00:00",
+      "exit_code": 0,
+      "snapshot_stable": true,
+      "argv": [
+        "env",
+        "PYTHONPATH=agent-dev-kit/src:.",
+        "bash",
+        "tests/test_adk_promotion_transaction.sh"
+      ]
+    },
+    {
+      "label": "root8040-review-signature-4de",
+      "record": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/root8040-review-signature-4de.json",
+        "bytes": 1754,
+        "sha256": "0c6e06e2ef143b644df8930eb759913e17124b6010a49a9b1697bff32dba1fa1"
+      },
+      "stdout": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/root8040-review-signature-4de.stdout",
+        "bytes": 587,
+        "sha256": "8348ea87eeeb9d28b43862483ee875403251ff265cc0263191783f44c12907d6"
+      },
+      "stderr": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/root8040-review-signature-4de.stderr",
+        "bytes": 12,
+        "sha256": "80a53f76c7ed6969dade3b6ee47cdb753162db7c00be625448999d08bae77ed8"
+      },
+      "started_at": "2026-10-24T17:23:06.801578+00:00",
+      "completed_at": "2026-10-24T17:23:07.195152+00:00",
+      "exit_code": 0,
+      "snapshot_stable": true,
+      "argv": [
+        "env",
+        "PYTHONPATH=agent-dev-kit/src:.",
+        "bash",
+        "scripts/check-adk-promotion-evidence.sh",
+        "."
+      ]
+    }
+  ],
+  "cosign": {
+    "executable": {
+      "path": "/workspace/scratch/712af632e2a5/audit-tools/cosign",
+      "bytes": 141178250,
+      "sha256": "4629c757b7618056f8ddd7e2625ae9fdd94c0372a65049520bc7d9df9efc7f71"
+    },
+    "mode": "0755",
+    "identity": "https://github.com/jiying2007/agent-dev-kit/.github/workflows/ci.yml@refs/heads/main",
+    "issuer": "https://token.actions.githubusercontent.com",
+    "result": "Verified OK"
+  },
+  "fresh_full_gate": {
+    "execution": {
+      "label": "root8040-independent-full-4de6364d-172005",
+      "record": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/root8040-independent-full-4de6364d-172005.json",
+        "bytes": 3342,
+        "sha256": "342bbbddf740fc16c7292f6e86cad31f9c6bc56e117ac2e1ede60b60cafbcefb"
+      },
+      "stdout": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/root8040-independent-full-4de6364d-172005.stdout",
+        "bytes": 2927,
+        "sha256": "945a1be5beb3abd3d68774045baccf12d645aed2f0755411b9f79ec651537ca2"
+      },
+      "stderr": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/root8040-independent-full-4de6364d-172005.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "started_at": "2026-10-24T17:20:21.095768+00:00",
+      "completed_at": "2026-10-24T17:25:16.996707+00:00",
+      "exit_code": 0,
+      "snapshot_stable": true,
+      "argv": [
+        "runuser",
+        "-u",
+        "nobody",
+        "--",
+        "env",
+        "-u",
+        "PYTHONPATH",
+        "PATH=/tmp/llm-agent-validation-venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+        "ADK_PYTHON_BIN=/tmp/llm-agent-validation-venv/bin/python3",
+        "PYTHONDONTWRITEBYTECODE=1",
+        "bash",
+        "tests/run_all.sh",
+        "--fail-fast",
+        "--timing-json",
+        "/tmp/root8040-independent-full-4de6364d-172005-lciwc2ix/root-full-timing.json"
+      ]
+    },
+    "preparation": {
+      "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root8040/root8040-independent-full-4de6364d-172005-preparation.json",
+      "bytes": 2109,
+      "sha256": "e871610fc9d5f629ccffd9481a875dd722930c82df174e2ef195e9afdd4e1ffe"
+    },
+    "timing_original": {
+      "path": "/tmp/root8040-independent-full-4de6364d-172005-lciwc2ix/root-full-timing.json",
+      "bytes": 6868,
+      "sha256": "560c6ca4eeb1123b622b31bab70d3a7581c34e06c5c1e95174e70fbbfa77fae8"
+    },
+    "timing_copy": {
+      "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root8040/fresh-full-timing.json",
+      "bytes": 6868,
+      "sha256": "560c6ca4eeb1123b622b31bab70d3a7581c34e06c5c1e95174e70fbbfa77fae8"
+    },
+    "status": "pass",
+    "total": 79,
+    "passed": 79,
+    "failed": 0,
+    "uid": 65534,
+    "gid": 65534,
+    "real_proc": true,
+    "python": "3.12.14",
+    "PyYAML": "6.0.3",
+    "jsonschema": "4.26.0",
+    "elapsed_seconds": 295.901,
+    "suite_elapsed_ms": 295599,
+    "source_and_tests_modified": false
+  },
+  "unperformed": [
+    "Root protected PR candidate CI and post-merge actual-main CI",
+    "canonical host live gates requiring unavailable Knowledge Provider and Execution Policy",
+    "Native, G22, LTA, field and Product M5 qualification"
+  ],
+  "notes": [
+    "Identity binding is evidence verification, not a new upstream ADK semantic approval.",
+    "The original apply receipt remains applied-not-verified and release_authorized=false.",
+    "The fresh full gate is recorded separately from source Spec/Quality review.",
+    "The validation plan was recorded after the parallel full launch and before targeted checks; original timestamps are preserved."
+  ]
+}

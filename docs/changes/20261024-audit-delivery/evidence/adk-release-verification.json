@@ -1,0 +1,762 @@
+{
+  "schema": "adk-official-release-artifact-verification/v1",
+  "verifier": "ai/root/release_governance_audit",
+  "status": "pass",
+  "scope": "Official component artifact identity, content, exact-main reproducibility and upgrade/rollback; no signature or product-qualification verdict",
+  "recorded_at": "2026-10-24T17:19:51.341091+00:00",
+  "execution_interval_utc": {
+    "started_at": "2026-10-24T17:04:59.347265+00:00",
+    "completed_at": "2026-10-24T17:16:49.237987+00:00"
+  },
+  "repository": "jiying2007/agent-dev-kit",
+  "version": "8.0.40",
+  "source": {
+    "commit": "80ba8954c7d9f6225a2c5a4a2f0d805e8eb157c4",
+    "tree": "cda8f8223beb236bebb08df17908168a883fad90",
+    "clean_detached_checkout": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/source-80ba8954c7d9",
+    "all_command_source_snapshots_clean_and_unchanged": true,
+    "setup_record": {
+      "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/exact-main-setup.json",
+      "bytes": 2314,
+      "sha256": "deece19fc3d898eb370eda3cf7df04ce0e3536a530364151b6c01c05cd4165ed"
+    },
+    "provenance": {
+      "kind": "git-clean-commit",
+      "release_eligible": true,
+      "commit": "80ba8954c7d9f6225a2c5a4a2f0d805e8eb157c4",
+      "tree": "cda8f8223beb236bebb08df17908168a883fad90",
+      "dirty": false,
+      "source_distribution_sha256": "2e7427fcaa6a30374955ebb0fe0c87a1308910299568860cd8a1cd9863d4e73e"
+    }
+  },
+  "tag": {
+    "name": "v8.0.40",
+    "ref": "refs/tags/v8.0.40",
+    "annotated_object": "360645efabf9ca1778c540812478437abc3ee7cf",
+    "object": {
+      "sha": "80ba8954c7d9f6225a2c5a4a2f0d805e8eb157c4",
+      "type": "commit",
+      "url": "https://api.github.com/repos/jiying2007/agent-dev-kit/git/commits/80ba8954c7d9f6225a2c5a4a2f0d805e8eb157c4"
+    },
+    "tagger": {
+      "name": "github-actions[bot]",
+      "email": "41898282+github-actions[bot]@users.noreply.github.com",
+      "date": "2026-10-24T17:10:15Z"
+    },
+    "url": "https://api.github.com/repos/jiying2007/agent-dev-kit/git/tags/360645efabf9ca1778c540812478437abc3ee7cf"
+  },
+  "release": {
+    "id": 422869029,
+    "tag_name": "v8.0.40",
+    "target_commitish": "main",
+    "name": "v8.0.40",
+    "draft": false,
+    "prerelease": false,
+    "immutable": true,
+    "created_at": "2026-10-24T17:10:15Z",
+    "published_at": "2026-10-24T17:12:55Z",
+    "html_url": "https://github.com/jiying2007/agent-dev-kit/releases/tag/v8.0.40",
+    "url": "https://api.github.com/repos/jiying2007/agent-dev-kit/releases/422869029"
+  },
+  "main_ci": {
+    "id": 40114372768,
+    "name": "agent-dev-kit-ci",
+    "path": ".github/workflows/ci.yml",
+    "head_sha": "80ba8954c7d9f6225a2c5a4a2f0d805e8eb157c4",
+    "head_branch": "main",
+    "event": "push",
+    "status": "completed",
+    "conclusion": "success",
+    "run_attempt": 1,
+    "run_started_at": "2026-10-24T17:03:21Z",
+    "updated_at": "2026-10-24T17:10:06Z",
+    "html_url": "https://github.com/jiying2007/agent-dev-kit/actions/runs/40114372768"
+  },
+  "release_run": {
+    "id": 40114884700,
+    "name": "release-tag-promotion",
+    "path": ".github/workflows/release-tag-promotion.yml",
+    "head_sha": "80ba8954c7d9f6225a2c5a4a2f0d805e8eb157c4",
+    "head_branch": "main",
+    "event": "workflow_run",
+    "status": "completed",
+    "conclusion": "success",
+    "run_attempt": 1,
+    "run_started_at": "2026-10-24T17:10:08Z",
+    "updated_at": "2026-10-24T17:14:11Z",
+    "html_url": "https://github.com/jiying2007/agent-dev-kit/actions/runs/40114884700",
+    "jobs": [
+      {
+        "id": 120934011534,
+        "name": "promote-tag",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-24T17:10:11Z",
+        "completed_at": "2026-10-24T17:10:18Z",
+        "html_url": "https://github.com/jiying2007/agent-dev-kit/actions/runs/40114884700/job/120934011534"
+      },
+      {
+        "id": 120934051200,
+        "name": "release / package",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-24T17:10:20Z",
+        "completed_at": "2026-10-24T17:12:59Z",
+        "html_url": "https://github.com/jiying2007/agent-dev-kit/actions/runs/40114884700/job/120934051200"
+      },
+      {
+        "id": 120934650800,
+        "name": "discover-orphaned-releases",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-24T17:13:01Z",
+        "completed_at": "2026-10-24T17:14:10Z",
+        "html_url": "https://github.com/jiying2007/agent-dev-kit/actions/runs/40114884700/job/120934650800"
+      },
+      {
+        "id": 120934920670,
+        "name": "repair-orphaned-release",
+        "status": "completed",
+        "conclusion": "skipped",
+        "started_at": "2026-10-24T17:14:11Z",
+        "completed_at": "2026-10-24T17:14:10Z",
+        "html_url": "https://github.com/jiying2007/agent-dev-kit/actions/runs/40114884700/job/120934920670"
+      }
+    ]
+  },
+  "assets": [
+    {
+      "api": {
+        "id": 672837029,
+        "name": "agent-dev-kit-8.0.40.tar.gz",
+        "state": "uploaded",
+        "size": 2768685,
+        "content_type": "application/x-gtar",
+        "digest": "sha256:b5e6220337bc34d326bfaa781a23cf144e1689be8c65d997cda3caac539f9196",
+        "created_at": "2026-10-24T17:12:54Z",
+        "updated_at": "2026-10-24T17:12:54Z",
+        "url": "https://api.github.com/repos/jiying2007/agent-dev-kit/releases/assets/672837029",
+        "browser_download_url": "https://github.com/jiying2007/agent-dev-kit/releases/download/v8.0.40/agent-dev-kit-8.0.40.tar.gz"
+      },
+      "download": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/official/agent-dev-kit-8.0.40.tar.gz",
+        "bytes": 2768685,
+        "sha256": "b5e6220337bc34d326bfaa781a23cf144e1689be8c65d997cda3caac539f9196"
+      },
+      "clean_rebuild": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/rebuilt/agent-dev-kit-8.0.40.tar.gz",
+        "bytes": 2768685,
+        "sha256": "b5e6220337bc34d326bfaa781a23cf144e1689be8c65d997cda3caac539f9196"
+      },
+      "byte_equal": true
+    },
+    {
+      "api": {
+        "id": 672837028,
+        "name": "agent-dev-kit-8.0.40.tar.gz.sha256",
+        "state": "uploaded",
+        "size": 94,
+        "content_type": "application/octet-stream",
+        "digest": "sha256:a48f8f606fc1136b7e682833c61504b4272b2a94685a7928b13d40eb049e2796",
+        "created_at": "2026-10-24T17:12:54Z",
+        "updated_at": "2026-10-24T17:12:54Z",
+        "url": "https://api.github.com/repos/jiying2007/agent-dev-kit/releases/assets/672837028",
+        "browser_download_url": "https://github.com/jiying2007/agent-dev-kit/releases/download/v8.0.40/agent-dev-kit-8.0.40.tar.gz.sha256"
+      },
+      "download": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/official/agent-dev-kit-8.0.40.tar.gz.sha256",
+        "bytes": 94,
+        "sha256": "a48f8f606fc1136b7e682833c61504b4272b2a94685a7928b13d40eb049e2796"
+      },
+      "clean_rebuild": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/rebuilt/agent-dev-kit-8.0.40.tar.gz.sha256",
+        "bytes": 94,
+        "sha256": "a48f8f606fc1136b7e682833c61504b4272b2a94685a7928b13d40eb049e2796"
+      },
+      "byte_equal": true
+    },
+    {
+      "api": {
+        "id": 672837030,
+        "name": "release-contract.json",
+        "state": "uploaded",
+        "size": 592,
+        "content_type": "application/json",
+        "digest": "sha256:3349c4feb92c5ff3906bf50ede0df0413ba8ebf43139187b976026d5c7d1c39a",
+        "created_at": "2026-10-24T17:12:54Z",
+        "updated_at": "2026-10-24T17:12:54Z",
+        "url": "https://api.github.com/repos/jiying2007/agent-dev-kit/releases/assets/672837030",
+        "browser_download_url": "https://github.com/jiying2007/agent-dev-kit/releases/download/v8.0.40/release-contract.json"
+      },
+      "download": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/official/release-contract.json",
+        "bytes": 592,
+        "sha256": "3349c4feb92c5ff3906bf50ede0df0413ba8ebf43139187b976026d5c7d1c39a"
+      },
+      "clean_rebuild": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/rebuilt/release-contract.json",
+        "bytes": 592,
+        "sha256": "3349c4feb92c5ff3906bf50ede0df0413ba8ebf43139187b976026d5c7d1c39a"
+      },
+      "byte_equal": true
+    }
+  ],
+  "checks": {
+    "downloaded_checksum": "pass",
+    "canonical_cli": "pass",
+    "canonical_cli_output_equals_official_contract_bytes": true,
+    "publishable_artifact_assertion": {
+      "schema": "adk-release-artifact-contract/v1",
+      "status": "pass",
+      "version": "8.0.40",
+      "artifact": "agent-dev-kit-8.0.40.tar.gz",
+      "artifact_sha256": "b5e6220337bc34d326bfaa781a23cf144e1689be8c65d997cda3caac539f9196",
+      "release_manifest_sha256": "5fad85412d04723d25f8819306e48184e429d4af102a41cc0b0d27c3ee231d08",
+      "manifest_sha256": "9139c22ad2800a8e0dd8d382372942472bed4558808532f61664c01d6ac16a45",
+      "sbom_sha256": "a3ce68db4c691fe5b723bf9dc98d720e133870f360a97b4aac18ecedbc516e03",
+      "release_eligible": true
+    },
+    "api_digest_and_size_match_for_all_three_assets": true,
+    "all_three_clean_rebuild_assets_byte_equal": true,
+    "source_file_count": 1608
+  },
+  "rehearsal": {
+    "artifact": {
+      "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/rehearsal-8.0.39-to-8.0.40.json",
+      "bytes": 773,
+      "sha256": "d1b2ba155519329ab958851466b92dcedd50bdb272e6535edceb1f6f1824a830"
+    },
+    "report": {
+      "schema_version": 3,
+      "status": "pass",
+      "previous_version": "8.0.39",
+      "candidate_version": "8.0.40",
+      "previous_sha256": "680ab5bbf4340c5ae75e1e8441dc3531a50795d1c0d8e395a84448ba4429b487",
+      "candidate_sha256": "b5e6220337bc34d326bfaa781a23cf144e1689be8c65d997cda3caac539f9196",
+      "previous_manifest_sha256": "4bb9b91d8701e3e5b9300bcb5a0a1f7995503b9b665bac69d4a17aad1361fd0e",
+      "candidate_manifest_sha256": "9139c22ad2800a8e0dd8d382372942472bed4558808532f61664c01d6ac16a45",
+      "previous_installed": 39,
+      "candidate_installed": 39,
+      "rollback": {
+        "status": "pass",
+        "removed": 39,
+        "restored": 39
+      },
+      "restored_assets": 39,
+      "remote_publish": "not-in-scope",
+      "report_sha256": "5b6ee30d3e2aae999d31c2641603a02462098aa53c5970c4fd7f35e226dc5c8a"
+    },
+    "input_archives_unchanged_after_rehearsal": true,
+    "original_cli_comparisons": [
+      "previous managed content hashes",
+      "previous managed permission modes",
+      "original receipt bytes and mode"
+    ]
+  },
+  "build_environment": {
+    "PyYAML": "6.0.3",
+    "executable": "/workspace/scratch/712af632e2a5/audit-venv/bin/python3",
+    "jsonschema": "4.26.0",
+    "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+    "zlib_runtime": "1.3.2"
+  },
+  "executions": [
+    {
+      "label": "exact-main-release-check",
+      "argv": [
+        "/workspace/scratch/712af632e2a5/audit-tools/rtk",
+        "proxy",
+        "bash",
+        "scripts/devkit.sh",
+        "release",
+        "check",
+        "--summary-json"
+      ],
+      "cwd": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/source-80ba8954c7d9",
+      "started_at": "2026-10-24T17:04:59.347265+00:00",
+      "completed_at": "2026-10-24T17:04:59.665452+00:00",
+      "exit_code": 0,
+      "elapsed_seconds": 0.318,
+      "source_stable": true,
+      "stdout": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/executions/exact-main-release-check.stdout",
+        "bytes": 432,
+        "sha256": "72a0a94bdc4d03e630e7103351c5c85621b43b5fb612c4a400b16b0ef4421070"
+      },
+      "stderr": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/executions/exact-main-release-check.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "raw_record": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/executions/exact-main-release-check.json",
+        "bytes": 1402,
+        "sha256": "7351e87b3aed67cc1b343c767430e7d3bef6c4b6f96414b1074c16fb38912f9b"
+      }
+    },
+    {
+      "label": "exact-main-release-build",
+      "argv": [
+        "/workspace/scratch/712af632e2a5/audit-tools/rtk",
+        "proxy",
+        "bash",
+        "scripts/devkit.sh",
+        "release",
+        "build",
+        "--version",
+        "8.0.40",
+        "--out",
+        "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/rebuilt",
+        "--summary-json"
+      ],
+      "cwd": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/source-80ba8954c7d9",
+      "started_at": "2026-10-24T17:05:03.142979+00:00",
+      "completed_at": "2026-10-24T17:05:04.813128+00:00",
+      "exit_code": 0,
+      "elapsed_seconds": 1.67,
+      "source_stable": true,
+      "stdout": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/executions/exact-main-release-build.stdout",
+        "bytes": 862,
+        "sha256": "5ef6f118947c9b32662668bbdc955b9653d0f61ad427375b840401cacd34123e"
+      },
+      "stderr": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/executions/exact-main-release-build.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "raw_record": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/executions/exact-main-release-build.json",
+        "bytes": 1522,
+        "sha256": "39c5b66a479bd4573b4677d29944498f315696f2e414fab1d495521cddcba984"
+      }
+    },
+    {
+      "label": "exact-main-build-environment",
+      "argv": [
+        "/workspace/scratch/712af632e2a5/audit-tools/rtk",
+        "proxy",
+        "/workspace/scratch/712af632e2a5/audit-venv/bin/python3",
+        "-c",
+        "import json,sys,zlib; from importlib.metadata import version; print(json.dumps({\"python\":sys.version,\"executable\":sys.executable,\"PyYAML\":version(\"PyYAML\"),\"jsonschema\":version(\"jsonschema\"),\"zlib_runtime\":zlib.ZLIB_RUNTIME_VERSION},sort_keys=True))"
+      ],
+      "cwd": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/source-80ba8954c7d9",
+      "started_at": "2026-10-24T17:05:23.243127+00:00",
+      "completed_at": "2026-10-24T17:05:23.308036+00:00",
+      "exit_code": 0,
+      "elapsed_seconds": 0.065,
+      "source_stable": true,
+      "stdout": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/executions/exact-main-build-environment.stdout",
+        "bytes": 208,
+        "sha256": "2a781f6749d09a4e21e810037da06c49f734929e20f154729c2f374c7e1739fd"
+      },
+      "stderr": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/executions/exact-main-build-environment.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "raw_record": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/executions/exact-main-build-environment.json",
+        "bytes": 1670,
+        "sha256": "947279d066ab48c68ef225104fb09990f346fc77f205fd0f162d6628836a03fc"
+      }
+    },
+    {
+      "label": "exact-main-built-contract",
+      "argv": [
+        "/workspace/scratch/712af632e2a5/audit-tools/rtk",
+        "proxy",
+        "/workspace/scratch/712af632e2a5/audit-venv/bin/python3",
+        "-m",
+        "agent_dev_kit.distribution.release_contract",
+        "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/rebuilt/agent-dev-kit-8.0.40.tar.gz"
+      ],
+      "cwd": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/source-80ba8954c7d9",
+      "started_at": "2026-10-24T17:05:28.668823+00:00",
+      "completed_at": "2026-10-24T17:05:29.686744+00:00",
+      "exit_code": 0,
+      "elapsed_seconds": 1.018,
+      "source_stable": true,
+      "stdout": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/executions/exact-main-built-contract.stdout",
+        "bytes": 592,
+        "sha256": "3349c4feb92c5ff3906bf50ede0df0413ba8ebf43139187b976026d5c7d1c39a"
+      },
+      "stderr": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/executions/exact-main-built-contract.stderr",
+        "bytes": 273,
+        "sha256": "f48e9701c549189f77632fb8312032a4f70248ed0f8a9427d085a73834c810fa"
+      },
+      "raw_record": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/executions/exact-main-built-contract.json",
+        "bytes": 1548,
+        "sha256": "d7f993e9e86d733aeab89c3069c69d0f606135b6fd8ecd48c538f9fd8132b242"
+      }
+    },
+    {
+      "label": "exact-main-built-checksum",
+      "argv": [
+        "/workspace/scratch/712af632e2a5/audit-tools/rtk",
+        "proxy",
+        "sha256sum",
+        "--check",
+        "agent-dev-kit-8.0.40.tar.gz.sha256"
+      ],
+      "cwd": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/rebuilt",
+      "started_at": "2026-10-24T17:05:28.670216+00:00",
+      "completed_at": "2026-10-24T17:05:28.678750+00:00",
+      "exit_code": 0,
+      "elapsed_seconds": 0.009,
+      "source_stable": true,
+      "stdout": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/executions/exact-main-built-checksum.stdout",
+        "bytes": 32,
+        "sha256": "5fc7eafe32a3976e6c09a87e1652a7ca8234312418260eef0c186b8a5a1a1fd5"
+      },
+      "stderr": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/executions/exact-main-built-checksum.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "raw_record": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/executions/exact-main-built-checksum.json",
+        "bytes": 1379,
+        "sha256": "71a4220a64e37ce44f88fd9ec99a35392ee8887c9e15b323be3b38593df928f0"
+      }
+    },
+    {
+      "label": "download-official-672837029",
+      "argv": [
+        "/workspace/scratch/712af632e2a5/audit-tools/rtk",
+        "proxy",
+        "curl",
+        "--fail",
+        "--location",
+        "--proto",
+        "=https",
+        "--proto-redir",
+        "=https",
+        "--silent",
+        "--show-error",
+        "--connect-timeout",
+        "15",
+        "--max-time",
+        "120",
+        "--max-filesize",
+        "2768685",
+        "--output",
+        "agent-dev-kit-8.0.40.tar.gz",
+        "https://github.com/jiying2007/agent-dev-kit/releases/download/v8.0.40/agent-dev-kit-8.0.40.tar.gz"
+      ],
+      "cwd": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/official",
+      "started_at": "2026-10-24T17:14:58.604271+00:00",
+      "completed_at": "2026-10-24T17:14:58.971515+00:00",
+      "exit_code": 0,
+      "elapsed_seconds": 0.367,
+      "source_stable": true,
+      "stdout": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/executions/download-official-672837029.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/executions/download-official-672837029.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "raw_record": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/executions/download-official-672837029.json",
+        "bytes": 1712,
+        "sha256": "1e903e5a098d652f68914237f282507848c872a4967419ee1954b81ee8c29cab"
+      }
+    },
+    {
+      "label": "download-official-672837028",
+      "argv": [
+        "/workspace/scratch/712af632e2a5/audit-tools/rtk",
+        "proxy",
+        "curl",
+        "--fail",
+        "--location",
+        "--proto",
+        "=https",
+        "--proto-redir",
+        "=https",
+        "--silent",
+        "--show-error",
+        "--connect-timeout",
+        "15",
+        "--max-time",
+        "120",
+        "--max-filesize",
+        "94",
+        "--output",
+        "agent-dev-kit-8.0.40.tar.gz.sha256",
+        "https://github.com/jiying2007/agent-dev-kit/releases/download/v8.0.40/agent-dev-kit-8.0.40.tar.gz.sha256"
+      ],
+      "cwd": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/official",
+      "started_at": "2026-10-24T17:14:57.946756+00:00",
+      "completed_at": "2026-10-24T17:14:58.312419+00:00",
+      "exit_code": 0,
+      "elapsed_seconds": 0.366,
+      "source_stable": true,
+      "stdout": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/executions/download-official-672837028.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/executions/download-official-672837028.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "raw_record": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/executions/download-official-672837028.json",
+        "bytes": 1721,
+        "sha256": "e3021cab89c9b0cdcaf6a845494586764e26101ca5484ae6bf235622cea4b1e6"
+      }
+    },
+    {
+      "label": "download-official-672837030",
+      "argv": [
+        "/workspace/scratch/712af632e2a5/audit-tools/rtk",
+        "proxy",
+        "curl",
+        "--fail",
+        "--location",
+        "--proto",
+        "=https",
+        "--proto-redir",
+        "=https",
+        "--silent",
+        "--show-error",
+        "--connect-timeout",
+        "15",
+        "--max-time",
+        "120",
+        "--max-filesize",
+        "592",
+        "--output",
+        "release-contract.json",
+        "https://github.com/jiying2007/agent-dev-kit/releases/download/v8.0.40/release-contract.json"
+      ],
+      "cwd": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/official",
+      "started_at": "2026-10-24T17:15:00.104568+00:00",
+      "completed_at": "2026-10-24T17:15:00.420117+00:00",
+      "exit_code": 0,
+      "elapsed_seconds": 0.316,
+      "source_stable": true,
+      "stdout": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/executions/download-official-672837030.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/executions/download-official-672837030.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "raw_record": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/executions/download-official-672837030.json",
+        "bytes": 1696,
+        "sha256": "f6f1339169b1ca4a670c81eeaa43a324d211d58b010073b89402b75df84378c8"
+      }
+    },
+    {
+      "label": "official-canonical-cli",
+      "argv": [
+        "/workspace/scratch/712af632e2a5/audit-tools/rtk",
+        "proxy",
+        "/workspace/scratch/712af632e2a5/audit-venv/bin/python3",
+        "-m",
+        "agent_dev_kit.distribution.release_contract",
+        "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/official/agent-dev-kit-8.0.40.tar.gz"
+      ],
+      "cwd": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/source-80ba8954c7d9",
+      "started_at": "2026-10-24T17:15:54.782869+00:00",
+      "completed_at": "2026-10-24T17:15:55.804744+00:00",
+      "exit_code": 0,
+      "elapsed_seconds": 1.022,
+      "source_stable": true,
+      "stdout": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/executions/official-canonical-cli.stdout",
+        "bytes": 592,
+        "sha256": "3349c4feb92c5ff3906bf50ede0df0413ba8ebf43139187b976026d5c7d1c39a"
+      },
+      "stderr": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/executions/official-canonical-cli.stderr",
+        "bytes": 273,
+        "sha256": "f48e9701c549189f77632fb8312032a4f70248ed0f8a9427d085a73834c810fa"
+      },
+      "raw_record": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/executions/official-canonical-cli.json",
+        "bytes": 1540,
+        "sha256": "6a26f930f55092090ca9355bf0eca05a9d99c74110fd018c16a806352c352e9d"
+      }
+    },
+    {
+      "label": "official-checksum",
+      "argv": [
+        "/workspace/scratch/712af632e2a5/audit-tools/rtk",
+        "proxy",
+        "sha256sum",
+        "--check",
+        "agent-dev-kit-8.0.40.tar.gz.sha256"
+      ],
+      "cwd": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/official",
+      "started_at": "2026-10-24T17:15:54.792769+00:00",
+      "completed_at": "2026-10-24T17:15:54.809678+00:00",
+      "exit_code": 0,
+      "elapsed_seconds": 0.017,
+      "source_stable": true,
+      "stdout": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/executions/official-checksum.stdout",
+        "bytes": 32,
+        "sha256": "5fc7eafe32a3976e6c09a87e1652a7ca8234312418260eef0c186b8a5a1a1fd5"
+      },
+      "stderr": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/executions/official-checksum.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "raw_record": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/executions/official-checksum.json",
+        "bytes": 1356,
+        "sha256": "b239cb809724f46616eee75189404de79db722b353704fc9afbc312bee96ca70"
+      }
+    },
+    {
+      "label": "official-byte-and-publishable-check",
+      "argv": [
+        "/workspace/scratch/712af632e2a5/audit-tools/rtk",
+        "proxy",
+        "/workspace/scratch/712af632e2a5/audit-venv/bin/python3",
+        "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/verify_official_assets.py"
+      ],
+      "cwd": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/source-80ba8954c7d9",
+      "started_at": "2026-10-24T17:16:12.375344+00:00",
+      "completed_at": "2026-10-24T17:16:14.446937+00:00",
+      "exit_code": 0,
+      "elapsed_seconds": 2.072,
+      "source_stable": true,
+      "stdout": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/executions/official-byte-and-publishable-check.stdout",
+        "bytes": 3489,
+        "sha256": "b43ed443189f623e0c5176d273ec526e4c68679684506f21d2d7b2583fbc96fe"
+      },
+      "stderr": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/executions/official-byte-and-publishable-check.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "raw_record": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/executions/official-byte-and-publishable-check.json",
+        "bytes": 1506,
+        "sha256": "1ad843e13f1e2e88b44e538261a30b5d8235b2f1790e148765cc59a493d1cc71"
+      }
+    },
+    {
+      "label": "official-upgrade-rollback-rehearsal",
+      "argv": [
+        "/workspace/scratch/712af632e2a5/audit-tools/rtk",
+        "proxy",
+        "bash",
+        "scripts/devkit.sh",
+        "release",
+        "rehearse",
+        "--previous-artifact",
+        "/workspace/scratch/712af632e2a5/release_audit/agent-dev-kit-8.0.39.tar.gz",
+        "--candidate-artifact",
+        "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/official/agent-dev-kit-8.0.40.tar.gz",
+        "--output",
+        "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/rehearsal-8.0.39-to-8.0.40.json",
+        "--summary-json"
+      ],
+      "cwd": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/source-80ba8954c7d9",
+      "started_at": "2026-10-24T17:16:46.866939+00:00",
+      "completed_at": "2026-10-24T17:16:49.237987+00:00",
+      "exit_code": 0,
+      "elapsed_seconds": 2.371,
+      "source_stable": true,
+      "stdout": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/executions/official-upgrade-rollback-rehearsal.stdout",
+        "bytes": 695,
+        "sha256": "85185cfefbc2df4f21e5f4b70bd72394b9ec99d174ed79a6b193db7b5ddaf2c1"
+      },
+      "stderr": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/executions/official-upgrade-rollback-rehearsal.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "raw_record": {
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/executions/official-upgrade-rollback-rehearsal.json",
+        "bytes": 1797,
+        "sha256": "9a310fce2d0d9af34c16c6d4ebcb4fabde5d8dfb43b064356d9c1274bde9bff1"
+      }
+    }
+  ],
+  "api_observations": [
+    {
+      "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/metadata/release-initial.json",
+      "bytes": 8816,
+      "sha256": "5808362c773d6e798aed723e1523b9e4c5aabc2400bc872d187dbc0e1eefd3cc",
+      "retrieved_at": "2026-10-24T17:13:50.573Z",
+      "url": "https://api.github.com/repos/jiying2007/agent-dev-kit/releases/422869029"
+    },
+    {
+      "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/metadata/tag-initial.json",
+      "bytes": 1054,
+      "sha256": "689f3054d13d6a05ceab6d9410681338536806070dd7744efbf26d211b1b7d9e",
+      "retrieved_at": "2026-10-24T17:13:50.439Z",
+      "url": "https://api.github.com/repos/jiying2007/agent-dev-kit/git/tags/360645efabf9ca1778c540812478437abc3ee7cf"
+    },
+    {
+      "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/metadata/main_ci-initial.json",
+      "bytes": 14791,
+      "sha256": "04074523d6fcb55a0fa097dd944c79a9c309a71393d4c7d366f73952c0a7be59",
+      "retrieved_at": "2026-10-24T17:13:50.458Z",
+      "url": "https://api.github.com/repos/jiying2007/agent-dev-kit/actions/runs/40114372768"
+    },
+    {
+      "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/metadata/release_run_final.json",
+      "bytes": 15006,
+      "sha256": "05993f219d46008dfeba568ea6cdd453d41cf96eec3c300fa79c00c317b48fef",
+      "retrieved_at": "2026-10-24T17:16:35.168Z",
+      "url": "https://api.github.com/repos/jiying2007/agent-dev-kit/actions/runs/40114884700"
+    },
+    {
+      "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/metadata/tag_ref_final.json",
+      "bytes": 554,
+      "sha256": "df0e2b74845c2fcae2306ac8b49acac5c519bd7a3ffc863a56acdf8826ba0b64",
+      "retrieved_at": "2026-10-24T17:16:35.136Z",
+      "url": "https://api.github.com/repos/jiying2007/agent-dev-kit/git/ref/tags/v8.0.40"
+    },
+    {
+      "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/metadata/release_jobs_final.json",
+      "bytes": 4922,
+      "sha256": "5e99305c27f38c01a80fc3d469735ba20b24a53d906b9842ae81d70ce01c8ec1",
+      "retrieved_at": "2026-10-24T17:16:35.567Z",
+      "url": "https://api.github.com/repos/jiying2007/agent-dev-kit/actions/runs/40114884700/jobs?filter=latest&per_page=100"
+    },
+    {
+      "path": "/workspace/scratch/712af632e2a5/apply20261024/release-v8.0.40/metadata/source_commit_final.json",
+      "bytes": 3298,
+      "sha256": "b26a927cc94ceaa3fedacbfb89be07831d6b6d91399cd19452873da60021390c",
+      "retrieved_at": "2026-10-24T17:16:35.188Z",
+      "url": "https://api.github.com/repos/jiying2007/agent-dev-kit/git/commits/80ba8954c7d9f6225a2c5a4a2f0d805e8eb157c4"
+    }
+  ],
+  "signature_verification": {
+    "owner": "ai/root",
+    "performed_by_this_verifier": false,
+    "result": "separate parent-owned Cosign and Root consumption evidence"
+  },
+  "boundaries": [
+    "No production source, gate, remote ref, tag or official asset was changed by these checks.",
+    "Checkout setup and rebuilt copies are isolated scratch artifacts; the actual downloaded archives were used in rehearsal.",
+    "The clean rebuild was completed before publication and is bound to the actual main commit, not an equivalent candidate commit.",
+    "This report does not itself authorize product release or confer Native, G22, LTA, field or Product M5 qualification.",
+    "Tar archives and raw execution/API observations remain in scratch; this compact record embeds no tar payload."
+  ]
+}
