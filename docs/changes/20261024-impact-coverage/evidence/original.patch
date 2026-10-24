@@ -1,0 +1,2146 @@
+diff --git a/.gitlab-ci.yml b/.gitlab-ci.yml
+index 9c1f091..9a593ee 100644
+--- a/.gitlab-ci.yml
++++ b/.gitlab-ci.yml
+@@ -17,6 +17,7 @@ default:
+ contract:
+   stage: contract
+   script:
++    - git submodule update --init --depth=1 agent-dev-kit
+     - python3 -m tools.control_plane.gate_runner --profile contract
+ 
+ doc-sync:
+diff --git a/docs/changes/20261023-evidence-methods/evidence/consolidation-independent-execution.json b/docs/changes/20261023-evidence-methods/evidence/consolidation-independent-execution.json
+new file mode 100644
+index 0000000..ce4e924
+--- /dev/null
++++ b/docs/changes/20261023-evidence-methods/evidence/consolidation-independent-execution.json
+@@ -0,0 +1,671 @@
++{
++  "schema": "llm-agent-methods-consolidation-review-execution/v1",
++  "reviewer_id": "ai/root/architecture_audit",
++  "implementation_author": "ai/root",
++  "started_at": "2026-10-23T14:18:41.041405+00:00",
++  "base_local_commit": "4c700de642fb8a1755b657e52b760b4384a5129d",
++  "base_remote_commit": "64c5192f2d6aaacf65143223f03190564032facc",
++  "binding_kind": "frozen-file-sha256-snapshot",
++  "implementation_commit_at_review": "not-yet-created",
++  "status": "pass",
++  "executions": [
++    {
++      "argv": [
++        "/workspace/scratch/694941d81014/tooling/rtk",
++        "bypass",
++        "bash",
++        "scripts/check-upstream-intake-readiness.sh",
++        "."
++      ],
++      "cwd": "/workspace/scratch/694941d81014/llm_agent",
++      "started_at": "2026-10-23T14:18:41.331766+00:00",
++      "completed_at": "2026-10-23T14:18:41.354921+00:00",
++      "returncode": 0,
++      "expected_returncode": 0,
++      "stdout": "[PASS] upstream intake readiness checks passed (164 adopt rows)\n",
++      "stderr": ""
++    },
++    {
++      "argv": [
++        "/workspace/scratch/694941d81014/tooling/rtk",
++        "bypass",
++        "bash",
++        "scripts/check-observe-intake-depth.sh",
++        "."
++      ],
++      "cwd": "/workspace/scratch/694941d81014/llm_agent",
++      "started_at": "2026-10-23T14:18:41.355765+00:00",
++      "completed_at": "2026-10-23T14:18:41.363527+00:00",
++      "returncode": 0,
++      "expected_returncode": 0,
++      "stdout": "[PASS] observe intake depth checks passed (11 rows)\n",
++      "stderr": ""
++    },
++    {
++      "argv": [
++        "/workspace/scratch/694941d81014/tooling/rtk",
++        "bypass",
++        "bash",
++        "scripts/check-adoption-matrix-structured.sh",
++        "."
++      ],
++      "cwd": "/workspace/scratch/694941d81014/llm_agent",
++      "started_at": "2026-10-23T14:18:41.364140+00:00",
++      "completed_at": "2026-10-23T14:18:41.402783+00:00",
++      "returncode": 0,
++      "expected_returncode": 0,
++      "stdout": "[PASS] structured adoption matrix synchronized\n",
++      "stderr": ""
++    },
++    {
++      "argv": [
++        "/workspace/scratch/694941d81014/tooling/rtk",
++        "bypass",
++        "bash",
++        "scripts/check-adoption-matrix-status.sh",
++        "."
++      ],
++      "cwd": "/workspace/scratch/694941d81014/llm_agent",
++      "started_at": "2026-10-23T14:18:41.403431+00:00",
++      "completed_at": "2026-10-23T14:18:41.413315+00:00",
++      "returncode": 0,
++      "expected_returncode": 0,
++      "stdout": "[PASS] adoption-matrix status checks passed\n",
++      "stderr": ""
++    },
++    {
++      "argv": [
++        "/workspace/scratch/694941d81014/tooling/rtk",
++        "bypass",
++        "bash",
++        "scripts/check-adoption-evidence-integrity.sh",
++        "."
++      ],
++      "cwd": "/workspace/scratch/694941d81014/llm_agent",
++      "started_at": "2026-10-23T14:18:41.413924+00:00",
++      "completed_at": "2026-10-23T14:18:45.009590+00:00",
++      "returncode": 0,
++      "expected_returncode": 0,
++      "stdout": "[PASS] adoption evidence integrity checks passed (rows=210 paths=621)\n",
++      "stderr": ""
++    },
++    {
++      "argv": [
++        "/workspace/scratch/694941d81014/tooling/rtk",
++        "bypass",
++        "bash",
++        "scripts/check-adoption-real-assets.sh",
++        ".",
++        "--summary-json"
++      ],
++      "cwd": "/workspace/scratch/694941d81014/llm_agent",
++      "started_at": "2026-10-23T14:18:45.011646+00:00",
++      "completed_at": "2026-10-23T14:18:45.077619+00:00",
++      "returncode": 0,
++      "expected_returncode": 0,
++      "stdout": "{\"status\":\"pass\",\"checked\":234,\"real_asset_ok\":233,\"matrix_asset_exceptions\":1,\"failures\":[]}\n",
++      "stderr": ""
++    },
++    {
++      "argv": [
++        "/workspace/scratch/694941d81014/tooling/rtk",
++        "bypass",
++        "bash",
++        "tests/test_reference_repository_removal.sh"
++      ],
++      "cwd": "/workspace/scratch/694941d81014/llm_agent",
++      "started_at": "2026-10-23T14:18:45.078553+00:00",
++      "completed_at": "2026-10-23T14:18:45.859792+00:00",
++      "returncode": 0,
++      "expected_returncode": 0,
++      "stdout": "[PASS] reference repository removal plans are hashed, dry-run, and non-destructive\n",
++      "stderr": ""
++    },
++    {
++      "argv": [
++        "/workspace/scratch/694941d81014/tooling/rtk",
++        "bypass",
++        "bash",
++        "tests/test_maintainability_budgets.sh"
++      ],
++      "cwd": "/workspace/scratch/694941d81014/llm_agent",
++      "started_at": "2026-10-23T14:18:45.860973+00:00",
++      "completed_at": "2026-10-23T14:18:50.156109+00:00",
++      "returncode": 0,
++      "expected_returncode": 0,
++      "stdout": "[PASS] maintainability budgets enforce static and evidence metrics with honest availability\n",
++      "stderr": ""
++    },
++    {
++      "argv": [
++        "/workspace/scratch/694941d81014/tooling/rtk",
++        "bypass",
++        "bash",
++        "scripts/check-maintainability-budgets.sh",
++        ".",
++        "--strict",
++        "--summary-json"
++      ],
++      "cwd": "/workspace/scratch/694941d81014/llm_agent",
++      "started_at": "2026-10-23T14:18:50.156982+00:00",
++      "completed_at": "2026-10-23T14:18:51.199283+00:00",
++      "returncode": 0,
++      "expected_returncode": 0,
++      "stdout": "{\"schema\":\"llm-agent-maintainability-budget-report/v2\",\"status\":\"pass\",\"strict\":true,\"baseline_date\":\"2026-07-30\",\"root\":\"/workspace/scratch/694941d81014/llm_agent\",\"budget_count\":14,\"evidence_metric_count\":3,\"failures\":[],\"warnings\":[],\"budgets\":[{\"id\":\"root-script-count\",\"metric\":\"file_count\",\"status\":\"pass\",\"observed\":89,\"baseline\":89,\"drift\":0,\"warning_limit\":92,\"hard_limit\":100,\"files_scanned\":89,\"owner\":\"llm-agent-governance\",\"next_action\":\"Consolidate thin wrappers into an existing typed tools.codex_assets entrypoint before adding another root script.\",\"hotspots\":[{\"path\":\"scripts/analyze-repo.sh\",\"value\":1},{\"path\":\"scripts/backup-rollback.sh\",\"value\":1},{\"path\":\"scripts/check-adk-goal-capability.sh\",\"value\":1},{\"path\":\"scripts/check-adk-governance-suite.sh\",\"value\":1},{\"path\":\"scripts/check-adk-harden-readiness.sh\",\"value\":1}]},{\"id\":\"root-report-count\",\"metric\":\"file_count\",\"status\":\"pass\",\"observed\":320,\"baseline\":284,\"drift\":36,\"warning_limit\":320,\"hard_limit\":400,\"files_scanned\":320,\"owner\":\"llm-agent-governance\",\"next_action\":\"Run governed report cleanup and preserve supersession metadata before creating more active reports.\",\"hotspots\":[{\"path\":\"reports/2026-08-01-token-context-governance-v2-release-bundle.json\",\"value\":1},{\"path\":\"reports/README.md\",\"value\":1},{\"path\":\"reports/absorb-review-20260512_115031.md\",\"value\":1},{\"path\":\"reports/absorption-optimization-review-2026-06-15.md\",\"value\":1},{\"path\":\"reports/active-subrepo-diff-scan-2026-07-06.md\",\"value\":1}]},{\"id\":\"root-manifest-count\",\"metric\":\"file_count\",\"status\":\"pass\",\"observed\":18,\"baseline\":15,\"drift\":3,\"warning_limit\":20,\"hard_limit\":25,\"files_scanned\":18,\"owner\":\"llm-agent-governance\",\"next_action\":\"Keep historical snapshots under manifests/history; consolidate active SSOT contracts before adding another root manifest.\",\"hotspots\":[{\"path\":\"manifests/adk_interface.lock.json\",\"value\":1},{\"path\":\"manifests/comprehensive_optimization_backlog.json\",\"value\":1},{\"path\":\"manifests/digital_worker_runtime_pilot.json\",\"value\":1},{\"path\":\"manifests/external_practice_cycle.json\",\"value\":1},{\"path\":\"manifests/external_practice_sources.json\",\"value\":1}]},{\"id\":\"root-largest-shell-lines\",\"metric\":\"max_lines\",\"status\":\"pass\",\"observed\":658,\"baseline\":666,\"drift\":-8,\"warning_limit\":750,\"hard_limit\":900,\"files_scanned\":89,\"owner\":\"llm-agent-governance\",\"next_action\":\"Move reusable parsing and state logic into tools.codex_assets and keep shell as a transport wrapper.\",\"hotspots\":[{\"path\":\"scripts/collect-runtime-target-evidence-package.sh\",\"value\":658},{\"path\":\"scripts/check-architecture-reports.sh\",\"value\":616},{\"path\":\"scripts/check-runtime-targets.sh\",\"value\":591},{\"path\":\"scripts/lib/same-run-evidence.sh\",\"value\":457},{\"path\":\"scripts/check-workspace-entrypoints.sh\",\"value\":422}]},{\"id\":\"root-largest-python-lines\",\"metric\":\"max_lines\",\"status\":\"pass\",\"observed\":1919,\"baseline\":2078,\"drift\":-159,\"warning_limit\":2200,\"hard_limit\":2500,\"files_scanned\":30,\"owner\":\"llm-agent-governance\",\"next_action\":\"Split the named hotspot by capability boundary with contract tests before adding another responsibility.\",\"hotspots\":[{\"path\":\"tools/codex_assets/practice_intake.py\",\"value\":1919},{\"path\":\"tools/codex_assets/reference_repository.py\",\"value\":970},{\"path\":\"tools/codex_assets/maintainability_budget.py\",\"value\":834},{\"path\":\"tools/codex_assets/runtime_smoke_evidence.py\",\"value\":752},{\"path\":\"tools/codex_assets/software_m5_v3_core.py\",\"value\":676}]},{\"id\":\"adk-largest-shell-lines\",\"metric\":\"max_lines\",\"status\":\"pass\",\"observed\":756,\"baseline\":1745,\"drift\":-989,\"warning_limit\":1850,\"hard_limit\":2100,\"files_scanned\":42,\"owner\":\"agent-dev-kit\",\"next_action\":\"Move deterministic governance logic into src/agent_dev_kit and retain a thin stable shell entrypoint.\",\"hotspots\":[{\"path\":\"agent-dev-kit/scripts/check-agent-ecosystem-standards.sh\",\"value\":756},{\"path\":\"agent-dev-kit/scripts/workflow.sh\",\"value\":670},{\"path\":\"agent-dev-kit/scripts/check-harness-loop-engineering-contracts.sh\",\"value\":585},{\"path\":\"agent-dev-kit/scripts/run-embedded-workflow-pilots.sh\",\"value\":525},{\"path\":\"agent-dev-kit/scripts/run-embedded-production-field-pilot.sh\",\"value\":445}]},{\"id\":\"adk-largest-python-lines\",\"metric\":\"max_lines\",\"status\":\"pass\",\"observed\":575,\"baseline\":1054,\"drift\":-479,\"warning_limit\":1150,\"hard_limit\":1400,\"files_scanned\":106,\"owner\":\"agent-dev-kit\",\"next_action\":\"Split the hotspot only along an owned domain boundary and preserve CLI/API compatibility tests.\",\"hotspots\":[{\"path\":\"agent-dev-kit/src/agent_dev_kit/evaluation_runtime.py\",\"value\":575},{\"path\":\"agent-dev-kit/src/agent_dev_kit/_matcher_kernel.py\",\"value\":570},{\"path\":\"agent-dev-kit/src/agent_dev_kit/installation_transaction.py\",\"value\":542},{\"path\":\"agent-dev-kit/src/agent_dev_kit/release.py\",\"value\":536},{\"path\":\"agent-dev-kit/src/agent_dev_kit/agent_platform.py\",\"value\":511}]},{\"id\":\"root-python-import-fan-out\",\"metric\":\"max_import_fan_out\",\"status\":\"pass\",\"observed\":17,\"baseline\":17,\"drift\":0,\"warning_limit\":20,\"hard_limit\":25,\"files_scanned\":30,\"owner\":\"llm-agent-governance\",\"next_action\":\"Split high fan-out typed modules at stable domain ports before adding another dependency.\",\"hotspots\":[{\"path\":\"tools/codex_assets/codex_model_observer.py\",\"value\":17},{\"path\":\"tools/codex_assets/intake_pipeline.py\",\"value\":17},{\"path\":\"tools/codex_assets/m5_signature.py\",\"value\":15},{\"path\":\"tools/codex_assets/maintainability_budget.py\",\"value\":15},{\"path\":\"tools/codex_assets/reference_worktree_identity.py\",\"value\":15}]},{\"id\":\"adk-python-import-fan-out\",\"metric\":\"max_import_fan_out\",\"status\":\"pass\",\"observed\":26,\"baseline\":24,\"drift\":2,\"warning_limit\":28,\"hard_limit\":35,\"files_scanned\":106,\"owner\":\"agent-dev-kit\",\"next_action\":\"Introduce typed internal ports when a module crosses the reviewed import fan-out budget.\",\"hotspots\":[{\"path\":\"agent-dev-kit/src/agent_dev_kit/cli.py\",\"value\":26},{\"path\":\"agent-dev-kit/src/agent_dev_kit/distribution/release_artifacts.py\",\"value\":20},{\"path\":\"agent-dev-kit/src/agent_dev_kit/evaluation_cli.py\",\"value\":18},{\"path\":\"agent-dev-kit/src/agent_dev_kit/release.py\",\"value\":18},{\"path\":\"agent-dev-kit/src/agent_dev_kit/effect_campaign_materializer.py\",\"value\":17}]},{\"id\":\"root-exact-code-duplication\",\"metric\":\"duplicate_content_groups\",\"status\":\"pass\",\"observed\":0,\"baseline\":0,\"drift\":0,\"warning_limit\":1,\"hard_limit\":3,\"files_scanned\":119,\"owner\":\"llm-agent-governance\",\"next_action\":\"Replace exact duplicate implementation files with one typed implementation and thin entrypoints.\",\"hotspots\":[{\"path\":\"<none>\",\"value\":0,\"duplicates\":[]}]},{\"id\":\"adk-exact-code-duplication\",\"metric\":\"duplicate_content_groups\",\"status\":\"pass\",\"observed\":0,\"baseline\":0,\"drift\":0,\"warning_limit\":2,\"hard_limit\":5,\"files_scanned\":301,\"owner\":\"agent-dev-kit\",\"next_action\":\"Consolidate exact duplicate checker or test logic without weakening target-specific assertions.\",\"hotspots\":[{\"path\":\"<none>\",\"value\":0,\"duplicates\":[]}]},{\"id\":\"root-control-plane-python-count\",\"metric\":\"file_count\",\"status\":\"pass\",\"observed\":29,\"baseline\":28,\"drift\":1,\"warning_limit\":31,\"hard_limit\":35,\"files_scanned\":29,\"owner\":\"llm-agent-governance\",\"next_action\":\"Review ownership and consolidate existing typed control-plane modules before adding further modules; do not hide new modules by excluding the directory.\",\"hotspots\":[{\"path\":\"tools/control_plane/__init__.py\",\"value\":1},{\"path\":\"tools/control_plane/active_contracts.py\",\"value\":1},{\"path\":\"tools/control_plane/adk_interface.py\",\"value\":1},{\"path\":\"tools/control_plane/adk_promotion.py\",\"value\":1},{\"path\":\"tools/control_plane/adk_promotion_evidence.py\",\"value\":1}]},{\"id\":\"root-control-plane-largest-python-lines\",\"metric\":\"max_lines\",\"status\":\"pass\",\"observed\":1030,\"baseline\":981,\"drift\":49,\"warning_limit\":1050,\"hard_limit\":1200,\"files_scanned\":29,\"owner\":\"llm-agent-governance\",\"next_action\":\"Split named control-plane hotspots by bounded context with behavioral regression evidence instead of allocating unbounded line budgets.\",\"hotspots\":[{\"path\":\"tools/control_plane/effect_readiness.py\",\"value\":1030},{\"path\":\"tools/control_plane/longitudinal_operation.py\",\"value\":718},{\"path\":\"tools/control_plane/branch_gc.py\",\"value\":591},{\"path\":\"tools/control_plane/qualification_followup.py\",\"value\":573},{\"path\":\"tools/control_plane/gate_runner.py\",\"value\":501}]},{\"id\":\"root-control-plane-python-import-fan-out\",\"metric\":\"max_import_fan_out\",\"status\":\"pass\",\"observed\":14,\"baseline\":14,\"drift\":0,\"warning_limit\":19,\"hard_limit\":23,\"files_scanned\":29,\"owner\":\"llm-agent-governance\",\"next_action\":\"Preserve explicit dependency direction; review the named high-fan-out control-plane module before introducing another cross-context import.\",\"hotspots\":[{\"path\":\"tools/control_plane/adk_interface.py\",\"value\":14},{\"path\":\"tools/control_plane/effect_readiness.py\",\"value\":14},{\"path\":\"tools/control_plane/qualification_followup.py\",\"value\":14},{\"path\":\"tools/control_plane/adk_promotion.py\",\"value\":13},{\"path\":\"tools/control_plane/longitudinal_operation.py\",\"value\":13}]}],\"elapsed_ms\":946.388,\"semantic_axes\":{\"coupling\":{\"status\":\"measured\",\"method\":\"max-import-fan-out\"},\"exact_duplication\":{\"status\":\"measured\",\"method\":\"content-sha256\"},\"churn\":{\"id\":\"repository-churn\",\"metric\":\"churn\",\"risk\":\"medium\",\"enforcement\":\"report-only\",\"enforcement_rationale\":\"A reviewed version-history window and stable churn baseline are not yet available, so a hard threshold would create false precision.\",\"expected_repository_id\":\"llm-agent\",\"expected_population\":null,\"max_age_days\":45,\"owner\":\"llm-agent-governance\",\"next_action\":\"Generate a reviewed git-history numstat snapshot for a fixed revision and time window before proposing a churn budget.\",\"status\":\"not-available\",\"observed\":null,\"unit\":null,\"hotspots\":[],\"source\":null,\"unavailable_reason\":\"No reviewed git-history numstat snapshot is pinned by path, repository identity, revision window and SHA-256.\"},\"owner_concentration\":{\"id\":\"owner-concentration\",\"metric\":\"owner_concentration\",\"risk\":\"high\",\"enforcement\":\"report-only\",\"enforcement_rationale\":\"Ownership concentration is high-risk, but enforcing a threshold without a reviewed scope-to-owner snapshot would treat missing owners as measured zero.\",\"expected_repository_id\":\"llm-agent\",\"expected_population\":null,\"max_age_days\":90,\"owner\":\"llm-agent-governance\",\"next_action\":\"Review critical scopes and primary owners, then pin the ownership snapshot before setting a basis-point budget.\",\"status\":\"not-available\",\"observed\":null,\"unit\":null,\"hotspots\":[],\"source\":null,\"unavailable_reason\":\"No reviewed ownership snapshot is pinned by repository identity, revision window and SHA-256.\"},\"inactive_assets\":{\"id\":\"inactive-assets\",\"metric\":\"inactive_assets\",\"risk\":\"high\",\"enforcement\":\"report-only\",\"enforcement_rationale\":\"Asset retirement decisions require a sanitized invocation window; absent telemetry must not be interpreted as zero activity.\",\"expected_repository_id\":\"llm-agent\",\"expected_population\":null,\"max_age_days\":30,\"owner\":\"llm-agent-governance\",\"next_action\":\"Produce a privacy-reviewed invocation ledger for a fixed window before proposing an inactive-asset threshold.\",\"status\":\"not-available\",\"observed\":null,\"unit\":null,\"hotspots\":[],\"source\":null,\"unavailable_reason\":\"No sanitized invocation ledger is pinned by repository identity, revision window and SHA-256.\"}}}\n",
++      "stderr": ""
++    },
++    {
++      "argv": [
++        "/workspace/scratch/694941d81014/tooling/rtk",
++        "bypass",
++        "bash",
++        "scripts/export-adoption-matrix-jsonl.sh",
++        ".",
++        "/workspace/scratch/694941d81014/closure20261023/root-consolidation-independent/canonical-adoption-matrix.jsonl"
++      ],
++      "cwd": "/workspace/scratch/694941d81014/llm_agent",
++      "started_at": "2026-10-23T14:18:51.200302+00:00",
++      "completed_at": "2026-10-23T14:18:51.214753+00:00",
++      "returncode": 0,
++      "expected_returncode": 0,
++      "stdout": "[OK] adoption matrix jsonl exported: /workspace/scratch/694941d81014/closure20261023/root-consolidation-independent/canonical-adoption-matrix.jsonl\n",
++      "stderr": ""
++    },
++    {
++      "argv": [
++        "/workspace/scratch/694941d81014/tooling/rtk",
++        "bypass",
++        "/workspace/scratch/694941d81014/tooling/venv/bin/python",
++        "-m",
++        "tools.codex_assets.reference_repository",
++        "--root",
++        "/workspace/scratch/694941d81014/llm_agent",
++        "plan-removal",
++        "--repo",
++        "codex",
++        "--as-of",
++        "2026-07-19",
++        "--adoption-decision",
++        "subrepos/adoption-matrix.md",
++        "--evidence-dependency-scan",
++        "reports/subrepo-removal-plan-codex-2026-06-16.md",
++        "--dirty-baseline-review",
++        "subrepos/dirty-baseline.tsv",
++        "--rollback-plan",
++        "reports/subrepo-removal-plan-codex-2026-06-16.md",
++        "--out-json",
++        "/workspace/scratch/694941d81014/closure20261023/root-consolidation-independent/canonical-removal-plan.json",
++        "--out-md",
++        "/workspace/scratch/694941d81014/closure20261023/root-consolidation-independent/canonical-removal-plan.md"
++      ],
++      "cwd": "/workspace/scratch/694941d81014/llm_agent",
++      "started_at": "2026-10-23T14:18:51.222785+00:00",
++      "completed_at": "2026-10-23T14:18:51.351968+00:00",
++      "returncode": 0,
++      "expected_returncode": 0,
++      "stdout": "[PASS] reference repository removal dry-run plan written: /workspace/scratch/694941d81014/closure20261023/root-consolidation-independent/canonical-removal-plan.json\n",
++      "stderr": ""
++    },
++    {
++      "argv": [
++        "/workspace/scratch/694941d81014/tooling/rtk",
++        "bypass",
++        "/workspace/scratch/694941d81014/tooling/venv/bin/python",
++        "-m",
++        "tools.codex_assets.reference_repository",
++        "--root",
++        "/workspace/scratch/694941d81014/llm_agent",
++        "check-removal",
++        "--plan",
++        "/workspace/scratch/694941d81014/closure20261023/root-consolidation-independent/prior-removal-fixture.json",
++        "--no-fixtures",
++        "--summary-json"
++      ],
++      "cwd": "/workspace/scratch/694941d81014/llm_agent",
++      "started_at": "2026-10-23T14:18:51.353379+00:00",
++      "completed_at": "2026-10-23T14:18:51.488474+00:00",
++      "returncode": 2,
++      "expected_returncode": 2,
++      "stdout": "{\"checked\": 0, \"failures\": 1, \"status\": \"fail\"}\n",
++      "stderr": "[FAIL] /workspace/scratch/694941d81014/closure20261023/root-consolidation-independent/prior-removal-fixture.json: reference repository removal artifact hash is stale\n"
++    }
++  ],
++  "sources": [
++    {
++      "base": "repository",
++      "path": "subrepos/adoption-matrix.md",
++      "bytes": 85541,
++      "sha256": "da66a91c839169f540175cfcfabea245526657e9e9f47b868ea7e1d4b74493b4"
++    },
++    {
++      "base": "repository",
++      "path": "subrepos/adoption-matrix.jsonl",
++      "bytes": 103853,
++      "sha256": "a0a345e4626725a234a47419dfc073e61f221aec3595f2d960bcb19d0a780b3a"
++    },
++    {
++      "base": "repository",
++      "path": "docs/changes/20261023-evidence-methods/implementation-map.md",
++      "bytes": 19762,
++      "sha256": "635812051b3880a819fd403ca0dfc340491b94fde39076ac076c5c187e3946f9"
++    },
++    {
++      "base": "repository",
++      "path": "docs/runbooks/evidence-driven-optimization.md",
++      "bytes": 4858,
++      "sha256": "821f69318d9608b6f96fc13406707eee2d3040bdfc251e48133063d5f6666ffa"
++    },
++    {
++      "base": "repository",
++      "path": "fixtures/reference-repository/removal/pass/removal-plan.json",
++      "bytes": 2327,
++      "sha256": "af3006a9f496d3e5859c496a29b6457cca18cab7dd83d0a3e146e194f3df8c40"
++    }
++  ],
++  "source_set_sha256": "eb3c1bb5b51f396bb3e38bccb13b1bcd8fd31ea4151f0fa3bab8635bbd902663",
++  "deletions": [
++    {
++      "base": "repository",
++      "path": "reports/evidence-methods-absorption-2026-10-23.md",
++      "base_local_commit": "4c700de642fb8a1755b657e52b760b4384a5129d",
++      "base_remote_commit": "64c5192f2d6aaacf65143223f03190564032facc",
++      "git_blob": "53cda81736ca0b702af426ffbcc7091e47ae2109",
++      "bytes": 10280,
++      "sha256": "50662a903fe77a7915265025f45ab3a62bff4dfccf825b4649c9c034451239f4",
++      "absent_at_review": true,
++      "consolidated_into": "docs/changes/20261023-evidence-methods/implementation-map.md",
++      "content_retention": "Entire report body retained; heading depth adjusted, two self-descriptions changed from report to analysis, and the seven-entry review paragraph accurately converted to historical context."
++    }
++  ],
++  "consolidation_content_diff_after_heading_normalization": [
++    "--- original-report\n",
++    "+++ consolidated-map\n",
++    "@@ -1,5 +1,5 @@\n",
++    " ## 范围与实际来源",
++    " ",
++    "-本报告承接 Owner“全面吸收，全面优化，落地闭环”的授权，对十二项来源分别说明实际落点和限制。来源 URL、固定 revision 或内容摘要、许可证未知项、采集范围保存在 `docs/changes/20261023-evidence-methods/sources.json`；原始十二条 candidate、独立 decision 和 9 ENHANCE / 3 OBSERVE 决定保持不变。",
++    "+本分析承接 Owner“全面吸收，全面优化，落地闭环”的授权，对十二项来源分别说明实际落点和限制。来源 URL、固定 revision 或内容摘要、许可证未知项、采集范围保存在 `docs/changes/20261023-evidence-methods/sources.json`；原始十二条 candidate、独立 decision 和 9 ENHANCE / 3 OBSERVE 决定保持不变。",
++    " ",
++    " 本轮代码增强已随 ADK 8.0.39 发布，精确来源为 `415590db44e88979185efb850e2339a3f95411ef`，tree 为 `51d400e80ba555a49ca85fcfefbd74f7fe499072`。发布证据为 [PR #220](https://github.com/jiying2007/agent-dev-kit/pull/220)、[实际 main CI](https://github.com/jiying2007/agent-dev-kit/actions/runs/39955902743) 和 [v8.0.39](https://github.com/jiying2007/agent-dev-kit/releases/tag/v8.0.39)。Root 接入的原始签名材料在 `reports/promotion/agent-dev-kit/`；组件发布不授予 Native、G22、现场或 Product M5 资格。",
++    "@@ -31,5 +31,5 @@\n",
++    " 既有职责为 `agent-dev-kit/agents/security-compliance-reviewer/AGENTS.md`、`agent-dev-kit/skills/adk-interface-contract-design/SKILL.md` 和 `agent-dev-kit/workflows/release-hardening/WORKFLOW.md`。实现与审核见 `agent-dev-kit/docs/changes/20261023-release-contract/`。不可信日志、外部标题和回执不能替代精确来源、签名主体与发行权威。",
++    " ",
++    "-本报告不声称新增了通用 prompt-injection 防护或验证了所有模型安全行为；OpenAI 平台本身未被引入。方法来源与实际控制的覆盖范围保持分开。",
++    "+本分析不声称新增了通用 prompt-injection 防护或验证了所有模型安全行为；OpenAI 平台本身未被引入。方法来源与实际控制的覆盖范围保持分开。",
++    " ",
++    " ### EXT-11：完整发布集合与同字节验证",
++    "@@ -69,5 +69,5 @@\n",
++    " 本次修正只把四项真实 ADK 代码增强投影到生产矩阵，其余八项完整保留在原 candidate/decision/map。原 `docs/changes/20261023-evidence-methods/review-evidence.json`、requirements/design/tasks 和执行日志保持历史原件；前次方法审核遗漏上述两个 gate，历史 PASS 不继承为本次更正验收。",
++    " ",
++    "-更正后的独立复审须绑定本报告、矩阵 Markdown/JSONL、implementation map、runbook 和 removal fixture 的新摘要，并实际运行以下原始入口：",
++    "+前次矩阵更正的独立复审绑定了当时独立报告、矩阵 Markdown/JSONL、implementation map、runbook 和 removal fixture 共六份文件，并实际运行了以下七个原始入口；该历史记录保留在 `review-projection-correction.json`：",
++    " ",
++    " - `rtk bash scripts/check-upstream-intake-readiness.sh .`"
++  ],
++  "unchanged_guards": [
++    {
++      "base": "repository",
++      "path": "scripts/check-upstream-intake-readiness.sh",
++      "sha256": "85dd214eb7e59b6d03b25191f16174b7dd679d1e5eba15ebfdace116eb43bf70"
++    },
++    {
++      "base": "repository",
++      "path": "scripts/check-observe-intake-depth.sh",
++      "sha256": "cecee43ee13b28e705357e464cd17b9bd69df89cbd62968229b2da7e8313927d"
++    },
++    {
++      "base": "repository",
++      "path": "scripts/check-adoption-matrix-structured.sh",
++      "sha256": "e667d41e99f8bb80a190bf0fa1772968898e25b7ac4f60a85c812e55314bfcff"
++    },
++    {
++      "base": "repository",
++      "path": "scripts/check-adoption-matrix-status.sh",
++      "sha256": "76bf28768a2a9dd2c0be7fa973875a8a2a2e9f9764602340b075424e20cccdef"
++    },
++    {
++      "base": "repository",
++      "path": "scripts/check-adoption-evidence-integrity.sh",
++      "sha256": "86ea1ec79a8b8e0d88741f0081489cc4ba5a0f65e0a6ea20f3e20ae0369c8ec4"
++    },
++    {
++      "base": "repository",
++      "path": "scripts/check-adoption-real-assets.sh",
++      "sha256": "4b8691db4873c423e939cb6bbdafc68d4c6f9883982534ad58762205fc443cf8"
++    },
++    {
++      "base": "repository",
++      "path": "tests/test_reference_repository_removal.sh",
++      "sha256": "65ea2a6e15a6eb366fe6f579a7334a5e9f086014c5f8589fd040d9ee3bc54157"
++    },
++    {
++      "base": "repository",
++      "path": "scripts/export-adoption-matrix-jsonl.sh",
++      "sha256": "802e1fa030c5a119eda87f20937def013e120909cee55b8668e9092f7490916d"
++    },
++    {
++      "base": "repository",
++      "path": "scripts/check-reference-repository-removal.sh",
++      "sha256": "292380dab1782ef9c175d4571a39fa56c5bd075be201d31eac50e44588c8c6f0"
++    },
++    {
++      "base": "repository",
++      "path": "scripts/plan-reference-repository-removal.sh",
++      "sha256": "9235803f6a51df596893106c588d23dd7e7ed5d0e248b69e031fca271bb9acb4"
++    },
++    {
++      "base": "repository",
++      "path": "tools/codex_assets/reference_removal.py",
++      "sha256": "773635dfba7847134c1ca6393e6326182b3b3ceb31d2e8049603994be0b0ebad"
++    },
++    {
++      "base": "repository",
++      "path": "tools/codex_assets/reference_repository.py",
++      "sha256": "d4d64fac97a7234e2352908dc9fed6b909334be5a4662cce3c171dd4be5830d4"
++    },
++    {
++      "base": "repository",
++      "path": "tools/codex_assets/reference_contracts.py",
++      "sha256": "29cd0e7f55c203af3f8a70a8952faedc90d510eefeab4be2d7e64ba0951aaf1c"
++    },
++    {
++      "base": "repository",
++      "path": "tools/codex_assets/intake_io.py",
++      "sha256": "2ccdd060dd64284aab8b1a39c4384de64879e278ed8ae3a7fe20ca974fc31e49"
++    },
++    {
++      "base": "repository",
++      "path": "manifests/reference_repository_lifecycle_policy.json",
++      "sha256": "bdd2596507eba5cfd0e3800622eceb6f1d14b2941010c766e0ee16991ac45e57"
++    },
++    {
++      "base": "repository",
++      "path": "tests/test_maintainability_budgets.sh",
++      "sha256": "cee2cd5a4d2f04b013dfdef45c38688dca94ec7e56bf2dde60c798116c948f76"
++    },
++    {
++      "base": "repository",
++      "path": "scripts/check-maintainability-budgets.sh",
++      "sha256": "cb853284406bd6d630669a613dcf2906d34f38a77c2f96d3675e191f1821e0b6"
++    },
++    {
++      "base": "repository",
++      "path": "tools/codex_assets/maintainability_budget.py",
++      "sha256": "7312a119218439a1726e426eda56690b026c31a2669f14b1d6453acf5ee64054"
++    },
++    {
++      "base": "repository",
++      "path": "manifests/comprehensive_optimization_backlog.json",
++      "sha256": "dcc814b4af52ec498a2585673d9da7274fe92da58e02ee580f2fb01283a74a8b"
++    }
++  ],
++  "preserved_history": [
++    {
++      "base": "repository",
++      "path": "docs/changes/20261023-evidence-methods/requirements.md",
++      "sha256": "caa6b8ff71120e6ab362ec8cc51c337bc3d06ecf2e5df6757553750c37a557cd"
++    },
++    {
++      "base": "repository",
++      "path": "docs/changes/20261023-evidence-methods/design.md",
++      "sha256": "a06522ed1fa37b273fa72d820b5a93302a6bc3f0885ac686bacbaab639666d4e"
++    },
++    {
++      "base": "repository",
++      "path": "docs/changes/20261023-evidence-methods/tasks.md",
++      "sha256": "8a1a4243f50fdb39c7442b1dfd096ea28ce4949d89de4fb7b400c38943f354e3"
++    },
++    {
++      "base": "repository",
++      "path": "docs/changes/20261023-evidence-methods/sources.json",
++      "sha256": "ba7da4f4bb46e59b835e0dc5dedfba487639b27d861100e6de305d9edfc692aa"
++    },
++    {
++      "base": "repository",
++      "path": "docs/changes/20261023-evidence-methods/source-metadata.jsonl",
++      "sha256": "4bad3191fac50362d3f30ff8290741cd258702c243ddb413da6e2d1e3b3372f6"
++    },
++    {
++      "base": "repository",
++      "path": "docs/changes/20261023-evidence-methods/candidates.jsonl",
++      "sha256": "0ba319379f12ee1b3d454fbd5ac622699d8b9ad1550173735cc71d3433de6010"
++    },
++    {
++      "base": "repository",
++      "path": "docs/changes/20261023-evidence-methods/collection.json",
++      "sha256": "4eb4e6743c8c699f60782431d380480c602b3c799fa9b1cd0a9b3c39f5de2320"
++    },
++    {
++      "base": "repository",
++      "path": "docs/changes/20261023-evidence-methods/decisions.jsonl",
++      "sha256": "3d3582391dc2fdf9fd79e67a9a3dbfc4174392df07965b7d0aac0e3294a4109b"
++    },
++    {
++      "base": "repository",
++      "path": "docs/changes/20261023-evidence-methods/owner-decision.md",
++      "sha256": "b0c1c6af3f247b10fb83582ea2b2a22ebc0fc201032b5957ff43fdbfafc5caaf"
++    },
++    {
++      "base": "repository",
++      "path": "docs/changes/20261023-evidence-methods/review-evidence.json",
++      "sha256": "ade3d294f05deb506fc9d72ff8f0be53feee2346d420372ba05b02139fa83a4f"
++    },
++    {
++      "base": "repository",
++      "path": "docs/changes/20261023-evidence-methods/review-findings.md",
++      "sha256": "64cb910798ed3817b57fa90cecc30e4f433d4ebd990c377dec21b1696b6bed26"
++    },
++    {
++      "base": "repository",
++      "path": "docs/changes/20261023-evidence-methods/negative-results.md",
++      "sha256": "431ea8d117b19eaf4388e2f5ea59a2a9b08bba518e32f33de4dbb9b1fa8e25f9"
++    },
++    {
++      "base": "repository",
++      "path": "docs/changes/20261023-evidence-methods/evidence/independent-review-execution.json",
++      "sha256": "b4679c8aba80b5da61f91ff041d56264295b0726fb043f2481ed0ac3153b21fb"
++    },
++    {
++      "base": "repository",
++      "path": "docs/changes/20261023-evidence-methods/evidence/independent-review-probes.py",
++      "sha256": "a9bdb843bb1b95e8c5cf8eaef7fcce433f4bc34ac9b18a5d2b7a574646c2b17b"
++    },
++    {
++      "base": "repository",
++      "path": "docs/changes/20261023-evidence-methods/review-projection-correction.json",
++      "sha256": "df270326b796a4daead2b72dd49898785df7572b937ac9ade99022be7514d8b6"
++    },
++    {
++      "base": "repository",
++      "path": "docs/changes/20261023-evidence-methods/review-projection-correction-findings.md",
++      "sha256": "d22660328b7f785ed0b814cf2e762deca8843837af85ab3f3023a7486ad99d98"
++    },
++    {
++      "base": "repository",
++      "path": "docs/changes/20261023-evidence-methods/evidence/projection-correction-independent-execution.json",
++      "sha256": "2e1c1c3f9e2d3c5366ff4e28ce9087f12d83ce7904d65c1e0c52a33d048ad617"
++    }
++  ],
++  "reports_tree_delta": [
++    "D\treports/evidence-methods-absorption-2026-10-23.md"
++  ],
++  "ledger_preservation": {
++    "sources": 12,
++    "candidates": 12,
++    "decisions": 12,
++    "decision_counts": {
++      "OBSERVE": 3,
++      "ENHANCE": 9
++    },
++    "original_bytes_and_ids_preserved": true
++  },
++  "matrix_projection": {
++    "rows": 210,
++    "production_ids": [
++      "EXT-06",
++      "EXT-08",
++      "EXT-09",
++      "EXT-11"
++    ],
++    "research_enhance_ids": [
++      "EXT-01",
++      "EXT-03",
++      "EXT-04",
++      "EXT-05",
++      "EXT-07"
++    ],
++    "observe_ids": [
++      "EXT-02",
++      "EXT-10",
++      "EXT-12"
++    ],
++    "only_four_evidence_paths_retargeted": true
++  },
++  "published_adk": {
++    "commit": "415590db44e88979185efb850e2339a3f95411ef",
++    "tree": "51d400e80ba555a49ca85fcfefbd74f7fe499072",
++    "source_bindings": [
++      {
++        "base": "repository",
++        "path": "agent-dev-kit/src/agent_dev_kit/atomic_io.py",
++        "sha256": "0a620484ae5954824ca7c93a251df8f8518ee5ec64739d64d9d987f0fb3a1b79"
++      },
++      {
++        "base": "repository",
++        "path": "agent-dev-kit/src/agent_dev_kit/native_campaign.py",
++        "sha256": "52d0b5a37828d8d7d5042da62517e2d65047acb6c9474f2e9703df874cde6b81"
++      },
++      {
++        "base": "repository",
++        "path": "agent-dev-kit/src/agent_dev_kit/native_campaign_contract.py",
++        "sha256": "63f0dbb11fb4d8b2878dedfe9668db797b9182e9f635feccb0a62ea8c2681d91"
++      },
++      {
++        "base": "repository",
++        "path": "agent-dev-kit/src/agent_dev_kit/compiler.py",
++        "sha256": "27e643dee1bbf7a150e8f6f1e0466e043284d57db15eeca77afd8287aad2cce4"
++      },
++      {
++        "base": "repository",
++        "path": "agent-dev-kit/src/agent_dev_kit/release.py",
++        "sha256": "f6a9f42408222a6e1ebccba6baabe57c1df263ab72a6f0a933e0953f6938b8dd"
++      },
++      {
++        "base": "repository",
++        "path": "agent-dev-kit/src/agent_dev_kit/distribution/release_artifacts.py",
++        "sha256": "921dd17150b9687e5120a50111ef640ee04499cf59a0115af9d70874ffd0260b"
++      },
++      {
++        "base": "repository",
++        "path": "agent-dev-kit/src/agent_dev_kit/distribution/archive_io.py",
++        "sha256": "3ce030569ca6b29d8cdc9463cc22057294fb52572ee221e7304caee8381e2c84"
++      },
++      {
++        "base": "repository",
++        "path": "agent-dev-kit/src/agent_dev_kit/distribution/release_contract.py",
++        "sha256": "9c2e8c8753f7c5fcf860d121d5f18900d7c3107b1a777593cb5c188170196126"
++      },
++      {
++        "base": "repository",
++        "path": "agent-dev-kit/agents/architecture-planner/AGENTS.md",
++        "sha256": "c365f27397c82c548c1b1a7528fb2960df58ab6f0d1c64828252375e429a113a"
++      },
++      {
++        "base": "repository",
++        "path": "agent-dev-kit/agents/security-compliance-reviewer/AGENTS.md",
++        "sha256": "0abd4397720aadc778778d400eb2bcf2bf9e30eebe472b676121fba0c72d52c8"
++      },
++      {
++        "base": "repository",
++        "path": "agent-dev-kit/agents/build-release-engineer/AGENTS.md",
++        "sha256": "7d6c552b62282ada68f6dbbd7abac34336011f80320668339e1f267c4c4e76ba"
++      },
++      {
++        "base": "repository",
++        "path": "agent-dev-kit/skills/adk-interface-contract-design/SKILL.md",
++        "sha256": "8e879b5f42eb02d17f8c4f69249a2af8ea31c55f79a1e710329a1ca80c028eeb"
++      },
++      {
++        "base": "repository",
++        "path": "agent-dev-kit/skills/adk-interface-contract-design/references/lifecycle-operation-contract.md",
++        "sha256": "22532bfe0e89fac9596023f0a2b708d46b98722d4acf6adc90bf833e0f82db71"
++      },
++      {
++        "base": "repository",
++        "path": "agent-dev-kit/skills/adk-interface-contract-design/references/tool-effect-contract.md",
++        "sha256": "428be87b2acb671e01581ae83af46dfb0e87c8cdb1d24d11e18a231244b67ea4"
++      },
++      {
++        "base": "repository",
++        "path": "agent-dev-kit/skills/adk-release-versioning/SKILL.md",
++        "sha256": "3bf8f529be16d467cb099a0db7b2534860de7952001f6baa0b990ff189db5988"
++      },
++      {
++        "base": "repository",
++        "path": "agent-dev-kit/workflows/release-hardening/WORKFLOW.md",
++        "sha256": "0b85520437a8e79cdd9b52b94039f52b163c5934385b6eebc9a153a4876047c7"
++      }
++    ]
++  },
++  "maintainability": {
++    "status": "pass",
++    "strict": true,
++    "budget_count": 14,
++    "warnings": [],
++    "failures": [],
++    "root_report_budget": {
++      "id": "root-report-count",
++      "metric": "file_count",
++      "status": "pass",
++      "observed": 320,
++      "baseline": 284,
++      "drift": 36,
++      "warning_limit": 320,
++      "hard_limit": 400,
++      "files_scanned": 320,
++      "owner": "llm-agent-governance",
++      "next_action": "Run governed report cleanup and preserve supersession metadata before creating more active reports.",
++      "hotspots": [
++        {
++          "path": "reports/2026-08-01-token-context-governance-v2-release-bundle.json",
++          "value": 1
++        },
++        {
++          "path": "reports/README.md",
++          "value": 1
++        },
++        {
++          "path": "reports/absorb-review-20260512_115031.md",
++          "value": 1
++        },
++        {
++          "path": "reports/absorption-optimization-review-2026-06-15.md",
++          "value": 1
++        },
++        {
++          "path": "reports/active-subrepo-diff-scan-2026-07-06.md",
++          "value": 1
++        }
++      ]
++    },
++    "budget_config_and_checker_unchanged": true
++  },
++  "canonical_export_byte_match": true,
++  "removal_contract": {
++    "only_fixture_field_changed": "/artifact_sha256/adoption_decision",
++    "old_sha256": "46ca2f731f41b4ab2ad8422bc0eba996749404e8528a37117e4794e0f3e2fcb2",
++    "new_sha256": "da66a91c839169f540175cfcfabea245526657e9e9f47b868ea7e1d4b74493b4",
++    "canonical_plan_object_matches": true,
++    "old_digest_rejected": true
++  },
++  "frozen_sources_and_deletion_stable_during_review": true,
++  "scope_limits": [
++    "Eight original entrypoints plus the strict budget measurement and canonical export/planner/stale-digest check are actual independent executions.",
++    "No production source, thresholds, exclusions, guards, tests, prior review records or old reports were changed by this reviewer.",
++    "Existing ASW contracts remain responsibility references, not new execution receipts; ADK source is unchanged.",
++    "This is a frozen-file review before the next commit and CI, not a full-suite or release authorization.",
++    "64c5192 CI and its matching local 41-pass/1-fail result remain historical failures; old seven-gate PASS is not used to override them.",
++    "Existing dirty-triage and historical Product M5/current candidate blockers remain unchanged."
++  ],
++  "completed_at": "2026-10-23T14:18:51.491714+00:00"
++}
+diff --git a/docs/changes/20261023-evidence-methods/implementation-map.md b/docs/changes/20261023-evidence-methods/implementation-map.md
+index 00f4b8e..a3571a2 100644
+--- a/docs/changes/20261023-evidence-methods/implementation-map.md
++++ b/docs/changes/20261023-evidence-methods/implementation-map.md
+@@ -6,7 +6,7 @@
+ 
+ 十二项来源和九项 ENHANCE、三项 OBSERVE 的原始决定全部保留。生产采纳表只登记 EXT-06、EXT-08、EXT-09、EXT-11 在 ADK 8.0.39 的实际代码承接；EXT-01、EXT-03、EXT-04、EXT-05、EXT-07 是本轮研究与验收方法，EXT-02、EXT-10、EXT-12 是选型观察，分别通过本映射、runbook 和原 decision ledger 留存。后八项没有新增生产 Agent/Skill/Workflow intake package，也不声明生产 intake 已完成。
+ 
+-此前将十二项统一投影为 `llm_agent + done` 与既有 reference lifecycle 合同不符。原 `review-evidence.json` 和执行日志保留为当时文件快照的审查历史；该审查遗漏了 upstream-intake-readiness 与 observe-intake-depth 两个入口，不能作为更正后矩阵的验收。后续独立复审绑定更正后的文件、原始门禁结果和 removal fixture 摘要，见 `reports/evidence-methods-absorption-2026-10-23.md` 的关闭要求。
++此前将十二项统一投影为 `llm_agent + done` 与既有 reference lifecycle 合同不符。原 `review-evidence.json` 和执行日志保留为当时文件快照的审查历史；该审查遗漏了 upstream-intake-readiness 与 observe-intake-depth 两个入口，不能作为更正后矩阵的验收。原矩阵修正的实际七项门禁结果及六文件快照保存在 `review-projection-correction.json`，对应远端提交 `64c5192f2d6aaacf65143223f03190564032facc`。随后完整回归发现新增根 reports 文档使严格维护预算失败。其分析已合并到本文件的生产承接章节；最新来源与维护预算修复须由新的 `review-consolidation.json` 复核，历史审核不迁移为当前文件绑定。
+ 
+ ## 方法映射
+ 
+@@ -44,6 +44,100 @@
+ 
+ ## 关闭条件
+ 
+-采纳表的 done 遵循既有生产 intake 合同，不能由尾注重定义为“方法已经讨论”。本轮四项生产投影须指向真实 ADK 代码及分析报告，其余八项在原 ledger 中保持可追溯。代码问题须具有独立 Spec/Quality 审查和新鲜回归，组件交付须有受保护 PR、精确主线 CI、immutable 三资产和 Root pin 的读回。缺真实 Native receipts、G22 trials、LTA field events 或当前 Product M5 authority 时继续由原检查器返回 blocked/conditional；本映射不生成它们。
++采纳表的 done 遵循既有生产 intake 合同，不能由尾注重定义为“方法已经讨论”。本轮四项生产投影须指向真实 ADK 代码及本 change 的分析，其余八项在原 ledger 中保持可追溯。代码问题须具有独立 Spec/Quality 审查和新鲜回归，组件交付须有受保护 PR、精确主线 CI、immutable 三资产和 Root pin 的读回。缺真实 Native receipts、G22 trials、LTA field events 或当前 Product M5 authority 时继续由原检查器返回 blocked/conditional；本映射不生成它们。
+ 
+ 本轮没有实际调用收费模型，也没有新增外部评估框架。现有 Native executor 的 asyncio transport 清理告警已在输出变更中保留为独立未关闭事项，不能用输出写入修复覆盖该观察。
++
++## 生产承接与适用边界
++
++### 范围与实际来源
++
++本分析承接 Owner“全面吸收，全面优化，落地闭环”的授权，对十二项来源分别说明实际落点和限制。来源 URL、固定 revision 或内容摘要、许可证未知项、采集范围保存在 `docs/changes/20261023-evidence-methods/sources.json`；原始十二条 candidate、独立 decision 和 9 ENHANCE / 3 OBSERVE 决定保持不变。
++
++本轮代码增强已随 ADK 8.0.39 发布，精确来源为 `415590db44e88979185efb850e2339a3f95411ef`，tree 为 `51d400e80ba555a49ca85fcfefbd74f7fe499072`。发布证据为 [PR #220](https://github.com/jiying2007/agent-dev-kit/pull/220)、[实际 main CI](https://github.com/jiying2007/agent-dev-kit/actions/runs/39955902743) 和 [v8.0.39](https://github.com/jiying2007/agent-dev-kit/releases/tag/v8.0.39)。Root 接入的原始签名材料在 `reports/promotion/agent-dev-kit/`；组件发布不授予 Native、G22、现场或 Product M5 资格。
++
++第三方材料只作为方法输入，没有复制、安装或执行第三方资产。下述生产映射复用本仓已有实现和职责，没有新增 Agent、Skill、Workflow、评估框架或收费服务。
++
++### 四项实际生产承接
++
++#### EXT-06：按完整责任复用既有模块
++
++适用于 Native 多文档输出和公开 release publish 的重复责任。`agent-dev-kit/src/agent_dev_kit/native_campaign.py` 通过 `agent-dev-kit/src/agent_dev_kit/atomic_io.py` 承担统一输出校验、staging 和补偿；`agent-dev-kit/src/agent_dev_kit/release.py` 复用 `agent-dev-kit/src/agent_dev_kit/distribution/release_contract.py` 的 canonical verifier。
++
++该增强由 `agent-dev-kit/agents/architecture-planner/AGENTS.md` 的责任划分、`agent-dev-kit/skills/adk-interface-contract-design/SKILL.md` 的调用者合同和 `agent-dev-kit/workflows/release-hardening/WORKFLOW.md` 的验证与发布职责承接。具体改动和独立审核在 `agent-dev-kit/docs/changes/20261023-output-boundaries/` 与 `agent-dev-kit/docs/changes/20261023-release-contract/`。确定性反例覆盖调用者正常输出、重复/别名输出、后项写入失败和发布合同不一致。
++
++适用收益是统一实际责任与错误处理；不以文件数、模块行数或假设的 token 节省证明生产效率改善。Root 的 process_budget 复用仍在原实现映射中，不伪装成 ADK 新资产。
++
++#### EXT-08：在实际失败路径上保证可恢复
++
++`agent-dev-kit/src/agent_dev_kit/native_campaign_contract.py` 与 `agent-dev-kit/src/agent_dev_kit/atomic_io.py` 在写入前校验全集合的输出类型、别名和输入冲突，完成编码及 staging 后再发布；失败时补偿已替换项目，恢复失败则保留恢复材料。`agent-dev-kit/src/agent_dev_kit/compiler.py` 在 export 使用 writer lock，并在获得锁后复核原始路径身份。
++
++既有承接职责为 `agent-dev-kit/agents/architecture-planner/AGENTS.md`、`agent-dev-kit/skills/adk-interface-contract-design/references/lifecycle-operation-contract.md`、`agent-dev-kit/skills/adk-interface-contract-design/references/tool-effect-contract.md` 和 `agent-dev-kit/workflows/release-hardening/WORKFLOW.md`。代码及真实反例见 `agent-dev-kit/docs/changes/20261023-output-boundaries/`。
++
++这证明已观察到的文件操作失败可以按合同处理；跨文件补偿不等于任意断电点的崩溃原子性，也不证明远端 API exactly-once。远端未知结果仍按已有发布流程读回后决定是否重试。
++
++#### EXT-09：来源数据与发布权威分别核验
++
++本次生产增强限定为 release 来源完整性：`agent-dev-kit/src/agent_dev_kit/distribution/release_artifacts.py` 从冻结 Git tree 读取并验证 blob；`agent-dev-kit/src/agent_dev_kit/distribution/archive_io.py` 有界扫描完整 source inventory；`agent-dev-kit/src/agent_dev_kit/distribution/release_contract.py` 对照 source 数量、摘要和嵌入 manifest。ignored、index 隐藏漂移、Git attributes、重复成员、路径或类型冲突不能仅凭表面 clean 状态进入合格资产。
++
++既有职责为 `agent-dev-kit/agents/security-compliance-reviewer/AGENTS.md`、`agent-dev-kit/skills/adk-interface-contract-design/SKILL.md` 和 `agent-dev-kit/workflows/release-hardening/WORKFLOW.md`。实现与审核见 `agent-dev-kit/docs/changes/20261023-release-contract/`。不可信日志、外部标题和回执不能替代精确来源、签名主体与发行权威。
++
++本分析不声称新增了通用 prompt-injection 防护或验证了所有模型安全行为；OpenAI 平台本身未被引入。方法来源与实际控制的覆盖范围保持分开。
++
++#### EXT-11：完整发布集合与同字节验证
++
++`agent-dev-kit/src/agent_dev_kit/release.py` 的公开 publish 对 captured archive snapshot 进行 canonical verification，并使用同一份已验证字节形成 tar、checksum 和 release-contract 三资产；dry-run 不写输出。`agent-dev-kit/src/agent_dev_kit/distribution/release_contract.py` 仍是实际合同 owner，改名版本、source 漂移和异常 tar 会被原验证器拒绝。
++
++既有职责为 `agent-dev-kit/agents/build-release-engineer/AGENTS.md`、`agent-dev-kit/skills/adk-release-versioning/SKILL.md` 和 `agent-dev-kit/workflows/release-hardening/WORKFLOW.md`。实现、测试和独立审核见 `agent-dev-kit/docs/changes/20261023-release-contract/`。实际 GitHub immutable 状态、签名和主线执行由上列发布及 CI 记录分别证明，不由本报告或 release 标题推断。
++
++这些 Agent/Skill/Workflow 路径说明既有职责承接关系，不是新生成的执行回执，也不声明每个 Workflow 步骤在本次独立运行。实际执行只以原始测试、review、CI 和发布证据为准。
++
++### 五项研究与验收方法
++
++以下 ENHANCE 决定保留在原 ledger 和 `docs/changes/20261023-evidence-methods/implementation-map.md`，操作说明进入 `docs/runbooks/evidence-driven-optimization.md`。它们用于本轮问题定义与验收，不登记为新生产 intake package。
++
++| 来源 | 本轮实际采用 | 适用边界与后续验证 |
++|---|---|---|
++| EXT-01 OpenAI Skill evals | 分开记录路由、执行、正确产物与真实效果；用原失败和正常对照验收缺陷 | 没有重新认证全部 Skill；真实效果沿原 effect campaign 采样 |
++| EXT-03 Anthropic evals | 以最终文件、退出码、进程和发布状态验收，保留失败与重试分母 | 测试通过不增加 Native、G22 或产品资格；真实 campaign 仍需实际任务 |
++| EXT-04 Anthropic harness | 根据共享边界风险选择独立审查与回归，对局部反馈只补相应验证 | 本轮没有逐个证明所有 harness 组件的净收益，后续消融需固定输入与预算 |
++| EXT-05 Addy Skill evals | 分开解释结构校验、词法路由近似、执行成功与行为效果 | 没有新 catalog 或 runner；组件有无对照须使用真实任务且保留完整分母 |
++| EXT-07 Cursor benchmark | 先确认实际工作与产物；缓存反例暴露九项生产缓存输入不完整并禁用 | 只确认正确性修复，没有端到端效率、模型成本或人工时间改善的测量结论 |
++
++### 三项选型观察与重新进入条件
++
++这三项保持原 OBSERVE decision；未建立生产 observe intake package，因此不出现在生产 adoption matrix。以后需要生产吸收时仍须完成原 Agent/Skill/Workflow 深度、报告、合法性和运行证据要求。
++
++| 来源 | 当前观察结论 | 重新进入评审的条件 |
++|---|---|---|
++| EXT-02 OpenAI deprecations | 在 sources.json 指定静态扫描面未发现活跃托管 Evals / Agent Builder 调用，作为选型约束 | 发现真实活跃调用或平台边界变更时，核对当前官方状态、实际调用者及迁移需求；未扫描的外部部署保持未知 |
++| EXT-10 LangGraph checkpointers | 复用关于 checkpoint、重放与外部副作用的语义分析，没有引入框架 | 真实故障证明现有恢复 owner 无法满足需求，并有可比较收益、维护成本与副作用控制证据时再评审 |
++| EXT-12 GitHub workflow lockfiles | 继续已有 full SHA pin；按已核来源保持 Enterprise Cloud 公开预览观察 | 重新核实官方状态、确认已具备资格且零新增费用，再进行限定工作流兼容性试验；当前没有升级或购买动作 |
++
++### 发现、纠正与关闭要求
++
++工作树 quick 检查发现，原十二条生产矩阵行全部使用 `llm_agent + done`。既有 reference lifecycle 只在真实 reference-repository onboarding 时允许 Root 作为该生产目标；九项 adopt 不满足生产目标及本地证据要求，三项 observe 也没有生产 intake 所需的深度包。原矩阵尾注不能重新定义 done。
++
++本次修正只把四项真实 ADK 代码增强投影到生产矩阵，其余八项完整保留在原 candidate/decision/map。原 `docs/changes/20261023-evidence-methods/review-evidence.json`、requirements/design/tasks 和执行日志保持历史原件；前次方法审核遗漏上述两个 gate，历史 PASS 不继承为本次更正验收。
++
++前次矩阵更正的独立复审绑定了当时独立报告、矩阵 Markdown/JSONL、implementation map、runbook 和 removal fixture 共六份文件，并实际运行了以下七个原始入口；该历史记录保留在 `review-projection-correction.json`：
++
++- `rtk bash scripts/check-upstream-intake-readiness.sh .`
++- `rtk bash scripts/check-observe-intake-depth.sh .`
++- `rtk bash scripts/check-adoption-matrix-structured.sh .`
++- `rtk bash scripts/check-adoption-matrix-status.sh .`
++- `rtk bash scripts/check-adoption-evidence-integrity.sh .`
++- `rtk bash scripts/check-adoption-real-assets.sh . --summary-json`
++- `rtk bash tests/test_reference_repository_removal.sh`
++
++矩阵 JSONL 由原 exporter 生成，removal pass fixture 的 adoption_decision 摘要由原 planner 计算；不改变门禁或测试断言。新提交的全量回归、受保护 PR CI 与实际 main CI 独立留证。本报告不预填尚未运行的更正后结果。
++
++当前缺少本机声明运行环境、过期 dirty baseline 及旧 M5 资格的门禁结果仍依其原权威报告，不能用本次矩阵修正、ADK 发布或 PR CI 绿色消除。复审时间沿原变更节奏或 2026-11-22 之前进行；该日期不表示创建了自动任务。
++
++## 文档整合与严格维护预算
++
++`64c5192f2d6aaacf65143223f03190564032facc` 的远端 CI 39965536971 与同树本地完整回归均在 `test_maintainability_budgets` 失败：先完成 41 组，root-report-count 实测 321，超过 warning_limit 320；strict 模式正确拒绝 warning。唯一增量是本轮新建的 `reports/evidence-methods-absorption-2026-10-23.md`。
++
++本次将该分析完整合并到已有 implementation map，移除重复的根 reports 载体，并将矩阵证据更新到本文件及既有真实 ADK 代码。原报告及独立审核仍可从 [固定历史提交](https://github.com/jiying2007/llm_agent/blob/64c5192f2d6aaacf65143223f03190564032facc/reports/evidence-methods-absorption-2026-10-23.md) 回读。没有移动旧报告、排除目录、改变统计规则或提高任何预算。原 12 candidate/decision、9 ENHANCE/3 OBSERVE、4/5/3 分流和适用边界保持不变。
++
++文档整合后的独立复审须绑定当前矩阵 Markdown/JSONL、implementation map、runbook、removal fixture 共五份文件，以及原报告删除和内容合并事实。除上述七个原始 intake/matrix/removal 入口外，还必须执行 `rtk bash tests/test_maintainability_budgets.sh`。旧 CI 与本地 41/1 失败、未执行的两个 quick、已归档的本轮测试临时产物分别保留；最新完整回归和实际主线结果由后续精确提交证据给出。
+diff --git a/docs/changes/20261023-evidence-methods/review-consolidation-findings.md b/docs/changes/20261023-evidence-methods/review-consolidation-findings.md
+new file mode 100644
+index 0000000..4b49fb6
+--- /dev/null
++++ b/docs/changes/20261023-evidence-methods/review-consolidation-findings.md
+@@ -0,0 +1,54 @@
++# 分析整合与维护预算：独立 Spec / Quality 复审
++
++Reviewer：`ai/root/architecture_audit`。实现作者：`ai/root`。审查者参与了此前独立路径、发布、集成和矩阵审核，并只读审查了本次整合方案；没有实现本次五个文件及删除变更。
++
++本次绑定提交前冻结的五个源文件和一个删除事实。父提交为本地 `4c700de642fb8a1755b657e52b760b4384a5129d`、远端 `64c5192f2d6aaacf65143223f03190564032facc`，两者 tree 为 `81d552d11888dd4b2c2c758497d9f2eacc7c0cc5`。新的实施提交和完整 CI 尚未发生，不由本审核预先认证。
++
++**结论：Spec PASS / Quality PASS。** 本次修正范围内没有未解决阻断发现。八个要求的原始入口独立执行全部 exit 0；全量回归、两个 quick 与新精确提交的 PR / main CI 仍须分别留证。
++
++## METHODS-CONSOLIDATION-01：新增报告超出既有 strict 预算 — 已修正
++
++远端 run 39965536971 及同树本地完整回归在 41 组通过后，于 `test_maintainability_budgets` 失败。原始报告数为 321，warning_limit 为 320；strict 模式拒绝 warning。原始候选、失败日志、五成员 CI ZIP 和旧审核保留为历史，不能通过修改历史结论或重标旧 PASS 消除失败。
++
++实际修正将本轮新增 `reports/evidence-methods-absorption-2026-10-23.md` 的分析并入已有 `docs/changes/20261023-evidence-methods/implementation-map.md`，删除重复载体。审查验证：
++
++- Git 父提交、真实远端 `64c5192f…` 的原报告 blob 与保存的原版字节一致：10280 bytes，SHA-256 为 `50662a903fe77a7915265025f45ab3a62bff4dfccf825b4649c9c034451239f4`，Git blob 为 `53cda81736ca0b702af426ffbcc7091e47ae2109`。
++- 去掉原报告标题并统一标题层级后，合并正文只有三处文字调整：两处“本报告”改为“本分析”；原未来审核段落改为准确描述已完成的六文件、七入口历史审核。其余正文逐字保留。
++- 四项生产承接、五项研究方法、三项观察及重新进入条件、固定发布来源、ASW 非执行认证、崩溃原子性 / exactly-once 限制、Native / G22 / field / Product M5 资格边界均完整保留。
++- `reports/` 的 tracked diff 只有本轮新增报告的删除；没有移动旧报告、添加排除目录、改变计数方法或提高预算。
++- 原 maintainability 回归实际 exit 0。独立 strict 实测的十四项 budget 全部 pass、warnings/failures 为空，报告数为 **320**，warning_limit 仍为 **320**，hard_limit 仍为 **400**。当前结果没有新增报告数量余量；它也不构成行为收益或未测语义指标的证明。
++
++十九个相关门禁、测试、planner、checker、policy 与预算配置在执行前后保持父提交字节；十七个原来源、决策、要求、设计、任务和两代审核历史文件保持原字节。
++
++## Intake 与证据语义
++
++四条生产行仍是 EXT-06、EXT-08、EXT-09、EXT-11，target 为 `agent-dev-kit`、decision 为 `adopt`、state 为 `done`。逐对象比较确认只有四条 evidence 中的分析载体路径从被删除报告改为 implementation map；真实 ADK 代码路径、其他字段及其余 206 行未变，总计 210 行。
++
++原 upstream gate 接受实际 `agent-dev-kit/` 本地生产证据，未规定每个 adopt 必须增加根 reports 文件。观察行的深度合同保持原样：本轮三个 OBSERVE 继续留在原 decision ledger，原生产矩阵中的 11 个 observe 行仍由原 gate 校验。整合没有制造生产 intake 包或 ASW 执行回执。
++
++十二个 source、十二个 candidate、十二个 decision 及原 ID / 字节保持不变，决策仍为九个 ENHANCE、三个 OBSERVE。五个研究 ENHANCE 与三个选型 OBSERVE 的原限制继续有效。相关十六个 ADK 实现及 ASW 职责文件继续匹配此前实际读过并绑定的已发布提交 `415590db44e88979185efb850e2339a3f95411ef`；本次没有修改 ADK，也没有重新执行其完整套件。
++
++## 实际执行与摘要依赖
++
++独立执行时间：**2026-10-23T14:18:41.041405Z 至 14:18:51.491714Z**。完整 argv、cwd、UTC 时间、returncode、stdout 和 stderr 见 `evidence/consolidation-independent-execution.json`。
++
++| 原始入口 | 实际结果 |
++| --- | --- |
++| `scripts/check-upstream-intake-readiness.sh .` | exit 0；164 adopt rows |
++| `scripts/check-observe-intake-depth.sh .` | exit 0；11 rows |
++| `scripts/check-adoption-matrix-structured.sh .` | exit 0 |
++| `scripts/check-adoption-matrix-status.sh .` | exit 0 |
++| `scripts/check-adoption-evidence-integrity.sh .` | exit 0；210 rows / 621 paths |
++| `scripts/check-adoption-real-assets.sh . --summary-json` | exit 0；234 checked / 233 real assets / 1 个既有例外 |
++| `tests/test_reference_repository_removal.sh` | exit 0 |
++| `tests/test_maintainability_budgets.sh` | exit 0 |
++
++另外四次调用只解决本次具体依赖风险：strict budget 输出证实 320 及未改阈值；canonical exporter 输出与新 JSONL 逐字一致；canonical planner 与 fixture JSON 对象一致；父提交中的旧 `46ca…` 摘要实际被原 checker 以 exit 2 和 `artifact hash is stale` 拒绝。fixture 语义 diff 只有 `/artifact_sha256/adoption_decision`，新值为 `da66a91c839169f540175cfcfabea245526657e9e9f47b868ea7e1d4b74493b4`。
++
++规划器的 `--as-of 2026-07-19` 是原历史 fixture 输入；本审核使用真实 2026-10-23 时间，没有重写或续期 dirty review。五个冻结源文件、报告缺失状态、十九个 guard 和十七个历史文件在运行后再次核对一致。
++
++## 权威与交付限制
++
++旧 `review-evidence.json`、`review-projection-correction.json` 及附件仍为其对应快照的历史证据。前次七个定向门禁 PASS 是真实历史；随后 64c 的完整集成 FAIL 也是真实历史，本次没有互相替换。当前记录用新五文件与删除事实建立新的绑定。
++
++SHA-256 证明文件身份和内部一致性，不认证作者、上游身份、许可证或全部来源陈述。本次没有外部来源重新认证、付费调用、真实任务收益测量或 ASW 全流程执行。原 dirty-triage 过期与历史 Product M5/current candidate 限制未被修改；静态预算中的 churn、owner concentration 和 inactive assets 仍保留原来的不可用及 report-only 边界。当前定向 PASS 不表示 full / quick / 受保护合并或产品发布已获批准。
+diff --git a/docs/changes/20261023-evidence-methods/review-consolidation.json b/docs/changes/20261023-evidence-methods/review-consolidation.json
+new file mode 100644
+index 0000000..32715a5
+--- /dev/null
++++ b/docs/changes/20261023-evidence-methods/review-consolidation.json
+@@ -0,0 +1,470 @@
++{
++  "schema": "llm-agent-methods-independent-review/v1",
++  "subject_id": "20261023-evidence-methods",
++  "scope": "analysis-consolidation-and-maintainability",
++  "owner": "leiwenjun",
++  "authors": [
++    "ai/root"
++  ],
++  "reviewer": {
++    "id": "ai/root/architecture_audit",
++    "kind": "ai",
++    "implementation_independence": "independent",
++    "prior_related_review_participation": true,
++    "read_only_design_review_participation": true,
++    "scope_note": "The reviewer assessed the proposed consolidation and previously reviewed related ADK/Root boundaries, but did not implement this five-source and deletion change."
++  },
++  "reviewed_at": "2026-10-23T14:20:59Z",
++  "evidence_completed_at": "2026-10-23T14:18:51.491714+00:00",
++  "status": "pass",
++  "verdicts": {
++    "spec": "pass",
++    "quality": "pass"
++  },
++  "reviewed_parent_head": "4c700de642fb8a1755b657e52b760b4384a5129d",
++  "reviewed_parent_remote_head": "64c5192f2d6aaacf65143223f03190564032facc",
++  "reviewed_parent_tree": "81d552d11888dd4b2c2c758497d9f2eacc7c0cc5",
++  "implementation_commit_at_review": "not-yet-created",
++  "findings": [
++    {
++      "id": "METHODS-CONSOLIDATION-01",
++      "severity": "major",
++      "disposition": "fixed",
++      "reason": "The additional root report made the strict maintainability budget fail at 321 reports versus warning_limit 320 in actual remote and local full regression. The complete substantive analysis is consolidated into the existing implementation map and only the newly introduced duplicate report is deleted. The original maintainability test and all seven original intake/matrix/removal entrypoints pass independently. The checker, thresholds, exclusions, old reports and historical evidence remain unchanged.",
++      "evidence": [
++        "review-consolidation-findings.md",
++        "evidence/consolidation-independent-execution.json"
++      ]
++    }
++  ],
++  "assessed_boundaries": {
++    "source_count": 12,
++    "candidate_count": 12,
++    "decision_count": 12,
++    "enhance_count": 9,
++    "observe_count": 3,
++    "production_method_count": 4,
++    "production_source_ids": [
++      "EXT-06",
++      "EXT-08",
++      "EXT-09",
++      "EXT-11"
++    ],
++    "research_enhance_source_ids": [
++      "EXT-01",
++      "EXT-03",
++      "EXT-04",
++      "EXT-05",
++      "EXT-07"
++    ],
++    "observe_source_ids": [
++      "EXT-02",
++      "EXT-10",
++      "EXT-12"
++    ],
++    "matrix_total_rows": 210,
++    "only_four_evidence_paths_retargeted": true,
++    "source_candidate_decision_bytes_and_ids_preserved": true,
++    "candidate_trust": "unverified-metadata",
++    "candidate_review_status": "review-required",
++    "article_body_persisted": false,
++    "automatic_adoption": false,
++    "upstream_code_executed": false,
++    "new_paid_resources": false,
++    "analysis_destination": "docs/changes/20261023-evidence-methods/implementation-map.md",
++    "complete_substantive_report_body_retained": true,
++    "consolidation_text_adjustments": "Heading depth, two report-to-analysis self-descriptions, and the accurate historical six-file/seven-entry review paragraph; the normalized content difference is preserved in execution evidence.",
++    "only_reports_tree_change": "Delete the newly introduced reports/evidence-methods-absorption-2026-10-23.md; no old report relocation.",
++    "published_adk_commit": "415590db44e88979185efb850e2339a3f95411ef",
++    "published_adk_tree": "51d400e80ba555a49ca85fcfefbd74f7fe499072",
++    "asw_semantics": "Existing responsibility contracts and actual code mapping; no new ASW execution receipt or claim that every workflow step ran.",
++    "original_required_entrypoints_passed": 8,
++    "total_independent_command_invocations": 12,
++    "unchanged_guard_test_policy_budget_files": 19,
++    "preserved_history_files": 17,
++    "strict_maintainability": {
++      "status": "pass",
++      "strict": true,
++      "budget_count": 14,
++      "warnings": [],
++      "failures": [],
++      "root_report_budget": {
++        "id": "root-report-count",
++        "metric": "file_count",
++        "status": "pass",
++        "observed": 320,
++        "baseline": 284,
++        "drift": 36,
++        "warning_limit": 320,
++        "hard_limit": 400,
++        "files_scanned": 320,
++        "owner": "llm-agent-governance",
++        "next_action": "Run governed report cleanup and preserve supersession metadata before creating more active reports.",
++        "hotspots": [
++          {
++            "path": "reports/2026-08-01-token-context-governance-v2-release-bundle.json",
++            "value": 1
++          },
++          {
++            "path": "reports/README.md",
++            "value": 1
++          },
++          {
++            "path": "reports/absorb-review-20260512_115031.md",
++            "value": 1
++          },
++          {
++            "path": "reports/absorption-optimization-review-2026-06-15.md",
++            "value": 1
++          },
++          {
++            "path": "reports/active-subrepo-diff-scan-2026-07-06.md",
++            "value": 1
++          }
++        ]
++      },
++      "budget_config_and_checker_unchanged": true
++    },
++    "canonical_export_byte_match": true,
++    "removal_fixture_canonical_object_match": true,
++    "previous_removal_digest_rejected": true,
++    "actual_task_benefit": "not-measured",
++    "product_release_authorized": false,
++    "future_commit_full_quick_and_ci": "separate exact-identity evidence required",
++    "existing_dirty_and_m5_quick_blockers": "unchanged; targeted passes do not imply full quick or current product qualification"
++  },
++  "source_binding_kind": "sha256-file-snapshot",
++  "source_set_serialization": "UTF-8 JSON of sources with sort_keys=true and separators=(',', ':'); includes base, path, bytes and sha256. The deletion identity and content-retention facts are recorded separately in deletions.",
++  "source_set_sha256": "eb3c1bb5b51f396bb3e38bccb13b1bcd8fd31ea4151f0fa3bab8635bbd902663",
++  "sources": [
++    {
++      "base": "repository",
++      "path": "subrepos/adoption-matrix.md",
++      "bytes": 85541,
++      "sha256": "da66a91c839169f540175cfcfabea245526657e9e9f47b868ea7e1d4b74493b4"
++    },
++    {
++      "base": "repository",
++      "path": "subrepos/adoption-matrix.jsonl",
++      "bytes": 103853,
++      "sha256": "a0a345e4626725a234a47419dfc073e61f221aec3595f2d960bcb19d0a780b3a"
++    },
++    {
++      "base": "repository",
++      "path": "docs/changes/20261023-evidence-methods/implementation-map.md",
++      "bytes": 19762,
++      "sha256": "635812051b3880a819fd403ca0dfc340491b94fde39076ac076c5c187e3946f9"
++    },
++    {
++      "base": "repository",
++      "path": "docs/runbooks/evidence-driven-optimization.md",
++      "bytes": 4858,
++      "sha256": "821f69318d9608b6f96fc13406707eee2d3040bdfc251e48133063d5f6666ffa"
++    },
++    {
++      "base": "repository",
++      "path": "fixtures/reference-repository/removal/pass/removal-plan.json",
++      "bytes": 2327,
++      "sha256": "af3006a9f496d3e5859c496a29b6457cca18cab7dd83d0a3e146e194f3df8c40"
++    }
++  ],
++  "deletions": [
++    {
++      "base": "repository",
++      "path": "reports/evidence-methods-absorption-2026-10-23.md",
++      "base_local_commit": "4c700de642fb8a1755b657e52b760b4384a5129d",
++      "base_remote_commit": "64c5192f2d6aaacf65143223f03190564032facc",
++      "git_blob": "53cda81736ca0b702af426ffbcc7091e47ae2109",
++      "bytes": 10280,
++      "sha256": "50662a903fe77a7915265025f45ab3a62bff4dfccf825b4649c9c034451239f4",
++      "absent_at_review": true,
++      "consolidated_into": "docs/changes/20261023-evidence-methods/implementation-map.md",
++      "content_retention": "Entire report body retained; heading depth adjusted, two self-descriptions changed from report to analysis, and the seven-entry review paragraph accurately converted to historical context."
++    }
++  ],
++  "remote_deletion_source_verification": {
++    "commit": "64c5192f2d6aaacf65143223f03190564032facc",
++    "path": "reports/evidence-methods-absorption-2026-10-23.md",
++    "sha256": "50662a903fe77a7915265025f45ab3a62bff4dfccf825b4649c9c034451239f4",
++    "matches_local_parent_and_archived_original": true
++  },
++  "analysis_destination": "docs/changes/20261023-evidence-methods/implementation-map.md",
++  "context_binding_location": "evidence/consolidation-independent-execution.json: unchanged_guards, preserved_history, published_adk.source_bindings and consolidation_content_diff_after_heading_normalization",
++  "evidence": [
++    {
++      "base": "record",
++      "path": "review-consolidation-findings.md",
++      "bytes": 6417,
++      "sha256": "913d6c8fe790a4dcc117931c7a704f2f5bc0be9a833be65c7daccbb5e760751f"
++    },
++    {
++      "base": "record",
++      "path": "evidence/consolidation-independent-execution.json",
++      "bytes": 39778,
++      "sha256": "39548a00098eef21654e79299210cbd4fa336c746e178f59108abcffdc548c4d"
++    }
++  ],
++  "executions": [
++    {
++      "argv": [
++        "/workspace/scratch/694941d81014/tooling/rtk",
++        "bypass",
++        "bash",
++        "scripts/check-upstream-intake-readiness.sh",
++        "."
++      ],
++      "cwd": "/workspace/scratch/694941d81014/llm_agent",
++      "started_at": "2026-10-23T14:18:41.331766+00:00",
++      "completed_at": "2026-10-23T14:18:41.354921+00:00",
++      "returncode": 0,
++      "expected_returncode": 0,
++      "stdout": "[PASS] upstream intake readiness checks passed (164 adopt rows)\n",
++      "stderr": ""
++    },
++    {
++      "argv": [
++        "/workspace/scratch/694941d81014/tooling/rtk",
++        "bypass",
++        "bash",
++        "scripts/check-observe-intake-depth.sh",
++        "."
++      ],
++      "cwd": "/workspace/scratch/694941d81014/llm_agent",
++      "started_at": "2026-10-23T14:18:41.355765+00:00",
++      "completed_at": "2026-10-23T14:18:41.363527+00:00",
++      "returncode": 0,
++      "expected_returncode": 0,
++      "stdout": "[PASS] observe intake depth checks passed (11 rows)\n",
++      "stderr": ""
++    },
++    {
++      "argv": [
++        "/workspace/scratch/694941d81014/tooling/rtk",
++        "bypass",
++        "bash",
++        "scripts/check-adoption-matrix-structured.sh",
++        "."
++      ],
++      "cwd": "/workspace/scratch/694941d81014/llm_agent",
++      "started_at": "2026-10-23T14:18:41.364140+00:00",
++      "completed_at": "2026-10-23T14:18:41.402783+00:00",
++      "returncode": 0,
++      "expected_returncode": 0,
++      "stdout": "[PASS] structured adoption matrix synchronized\n",
++      "stderr": ""
++    },
++    {
++      "argv": [
++        "/workspace/scratch/694941d81014/tooling/rtk",
++        "bypass",
++        "bash",
++        "scripts/check-adoption-matrix-status.sh",
++        "."
++      ],
++      "cwd": "/workspace/scratch/694941d81014/llm_agent",
++      "started_at": "2026-10-23T14:18:41.403431+00:00",
++      "completed_at": "2026-10-23T14:18:41.413315+00:00",
++      "returncode": 0,
++      "expected_returncode": 0,
++      "stdout": "[PASS] adoption-matrix status checks passed\n",
++      "stderr": ""
++    },
++    {
++      "argv": [
++        "/workspace/scratch/694941d81014/tooling/rtk",
++        "bypass",
++        "bash",
++        "scripts/check-adoption-evidence-integrity.sh",
++        "."
++      ],
++      "cwd": "/workspace/scratch/694941d81014/llm_agent",
++      "started_at": "2026-10-23T14:18:41.413924+00:00",
++      "completed_at": "2026-10-23T14:18:45.009590+00:00",
++      "returncode": 0,
++      "expected_returncode": 0,
++      "stdout": "[PASS] adoption evidence integrity checks passed (rows=210 paths=621)\n",
++      "stderr": ""
++    },
++    {
++      "argv": [
++        "/workspace/scratch/694941d81014/tooling/rtk",
++        "bypass",
++        "bash",
++        "scripts/check-adoption-real-assets.sh",
++        ".",
++        "--summary-json"
++      ],
++      "cwd": "/workspace/scratch/694941d81014/llm_agent",
++      "started_at": "2026-10-23T14:18:45.011646+00:00",
++      "completed_at": "2026-10-23T14:18:45.077619+00:00",
++      "returncode": 0,
++      "expected_returncode": 0,
++      "stdout": "{\"status\":\"pass\",\"checked\":234,\"real_asset_ok\":233,\"matrix_asset_exceptions\":1,\"failures\":[]}\n",
++      "stderr": ""
++    },
++    {
++      "argv": [
++        "/workspace/scratch/694941d81014/tooling/rtk",
++        "bypass",
++        "bash",
++        "tests/test_reference_repository_removal.sh"
++      ],
++      "cwd": "/workspace/scratch/694941d81014/llm_agent",
++      "started_at": "2026-10-23T14:18:45.078553+00:00",
++      "completed_at": "2026-10-23T14:18:45.859792+00:00",
++      "returncode": 0,
++      "expected_returncode": 0,
++      "stdout": "[PASS] reference repository removal plans are hashed, dry-run, and non-destructive\n",
++      "stderr": ""
++    },
++    {
++      "argv": [
++        "/workspace/scratch/694941d81014/tooling/rtk",
++        "bypass",
++        "bash",
++        "tests/test_maintainability_budgets.sh"
++      ],
++      "cwd": "/workspace/scratch/694941d81014/llm_agent",
++      "started_at": "2026-10-23T14:18:45.860973+00:00",
++      "completed_at": "2026-10-23T14:18:50.156109+00:00",
++      "returncode": 0,
++      "expected_returncode": 0,
++      "stdout": "[PASS] maintainability budgets enforce static and evidence metrics with honest availability\n",
++      "stderr": ""
++    },
++    {
++      "argv": [
++        "/workspace/scratch/694941d81014/tooling/rtk",
++        "bypass",
++        "bash",
++        "scripts/check-maintainability-budgets.sh",
++        ".",
++        "--strict",
++        "--summary-json"
++      ],
++      "cwd": "/workspace/scratch/694941d81014/llm_agent",
++      "started_at": "2026-10-23T14:18:50.156982+00:00",
++      "completed_at": "2026-10-23T14:18:51.199283+00:00",
++      "returncode": 0,
++      "expected_returncode": 0,
++      "stdout": "{\"schema\":\"llm-agent-maintainability-budget-report/v2\",\"status\":\"pass\",\"strict\":true,\"baseline_date\":\"2026-07-30\",\"root\":\"/workspace/scratch/694941d81014/llm_agent\",\"budget_count\":14,\"evidence_metric_count\":3,\"failures\":[],\"warnings\":[],\"budgets\":[{\"id\":\"root-script-count\",\"metric\":\"file_count\",\"status\":\"pass\",\"observed\":89,\"baseline\":89,\"drift\":0,\"warning_limit\":92,\"hard_limit\":100,\"files_scanned\":89,\"owner\":\"llm-agent-governance\",\"next_action\":\"Consolidate thin wrappers into an existing typed tools.codex_assets entrypoint before adding another root script.\",\"hotspots\":[{\"path\":\"scripts/analyze-repo.sh\",\"value\":1},{\"path\":\"scripts/backup-rollback.sh\",\"value\":1},{\"path\":\"scripts/check-adk-goal-capability.sh\",\"value\":1},{\"path\":\"scripts/check-adk-governance-suite.sh\",\"value\":1},{\"path\":\"scripts/check-adk-harden-readiness.sh\",\"value\":1}]},{\"id\":\"root-report-count\",\"metric\":\"file_count\",\"status\":\"pass\",\"observed\":320,\"baseline\":284,\"drift\":36,\"warning_limit\":320,\"hard_limit\":400,\"files_scanned\":320,\"owner\":\"llm-agent-governance\",\"next_action\":\"Run governed report cleanup and preserve supersession metadata before creating more active reports.\",\"hotspots\":[{\"path\":\"reports/2026-08-01-token-context-governance-v2-release-bundle.json\",\"value\":1},{\"path\":\"reports/README.md\",\"value\":1},{\"path\":\"reports/absorb-review-20260512_115031.md\",\"value\":1},{\"path\":\"reports/absorption-optimization-review-2026-06-15.md\",\"value\":1},{\"path\":\"reports/active-subrepo-diff-scan-2026-07-06.md\",\"value\":1}]},{\"id\":\"root-manifest-count\",\"metric\":\"file_count\",\"status\":\"pass\",\"observed\":18,\"baseline\":15,\"drift\":3,\"warning_limit\":20,\"hard_limit\":25,\"files_scanned\":18,\"owner\":\"llm-agent-governance\",\"next_action\":\"Keep historical snapshots under manifests/history; consolidate active SSOT contracts before adding another root manifest.\",\"hotspots\":[{\"path\":\"manifests/adk_interface.lock.json\",\"value\":1},{\"path\":\"manifests/comprehensive_optimization_backlog.json\",\"value\":1},{\"path\":\"manifests/digital_worker_runtime_pilot.json\",\"value\":1},{\"path\":\"manifests/external_practice_cycle.json\",\"value\":1},{\"path\":\"manifests/external_practice_sources.json\",\"value\":1}]},{\"id\":\"root-largest-shell-lines\",\"metric\":\"max_lines\",\"status\":\"pass\",\"observed\":658,\"baseline\":666,\"drift\":-8,\"warning_limit\":750,\"hard_limit\":900,\"files_scanned\":89,\"owner\":\"llm-agent-governance\",\"next_action\":\"Move reusable parsing and state logic into tools.codex_assets and keep shell as a transport wrapper.\",\"hotspots\":[{\"path\":\"scripts/collect-runtime-target-evidence-package.sh\",\"value\":658},{\"path\":\"scripts/check-architecture-reports.sh\",\"value\":616},{\"path\":\"scripts/check-runtime-targets.sh\",\"value\":591},{\"path\":\"scripts/lib/same-run-evidence.sh\",\"value\":457},{\"path\":\"scripts/check-workspace-entrypoints.sh\",\"value\":422}]},{\"id\":\"root-largest-python-lines\",\"metric\":\"max_lines\",\"status\":\"pass\",\"observed\":1919,\"baseline\":2078,\"drift\":-159,\"warning_limit\":2200,\"hard_limit\":2500,\"files_scanned\":30,\"owner\":\"llm-agent-governance\",\"next_action\":\"Split the named hotspot by capability boundary with contract tests before adding another responsibility.\",\"hotspots\":[{\"path\":\"tools/codex_assets/practice_intake.py\",\"value\":1919},{\"path\":\"tools/codex_assets/reference_repository.py\",\"value\":970},{\"path\":\"tools/codex_assets/maintainability_budget.py\",\"value\":834},{\"path\":\"tools/codex_assets/runtime_smoke_evidence.py\",\"value\":752},{\"path\":\"tools/codex_assets/software_m5_v3_core.py\",\"value\":676}]},{\"id\":\"adk-largest-shell-lines\",\"metric\":\"max_lines\",\"status\":\"pass\",\"observed\":756,\"baseline\":1745,\"drift\":-989,\"warning_limit\":1850,\"hard_limit\":2100,\"files_scanned\":42,\"owner\":\"agent-dev-kit\",\"next_action\":\"Move deterministic governance logic into src/agent_dev_kit and retain a thin stable shell entrypoint.\",\"hotspots\":[{\"path\":\"agent-dev-kit/scripts/check-agent-ecosystem-standards.sh\",\"value\":756},{\"path\":\"agent-dev-kit/scripts/workflow.sh\",\"value\":670},{\"path\":\"agent-dev-kit/scripts/check-harness-loop-engineering-contracts.sh\",\"value\":585},{\"path\":\"agent-dev-kit/scripts/run-embedded-workflow-pilots.sh\",\"value\":525},{\"path\":\"agent-dev-kit/scripts/run-embedded-production-field-pilot.sh\",\"value\":445}]},{\"id\":\"adk-largest-python-lines\",\"metric\":\"max_lines\",\"status\":\"pass\",\"observed\":575,\"baseline\":1054,\"drift\":-479,\"warning_limit\":1150,\"hard_limit\":1400,\"files_scanned\":106,\"owner\":\"agent-dev-kit\",\"next_action\":\"Split the hotspot only along an owned domain boundary and preserve CLI/API compatibility tests.\",\"hotspots\":[{\"path\":\"agent-dev-kit/src/agent_dev_kit/evaluation_runtime.py\",\"value\":575},{\"path\":\"agent-dev-kit/src/agent_dev_kit/_matcher_kernel.py\",\"value\":570},{\"path\":\"agent-dev-kit/src/agent_dev_kit/installation_transaction.py\",\"value\":542},{\"path\":\"agent-dev-kit/src/agent_dev_kit/release.py\",\"value\":536},{\"path\":\"agent-dev-kit/src/agent_dev_kit/agent_platform.py\",\"value\":511}]},{\"id\":\"root-python-import-fan-out\",\"metric\":\"max_import_fan_out\",\"status\":\"pass\",\"observed\":17,\"baseline\":17,\"drift\":0,\"warning_limit\":20,\"hard_limit\":25,\"files_scanned\":30,\"owner\":\"llm-agent-governance\",\"next_action\":\"Split high fan-out typed modules at stable domain ports before adding another dependency.\",\"hotspots\":[{\"path\":\"tools/codex_assets/codex_model_observer.py\",\"value\":17},{\"path\":\"tools/codex_assets/intake_pipeline.py\",\"value\":17},{\"path\":\"tools/codex_assets/m5_signature.py\",\"value\":15},{\"path\":\"tools/codex_assets/maintainability_budget.py\",\"value\":15},{\"path\":\"tools/codex_assets/reference_worktree_identity.py\",\"value\":15}]},{\"id\":\"adk-python-import-fan-out\",\"metric\":\"max_import_fan_out\",\"status\":\"pass\",\"observed\":26,\"baseline\":24,\"drift\":2,\"warning_limit\":28,\"hard_limit\":35,\"files_scanned\":106,\"owner\":\"agent-dev-kit\",\"next_action\":\"Introduce typed internal ports when a module crosses the reviewed import fan-out budget.\",\"hotspots\":[{\"path\":\"agent-dev-kit/src/agent_dev_kit/cli.py\",\"value\":26},{\"path\":\"agent-dev-kit/src/agent_dev_kit/distribution/release_artifacts.py\",\"value\":20},{\"path\":\"agent-dev-kit/src/agent_dev_kit/evaluation_cli.py\",\"value\":18},{\"path\":\"agent-dev-kit/src/agent_dev_kit/release.py\",\"value\":18},{\"path\":\"agent-dev-kit/src/agent_dev_kit/effect_campaign_materializer.py\",\"value\":17}]},{\"id\":\"root-exact-code-duplication\",\"metric\":\"duplicate_content_groups\",\"status\":\"pass\",\"observed\":0,\"baseline\":0,\"drift\":0,\"warning_limit\":1,\"hard_limit\":3,\"files_scanned\":119,\"owner\":\"llm-agent-governance\",\"next_action\":\"Replace exact duplicate implementation files with one typed implementation and thin entrypoints.\",\"hotspots\":[{\"path\":\"<none>\",\"value\":0,\"duplicates\":[]}]},{\"id\":\"adk-exact-code-duplication\",\"metric\":\"duplicate_content_groups\",\"status\":\"pass\",\"observed\":0,\"baseline\":0,\"drift\":0,\"warning_limit\":2,\"hard_limit\":5,\"files_scanned\":301,\"owner\":\"agent-dev-kit\",\"next_action\":\"Consolidate exact duplicate checker or test logic without weakening target-specific assertions.\",\"hotspots\":[{\"path\":\"<none>\",\"value\":0,\"duplicates\":[]}]},{\"id\":\"root-control-plane-python-count\",\"metric\":\"file_count\",\"status\":\"pass\",\"observed\":29,\"baseline\":28,\"drift\":1,\"warning_limit\":31,\"hard_limit\":35,\"files_scanned\":29,\"owner\":\"llm-agent-governance\",\"next_action\":\"Review ownership and consolidate existing typed control-plane modules before adding further modules; do not hide new modules by excluding the directory.\",\"hotspots\":[{\"path\":\"tools/control_plane/__init__.py\",\"value\":1},{\"path\":\"tools/control_plane/active_contracts.py\",\"value\":1},{\"path\":\"tools/control_plane/adk_interface.py\",\"value\":1},{\"path\":\"tools/control_plane/adk_promotion.py\",\"value\":1},{\"path\":\"tools/control_plane/adk_promotion_evidence.py\",\"value\":1}]},{\"id\":\"root-control-plane-largest-python-lines\",\"metric\":\"max_lines\",\"status\":\"pass\",\"observed\":1030,\"baseline\":981,\"drift\":49,\"warning_limit\":1050,\"hard_limit\":1200,\"files_scanned\":29,\"owner\":\"llm-agent-governance\",\"next_action\":\"Split named control-plane hotspots by bounded context with behavioral regression evidence instead of allocating unbounded line budgets.\",\"hotspots\":[{\"path\":\"tools/control_plane/effect_readiness.py\",\"value\":1030},{\"path\":\"tools/control_plane/longitudinal_operation.py\",\"value\":718},{\"path\":\"tools/control_plane/branch_gc.py\",\"value\":591},{\"path\":\"tools/control_plane/qualification_followup.py\",\"value\":573},{\"path\":\"tools/control_plane/gate_runner.py\",\"value\":501}]},{\"id\":\"root-control-plane-python-import-fan-out\",\"metric\":\"max_import_fan_out\",\"status\":\"pass\",\"observed\":14,\"baseline\":14,\"drift\":0,\"warning_limit\":19,\"hard_limit\":23,\"files_scanned\":29,\"owner\":\"llm-agent-governance\",\"next_action\":\"Preserve explicit dependency direction; review the named high-fan-out control-plane module before introducing another cross-context import.\",\"hotspots\":[{\"path\":\"tools/control_plane/adk_interface.py\",\"value\":14},{\"path\":\"tools/control_plane/effect_readiness.py\",\"value\":14},{\"path\":\"tools/control_plane/qualification_followup.py\",\"value\":14},{\"path\":\"tools/control_plane/adk_promotion.py\",\"value\":13},{\"path\":\"tools/control_plane/longitudinal_operation.py\",\"value\":13}]}],\"elapsed_ms\":946.388,\"semantic_axes\":{\"coupling\":{\"status\":\"measured\",\"method\":\"max-import-fan-out\"},\"exact_duplication\":{\"status\":\"measured\",\"method\":\"content-sha256\"},\"churn\":{\"id\":\"repository-churn\",\"metric\":\"churn\",\"risk\":\"medium\",\"enforcement\":\"report-only\",\"enforcement_rationale\":\"A reviewed version-history window and stable churn baseline are not yet available, so a hard threshold would create false precision.\",\"expected_repository_id\":\"llm-agent\",\"expected_population\":null,\"max_age_days\":45,\"owner\":\"llm-agent-governance\",\"next_action\":\"Generate a reviewed git-history numstat snapshot for a fixed revision and time window before proposing a churn budget.\",\"status\":\"not-available\",\"observed\":null,\"unit\":null,\"hotspots\":[],\"source\":null,\"unavailable_reason\":\"No reviewed git-history numstat snapshot is pinned by path, repository identity, revision window and SHA-256.\"},\"owner_concentration\":{\"id\":\"owner-concentration\",\"metric\":\"owner_concentration\",\"risk\":\"high\",\"enforcement\":\"report-only\",\"enforcement_rationale\":\"Ownership concentration is high-risk, but enforcing a threshold without a reviewed scope-to-owner snapshot would treat missing owners as measured zero.\",\"expected_repository_id\":\"llm-agent\",\"expected_population\":null,\"max_age_days\":90,\"owner\":\"llm-agent-governance\",\"next_action\":\"Review critical scopes and primary owners, then pin the ownership snapshot before setting a basis-point budget.\",\"status\":\"not-available\",\"observed\":null,\"unit\":null,\"hotspots\":[],\"source\":null,\"unavailable_reason\":\"No reviewed ownership snapshot is pinned by repository identity, revision window and SHA-256.\"},\"inactive_assets\":{\"id\":\"inactive-assets\",\"metric\":\"inactive_assets\",\"risk\":\"high\",\"enforcement\":\"report-only\",\"enforcement_rationale\":\"Asset retirement decisions require a sanitized invocation window; absent telemetry must not be interpreted as zero activity.\",\"expected_repository_id\":\"llm-agent\",\"expected_population\":null,\"max_age_days\":30,\"owner\":\"llm-agent-governance\",\"next_action\":\"Produce a privacy-reviewed invocation ledger for a fixed window before proposing an inactive-asset threshold.\",\"status\":\"not-available\",\"observed\":null,\"unit\":null,\"hotspots\":[],\"source\":null,\"unavailable_reason\":\"No sanitized invocation ledger is pinned by repository identity, revision window and SHA-256.\"}}}\n",
++      "stderr": ""
++    },
++    {
++      "argv": [
++        "/workspace/scratch/694941d81014/tooling/rtk",
++        "bypass",
++        "bash",
++        "scripts/export-adoption-matrix-jsonl.sh",
++        ".",
++        "/workspace/scratch/694941d81014/closure20261023/root-consolidation-independent/canonical-adoption-matrix.jsonl"
++      ],
++      "cwd": "/workspace/scratch/694941d81014/llm_agent",
++      "started_at": "2026-10-23T14:18:51.200302+00:00",
++      "completed_at": "2026-10-23T14:18:51.214753+00:00",
++      "returncode": 0,
++      "expected_returncode": 0,
++      "stdout": "[OK] adoption matrix jsonl exported: /workspace/scratch/694941d81014/closure20261023/root-consolidation-independent/canonical-adoption-matrix.jsonl\n",
++      "stderr": ""
++    },
++    {
++      "argv": [
++        "/workspace/scratch/694941d81014/tooling/rtk",
++        "bypass",
++        "/workspace/scratch/694941d81014/tooling/venv/bin/python",
++        "-m",
++        "tools.codex_assets.reference_repository",
++        "--root",
++        "/workspace/scratch/694941d81014/llm_agent",
++        "plan-removal",
++        "--repo",
++        "codex",
++        "--as-of",
++        "2026-07-19",
++        "--adoption-decision",
++        "subrepos/adoption-matrix.md",
++        "--evidence-dependency-scan",
++        "reports/subrepo-removal-plan-codex-2026-06-16.md",
++        "--dirty-baseline-review",
++        "subrepos/dirty-baseline.tsv",
++        "--rollback-plan",
++        "reports/subrepo-removal-plan-codex-2026-06-16.md",
++        "--out-json",
++        "/workspace/scratch/694941d81014/closure20261023/root-consolidation-independent/canonical-removal-plan.json",
++        "--out-md",
++        "/workspace/scratch/694941d81014/closure20261023/root-consolidation-independent/canonical-removal-plan.md"
++      ],
++      "cwd": "/workspace/scratch/694941d81014/llm_agent",
++      "started_at": "2026-10-23T14:18:51.222785+00:00",
++      "completed_at": "2026-10-23T14:18:51.351968+00:00",
++      "returncode": 0,
++      "expected_returncode": 0,
++      "stdout": "[PASS] reference repository removal dry-run plan written: /workspace/scratch/694941d81014/closure20261023/root-consolidation-independent/canonical-removal-plan.json\n",
++      "stderr": ""
++    },
++    {
++      "argv": [
++        "/workspace/scratch/694941d81014/tooling/rtk",
++        "bypass",
++        "/workspace/scratch/694941d81014/tooling/venv/bin/python",
++        "-m",
++        "tools.codex_assets.reference_repository",
++        "--root",
++        "/workspace/scratch/694941d81014/llm_agent",
++        "check-removal",
++        "--plan",
++        "/workspace/scratch/694941d81014/closure20261023/root-consolidation-independent/prior-removal-fixture.json",
++        "--no-fixtures",
++        "--summary-json"
++      ],
++      "cwd": "/workspace/scratch/694941d81014/llm_agent",
++      "started_at": "2026-10-23T14:18:51.353379+00:00",
++      "completed_at": "2026-10-23T14:18:51.488474+00:00",
++      "returncode": 2,
++      "expected_returncode": 2,
++      "stdout": "{\"checked\": 0, \"failures\": 1, \"status\": \"fail\"}\n",
++      "stderr": "[FAIL] /workspace/scratch/694941d81014/closure20261023/root-consolidation-independent/prior-removal-fixture.json: reference repository removal artifact hash is stale\n"
++    }
++  ],
++  "historical_reviews": [
++    {
++      "path": "review-evidence.json",
++      "sha256": "ade3d294f05deb506fc9d72ff8f0be53feee2346d420372ba05b02139fa83a4f",
++      "disposition": "preserved historical initial methods snapshot; not a current production projection approval"
++    },
++    {
++      "path": "review-projection-correction.json",
++      "sha256": "df270326b796a4daead2b72dd49898785df7572b937ac9ade99022be7514d8b6",
++      "disposition": "preserved historical six-source snapshot with actual seven-entry targeted PASS; does not override the later 64c full-regression failure or bind the current five-source snapshot"
++    }
++  ],
++  "historical_failed_ci": {
++    "remote_head": "64c5192f2d6aaacf65143223f03190564032facc",
++    "tree": "81d552d11888dd4b2c2c758497d9f2eacc7c0cc5",
++    "workflow_run_id": 39965536971,
++    "workflow_run_url": "https://github.com/jiying2007/llm_agent/actions/runs/39965536971",
++    "conclusion": "failure",
++    "root_regression": {
++      "exit_code": 1,
++      "passed_groups": 41,
++      "failed_groups": 1,
++      "first_failure": "test_maintainability_budgets",
++      "full_suite_completed": false
++    },
++    "root_report_count": 321,
++    "warning_limit": 320,
++    "retained_independent_failure_proof_sha256": "1097c4ebdc7b09db0071d565cf5e97255ec22acbe422494496ae6fb3d7236c71",
++    "original_artifact_sha256": "50fa4a106d78173ad14b3ab8aaa3e5bf991c42ecfe61c0fd9a01ca0b2cf8b162",
++    "disposition": "retained unchanged as a real failed integration attempt"
++  },
++  "limitations": [
++    "This is an independent Spec/Quality review of frozen files and the explicit deletion before the next implementation commit. It does not invent final commit identity, full/quick results, PR/main CI success, merge approval or product release authority.",
++    "SHA-256 bindings establish file identity and internal consistency, not reviewer authentication, upstream identity, license validity or all external source statements.",
++    "The strict report-count result is 320 at an unchanged warning_limit of 320 and hard_limit of 400. Passing this static budget does not measure engineering benefit, churn, ownership concentration or asset activity; unavailable semantic axes remain governed by their existing report-only contracts.",
++    "The five research ENHANCE and three OBSERVE decisions retain their original scope. Existing ASW files were previously read for responsibility mapping and remain byte-matched; this consolidation does not execute or re-certify their complete workflows or the published ADK.",
++    "The eight original entrypoints and four additional narrow measurement/canonical/negative checks are actual single executions with preserved argv, UTC timestamps, stdout, stderr and returncodes. The expected stale-digest rejection is exit 2 and is not mislabeled as exit 0.",
++    "No external source re-attestation, third-party Skill body execution, paid model call, field/runtime evaluation or real task-benefit measurement was performed.",
++    "Existing dirty-triage expiry and historical Product M5/current candidate mismatch remain unchanged. No review dates, qualification policies, tests, gates, counting exclusions or thresholds were weakened.",
++    "Old review, source, task and execution records remain historical byte-for-byte; the deleted report remains retrievable from its exact prior Git commit and archived original. Prior targeted PASS and the subsequent 41-pass/1-fail full result are both retained honestly."
++  ]
++}
+diff --git a/docs/changes/20261024-impact-coverage/design.md b/docs/changes/20261024-impact-coverage/design.md
+new file mode 100644
+index 0000000..d5262a2
+--- /dev/null
++++ b/docs/changes/20261024-impact-coverage/design.md
+@@ -0,0 +1,9 @@
++# 设计
++
++复用 `manifests/gates.json`、control-plane impact 与现有 CI profile。沿真实文件消费关系补输入清单，报告数量使用已有轻量预算检查。实现映射与测试分别由独立任务负责；shared manifest / CI / 锁由主 Agent 串行整合。
++
++整合决定：将原 strict maintenance checker 注册为常驻 contract gate，保持全部 14 项原预算和禁用缓存，不带 integration-deep 标签；GitLab 只初始化该检查真实需要的 ADK 子模块。深度回归的文档与根报告路径按 `input-consumers.md` 逐消费者声明，普通新说明保留轻量路径。README 的既有退役运行时禁止词由常驻 active-contracts 一并校验，以保持原回归语义；不改 impact 算法。
++
++恢复既有八文件整理 Git tree `d7f1319c90c70e989978c6b7e1984df2be59e66b` 的内容，不改变历史审核原件，不混入无关变更。回滚由受保护仓库 revert 新提交，不降低 required checks。
++
++当前隔离环境缺少 `~/codex` Provider 与 Execution Policy，记录 not-run；该事实不被转换成 live PASS。历史 lessons 文件检索不存在，使用本轮已保存反例与来源作为确定输入。
+diff --git a/docs/changes/20261024-impact-coverage/evidence/impact-consumers-red.json b/docs/changes/20261024-impact-coverage/evidence/impact-consumers-red.json
+new file mode 100644
+index 0000000..716e728
+--- /dev/null
++++ b/docs/changes/20261024-impact-coverage/evidence/impact-consumers-red.json
+@@ -0,0 +1,82 @@
++{
++  "schema": "llm-agent-impact-consumer-regression/v1",
++  "stage": "red-before-shared-configuration-change",
++  "source_head": "64c5192f2d6aaacf65143223f03190564032facc",
++  "gate_manifest_sha256": "404d3857d05c79ed8dc310b201dde9d4f41eebb28b85bee172dc199bc58bedd5",
++  "impact_source_sha256": "73e4dddb9c984081ef6ae07cc9ac0182839f87e43181261067a89ce835a25392",
++  "test_source_sha256": "8ed26832a15ea5557cbf3cbd5913ea6a12b72b10ce280ce4546fa56098557b7c",
++  "command": "rtk proxy python3 -m unittest tests.test_gate_boundaries.ImpactConsumerTests",
++  "interpreter": "/workspace/scratch/712af632e2a5/audit-venv/bin/python3",
++  "result": {
++    "exit_code": 1,
++    "tests": 8,
++    "assertion_failures": 21,
++    "errors": 0,
++    "elapsed_seconds": 6.598
++  },
++  "boundary": "Only isolated input copies were mutated. Existing checkers, budget limits, gate metadata, and impact implementation remained unchanged in this red run.",
++  "counterexamples": [
++    {
++      "consumer": "scripts/check-maintainability-budgets.sh --strict --summary-json",
++      "change": "one ordinary report added at the existing root-report-count warning limit",
++      "baseline_exit": 0,
++      "changed_exit": 1,
++      "expected_failure": "root-report-count in warnings",
++      "routing_failure": "no always-run strict budget gate in contract"
++    },
++    {
++      "consumer": "tools.codex_assets.reference_repository check-removal",
++      "change": "append comment to the actual removal plan's adoption_decision",
++      "baseline_exit": 0,
++      "changed_exit": 2,
++      "expected_failure": "artifact hash is stale",
++      "routing_failure": "integration-deep required=false"
++    },
++    {
++      "consumer": "tools.codex_assets.reference_repository check-removal",
++      "change": "existing pass fixture mode changed to apply",
++      "baseline_exit": 0,
++      "changed_exit": 2,
++      "expected_failure": "must remain a planned dry-run",
++      "routing_failure": "integration-deep required=false"
++    },
++    {
++      "consumer": "tools.codex_assets.reference_repository check-removal",
++      "change": "rename bound adoption artifact into unrelated prose",
++      "baseline_exit": 0,
++      "changed_exit": 2,
++      "expected_failure": "artifact is missing or unhashed",
++      "routing_failure": "integration-deep required=false despite old path retained"
++    },
++    {
++      "consumer": "tests/test_external_practice_intake.sh",
++      "change": "candidate schema and cycle-plan individually replaced by empty objects",
++      "baseline_exit": 0,
++      "changed_exit": "nonzero for each mutation",
++      "routing_failure": "integration-deep required=false for both inputs"
++    },
++    {
++      "consumer": "tests/test_typecheck_contract.sh",
++      "change": "pyproject mypy strict=true changed to false",
++      "baseline_exit": 0,
++      "changed_exit": "nonzero",
++      "expected_failure": "AssertionError",
++      "routing_failure": "integration-deep required=false"
++    },
++    {
++      "consumer": "check-architecture-reports.sh and test_product_maturity_contracts.sh",
++      "change": "paths derived from actual source_report, implementation_evidence and dimension evidence",
++      "routing_failure": "14 consumed paths lack deep scheduling"
++    }
++  ],
++  "unrelated_prose": {
++    "status": "pass",
++    "paths": [
++      "README.md",
++      "docs/architecture/unrelated-note.md",
++      "docs/changes/example/notes.md",
++      "reports/ordinary-review.md"
++    ]
++  },
++  "output": "FFFFFFFFFFFFFFFFFFFFF.\n======================================================================\nFAIL: test_adoption_only_change_exposes_stale_removal_artifact (tests.test_gate_boundaries.ImpactConsumerTests.test_adoption_only_change_exposes_stale_removal_artifact)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/workspace/scratch/712af632e2a5/llm_agent-pr270/tests/test_gate_boundaries.py\", line 243, in test_adoption_only_change_exposes_stale_removal_artifact\n    self.assert_regression_scheduled(changed)\n  File \"/workspace/scratch/712af632e2a5/llm_agent-pr270/tests/test_gate_boundaries.py\", line 172, in assert_regression_scheduled\n    self.assertTrue(result[\"required\"], result)\nAssertionError: False is not true : {'schema': 'llm-agent-gate-impact/v1', 'status': 'pass', 'group': 'integration-deep', 'required': False, 'reason': 'not-required', 'changed_paths': ['subrepos/adoption-matrix.md'], 'direct_gates': [], 'impacted_gates': [], 'group_gates': [], 'downstream_group_gates': [], 'matched_paths': {}}\n\n======================================================================\nFAIL: test_invalid_removal_pass_fixture_keeps_its_real_checker_scheduled (tests.test_gate_boundaries.ImpactConsumerTests.test_invalid_removal_pass_fixture_keeps_its_real_checker_scheduled)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/workspace/scratch/712af632e2a5/llm_agent-pr270/tests/test_gate_boundaries.py\", line 254, in test_invalid_removal_pass_fixture_keeps_its_real_checker_scheduled\n    self.assert_regression_scheduled(changed)\n  File \"/workspace/scratch/712af632e2a5/llm_agent-pr270/tests/test_gate_boundaries.py\", line 172, in assert_regression_scheduled\n    self.assertTrue(result[\"required\"], result)\nAssertionError: False is not true : {'schema': 'llm-agent-gate-impact/v1', 'status': 'pass', 'group': 'integration-deep', 'required': False, 'reason': 'not-required', 'changed_paths': ['fixtures/reference-repository/removal/pass/removal-plan.json'], 'direct_gates': [], 'impacted_gates': [], 'group_gates': [], 'downstream_group_gates': [], 'matched_paths': {}}\n\n======================================================================\nFAIL: test_packaging_change_reaches_existing_typecheck_contract (tests.test_gate_boundaries.ImpactConsumerTests.test_packaging_change_reaches_existing_typecheck_contract)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/workspace/scratch/712af632e2a5/llm_agent-pr270/tests/test_gate_boundaries.py\", line 307, in test_packaging_change_reaches_existing_typecheck_contract\n    self.assert_regression_scheduled(\"pyproject.toml\")\n  File \"/workspace/scratch/712af632e2a5/llm_agent-pr270/tests/test_gate_boundaries.py\", line 172, in assert_regression_scheduled\n    self.assertTrue(result[\"required\"], result)\nAssertionError: False is not true : {'schema': 'llm-agent-gate-impact/v1', 'status': 'pass', 'group': 'integration-deep', 'required': False, 'reason': 'not-required', 'changed_paths': ['pyproject.toml'], 'direct_gates': [], 'impacted_gates': [], 'group_gates': [], 'downstream_group_gates': [], 'matched_paths': {}}\n\n======================================================================\nFAIL: test_real_architecture_and_maturity_evidence_references_are_owned (tests.test_gate_boundaries.ImpactConsumerTests.test_real_architecture_and_maturity_evidence_references_are_owned) (changed='.github/CODEOWNERS')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/workspace/scratch/712af632e2a5/llm_agent-pr270/tests/test_gate_boundaries.py\", line 320, in test_real_architecture_and_maturity_evidence_references_are_owned\n    self.assert_regression_scheduled(changed)\n  File \"/workspace/scratch/712af632e2a5/llm_agent-pr270/tests/test_gate_boundaries.py\", line 172, in assert_regression_scheduled\n    self.assertTrue(result[\"required\"], result)\nAssertionError: False is not true : {'schema': 'llm-agent-gate-impact/v1', 'status': 'pass', 'group': 'integration-deep', 'required': False, 'reason': 'not-required', 'changed_paths': ['.github/CODEOWNERS'], 'direct_gates': [], 'impacted_gates': [], 'group_gates': [], 'downstream_group_gates': [], 'matched_paths': {}}\n\n======================================================================\nFAIL: test_real_architecture_and_maturity_evidence_references_are_owned (tests.test_gate_boundaries.ImpactConsumerTests.test_real_architecture_and_maturity_evidence_references_are_owned) (changed='docs/knowledge-candidates/llm-agent-adk-target-architecture.md')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/workspace/scratch/712af632e2a5/llm_agent-pr270/tests/test_gate_boundaries.py\", line 320, in test_real_architecture_and_maturity_evidence_references_are_owned\n    self.assert_regression_scheduled(changed)\n  File \"/workspace/scratch/712af632e2a5/llm_agent-pr270/tests/test_gate_boundaries.py\", line 172, in assert_regression_scheduled\n    self.assertTrue(result[\"required\"], result)\nAssertionError: False is not true : {'schema': 'llm-agent-gate-impact/v1', 'status': 'pass', 'group': 'integration-deep', 'required': False, 'reason': 'not-required', 'changed_paths': ['docs/knowledge-candidates/llm-agent-adk-target-architecture.md'], 'direct_gates': ['doc-sync'], 'impacted_gates': ['doc-sync'], 'group_gates': [], 'downstream_group_gates': [], 'matched_paths': {'doc-sync': ['docs/knowledge-candidates/llm-agent-adk-target-architecture.md']}}\n\n======================================================================\nFAIL: test_real_architecture_and_maturity_evidence_references_are_owned (tests.test_gate_boundaries.ImpactConsumerTests.test_real_architecture_and_maturity_evidence_references_are_owned) (changed='docs/product-maturity-model.md')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/workspace/scratch/712af632e2a5/llm_agent-pr270/tests/test_gate_boundaries.py\", line 320, in test_real_architecture_and_maturity_evidence_references_are_owned\n    self.assert_regression_scheduled(changed)\n  File \"/workspace/scratch/712af632e2a5/llm_agent-pr270/tests/test_gate_boundaries.py\", line 172, in assert_regression_scheduled\n    self.assertTrue(result[\"required\"], result)\nAssertionError: False is not true : {'schema': 'llm-agent-gate-impact/v1', 'status': 'pass', 'group': 'integration-deep', 'required': False, 'reason': 'not-required', 'changed_paths': ['docs/product-maturity-model.md'], 'direct_gates': ['doc-sync'], 'impacted_gates': ['doc-sync'], 'group_gates': [], 'downstream_group_gates': [], 'matched_paths': {'doc-sync': ['docs/product-maturity-model.md']}}\n\n======================================================================\nFAIL: test_real_architecture_and_maturity_evidence_references_are_owned (tests.test_gate_boundaries.ImpactConsumerTests.test_real_architecture_and_maturity_evidence_references_are_owned) (changed='docs/runbooks/effect-readiness.md')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/workspace/scratch/712af632e2a5/llm_agent-pr270/tests/test_gate_boundaries.py\", line 320, in test_real_architecture_and_maturity_evidence_references_are_owned\n    self.assert_regression_scheduled(changed)\n  File \"/workspace/scratch/712af632e2a5/llm_agent-pr270/tests/test_gate_boundaries.py\", line 172, in assert_regression_scheduled\n    self.assertTrue(result[\"required\"], result)\nAssertionError: False is not true : {'schema': 'llm-agent-gate-impact/v1', 'status': 'pass', 'group': 'integration-deep', 'required': False, 'reason': 'not-required', 'changed_paths': ['docs/runbooks/effect-readiness.md'], 'direct_gates': ['doc-sync'], 'impacted_gates': ['doc-sync'], 'group_gates': [], 'downstream_group_gates': [], 'matched_paths': {'doc-sync': ['docs/runbooks/effect-readiness.md']}}\n\n======================================================================\nFAIL: test_real_architecture_and_maturity_evidence_references_are_owned (tests.test_gate_boundaries.ImpactConsumerTests.test_real_architecture_and_maturity_evidence_references_are_owned) (changed='docs/runbooks/knowledge-retention-handoff.md')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/workspace/scratch/712af632e2a5/llm_agent-pr270/tests/test_gate_boundaries.py\", line 320, in test_real_architecture_and_maturity_evidence_references_are_owned\n    self.assert_regression_scheduled(changed)\n  File \"/workspace/scratch/712af632e2a5/llm_agent-pr270/tests/test_gate_boundaries.py\", line 172, in assert_regression_scheduled\n    self.assertTrue(result[\"required\"], result)\nAssertionError: False is not true : {'schema': 'llm-agent-gate-impact/v1', 'status': 'pass', 'group': 'integration-deep', 'required': False, 'reason': 'not-required', 'changed_paths': ['docs/runbooks/knowledge-retention-handoff.md'], 'direct_gates': ['doc-sync'], 'impacted_gates': ['doc-sync'], 'group_gates': [], 'downstream_group_gates': [], 'matched_paths': {'doc-sync': ['docs/runbooks/knowledge-retention-handoff.md']}}\n\n======================================================================\nFAIL: test_real_architecture_and_maturity_evidence_references_are_owned (tests.test_gate_boundaries.ImpactConsumerTests.test_real_architecture_and_maturity_evidence_references_are_owned) (changed='docs/runbooks/native-target-conformance-readiness.md')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/workspace/scratch/712af632e2a5/llm_agent-pr270/tests/test_gate_boundaries.py\", line 320, in test_real_architecture_and_maturity_evidence_references_are_owned\n    self.assert_regression_scheduled(changed)\n  File \"/workspace/scratch/712af632e2a5/llm_agent-pr270/tests/test_gate_boundaries.py\", line 172, in assert_regression_scheduled\n    self.assertTrue(result[\"required\"], result)\nAssertionError: False is not true : {'schema': 'llm-agent-gate-impact/v1', 'status': 'pass', 'group': 'integration-deep', 'required': False, 'reason': 'not-required', 'changed_paths': ['docs/runbooks/native-target-conformance-readiness.md'], 'direct_gates': ['doc-sync'], 'impacted_gates': ['doc-sync'], 'group_gates': [], 'downstream_group_gates': [], 'matched_paths': {'doc-sync': ['docs/runbooks/native-target-conformance-readiness.md']}}\n\n======================================================================\nFAIL: test_real_architecture_and_maturity_evidence_references_are_owned (tests.test_gate_boundaries.ImpactConsumerTests.test_real_architecture_and_maturity_evidence_references_are_owned) (changed='docs/runbooks/solo-maintainer-continuity.md')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/workspace/scratch/712af632e2a5/llm_agent-pr270/tests/test_gate_boundaries.py\", line 320, in test_real_architecture_and_maturity_evidence_references_are_owned\n    self.assert_regression_scheduled(changed)\n  File \"/workspace/scratch/712af632e2a5/llm_agent-pr270/tests/test_gate_boundaries.py\", line 172, in assert_regression_scheduled\n    self.assertTrue(result[\"required\"], result)\nAssertionError: False is not true : {'schema': 'llm-agent-gate-impact/v1', 'status': 'pass', 'group': 'integration-deep', 'required': False, 'reason': 'not-required', 'changed_paths': ['docs/runbooks/solo-maintainer-continuity.md'], 'direct_gates': ['doc-sync'], 'impacted_gates': ['doc-sync'], 'group_gates': [], 'downstream_group_gates': [], 'matched_paths': {'doc-sync': ['docs/runbooks/solo-maintainer-continuity.md']}}\n\n======================================================================\nFAIL: test_real_architecture_and_maturity_evidence_references_are_owned (tests.test_gate_boundaries.ImpactConsumerTests.test_real_architecture_and_maturity_evidence_references_are_owned) (changed='docs/software-m5-certification-plan.md')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/workspace/scratch/712af632e2a5/llm_agent-pr270/tests/test_gate_boundaries.py\", line 320, in test_real_architecture_and_maturity_evidence_references_are_owned\n    self.assert_regression_scheduled(changed)\n  File \"/workspace/scratch/712af632e2a5/llm_agent-pr270/tests/test_gate_boundaries.py\", line 172, in assert_regression_scheduled\n    self.assertTrue(result[\"required\"], result)\nAssertionError: False is not true : {'schema': 'llm-agent-gate-impact/v1', 'status': 'pass', 'group': 'integration-deep', 'required': False, 'reason': 'not-required', 'changed_paths': ['docs/software-m5-certification-plan.md'], 'direct_gates': ['doc-sync'], 'impacted_gates': ['doc-sync'], 'group_gates': [], 'downstream_group_gates': [], 'matched_paths': {'doc-sync': ['docs/software-m5-certification-plan.md']}}\n\n======================================================================\nFAIL: test_real_architecture_and_maturity_evidence_references_are_owned (tests.test_gate_boundaries.ImpactConsumerTests.test_real_architecture_and_maturity_evidence_references_are_owned) (changed='reports/architecture/README.md')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/workspace/scratch/712af632e2a5/llm_agent-pr270/tests/test_gate_boundaries.py\", line 320, in test_real_architecture_and_maturity_evidence_references_are_owned\n    self.assert_regression_scheduled(changed)\n  File \"/workspace/scratch/712af632e2a5/llm_agent-pr270/tests/test_gate_boundaries.py\", line 172, in assert_regression_scheduled\n    self.assertTrue(result[\"required\"], result)\nAssertionError: False is not true : {'schema': 'llm-agent-gate-impact/v1', 'status': 'pass', 'group': 'integration-deep', 'required': False, 'reason': 'not-required', 'changed_paths': ['reports/architecture/README.md'], 'direct_gates': [], 'impacted_gates': [], 'group_gates': [], 'downstream_group_gates': [], 'matched_paths': {}}\n\n======================================================================\nFAIL: test_real_architecture_and_maturity_evidence_references_are_owned (tests.test_gate_boundaries.ImpactConsumerTests.test_real_architecture_and_maturity_evidence_references_are_owned) (changed='reports/architecture/llm-agent-adk-target-architecture-2026-07-30.md')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/workspace/scratch/712af632e2a5/llm_agent-pr270/tests/test_gate_boundaries.py\", line 320, in test_real_architecture_and_maturity_evidence_references_are_owned\n    self.assert_regression_scheduled(changed)\n  File \"/workspace/scratch/712af632e2a5/llm_agent-pr270/tests/test_gate_boundaries.py\", line 172, in assert_regression_scheduled\n    self.assertTrue(result[\"required\"], result)\nAssertionError: False is not true : {'schema': 'llm-agent-gate-impact/v1', 'status': 'pass', 'group': 'integration-deep', 'required': False, 'reason': 'not-required', 'changed_paths': ['reports/architecture/llm-agent-adk-target-architecture-2026-07-30.md'], 'direct_gates': [], 'impacted_gates': [], 'group_gates': [], 'downstream_group_gates': [], 'matched_paths': {}}\n\n======================================================================\nFAIL: test_real_architecture_and_maturity_evidence_references_are_owned (tests.test_gate_boundaries.ImpactConsumerTests.test_real_architecture_and_maturity_evidence_references_are_owned) (changed='reports/external-practice-targeted-decisions-2026-07-30.jsonl')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/workspace/scratch/712af632e2a5/llm_agent-pr270/tests/test_gate_boundaries.py\", line 320, in test_real_architecture_and_maturity_evidence_references_are_owned\n    self.assert_regression_scheduled(changed)\n  File \"/workspace/scratch/712af632e2a5/llm_agent-pr270/tests/test_gate_boundaries.py\", line 172, in assert_regression_scheduled\n    self.assertTrue(result[\"required\"], result)\nAssertionError: False is not true : {'schema': 'llm-agent-gate-impact/v1', 'status': 'pass', 'group': 'integration-deep', 'required': False, 'reason': 'not-required', 'changed_paths': ['reports/external-practice-targeted-decisions-2026-07-30.jsonl'], 'direct_gates': [], 'impacted_gates': [], 'group_gates': [], 'downstream_group_gates': [], 'matched_paths': {}}\n\n======================================================================\nFAIL: test_real_architecture_and_maturity_evidence_references_are_owned (tests.test_gate_boundaries.ImpactConsumerTests.test_real_architecture_and_maturity_evidence_references_are_owned) (changed='reports/field-evidence/software-m5-independent-pilot-start-2026-09-12.json')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/workspace/scratch/712af632e2a5/llm_agent-pr270/tests/test_gate_boundaries.py\", line 320, in test_real_architecture_and_maturity_evidence_references_are_owned\n    self.assert_regression_scheduled(changed)\n  File \"/workspace/scratch/712af632e2a5/llm_agent-pr270/tests/test_gate_boundaries.py\", line 172, in assert_regression_scheduled\n    self.assertTrue(result[\"required\"], result)\nAssertionError: False is not true : {'schema': 'llm-agent-gate-impact/v1', 'status': 'pass', 'group': 'integration-deep', 'required': False, 'reason': 'not-required', 'changed_paths': ['reports/field-evidence/software-m5-independent-pilot-start-2026-09-12.json'], 'direct_gates': [], 'impacted_gates': [], 'group_gates': [], 'downstream_group_gates': [], 'matched_paths': {}}\n\n======================================================================\nFAIL: test_real_architecture_and_maturity_evidence_references_are_owned (tests.test_gate_boundaries.ImpactConsumerTests.test_real_architecture_and_maturity_evidence_references_are_owned) (changed='reports/field-evidence/software-m5-v5-events.jsonl')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/workspace/scratch/712af632e2a5/llm_agent-pr270/tests/test_gate_boundaries.py\", line 320, in test_real_architecture_and_maturity_evidence_references_are_owned\n    self.assert_regression_scheduled(changed)\n  File \"/workspace/scratch/712af632e2a5/llm_agent-pr270/tests/test_gate_boundaries.py\", line 172, in assert_regression_scheduled\n    self.assertTrue(result[\"required\"], result)\nAssertionError: False is not true : {'schema': 'llm-agent-gate-impact/v1', 'status': 'pass', 'group': 'integration-deep', 'required': False, 'reason': 'not-required', 'changed_paths': ['reports/field-evidence/software-m5-v5-events.jsonl'], 'direct_gates': ['longitudinal-operation-certifier'], 'impacted_gates': ['longitudinal-operation-certifier'], 'group_gates': [], 'downstream_group_gates': [], 'matched_paths': {'longitudinal-operation-certifier': ['reports/field-evidence/software-m5-v5-events.jsonl']}}\n\n======================================================================\nFAIL: test_real_architecture_and_maturity_evidence_references_are_owned (tests.test_gate_boundaries.ImpactConsumerTests.test_real_architecture_and_maturity_evidence_references_are_owned) (changed='reports/long-term-assets/solo-maintainer-recovery-current.json')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/workspace/scratch/712af632e2a5/llm_agent-pr270/tests/test_gate_boundaries.py\", line 320, in test_real_architecture_and_maturity_evidence_references_are_owned\n    self.assert_regression_scheduled(changed)\n  File \"/workspace/scratch/712af632e2a5/llm_agent-pr270/tests/test_gate_boundaries.py\", line 172, in assert_regression_scheduled\n    self.assertTrue(result[\"required\"], result)\nAssertionError: False is not true : {'schema': 'llm-agent-gate-impact/v1', 'status': 'pass', 'group': 'integration-deep', 'required': False, 'reason': 'not-required', 'changed_paths': ['reports/long-term-assets/solo-maintainer-recovery-current.json'], 'direct_gates': [], 'impacted_gates': [], 'group_gates': [], 'downstream_group_gates': [], 'matched_paths': {}}\n\n======================================================================\nFAIL: test_removing_bound_artifact_keeps_old_path_even_after_rename_to_prose (tests.test_gate_boundaries.ImpactConsumerTests.test_removing_bound_artifact_keeps_old_path_even_after_rename_to_prose)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/workspace/scratch/712af632e2a5/llm_agent-pr270/tests/test_gate_boundaries.py\", line 270, in test_removing_bound_artifact_keeps_old_path_even_after_rename_to_prose\n    self.assert_regression_scheduled(*changed)\n  File \"/workspace/scratch/712af632e2a5/llm_agent-pr270/tests/test_gate_boundaries.py\", line 172, in assert_regression_scheduled\n    self.assertTrue(result[\"required\"], result)\nAssertionError: False is not true : {'schema': 'llm-agent-gate-impact/v1', 'status': 'pass', 'group': 'integration-deep', 'required': False, 'reason': 'not-required', 'changed_paths': ['docs/architecture/unrelated-note.md', 'subrepos/adoption-matrix.md'], 'direct_gates': ['doc-sync'], 'impacted_gates': ['doc-sync'], 'group_gates': [], 'downstream_group_gates': [], 'matched_paths': {'doc-sync': ['docs/architecture/unrelated-note.md']}}\n\n======================================================================\nFAIL: test_report_growth_is_checked_in_contract_without_requiring_deep (tests.test_gate_boundaries.ImpactConsumerTests.test_report_growth_is_checked_in_contract_without_requiring_deep)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/workspace/scratch/712af632e2a5/llm_agent-pr270/tests/test_gate_boundaries.py\", line 223, in test_report_growth_is_checked_in_contract_without_requiring_deep\n    self.assertTrue(budget_gates, \"the existing strict budget checker needs an always-run contract path\")\nAssertionError: [] is not true : the existing strict budget checker needs an always-run contract path\n\n======================================================================\nFAIL: test_schema_and_intake_fixture_changes_reach_existing_shell_regression (tests.test_gate_boundaries.ImpactConsumerTests.test_schema_and_intake_fixture_changes_reach_existing_shell_regression) (changed='schemas/external-practice-candidate.schema.json')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/workspace/scratch/712af632e2a5/llm_agent-pr270/tests/test_gate_boundaries.py\", line 292, in test_schema_and_intake_fixture_changes_reach_existing_shell_regression\n    self.assert_regression_scheduled(changed)\n  File \"/workspace/scratch/712af632e2a5/llm_agent-pr270/tests/test_gate_boundaries.py\", line 172, in assert_regression_scheduled\n    self.assertTrue(result[\"required\"], result)\nAssertionError: False is not true : {'schema': 'llm-agent-gate-impact/v1', 'status': 'pass', 'group': 'integration-deep', 'required': False, 'reason': 'not-required', 'changed_paths': ['schemas/external-practice-candidate.schema.json'], 'direct_gates': [], 'impacted_gates': [], 'group_gates': [], 'downstream_group_gates': [], 'matched_paths': {}}\n\n======================================================================\nFAIL: test_schema_and_intake_fixture_changes_reach_existing_shell_regression (tests.test_gate_boundaries.ImpactConsumerTests.test_schema_and_intake_fixture_changes_reach_existing_shell_regression) (changed='fixtures/external-practice/cycle-plan.json')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/workspace/scratch/712af632e2a5/llm_agent-pr270/tests/test_gate_boundaries.py\", line 292, in test_schema_and_intake_fixture_changes_reach_existing_shell_regression\n    self.assert_regression_scheduled(changed)\n  File \"/workspace/scratch/712af632e2a5/llm_agent-pr270/tests/test_gate_boundaries.py\", line 172, in assert_regression_scheduled\n    self.assertTrue(result[\"required\"], result)\nAssertionError: False is not true : {'schema': 'llm-agent-gate-impact/v1', 'status': 'pass', 'group': 'integration-deep', 'required': False, 'reason': 'not-required', 'changed_paths': ['fixtures/external-practice/cycle-plan.json'], 'direct_gates': [], 'impacted_gates': [], 'group_gates': [], 'downstream_group_gates': [], 'matched_paths': {}}\n\n----------------------------------------------------------------------\nRan 8 tests in 6.598s\n\nFAILED (failures=21)\n"
++}
+diff --git a/docs/changes/20261024-impact-coverage/evidence/impact-readme-red.json b/docs/changes/20261024-impact-coverage/evidence/impact-readme-red.json
+new file mode 100644
+index 0000000..0e95a53
+--- /dev/null
++++ b/docs/changes/20261024-impact-coverage/evidence/impact-readme-red.json
+@@ -0,0 +1,39 @@
++{
++  "schema": "llm-agent-impact-consumer-regression/v1",
++  "stage": "supplemental-red-lightweight-readme-parity",
++  "observed_at": "2026-10-24T15:11:35Z",
++  "source_head": "64c5192f2d6aaacf65143223f03190564032facc",
++  "active_contracts_sha256": "ec96066f6b9aeaa4c344f8904a92483f87b384de71ea3caceb285a78ed83da9f",
++  "test_source_sha256": "3c7deaac17144b6575c8f1a8c92dba263129b734fa63c3eaa79ef905bd29a2e2",
++  "command": "rtk proxy python3 -m unittest tests.test_gate_boundaries.ImpactConsumerTests.test_readme_lightweight_gate_preserves_existing_retired_runtime_check",
++  "interpreter": "/workspace/scratch/712af632e2a5/audit-venv/bin/python3",
++  "result": {
++    "exit_code": 1,
++    "tests": 1,
++    "assertion_failures": 2,
++    "errors": 0,
++    "elapsed_seconds": 0.425
++  },
++  "cases": [
++    {
++      "mutation": "Append a README line containing hermes-agent in an isolated source copy",
++      "baseline_shell_exit": 0,
++      "baseline_declared_gate_exit": 0,
++      "changed_shell_assertion": "AssertionError: README.md",
++      "changed_declared_gate_exit": 0,
++      "changed_declared_gate_output": "[PASS] active governance contracts are fresh and executable",
++      "impact_required": false
++    },
++    {
++      "mutation": "Append a README line containing Hermes Agent in an isolated source copy",
++      "baseline_shell_exit": 0,
++      "baseline_declared_gate_exit": 0,
++      "changed_shell_assertion": "AssertionError: README.md",
++      "changed_declared_gate_exit": 0,
++      "changed_declared_gate_output": "[PASS] active governance contracts are fresh and executable",
++      "impact_required": false
++    }
++  ],
++  "reason": "The existing shell regression rejects both retired runtime names in README, but the always-run active-contracts gate checks only the separate interface deprecated_surfaces list. Keep README lightweight by enforcing the same existing prohibition in its real always-run validator.",
++  "note": "This supplements the earlier eight-method red record; the final boundary suite now has 24 tests. The gate budget test also executes the declared argv after it is scheduled."
++}
+diff --git a/docs/changes/20261024-impact-coverage/input-consumers.md b/docs/changes/20261024-impact-coverage/input-consumers.md
+new file mode 100644
+index 0000000..4113098
+--- /dev/null
++++ b/docs/changes/20261024-impact-coverage/input-consumers.md
+@@ -0,0 +1,61 @@
++# 实际输入与增量调度
++
++## 取证方法
++
++从 `tests/run_all.sh` 的全部 `tests/test_*.sh` 入口追踪文件读取、复制到隔离夹具的源输入，以及被调用 Python 检查器的间接引用。区分真实仓库输入与测试自行生成的临时文件；后者不增加生产输入声明。
++
++增量算法不需要改变。现有 `calculate_impact` 以直接命中的 gate 的 `impact_groups` 决定是否调度深度集成；依赖闭包继续只是下游信息。问题是消费者的输入声明缺失。
++
++## 常驻的轻量检查
++
++`contract` 增加调用既有 `scripts/check-maintainability-budgets.sh --strict --summary-json` 的 gate。保持原有 14 项预算、严格模式与禁用缓存，不增加 `integration-deep` 标签。
++
++其输入覆盖 `scripts`、`tools`、`manifests`、`reports`、`agent-dev-kit/scripts`、`agent-dev-kit/src`。这些路径包含现有预算 scope、检查实现及配置；ADK 子模块须在执行该检查之前初始化。普通新增报告命中该 gate，无须因此运行完整深度集成。
++
++## 深度回归的实际非代码输入
++
++下表补充 `root-regression` 已有的 `tests`、`scripts`、`tools`、`manifests`。相关 gitlink、锁文件和当前状态报告已有直接的深度 gate 归属。
++
++| 输入 | 现有消费者与失败条件 |
++| --- | --- |
++| `fixtures`、`schemas` | `test_external_practice_intake.sh` 读取现有 cycle plan、provider fixtures 与四份 schema；registration/removal 检查器验证正反夹具及摘要。 |
++| `subrepos` | registration/removal 读取 registry、phase gate、adoption matrix、dirty baseline；只改 adoption matrix 即可使原 removal pass fixture 的哈希过期。 |
++| `registry`、`.github/workflows`、`.github/CODEOWNERS` | `test_branch_gc_native_subtraction.sh`、`test_ci_incremental_gate_dag.sh`、`test_solo_recovery_drill_contract.sh` 及治理、M5、qualification-followup 回归消费登记表和 workflow；backlog 实现证据检查还要求 `CODEOWNERS` 存在。 |
++| `pyproject.toml` | `test_typecheck_contract.sh` 检查严格类型配置及受检文件集；CI 回归也读取打包与质量工具声明。 |
++| `docs/llm-agent-maintenance-guide.md` | `test_active_contracts.sh` 和 `test_asset_inventory_contract.py` / `check-asset-inventory.sh` 检查当前运行目标和资产数量口径。 |
++| `docs/product-maturity-model.md`、`docs/software-m5-certification-plan.md` | backlog / scorecard 实现证据的存在性，以及 `test_long_term_asset_qualification.sh` 的当前来源与历史产品资格边界。 |
++| `docs/runbooks/runtime-target-activation.md`、`docs/runbooks/knowledge-retention-handoff.md`、`docs/runbooks/practice-effect-review.md`、`docs/runbooks/native-target-conformance-readiness.md`、`docs/runbooks/effect-readiness.md`、`docs/runbooks/solo-maintainer-continuity.md`、`docs/runbooks/team-pilot-acceptance.md`、`docs/knowledge-candidates/llm-agent-adk-target-architecture.md` | active-contracts、LTA、knowledge handoff 消费运行目标、连续性、团队试点和候选 frontmatter；候选 handoff 还要求其 SOURCE_REFS 全部存在。精确声明这些路径，不扩大到整个 runbooks / knowledge-candidates 目录。 |
++| `reports/README.md`、`reports/optimization/2026-09-25/historical-script-status-2026-05-23.md`、`reports/optimization/2026-09-25/llm_agent-adk-optimization-plan.md` | `test_intake_active_docs.sh` 校验历史脚本状态、归档元数据、归档文件长度及 SHA-256 / Git blob 摘要。其他新 optimization 说明只需严格报告预算。 |
++| `reports/architecture` | `test_architecture_reports.sh` / `check-architecture-reports.sh` 校验章节、当前来源注册和 backlog 实现证据；knowledge handoff 也消费架构来源。 |
++| `reports/field-evidence`、`reports/long-term-assets` | M5、LTA、consumer-chain 和 longitudinal 回归读取事件、恢复和治理证据。 |
++| `reports/promotion`、`reports/runtime-evidence` | runtime-chain 消费固定版本的历史 promotion 证据；promotion、M5、knowledge handoff 和 runtime-target 检查消费当前及历史运行证据。 |
++| `reports/external-practice-targeted-decisions-2026-07-30.jsonl` | backlog 的真实 implementation_evidence，架构检查要求其存在。 |
++| `reports/oss-analysis-example-runtime-policy-gates-2026-06-16.md`、`reports/oss-duplicate-check-example-runtime-policy-gates-2026-06-16.md`、`reports/oss-security-review-example-runtime-policy-gates-2026-06-16.md` | `test_reference_repository_registration.sh` 直接读取的三份输入证据，现有 registration plan 绑定其摘要。 |
++| `reports/subrepo-removal-plan-codex-2026-06-16.md` | `test_reference_repository_removal.sh` 的真实证据与回滚输入，现有 pass fixture 绑定其摘要。 |
++| `reports/wechat-account-research-2026-07-16/catalog.jsonl` | source policy 的 provider input_path；practice intake 的 policy check 和 registration 回归实际读取。 |
++
++`manifests/subrepo_lifecycle.json` 中其他历史报告引用在这些测试路径上仅作为字符串保留，并未读取报告内容或检查其存在性。backlog 的 `review_evidence` 也是声明元数据，当前执行路径没有读取该文件，故不为它增加 `docs/changes` 例外。不能仅根据出现过路径就把全部 `reports` 纳入深度集成。部分独立治理脚本另有历史报告消费者，但 `run_all.sh` 没有在真实 root 上调用这些脚本；本变更不声称扩大了它们的执行范围。
++
++## 回归方式
++
++`ImpactConsumerTests` 复用原检查器，在临时仓库复制真实输入：
++
++1. 不改预算配置；必要时仅填充临时报告人口到现有 warning limit，再新增一个普通报告。原 strict checker 必须从退出 0 变为退出 1，并且该消费者在常驻 `contract` 内。
++2. 复制原 removal pass fixture 及其 `required_artifacts`，先检查通过，再分别制造 adoption 摘要过期、pass fixture 非 dry-run、绑定文件重命名后缺失。原 checker 必须退出 2，实际路径必须调度深度回归。
++3. 执行原 intake 和 typecheck shell 回归，先取得通过基线，再分别破坏 schema、cycle plan、严格类型配置，确认真实消费者失败且仍被调度。
++4. 从 backlog 的 `source_report` / `implementation_evidence`、scorecard 的 dimension evidence、source policy 的 provider input_path、registration/removal pass fixture 的 required_artifacts 自动推导被消费路径，防止输入声明与真实引用继续漂移。测试不复制 gates.json 的新增输入清单。
++5. README、无关 architecture / changes / runbooks / knowledge-candidates 说明和普通报告（含 optimization 目录下的新说明）仍不要求深度集成；原有异常 Git 文件名、重命名、无效编码及缺失 Git 基线回归继续保留。
++
++红测记录见 `evidence/impact-consumers-red.json`。它记录共享配置修改前 8 个测试、21 个预期断言失败、0 个执行错误；所有破坏输入的用例均先通过原检查器基线。验证只证明源码和调度边界，不构成运行态或产品放行证据。
++
++## README 轻量路径的一致性
++
++进一步交叉核对发现，`test_active_contracts.sh` 还禁止 README 出现 `hermes-agent` / `Hermes Agent`，而常驻 `active-contracts` gate 只检查 interface 的 `deprecated_surfaces`，该清单并不包含这两个运行目标名。只在 README 追加这些名称，原 shell 回归失败，常驻 gate 仍退出 0，深度集成也未被要求。
++
++新增第 9 个消费边界测试直接比较原 shell 与真实 gate.argv，在隔离副本分别重放两个名称；原实现的 2 个调度一致性断言均失败。证据见 `evidence/impact-readme-red.json`。最小修正是在已读取 README 的常驻 validator 中保留这两项既有禁止词检查；不需要让普通 README 修改触发深度集成，也不应以固定历史 `--as-of` 的 shell 测试替代当前日期的 freshness gate。
++
++## 阶段交接
++
++输入映射经独立只读任务 `/root/root_code_audit/input_map_check` 复核：没有新增实质性漏依赖或夹具伪失败；也核对了归档文件重新出现的反向依赖和旧 M5 历史引用。该复核没有运行全量测试，也不替代最终共享配置差异的独立审核。
++
++交接时 `tests/test_gate_boundaries.py` 共 24 个测试，其 SHA-256 为 `2281afd61cce5cb7f64ddcf8d45712ca8b535f51236762eacddd63f1f011e62b`。`git diff --check` 退出 0。`impact.py` 保持原样。共享 gate / CI 配置与 README validator 由主线程整合，随后须在冻结的同一工作树运行全部 24 个边界测试；本阶段没有宣称绿测或产品放行。
+diff --git a/docs/changes/20261024-impact-coverage/negative-results.md b/docs/changes/20261024-impact-coverage/negative-results.md
+new file mode 100644
+index 0000000..02566bf
+--- /dev/null
++++ b/docs/changes/20261024-impact-coverage/negative-results.md
+@@ -0,0 +1,7 @@
++# 整合负结果
++
++- 原输入映射的真实负例保存在 `evidence/impact-consumers-red.json` 与 `evidence/impact-readme-red.json`，不修改原件。
++- 共享配置和 README validator 合入工作树后的首次 24 测有两项断言失败：原 shell 将 Python validator stdout/stderr 重定向，新增轻量检查提前失败后不会再走到后续 Python assert 的 README 提示。保留 shell 非零断言，将明确 README 诊断断言放到实际常驻 gate 命令输出；不改变生产检查或降低失败要求。
++- 首次 contract profile 的 status-projection 正确拒绝已变更的 gates 摘要；后续通过 canonical status projection 只刷新派生来源字段，保留历史验证日期与 release_authorized=false。
++- 原沙箱全量回归在 check-all 同进程证据测试中无法读取真实父进程 `/proc/<pid>/stat`；同一未改测试在宿主执行退出 0。后续宿主全量回归通过前 47 项，在 registration 的 chmod 555 故障注入失败：当前 uid 0 仍可写该目录。保持原检查、测试及门禁，使用普通用户隔离副本复验，不以 root 的权限行为改写产品语义。
++- 全量测试在 ADK 子模块生成的 `reports/runtime/root-native-campaign-*/receipt.json` 为本轮夹具产物，已移到工作区外的本轮验证目录保留；不提交为真实运行回执。
+diff --git a/docs/changes/20261024-impact-coverage/requirements.md b/docs/changes/20261024-impact-coverage/requirements.md
+new file mode 100644
+index 0000000..eccdbd1
+--- /dev/null
++++ b/docs/changes/20261024-impact-coverage/requirements.md
+@@ -0,0 +1,15 @@
++# 增量 CI 的真实输入覆盖
++
++## 目标与边界
++
++修复 2026-10-24 全面审查 F3。冻结 Root 候选 `64c5192f2d6aaacf65143223f03190564032facc`、main `7ba2d71e210955464839d5177c0f7d6a86ac072b`。用户授权按建议全部优化落地，并沿用已授权自动审核、受保护提交和合并。
++
++报告、fixtures、subrepos、schemas 与打包配置变化必须触发实际消费它们的检查。真正无关的说明文字仍保留轻量路径，不新增平行 CI 框架或提高预算。
++
++## 验收
++
++- 单独新增 reports 文件导致维护预算失败时必须调度该检查。
++- 单独修改 adoption matrix 导致 removal 摘要过期时必须调度对应检查。
++- schema、fixture、pyproject 和相关治理输入均有明确覆盖。
++- rename/delete/异常 Git 路径继续失败关闭；无关普通文档可解释地 NOT_REQUIRED。
++- 恢复上一轮八文件整理成果后严格报告数为 320；保留原始失败及审核历史。
+diff --git a/docs/changes/20261024-impact-coverage/tasks.md b/docs/changes/20261024-impact-coverage/tasks.md
+new file mode 100644
+index 0000000..a4cfd83
+--- /dev/null
++++ b/docs/changes/20261024-impact-coverage/tasks.md
+@@ -0,0 +1,6 @@
++# 任务
++
++- [x] 恢复已有八文件整理成果并核对精确 diff；8/8 blob 匹配，整树为 `d7f1319c90c70e989978c6b7e1984df2be59e66b`。
++- [x] 建立真实输入到检查的映射，补行为回归；主 Agent 串行更新共享配置。
++- [x] 重放两个实际反例，验证原 contract/doc-sync 及对应检查的调度；24 项边界回归通过，无关文档保持轻量。
++- [ ] 按 validation plan 执行回归与独立审核，再更新 #270；核对实际候选与 main CI。
+diff --git a/docs/changes/20261024-impact-coverage/verification.md b/docs/changes/20261024-impact-coverage/verification.md
+new file mode 100644
+index 0000000..2581774
+--- /dev/null
++++ b/docs/changes/20261024-impact-coverage/verification.md
+@@ -0,0 +1,7 @@
++# 实现验证与交付边界
++
++原始行为负例和精确消费者映射见本 change 的 evidence 与 input-consumers。主 Agent 整合后实际执行：24/24 gate boundary PASS；CI incremental DAG、active-contracts、doc-sync PASS；固定 Root mypy 2.3.1 的既有9文件与额外 active_contracts 1文件均 PASS；该模块 Ruff 0.16.6 PASS。严格维护预算14项通过，报告数320。
++
++独立 reviewer `ai/root/release_governance_audit` 重新执行24项行为测试、真实rename/delete消费者、常驻README和预算，独立从HEAD及八文件恢复计算出原冻结树，Spec/Quality均通过。其原始时间、输出与来源摘要后续与最终精确实现提交一并归档。
++
++全量回归的两项环境差异保留在 negative-results。普通用户全量、精确候选CI、实际主线CI及ADK后续版本接入仍待交付步骤核验；当前不得写成全部完成。当前来源投影保持 historical evidence、release_authorized=false，不重置历史验证日期。
+diff --git a/fixtures/reference-repository/removal/pass/removal-plan.json b/fixtures/reference-repository/removal/pass/removal-plan.json
+index 7840cf9..9cdd7a8 100644
+--- a/fixtures/reference-repository/removal/pass/removal-plan.json
++++ b/fixtures/reference-repository/removal/pass/removal-plan.json
+@@ -1,6 +1,6 @@
+ {
+   "artifact_sha256": {
+-    "adoption_decision": "46ca2f731f41b4ab2ad8422bc0eba996749404e8528a37117e4794e0f3e2fcb2",
++    "adoption_decision": "da66a91c839169f540175cfcfabea245526657e9e9f47b868ea7e1d4b74493b4",
+     "dirty_baseline_review": "5eb456e565c67dde22b0e63559846c2059f3ed1ad3e29caf95d8a14402001150",
+     "evidence_dependency_scan": "69d99bbe058863285665c50529ded721903eef325cf905cf473ad40eccd38bb4",
+     "rollback_plan": "69d99bbe058863285665c50529ded721903eef325cf905cf473ad40eccd38bb4"
+diff --git a/manifests/gates.json b/manifests/gates.json
+index f320ef1..4805b2b 100644
+--- a/manifests/gates.json
++++ b/manifests/gates.json
+@@ -376,6 +376,29 @@
+       "timeout_seconds": 120,
+       "evidence_class": "release"
+     },
++    "maintenance-budget": {
++      "owner": "llm_agent",
++      "side_effect": "none",
++      "depends_on": [],
++      "inputs": [
++        "scripts",
++        "tools",
++        "manifests",
++        "reports",
++        "agent-dev-kit/scripts",
++        "agent-dev-kit/src"
++      ],
++      "outputs": [],
++      "cache_policy": "disabled",
++      "argv": [
++        "bash",
++        "scripts/check-maintainability-budgets.sh",
++        "--strict",
++        "--summary-json"
++      ],
++      "timeout_seconds": 60,
++      "evidence_class": "source"
++    },
+     "root-regression": {
+       "owner": "llm_agent",
+       "side_effect": "none",
+@@ -386,7 +409,39 @@
+         "tests",
+         "scripts",
+         "tools",
+-        "manifests"
++        "manifests",
++        "fixtures",
++        "schemas",
++        "subrepos",
++        "registry",
++        "pyproject.toml",
++        ".github/workflows",
++        ".github/CODEOWNERS",
++        "docs/llm-agent-maintenance-guide.md",
++        "docs/product-maturity-model.md",
++        "docs/software-m5-certification-plan.md",
++        "docs/runbooks/runtime-target-activation.md",
++        "docs/runbooks/knowledge-retention-handoff.md",
++        "docs/runbooks/practice-effect-review.md",
++        "docs/runbooks/native-target-conformance-readiness.md",
++        "docs/runbooks/effect-readiness.md",
++        "docs/runbooks/solo-maintainer-continuity.md",
++        "docs/runbooks/team-pilot-acceptance.md",
++        "docs/knowledge-candidates/llm-agent-adk-target-architecture.md",
++        "reports/README.md",
++        "reports/architecture",
++        "reports/optimization/2026-09-25/historical-script-status-2026-05-23.md",
++        "reports/optimization/2026-09-25/llm_agent-adk-optimization-plan.md",
++        "reports/field-evidence",
++        "reports/long-term-assets",
++        "reports/promotion",
++        "reports/runtime-evidence",
++        "reports/external-practice-targeted-decisions-2026-07-30.jsonl",
++        "reports/oss-analysis-example-runtime-policy-gates-2026-06-16.md",
++        "reports/oss-duplicate-check-example-runtime-policy-gates-2026-06-16.md",
++        "reports/oss-security-review-example-runtime-policy-gates-2026-06-16.md",
++        "reports/subrepo-removal-plan-codex-2026-06-16.md",
++        "reports/wechat-account-research-2026-07-16/catalog.jsonl"
+       ],
+       "outputs": [],
+       "cache_policy": "disabled",
+@@ -569,7 +624,8 @@
+       "status-projection-regression",
+       "adk-promotion-transaction",
+       "current-status-source-split",
+-      "ci-incremental-dag"
++      "ci-incremental-dag",
++      "maintenance-budget"
+     ],
+     "pr-fast": [
+       "contract",
+diff --git a/reports/current-status.md b/reports/current-status.md
+index 7897872..4baac37 100644
+--- a/reports/current-status.md
++++ b/reports/current-status.md
+@@ -4,7 +4,7 @@
+ <!-- Generated by tools/control_plane/status_projection.py; do not edit this block by hand. -->
+ - projection_schema: llm-agent-current-status/v1
+ - projection_semantics: generated-current-source-projection
+-- projection_inputs_sha256: 7bf8a42d3d01b7999c907a7c151c666c674b0d4f6e42c50c3db984201a3de8ac
++- projection_inputs_sha256: ca300d17f832aeca8e2adc61eaee6c29a037bdec50a23f1138152fd8f8392d17
+ - current_adk_version: 8.0.39
+ - current_adk_commit: 415590db44e88979185efb850e2339a3f95411ef
+ - current_adk_tree: 51d400e80ba555a49ca85fcfefbd74f7fe499072
+diff --git a/reports/evidence-methods-absorption-2026-10-23.md b/reports/evidence-methods-absorption-2026-10-23.md
+deleted file mode 100644
+index 53cda81..0000000
+--- a/reports/evidence-methods-absorption-2026-10-23.md
++++ /dev/null
+@@ -1,85 +0,0 @@
+-# 2026-10-23 外部方法吸收与生产投影更正
+-
+-## 范围与实际来源
+-
+-本报告承接 Owner“全面吸收，全面优化，落地闭环”的授权，对十二项来源分别说明实际落点和限制。来源 URL、固定 revision 或内容摘要、许可证未知项、采集范围保存在 `docs/changes/20261023-evidence-methods/sources.json`；原始十二条 candidate、独立 decision 和 9 ENHANCE / 3 OBSERVE 决定保持不变。
+-
+-本轮代码增强已随 ADK 8.0.39 发布，精确来源为 `415590db44e88979185efb850e2339a3f95411ef`，tree 为 `51d400e80ba555a49ca85fcfefbd74f7fe499072`。发布证据为 [PR #220](https://github.com/jiying2007/agent-dev-kit/pull/220)、[实际 main CI](https://github.com/jiying2007/agent-dev-kit/actions/runs/39955902743) 和 [v8.0.39](https://github.com/jiying2007/agent-dev-kit/releases/tag/v8.0.39)。Root 接入的原始签名材料在 `reports/promotion/agent-dev-kit/`；组件发布不授予 Native、G22、现场或 Product M5 资格。
+-
+-第三方材料只作为方法输入，没有复制、安装或执行第三方资产。下述生产映射复用本仓已有实现和职责，没有新增 Agent、Skill、Workflow、评估框架或收费服务。
+-
+-## 四项实际生产承接
+-
+-### EXT-06：按完整责任复用既有模块
+-
+-适用于 Native 多文档输出和公开 release publish 的重复责任。`agent-dev-kit/src/agent_dev_kit/native_campaign.py` 通过 `agent-dev-kit/src/agent_dev_kit/atomic_io.py` 承担统一输出校验、staging 和补偿；`agent-dev-kit/src/agent_dev_kit/release.py` 复用 `agent-dev-kit/src/agent_dev_kit/distribution/release_contract.py` 的 canonical verifier。
+-
+-该增强由 `agent-dev-kit/agents/architecture-planner/AGENTS.md` 的责任划分、`agent-dev-kit/skills/adk-interface-contract-design/SKILL.md` 的调用者合同和 `agent-dev-kit/workflows/release-hardening/WORKFLOW.md` 的验证与发布职责承接。具体改动和独立审核在 `agent-dev-kit/docs/changes/20261023-output-boundaries/` 与 `agent-dev-kit/docs/changes/20261023-release-contract/`。确定性反例覆盖调用者正常输出、重复/别名输出、后项写入失败和发布合同不一致。
+-
+-适用收益是统一实际责任与错误处理；不以文件数、模块行数或假设的 token 节省证明生产效率改善。Root 的 process_budget 复用仍在原实现映射中，不伪装成 ADK 新资产。
+-
+-### EXT-08：在实际失败路径上保证可恢复
+-
+-`agent-dev-kit/src/agent_dev_kit/native_campaign_contract.py` 与 `agent-dev-kit/src/agent_dev_kit/atomic_io.py` 在写入前校验全集合的输出类型、别名和输入冲突，完成编码及 staging 后再发布；失败时补偿已替换项目，恢复失败则保留恢复材料。`agent-dev-kit/src/agent_dev_kit/compiler.py` 在 export 使用 writer lock，并在获得锁后复核原始路径身份。
+-
+-既有承接职责为 `agent-dev-kit/agents/architecture-planner/AGENTS.md`、`agent-dev-kit/skills/adk-interface-contract-design/references/lifecycle-operation-contract.md`、`agent-dev-kit/skills/adk-interface-contract-design/references/tool-effect-contract.md` 和 `agent-dev-kit/workflows/release-hardening/WORKFLOW.md`。代码及真实反例见 `agent-dev-kit/docs/changes/20261023-output-boundaries/`。
+-
+-这证明已观察到的文件操作失败可以按合同处理；跨文件补偿不等于任意断电点的崩溃原子性，也不证明远端 API exactly-once。远端未知结果仍按已有发布流程读回后决定是否重试。
+-
+-### EXT-09：来源数据与发布权威分别核验
+-
+-本次生产增强限定为 release 来源完整性：`agent-dev-kit/src/agent_dev_kit/distribution/release_artifacts.py` 从冻结 Git tree 读取并验证 blob；`agent-dev-kit/src/agent_dev_kit/distribution/archive_io.py` 有界扫描完整 source inventory；`agent-dev-kit/src/agent_dev_kit/distribution/release_contract.py` 对照 source 数量、摘要和嵌入 manifest。ignored、index 隐藏漂移、Git attributes、重复成员、路径或类型冲突不能仅凭表面 clean 状态进入合格资产。
+-
+-既有职责为 `agent-dev-kit/agents/security-compliance-reviewer/AGENTS.md`、`agent-dev-kit/skills/adk-interface-contract-design/SKILL.md` 和 `agent-dev-kit/workflows/release-hardening/WORKFLOW.md`。实现与审核见 `agent-dev-kit/docs/changes/20261023-release-contract/`。不可信日志、外部标题和回执不能替代精确来源、签名主体与发行权威。
+-
+-本报告不声称新增了通用 prompt-injection 防护或验证了所有模型安全行为；OpenAI 平台本身未被引入。方法来源与实际控制的覆盖范围保持分开。
+-
+-### EXT-11：完整发布集合与同字节验证
+-
+-`agent-dev-kit/src/agent_dev_kit/release.py` 的公开 publish 对 captured archive snapshot 进行 canonical verification，并使用同一份已验证字节形成 tar、checksum 和 release-contract 三资产；dry-run 不写输出。`agent-dev-kit/src/agent_dev_kit/distribution/release_contract.py` 仍是实际合同 owner，改名版本、source 漂移和异常 tar 会被原验证器拒绝。
+-
+-既有职责为 `agent-dev-kit/agents/build-release-engineer/AGENTS.md`、`agent-dev-kit/skills/adk-release-versioning/SKILL.md` 和 `agent-dev-kit/workflows/release-hardening/WORKFLOW.md`。实现、测试和独立审核见 `agent-dev-kit/docs/changes/20261023-release-contract/`。实际 GitHub immutable 状态、签名和主线执行由上列发布及 CI 记录分别证明，不由本报告或 release 标题推断。
+-
+-这些 Agent/Skill/Workflow 路径说明既有职责承接关系，不是新生成的执行回执，也不声明每个 Workflow 步骤在本次独立运行。实际执行只以原始测试、review、CI 和发布证据为准。
+-
+-## 五项研究与验收方法
+-
+-以下 ENHANCE 决定保留在原 ledger 和 `docs/changes/20261023-evidence-methods/implementation-map.md`，操作说明进入 `docs/runbooks/evidence-driven-optimization.md`。它们用于本轮问题定义与验收，不登记为新生产 intake package。
+-
+-| 来源 | 本轮实际采用 | 适用边界与后续验证 |
+-|---|---|---|
+-| EXT-01 OpenAI Skill evals | 分开记录路由、执行、正确产物与真实效果；用原失败和正常对照验收缺陷 | 没有重新认证全部 Skill；真实效果沿原 effect campaign 采样 |
+-| EXT-03 Anthropic evals | 以最终文件、退出码、进程和发布状态验收，保留失败与重试分母 | 测试通过不增加 Native、G22 或产品资格；真实 campaign 仍需实际任务 |
+-| EXT-04 Anthropic harness | 根据共享边界风险选择独立审查与回归，对局部反馈只补相应验证 | 本轮没有逐个证明所有 harness 组件的净收益，后续消融需固定输入与预算 |
+-| EXT-05 Addy Skill evals | 分开解释结构校验、词法路由近似、执行成功与行为效果 | 没有新 catalog 或 runner；组件有无对照须使用真实任务且保留完整分母 |
+-| EXT-07 Cursor benchmark | 先确认实际工作与产物；缓存反例暴露九项生产缓存输入不完整并禁用 | 只确认正确性修复，没有端到端效率、模型成本或人工时间改善的测量结论 |
+-
+-## 三项选型观察与重新进入条件
+-
+-这三项保持原 OBSERVE decision；未建立生产 observe intake package，因此不出现在生产 adoption matrix。以后需要生产吸收时仍须完成原 Agent/Skill/Workflow 深度、报告、合法性和运行证据要求。
+-
+-| 来源 | 当前观察结论 | 重新进入评审的条件 |
+-|---|---|---|
+-| EXT-02 OpenAI deprecations | 在 sources.json 指定静态扫描面未发现活跃托管 Evals / Agent Builder 调用，作为选型约束 | 发现真实活跃调用或平台边界变更时，核对当前官方状态、实际调用者及迁移需求；未扫描的外部部署保持未知 |
+-| EXT-10 LangGraph checkpointers | 复用关于 checkpoint、重放与外部副作用的语义分析，没有引入框架 | 真实故障证明现有恢复 owner 无法满足需求，并有可比较收益、维护成本与副作用控制证据时再评审 |
+-| EXT-12 GitHub workflow lockfiles | 继续已有 full SHA pin；按已核来源保持 Enterprise Cloud 公开预览观察 | 重新核实官方状态、确认已具备资格且零新增费用，再进行限定工作流兼容性试验；当前没有升级或购买动作 |
+-
+-## 发现、纠正与关闭要求
+-
+-工作树 quick 检查发现，原十二条生产矩阵行全部使用 `llm_agent + done`。既有 reference lifecycle 只在真实 reference-repository onboarding 时允许 Root 作为该生产目标；九项 adopt 不满足生产目标及本地证据要求，三项 observe 也没有生产 intake 所需的深度包。原矩阵尾注不能重新定义 done。
+-
+-本次修正只把四项真实 ADK 代码增强投影到生产矩阵，其余八项完整保留在原 candidate/decision/map。原 `docs/changes/20261023-evidence-methods/review-evidence.json`、requirements/design/tasks 和执行日志保持历史原件；前次方法审核遗漏上述两个 gate，历史 PASS 不继承为本次更正验收。
+-
+-更正后的独立复审须绑定本报告、矩阵 Markdown/JSONL、implementation map、runbook 和 removal fixture 的新摘要，并实际运行以下原始入口：
+-
+-- `rtk bash scripts/check-upstream-intake-readiness.sh .`
+-- `rtk bash scripts/check-observe-intake-depth.sh .`
+-- `rtk bash scripts/check-adoption-matrix-structured.sh .`
+-- `rtk bash scripts/check-adoption-matrix-status.sh .`
+-- `rtk bash scripts/check-adoption-evidence-integrity.sh .`
+-- `rtk bash scripts/check-adoption-real-assets.sh . --summary-json`
+-- `rtk bash tests/test_reference_repository_removal.sh`
+-
+-矩阵 JSONL 由原 exporter 生成，removal pass fixture 的 adoption_decision 摘要由原 planner 计算；不改变门禁或测试断言。新提交的全量回归、受保护 PR CI 与实际 main CI 独立留证。本报告不预填尚未运行的更正后结果。
+-
+-当前缺少本机声明运行环境、过期 dirty baseline 及旧 M5 资格的门禁结果仍依其原权威报告，不能用本次矩阵修正、ADK 发布或 PR CI 绿色消除。复审时间沿原变更节奏或 2026-11-22 之前进行；该日期不表示创建了自动任务。
+diff --git a/subrepos/adoption-matrix.jsonl b/subrepos/adoption-matrix.jsonl
+index cc9bd01..2a2d2ff 100644
+--- a/subrepos/adoption-matrix.jsonl
++++ b/subrepos/adoption-matrix.jsonl
+@@ -204,7 +204,7 @@
+ {"date":"2026-07-23","repo":"Agent Skills in the Wild","category":"skill-maintenance","capability":"增加 revision/digest、稳定行为与 target-local binding diff、效果、刷新和退役证据；未知值显式 not-measured","value":"高","cost":"低","risk":"低","decision":"adopt","state":"done","target":"agent-dev-kit","evidence":"reports/external-practice-absorption-decisions-2026-07-23.jsonl; agent-dev-kit/manifests/skill_reproducibility_contracts.json; agent-dev-kit/fixtures/agent-ecosystem-standards/fail/skill-maintenance-missing-digest.json"}
+ {"date":"2026-07-23","repo":"VS Code / GitHub Copilot","category":"runtime-target","capability":"登记 discovery 与 forked-context target watch；真实 use case、版本、smoke、effect/security 和 rollback 前不新增 direct target","value":"中","cost":"中","risk":"中","decision":"observe","state":"done","target":"agent-dev-kit","evidence":"agent-dev-kit/agents/architecture-planner/AGENTS.md; agent-dev-kit/skills/adk-interface-contract-design/SKILL.md; agent-dev-kit/workflows/external-practice-absorption/WORKFLOW.md; reports/observe-secondary-intake-packages-2026-07-23.md; reports/external-practice-absorption-decisions-2026-07-23.jsonl; agent-dev-kit/manifests/external_agent_pattern_contracts.json; agent-dev-kit/fixtures/agent-ecosystem-standards/fail/coding-agent-target-enabled.json"}
+ {"date":"2026-07-30","repo":"Model Context Protocol","category":"mcp-compatibility","capability":"owner ENHANCE：把 2026-07-28 final tag/commit 与混合许可证边界刷新到既有 staging；active 仍为 2025-11-25，runtime、Tasks、Apps、extensions 和 compatibility claim 均禁用","value":"高","cost":"低","risk":"高","decision":"adopt","state":"done","target":"agent-dev-kit","evidence":"reports/external-practice-targeted-decisions-2026-07-30.jsonl; reports/external-practice-curator-review-2026-07-30.md; agent-dev-kit/docs/changes/mcp-2026-final-metadata-refresh-2026-07-30/; agent-dev-kit/manifests/skill_mcp_dependencies.json; agent-dev-kit/manifests/external_agent_pattern_contracts.json; agent-dev-kit/fixtures/agent-ecosystem-standards/fail/mcp-final-feature-enabled.json"}
+-{"date":"2026-10-23","repo":"mattpocock/skills","category":"module-ownership","capability":"EXT-06：Native 文档发布复用 atomic_io，公开 publish 复用 canonical release verifier；保留调用者正常与失败路径","value":"高","cost":"中","risk":"低","decision":"adopt","state":"done","target":"agent-dev-kit","evidence":"reports/evidence-methods-absorption-2026-10-23.md; agent-dev-kit/src/agent_dev_kit/atomic_io.py; agent-dev-kit/src/agent_dev_kit/native_campaign.py; agent-dev-kit/src/agent_dev_kit/release.py; agent-dev-kit/docs/changes/20261023-output-boundaries/"}
+-{"date":"2026-10-23","repo":"cursor/plugins","category":"recovery-correctness","capability":"EXT-08：输出全集合预检、staging、失败补偿和恢复材料保留；export 使用 writer lock 与路径身份复核","value":"高","cost":"中","risk":"中","decision":"adopt","state":"done","target":"agent-dev-kit","evidence":"reports/evidence-methods-absorption-2026-10-23.md; agent-dev-kit/src/agent_dev_kit/atomic_io.py; agent-dev-kit/src/agent_dev_kit/native_campaign_contract.py; agent-dev-kit/src/agent_dev_kit/compiler.py; agent-dev-kit/docs/changes/20261023-output-boundaries/"}
+-{"date":"2026-10-23","repo":"OpenAI agent safety","category":"trust-boundary","capability":"EXT-09：固定 Git commit/tree/blob 来源并独立核验 tar 全量 source digest；外部声明不授予 release authority","value":"高","cost":"低","risk":"低","decision":"adopt","state":"done","target":"agent-dev-kit","evidence":"reports/evidence-methods-absorption-2026-10-23.md; agent-dev-kit/src/agent_dev_kit/distribution/release_artifacts.py; agent-dev-kit/src/agent_dev_kit/distribution/archive_io.py; agent-dev-kit/src/agent_dev_kit/distribution/release_contract.py; agent-dev-kit/docs/changes/20261023-release-contract/"}
+-{"date":"2026-10-23","repo":"GitHub immutable releases","category":"release-integrity","capability":"EXT-11：公开 publish 从 captured snapshot 发布同字节三资产，dry-run 无写；真实 immutable 状态与签名分别验证","value":"高","cost":"中","risk":"低","decision":"adopt","state":"done","target":"agent-dev-kit","evidence":"reports/evidence-methods-absorption-2026-10-23.md; agent-dev-kit/src/agent_dev_kit/release.py; agent-dev-kit/src/agent_dev_kit/distribution/release_contract.py; agent-dev-kit/docs/changes/20261023-release-contract/"}
++{"date":"2026-10-23","repo":"mattpocock/skills","category":"module-ownership","capability":"EXT-06：Native 文档发布复用 atomic_io，公开 publish 复用 canonical release verifier；保留调用者正常与失败路径","value":"高","cost":"中","risk":"低","decision":"adopt","state":"done","target":"agent-dev-kit","evidence":"docs/changes/20261023-evidence-methods/implementation-map.md; agent-dev-kit/src/agent_dev_kit/atomic_io.py; agent-dev-kit/src/agent_dev_kit/native_campaign.py; agent-dev-kit/src/agent_dev_kit/release.py; agent-dev-kit/docs/changes/20261023-output-boundaries/"}
++{"date":"2026-10-23","repo":"cursor/plugins","category":"recovery-correctness","capability":"EXT-08：输出全集合预检、staging、失败补偿和恢复材料保留；export 使用 writer lock 与路径身份复核","value":"高","cost":"中","risk":"中","decision":"adopt","state":"done","target":"agent-dev-kit","evidence":"docs/changes/20261023-evidence-methods/implementation-map.md; agent-dev-kit/src/agent_dev_kit/atomic_io.py; agent-dev-kit/src/agent_dev_kit/native_campaign_contract.py; agent-dev-kit/src/agent_dev_kit/compiler.py; agent-dev-kit/docs/changes/20261023-output-boundaries/"}
++{"date":"2026-10-23","repo":"OpenAI agent safety","category":"trust-boundary","capability":"EXT-09：固定 Git commit/tree/blob 来源并独立核验 tar 全量 source digest；外部声明不授予 release authority","value":"高","cost":"低","risk":"低","decision":"adopt","state":"done","target":"agent-dev-kit","evidence":"docs/changes/20261023-evidence-methods/implementation-map.md; agent-dev-kit/src/agent_dev_kit/distribution/release_artifacts.py; agent-dev-kit/src/agent_dev_kit/distribution/archive_io.py; agent-dev-kit/src/agent_dev_kit/distribution/release_contract.py; agent-dev-kit/docs/changes/20261023-release-contract/"}
++{"date":"2026-10-23","repo":"GitHub immutable releases","category":"release-integrity","capability":"EXT-11：公开 publish 从 captured snapshot 发布同字节三资产，dry-run 无写；真实 immutable 状态与签名分别验证","value":"高","cost":"中","risk":"低","decision":"adopt","state":"done","target":"agent-dev-kit","evidence":"docs/changes/20261023-evidence-methods/implementation-map.md; agent-dev-kit/src/agent_dev_kit/release.py; agent-dev-kit/src/agent_dev_kit/distribution/release_contract.py; agent-dev-kit/docs/changes/20261023-release-contract/"}
+diff --git a/subrepos/adoption-matrix.md b/subrepos/adoption-matrix.md
+index 1aaf32f..73ee781 100644
+--- a/subrepos/adoption-matrix.md
++++ b/subrepos/adoption-matrix.md
+@@ -219,12 +219,12 @@
+ | 2026-07-23 | VS Code / GitHub Copilot | runtime-target | 登记 discovery 与 forked-context target watch；真实 use case、版本、smoke、effect/security 和 rollback 前不新增 direct target | 中 | 中 | 中 | observe | done | agent-dev-kit | agent-dev-kit/agents/architecture-planner/AGENTS.md; agent-dev-kit/skills/adk-interface-contract-design/SKILL.md; agent-dev-kit/workflows/external-practice-absorption/WORKFLOW.md; reports/observe-secondary-intake-packages-2026-07-23.md; reports/external-practice-absorption-decisions-2026-07-23.jsonl; agent-dev-kit/manifests/external_agent_pattern_contracts.json; agent-dev-kit/fixtures/agent-ecosystem-standards/fail/coding-agent-target-enabled.json |
+ | 2026-07-30 | Model Context Protocol | mcp-compatibility | owner ENHANCE：把 2026-07-28 final tag/commit 与混合许可证边界刷新到既有 staging；active 仍为 2025-11-25，runtime、Tasks、Apps、extensions 和 compatibility claim 均禁用 | 高 | 低 | 高 | adopt | done | agent-dev-kit | reports/external-practice-targeted-decisions-2026-07-30.jsonl; reports/external-practice-curator-review-2026-07-30.md; agent-dev-kit/docs/changes/mcp-2026-final-metadata-refresh-2026-07-30/; agent-dev-kit/manifests/skill_mcp_dependencies.json; agent-dev-kit/manifests/external_agent_pattern_contracts.json; agent-dev-kit/fixtures/agent-ecosystem-standards/fail/mcp-final-feature-enabled.json |
+ 
+-| 2026-10-23 | mattpocock/skills | module-ownership | EXT-06：Native 文档发布复用 atomic_io，公开 publish 复用 canonical release verifier；保留调用者正常与失败路径 | 高 | 中 | 低 | adopt | done | agent-dev-kit | reports/evidence-methods-absorption-2026-10-23.md; agent-dev-kit/src/agent_dev_kit/atomic_io.py; agent-dev-kit/src/agent_dev_kit/native_campaign.py; agent-dev-kit/src/agent_dev_kit/release.py; agent-dev-kit/docs/changes/20261023-output-boundaries/ |
+-| 2026-10-23 | cursor/plugins | recovery-correctness | EXT-08：输出全集合预检、staging、失败补偿和恢复材料保留；export 使用 writer lock 与路径身份复核 | 高 | 中 | 中 | adopt | done | agent-dev-kit | reports/evidence-methods-absorption-2026-10-23.md; agent-dev-kit/src/agent_dev_kit/atomic_io.py; agent-dev-kit/src/agent_dev_kit/native_campaign_contract.py; agent-dev-kit/src/agent_dev_kit/compiler.py; agent-dev-kit/docs/changes/20261023-output-boundaries/ |
+-| 2026-10-23 | OpenAI agent safety | trust-boundary | EXT-09：固定 Git commit/tree/blob 来源并独立核验 tar 全量 source digest；外部声明不授予 release authority | 高 | 低 | 低 | adopt | done | agent-dev-kit | reports/evidence-methods-absorption-2026-10-23.md; agent-dev-kit/src/agent_dev_kit/distribution/release_artifacts.py; agent-dev-kit/src/agent_dev_kit/distribution/archive_io.py; agent-dev-kit/src/agent_dev_kit/distribution/release_contract.py; agent-dev-kit/docs/changes/20261023-release-contract/ |
+-| 2026-10-23 | GitHub immutable releases | release-integrity | EXT-11：公开 publish 从 captured snapshot 发布同字节三资产，dry-run 无写；真实 immutable 状态与签名分别验证 | 高 | 中 | 低 | adopt | done | agent-dev-kit | reports/evidence-methods-absorption-2026-10-23.md; agent-dev-kit/src/agent_dev_kit/release.py; agent-dev-kit/src/agent_dev_kit/distribution/release_contract.py; agent-dev-kit/docs/changes/20261023-release-contract/ |
++| 2026-10-23 | mattpocock/skills | module-ownership | EXT-06：Native 文档发布复用 atomic_io，公开 publish 复用 canonical release verifier；保留调用者正常与失败路径 | 高 | 中 | 低 | adopt | done | agent-dev-kit | docs/changes/20261023-evidence-methods/implementation-map.md; agent-dev-kit/src/agent_dev_kit/atomic_io.py; agent-dev-kit/src/agent_dev_kit/native_campaign.py; agent-dev-kit/src/agent_dev_kit/release.py; agent-dev-kit/docs/changes/20261023-output-boundaries/ |
++| 2026-10-23 | cursor/plugins | recovery-correctness | EXT-08：输出全集合预检、staging、失败补偿和恢复材料保留；export 使用 writer lock 与路径身份复核 | 高 | 中 | 中 | adopt | done | agent-dev-kit | docs/changes/20261023-evidence-methods/implementation-map.md; agent-dev-kit/src/agent_dev_kit/atomic_io.py; agent-dev-kit/src/agent_dev_kit/native_campaign_contract.py; agent-dev-kit/src/agent_dev_kit/compiler.py; agent-dev-kit/docs/changes/20261023-output-boundaries/ |
++| 2026-10-23 | OpenAI agent safety | trust-boundary | EXT-09：固定 Git commit/tree/blob 来源并独立核验 tar 全量 source digest；外部声明不授予 release authority | 高 | 低 | 低 | adopt | done | agent-dev-kit | docs/changes/20261023-evidence-methods/implementation-map.md; agent-dev-kit/src/agent_dev_kit/distribution/release_artifacts.py; agent-dev-kit/src/agent_dev_kit/distribution/archive_io.py; agent-dev-kit/src/agent_dev_kit/distribution/release_contract.py; agent-dev-kit/docs/changes/20261023-release-contract/ |
++| 2026-10-23 | GitHub immutable releases | release-integrity | EXT-11：公开 publish 从 captured snapshot 发布同字节三资产，dry-run 无写；真实 immutable 状态与签名分别验证 | 高 | 中 | 低 | adopt | done | agent-dev-kit | docs/changes/20261023-evidence-methods/implementation-map.md; agent-dev-kit/src/agent_dev_kit/release.py; agent-dev-kit/src/agent_dev_kit/distribution/release_contract.py; agent-dev-kit/docs/changes/20261023-release-contract/ |
+ 
+-2026-10-23 的四行只投影已落实到 ADK 8.0.39 的生产代码增强。完整十二项 candidate/decision 及九项 ENHANCE、三项 OBSERVE 保留在 `docs/changes/20261023-evidence-methods/`；其中五项研究与验收方法、三项选型观察不登记为生产 intake 完成。具体分流、已有职责映射、验证与适用边界见 `reports/evidence-methods-absorption-2026-10-23.md`。
++2026-10-23 的四行只投影已落实到 ADK 8.0.39 的生产代码增强。完整十二项 candidate/decision 及九项 ENHANCE、三项 OBSERVE 保留在 `docs/changes/20261023-evidence-methods/`；其中五项研究与验收方法、三项选型观察不登记为生产 intake 完成。具体分流、已有职责映射、验证与适用边界见 `docs/changes/20261023-evidence-methods/implementation-map.md`。
+ 
+ ## 模板
+ 
+diff --git a/tests/test_ci_incremental_gate_dag.sh b/tests/test_ci_incremental_gate_dag.sh
+index e821022..be30aed 100644
+--- a/tests/test_ci_incremental_gate_dag.sh
++++ b/tests/test_ci_incremental_gate_dag.sh
+@@ -71,6 +71,7 @@ assert profiles["contract"] == [
+     "adk-promotion-transaction",
+     "current-status-source-split",
+     "ci-incremental-dag",
++    "maintenance-budget",
+ ]
+ assert profiles["pr-fast"] == ["contract", "doc-sync"]
+ assert profiles["integration-extra"] == ["adk-promotion-evidence", "native-target-readiness", "effect-readiness", "root-regression"]
+@@ -136,6 +137,8 @@ assert "integration-deep" in gates["ci-incremental-dag"]["impact_groups"]
+ assert "integration-deep" in gates["adk-promotion-evidence"]["impact_groups"]
+ assert "integration-deep" in gates["native-target-readiness"]["impact_groups"]
+ assert "integration-deep" in gates["runtime-chain-pin"]["impact_groups"]
++assert "integration-deep" not in gates["maintenance-budget"].get("impact_groups", [])
++assert "git submodule update --init --depth=1 agent-dev-kit" in gitlab
+ assert "adk-integration" not in gates
+ assert "adk-quick" not in gates
+ assert "adk-checkout" not in json.dumps(manifest, sort_keys=True)
+diff --git a/tests/test_gate_boundaries.py b/tests/test_gate_boundaries.py
+index 6646365..ec3df14 100644
+--- a/tests/test_gate_boundaries.py
++++ b/tests/test_gate_boundaries.py
+@@ -12,7 +12,7 @@ import time
+ import unittest
+ from pathlib import Path
+ 
+-from tools.control_plane.gate_runner import run_profile
++from tools.control_plane.gate_runner import _expand_profile, run_profile
+ from tools.control_plane.impact import _git_changed_paths, calculate_impact
+ from tools.control_plane.process_budget import ProcessBudgetError, run_bounded
+ from tools.control_plane.receipts import bind_receipt
+@@ -142,6 +142,230 @@ class ImpactPathTests(TemporaryRepository):
+             _git_changed_paths(self.root, self.base, head, "two-dot")
+ 
+ 
++class ImpactConsumerTests(TemporaryRepository):
++    """Changes that break existing consumers must retain a scheduled CI path."""
++
++    def setUp(self) -> None:
++        super().setUp()
++        self.copy_inputs("manifests/gates.json")
++        self.definition = json.loads((self.root / "manifests/gates.json").read_text(encoding="utf-8"))
++
++    def copy_inputs(self, *paths: str) -> None:
++        for relative in paths:
++            source, target = REPOSITORY / relative, self.root / relative
++            target.parent.mkdir(parents=True, exist_ok=True)
++            if source.is_dir():
++                shutil.copytree(source, target, dirs_exist_ok=True,
++                                ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
++            else:
++                shutil.copyfile(source, target)
++
++    def command(self, *argv: str, source_cwd: bool = False) -> subprocess.CompletedProcess[str]:
++        cwd = REPOSITORY if source_cwd else self.root
++        env = dict(os.environ, PYTHONPATH=str(cwd), PYTHONDONTWRITEBYTECODE="1")
++        env["PATH"] = str(Path(sys.executable).parent) + os.pathsep + env.get("PATH", "")
++        return subprocess.run(argv, cwd=cwd, env=env, check=False, capture_output=True,
++                              text=True, timeout=60)
++
++    def assert_regression_scheduled(self, *paths: str) -> None:
++        result = calculate_impact(self.root, paths, group="integration-deep")
++        self.assertTrue(result["required"], result)
++        scheduled = _expand_profile(self.definition, "integration-extra")
++        self.assertTrue(any("tests/run_all.sh" in self.definition["gates"][name]["argv"]
++                            for name in scheduled), scheduled)
++
++    def removal_fixture(self) -> str:
++        fixture = "fixtures/reference-repository/removal/pass/removal-plan.json"
++        self.copy_inputs("manifests/reference_repository_lifecycle_policy.json",
++                         "fixtures/reference-repository/removal")
++        plan = json.loads((self.root / fixture).read_text(encoding="utf-8"))
++        self.copy_inputs(*set(plan["required_artifacts"].values()))
++        baseline = self.check_removal()
++        self.assertEqual(0, baseline.returncode, baseline.stdout + baseline.stderr)
++        return fixture
++
++    def check_removal(self) -> subprocess.CompletedProcess[str]:
++        return self.command(sys.executable, "-m", "tools.codex_assets.reference_repository",
++                            "--root", str(self.root), "check-removal", "--summary-json",
++                            source_cwd=True)
++
++    def test_report_growth_is_checked_in_contract_without_requiring_deep(self) -> None:
++        config = "manifests/comprehensive_optimization_backlog.json"
++        contract = json.loads((REPOSITORY / config).read_text(encoding="utf-8"))
++        scopes = {path for item in contract["maintainability_budgets"]["budgets"]
++                  for path in item["scope_paths"]}
++        self.copy_inputs("tools", *sorted(scopes))
++        checker = "scripts/check-maintainability-budgets.sh"
++        argv = ("bash", str(REPOSITORY / checker), str(self.root), "--strict", "--summary-json")
++        baseline = self.command(*argv)
++        self.assertEqual(0, baseline.returncode, baseline.stdout + baseline.stderr)
++        report = json.loads(baseline.stdout)
++        count = next(item for item in report["budgets"] if item["id"] == "root-report-count")
++        # Fill only the isolated report population up to the unchanged contract's
++        # current limit, so this remains a one-file boundary if cleanup adds room.
++        for index in range(count["warning_limit"] - count["observed"]):
++            (self.root / f"reports/impact-padding-{index}.md").write_text("fixture\n", encoding="utf-8")
++        if count["observed"] < count["warning_limit"]:
++            baseline = self.command(*argv)
++            self.assertEqual(0, baseline.returncode, baseline.stdout + baseline.stderr)
++        base = commit(self.root)
++        changed = "reports/impact-added-report.md"
++        (self.root / changed).write_text("Ordinary report addition.\n", encoding="utf-8")
++        head = commit(self.root)
++        self.assertEqual([changed], _git_changed_paths(self.root, base, head, "two-dot"))
++        failed = self.command(*argv)
++        self.assertEqual(1, failed.returncode, failed.stdout + failed.stderr)
++        receipt = json.loads(failed.stdout)
++        self.assertIn("root-report-count", receipt["warnings"])
++        self.assertEqual((REPOSITORY / config).read_bytes(), (self.root / config).read_bytes())
++        always_run = _expand_profile(self.definition, "contract")
++        budget_gates = [name for name in always_run if checker in self.definition["gates"][name]["argv"]]
++        self.assertTrue(budget_gates, "the existing strict budget checker needs an always-run contract path")
++        for name in budget_gates:
++            self.assertIn("--strict", self.definition["gates"][name]["argv"])
++            self.assertEqual("disabled", self.definition["gates"][name]["cache_policy"])
++            scheduled_failure = self.command(*self.definition["gates"][name]["argv"])
++            self.assertEqual(1, scheduled_failure.returncode,
++                             scheduled_failure.stdout + scheduled_failure.stderr)
++            self.assertIn("root-report-count", json.loads(scheduled_failure.stdout)["warnings"])
++        result = calculate_impact(self.root, [changed], group="integration-deep")
++        self.assertFalse(result["required"], result)
++        self.assertTrue(set(budget_gates) & set(result["direct_gates"]), result)
++
++    def test_adoption_only_change_exposes_stale_removal_artifact(self) -> None:
++        fixture = self.removal_fixture()
++        plan = json.loads((self.root / fixture).read_text(encoding="utf-8"))
++        changed = plan["required_artifacts"]["adoption_decision"]
++        base = commit(self.root)
++        with (self.root / changed).open("a", encoding="utf-8") as stream:
++            stream.write("\n<!-- impact boundary fixture -->\n")
++        head = commit(self.root)
++        self.assertEqual([changed], _git_changed_paths(self.root, base, head, "two-dot"))
++        failed = self.check_removal()
++        self.assertEqual(2, failed.returncode, failed.stdout + failed.stderr)
++        self.assertIn("artifact hash is stale", failed.stderr)
++        self.assert_regression_scheduled(changed)
++
++    def test_invalid_removal_pass_fixture_keeps_its_real_checker_scheduled(self) -> None:
++        changed = self.removal_fixture()
++        path = self.root / changed
++        plan = json.loads(path.read_text(encoding="utf-8"))
++        plan["mode"] = "apply"
++        path.write_text(json.dumps(plan), encoding="utf-8")
++        failed = self.check_removal()
++        self.assertEqual(2, failed.returncode, failed.stdout + failed.stderr)
++        self.assertIn("must remain a planned dry-run", failed.stderr)
++        self.assert_regression_scheduled(changed)
++
++    def test_removing_bound_artifact_keeps_old_path_even_after_rename_to_prose(self) -> None:
++        fixture = self.removal_fixture()
++        plan = json.loads((self.root / fixture).read_text(encoding="utf-8"))
++        original = plan["required_artifacts"]["adoption_decision"]
++        base = commit(self.root)
++        destination = "docs/architecture/unrelated-note.md"
++        (self.root / destination).parent.mkdir(parents=True)
++        (self.root / original).rename(self.root / destination)
++        head = commit(self.root)
++        changed = _git_changed_paths(self.root, base, head, "two-dot")
++        self.assertEqual(sorted([original, destination]), changed)
++        failed = self.check_removal()
++        self.assertEqual(2, failed.returncode, failed.stdout + failed.stderr)
++        self.assertIn("artifact is missing or unhashed", failed.stderr)
++        self.assert_regression_scheduled(*changed)
++        self.assertFalse(calculate_impact(self.root, [destination], group="integration-deep")["required"])
++
++    def test_schema_and_intake_fixture_changes_reach_existing_shell_regression(self) -> None:
++        self.copy_inputs("tools", "scripts", "manifests", "schemas", "fixtures",
++                         "tests/test_external_practice_intake.sh")
++        policy = json.loads((self.root / "manifests/external_practice_sources.json").read_text())
++        self.copy_inputs(*(provider["input_path"] for provider in policy["providers"].values()
++                           if "input_path" in provider))
++        argv = ("bash", str(self.root / "tests/test_external_practice_intake.sh"))
++        baseline = self.command(*argv)
++        self.assertEqual(0, baseline.returncode, baseline.stdout + baseline.stderr)
++        for changed in ("schemas/external-practice-candidate.schema.json",
++                        "fixtures/external-practice/cycle-plan.json"):
++            with self.subTest(changed=changed):
++                path = self.root / changed
++                original = path.read_bytes()
++                path.write_text("{}\n", encoding="utf-8")
++                failed = self.command(*argv)
++                path.write_bytes(original)
++                self.assertNotEqual(0, failed.returncode, failed.stdout)
++                self.assertNotIn("ModuleNotFoundError", failed.stderr)
++                self.assert_regression_scheduled(changed)
++
++    def test_packaging_change_reaches_existing_typecheck_contract(self) -> None:
++        self.copy_inputs("tools", "pyproject.toml", ".github/workflows/ci.yml",
++                         "tests/test_typecheck_contract.sh")
++        argv = ("bash", str(self.root / "tests/test_typecheck_contract.sh"))
++        baseline = self.command(*argv)
++        self.assertEqual(0, baseline.returncode, baseline.stdout + baseline.stderr)
++        path = self.root / "pyproject.toml"
++        original = path.read_text(encoding="utf-8")
++        self.assertIn("strict = true", original)
++        path.write_text(original.replace("strict = true", "strict = false"), encoding="utf-8")
++        failed = self.command(*argv)
++        self.assertNotEqual(0, failed.returncode, failed.stdout)
++        self.assertIn("AssertionError", failed.stderr)
++        self.assert_regression_scheduled("pyproject.toml")
++
++    def test_real_contract_evidence_and_policy_inputs_are_owned(self) -> None:
++        backlog = json.loads((REPOSITORY / "manifests/comprehensive_optimization_backlog.json").read_text())
++        scorecard = json.loads((REPOSITORY / "manifests/product_maturity_scorecard.json").read_text())
++        policy = json.loads((REPOSITORY / "manifests/external_practice_sources.json").read_text())
++        consumed = {backlog["source_report"]}
++        consumed.update(path for item in backlog["items"] for path in item["implementation_evidence"])
++        consumed.update(path for item in scorecard["dimensions"] for path in item["evidence"])
++        consumed.update(provider["input_path"] for provider in policy["providers"].values()
++                        if "input_path" in provider)
++        for directory in ("fixtures/reference-repository/removal/pass",
++                          "fixtures/external-practice/registration/pass"):
++            for fixture in (REPOSITORY / directory).glob("*.json"):
++                plan = json.loads(fixture.read_text(encoding="utf-8"))
++                consumed.update(plan["required_artifacts"].values())
++        # Derive real existence/content/hash dependencies from the contracts
++        # consumed by the original architecture, maturity, and intake checkers.
++        for changed in sorted(consumed):
++            with self.subTest(changed=changed):
++                self.assertTrue((REPOSITORY / changed).exists(), changed)
++                self.assert_regression_scheduled(changed)
++
++    def test_readme_lightweight_gate_preserves_existing_retired_runtime_check(self) -> None:
++        self.copy_inputs("tools", "scripts", "tests", "manifests", "docs", "README.md")
++        always_run = _expand_profile(self.definition, "contract")
++        consumers = [self.definition["gates"][name]["argv"] for name in always_run
++                     if "tools.control_plane.active_contracts" in self.definition["gates"][name]["argv"]]
++        self.assertEqual(1, len(consumers), consumers)
++        shell = ("bash", str(self.root / "tests/test_active_contracts.sh"))
++        for argv in (shell, consumers[0]):
++            baseline = self.command(*argv)
++            self.assertEqual(0, baseline.returncode, baseline.stdout + baseline.stderr)
++        readme = self.root / "README.md"
++        original = readme.read_text(encoding="utf-8")
++        for retired in ("hermes-agent", "Hermes Agent"):
++            with self.subTest(retired=retired):
++                readme.write_text(original + f"\nRetired runtime: {retired}.\n", encoding="utf-8")
++                failed = self.command(*shell)
++                self.assertNotEqual(0, failed.returncode, failed.stdout)
++                result = calculate_impact(self.root, ["README.md"], group="integration-deep")
++                self.assertFalse(result["required"], result)
++                scheduled_failure = self.command(*consumers[0])
++                self.assertNotEqual(0, scheduled_failure.returncode,
++                                    "the lightweight README consumer lost an existing regression: "
++                                    + scheduled_failure.stdout)
++                self.assertIn("README.md", scheduled_failure.stdout + scheduled_failure.stderr)
++
++    def test_unrelated_prose_remains_lightweight(self) -> None:
++        for changed in ("README.md", "docs/architecture/unrelated-note.md",
++                        "docs/changes/example/notes.md", "docs/runbooks/unrelated-note.md",
++                        "docs/knowledge-candidates/unrelated-note.md", "reports/ordinary-review.md",
++                        "reports/optimization/unrelated-note.md"):
++            with self.subTest(changed=changed):
++                result = calculate_impact(self.root, [changed], group="integration-deep")
++                self.assertFalse(result["required"], result)
++
++
+ class GateProcessTests(TemporaryRepository):
+     def execute(self, code: str, *, failure_lines: int = 80) -> dict:
+         self.manifest({"process": gate([sys.executable, "-c", code])})
+diff --git a/tests/test_gate_runner.sh b/tests/test_gate_runner.sh
+index 5c8442d..b9aa98c 100644
+--- a/tests/test_gate_runner.sh
++++ b/tests/test_gate_runner.sh
+@@ -32,6 +32,7 @@ assert [item["name"] for item in result["gates"]] == [
+     "adk-promotion-transaction",
+     "current-status-source-split",
+     "ci-incremental-dag",
++    "maintenance-budget",
+ ]
+ assert all(item["status"] == "pass" for item in result["gates"])
+ PY
+diff --git a/tools/control_plane/active_contracts.py b/tools/control_plane/active_contracts.py
+index 974981b..0928386 100644
+--- a/tools/control_plane/active_contracts.py
++++ b/tools/control_plane/active_contracts.py
+@@ -84,6 +84,11 @@ def validate(root: Path, as_of: dt.date) -> dict[str, Any]:
+         "README.md": (root / "README.md").read_text(encoding="utf-8"),
+         "manifests/comprehensive_optimization_backlog.json": backlog_path.read_text(encoding="utf-8"),
+     }
++    # README-only changes use this always-run gate, so preserve the retired
++    # runtime checks also enforced by the deeper active-contract regression.
++    for retired_runtime in ("hermes-agent", "Hermes Agent"):
++        if retired_runtime in active_texts["README.md"]:
++            failures.append(f"active surface README.md references retired runtime: {retired_runtime}")
+     for label, text in active_texts.items():
+         for token in deprecated:
+             if token in text:

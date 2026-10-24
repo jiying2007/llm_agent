@@ -1,0 +1,762 @@
+{
+  "format": "independent-read-only-review-observations",
+  "subject": "Root F3 impact consumer coverage and eight-file recovery",
+  "reviewer": {
+    "id": "/root/release_governance_audit",
+    "kind": "ai",
+    "implementation_independence": "independent",
+    "scope_note": "Reviewer implemented separate ADK F2 scope, but authored no Root source or restoration changes."
+  },
+  "review_started_at": "2026-10-24T15:58:34.001821+00:00",
+  "review_completed_at": "2026-10-24T16:03:31.810813+00:00",
+  "reviewed_head": "64c5192f2d6aaacf65143223f03190564032facc",
+  "verdicts": {
+    "spec": "pass",
+    "quality": "pass"
+  },
+  "verdict_scope": "Frozen Root F3 source and recovered eight paths; targeted local review only.",
+  "findings": [],
+  "merge_or_release_authorized_by_this_record": false,
+  "full_regression": {
+    "reviewer_ran_full_suite": false,
+    "status": "separate_parent_evidence_required"
+  },
+  "source_binding_kind": "sha256-file-snapshot",
+  "source_set_serialization": "UTF-8 JSON sources array, sort_keys=true and separators=(',', ':'); includes base/path/bytes/sha256. Deletions bound separately by original Git blob.",
+  "source_set_sha256": "bbe66c3efc2fe1226e6f0c31e7848b1179a2928997863d0a9bcc9077296a5b77",
+  "sources": [
+    {
+      "base": "repository",
+      "path": ".gitlab-ci.yml",
+      "sha256": "88029613e9d856d9633cafd4995db2f95f470065c69f52d4948ae0182a6db3ee",
+      "bytes": 940
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/evidence/consolidation-independent-execution.json",
+      "sha256": "39548a00098eef21654e79299210cbd4fa336c746e178f59108abcffdc548c4d",
+      "bytes": 39778
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/implementation-map.md",
+      "sha256": "635812051b3880a819fd403ca0dfc340491b94fde39076ac076c5c187e3946f9",
+      "bytes": 19762
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/review-consolidation-findings.md",
+      "sha256": "913d6c8fe790a4dcc117931c7a704f2f5bc0be9a833be65c7daccbb5e760751f",
+      "bytes": 6417
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/review-consolidation.json",
+      "sha256": "5afc7b4161df268325ecff6dba35a92c4abd3197932777ee51b90fd41b899590",
+      "bytes": 32522
+    },
+    {
+      "base": "repository",
+      "path": "fixtures/reference-repository/removal/pass/removal-plan.json",
+      "sha256": "af3006a9f496d3e5859c496a29b6457cca18cab7dd83d0a3e146e194f3df8c40",
+      "bytes": 2327
+    },
+    {
+      "base": "repository",
+      "path": "manifests/comprehensive_optimization_backlog.json",
+      "sha256": "dcc814b4af52ec498a2585673d9da7274fe92da58e02ee580f2fb01283a74a8b",
+      "bytes": 40199
+    },
+    {
+      "base": "repository",
+      "path": "manifests/gates.json",
+      "sha256": "6b946680d8cd9329b1bce74a3e3e4565634daa25203b9cde2c8af3c507d9a8be",
+      "bytes": 16794
+    },
+    {
+      "base": "repository",
+      "path": "pyproject.toml",
+      "sha256": "853c9e0c09404f0d65970dd67966de887372946a4a73c4b7689c0061013068ca",
+      "bytes": 1155
+    },
+    {
+      "base": "repository",
+      "path": "reports/current-status.md",
+      "sha256": "96fa32f595b14b887a66a5eca9e0e7f8334d23589883864ee81c8fd5348d9d1f",
+      "bytes": 5839
+    },
+    {
+      "base": "repository",
+      "path": "subrepos/adoption-matrix.jsonl",
+      "sha256": "a0a345e4626725a234a47419dfc073e61f221aec3595f2d960bcb19d0a780b3a",
+      "bytes": 103853
+    },
+    {
+      "base": "repository",
+      "path": "subrepos/adoption-matrix.md",
+      "sha256": "da66a91c839169f540175cfcfabea245526657e9e9f47b868ea7e1d4b74493b4",
+      "bytes": 85541
+    },
+    {
+      "base": "repository",
+      "path": "tests/test_ci_incremental_gate_dag.sh",
+      "sha256": "c7737a1b585d52bba90a6b7c5106d6e84fca47563fe7f9d3215dcec59d69b3bb",
+      "bytes": 16923
+    },
+    {
+      "base": "repository",
+      "path": "tests/test_gate_boundaries.py",
+      "sha256": "4be7ffefc6ec608f1fe7d6564c4e5e1ed74aad165f0b2aa3e695505fc96b6eb4",
+      "bytes": 28573
+    },
+    {
+      "base": "repository",
+      "path": "tests/test_gate_runner.sh",
+      "sha256": "c9b9975467c6c966b7fdbcba852fe81fd0c308f0355213857e85f17448a8bd41",
+      "bytes": 1020
+    },
+    {
+      "base": "repository",
+      "path": "tools/control_plane/active_contracts.py",
+      "sha256": "4cc0a123b5588f4b13c1ca697903e2fa436b0a1deceb76ad5e474f986340f8fc",
+      "bytes": 7134
+    },
+    {
+      "base": "repository",
+      "path": "tools/control_plane/gate_runner.py",
+      "sha256": "d4da8de1bf5140fa8830bb817e9ae5c97f0cba0bafcd3b551e586ae7ee038606",
+      "bytes": 18514
+    },
+    {
+      "base": "repository",
+      "path": "tools/control_plane/impact.py",
+      "sha256": "73e4dddb9c984081ef6ae07cc9ac0182839f87e43181261067a89ce835a25392",
+      "bytes": 9058
+    }
+  ],
+  "deletions": [
+    {
+      "path": "reports/evidence-methods-absorption-2026-10-23.md",
+      "expected_blob": null,
+      "actual_blob": null,
+      "sha256": null,
+      "match": true
+    }
+  ],
+  "recovery": {
+    "published_head": "64c5192f2d6aaacf65143223f03190564032facc",
+    "recovery_record_sha256": "19692c568b12d12907e20ce1a93f9f9070b340413705a6e641b7759a922a5372",
+    "synthesized_recovery_only_tree": "d7f1319c90c70e989978c6b7e1984df2be59e66b",
+    "matches": 8,
+    "paths": [
+      {
+        "path": "docs/changes/20261023-evidence-methods/evidence/consolidation-independent-execution.json",
+        "expected_blob": "ce4e924d6ab59ab64a7c6103119f74bb86e6fd05",
+        "actual_blob": "ce4e924d6ab59ab64a7c6103119f74bb86e6fd05",
+        "sha256": "39548a00098eef21654e79299210cbd4fa336c746e178f59108abcffdc548c4d",
+        "match": true
+      },
+      {
+        "path": "docs/changes/20261023-evidence-methods/implementation-map.md",
+        "expected_blob": "a3571a202a626c844303d389e99724acfb5a8db8",
+        "actual_blob": "a3571a202a626c844303d389e99724acfb5a8db8",
+        "sha256": "635812051b3880a819fd403ca0dfc340491b94fde39076ac076c5c187e3946f9",
+        "match": true
+      },
+      {
+        "path": "docs/changes/20261023-evidence-methods/review-consolidation-findings.md",
+        "expected_blob": "4b49fb6dab2928a45b2f32088aae331ac36934aa",
+        "actual_blob": "4b49fb6dab2928a45b2f32088aae331ac36934aa",
+        "sha256": "913d6c8fe790a4dcc117931c7a704f2f5bc0be9a833be65c7daccbb5e760751f",
+        "match": true
+      },
+      {
+        "path": "docs/changes/20261023-evidence-methods/review-consolidation.json",
+        "expected_blob": "32715a5cc5344b945af3098f2e921f9dd6d75949",
+        "actual_blob": "32715a5cc5344b945af3098f2e921f9dd6d75949",
+        "sha256": "5afc7b4161df268325ecff6dba35a92c4abd3197932777ee51b90fd41b899590",
+        "match": true
+      },
+      {
+        "path": "fixtures/reference-repository/removal/pass/removal-plan.json",
+        "expected_blob": "9cdd7a8deab12197fe0a7a449772e5811281584d",
+        "actual_blob": "9cdd7a8deab12197fe0a7a449772e5811281584d",
+        "sha256": "af3006a9f496d3e5859c496a29b6457cca18cab7dd83d0a3e146e194f3df8c40",
+        "match": true
+      },
+      {
+        "path": "reports/evidence-methods-absorption-2026-10-23.md",
+        "expected_blob": null,
+        "actual_blob": null,
+        "sha256": null,
+        "match": true
+      },
+      {
+        "path": "subrepos/adoption-matrix.jsonl",
+        "expected_blob": "2a2d2ff72637e341b10dafecb5de7e66d92808b4",
+        "actual_blob": "2a2d2ff72637e341b10dafecb5de7e66d92808b4",
+        "sha256": "a0a345e4626725a234a47419dfc073e61f221aec3595f2d960bcb19d0a780b3a",
+        "match": true
+      },
+      {
+        "path": "subrepos/adoption-matrix.md",
+        "expected_blob": "73ee781e786d0e6d89d93c71c7f5edbe1e3883e0",
+        "actual_blob": "73ee781e786d0e6d89d93c71c7f5edbe1e3883e0",
+        "sha256": "da66a91c839169f540175cfcfabea245526657e9e9f47b868ea7e1d4b74493b4",
+        "match": true
+      }
+    ]
+  },
+  "ownership": {
+    "budget_count": 14,
+    "budget_unchanged": true,
+    "impact_algorithm_unchanged": true,
+    "github_workflow_unchanged": true,
+    "existing_gate_fields_changed": [
+      "root-regression"
+    ],
+    "new_gate": {
+      "owner": "llm_agent",
+      "side_effect": "none",
+      "depends_on": [],
+      "inputs": [
+        "scripts",
+        "tools",
+        "manifests",
+        "reports",
+        "agent-dev-kit/scripts",
+        "agent-dev-kit/src"
+      ],
+      "outputs": [],
+      "cache_policy": "disabled",
+      "argv": [
+        "bash",
+        "scripts/check-maintainability-budgets.sh",
+        "--strict",
+        "--summary-json"
+      ],
+      "timeout_seconds": 60,
+      "evidence_class": "source"
+    },
+    "path_probes": [
+      {
+        "path": "README.md",
+        "required": false,
+        "direct_gates": [
+          "active-contracts"
+        ]
+      },
+      {
+        "path": "docs/architecture/reviewer-ordinary.md",
+        "required": false,
+        "direct_gates": [
+          "doc-sync"
+        ]
+      },
+      {
+        "path": "docs/changes/reviewer-prose/notes.md",
+        "required": false,
+        "direct_gates": [
+          "doc-sync"
+        ]
+      },
+      {
+        "path": "docs/runbooks/reviewer-ordinary.md",
+        "required": false,
+        "direct_gates": [
+          "doc-sync"
+        ]
+      },
+      {
+        "path": "reports/reviewer-ordinary.md",
+        "required": false,
+        "direct_gates": [
+          "maintenance-budget"
+        ]
+      },
+      {
+        "path": "reports/optimization/reviewer-ordinary.md",
+        "required": false,
+        "direct_gates": [
+          "maintenance-budget"
+        ]
+      },
+      {
+        "path": "subrepos/adoption-matrix.md",
+        "required": true,
+        "direct_gates": [
+          "root-regression"
+        ]
+      },
+      {
+        "path": "schemas/external-practice-candidate.schema.json",
+        "required": true,
+        "direct_gates": [
+          "root-regression"
+        ]
+      },
+      {
+        "path": "fixtures/external-practice/cycle-plan.json",
+        "required": true,
+        "direct_gates": [
+          "root-regression"
+        ]
+      },
+      {
+        "path": "pyproject.toml",
+        "required": true,
+        "direct_gates": [
+          "root-regression"
+        ]
+      },
+      {
+        "path": "reports/README.md",
+        "required": true,
+        "direct_gates": [
+          "maintenance-budget",
+          "root-regression"
+        ]
+      },
+      {
+        "path": "docs/runbooks/runtime-target-activation.md",
+        "required": true,
+        "direct_gates": [
+          "doc-sync",
+          "root-regression"
+        ]
+      },
+      {
+        "path": ".github/workflows/ci.yml",
+        "required": true,
+        "direct_gates": [
+          "ci-incremental-dag",
+          "root-regression"
+        ]
+      },
+      {
+        "path": ".github/CODEOWNERS",
+        "required": true,
+        "direct_gates": [
+          "root-regression"
+        ]
+      }
+    ]
+  },
+  "additional_real_consumer_counterexamples": {
+    "baseline_exit": 0,
+    "rename_paths": [
+      "docs/architecture/reviewer-moved-evidence.md",
+      "subrepos/adoption-matrix.md"
+    ],
+    "rename_consumer_exit": 2,
+    "rename_consumer_stderr": "[FAIL] fixtures/reference-repository/removal/pass/removal-plan.json: reference repository removal artifact is missing or unhashed\n",
+    "rename_deep_required": true,
+    "destination_alone_deep_required": false,
+    "delete_paths": [
+      "subrepos/adoption-matrix.md"
+    ],
+    "delete_consumer_exit": 2,
+    "delete_consumer_stderr": "[FAIL] fixtures/reference-repository/removal/pass/removal-plan.json: reference repository removal artifact is missing or unhashed\n",
+    "delete_deep_required": true
+  },
+  "strict_budget": {
+    "status": "pass",
+    "warnings": [],
+    "budget_count": 14,
+    "root_report_count": {
+      "id": "root-report-count",
+      "metric": "file_count",
+      "status": "pass",
+      "observed": 320,
+      "baseline": 284,
+      "drift": 36,
+      "warning_limit": 320,
+      "hard_limit": 400,
+      "files_scanned": 320,
+      "owner": "llm-agent-governance",
+      "next_action": "Run governed report cleanup and preserve supersession metadata before creating more active reports.",
+      "hotspots": [
+        {
+          "path": "reports/2026-08-01-token-context-governance-v2-release-bundle.json",
+          "value": 1
+        },
+        {
+          "path": "reports/README.md",
+          "value": 1
+        },
+        {
+          "path": "reports/absorb-review-20260512_115031.md",
+          "value": 1
+        },
+        {
+          "path": "reports/absorption-optimization-review-2026-06-15.md",
+          "value": 1
+        },
+        {
+          "path": "reports/active-subrepo-diff-scan-2026-07-06.md",
+          "value": 1
+        }
+      ]
+    }
+  },
+  "current_status_change": {
+    "only_projection_inputs_sha256_changed": true,
+    "historical_verification_and_release_authority_unchanged": true,
+    "is_part_of_eight_file_recovery": false
+  },
+  "tools": {
+    "python": "3.12.14",
+    "ruff": "0.16.6",
+    "mypy": "2.3.1"
+  },
+  "executions": [
+    {
+      "label": "boundaries",
+      "argv": [
+        "/workspace/scratch/712af632e2a5/audit-venv/bin/python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_gate_boundaries.py",
+        "-v"
+      ],
+      "started_at": "2026-10-24T15:58:34.001821+00:00",
+      "completed_at": "2026-10-24T15:58:45.400683+00:00",
+      "elapsed_seconds": 11.397,
+      "exit_code": 0,
+      "source_stable": true,
+      "stdout": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/boundaries.stdout"
+      },
+      "stderr": {
+        "sha256": "429e415f420f9d2f87211873ba962ea7cadfc3794f2bb60685aeb8d07deb0531",
+        "bytes": 4070,
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/boundaries.stderr"
+      }
+    },
+    {
+      "label": "independent-probes",
+      "argv": [
+        "/workspace/scratch/712af632e2a5/audit-venv/bin/python3",
+        "/workspace/scratch/712af632e2a5/apply20261024/review-root/independent_probes.py"
+      ],
+      "started_at": "2026-10-24T15:59:47.218499+00:00",
+      "completed_at": "2026-10-24T15:59:47.635445+00:00",
+      "elapsed_seconds": 0.415,
+      "exit_code": 0,
+      "source_stable": true,
+      "stdout": {
+        "sha256": "2e63a1f35ddb784f07120015a68cd4de090a2daf668348aafd2aec1681ea45f3",
+        "bytes": 6663,
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/independent-probes.stdout"
+      },
+      "stderr": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/independent-probes.stderr"
+      }
+    },
+    {
+      "label": "strict-budget",
+      "argv": [
+        "bash",
+        "scripts/check-maintainability-budgets.sh",
+        "--strict",
+        "--summary-json"
+      ],
+      "started_at": "2026-10-24T16:00:05.002425+00:00",
+      "completed_at": "2026-10-24T16:00:05.721143+00:00",
+      "elapsed_seconds": 0.716,
+      "exit_code": 0,
+      "source_stable": true,
+      "stdout": {
+        "sha256": "f177a49a39a0bc9b6598ac50bf4c9bf519c378708f9a2839d496ae06c245a343",
+        "bytes": 11374,
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/strict-budget.stdout"
+      },
+      "stderr": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/strict-budget.stderr"
+      }
+    },
+    {
+      "label": "active-contracts-current",
+      "argv": [
+        "/workspace/scratch/712af632e2a5/audit-venv/bin/python3",
+        "-m",
+        "tools.control_plane.active_contracts",
+        "--root",
+        ".",
+        "--summary-json"
+      ],
+      "started_at": "2026-10-24T16:00:05.000676+00:00",
+      "completed_at": "2026-10-24T16:00:05.068568+00:00",
+      "elapsed_seconds": 0.066,
+      "exit_code": 0,
+      "source_stable": true,
+      "stdout": {
+        "sha256": "cdeb3f43bef7ec91b9309fd8cd13fb5366105f0d7fce90942b09217c0f29b44a",
+        "bytes": 309,
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/active-contracts-current.stdout"
+      },
+      "stderr": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/active-contracts-current.stderr"
+      }
+    },
+    {
+      "label": "ci-dag",
+      "argv": [
+        "bash",
+        "tests/test_ci_incremental_gate_dag.sh"
+      ],
+      "started_at": "2026-10-24T16:00:05.012994+00:00",
+      "completed_at": "2026-10-24T16:00:05.132430+00:00",
+      "elapsed_seconds": 0.117,
+      "exit_code": 0,
+      "source_stable": true,
+      "stdout": {
+        "sha256": "6930995dd0ae4e3114c9cc160cd104578245a5cf0d2ae70517eec619f22ce7af",
+        "bytes": 132,
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/ci-dag.stdout"
+      },
+      "stderr": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/ci-dag.stderr"
+      }
+    },
+    {
+      "label": "diffcheck",
+      "argv": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "started_at": "2026-10-24T16:00:05.027669+00:00",
+      "completed_at": "2026-10-24T16:00:05.046111+00:00",
+      "elapsed_seconds": 0.016,
+      "exit_code": 0,
+      "source_stable": true,
+      "stdout": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/diffcheck.stdout"
+      },
+      "stderr": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/diffcheck.stderr"
+      }
+    },
+    {
+      "label": "validation-plan",
+      "argv": [
+        "/workspace/scratch/712af632e2a5/audit-venv/bin/python3",
+        "-m",
+        "tools.codex_assets.validation_plan",
+        "--root",
+        ".",
+        "--summary-json"
+      ],
+      "started_at": "2026-10-24T16:00:13.197010+00:00",
+      "completed_at": "2026-10-24T16:00:13.312803+00:00",
+      "elapsed_seconds": 0.114,
+      "exit_code": 0,
+      "source_stable": true,
+      "stdout": {
+        "sha256": "685e8de48a5b861642a4ba0ba0d2ec6691ee4bf0abebe88351dd7e03a6e46b84",
+        "bytes": 6855,
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/validation-plan.stdout"
+      },
+      "stderr": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/validation-plan.stderr"
+      }
+    },
+    {
+      "label": "ruff",
+      "argv": [
+        "/workspace/scratch/712af632e2a5/root-quality-venv/bin/python3",
+        "-m",
+        "ruff",
+        "check",
+        "tools/control_plane/active_contracts.py",
+        "tests/test_gate_boundaries.py"
+      ],
+      "started_at": "2026-10-24T16:00:34.708597+00:00",
+      "completed_at": "2026-10-24T16:00:34.742261+00:00",
+      "elapsed_seconds": 0.032,
+      "exit_code": 0,
+      "source_stable": true,
+      "stdout": {
+        "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+        "bytes": 19,
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/ruff.stdout"
+      },
+      "stderr": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/ruff.stderr"
+      }
+    },
+    {
+      "label": "mypy-active",
+      "argv": [
+        "/workspace/scratch/712af632e2a5/root-quality-venv/bin/python3",
+        "-m",
+        "mypy",
+        "--config-file",
+        "pyproject.toml",
+        "--cache-dir",
+        "/tmp/root-review-mypy-cache",
+        "tools/control_plane/active_contracts.py"
+      ],
+      "started_at": "2026-10-24T16:00:34.708669+00:00",
+      "completed_at": "2026-10-24T16:00:35.576086+00:00",
+      "elapsed_seconds": 0.866,
+      "exit_code": 0,
+      "source_stable": true,
+      "stdout": {
+        "sha256": "5d4b6d285b77932e3d08212c3b4974d0a803f98ec60408ac6ccf6a063fa6c19e",
+        "bytes": 42,
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/mypy-active.stdout"
+      },
+      "stderr": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/mypy-active.stderr"
+      }
+    },
+    {
+      "label": "gitlab-parity",
+      "argv": [
+        "/workspace/scratch/712af632e2a5/audit-venv/bin/python3",
+        "-c",
+        "import json,yaml;from pathlib import Path;g=yaml.safe_load(Path('.gitlab-ci.yml').read_text());assert g['variables']['GIT_SUBMODULE_STRATEGY']=='none';assert g['contract']['script']==['git submodule update --init --depth=1 agent-dev-kit','python3 -m tools.control_plane.gate_runner --profile contract'];print(json.dumps({'contract':g['contract'],'submodule_strategy':g['variables']['GIT_SUBMODULE_STRATEGY']}))"
+      ],
+      "started_at": "2026-10-24T16:00:34.726862+00:00",
+      "completed_at": "2026-10-24T16:00:34.792473+00:00",
+      "elapsed_seconds": 0.064,
+      "exit_code": 0,
+      "source_stable": true,
+      "stdout": {
+        "sha256": "66a85f82c3b9c91226144faff38e97d661393fd0d65585edaecaf533b8afb9d1",
+        "bytes": 198,
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/gitlab-parity.stdout"
+      },
+      "stderr": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/gitlab-parity.stderr"
+      }
+    },
+    {
+      "label": "quality-versions",
+      "argv": [
+        "/workspace/scratch/712af632e2a5/root-quality-venv/bin/python3",
+        "-c",
+        "import importlib.metadata,json,platform;print(json.dumps({\"python\":platform.python_version(),\"ruff\":importlib.metadata.version(\"ruff\"),\"mypy\":importlib.metadata.version(\"mypy\")}))"
+      ],
+      "started_at": "2026-10-24T16:03:05.570973+00:00",
+      "completed_at": "2026-10-24T16:03:05.637322+00:00",
+      "elapsed_seconds": 0.065,
+      "exit_code": 0,
+      "source_stable": true,
+      "stdout": {
+        "sha256": "a0e2744c164d2ee9cd93c6d6689fe0a23edbf2a4c902338c615d66cf7b317a40",
+        "bytes": 57,
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/quality-versions.stdout"
+      },
+      "stderr": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/quality-versions.stderr"
+      }
+    },
+    {
+      "label": "status-projection",
+      "argv": [
+        "python3",
+        "-m",
+        "tools.control_plane.status_projection",
+        "--root",
+        "."
+      ],
+      "started_at": "2026-10-24T16:03:29.889166+00:00",
+      "completed_at": "2026-10-24T16:03:29.955135+00:00",
+      "elapsed_seconds": 0.064,
+      "exit_code": 0,
+      "source_stable": true,
+      "stdout": {
+        "sha256": "ce2b9e0a473eac240574b29d73326a11b43443c796ef9ba667d382b57afc5b72",
+        "bytes": 1662,
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/status-projection.stdout"
+      },
+      "stderr": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/status-projection.stderr"
+      }
+    }
+  ],
+  "validation_plan": {
+    "tier": "L4",
+    "reason": "release/version/M5/lock surface changed",
+    "snapshot_sha256": "a3283b4c1073202cd4988658400aaf9b929aa66c9e00b1ede95ef4c40761b03e",
+    "scope_limitation": "Parent full suite was running and its transient fixture paths were present; freeze a clean post-test plan before final delivery."
+  },
+  "environment_not_run": [
+    "Knowledge Provider and canonical ~/codex Execution Policy owner are absent in this isolated environment."
+  ],
+  "evidence_secret_pattern_scan": {
+    "matched": 0,
+    "files": [
+      "active-contracts-current.json",
+      "active-contracts-current.stderr",
+      "active-contracts-current.stdout",
+      "boundaries.json",
+      "boundaries.stderr",
+      "boundaries.stdout",
+      "ci-dag.json",
+      "ci-dag.stderr",
+      "ci-dag.stdout",
+      "diffcheck.json",
+      "diffcheck.stderr",
+      "diffcheck.stdout",
+      "gitlab-parity.json",
+      "gitlab-parity.stderr",
+      "gitlab-parity.stdout",
+      "independent-probes.json",
+      "independent-probes.stderr",
+      "independent-probes.stdout",
+      "mypy-active.json",
+      "mypy-active.stderr",
+      "mypy-active.stdout",
+      "quality-versions.json",
+      "quality-versions.stderr",
+      "quality-versions.stdout",
+      "ruff.json",
+      "ruff.stderr",
+      "ruff.stdout",
+      "status-projection.json",
+      "status-projection.stderr",
+      "status-projection.stdout",
+      "strict-budget.json",
+      "strict-budget.stderr",
+      "strict-budget.stdout",
+      "validation-plan.json",
+      "validation-plan.stderr",
+      "validation-plan.stdout"
+    ],
+    "scope": "common GitHub token/private-key/Bearer patterns"
+  }
+}
