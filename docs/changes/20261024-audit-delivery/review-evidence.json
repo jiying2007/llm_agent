@@ -1,0 +1,139 @@
+{
+  "schema": "adk-review-evidence/v1",
+  "subject_id": "20261024-audit-delivery",
+  "scope": "source-change",
+  "owner": "leiwenjun",
+  "author_id": "ai/root",
+  "reviewer": {
+    "id": "ai/root/adk_code_audit",
+    "kind": "ai",
+    "independence": "independent"
+  },
+  "reviewed_at": "2026-10-24T17:29:26Z",
+  "evidence_completed_at": "2026-10-24T17:28:21.976213Z",
+  "verdicts": {
+    "spec": "pass",
+    "quality": "pass"
+  },
+  "findings": [],
+  "limitations": [
+    "The reviewer authored ADK F1 and does not claim independent ADK implementation approval; upstream ADK semantic and release evidence has separate owners.",
+    "GitHub observations are point-in-time read-only GET results; source/tag/release checks are bound to the recorded responses.",
+    "The original applied-not-verified receipt and release_authorized=false are preserved. Later gate successes are separate records.",
+    "The fresh full run used an isolated local clone as UID/GID 65534 and real /proc. Production and tests were unchanged.",
+    "The original validation-plan execution followed the parallel full launch and preceded targeted checks; timestamps are retained without retrospective reordering.",
+    "The fixed-identity Sigstore command passed. No claim is made that the Git commit or annotated Git tag itself carries a GPG signature.",
+    "No reviewer test, source, policy, timeout, or assertion was changed to obtain PASS.",
+    "Independent AI source review under the existing owner delegation. No human or authenticated reviewer identity is asserted.",
+    "Five ordinary file hashes are listed as sources; the sixth path is a Git gitlink, bound by its exact commit identity in the original patch and independent source-binding evidence rather than treated as a regular file.",
+    "The original frozen requirements/design/tasks remain unchanged. Original planning checkboxes describe the pre-promotion plan; actual subsequent execution is retained in verification.md, independent findings and this PR delivery record.",
+    "Independent fresh full regression passed 79/79 on the exact reviewed source. Protected final candidate CI, post-merge actual-main CI and new-source qualification follow-up remain separate delivery gates.",
+    "The integrator packaged existing original delivery/review observations without changing their times or verdicts. Canonical host live is not-run; no Native, G22, LTA, field, paid-provider or Product M5 qualification is conferred.",
+    "The original 6607-byte reviewer Markdown, SHA256 16b7dcc9fa170c480276cc09a6df3cdf956990a18a3fdbf5ee4e7691095e9204, is retained losslessly in the observations container. Its display copy replaces only two trailing-space Markdown hard breaks with blank lines to satisfy the unchanged whitespace gate; review words, times and verdicts are unchanged."
+  ],
+  "policy_sha256": "f6c7571084b3f36e12e1fea1e71a46108a54835ba438b189f727a20ee88e0a24",
+  "validator_sha256": {
+    "src/agent_dev_kit/review_evidence.py": "73d85e864a3da125bf94808f19616f52150751a94ccc729ac66f66d2576b8808",
+    "src/agent_dev_kit/strict_json.py": "e11233b8d02d7fb95a8f2f93bfff065a1db84c4ef0820fef6d817600abe8ec98",
+    "src/agent_dev_kit/readiness_evidence.py": "ef980657486084eea8ab8a03ab357a76a3ed43691aca8d6909b06642764c808b"
+  },
+  "target": {
+    "base_commit": "33878cc1dac2faa28a32f4899afa7e0397fe1d0f",
+    "head_commit": "4de6364d18d65d3ae43364dc4625a0c2c4be3bb6",
+    "original_patch_sha256": "474a166f9f082fc2474bb514b5c807a34d680f975ee2f9901d39d8df331b37f8"
+  },
+  "sources": [
+    {
+      "base": "repository",
+      "path": "adk.lock",
+      "sha256": "5c518db684b00d084d486eb6c3e55d5f5b41a15d2f8750d006667eca269254d5"
+    },
+    {
+      "base": "repository",
+      "path": "manifests/adk_interface.lock.json",
+      "sha256": "3d92a1d27f6c2df2da24399146e48ed4b3edee8ea26709120381b94faa2adf93"
+    },
+    {
+      "base": "repository",
+      "path": "reports/current-status.md",
+      "sha256": "6444497fd1ad3057966ca6a2f3527b50ab33aafb540cce1aa180278b2819a319"
+    },
+    {
+      "base": "repository",
+      "path": "reports/promotion/agent-dev-kit/promotion-attestation.json",
+      "sha256": "e93dc0fb335dc6b68cf668a70d11003bcf8c02f0c6b3a18e554397629da19b1a"
+    },
+    {
+      "base": "repository",
+      "path": "reports/promotion/agent-dev-kit/promotion-evidence.json",
+      "sha256": "20fe84342225f36fdd9f4e79105bcb8d5f390bf1392419d4a3e5cd3373481904"
+    },
+    {
+      "base": "record",
+      "path": "requirements.md",
+      "sha256": "2e9428ac6f13cf0f267750ef39427c69dbffb01b36986d4eaec77aa4db52809c"
+    },
+    {
+      "base": "record",
+      "path": "design.md",
+      "sha256": "e52ab30e7e295e5ff063d2483c365e5b81ffdfa473806ad6091cbd04f6328708"
+    },
+    {
+      "base": "record",
+      "path": "tasks.md",
+      "sha256": "daf8a1812613d87f0143017f2b17dc460b6af1cb87247ed98f9a6dd1f6cbf325"
+    },
+    {
+      "base": "record",
+      "path": "evidence/original.patch",
+      "sha256": "474a166f9f082fc2474bb514b5c807a34d680f975ee2f9901d39d8df331b37f8"
+    }
+  ],
+  "evidence": [
+    {
+      "base": "record",
+      "path": "review-findings.md",
+      "sha256": "ca9c5a6bafd8268eac42e80a43e5f65a4f53cb6e2766f27a3f67fc0a00a557eb"
+    },
+    {
+      "base": "record",
+      "path": "evidence/independent-review-summary.json",
+      "sha256": "7906f407b1c4e5d605db820b08c6ce245448c1df35dfe64f5700c9059ee5850a"
+    },
+    {
+      "base": "record",
+      "path": "evidence/independent-review-source-binding.json",
+      "sha256": "3fc0a0e3724e172c0a520bb8dee06f0eb9f61ccdc7d92ba1723bb1787b3a58d2"
+    },
+    {
+      "base": "record",
+      "path": "evidence/independent-review-observations.json",
+      "sha256": "a2c648ddaf2b7e89a94644e9a813c35dee997036c947018d8de057da7677fef4"
+    },
+    {
+      "base": "record",
+      "path": "evidence/adk-release-verification.json",
+      "sha256": "1863a3ff4c440e5d880feffc14e06d39b1c6cb2b074c77dcc20ef6992e86acf2"
+    },
+    {
+      "base": "record",
+      "path": "evidence/adk-upgrade-rollback.json",
+      "sha256": "d1b2ba155519329ab958851466b92dcedd50bdb272e6535edceb1f6f1824a830"
+    },
+    {
+      "base": "record",
+      "path": "evidence/promotion-dry-run.json",
+      "sha256": "a673fc96c96d3a705ae692ae8b53b91c8f8f2d2feb04e62678de9f345192ae2c"
+    },
+    {
+      "base": "record",
+      "path": "evidence/promotion-apply.json",
+      "sha256": "4fe37b662f8e775e339ded994bcf18c0b1b3dcd6f7bc0704f6e77aba5c601a86"
+    },
+    {
+      "base": "record",
+      "path": "evidence/delivery-observations.json",
+      "sha256": "7b6eb858fb8764960e52df01c4d926376256ca1bc380478186292844a5881d8c"
+    }
+  ]
+}
