@@ -32,6 +32,7 @@ assert [item["name"] for item in result["gates"]] == [
     "adk-promotion-transaction",
     "current-status-source-split",
     "ci-incremental-dag",
+    "maintenance-budget",
 ]
 assert all(item["status"] == "pass" for item in result["gates"])
 PY

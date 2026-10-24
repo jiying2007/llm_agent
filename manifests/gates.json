@@ -376,6 +376,29 @@
       "timeout_seconds": 120,
       "evidence_class": "release"
     },
+    "maintenance-budget": {
+      "owner": "llm_agent",
+      "side_effect": "none",
+      "depends_on": [],
+      "inputs": [
+        "scripts",
+        "tools",
+        "manifests",
+        "reports",
+        "agent-dev-kit/scripts",
+        "agent-dev-kit/src"
+      ],
+      "outputs": [],
+      "cache_policy": "disabled",
+      "argv": [
+        "bash",
+        "scripts/check-maintainability-budgets.sh",
+        "--strict",
+        "--summary-json"
+      ],
+      "timeout_seconds": 60,
+      "evidence_class": "source"
+    },
     "root-regression": {
       "owner": "llm_agent",
       "side_effect": "none",
@@ -386,7 +409,39 @@
         "tests",
         "scripts",
         "tools",
-        "manifests"
+        "manifests",
+        "fixtures",
+        "schemas",
+        "subrepos",
+        "registry",
+        "pyproject.toml",
+        ".github/workflows",
+        ".github/CODEOWNERS",
+        "docs/llm-agent-maintenance-guide.md",
+        "docs/product-maturity-model.md",
+        "docs/software-m5-certification-plan.md",
+        "docs/runbooks/runtime-target-activation.md",
+        "docs/runbooks/knowledge-retention-handoff.md",
+        "docs/runbooks/practice-effect-review.md",
+        "docs/runbooks/native-target-conformance-readiness.md",
+        "docs/runbooks/effect-readiness.md",
+        "docs/runbooks/solo-maintainer-continuity.md",
+        "docs/runbooks/team-pilot-acceptance.md",
+        "docs/knowledge-candidates/llm-agent-adk-target-architecture.md",
+        "reports/README.md",
+        "reports/architecture",
+        "reports/optimization/2026-09-25/historical-script-status-2026-05-23.md",
+        "reports/optimization/2026-09-25/llm_agent-adk-optimization-plan.md",
+        "reports/field-evidence",
+        "reports/long-term-assets",
+        "reports/promotion",
+        "reports/runtime-evidence",
+        "reports/external-practice-targeted-decisions-2026-07-30.jsonl",
+        "reports/oss-analysis-example-runtime-policy-gates-2026-06-16.md",
+        "reports/oss-duplicate-check-example-runtime-policy-gates-2026-06-16.md",
+        "reports/oss-security-review-example-runtime-policy-gates-2026-06-16.md",
+        "reports/subrepo-removal-plan-codex-2026-06-16.md",
+        "reports/wechat-account-research-2026-07-16/catalog.jsonl"
       ],
       "outputs": [],
       "cache_policy": "disabled",
@@ -569,7 +624,8 @@
       "status-projection-regression",
       "adk-promotion-transaction",
       "current-status-source-split",
-      "ci-incremental-dag"
+      "ci-incremental-dag",
+      "maintenance-budget"
     ],
     "pr-fast": [
       "contract",
