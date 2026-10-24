@@ -1,0 +1,16 @@
+test_cli_rejects_empty_base_and_preserves_changed_file_mode (test_gate_boundaries.ImpactPathTests.test_cli_rejects_empty_base_and_preserves_changed_file_mode) ...
+  test_cli_rejects_empty_base_and_preserves_changed_file_mode (test_gate_boundaries.ImpactPathTests.test_cli_rejects_empty_base_and_preserves_changed_file_mode) (mode='empty-base') ... FAIL
+
+======================================================================
+FAIL: test_cli_rejects_empty_base_and_preserves_changed_file_mode (test_gate_boundaries.ImpactPathTests.test_cli_rejects_empty_base_and_preserves_changed_file_mode) (mode='empty-base')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/694941d81014/llm_agent/tests/test_gate_boundaries.py", line 122, in test_cli_rejects_empty_base_and_preserves_changed_file_mode
+    self.assertNotEqual(0, result.returncode, result.stdout)
+AssertionError: 0 == 0 : {"changed_paths": [], "direct_gates": [], "downstream_group_gates": [], "group": "integration-deep", "group_gates": [], "impacted_gates": [], "matched_paths": {}, "reason": "not-required", "required": false, "schema": "llm-agent-gate-impact/v1", "status": "pass"}
+
+
+----------------------------------------------------------------------
+Ran 1 test in 0.231s
+
+FAILED (failures=1)

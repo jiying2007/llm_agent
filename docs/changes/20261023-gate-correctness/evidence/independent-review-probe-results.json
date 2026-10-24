@@ -1,0 +1,162 @@
+{
+  "schema": "llm-agent-independent-gate-probes/v1",
+  "reviewer": "ai/root/remote_governance",
+  "implementation_author": "ai/root/implement_gates",
+  "started_at_utc": "2026-10-23T12:21:20.253217+00:00",
+  "completed_at_utc": "2026-10-23T12:21:25.591711+00:00",
+  "status": "pass",
+  "source_sha256": {
+    "tools/control_plane/impact.py": "73e4dddb9c984081ef6ae07cc9ac0182839f87e43181261067a89ce835a25392",
+    "tools/control_plane/gate_runner.py": "d4da8de1bf5140fa8830bb817e9ae5c97f0cba0bafcd3b551e586ae7ee038606",
+    "tools/control_plane/process_budget.py": "9173dd8a1d757cf07fd1d07206b952625ac77a72964f382850b45303607cf887",
+    "manifests/gates.json": "404d3857d05c79ed8dc310b201dde9d4f41eebb28b85bee172dc199bc58bedd5",
+    "tests/test_gate_boundaries.py": "f760ff8d89dec9fbec49dcee7d1c76ac0b58ed715adde16417424c35e4ab0e37",
+    "tests/test_gate_runner_contract.sh": "1aba4076782ea45cfbdddbe1e003c0d4ccfc12a60c59a6c9f8bd0a1e2b265d03"
+  },
+  "source_unchanged_during_probes": true,
+  "probe_count": 8,
+  "probes": [
+    {
+      "probe": "cli_base_boundary",
+      "status": "pass",
+      "details": {
+        "invalid_comparisons_rejected": 3,
+        "omitted_base_control": "pass"
+      },
+      "elapsed_seconds": 0.4816
+    },
+    {
+      "probe": "raw_path_three_dot",
+      "status": "pass",
+      "details": {
+        "exact_changed_path_count": 5,
+        "three_dot": "pass",
+        "rename_old_and_new": "pass",
+        "github_output_lines": 3,
+        "literal_unowned_controls": 2
+      },
+      "elapsed_seconds": 0.362
+    },
+    {
+      "probe": "non_utf8_cli",
+      "status": "pass",
+      "details": {
+        "exit_code": 1,
+        "receipt_emitted": false,
+        "github_output_emitted": false
+      },
+      "elapsed_seconds": 0.1562
+    },
+    {
+      "probe": "exact_and_exceeded_output_budgets",
+      "status": "pass",
+      "details": {
+        "cases": [
+          {
+            "stdout_bytes": 2097152,
+            "stderr_bytes": 65536,
+            "status": "pass",
+            "failure_reason": null,
+            "captured_tail_bytes": 2162688
+          },
+          {
+            "stdout_bytes": 2097153,
+            "stderr_bytes": 0,
+            "status": "fail",
+            "failure_reason": "output-budget",
+            "captured_tail_bytes": 2097187
+          },
+          {
+            "stdout_bytes": 0,
+            "stderr_bytes": 65537,
+            "status": "fail",
+            "failure_reason": "output-budget",
+            "captured_tail_bytes": 65571
+          }
+        ]
+      },
+      "elapsed_seconds": 0.2702
+    },
+    {
+      "probe": "descendants_on_timeout_and_overflow",
+      "status": "pass",
+      "details": {
+        "cases": [
+          {
+            "mode": "inherited-pipe-timeout",
+            "failure_reason": "timeout",
+            "elapsed_seconds": 1.0136,
+            "late_marker_exists": false
+          },
+          {
+            "mode": "output-overflow",
+            "failure_reason": "output-budget",
+            "elapsed_seconds": 0.0752,
+            "late_marker_exists": false
+          }
+        ],
+        "boundary": "same POSIX process group; no setsid escape claim"
+      },
+      "elapsed_seconds": 3.7714
+    },
+    {
+      "probe": "disabled_and_pure_cache",
+      "status": "pass",
+      "details": {
+        "cases": [
+          {
+            "policy": "disabled",
+            "second_run_cache_hit": false,
+            "after_input_change_status": "fail",
+            "same_head": true,
+            "third_run_cache_hit": false
+          },
+          {
+            "policy": "content-addressed",
+            "second_run_cache_hit": true,
+            "after_input_change_status": "fail",
+            "same_head": true,
+            "third_run_cache_hit": false
+          }
+        ]
+      },
+      "elapsed_seconds": 0.2647
+    },
+    {
+      "probe": "production_manifest_scope",
+      "status": "pass",
+      "details": {
+        "changed_gate_count": 9,
+        "changed_gates": [
+          "active-contracts",
+          "adk-interface",
+          "adk-pin",
+          "codex-pin",
+          "gitlink-registry",
+          "reference-pins",
+          "runtime-chain-pin",
+          "source-hygiene",
+          "status-projection"
+        ],
+        "production_content_addressed_count": 0,
+        "other_gate_fields_and_profiles_unchanged": true
+      },
+      "elapsed_seconds": 0.0034
+    },
+    {
+      "probe": "sink_consumer_compatibility",
+      "status": "pass",
+      "details": {
+        "sink_exact_bytes": 16384,
+        "sink_overflow_rejected": true,
+        "legacy_exception_constructor": "pass"
+      },
+      "elapsed_seconds": 0.0284
+    }
+  ],
+  "limits": [
+    "Supplemental local deterministic source tests only; no runtime/product qualification.",
+    "All fixture writes are temporary; no implementation or remote changes.",
+    "Process cleanup claims are limited to POSIX process groups."
+  ]
+}

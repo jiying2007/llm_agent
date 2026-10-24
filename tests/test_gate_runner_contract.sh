@@ -6,6 +6,8 @@ TMP="$(mktemp)"
 FIXTURE="$(mktemp -d)"
 trap 'rm -f "$TMP"; rm -rf "$FIXTURE"' EXIT
 
+python3 -m unittest discover -s "$ROOT/tests" -p 'test_gate_boundaries.py'
+
 python3 -m tools.control_plane.gate_runner \
   --root "$ROOT" \
   --profile contract \

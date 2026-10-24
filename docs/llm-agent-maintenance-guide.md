@@ -90,6 +90,8 @@ rtk scripts/check-runtime-health.sh . --profile minimal
 
 跨会话优化先按 [历史与知识复用](runbooks/history-knowledge-reuse.md) 核对覆盖和现有能力；向团队交付按 [试点验收](runbooks/team-pilot-acceptance.md) 记录真实上手、失败恢复和任务收益。
 
+简化、性能与恢复改动按 [以实际结果驱动优化](runbooks/evidence-driven-optimization.md) 固定对照条件、验证实际工作并区分工程闭环与效果资格。
+
 ### 3.2 adk 压实检查
 
 ```bash

@@ -84,6 +84,11 @@ def validate(root: Path, as_of: dt.date) -> dict[str, Any]:
         "README.md": (root / "README.md").read_text(encoding="utf-8"),
         "manifests/comprehensive_optimization_backlog.json": backlog_path.read_text(encoding="utf-8"),
     }
+    # README-only changes use this always-run gate, so preserve the retired
+    # runtime checks also enforced by the deeper active-contract regression.
+    for retired_runtime in ("hermes-agent", "Hermes Agent"):
+        if retired_runtime in active_texts["README.md"]:
+            failures.append(f"active surface README.md references retired runtime: {retired_runtime}")
     for label, text in active_texts.items():
         for token in deprecated:
             if token in text:

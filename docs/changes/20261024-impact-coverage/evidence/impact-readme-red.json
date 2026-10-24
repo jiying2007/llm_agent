@@ -1,0 +1,39 @@
+{
+  "schema": "llm-agent-impact-consumer-regression/v1",
+  "stage": "supplemental-red-lightweight-readme-parity",
+  "observed_at": "2026-10-24T15:11:35Z",
+  "source_head": "64c5192f2d6aaacf65143223f03190564032facc",
+  "active_contracts_sha256": "ec96066f6b9aeaa4c344f8904a92483f87b384de71ea3caceb285a78ed83da9f",
+  "test_source_sha256": "3c7deaac17144b6575c8f1a8c92dba263129b734fa63c3eaa79ef905bd29a2e2",
+  "command": "rtk proxy python3 -m unittest tests.test_gate_boundaries.ImpactConsumerTests.test_readme_lightweight_gate_preserves_existing_retired_runtime_check",
+  "interpreter": "/workspace/scratch/712af632e2a5/audit-venv/bin/python3",
+  "result": {
+    "exit_code": 1,
+    "tests": 1,
+    "assertion_failures": 2,
+    "errors": 0,
+    "elapsed_seconds": 0.425
+  },
+  "cases": [
+    {
+      "mutation": "Append a README line containing hermes-agent in an isolated source copy",
+      "baseline_shell_exit": 0,
+      "baseline_declared_gate_exit": 0,
+      "changed_shell_assertion": "AssertionError: README.md",
+      "changed_declared_gate_exit": 0,
+      "changed_declared_gate_output": "[PASS] active governance contracts are fresh and executable",
+      "impact_required": false
+    },
+    {
+      "mutation": "Append a README line containing Hermes Agent in an isolated source copy",
+      "baseline_shell_exit": 0,
+      "baseline_declared_gate_exit": 0,
+      "changed_shell_assertion": "AssertionError: README.md",
+      "changed_declared_gate_exit": 0,
+      "changed_declared_gate_output": "[PASS] active governance contracts are fresh and executable",
+      "impact_required": false
+    }
+  ],
+  "reason": "The existing shell regression rejects both retired runtime names in README, but the always-run active-contracts gate checks only the separate interface deprecated_surfaces list. Keep README lightweight by enforcing the same existing prohibition in its real always-run validator.",
+  "note": "This supplements the earlier eight-method red record; the final boundary suite now has 24 tests. The gate budget test also executes the declared argv after it is scheduled."
+}

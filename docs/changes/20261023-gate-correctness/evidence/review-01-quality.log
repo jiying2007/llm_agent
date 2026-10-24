@@ -1,0 +1,10 @@
+$ /workspace/scratch/694941d81014/tooling/rtk bypass env PYTHONDONTWRITEBYTECODE=1 PATH=/workspace/scratch/694941d81014/tooling/venv/bin:$PATH python3 -m ruff check tools/control_plane/impact.py tools/control_plane/gate_runner.py tools/control_plane/process_budget.py tests/test_gate_boundaries.py
+All checks passed!
+exit_code=0
+
+$ /workspace/scratch/694941d81014/tooling/rtk bypass env PYTHONDONTWRITEBYTECODE=1 PATH=/workspace/scratch/694941d81014/tooling/venv/bin:$PATH python3 -m mypy tools/control_plane/impact.py tools/control_plane/gate_runner.py tools/control_plane/process_budget.py
+Success: no issues found in 3 source files
+exit_code=0
+
+$ /workspace/scratch/694941d81014/tooling/rtk bypass git diff --check
+exit_code=0

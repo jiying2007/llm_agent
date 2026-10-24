@@ -1,0 +1,25 @@
+$ /workspace/scratch/694941d81014/tooling/rtk bypass env PYTHONDONTWRITEBYTECODE=1 PATH=/workspace/scratch/694941d81014/tooling/venv/bin:$PATH bash scripts/practice-intake.sh collect --provider manual --input docs/changes/20261023-evidence-methods/source-metadata.jsonl --max-results 12 --as-of 2026-10-23 --out docs/changes/20261023-evidence-methods/candidates.jsonl --evidence-out docs/changes/20261023-evidence-methods/collection.json
+[PASS] provider=manual status=complete candidates=12 ledger=/workspace/scratch/694941d81014/llm_agent/docs/changes/20261023-evidence-methods/candidates.jsonl
+exit_code=0
+
+$ /workspace/scratch/694941d81014/tooling/rtk bypass env PYTHONDONTWRITEBYTECODE=1 PATH=/workspace/scratch/694941d81014/tooling/venv/bin:$PATH bash scripts/practice-intake.sh check --kind policy --input manifests/external_practice_sources.json
+[PASS] kind=policy records=1 input=/workspace/scratch/694941d81014/llm_agent/manifests/external_practice_sources.json
+exit_code=0
+
+$ /workspace/scratch/694941d81014/tooling/rtk bypass env PYTHONDONTWRITEBYTECODE=1 PATH=/workspace/scratch/694941d81014/tooling/venv/bin:$PATH bash scripts/practice-intake.sh check --kind candidate --input docs/changes/20261023-evidence-methods/candidates.jsonl
+[PASS] kind=candidate records=12 input=/workspace/scratch/694941d81014/llm_agent/docs/changes/20261023-evidence-methods/candidates.jsonl
+exit_code=0
+
+$ /workspace/scratch/694941d81014/tooling/rtk bypass env PYTHONDONTWRITEBYTECODE=1 PATH=/workspace/scratch/694941d81014/tooling/venv/bin:$PATH bash scripts/practice-intake.sh check --kind decision --input docs/changes/20261023-evidence-methods/decisions.jsonl
+[PASS] kind=decision records=12 input=/workspace/scratch/694941d81014/llm_agent/docs/changes/20261023-evidence-methods/decisions.jsonl
+exit_code=0
+
+$ /workspace/scratch/694941d81014/tooling/rtk bypass env PYTHONDONTWRITEBYTECODE=1 PATH=/workspace/scratch/694941d81014/tooling/venv/bin:$PATH bash scripts/practice-intake.sh check --kind evidence --input docs/changes/20261023-evidence-methods/collection.json
+[PASS] kind=evidence records=1 input=/workspace/scratch/694941d81014/llm_agent/docs/changes/20261023-evidence-methods/collection.json
+exit_code=0
+
+$ /workspace/scratch/694941d81014/tooling/rtk bypass bash -n tests/test_external_practice_intake.sh
+exit_code=0
+
+$ /workspace/scratch/694941d81014/tooling/rtk bypass git diff --check
+exit_code=0

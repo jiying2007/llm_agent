@@ -1,0 +1,177 @@
+{
+  "schema": "adk-review-evidence/v1",
+  "subject_id": "20261024-impact-coverage",
+  "scope": "source-change",
+  "owner": "leiwenjun",
+  "author_id": "ai/root",
+  "reviewer": {
+    "id": "ai/root/release_governance_audit",
+    "kind": "ai",
+    "independence": "independent"
+  },
+  "reviewed_at": "2026-10-24T16:14:55.590822Z",
+  "evidence_completed_at": "2026-10-24T16:03:31.810813Z",
+  "verdicts": {
+    "spec": "pass",
+    "quality": "pass"
+  },
+  "findings": [],
+  "limitations": [
+    "Independent AI source review under the existing owner delegation. The reviewer authored no Root implementation or recovered files. No human review or authenticated reviewer identity is asserted.",
+    "Review covers frozen F3 consumer coverage, always-run strict budget and README checks, and the exact eight-file restoration. Original 15:58-16:03 UTC review observations are retained; the later binding record confirms all 18 source blobs and one deletion at the real remote implementation commit.",
+    "The complete original patch is retained from 64c5192f2d6aaacf65143223f03190564032facc to a922a2884c4d38e2ecdc2f8dbc27b1fde69765b8. Earlier PR #270 implementation and historical consolidation evidence keep their prior source identities and review records.",
+    "Targeted independent tests passed, including 24 boundary cases and real rename/delete consumers. This reviewer did not run the complete Root regression suite; integrator full-suite results and exact candidate/main CI are separate delivery evidence.",
+    "The isolated environment has no canonical ~/codex Knowledge Provider or Execution Policy owner. No provider, native target, paid-model, longitudinal field, or product-effect execution is claimed.",
+    "Existing thresholds, CI protections and release_authorized=false remain unchanged. Digest validity and source-review PASS do not themselves authorize product qualification or establish an immutable release."
+  ],
+  "policy_sha256": "f6c7571084b3f36e12e1fea1e71a46108a54835ba438b189f727a20ee88e0a24",
+  "validator_sha256": {
+    "src/agent_dev_kit/review_evidence.py": "73d85e864a3da125bf94808f19616f52150751a94ccc729ac66f66d2576b8808",
+    "src/agent_dev_kit/strict_json.py": "e11233b8d02d7fb95a8f2f93bfff065a1db84c4ef0820fef6d817600abe8ec98",
+    "src/agent_dev_kit/readiness_evidence.py": "ef980657486084eea8ab8a03ab357a76a3ed43691aca8d6909b06642764c808b"
+  },
+  "target": {
+    "base_commit": "64c5192f2d6aaacf65143223f03190564032facc",
+    "head_commit": "a922a2884c4d38e2ecdc2f8dbc27b1fde69765b8",
+    "original_patch_sha256": "80057aa7aadd27009dc18fbe2904c1ad342afad30569531b80abad921f67d726"
+  },
+  "sources": [
+    {
+      "base": "repository",
+      "path": ".gitlab-ci.yml",
+      "sha256": "88029613e9d856d9633cafd4995db2f95f470065c69f52d4948ae0182a6db3ee"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/evidence/consolidation-independent-execution.json",
+      "sha256": "39548a00098eef21654e79299210cbd4fa336c746e178f59108abcffdc548c4d"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/implementation-map.md",
+      "sha256": "635812051b3880a819fd403ca0dfc340491b94fde39076ac076c5c187e3946f9"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/review-consolidation-findings.md",
+      "sha256": "913d6c8fe790a4dcc117931c7a704f2f5bc0be9a833be65c7daccbb5e760751f"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/review-consolidation.json",
+      "sha256": "5afc7b4161df268325ecff6dba35a92c4abd3197932777ee51b90fd41b899590"
+    },
+    {
+      "base": "repository",
+      "path": "fixtures/reference-repository/removal/pass/removal-plan.json",
+      "sha256": "af3006a9f496d3e5859c496a29b6457cca18cab7dd83d0a3e146e194f3df8c40"
+    },
+    {
+      "base": "repository",
+      "path": "manifests/comprehensive_optimization_backlog.json",
+      "sha256": "dcc814b4af52ec498a2585673d9da7274fe92da58e02ee580f2fb01283a74a8b"
+    },
+    {
+      "base": "repository",
+      "path": "manifests/gates.json",
+      "sha256": "6b946680d8cd9329b1bce74a3e3e4565634daa25203b9cde2c8af3c507d9a8be"
+    },
+    {
+      "base": "repository",
+      "path": "pyproject.toml",
+      "sha256": "853c9e0c09404f0d65970dd67966de887372946a4a73c4b7689c0061013068ca"
+    },
+    {
+      "base": "repository",
+      "path": "reports/current-status.md",
+      "sha256": "96fa32f595b14b887a66a5eca9e0e7f8334d23589883864ee81c8fd5348d9d1f"
+    },
+    {
+      "base": "repository",
+      "path": "subrepos/adoption-matrix.jsonl",
+      "sha256": "a0a345e4626725a234a47419dfc073e61f221aec3595f2d960bcb19d0a780b3a"
+    },
+    {
+      "base": "repository",
+      "path": "subrepos/adoption-matrix.md",
+      "sha256": "da66a91c839169f540175cfcfabea245526657e9e9f47b868ea7e1d4b74493b4"
+    },
+    {
+      "base": "repository",
+      "path": "tests/test_ci_incremental_gate_dag.sh",
+      "sha256": "c7737a1b585d52bba90a6b7c5106d6e84fca47563fe7f9d3215dcec59d69b3bb"
+    },
+    {
+      "base": "repository",
+      "path": "tests/test_gate_boundaries.py",
+      "sha256": "4be7ffefc6ec608f1fe7d6564c4e5e1ed74aad165f0b2aa3e695505fc96b6eb4"
+    },
+    {
+      "base": "repository",
+      "path": "tests/test_gate_runner.sh",
+      "sha256": "c9b9975467c6c966b7fdbcba852fe81fd0c308f0355213857e85f17448a8bd41"
+    },
+    {
+      "base": "repository",
+      "path": "tools/control_plane/active_contracts.py",
+      "sha256": "4cc0a123b5588f4b13c1ca697903e2fa436b0a1deceb76ad5e474f986340f8fc"
+    },
+    {
+      "base": "repository",
+      "path": "tools/control_plane/gate_runner.py",
+      "sha256": "d4da8de1bf5140fa8830bb817e9ae5c97f0cba0bafcd3b551e586ae7ee038606"
+    },
+    {
+      "base": "repository",
+      "path": "tools/control_plane/impact.py",
+      "sha256": "73e4dddb9c984081ef6ae07cc9ac0182839f87e43181261067a89ce835a25392"
+    },
+    {
+      "base": "record",
+      "path": "requirements.md",
+      "sha256": "6910942a8ddb5fdf469c572ebf6f1307fc2c1b4303eb7c5432178c0b24dfe6cf"
+    },
+    {
+      "base": "record",
+      "path": "design.md",
+      "sha256": "e777bed8b726fbb8f68dc6ca6a2bc8fa625bdf0165949c1bf7153b600cb17bc4"
+    },
+    {
+      "base": "record",
+      "path": "evidence/original.patch",
+      "sha256": "80057aa7aadd27009dc18fbe2904c1ad342afad30569531b80abad921f67d726"
+    }
+  ],
+  "evidence": [
+    {
+      "base": "record",
+      "path": "review-findings.md",
+      "sha256": "d952fd10a955cd2e58102b90b600f24066fcf983195907f0f457bebaed96c017"
+    },
+    {
+      "base": "record",
+      "path": "evidence/independent-review-summary.json",
+      "sha256": "6f24030a92f84af741c990412c9f1bac13cf7afdf9e2afd6d58ec4f0d5dc2172"
+    },
+    {
+      "base": "record",
+      "path": "evidence/independent-review-git-binding.json",
+      "sha256": "62a3e83b06b013ed9c55e666b393db7b530d5d8f9e283e1a8ecddb527d89889d"
+    },
+    {
+      "base": "record",
+      "path": "evidence/independent-review-probes.py",
+      "sha256": "468424c65a5e787cc806840bf5c9acceee3bb3563624a3bb21a816e56e16b726"
+    },
+    {
+      "base": "record",
+      "path": "evidence/independent-review-runner.py",
+      "sha256": "798557a10cc34ab1cfbc06a23c3fee9b2fc4bc9312556663005000e455386c89"
+    },
+    {
+      "base": "record",
+      "path": "evidence/independent-review-execution.json",
+      "sha256": "3478355fa88877b9d28f18c62fa3599d4d85aaafaec0b0bd16565fbeb54be00f"
+    }
+  ]
+}

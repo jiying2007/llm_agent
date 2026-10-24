@@ -1,0 +1,638 @@
+{
+  "schema": "llm-agent-gate-run/v2",
+  "gate_manifest_schema": "llm-agent-gates/v2",
+  "profile": "contract",
+  "status": "fail",
+  "source": {
+    "head": "7ba2d71e210955464839d5177c0f7d6a86ac072b",
+    "tree": "27589b9b190f1e1ceeb7687c297b9a02b84cc4c1",
+    "gate_manifest_sha256": "404d3857d05c79ed8dc310b201dde9d4f41eebb28b85bee172dc199bc58bedd5"
+  },
+  "capabilities": [],
+  "blocked_capabilities": [],
+  "graph_order": [
+    "adk-pin",
+    "adk-interface",
+    "codex-pin",
+    "runtime-chain-pin",
+    "gitlink-registry",
+    "reference-pins",
+    "source-hygiene",
+    "status-projection",
+    "active-contracts",
+    "native-governance-contract",
+    "longitudinal-operation-certifier",
+    "status-projection-regression",
+    "adk-promotion-transaction",
+    "current-status-source-split",
+    "ci-incremental-dag"
+  ],
+  "total_elapsed_ms": 19864,
+  "gates": [
+    {
+      "name": "adk-pin",
+      "status": "pass",
+      "exit_code": 0,
+      "elapsed_ms": 112,
+      "owner": "llm_agent",
+      "evidence_class": "source",
+      "argv": [
+        "bash",
+        "scripts/check-adk-lock.sh",
+        ".",
+        "--pin-only"
+      ],
+      "timeout_seconds": 30,
+      "missing_capabilities": [],
+      "failure_reason": null,
+      "depends_on": [],
+      "blocked_by": [],
+      "inputs": [
+        "adk.lock",
+        ".gitmodules",
+        "scripts/check-adk-lock.sh"
+      ],
+      "input_digests": {
+        "adk.lock": "54119d40c5f16ae5597fdb8888839faf4dea75caf184e011f560b3f3fa264232",
+        ".gitmodules": "10cc8b23280cf6aa8b54e90f43e9b25e2201bf88f31200785bdecc8320595da7",
+        "scripts/check-adk-lock.sh": "6a03be6d4e8473ddb7db66b3fbfe679f5d3455fef139fe1e396c7583d3f4ce8e"
+      },
+      "outputs": [],
+      "cache_policy": "disabled",
+      "cache_key": "a1aeca4602c7736111547a38a3f98f8b813019fde90494165bd5e568d2eb45db",
+      "cache_hit": false,
+      "output_tail": [
+        "[PASS] ADK immutable pin matches gitlink (schema=llm-agent-adk-lock/v2, commit=bf9ec8164e2c80394ce997f8a8b51515cad4746e)"
+      ]
+    },
+    {
+      "name": "adk-interface",
+      "status": "pass",
+      "exit_code": 0,
+      "elapsed_ms": 612,
+      "owner": "llm_agent",
+      "evidence_class": "source",
+      "argv": [
+        "python3",
+        "-m",
+        "tools.control_plane.adk_interface",
+        "--root",
+        "."
+      ],
+      "timeout_seconds": 30,
+      "missing_capabilities": [],
+      "failure_reason": null,
+      "depends_on": [
+        "adk-pin"
+      ],
+      "blocked_by": [],
+      "inputs": [
+        "adk.lock",
+        "manifests/adk_interface.lock.json",
+        "tools/control_plane/adk_interface.py"
+      ],
+      "input_digests": {
+        "adk.lock": "54119d40c5f16ae5597fdb8888839faf4dea75caf184e011f560b3f3fa264232",
+        "manifests/adk_interface.lock.json": "faf5685d0326ccb38f8ba664444333cd2326333568a7e9c4f1be9e1001512c21",
+        "tools/control_plane/adk_interface.py": "b888aa5e6e0eaec705a20c3bee3f0c32f5f00f90838965a111ceb0d163ec0202"
+      },
+      "outputs": [],
+      "cache_policy": "disabled",
+      "cache_key": "7ddd56e9327615c408e1fa3842d639311297c11c0c03306645e87d9b676f059d",
+      "cache_hit": false,
+      "output_tail": [
+        "[PASS] ADK interface lock matches gitlink, adk.lock and required source surfaces"
+      ]
+    },
+    {
+      "name": "codex-pin",
+      "status": "pass",
+      "exit_code": 0,
+      "elapsed_ms": 219,
+      "owner": "llm_agent",
+      "evidence_class": "source",
+      "argv": [
+        "bash",
+        "scripts/check-codex-lock.sh",
+        ".",
+        "--pin-only"
+      ],
+      "timeout_seconds": 30,
+      "missing_capabilities": [],
+      "failure_reason": null,
+      "depends_on": [],
+      "blocked_by": [],
+      "inputs": [
+        "codex.lock",
+        ".gitmodules",
+        "scripts/check-codex-lock.sh"
+      ],
+      "input_digests": {
+        "codex.lock": "9f3284b3e920059e51e721624f9279b42948c4065427d28b88d69fedf6862dde",
+        ".gitmodules": "10cc8b23280cf6aa8b54e90f43e9b25e2201bf88f31200785bdecc8320595da7",
+        "scripts/check-codex-lock.sh": "81107bf5ceddbda74a31d5dee3c963e6133f9e8babde856a26b83acc443307eb"
+      },
+      "outputs": [],
+      "cache_policy": "disabled",
+      "cache_key": "dea02b5ff816daf965ed779598840ba36b17f0be85ee8bcea0e167231bfd1112",
+      "cache_hit": false,
+      "output_tail": [
+        "[PASS] Codex immutable pin matches gitlink (commit=d12e782b46430d6bfc828f24a41f94f871a7a19a)"
+      ]
+    },
+    {
+      "name": "runtime-chain-pin",
+      "status": "pass",
+      "exit_code": 0,
+      "elapsed_ms": 461,
+      "owner": "llm_agent",
+      "evidence_class": "source",
+      "argv": [
+        "python3",
+        "-m",
+        "tools.control_plane.runtime_chain",
+        "--root",
+        ".",
+        "--pin-only",
+        "--summary-json"
+      ],
+      "timeout_seconds": 30,
+      "missing_capabilities": [],
+      "failure_reason": null,
+      "depends_on": [
+        "adk-interface",
+        "codex-pin"
+      ],
+      "blocked_by": [],
+      "inputs": [
+        "adk.lock",
+        "codex.lock",
+        "reports/promotion/agent-dev-kit/promotion-evidence.json",
+        "tools/control_plane/runtime_chain.py"
+      ],
+      "input_digests": {
+        "adk.lock": "54119d40c5f16ae5597fdb8888839faf4dea75caf184e011f560b3f3fa264232",
+        "codex.lock": "9f3284b3e920059e51e721624f9279b42948c4065427d28b88d69fedf6862dde",
+        "reports/promotion/agent-dev-kit/promotion-evidence.json": "93fea77185abb0e488d39f5eef8943b41e581484eaacc87f692c5157c1c75795",
+        "tools/control_plane/runtime_chain.py": "32ad597eeb7419a9395e223228153ad7844bea325cea26e4b9d859dc157f7ab2"
+      },
+      "outputs": [],
+      "cache_policy": "disabled",
+      "cache_key": "0f0f478f5f48cc053175caeae4f61aa8a5d8dcc17a79d19853826f52eb879bcf",
+      "cache_hit": false,
+      "output_tail": [
+        "{\"chain\": \"llm_agent current managed ADK + Codex frozen provider/replay chain\", \"current_agent_dev_kit\": {\"commit\": \"bf9ec8164e2c80394ce997f8a8b51515cad4746e\", \"manifest_blob\": \"a522a475a121c07d4a3def5fe95a0ee2eed415fd\", \"tree\": \"4d79fabb0f280b55ae034ad8c01501766c5fe25b\", \"version\": \"8.0.38\"}, \"frozen_codex_provider\": {\"commit\": \"e36dfec69f21806431b07daddc4bd78412179e62\", \"manifest_blob\": \"4715a03db12ac28d2978356306381c028c75af76\", \"promotion_attestation\": \"reports/promotion/agent-dev-kit/history/5.1.1/promotion-attestation.json\", \"promotion_evidence\": \"reports/promotion/agent-dev-kit/history/5.1.1/promotion-evidence.json\", \"release_artifact_sha256\": \"1924d79034a216f04dde0d08826dd5b87c597f090721335c1cec16e9bc88cbc1\", \"tree\": \"9c37468930231bdfa7f230e38ed1b85e0dc0f5f5\", \"version\": \"5.1.1\"}, \"mode\": \"pin-only\", \"schema\": \"llm-agent-runtime-chain-check/v1\", \"status\": \"pass\"}"
+      ]
+    },
+    {
+      "name": "gitlink-registry",
+      "status": "pass",
+      "exit_code": 0,
+      "elapsed_ms": 261,
+      "owner": "llm_agent",
+      "evidence_class": "source",
+      "argv": [
+        "python3",
+        "-m",
+        "tools.control_plane.gitlink_registry",
+        "--root",
+        "."
+      ],
+      "timeout_seconds": 30,
+      "missing_capabilities": [],
+      "failure_reason": null,
+      "depends_on": [
+        "adk-pin",
+        "codex-pin"
+      ],
+      "blocked_by": [],
+      "inputs": [
+        ".gitmodules",
+        "manifests/gitlinks.json",
+        "tools/control_plane/gitlink_registry.py"
+      ],
+      "input_digests": {
+        ".gitmodules": "10cc8b23280cf6aa8b54e90f43e9b25e2201bf88f31200785bdecc8320595da7",
+        "manifests/gitlinks.json": "d843f3aa107cf409275735737356bb554f44abfaa6784bc971de8b876eebca5d",
+        "tools/control_plane/gitlink_registry.py": "9ae71c70f2ed238a93abc16ffdf919b9922c064cc5ec0d744727f4e4b48bfffa"
+      },
+      "outputs": [],
+      "cache_policy": "disabled",
+      "cache_key": "ca0d7d009476123ab62bcc08b2d98b3cb0f8180dc2bd51e5c050fb36c6fa8b32",
+      "cache_hit": false,
+      "output_tail": [
+        "[PASS] all tracked gitlinks are registered submodules (count=2)"
+      ]
+    },
+    {
+      "name": "reference-pins",
+      "status": "pass",
+      "exit_code": 0,
+      "elapsed_ms": 309,
+      "owner": "llm_agent",
+      "evidence_class": "source",
+      "argv": [
+        "python3",
+        "-m",
+        "tools.control_plane.reference_pins",
+        "--root",
+        "."
+      ],
+      "timeout_seconds": 30,
+      "missing_capabilities": [],
+      "failure_reason": null,
+      "depends_on": [
+        "gitlink-registry"
+      ],
+      "blocked_by": [],
+      "inputs": [
+        "manifests/reference_pins.json",
+        "tools/control_plane/reference_pins.py"
+      ],
+      "input_digests": {
+        "manifests/reference_pins.json": "0b12798f00db011d0a5a3fa919ee667ac960b8294435653bfd8af651947bca1c",
+        "tools/control_plane/reference_pins.py": "493dead245bea8e7ed5d513e9c0fc964426ddae392c7cfdad8aefc9c9770558d"
+      },
+      "outputs": [],
+      "cache_policy": "disabled",
+      "cache_key": "9d4ecacdc23091719dc416ebdfacf3d02aa259c7d627b0a9a69e97cfa0013b48",
+      "cache_hit": false,
+      "output_tail": [
+        "[PASS] non-source reference pins valid (count=11, repos=8)"
+      ]
+    },
+    {
+      "name": "source-hygiene",
+      "status": "pass",
+      "exit_code": 0,
+      "elapsed_ms": 691,
+      "owner": "llm_agent",
+      "evidence_class": "source",
+      "argv": [
+        "python3",
+        "-m",
+        "tools.control_plane.source_hygiene",
+        "--root",
+        "."
+      ],
+      "timeout_seconds": 30,
+      "missing_capabilities": [],
+      "failure_reason": null,
+      "depends_on": [
+        "gitlink-registry"
+      ],
+      "blocked_by": [],
+      "inputs": [
+        "tools/control_plane/source_hygiene.py",
+        ".gitignore"
+      ],
+      "input_digests": {
+        "tools/control_plane/source_hygiene.py": "8b567596ce84519c45fc22c3e3f5aa35434d55cd3543537d4028ebbea768414b",
+        ".gitignore": "920667b11d94a6f5d67519231611766efb32c09f842a9005b4ab4c3eb256f3d5"
+      },
+      "outputs": [],
+      "cache_policy": "disabled",
+      "cache_key": "6f237aede193305ea59f3d0bf2018fe6ae07f2edd5f6913ab4d0804c922e0204",
+      "cache_hit": false,
+      "output_tail": [
+        "[PASS] source hygiene (tracked_files=884)"
+      ]
+    },
+    {
+      "name": "status-projection",
+      "status": "fail",
+      "exit_code": 1,
+      "elapsed_ms": 693,
+      "owner": "llm_agent",
+      "evidence_class": "source",
+      "argv": [
+        "python3",
+        "-m",
+        "tools.control_plane.status_projection",
+        "--root",
+        "."
+      ],
+      "timeout_seconds": 30,
+      "missing_capabilities": [],
+      "failure_reason": "nonzero-exit",
+      "depends_on": [
+        "adk-interface"
+      ],
+      "blocked_by": [],
+      "inputs": [
+        "adk.lock",
+        "manifests/gates.json",
+        "manifests/product_maturity_scorecard.json",
+        "manifests/software_m5_policy.json",
+        "reports/current-status.md",
+        "tools/control_plane/status_projection.py"
+      ],
+      "input_digests": {
+        "adk.lock": "54119d40c5f16ae5597fdb8888839faf4dea75caf184e011f560b3f3fa264232",
+        "manifests/gates.json": "404d3857d05c79ed8dc310b201dde9d4f41eebb28b85bee172dc199bc58bedd5",
+        "manifests/product_maturity_scorecard.json": "8adcd4db0f22cbef50b6c54243bffbdcd133fd4b974bbfd886920a71eba6f893",
+        "manifests/software_m5_policy.json": "5375d045f5a5214220d5f2a0375aaa86399233497a07de2f3801e89701f61246",
+        "reports/current-status.md": "eae0e83516066a4d0dbeacc46b927d589b340acfb6b6ff0a0f4e109c41f30d97",
+        "tools/control_plane/status_projection.py": "6fb7f595cc07732a59f435e0518c51f2dc4754d45e54bc8e435f30fef6938e59"
+      },
+      "outputs": [],
+      "cache_policy": "disabled",
+      "cache_key": "7f7ab51e661a7e192b5768a291b214a614e7d2f0af34d6c5e6fb77eca4c9c064",
+      "cache_hit": false,
+      "output_tail": [
+        "    \"verified_projection_inputs_sha256\": \"3b08c91926792770caa3f4b29a188f53b53ba91b5888624b9bfe06d21f45923d\",",
+        "    \"age_days\": 41,",
+        "    \"history_available\": false,",
+        "    \"relationship_to_head\": \"history-unavailable\",",
+        "    \"is_ancestor\": null,",
+        "    \"source_inputs_match\": false,",
+        "    \"fresh_for_current_source\": false,",
+        "    \"fresh_for_current_head\": false",
+        "  },",
+        "  \"current_evidence_state\": \"source-current-evidence-historical\",",
+        "  \"release_authorized\": false",
+        "}"
+      ]
+    },
+    {
+      "name": "active-contracts",
+      "status": "pass",
+      "exit_code": 0,
+      "elapsed_ms": 219,
+      "owner": "llm_agent",
+      "evidence_class": "source",
+      "argv": [
+        "python3",
+        "-m",
+        "tools.control_plane.active_contracts",
+        "--root",
+        "."
+      ],
+      "timeout_seconds": 30,
+      "missing_capabilities": [],
+      "failure_reason": null,
+      "depends_on": [
+        "adk-interface"
+      ],
+      "blocked_by": [],
+      "inputs": [
+        "README.md",
+        "manifests/adk_interface.lock.json",
+        "manifests/comprehensive_optimization_backlog.json",
+        "manifests/report_registry.json",
+        "tools/control_plane/active_contracts.py"
+      ],
+      "input_digests": {
+        "README.md": "bcb6978c5c9d272d6c720e0a01b5b650c222eadb51e0bd35abd06de136ee9d3d",
+        "manifests/adk_interface.lock.json": "faf5685d0326ccb38f8ba664444333cd2326333568a7e9c4f1be9e1001512c21",
+        "manifests/comprehensive_optimization_backlog.json": "dcc814b4af52ec498a2585673d9da7274fe92da58e02ee580f2fb01283a74a8b",
+        "manifests/report_registry.json": "e0363a97b93956311886ab676124c3493bf9ff8b121ef990e8c2b1b09cf6ad71",
+        "tools/control_plane/active_contracts.py": "ec96066f6b9aeaa4c344f8904a92483f87b384de71ea3caceb285a78ed83da9f"
+      },
+      "outputs": [],
+      "cache_policy": "disabled",
+      "cache_key": "f8e9595ffa8cdbae9c8bad3f4d4a3cb604f856ab04c936a327ea9404cd71a638",
+      "cache_hit": false,
+      "output_tail": [
+        "[PASS] active governance contracts are fresh and executable"
+      ]
+    },
+    {
+      "name": "native-governance-contract",
+      "status": "pass",
+      "exit_code": 0,
+      "elapsed_ms": 451,
+      "owner": "llm_agent",
+      "evidence_class": "test",
+      "argv": [
+        "bash",
+        "tests/test_native_repository_governance_certifier.sh"
+      ],
+      "timeout_seconds": 30,
+      "missing_capabilities": [],
+      "failure_reason": null,
+      "depends_on": [
+        "active-contracts"
+      ],
+      "blocked_by": [],
+      "inputs": [
+        "manifests/long_term_asset_qualification.json",
+        "tools/control_plane/native_repository_governance.py",
+        "tools/control_plane/cli.py",
+        "tests/test_native_repository_governance_certifier.sh",
+        ".github/workflows/native-governance-control-plane.yml"
+      ],
+      "input_digests": {
+        "manifests/long_term_asset_qualification.json": "178f02dc25400a7ca4962e00bed7b8da14153b193bc7966df69744c0ce3650d8",
+        "tools/control_plane/native_repository_governance.py": "5331245995862eeedee56b53c451abe8562dbd2b5606df2f55189db3172455b8",
+        "tools/control_plane/cli.py": "5588b83fc09b8ab9f75f0d167b07fda933cf88f8b39a904e5cb2dee1170599f8",
+        "tests/test_native_repository_governance_certifier.sh": "d9cafaa86ce3cd9f753c40a59c370e220fe668da5f31678fc77fe1a4bba8df29",
+        ".github/workflows/native-governance-control-plane.yml": "f0bcda15356bfd80fae6746198c328020af85ed930ad5f3b2cade782873e8f3f"
+      },
+      "outputs": [],
+      "cache_policy": "disabled",
+      "cache_key": "f6c74805f2082e8d80c88050686beed7efa89103aeaa1e629b471df88bac8ea7",
+      "cache_hit": false,
+      "output_tail": [
+        "{\"active_rulesets\":[{\"bypass_actors\":[],\"id\":50,\"name\":\"llm_agent main governance\"}],\"branch\":\"main\",\"checks\":{\"active_main_ruleset\":true,\"all_required_checks_enforced\":true,\"branch_deletion_blocked\":true,\"default_branch_is_main\":true,\"delete_branch_on_merge\":true,\"force_push_blocked\":true,\"main_protected\":true,\"no_ruleset_bypass\":true,\"pull_request_required\":true,\"required_status_checks_present\":true,\"ruleset_squash_only\":true,\"solo_zero_required_approvals\":true,\"strict_required_status_checks\":true},\"desired_ruleset\":{\"bypass_actors\":[],\"conditions\":{\"ref_name\":{\"exclude\":[],\"include\":[\"refs/heads/main\"]}},\"enforcement\":\"active\",\"name\":\"llm_agent main governance\",\"rules\":[{\"parameters\":{\"allowed_merge_methods\":[\"squash\"],\"dismiss_stale_reviews_on_push\":false,\"require_code_owner_review\":false,\"require_last_push_approval\":false,\"required_approving_review_count\":0,\"required_review_thread_resolution\":false},\"type\":\"pull_request\"},{\"parameters\":{\"do_not_enforce_on_create\":false,\"required_status_checks\":[{\"context\":\"contract\"},{\"context\":\"doc-sync\"},{\"context\":\"integration-impact\"},{\"context\":\"integration-summary\"},{\"context\":\"software-m5-certify\"},{\"context\":\"branch-gc\"}],\"strict_required_status_checks_policy\":true},\"type\":\"required_status_checks\"},{\"type\":\"non_fast_forward\"},{\"type\":\"deletion\"}],\"target\":\"branch\"},\"full_checks\":{\"active_main_ruleset\":true,\"all_required_checks_enforced\":true,\"branch_deletion_blocked\":true,\"default_branch_is_main\":true,\"delete_branch_on_merge\":true,\"force_push_blocked\":true,\"main_protected\":true,\"no_ruleset_bypass\":true,\"pull_request_required\":true,\"required_status_checks_present\":true,\"ruleset_squash_only\":true,\"solo_zero_required_approvals\":true,\"strict_required_status_checks\":true},\"full_compliant\":true,\"hosted_checks\":{\"active_main_ruleset\":true,\"all_required_checks_enforced\":true,\"branch_deletion_blocked\":true,\"default_branch_is_main\":true,\"force_push_blocked\":true,\"main_protected\":true,\"no_ruleset_bypass\":true,\"pull_request_required\":true,\"required_status_checks_present\":true,\"ruleset_squash_only\":true,\"solo_zero_required_approvals\":true,\"strict_required_status_checks\":true},\"implementation_status\":\"certifier-ready\",\"missing_status_checks\":[],\"observed_pull_request_merge_methods\":[[\"squash\"]],\"observed_required_approval_counts\":[0],\"observed_status_checks\":[\"branch-gc\",\"contract\",\"doc-sync\",\"integration-impact\",\"integration-summary\",\"software-m5-certify\"],\"observed_strict_required_status_checks_policies\":[true],\"qualification\":\"LTA-01\",\"remediation\":[],\"repository\":\"jiying2007/llm_agent\",\"repository_admin_settings_authoritative\":true,\"required_status_checks\":[\"contract\",\"doc-sync\",\"integration-impact\",\"integration-summary\",\"software-m5-certify\",\"branch-gc\"],\"schema\":\"llm-agent-native-repository-governance-check/v2\",\"scope\":\"full\",\"status\":\"pass\",\"violations\":[]}",
+        "{\"active_rulesets\":[{\"bypass_actors\":[],\"id\":50,\"name\":\"llm_agent main governance\"}],\"branch\":\"main\",\"checks\":{\"active_main_ruleset\":true,\"all_required_checks_enforced\":true,\"branch_deletion_blocked\":true,\"default_branch_is_main\":true,\"delete_branch_on_merge\":false,\"force_push_blocked\":true,\"main_protected\":true,\"no_ruleset_bypass\":true,\"pull_request_required\":true,\"required_status_checks_present\":true,\"ruleset_squash_only\":true,\"solo_zero_required_approvals\":true,\"strict_required_status_checks\":true},\"desired_ruleset\":{\"bypass_actors\":[],\"conditions\":{\"ref_name\":{\"exclude\":[],\"include\":[\"refs/heads/main\"]}},\"enforcement\":\"active\",\"name\":\"llm_agent main governance\",\"rules\":[{\"parameters\":{\"allowed_merge_methods\":[\"squash\"],\"dismiss_stale_reviews_on_push\":false,\"require_code_owner_review\":false,\"require_last_push_approval\":false,\"required_approving_review_count\":0,\"required_review_thread_resolution\":false},\"type\":\"pull_request\"},{\"parameters\":{\"do_not_enforce_on_create\":false,\"required_status_checks\":[{\"context\":\"contract\"},{\"context\":\"doc-sync\"},{\"context\":\"integration-impact\"},{\"context\":\"integration-summary\"},{\"context\":\"software-m5-certify\"},{\"context\":\"branch-gc\"}],\"strict_required_status_checks_policy\":true},\"type\":\"required_status_checks\"},{\"type\":\"non_fast_forward\"},{\"type\":\"deletion\"}],\"target\":\"branch\"},\"full_checks\":{\"active_main_ruleset\":true,\"all_required_checks_enforced\":true,\"branch_deletion_blocked\":true,\"default_branch_is_main\":true,\"delete_branch_on_merge\":false,\"force_push_blocked\":true,\"main_protected\":true,\"no_ruleset_bypass\":true,\"pull_request_required\":true,\"required_status_checks_present\":true,\"ruleset_squash_only\":true,\"solo_zero_required_approvals\":true,\"strict_required_status_checks\":true},\"full_compliant\":false,\"hosted_checks\":{\"active_main_ruleset\":true,\"all_required_checks_enforced\":true,\"branch_deletion_blocked\":true,\"default_branch_is_main\":true,\"force_push_blocked\":true,\"main_protected\":true,\"no_ruleset_bypass\":true,\"pull_request_required\":true,\"required_status_checks_present\":true,\"ruleset_squash_only\":true,\"solo_zero_required_approvals\":true,\"strict_required_status_checks\":true},\"implementation_status\":\"certifier-ready\",\"missing_status_checks\":[],\"observed_pull_request_merge_methods\":[[\"squash\"]],\"observed_required_approval_counts\":[0],\"observed_status_checks\":[\"branch-gc\",\"contract\",\"doc-sync\",\"integration-impact\",\"integration-summary\",\"software-m5-certify\"],\"observed_strict_required_status_checks_policies\":[true],\"qualification\":\"LTA-01\",\"remediation\":[\"enable delete_branch_on_merge\"],\"repository\":\"jiying2007/llm_agent\",\"repository_admin_settings_authoritative\":true,\"required_status_checks\":[\"contract\",\"doc-sync\",\"integration-impact\",\"integration-summary\",\"software-m5-certify\",\"branch-gc\"],\"schema\":\"llm-agent-native-repository-governance-check/v2\",\"scope\":\"full\",\"status\":\"blocked_external_admin\",\"violations\":[\"native delete_branch_on_merge is not enabled\"]}",
+        "{\"active_rulesets\":[{\"bypass_actors\":[],\"id\":50,\"name\":\"llm_agent main governance\"}],\"branch\":\"main\",\"checks\":{\"active_main_ruleset\":true,\"all_required_checks_enforced\":true,\"branch_deletion_blocked\":true,\"default_branch_is_main\":true,\"force_push_blocked\":true,\"main_protected\":true,\"no_ruleset_bypass\":true,\"pull_request_required\":true,\"required_status_checks_present\":true,\"ruleset_squash_only\":true,\"solo_zero_required_approvals\":true,\"strict_required_status_checks\":true},\"desired_ruleset\":{\"bypass_actors\":[],\"conditions\":{\"ref_name\":{\"exclude\":[],\"include\":[\"refs/heads/main\"]}},\"enforcement\":\"active\",\"name\":\"llm_agent main governance\",\"rules\":[{\"parameters\":{\"allowed_merge_methods\":[\"squash\"],\"dismiss_stale_reviews_on_push\":false,\"require_code_owner_review\":false,\"require_last_push_approval\":false,\"required_approving_review_count\":0,\"required_review_thread_resolution\":false},\"type\":\"pull_request\"},{\"parameters\":{\"do_not_enforce_on_create\":false,\"required_status_checks\":[{\"context\":\"contract\"},{\"context\":\"doc-sync\"},{\"context\":\"integration-impact\"},{\"context\":\"integration-summary\"},{\"context\":\"software-m5-certify\"},{\"context\":\"branch-gc\"}],\"strict_required_status_checks_policy\":true},\"type\":\"required_status_checks\"},{\"type\":\"non_fast_forward\"},{\"type\":\"deletion\"}],\"target\":\"branch\"},\"full_checks\":{\"active_main_ruleset\":true,\"all_required_checks_enforced\":true,\"branch_deletion_blocked\":true,\"default_branch_is_main\":true,\"delete_branch_on_merge\":false,\"force_push_blocked\":true,\"main_protected\":true,\"no_ruleset_bypass\":true,\"pull_request_required\":true,\"required_status_checks_present\":true,\"ruleset_squash_only\":true,\"solo_zero_required_approvals\":true,\"strict_required_status_checks\":true},\"full_compliant\":null,\"hosted_checks\":{\"active_main_ruleset\":true,\"all_required_checks_enforced\":true,\"branch_deletion_blocked\":true,\"default_branch_is_main\":true,\"force_push_blocked\":true,\"main_protected\":true,\"no_ruleset_bypass\":true,\"pull_request_required\":true,\"required_status_checks_present\":true,\"ruleset_squash_only\":true,\"solo_zero_required_approvals\":true,\"strict_required_status_checks\":true},\"implementation_status\":\"certifier-ready\",\"missing_status_checks\":[],\"observed_pull_request_merge_methods\":[[\"squash\"]],\"observed_required_approval_counts\":[0],\"observed_status_checks\":[\"branch-gc\",\"contract\",\"doc-sync\",\"integration-impact\",\"integration-summary\",\"software-m5-certify\"],\"observed_strict_required_status_checks_policies\":[true],\"qualification\":\"LTA-01\",\"remediation\":[],\"repository\":\"jiying2007/llm_agent\",\"repository_admin_settings_authoritative\":false,\"required_status_checks\":[\"contract\",\"doc-sync\",\"integration-impact\",\"integration-summary\",\"software-m5-certify\",\"branch-gc\"],\"schema\":\"llm-agent-native-repository-governance-check/v2\",\"scope\":\"hosted-ruleset\",\"status\":\"pass\",\"violations\":[]}",
+        "{\"active_rulesets\":[],\"branch\":\"main\",\"checks\":{\"active_main_ruleset\":false,\"all_required_checks_enforced\":false,\"branch_deletion_blocked\":false,\"default_branch_is_main\":true,\"force_push_blocked\":false,\"main_protected\":false,\"no_ruleset_bypass\":false,\"pull_request_required\":false,\"required_status_checks_present\":false,\"ruleset_squash_only\":false,\"solo_zero_required_approvals\":false,\"strict_required_status_checks\":false},\"desired_ruleset\":{\"bypass_actors\":[],\"conditions\":{\"ref_name\":{\"exclude\":[],\"include\":[\"refs/heads/main\"]}},\"enforcement\":\"active\",\"name\":\"llm_agent main governance\",\"rules\":[{\"parameters\":{\"allowed_merge_methods\":[\"squash\"],\"dismiss_stale_reviews_on_push\":false,\"require_code_owner_review\":false,\"require_last_push_approval\":false,\"required_approving_review_count\":0,\"required_review_thread_resolution\":false},\"type\":\"pull_request\"},{\"parameters\":{\"do_not_enforce_on_create\":false,\"required_status_checks\":[{\"context\":\"contract\"},{\"context\":\"doc-sync\"},{\"context\":\"integration-impact\"},{\"context\":\"integration-summary\"},{\"context\":\"software-m5-certify\"},{\"context\":\"branch-gc\"}],\"strict_required_status_checks_policy\":true},\"type\":\"required_status_checks\"},{\"type\":\"non_fast_forward\"},{\"type\":\"deletion\"}],\"target\":\"branch\"},\"full_checks\":{\"active_main_ruleset\":false,\"all_required_checks_enforced\":false,\"branch_deletion_blocked\":false,\"default_branch_is_main\":true,\"delete_branch_on_merge\":false,\"force_push_blocked\":false,\"main_protected\":false,\"no_ruleset_bypass\":false,\"pull_request_required\":false,\"required_status_checks_present\":false,\"ruleset_squash_only\":false,\"solo_zero_required_approvals\":false,\"strict_required_status_checks\":false},\"full_compliant\":null,\"hosted_checks\":{\"active_main_ruleset\":false,\"all_required_checks_enforced\":false,\"branch_deletion_blocked\":false,\"default_branch_is_main\":true,\"force_push_blocked\":false,\"main_protected\":false,\"no_ruleset_bypass\":false,\"pull_request_required\":false,\"required_status_checks_present\":false,\"ruleset_squash_only\":false,\"solo_zero_required_approvals\":false,\"strict_required_status_checks\":false},\"implementation_status\":\"certifier-ready\",\"missing_status_checks\":[\"branch-gc\",\"contract\",\"doc-sync\",\"integration-impact\",\"integration-summary\",\"software-m5-certify\"],\"observed_pull_request_merge_methods\":[],\"observed_required_approval_counts\":[],\"observed_status_checks\":[],\"observed_strict_required_status_checks_policies\":[],\"qualification\":\"LTA-01\",\"remediation\":[\"create or enable an active native ruleset covering main\",\"create the canonical solo-maintainer main ruleset\",\"add a pull_request rule\",\"set required_approving_review_count to 0\",\"remove unconditional ruleset bypass actors\",\"set allowed merge methods to squash only\",\"add a required_status_checks rule\",\"enable strict_required_status_checks_policy\",\"require every canonical llm_agent PR qualification context\",\"add a non_fast_forward rule\",\"add a deletion rule\"],\"repository\":\"jiying2007/llm_agent\",\"repository_admin_settings_authoritative\":false,\"required_status_checks\":[\"contract\",\"doc-sync\",\"integration-impact\",\"integration-summary\",\"software-m5-certify\",\"branch-gc\"],\"schema\":\"llm-agent-native-repository-governance-check/v2\",\"scope\":\"hosted-ruleset\",\"status\":\"blocked_external_admin\",\"violations\":[\"main is not protected by native GitHub governance\",\"no active native repository ruleset covers main\",\"native ruleset does not require pull requests\",\"native ruleset does not preserve zero required human approvals\",\"native ruleset has a bypass actor\",\"native ruleset does not restrict merge methods to squash\",\"native ruleset does not require status checks\",\"required status checks do not require an up-to-date branch\",\"required status checks missing: branch-gc, contract, doc-sync, integration-impact, integration-summary, software-m5-certify\",\"native ruleset does not block non-fast-forward updates\",\"native ruleset does not block main branch deletion\"]}",
+        "[PASS] LTA-01 native repository governance certifier authority scopes",
+        "[PASS] local LTA-01 governance admin planner/apply is fail-closed, manifest-bound, shared-token-only, and evidence-ratcheted"
+      ]
+    },
+    {
+      "name": "longitudinal-operation-certifier",
+      "status": "pass",
+      "exit_code": 0,
+      "elapsed_ms": 12313,
+      "owner": "llm_agent",
+      "evidence_class": "test",
+      "argv": [
+        "bash",
+        "tests/test_longitudinal_operation_certifier.sh"
+      ],
+      "timeout_seconds": 60,
+      "missing_capabilities": [],
+      "failure_reason": null,
+      "depends_on": [
+        "native-governance-contract"
+      ],
+      "blocked_by": [],
+      "inputs": [
+        "tools/control_plane/longitudinal_operation.py",
+        "tests/test_longitudinal_operation_certifier.sh",
+        "manifests/long_term_asset_qualification.json",
+        "manifests/software_m5_pilot_ledger.json",
+        "reports/field-evidence/software-m5-v5-events.jsonl"
+      ],
+      "input_digests": {
+        "tools/control_plane/longitudinal_operation.py": "c05fa6af4779dd7205418c36ae5bb38fea34e9a77b0a31e0904ee2f8ce6219c7",
+        "tests/test_longitudinal_operation_certifier.sh": "c724572d1639e7189ea62ee8d5cfd04f838761323bc83fc8f31ea3834be4185e",
+        "manifests/long_term_asset_qualification.json": "178f02dc25400a7ca4962e00bed7b8da14153b193bc7966df69744c0ce3650d8",
+        "manifests/software_m5_pilot_ledger.json": "ad1182d5384b22cfa8e0b679967f74c583ebbb18a40fbf38da4dbed5f6e5c799",
+        "reports/field-evidence/software-m5-v5-events.jsonl": "accea1869c9cce11615dab657d9fd02884af47c74e86506544ee8f898ec6be22"
+      },
+      "outputs": [],
+      "cache_policy": "disabled",
+      "cache_key": "c1994e2657814b7ae7bb798d8d67f1962bb269495924f666060bafbe770655cd",
+      "cache_hit": false,
+      "output_tail": [
+        "[PASS] LTA-04 longitudinal operation certifier"
+      ]
+    },
+    {
+      "name": "status-projection-regression",
+      "status": "blocked",
+      "exit_code": null,
+      "elapsed_ms": 0,
+      "owner": "llm_agent",
+      "evidence_class": "test",
+      "argv": [
+        "bash",
+        "tests/test_status_projection.sh"
+      ],
+      "timeout_seconds": 30,
+      "missing_capabilities": [],
+      "failure_reason": "dependency-blocked",
+      "depends_on": [
+        "status-projection"
+      ],
+      "blocked_by": [
+        "status-projection"
+      ],
+      "inputs": [
+        "tests/test_status_projection.sh",
+        "tools/control_plane/status_projection.py"
+      ],
+      "input_digests": {},
+      "outputs": [],
+      "cache_policy": "disabled",
+      "cache_key": "e73b664b6cb7bd139bc29aeca6a7cbe65121fbbef80ced9ffd059b82e0d12c45",
+      "cache_hit": false,
+      "output_tail": []
+    },
+    {
+      "name": "adk-promotion-transaction",
+      "status": "pass",
+      "exit_code": 0,
+      "elapsed_ms": 2510,
+      "owner": "llm_agent",
+      "evidence_class": "test",
+      "argv": [
+        "bash",
+        "tests/test_adk_promotion_transaction.sh"
+      ],
+      "timeout_seconds": 60,
+      "missing_capabilities": [],
+      "failure_reason": null,
+      "depends_on": [
+        "adk-interface"
+      ],
+      "blocked_by": [],
+      "inputs": [
+        "tests/test_adk_promotion_transaction.sh",
+        "tools/control_plane/adk_promotion.py",
+        "tools/control_plane/adk_interface.py",
+        "tools/control_plane/adk_promotion_evidence.py"
+      ],
+      "input_digests": {
+        "tests/test_adk_promotion_transaction.sh": "3e495b298997f7c2059ab6a6aff559c002bfdaad8e2f61b21ab949c674148c71",
+        "tools/control_plane/adk_promotion.py": "cce0c8c3f98ba350e7e1fc79c71470c3cc54635382e9f588512b06439e4ba56c",
+        "tools/control_plane/adk_interface.py": "b888aa5e6e0eaec705a20c3bee3f0c32f5f00f90838965a111ceb0d163ec0202",
+        "tools/control_plane/adk_promotion_evidence.py": "de4cde37ed47bd362450833088119f3c696307249f6b3fa9c2ca819998732739"
+      },
+      "outputs": [],
+      "cache_policy": "disabled",
+      "cache_key": "cb287d558226434d9e0a3b456da99486f180ec4718405968fc116eaedb9e9394",
+      "cache_hit": false,
+      "output_tail": [
+        "hint: the embedded repository and will not know how to obtain it.",
+        "hint: If you meant to add a submodule, use:",
+        "hint:",
+        "hint: \tgit submodule add <url> agent-dev-kit",
+        "hint:",
+        "hint: If you added this path by mistake, you can remove it from the",
+        "hint: index with:",
+        "hint:",
+        "hint: \tgit rm --cached agent-dev-kit",
+        "hint:",
+        "hint: See \"git help submodule\" for more information.",
+        "hint: Disable this message with \"git config set advice.addEmbeddedRepo false\""
+      ]
+    },
+    {
+      "name": "current-status-source-split",
+      "status": "blocked",
+      "exit_code": null,
+      "elapsed_ms": 0,
+      "owner": "llm_agent",
+      "evidence_class": "test",
+      "argv": [
+        "bash",
+        "tests/test_current_status_source_split.sh"
+      ],
+      "timeout_seconds": 60,
+      "missing_capabilities": [],
+      "failure_reason": "dependency-blocked",
+      "depends_on": [
+        "status-projection-regression"
+      ],
+      "blocked_by": [
+        "status-projection-regression"
+      ],
+      "inputs": [
+        "tests/test_current_status_source_split.sh",
+        "reports/current-status.md"
+      ],
+      "input_digests": {},
+      "outputs": [],
+      "cache_policy": "disabled",
+      "cache_key": "4cdba2cabedf8e5e16811b16a1f53e4f4ea5584ea309f3391f1269c219fb4cf0",
+      "cache_hit": false,
+      "output_tail": []
+    },
+    {
+      "name": "ci-incremental-dag",
+      "status": "pass",
+      "exit_code": 0,
+      "elapsed_ms": 979,
+      "owner": "llm_agent",
+      "evidence_class": "test",
+      "argv": [
+        "bash",
+        "tests/test_ci_incremental_gate_dag.sh"
+      ],
+      "timeout_seconds": 30,
+      "missing_capabilities": [],
+      "failure_reason": null,
+      "depends_on": [
+        "active-contracts"
+      ],
+      "blocked_by": [],
+      "inputs": [
+        "tests/test_ci_incremental_gate_dag.sh",
+        ".github/workflows/ci.yml",
+        ".gitlab-ci.yml",
+        "manifests/gates.json",
+        "tools/control_plane/impact.py"
+      ],
+      "input_digests": {
+        "tests/test_ci_incremental_gate_dag.sh": "0c644354be1ea2cf1522764599ead120683aa9921ebdc65cf637cb1f3cb8a505",
+        ".github/workflows/ci.yml": "640c9f48c123833f579c568df11ff19d8164e053aa47a753edd88062dac88c20",
+        ".gitlab-ci.yml": "9f76bf18aad20806f3168bb8d2fbd1b5099da1bb18a147a072e484ee09054ece",
+        "manifests/gates.json": "404d3857d05c79ed8dc310b201dde9d4f41eebb28b85bee172dc199bc58bedd5",
+        "tools/control_plane/impact.py": "b173f03885e34ee9c83de9d529228161a4d0eaec349e43d33de6fcf9726c298c"
+      },
+      "outputs": [],
+      "cache_policy": "disabled",
+      "cache_key": "16f57018133940dc6666f08d1dd2283558a141f565be0634f0f96e1ec3141beb",
+      "cache_hit": false,
+      "output_tail": [
+        "[PASS] CI uses gate-derived integration impact, typed control-plane entrypoints, and native-deletion-aware fail-closed GC semantics"
+      ]
+    }
+  ],
+  "receipt_sha256": "506c9e67feab1de9d0a38f7e1d6022b6de91e343afe8b2e4600a191eac84a949"
+}

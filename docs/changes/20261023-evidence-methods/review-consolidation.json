@@ -1,0 +1,470 @@
+{
+  "schema": "llm-agent-methods-independent-review/v1",
+  "subject_id": "20261023-evidence-methods",
+  "scope": "analysis-consolidation-and-maintainability",
+  "owner": "leiwenjun",
+  "authors": [
+    "ai/root"
+  ],
+  "reviewer": {
+    "id": "ai/root/architecture_audit",
+    "kind": "ai",
+    "implementation_independence": "independent",
+    "prior_related_review_participation": true,
+    "read_only_design_review_participation": true,
+    "scope_note": "The reviewer assessed the proposed consolidation and previously reviewed related ADK/Root boundaries, but did not implement this five-source and deletion change."
+  },
+  "reviewed_at": "2026-10-23T14:20:59Z",
+  "evidence_completed_at": "2026-10-23T14:18:51.491714+00:00",
+  "status": "pass",
+  "verdicts": {
+    "spec": "pass",
+    "quality": "pass"
+  },
+  "reviewed_parent_head": "4c700de642fb8a1755b657e52b760b4384a5129d",
+  "reviewed_parent_remote_head": "64c5192f2d6aaacf65143223f03190564032facc",
+  "reviewed_parent_tree": "81d552d11888dd4b2c2c758497d9f2eacc7c0cc5",
+  "implementation_commit_at_review": "not-yet-created",
+  "findings": [
+    {
+      "id": "METHODS-CONSOLIDATION-01",
+      "severity": "major",
+      "disposition": "fixed",
+      "reason": "The additional root report made the strict maintainability budget fail at 321 reports versus warning_limit 320 in actual remote and local full regression. The complete substantive analysis is consolidated into the existing implementation map and only the newly introduced duplicate report is deleted. The original maintainability test and all seven original intake/matrix/removal entrypoints pass independently. The checker, thresholds, exclusions, old reports and historical evidence remain unchanged.",
+      "evidence": [
+        "review-consolidation-findings.md",
+        "evidence/consolidation-independent-execution.json"
+      ]
+    }
+  ],
+  "assessed_boundaries": {
+    "source_count": 12,
+    "candidate_count": 12,
+    "decision_count": 12,
+    "enhance_count": 9,
+    "observe_count": 3,
+    "production_method_count": 4,
+    "production_source_ids": [
+      "EXT-06",
+      "EXT-08",
+      "EXT-09",
+      "EXT-11"
+    ],
+    "research_enhance_source_ids": [
+      "EXT-01",
+      "EXT-03",
+      "EXT-04",
+      "EXT-05",
+      "EXT-07"
+    ],
+    "observe_source_ids": [
+      "EXT-02",
+      "EXT-10",
+      "EXT-12"
+    ],
+    "matrix_total_rows": 210,
+    "only_four_evidence_paths_retargeted": true,
+    "source_candidate_decision_bytes_and_ids_preserved": true,
+    "candidate_trust": "unverified-metadata",
+    "candidate_review_status": "review-required",
+    "article_body_persisted": false,
+    "automatic_adoption": false,
+    "upstream_code_executed": false,
+    "new_paid_resources": false,
+    "analysis_destination": "docs/changes/20261023-evidence-methods/implementation-map.md",
+    "complete_substantive_report_body_retained": true,
+    "consolidation_text_adjustments": "Heading depth, two report-to-analysis self-descriptions, and the accurate historical six-file/seven-entry review paragraph; the normalized content difference is preserved in execution evidence.",
+    "only_reports_tree_change": "Delete the newly introduced reports/evidence-methods-absorption-2026-10-23.md; no old report relocation.",
+    "published_adk_commit": "415590db44e88979185efb850e2339a3f95411ef",
+    "published_adk_tree": "51d400e80ba555a49ca85fcfefbd74f7fe499072",
+    "asw_semantics": "Existing responsibility contracts and actual code mapping; no new ASW execution receipt or claim that every workflow step ran.",
+    "original_required_entrypoints_passed": 8,
+    "total_independent_command_invocations": 12,
+    "unchanged_guard_test_policy_budget_files": 19,
+    "preserved_history_files": 17,
+    "strict_maintainability": {
+      "status": "pass",
+      "strict": true,
+      "budget_count": 14,
+      "warnings": [],
+      "failures": [],
+      "root_report_budget": {
+        "id": "root-report-count",
+        "metric": "file_count",
+        "status": "pass",
+        "observed": 320,
+        "baseline": 284,
+        "drift": 36,
+        "warning_limit": 320,
+        "hard_limit": 400,
+        "files_scanned": 320,
+        "owner": "llm-agent-governance",
+        "next_action": "Run governed report cleanup and preserve supersession metadata before creating more active reports.",
+        "hotspots": [
+          {
+            "path": "reports/2026-08-01-token-context-governance-v2-release-bundle.json",
+            "value": 1
+          },
+          {
+            "path": "reports/README.md",
+            "value": 1
+          },
+          {
+            "path": "reports/absorb-review-20260512_115031.md",
+            "value": 1
+          },
+          {
+            "path": "reports/absorption-optimization-review-2026-06-15.md",
+            "value": 1
+          },
+          {
+            "path": "reports/active-subrepo-diff-scan-2026-07-06.md",
+            "value": 1
+          }
+        ]
+      },
+      "budget_config_and_checker_unchanged": true
+    },
+    "canonical_export_byte_match": true,
+    "removal_fixture_canonical_object_match": true,
+    "previous_removal_digest_rejected": true,
+    "actual_task_benefit": "not-measured",
+    "product_release_authorized": false,
+    "future_commit_full_quick_and_ci": "separate exact-identity evidence required",
+    "existing_dirty_and_m5_quick_blockers": "unchanged; targeted passes do not imply full quick or current product qualification"
+  },
+  "source_binding_kind": "sha256-file-snapshot",
+  "source_set_serialization": "UTF-8 JSON of sources with sort_keys=true and separators=(',', ':'); includes base, path, bytes and sha256. The deletion identity and content-retention facts are recorded separately in deletions.",
+  "source_set_sha256": "eb3c1bb5b51f396bb3e38bccb13b1bcd8fd31ea4151f0fa3bab8635bbd902663",
+  "sources": [
+    {
+      "base": "repository",
+      "path": "subrepos/adoption-matrix.md",
+      "bytes": 85541,
+      "sha256": "da66a91c839169f540175cfcfabea245526657e9e9f47b868ea7e1d4b74493b4"
+    },
+    {
+      "base": "repository",
+      "path": "subrepos/adoption-matrix.jsonl",
+      "bytes": 103853,
+      "sha256": "a0a345e4626725a234a47419dfc073e61f221aec3595f2d960bcb19d0a780b3a"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/implementation-map.md",
+      "bytes": 19762,
+      "sha256": "635812051b3880a819fd403ca0dfc340491b94fde39076ac076c5c187e3946f9"
+    },
+    {
+      "base": "repository",
+      "path": "docs/runbooks/evidence-driven-optimization.md",
+      "bytes": 4858,
+      "sha256": "821f69318d9608b6f96fc13406707eee2d3040bdfc251e48133063d5f6666ffa"
+    },
+    {
+      "base": "repository",
+      "path": "fixtures/reference-repository/removal/pass/removal-plan.json",
+      "bytes": 2327,
+      "sha256": "af3006a9f496d3e5859c496a29b6457cca18cab7dd83d0a3e146e194f3df8c40"
+    }
+  ],
+  "deletions": [
+    {
+      "base": "repository",
+      "path": "reports/evidence-methods-absorption-2026-10-23.md",
+      "base_local_commit": "4c700de642fb8a1755b657e52b760b4384a5129d",
+      "base_remote_commit": "64c5192f2d6aaacf65143223f03190564032facc",
+      "git_blob": "53cda81736ca0b702af426ffbcc7091e47ae2109",
+      "bytes": 10280,
+      "sha256": "50662a903fe77a7915265025f45ab3a62bff4dfccf825b4649c9c034451239f4",
+      "absent_at_review": true,
+      "consolidated_into": "docs/changes/20261023-evidence-methods/implementation-map.md",
+      "content_retention": "Entire report body retained; heading depth adjusted, two self-descriptions changed from report to analysis, and the seven-entry review paragraph accurately converted to historical context."
+    }
+  ],
+  "remote_deletion_source_verification": {
+    "commit": "64c5192f2d6aaacf65143223f03190564032facc",
+    "path": "reports/evidence-methods-absorption-2026-10-23.md",
+    "sha256": "50662a903fe77a7915265025f45ab3a62bff4dfccf825b4649c9c034451239f4",
+    "matches_local_parent_and_archived_original": true
+  },
+  "analysis_destination": "docs/changes/20261023-evidence-methods/implementation-map.md",
+  "context_binding_location": "evidence/consolidation-independent-execution.json: unchanged_guards, preserved_history, published_adk.source_bindings and consolidation_content_diff_after_heading_normalization",
+  "evidence": [
+    {
+      "base": "record",
+      "path": "review-consolidation-findings.md",
+      "bytes": 6417,
+      "sha256": "913d6c8fe790a4dcc117931c7a704f2f5bc0be9a833be65c7daccbb5e760751f"
+    },
+    {
+      "base": "record",
+      "path": "evidence/consolidation-independent-execution.json",
+      "bytes": 39778,
+      "sha256": "39548a00098eef21654e79299210cbd4fa336c746e178f59108abcffdc548c4d"
+    }
+  ],
+  "executions": [
+    {
+      "argv": [
+        "/workspace/scratch/694941d81014/tooling/rtk",
+        "bypass",
+        "bash",
+        "scripts/check-upstream-intake-readiness.sh",
+        "."
+      ],
+      "cwd": "/workspace/scratch/694941d81014/llm_agent",
+      "started_at": "2026-10-23T14:18:41.331766+00:00",
+      "completed_at": "2026-10-23T14:18:41.354921+00:00",
+      "returncode": 0,
+      "expected_returncode": 0,
+      "stdout": "[PASS] upstream intake readiness checks passed (164 adopt rows)\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/694941d81014/tooling/rtk",
+        "bypass",
+        "bash",
+        "scripts/check-observe-intake-depth.sh",
+        "."
+      ],
+      "cwd": "/workspace/scratch/694941d81014/llm_agent",
+      "started_at": "2026-10-23T14:18:41.355765+00:00",
+      "completed_at": "2026-10-23T14:18:41.363527+00:00",
+      "returncode": 0,
+      "expected_returncode": 0,
+      "stdout": "[PASS] observe intake depth checks passed (11 rows)\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/694941d81014/tooling/rtk",
+        "bypass",
+        "bash",
+        "scripts/check-adoption-matrix-structured.sh",
+        "."
+      ],
+      "cwd": "/workspace/scratch/694941d81014/llm_agent",
+      "started_at": "2026-10-23T14:18:41.364140+00:00",
+      "completed_at": "2026-10-23T14:18:41.402783+00:00",
+      "returncode": 0,
+      "expected_returncode": 0,
+      "stdout": "[PASS] structured adoption matrix synchronized\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/694941d81014/tooling/rtk",
+        "bypass",
+        "bash",
+        "scripts/check-adoption-matrix-status.sh",
+        "."
+      ],
+      "cwd": "/workspace/scratch/694941d81014/llm_agent",
+      "started_at": "2026-10-23T14:18:41.403431+00:00",
+      "completed_at": "2026-10-23T14:18:41.413315+00:00",
+      "returncode": 0,
+      "expected_returncode": 0,
+      "stdout": "[PASS] adoption-matrix status checks passed\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/694941d81014/tooling/rtk",
+        "bypass",
+        "bash",
+        "scripts/check-adoption-evidence-integrity.sh",
+        "."
+      ],
+      "cwd": "/workspace/scratch/694941d81014/llm_agent",
+      "started_at": "2026-10-23T14:18:41.413924+00:00",
+      "completed_at": "2026-10-23T14:18:45.009590+00:00",
+      "returncode": 0,
+      "expected_returncode": 0,
+      "stdout": "[PASS] adoption evidence integrity checks passed (rows=210 paths=621)\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/694941d81014/tooling/rtk",
+        "bypass",
+        "bash",
+        "scripts/check-adoption-real-assets.sh",
+        ".",
+        "--summary-json"
+      ],
+      "cwd": "/workspace/scratch/694941d81014/llm_agent",
+      "started_at": "2026-10-23T14:18:45.011646+00:00",
+      "completed_at": "2026-10-23T14:18:45.077619+00:00",
+      "returncode": 0,
+      "expected_returncode": 0,
+      "stdout": "{\"status\":\"pass\",\"checked\":234,\"real_asset_ok\":233,\"matrix_asset_exceptions\":1,\"failures\":[]}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/694941d81014/tooling/rtk",
+        "bypass",
+        "bash",
+        "tests/test_reference_repository_removal.sh"
+      ],
+      "cwd": "/workspace/scratch/694941d81014/llm_agent",
+      "started_at": "2026-10-23T14:18:45.078553+00:00",
+      "completed_at": "2026-10-23T14:18:45.859792+00:00",
+      "returncode": 0,
+      "expected_returncode": 0,
+      "stdout": "[PASS] reference repository removal plans are hashed, dry-run, and non-destructive\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/694941d81014/tooling/rtk",
+        "bypass",
+        "bash",
+        "tests/test_maintainability_budgets.sh"
+      ],
+      "cwd": "/workspace/scratch/694941d81014/llm_agent",
+      "started_at": "2026-10-23T14:18:45.860973+00:00",
+      "completed_at": "2026-10-23T14:18:50.156109+00:00",
+      "returncode": 0,
+      "expected_returncode": 0,
+      "stdout": "[PASS] maintainability budgets enforce static and evidence metrics with honest availability\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/694941d81014/tooling/rtk",
+        "bypass",
+        "bash",
+        "scripts/check-maintainability-budgets.sh",
+        ".",
+        "--strict",
+        "--summary-json"
+      ],
+      "cwd": "/workspace/scratch/694941d81014/llm_agent",
+      "started_at": "2026-10-23T14:18:50.156982+00:00",
+      "completed_at": "2026-10-23T14:18:51.199283+00:00",
+      "returncode": 0,
+      "expected_returncode": 0,
+      "stdout": "{\"schema\":\"llm-agent-maintainability-budget-report/v2\",\"status\":\"pass\",\"strict\":true,\"baseline_date\":\"2026-07-30\",\"root\":\"/workspace/scratch/694941d81014/llm_agent\",\"budget_count\":14,\"evidence_metric_count\":3,\"failures\":[],\"warnings\":[],\"budgets\":[{\"id\":\"root-script-count\",\"metric\":\"file_count\",\"status\":\"pass\",\"observed\":89,\"baseline\":89,\"drift\":0,\"warning_limit\":92,\"hard_limit\":100,\"files_scanned\":89,\"owner\":\"llm-agent-governance\",\"next_action\":\"Consolidate thin wrappers into an existing typed tools.codex_assets entrypoint before adding another root script.\",\"hotspots\":[{\"path\":\"scripts/analyze-repo.sh\",\"value\":1},{\"path\":\"scripts/backup-rollback.sh\",\"value\":1},{\"path\":\"scripts/check-adk-goal-capability.sh\",\"value\":1},{\"path\":\"scripts/check-adk-governance-suite.sh\",\"value\":1},{\"path\":\"scripts/check-adk-harden-readiness.sh\",\"value\":1}]},{\"id\":\"root-report-count\",\"metric\":\"file_count\",\"status\":\"pass\",\"observed\":320,\"baseline\":284,\"drift\":36,\"warning_limit\":320,\"hard_limit\":400,\"files_scanned\":320,\"owner\":\"llm-agent-governance\",\"next_action\":\"Run governed report cleanup and preserve supersession metadata before creating more active reports.\",\"hotspots\":[{\"path\":\"reports/2026-08-01-token-context-governance-v2-release-bundle.json\",\"value\":1},{\"path\":\"reports/README.md\",\"value\":1},{\"path\":\"reports/absorb-review-20260512_115031.md\",\"value\":1},{\"path\":\"reports/absorption-optimization-review-2026-06-15.md\",\"value\":1},{\"path\":\"reports/active-subrepo-diff-scan-2026-07-06.md\",\"value\":1}]},{\"id\":\"root-manifest-count\",\"metric\":\"file_count\",\"status\":\"pass\",\"observed\":18,\"baseline\":15,\"drift\":3,\"warning_limit\":20,\"hard_limit\":25,\"files_scanned\":18,\"owner\":\"llm-agent-governance\",\"next_action\":\"Keep historical snapshots under manifests/history; consolidate active SSOT contracts before adding another root manifest.\",\"hotspots\":[{\"path\":\"manifests/adk_interface.lock.json\",\"value\":1},{\"path\":\"manifests/comprehensive_optimization_backlog.json\",\"value\":1},{\"path\":\"manifests/digital_worker_runtime_pilot.json\",\"value\":1},{\"path\":\"manifests/external_practice_cycle.json\",\"value\":1},{\"path\":\"manifests/external_practice_sources.json\",\"value\":1}]},{\"id\":\"root-largest-shell-lines\",\"metric\":\"max_lines\",\"status\":\"pass\",\"observed\":658,\"baseline\":666,\"drift\":-8,\"warning_limit\":750,\"hard_limit\":900,\"files_scanned\":89,\"owner\":\"llm-agent-governance\",\"next_action\":\"Move reusable parsing and state logic into tools.codex_assets and keep shell as a transport wrapper.\",\"hotspots\":[{\"path\":\"scripts/collect-runtime-target-evidence-package.sh\",\"value\":658},{\"path\":\"scripts/check-architecture-reports.sh\",\"value\":616},{\"path\":\"scripts/check-runtime-targets.sh\",\"value\":591},{\"path\":\"scripts/lib/same-run-evidence.sh\",\"value\":457},{\"path\":\"scripts/check-workspace-entrypoints.sh\",\"value\":422}]},{\"id\":\"root-largest-python-lines\",\"metric\":\"max_lines\",\"status\":\"pass\",\"observed\":1919,\"baseline\":2078,\"drift\":-159,\"warning_limit\":2200,\"hard_limit\":2500,\"files_scanned\":30,\"owner\":\"llm-agent-governance\",\"next_action\":\"Split the named hotspot by capability boundary with contract tests before adding another responsibility.\",\"hotspots\":[{\"path\":\"tools/codex_assets/practice_intake.py\",\"value\":1919},{\"path\":\"tools/codex_assets/reference_repository.py\",\"value\":970},{\"path\":\"tools/codex_assets/maintainability_budget.py\",\"value\":834},{\"path\":\"tools/codex_assets/runtime_smoke_evidence.py\",\"value\":752},{\"path\":\"tools/codex_assets/software_m5_v3_core.py\",\"value\":676}]},{\"id\":\"adk-largest-shell-lines\",\"metric\":\"max_lines\",\"status\":\"pass\",\"observed\":756,\"baseline\":1745,\"drift\":-989,\"warning_limit\":1850,\"hard_limit\":2100,\"files_scanned\":42,\"owner\":\"agent-dev-kit\",\"next_action\":\"Move deterministic governance logic into src/agent_dev_kit and retain a thin stable shell entrypoint.\",\"hotspots\":[{\"path\":\"agent-dev-kit/scripts/check-agent-ecosystem-standards.sh\",\"value\":756},{\"path\":\"agent-dev-kit/scripts/workflow.sh\",\"value\":670},{\"path\":\"agent-dev-kit/scripts/check-harness-loop-engineering-contracts.sh\",\"value\":585},{\"path\":\"agent-dev-kit/scripts/run-embedded-workflow-pilots.sh\",\"value\":525},{\"path\":\"agent-dev-kit/scripts/run-embedded-production-field-pilot.sh\",\"value\":445}]},{\"id\":\"adk-largest-python-lines\",\"metric\":\"max_lines\",\"status\":\"pass\",\"observed\":575,\"baseline\":1054,\"drift\":-479,\"warning_limit\":1150,\"hard_limit\":1400,\"files_scanned\":106,\"owner\":\"agent-dev-kit\",\"next_action\":\"Split the hotspot only along an owned domain boundary and preserve CLI/API compatibility tests.\",\"hotspots\":[{\"path\":\"agent-dev-kit/src/agent_dev_kit/evaluation_runtime.py\",\"value\":575},{\"path\":\"agent-dev-kit/src/agent_dev_kit/_matcher_kernel.py\",\"value\":570},{\"path\":\"agent-dev-kit/src/agent_dev_kit/installation_transaction.py\",\"value\":542},{\"path\":\"agent-dev-kit/src/agent_dev_kit/release.py\",\"value\":536},{\"path\":\"agent-dev-kit/src/agent_dev_kit/agent_platform.py\",\"value\":511}]},{\"id\":\"root-python-import-fan-out\",\"metric\":\"max_import_fan_out\",\"status\":\"pass\",\"observed\":17,\"baseline\":17,\"drift\":0,\"warning_limit\":20,\"hard_limit\":25,\"files_scanned\":30,\"owner\":\"llm-agent-governance\",\"next_action\":\"Split high fan-out typed modules at stable domain ports before adding another dependency.\",\"hotspots\":[{\"path\":\"tools/codex_assets/codex_model_observer.py\",\"value\":17},{\"path\":\"tools/codex_assets/intake_pipeline.py\",\"value\":17},{\"path\":\"tools/codex_assets/m5_signature.py\",\"value\":15},{\"path\":\"tools/codex_assets/maintainability_budget.py\",\"value\":15},{\"path\":\"tools/codex_assets/reference_worktree_identity.py\",\"value\":15}]},{\"id\":\"adk-python-import-fan-out\",\"metric\":\"max_import_fan_out\",\"status\":\"pass\",\"observed\":26,\"baseline\":24,\"drift\":2,\"warning_limit\":28,\"hard_limit\":35,\"files_scanned\":106,\"owner\":\"agent-dev-kit\",\"next_action\":\"Introduce typed internal ports when a module crosses the reviewed import fan-out budget.\",\"hotspots\":[{\"path\":\"agent-dev-kit/src/agent_dev_kit/cli.py\",\"value\":26},{\"path\":\"agent-dev-kit/src/agent_dev_kit/distribution/release_artifacts.py\",\"value\":20},{\"path\":\"agent-dev-kit/src/agent_dev_kit/evaluation_cli.py\",\"value\":18},{\"path\":\"agent-dev-kit/src/agent_dev_kit/release.py\",\"value\":18},{\"path\":\"agent-dev-kit/src/agent_dev_kit/effect_campaign_materializer.py\",\"value\":17}]},{\"id\":\"root-exact-code-duplication\",\"metric\":\"duplicate_content_groups\",\"status\":\"pass\",\"observed\":0,\"baseline\":0,\"drift\":0,\"warning_limit\":1,\"hard_limit\":3,\"files_scanned\":119,\"owner\":\"llm-agent-governance\",\"next_action\":\"Replace exact duplicate implementation files with one typed implementation and thin entrypoints.\",\"hotspots\":[{\"path\":\"<none>\",\"value\":0,\"duplicates\":[]}]},{\"id\":\"adk-exact-code-duplication\",\"metric\":\"duplicate_content_groups\",\"status\":\"pass\",\"observed\":0,\"baseline\":0,\"drift\":0,\"warning_limit\":2,\"hard_limit\":5,\"files_scanned\":301,\"owner\":\"agent-dev-kit\",\"next_action\":\"Consolidate exact duplicate checker or test logic without weakening target-specific assertions.\",\"hotspots\":[{\"path\":\"<none>\",\"value\":0,\"duplicates\":[]}]},{\"id\":\"root-control-plane-python-count\",\"metric\":\"file_count\",\"status\":\"pass\",\"observed\":29,\"baseline\":28,\"drift\":1,\"warning_limit\":31,\"hard_limit\":35,\"files_scanned\":29,\"owner\":\"llm-agent-governance\",\"next_action\":\"Review ownership and consolidate existing typed control-plane modules before adding further modules; do not hide new modules by excluding the directory.\",\"hotspots\":[{\"path\":\"tools/control_plane/__init__.py\",\"value\":1},{\"path\":\"tools/control_plane/active_contracts.py\",\"value\":1},{\"path\":\"tools/control_plane/adk_interface.py\",\"value\":1},{\"path\":\"tools/control_plane/adk_promotion.py\",\"value\":1},{\"path\":\"tools/control_plane/adk_promotion_evidence.py\",\"value\":1}]},{\"id\":\"root-control-plane-largest-python-lines\",\"metric\":\"max_lines\",\"status\":\"pass\",\"observed\":1030,\"baseline\":981,\"drift\":49,\"warning_limit\":1050,\"hard_limit\":1200,\"files_scanned\":29,\"owner\":\"llm-agent-governance\",\"next_action\":\"Split named control-plane hotspots by bounded context with behavioral regression evidence instead of allocating unbounded line budgets.\",\"hotspots\":[{\"path\":\"tools/control_plane/effect_readiness.py\",\"value\":1030},{\"path\":\"tools/control_plane/longitudinal_operation.py\",\"value\":718},{\"path\":\"tools/control_plane/branch_gc.py\",\"value\":591},{\"path\":\"tools/control_plane/qualification_followup.py\",\"value\":573},{\"path\":\"tools/control_plane/gate_runner.py\",\"value\":501}]},{\"id\":\"root-control-plane-python-import-fan-out\",\"metric\":\"max_import_fan_out\",\"status\":\"pass\",\"observed\":14,\"baseline\":14,\"drift\":0,\"warning_limit\":19,\"hard_limit\":23,\"files_scanned\":29,\"owner\":\"llm-agent-governance\",\"next_action\":\"Preserve explicit dependency direction; review the named high-fan-out control-plane module before introducing another cross-context import.\",\"hotspots\":[{\"path\":\"tools/control_plane/adk_interface.py\",\"value\":14},{\"path\":\"tools/control_plane/effect_readiness.py\",\"value\":14},{\"path\":\"tools/control_plane/qualification_followup.py\",\"value\":14},{\"path\":\"tools/control_plane/adk_promotion.py\",\"value\":13},{\"path\":\"tools/control_plane/longitudinal_operation.py\",\"value\":13}]}],\"elapsed_ms\":946.388,\"semantic_axes\":{\"coupling\":{\"status\":\"measured\",\"method\":\"max-import-fan-out\"},\"exact_duplication\":{\"status\":\"measured\",\"method\":\"content-sha256\"},\"churn\":{\"id\":\"repository-churn\",\"metric\":\"churn\",\"risk\":\"medium\",\"enforcement\":\"report-only\",\"enforcement_rationale\":\"A reviewed version-history window and stable churn baseline are not yet available, so a hard threshold would create false precision.\",\"expected_repository_id\":\"llm-agent\",\"expected_population\":null,\"max_age_days\":45,\"owner\":\"llm-agent-governance\",\"next_action\":\"Generate a reviewed git-history numstat snapshot for a fixed revision and time window before proposing a churn budget.\",\"status\":\"not-available\",\"observed\":null,\"unit\":null,\"hotspots\":[],\"source\":null,\"unavailable_reason\":\"No reviewed git-history numstat snapshot is pinned by path, repository identity, revision window and SHA-256.\"},\"owner_concentration\":{\"id\":\"owner-concentration\",\"metric\":\"owner_concentration\",\"risk\":\"high\",\"enforcement\":\"report-only\",\"enforcement_rationale\":\"Ownership concentration is high-risk, but enforcing a threshold without a reviewed scope-to-owner snapshot would treat missing owners as measured zero.\",\"expected_repository_id\":\"llm-agent\",\"expected_population\":null,\"max_age_days\":90,\"owner\":\"llm-agent-governance\",\"next_action\":\"Review critical scopes and primary owners, then pin the ownership snapshot before setting a basis-point budget.\",\"status\":\"not-available\",\"observed\":null,\"unit\":null,\"hotspots\":[],\"source\":null,\"unavailable_reason\":\"No reviewed ownership snapshot is pinned by repository identity, revision window and SHA-256.\"},\"inactive_assets\":{\"id\":\"inactive-assets\",\"metric\":\"inactive_assets\",\"risk\":\"high\",\"enforcement\":\"report-only\",\"enforcement_rationale\":\"Asset retirement decisions require a sanitized invocation window; absent telemetry must not be interpreted as zero activity.\",\"expected_repository_id\":\"llm-agent\",\"expected_population\":null,\"max_age_days\":30,\"owner\":\"llm-agent-governance\",\"next_action\":\"Produce a privacy-reviewed invocation ledger for a fixed window before proposing an inactive-asset threshold.\",\"status\":\"not-available\",\"observed\":null,\"unit\":null,\"hotspots\":[],\"source\":null,\"unavailable_reason\":\"No sanitized invocation ledger is pinned by repository identity, revision window and SHA-256.\"}}}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/694941d81014/tooling/rtk",
+        "bypass",
+        "bash",
+        "scripts/export-adoption-matrix-jsonl.sh",
+        ".",
+        "/workspace/scratch/694941d81014/closure20261023/root-consolidation-independent/canonical-adoption-matrix.jsonl"
+      ],
+      "cwd": "/workspace/scratch/694941d81014/llm_agent",
+      "started_at": "2026-10-23T14:18:51.200302+00:00",
+      "completed_at": "2026-10-23T14:18:51.214753+00:00",
+      "returncode": 0,
+      "expected_returncode": 0,
+      "stdout": "[OK] adoption matrix jsonl exported: /workspace/scratch/694941d81014/closure20261023/root-consolidation-independent/canonical-adoption-matrix.jsonl\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/694941d81014/tooling/rtk",
+        "bypass",
+        "/workspace/scratch/694941d81014/tooling/venv/bin/python",
+        "-m",
+        "tools.codex_assets.reference_repository",
+        "--root",
+        "/workspace/scratch/694941d81014/llm_agent",
+        "plan-removal",
+        "--repo",
+        "codex",
+        "--as-of",
+        "2026-07-19",
+        "--adoption-decision",
+        "subrepos/adoption-matrix.md",
+        "--evidence-dependency-scan",
+        "reports/subrepo-removal-plan-codex-2026-06-16.md",
+        "--dirty-baseline-review",
+        "subrepos/dirty-baseline.tsv",
+        "--rollback-plan",
+        "reports/subrepo-removal-plan-codex-2026-06-16.md",
+        "--out-json",
+        "/workspace/scratch/694941d81014/closure20261023/root-consolidation-independent/canonical-removal-plan.json",
+        "--out-md",
+        "/workspace/scratch/694941d81014/closure20261023/root-consolidation-independent/canonical-removal-plan.md"
+      ],
+      "cwd": "/workspace/scratch/694941d81014/llm_agent",
+      "started_at": "2026-10-23T14:18:51.222785+00:00",
+      "completed_at": "2026-10-23T14:18:51.351968+00:00",
+      "returncode": 0,
+      "expected_returncode": 0,
+      "stdout": "[PASS] reference repository removal dry-run plan written: /workspace/scratch/694941d81014/closure20261023/root-consolidation-independent/canonical-removal-plan.json\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/694941d81014/tooling/rtk",
+        "bypass",
+        "/workspace/scratch/694941d81014/tooling/venv/bin/python",
+        "-m",
+        "tools.codex_assets.reference_repository",
+        "--root",
+        "/workspace/scratch/694941d81014/llm_agent",
+        "check-removal",
+        "--plan",
+        "/workspace/scratch/694941d81014/closure20261023/root-consolidation-independent/prior-removal-fixture.json",
+        "--no-fixtures",
+        "--summary-json"
+      ],
+      "cwd": "/workspace/scratch/694941d81014/llm_agent",
+      "started_at": "2026-10-23T14:18:51.353379+00:00",
+      "completed_at": "2026-10-23T14:18:51.488474+00:00",
+      "returncode": 2,
+      "expected_returncode": 2,
+      "stdout": "{\"checked\": 0, \"failures\": 1, \"status\": \"fail\"}\n",
+      "stderr": "[FAIL] /workspace/scratch/694941d81014/closure20261023/root-consolidation-independent/prior-removal-fixture.json: reference repository removal artifact hash is stale\n"
+    }
+  ],
+  "historical_reviews": [
+    {
+      "path": "review-evidence.json",
+      "sha256": "ade3d294f05deb506fc9d72ff8f0be53feee2346d420372ba05b02139fa83a4f",
+      "disposition": "preserved historical initial methods snapshot; not a current production projection approval"
+    },
+    {
+      "path": "review-projection-correction.json",
+      "sha256": "df270326b796a4daead2b72dd49898785df7572b937ac9ade99022be7514d8b6",
+      "disposition": "preserved historical six-source snapshot with actual seven-entry targeted PASS; does not override the later 64c full-regression failure or bind the current five-source snapshot"
+    }
+  ],
+  "historical_failed_ci": {
+    "remote_head": "64c5192f2d6aaacf65143223f03190564032facc",
+    "tree": "81d552d11888dd4b2c2c758497d9f2eacc7c0cc5",
+    "workflow_run_id": 39965536971,
+    "workflow_run_url": "https://github.com/jiying2007/llm_agent/actions/runs/39965536971",
+    "conclusion": "failure",
+    "root_regression": {
+      "exit_code": 1,
+      "passed_groups": 41,
+      "failed_groups": 1,
+      "first_failure": "test_maintainability_budgets",
+      "full_suite_completed": false
+    },
+    "root_report_count": 321,
+    "warning_limit": 320,
+    "retained_independent_failure_proof_sha256": "1097c4ebdc7b09db0071d565cf5e97255ec22acbe422494496ae6fb3d7236c71",
+    "original_artifact_sha256": "50fa4a106d78173ad14b3ab8aaa3e5bf991c42ecfe61c0fd9a01ca0b2cf8b162",
+    "disposition": "retained unchanged as a real failed integration attempt"
+  },
+  "limitations": [
+    "This is an independent Spec/Quality review of frozen files and the explicit deletion before the next implementation commit. It does not invent final commit identity, full/quick results, PR/main CI success, merge approval or product release authority.",
+    "SHA-256 bindings establish file identity and internal consistency, not reviewer authentication, upstream identity, license validity or all external source statements.",
+    "The strict report-count result is 320 at an unchanged warning_limit of 320 and hard_limit of 400. Passing this static budget does not measure engineering benefit, churn, ownership concentration or asset activity; unavailable semantic axes remain governed by their existing report-only contracts.",
+    "The five research ENHANCE and three OBSERVE decisions retain their original scope. Existing ASW files were previously read for responsibility mapping and remain byte-matched; this consolidation does not execute or re-certify their complete workflows or the published ADK.",
+    "The eight original entrypoints and four additional narrow measurement/canonical/negative checks are actual single executions with preserved argv, UTC timestamps, stdout, stderr and returncodes. The expected stale-digest rejection is exit 2 and is not mislabeled as exit 0.",
+    "No external source re-attestation, third-party Skill body execution, paid model call, field/runtime evaluation or real task-benefit measurement was performed.",
+    "Existing dirty-triage expiry and historical Product M5/current candidate mismatch remain unchanged. No review dates, qualification policies, tests, gates, counting exclusions or thresholds were weakened.",
+    "Old review, source, task and execution records remain historical byte-for-byte; the deleted report remains retrievable from its exact prior Git commit and archived original. Prior targeted PASS and the subsequent 41-pass/1-fail full result are both retained honestly."
+  ]
+}

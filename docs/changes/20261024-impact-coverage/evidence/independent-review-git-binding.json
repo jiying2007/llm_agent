@@ -1,0 +1,124 @@
+{
+  "binding_checked_at": "2026-10-24T16:14:55.590822+00:00",
+  "target": "a922a2884c4d38e2ecdc2f8dbc27b1fde69765b8",
+  "target_tree": "a0911169e73963e24efec0f26bcb29e70619cc0c",
+  "original_reviewed_head": "64c5192f2d6aaacf65143223f03190564032facc",
+  "original_review_time_preserved": true,
+  "review_summary_sha256": "6f24030a92f84af741c990412c9f1bac13cf7afdf9e2afd6d58ec4f0d5dc2172",
+  "source_set_sha256": "bbe66c3efc2fe1226e6f0c31e7848b1179a2928997863d0a9bcc9077296a5b77",
+  "matched_source_files": 18,
+  "deletion_count": 1,
+  "sources": [
+    {
+      "path": ".gitlab-ci.yml",
+      "sha256": "88029613e9d856d9633cafd4995db2f95f470065c69f52d4948ae0182a6db3ee",
+      "bytes": 940,
+      "matches_reviewed_source": true
+    },
+    {
+      "path": "docs/changes/20261023-evidence-methods/evidence/consolidation-independent-execution.json",
+      "sha256": "39548a00098eef21654e79299210cbd4fa336c746e178f59108abcffdc548c4d",
+      "bytes": 39778,
+      "matches_reviewed_source": true
+    },
+    {
+      "path": "docs/changes/20261023-evidence-methods/implementation-map.md",
+      "sha256": "635812051b3880a819fd403ca0dfc340491b94fde39076ac076c5c187e3946f9",
+      "bytes": 19762,
+      "matches_reviewed_source": true
+    },
+    {
+      "path": "docs/changes/20261023-evidence-methods/review-consolidation-findings.md",
+      "sha256": "913d6c8fe790a4dcc117931c7a704f2f5bc0be9a833be65c7daccbb5e760751f",
+      "bytes": 6417,
+      "matches_reviewed_source": true
+    },
+    {
+      "path": "docs/changes/20261023-evidence-methods/review-consolidation.json",
+      "sha256": "5afc7b4161df268325ecff6dba35a92c4abd3197932777ee51b90fd41b899590",
+      "bytes": 32522,
+      "matches_reviewed_source": true
+    },
+    {
+      "path": "fixtures/reference-repository/removal/pass/removal-plan.json",
+      "sha256": "af3006a9f496d3e5859c496a29b6457cca18cab7dd83d0a3e146e194f3df8c40",
+      "bytes": 2327,
+      "matches_reviewed_source": true
+    },
+    {
+      "path": "manifests/comprehensive_optimization_backlog.json",
+      "sha256": "dcc814b4af52ec498a2585673d9da7274fe92da58e02ee580f2fb01283a74a8b",
+      "bytes": 40199,
+      "matches_reviewed_source": true
+    },
+    {
+      "path": "manifests/gates.json",
+      "sha256": "6b946680d8cd9329b1bce74a3e3e4565634daa25203b9cde2c8af3c507d9a8be",
+      "bytes": 16794,
+      "matches_reviewed_source": true
+    },
+    {
+      "path": "pyproject.toml",
+      "sha256": "853c9e0c09404f0d65970dd67966de887372946a4a73c4b7689c0061013068ca",
+      "bytes": 1155,
+      "matches_reviewed_source": true
+    },
+    {
+      "path": "reports/current-status.md",
+      "sha256": "96fa32f595b14b887a66a5eca9e0e7f8334d23589883864ee81c8fd5348d9d1f",
+      "bytes": 5839,
+      "matches_reviewed_source": true
+    },
+    {
+      "path": "subrepos/adoption-matrix.jsonl",
+      "sha256": "a0a345e4626725a234a47419dfc073e61f221aec3595f2d960bcb19d0a780b3a",
+      "bytes": 103853,
+      "matches_reviewed_source": true
+    },
+    {
+      "path": "subrepos/adoption-matrix.md",
+      "sha256": "da66a91c839169f540175cfcfabea245526657e9e9f47b868ea7e1d4b74493b4",
+      "bytes": 85541,
+      "matches_reviewed_source": true
+    },
+    {
+      "path": "tests/test_ci_incremental_gate_dag.sh",
+      "sha256": "c7737a1b585d52bba90a6b7c5106d6e84fca47563fe7f9d3215dcec59d69b3bb",
+      "bytes": 16923,
+      "matches_reviewed_source": true
+    },
+    {
+      "path": "tests/test_gate_boundaries.py",
+      "sha256": "4be7ffefc6ec608f1fe7d6564c4e5e1ed74aad165f0b2aa3e695505fc96b6eb4",
+      "bytes": 28573,
+      "matches_reviewed_source": true
+    },
+    {
+      "path": "tests/test_gate_runner.sh",
+      "sha256": "c9b9975467c6c966b7fdbcba852fe81fd0c308f0355213857e85f17448a8bd41",
+      "bytes": 1020,
+      "matches_reviewed_source": true
+    },
+    {
+      "path": "tools/control_plane/active_contracts.py",
+      "sha256": "4cc0a123b5588f4b13c1ca697903e2fa436b0a1deceb76ad5e474f986340f8fc",
+      "bytes": 7134,
+      "matches_reviewed_source": true
+    },
+    {
+      "path": "tools/control_plane/gate_runner.py",
+      "sha256": "d4da8de1bf5140fa8830bb817e9ae5c97f0cba0bafcd3b551e586ae7ee038606",
+      "bytes": 18514,
+      "matches_reviewed_source": true
+    },
+    {
+      "path": "tools/control_plane/impact.py",
+      "sha256": "73e4dddb9c984081ef6ae07cc9ac0182839f87e43181261067a89ce835a25392",
+      "bytes": 9058,
+      "matches_reviewed_source": true
+    }
+  ],
+  "retained_patch_base": "64c5192f2d6aaacf65143223f03190564032facc",
+  "retained_patch_sha256": "80057aa7aadd27009dc18fbe2904c1ad342afad30569531b80abad921f67d726",
+  "status": "pass"
+}

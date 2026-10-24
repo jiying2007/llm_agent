@@ -1,0 +1,53 @@
+test_digest_reader_uses_same_open_guard (test_intake_hardening.DescriptorInputTests.test_digest_reader_uses_same_open_guard) ... ok
+test_leaf_replacement_rejected_and_descriptor_closed (test_intake_hardening.DescriptorInputTests.test_leaf_replacement_rejected_and_descriptor_closed) ... ok
+test_preflight_errors_are_normalized (test_intake_hardening.DescriptorInputTests.test_preflight_errors_are_normalized) ... ok
+test_regular_inputs_and_byte_budgets (test_intake_hardening.DescriptorInputTests.test_regular_inputs_and_byte_budgets) ... ok
+test_crlf_frontmatter (test_intake_hardening.MetadataTests.test_crlf_frontmatter) ... ok
+test_duplicate_alias_tag_and_nesting_rejected (test_intake_hardening.MetadataTests.test_duplicate_alias_tag_and_nesting_rejected) ... ok
+test_literal_and_folded_description (test_intake_hardening.MetadataTests.test_literal_and_folded_description) ... ok
+test_missing_and_oversized_metadata (test_intake_hardening.MetadataTests.test_missing_and_oversized_metadata) ... ok
+test_descendant_inheriting_pipes_is_bounded (test_intake_hardening.ProcessTests.test_descendant_inheriting_pipes_is_bounded) ... ok
+test_invalid_budgets (test_intake_hardening.ProcessTests.test_invalid_budgets) ... ok
+test_sink_never_exceeds_budget (test_intake_hardening.ProcessTests.test_sink_never_exceeds_budget) ... ok
+test_stderr_flood (test_intake_hardening.ProcessTests.test_stderr_flood) ... ok
+test_stdout_flood (test_intake_hardening.ProcessTests.test_stdout_flood) ... ok
+test_success_and_nonzero_are_preserved (test_intake_hardening.ProcessTests.test_success_and_nonzero_are_preserved) ... ok
+test_timeout (test_intake_hardening.ProcessTests.test_timeout) ... ok
+test_archive_generation_byte_limit (test_intake_hardening.ReferenceTests.test_archive_generation_byte_limit) ... ok
+test_cache_only_end_to_end_and_root_unchanged (test_intake_hardening.ReferenceTests.test_cache_only_end_to_end_and_root_unchanged) ... ok
+test_cache_symlink_escape_rejected (test_intake_hardening.ReferenceTests.test_cache_symlink_escape_rejected) ... ok
+test_cache_workspace_and_runtime_boundaries (test_intake_hardening.ReferenceTests.test_cache_workspace_and_runtime_boundaries) ... ok
+test_coverage_gap_examples_are_bounded (test_intake_hardening.ReferenceTests.test_coverage_gap_examples_are_bounded) ... ok
+test_dirty_cache_cannot_contaminate_snapshot (test_intake_hardening.ReferenceTests.test_dirty_cache_cannot_contaminate_snapshot) ... ok
+test_empty_git_tree_is_complete (test_intake_hardening.ReferenceTests.test_empty_git_tree_is_complete) ... ok
+test_export_ignore_cannot_make_empty_archive_complete (test_intake_hardening.ReferenceTests.test_export_ignore_cannot_make_empty_archive_complete) ... ok
+test_export_ignore_preserves_distinct_source_and_archive_totals (test_intake_hardening.ReferenceTests.test_export_ignore_preserves_distinct_source_and_archive_totals) ... ok
+test_export_subst_bytes_are_not_source_analysis (test_intake_hardening.ReferenceTests.test_export_subst_bytes_are_not_source_analysis) ... ok
+test_failure_json_and_exit_code_agree (test_intake_hardening.ReferenceTests.test_failure_json_and_exit_code_agree) ... ok
+test_git_archive_links_are_skipped_and_reported (test_intake_hardening.ReferenceTests.test_git_archive_links_are_skipped_and_reported) ... ok
+test_gitlinks_are_source_coverage_gaps (test_intake_hardening.ReferenceTests.test_gitlinks_are_source_coverage_gaps) ... ok
+test_head_drift_rejected (test_intake_hardening.ReferenceTests.test_head_drift_rejected) ... ok
+test_ignored_inventory_output_is_byte_bounded (test_intake_hardening.ReferenceTests.test_ignored_inventory_output_is_byte_bounded) ... ok
+test_ignored_tree_member_limit (test_intake_hardening.ReferenceTests.test_ignored_tree_member_limit) ... ok
+test_malformed_runtime_registry_is_structured_failure (test_intake_hardening.ReferenceTests.test_malformed_runtime_registry_is_structured_failure) ... ok
+test_managed_dependency_requires_explicit_kind_and_exact_gitlink (test_intake_hardening.ReferenceTests.test_managed_dependency_requires_explicit_kind_and_exact_gitlink) ... ok
+test_member_limit (test_intake_hardening.ReferenceTests.test_member_limit) ... ok
+test_no_root_fallback (test_intake_hardening.ReferenceTests.test_no_root_fallback) ... ok
+test_origin_replacement_rejected (test_intake_hardening.ReferenceTests.test_origin_replacement_rejected) ... ok
+test_report_cannot_write_live_root (test_intake_hardening.ReferenceTests.test_report_cannot_write_live_root) ... ok
+test_reuse_checks_identity (test_intake_hardening.ReferenceTests.test_reuse_checks_identity) ... ok
+test_source_gaps_propagate_to_pipeline_partial_count (test_intake_hardening.ReferenceTests.test_source_gaps_propagate_to_pipeline_partial_count) ... ok
+test_tab_and_newline_paths_preserve_blob_identity (test_intake_hardening.ReferenceTests.test_tab_and_newline_paths_preserve_blob_identity) ... ok
+test_unsafe_pin_ids_and_credential_urls_rejected (test_intake_hardening.ReferenceTests.test_unsafe_pin_ids_and_credential_urls_rejected) ... ok
+test_wrong_ref_rejected (test_intake_hardening.ReferenceTests.test_wrong_ref_rejected) ... ok
+test_archive_path_and_special_file_rejection (test_intake_hardening.SnapshotTests.test_archive_path_and_special_file_rejection) ... ok
+test_coverage_is_explicit (test_intake_hardening.SnapshotTests.test_coverage_is_explicit) ... ok
+test_invalid_empty_pax_archives_are_not_accepted (test_intake_hardening.SnapshotTests.test_invalid_empty_pax_archives_are_not_accepted) ... ok
+test_sha256_blobs_and_unexpected_archive_files (test_intake_hardening.SnapshotTests.test_sha256_blobs_and_unexpected_archive_files) ... ok
+test_streaming_scan_does_not_retain_all_text (test_intake_hardening.SnapshotTests.test_streaming_scan_does_not_retain_all_text) ... ok
+
+----------------------------------------------------------------------
+Ran 47 tests in 4.482s
+
+OK
+{"metric": "scanner-python-allocation-peak", "peak_bytes": 1361393, "input_text_bytes": 16778432, "scope": "offline-synthetic-test"}

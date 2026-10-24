@@ -1,0 +1,2211 @@
+{
+  "format": "retained-independent-executions/v1",
+  "packaging_note": "Original reviewer execution records and complete UTF-8 streams, verified against their original hashes. Original timestamps, paths, and verdicts are preserved.",
+  "executions": [
+    {
+      "original_record": {
+        "schema": "independent-root-review-run/v1",
+        "label": "active-contracts-current",
+        "reviewer": "/root/release_governance_audit",
+        "cwd": "/workspace/scratch/712af632e2a5/llm_agent-pr270",
+        "argv": [
+          "/workspace/scratch/712af632e2a5/audit-venv/bin/python3",
+          "-m",
+          "tools.control_plane.active_contracts",
+          "--root",
+          ".",
+          "--summary-json"
+        ],
+        "started_at": "2026-10-24T16:00:05.000676+00:00",
+        "source_before": {
+          ".gitlab-ci.yml": {
+            "sha256": "88029613e9d856d9633cafd4995db2f95f470065c69f52d4948ae0182a6db3ee",
+            "bytes": 940
+          },
+          "docs/changes/20261023-evidence-methods/evidence/consolidation-independent-execution.json": {
+            "sha256": "39548a00098eef21654e79299210cbd4fa336c746e178f59108abcffdc548c4d",
+            "bytes": 39778
+          },
+          "docs/changes/20261023-evidence-methods/implementation-map.md": {
+            "sha256": "635812051b3880a819fd403ca0dfc340491b94fde39076ac076c5c187e3946f9",
+            "bytes": 19762
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation-findings.md": {
+            "sha256": "913d6c8fe790a4dcc117931c7a704f2f5bc0be9a833be65c7daccbb5e760751f",
+            "bytes": 6417
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation.json": {
+            "sha256": "5afc7b4161df268325ecff6dba35a92c4abd3197932777ee51b90fd41b899590",
+            "bytes": 32522
+          },
+          "fixtures/reference-repository/removal/pass/removal-plan.json": {
+            "sha256": "af3006a9f496d3e5859c496a29b6457cca18cab7dd83d0a3e146e194f3df8c40",
+            "bytes": 2327
+          },
+          "manifests/comprehensive_optimization_backlog.json": {
+            "sha256": "dcc814b4af52ec498a2585673d9da7274fe92da58e02ee580f2fb01283a74a8b",
+            "bytes": 40199
+          },
+          "manifests/gates.json": {
+            "sha256": "6b946680d8cd9329b1bce74a3e3e4565634daa25203b9cde2c8af3c507d9a8be",
+            "bytes": 16794
+          },
+          "pyproject.toml": {
+            "sha256": "853c9e0c09404f0d65970dd67966de887372946a4a73c4b7689c0061013068ca",
+            "bytes": 1155
+          },
+          "reports/current-status.md": {
+            "sha256": "96fa32f595b14b887a66a5eca9e0e7f8334d23589883864ee81c8fd5348d9d1f",
+            "bytes": 5839
+          },
+          "reports/evidence-methods-absorption-2026-10-23.md": null,
+          "subrepos/adoption-matrix.jsonl": {
+            "sha256": "a0a345e4626725a234a47419dfc073e61f221aec3595f2d960bcb19d0a780b3a",
+            "bytes": 103853
+          },
+          "subrepos/adoption-matrix.md": {
+            "sha256": "da66a91c839169f540175cfcfabea245526657e9e9f47b868ea7e1d4b74493b4",
+            "bytes": 85541
+          },
+          "tests/test_ci_incremental_gate_dag.sh": {
+            "sha256": "c7737a1b585d52bba90a6b7c5106d6e84fca47563fe7f9d3215dcec59d69b3bb",
+            "bytes": 16923
+          },
+          "tests/test_gate_boundaries.py": {
+            "sha256": "4be7ffefc6ec608f1fe7d6564c4e5e1ed74aad165f0b2aa3e695505fc96b6eb4",
+            "bytes": 28573
+          },
+          "tests/test_gate_runner.sh": {
+            "sha256": "c9b9975467c6c966b7fdbcba852fe81fd0c308f0355213857e85f17448a8bd41",
+            "bytes": 1020
+          },
+          "tools/control_plane/active_contracts.py": {
+            "sha256": "4cc0a123b5588f4b13c1ca697903e2fa436b0a1deceb76ad5e474f986340f8fc",
+            "bytes": 7134
+          },
+          "tools/control_plane/gate_runner.py": {
+            "sha256": "d4da8de1bf5140fa8830bb817e9ae5c97f0cba0bafcd3b551e586ae7ee038606",
+            "bytes": 18514
+          },
+          "tools/control_plane/impact.py": {
+            "sha256": "73e4dddb9c984081ef6ae07cc9ac0182839f87e43181261067a89ce835a25392",
+            "bytes": 9058
+          }
+        },
+        "exit_code": 0,
+        "completed_at": "2026-10-24T16:00:05.068568+00:00",
+        "elapsed_seconds": 0.066,
+        "source_after": {
+          ".gitlab-ci.yml": {
+            "sha256": "88029613e9d856d9633cafd4995db2f95f470065c69f52d4948ae0182a6db3ee",
+            "bytes": 940
+          },
+          "docs/changes/20261023-evidence-methods/evidence/consolidation-independent-execution.json": {
+            "sha256": "39548a00098eef21654e79299210cbd4fa336c746e178f59108abcffdc548c4d",
+            "bytes": 39778
+          },
+          "docs/changes/20261023-evidence-methods/implementation-map.md": {
+            "sha256": "635812051b3880a819fd403ca0dfc340491b94fde39076ac076c5c187e3946f9",
+            "bytes": 19762
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation-findings.md": {
+            "sha256": "913d6c8fe790a4dcc117931c7a704f2f5bc0be9a833be65c7daccbb5e760751f",
+            "bytes": 6417
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation.json": {
+            "sha256": "5afc7b4161df268325ecff6dba35a92c4abd3197932777ee51b90fd41b899590",
+            "bytes": 32522
+          },
+          "fixtures/reference-repository/removal/pass/removal-plan.json": {
+            "sha256": "af3006a9f496d3e5859c496a29b6457cca18cab7dd83d0a3e146e194f3df8c40",
+            "bytes": 2327
+          },
+          "manifests/comprehensive_optimization_backlog.json": {
+            "sha256": "dcc814b4af52ec498a2585673d9da7274fe92da58e02ee580f2fb01283a74a8b",
+            "bytes": 40199
+          },
+          "manifests/gates.json": {
+            "sha256": "6b946680d8cd9329b1bce74a3e3e4565634daa25203b9cde2c8af3c507d9a8be",
+            "bytes": 16794
+          },
+          "pyproject.toml": {
+            "sha256": "853c9e0c09404f0d65970dd67966de887372946a4a73c4b7689c0061013068ca",
+            "bytes": 1155
+          },
+          "reports/current-status.md": {
+            "sha256": "96fa32f595b14b887a66a5eca9e0e7f8334d23589883864ee81c8fd5348d9d1f",
+            "bytes": 5839
+          },
+          "reports/evidence-methods-absorption-2026-10-23.md": null,
+          "subrepos/adoption-matrix.jsonl": {
+            "sha256": "a0a345e4626725a234a47419dfc073e61f221aec3595f2d960bcb19d0a780b3a",
+            "bytes": 103853
+          },
+          "subrepos/adoption-matrix.md": {
+            "sha256": "da66a91c839169f540175cfcfabea245526657e9e9f47b868ea7e1d4b74493b4",
+            "bytes": 85541
+          },
+          "tests/test_ci_incremental_gate_dag.sh": {
+            "sha256": "c7737a1b585d52bba90a6b7c5106d6e84fca47563fe7f9d3215dcec59d69b3bb",
+            "bytes": 16923
+          },
+          "tests/test_gate_boundaries.py": {
+            "sha256": "4be7ffefc6ec608f1fe7d6564c4e5e1ed74aad165f0b2aa3e695505fc96b6eb4",
+            "bytes": 28573
+          },
+          "tests/test_gate_runner.sh": {
+            "sha256": "c9b9975467c6c966b7fdbcba852fe81fd0c308f0355213857e85f17448a8bd41",
+            "bytes": 1020
+          },
+          "tools/control_plane/active_contracts.py": {
+            "sha256": "4cc0a123b5588f4b13c1ca697903e2fa436b0a1deceb76ad5e474f986340f8fc",
+            "bytes": 7134
+          },
+          "tools/control_plane/gate_runner.py": {
+            "sha256": "d4da8de1bf5140fa8830bb817e9ae5c97f0cba0bafcd3b551e586ae7ee038606",
+            "bytes": 18514
+          },
+          "tools/control_plane/impact.py": {
+            "sha256": "73e4dddb9c984081ef6ae07cc9ac0182839f87e43181261067a89ce835a25392",
+            "bytes": 9058
+          }
+        },
+        "source_stable": true,
+        "stdout": {
+          "sha256": "cdeb3f43bef7ec91b9309fd8cd13fb5366105f0d7fce90942b09217c0f29b44a",
+          "bytes": 309,
+          "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/active-contracts-current.stdout"
+        },
+        "stderr": {
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0,
+          "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/active-contracts-current.stderr"
+        }
+      },
+      "raw_streams_utf8": {
+        "stdout": "{\"adk_checkout_available\": true, \"as_of\": \"2026-10-25\", \"backlog\": \"manifests/comprehensive_optimization_backlog.json\", \"failures\": [], \"item_count\": 22, \"schema\": \"llm-agent-active-contract-check/v1\", \"source_report\": \"reports/architecture/llm-agent-adk-target-architecture-2026-07-30.md\", \"status\": \"pass\"}\n",
+        "stderr": ""
+      }
+    },
+    {
+      "original_record": {
+        "schema": "independent-root-review-run/v1",
+        "label": "boundaries",
+        "reviewer": "/root/release_governance_audit",
+        "cwd": "/workspace/scratch/712af632e2a5/llm_agent-pr270",
+        "argv": [
+          "/workspace/scratch/712af632e2a5/audit-venv/bin/python3",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "tests",
+          "-p",
+          "test_gate_boundaries.py",
+          "-v"
+        ],
+        "started_at": "2026-10-24T15:58:34.001821+00:00",
+        "source_before": {
+          ".gitlab-ci.yml": {
+            "sha256": "88029613e9d856d9633cafd4995db2f95f470065c69f52d4948ae0182a6db3ee",
+            "bytes": 940
+          },
+          "docs/changes/20261023-evidence-methods/evidence/consolidation-independent-execution.json": {
+            "sha256": "39548a00098eef21654e79299210cbd4fa336c746e178f59108abcffdc548c4d",
+            "bytes": 39778
+          },
+          "docs/changes/20261023-evidence-methods/implementation-map.md": {
+            "sha256": "635812051b3880a819fd403ca0dfc340491b94fde39076ac076c5c187e3946f9",
+            "bytes": 19762
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation-findings.md": {
+            "sha256": "913d6c8fe790a4dcc117931c7a704f2f5bc0be9a833be65c7daccbb5e760751f",
+            "bytes": 6417
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation.json": {
+            "sha256": "5afc7b4161df268325ecff6dba35a92c4abd3197932777ee51b90fd41b899590",
+            "bytes": 32522
+          },
+          "fixtures/reference-repository/removal/pass/removal-plan.json": {
+            "sha256": "af3006a9f496d3e5859c496a29b6457cca18cab7dd83d0a3e146e194f3df8c40",
+            "bytes": 2327
+          },
+          "manifests/comprehensive_optimization_backlog.json": {
+            "sha256": "dcc814b4af52ec498a2585673d9da7274fe92da58e02ee580f2fb01283a74a8b",
+            "bytes": 40199
+          },
+          "manifests/gates.json": {
+            "sha256": "6b946680d8cd9329b1bce74a3e3e4565634daa25203b9cde2c8af3c507d9a8be",
+            "bytes": 16794
+          },
+          "pyproject.toml": {
+            "sha256": "853c9e0c09404f0d65970dd67966de887372946a4a73c4b7689c0061013068ca",
+            "bytes": 1155
+          },
+          "reports/current-status.md": {
+            "sha256": "96fa32f595b14b887a66a5eca9e0e7f8334d23589883864ee81c8fd5348d9d1f",
+            "bytes": 5839
+          },
+          "reports/evidence-methods-absorption-2026-10-23.md": null,
+          "subrepos/adoption-matrix.jsonl": {
+            "sha256": "a0a345e4626725a234a47419dfc073e61f221aec3595f2d960bcb19d0a780b3a",
+            "bytes": 103853
+          },
+          "subrepos/adoption-matrix.md": {
+            "sha256": "da66a91c839169f540175cfcfabea245526657e9e9f47b868ea7e1d4b74493b4",
+            "bytes": 85541
+          },
+          "tests/test_ci_incremental_gate_dag.sh": {
+            "sha256": "c7737a1b585d52bba90a6b7c5106d6e84fca47563fe7f9d3215dcec59d69b3bb",
+            "bytes": 16923
+          },
+          "tests/test_gate_boundaries.py": {
+            "sha256": "4be7ffefc6ec608f1fe7d6564c4e5e1ed74aad165f0b2aa3e695505fc96b6eb4",
+            "bytes": 28573
+          },
+          "tests/test_gate_runner.sh": {
+            "sha256": "c9b9975467c6c966b7fdbcba852fe81fd0c308f0355213857e85f17448a8bd41",
+            "bytes": 1020
+          },
+          "tools/control_plane/active_contracts.py": {
+            "sha256": "4cc0a123b5588f4b13c1ca697903e2fa436b0a1deceb76ad5e474f986340f8fc",
+            "bytes": 7134
+          },
+          "tools/control_plane/gate_runner.py": {
+            "sha256": "d4da8de1bf5140fa8830bb817e9ae5c97f0cba0bafcd3b551e586ae7ee038606",
+            "bytes": 18514
+          },
+          "tools/control_plane/impact.py": {
+            "sha256": "73e4dddb9c984081ef6ae07cc9ac0182839f87e43181261067a89ce835a25392",
+            "bytes": 9058
+          }
+        },
+        "exit_code": 0,
+        "completed_at": "2026-10-24T15:58:45.400683+00:00",
+        "elapsed_seconds": 11.397,
+        "source_after": {
+          ".gitlab-ci.yml": {
+            "sha256": "88029613e9d856d9633cafd4995db2f95f470065c69f52d4948ae0182a6db3ee",
+            "bytes": 940
+          },
+          "docs/changes/20261023-evidence-methods/evidence/consolidation-independent-execution.json": {
+            "sha256": "39548a00098eef21654e79299210cbd4fa336c746e178f59108abcffdc548c4d",
+            "bytes": 39778
+          },
+          "docs/changes/20261023-evidence-methods/implementation-map.md": {
+            "sha256": "635812051b3880a819fd403ca0dfc340491b94fde39076ac076c5c187e3946f9",
+            "bytes": 19762
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation-findings.md": {
+            "sha256": "913d6c8fe790a4dcc117931c7a704f2f5bc0be9a833be65c7daccbb5e760751f",
+            "bytes": 6417
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation.json": {
+            "sha256": "5afc7b4161df268325ecff6dba35a92c4abd3197932777ee51b90fd41b899590",
+            "bytes": 32522
+          },
+          "fixtures/reference-repository/removal/pass/removal-plan.json": {
+            "sha256": "af3006a9f496d3e5859c496a29b6457cca18cab7dd83d0a3e146e194f3df8c40",
+            "bytes": 2327
+          },
+          "manifests/comprehensive_optimization_backlog.json": {
+            "sha256": "dcc814b4af52ec498a2585673d9da7274fe92da58e02ee580f2fb01283a74a8b",
+            "bytes": 40199
+          },
+          "manifests/gates.json": {
+            "sha256": "6b946680d8cd9329b1bce74a3e3e4565634daa25203b9cde2c8af3c507d9a8be",
+            "bytes": 16794
+          },
+          "pyproject.toml": {
+            "sha256": "853c9e0c09404f0d65970dd67966de887372946a4a73c4b7689c0061013068ca",
+            "bytes": 1155
+          },
+          "reports/current-status.md": {
+            "sha256": "96fa32f595b14b887a66a5eca9e0e7f8334d23589883864ee81c8fd5348d9d1f",
+            "bytes": 5839
+          },
+          "reports/evidence-methods-absorption-2026-10-23.md": null,
+          "subrepos/adoption-matrix.jsonl": {
+            "sha256": "a0a345e4626725a234a47419dfc073e61f221aec3595f2d960bcb19d0a780b3a",
+            "bytes": 103853
+          },
+          "subrepos/adoption-matrix.md": {
+            "sha256": "da66a91c839169f540175cfcfabea245526657e9e9f47b868ea7e1d4b74493b4",
+            "bytes": 85541
+          },
+          "tests/test_ci_incremental_gate_dag.sh": {
+            "sha256": "c7737a1b585d52bba90a6b7c5106d6e84fca47563fe7f9d3215dcec59d69b3bb",
+            "bytes": 16923
+          },
+          "tests/test_gate_boundaries.py": {
+            "sha256": "4be7ffefc6ec608f1fe7d6564c4e5e1ed74aad165f0b2aa3e695505fc96b6eb4",
+            "bytes": 28573
+          },
+          "tests/test_gate_runner.sh": {
+            "sha256": "c9b9975467c6c966b7fdbcba852fe81fd0c308f0355213857e85f17448a8bd41",
+            "bytes": 1020
+          },
+          "tools/control_plane/active_contracts.py": {
+            "sha256": "4cc0a123b5588f4b13c1ca697903e2fa436b0a1deceb76ad5e474f986340f8fc",
+            "bytes": 7134
+          },
+          "tools/control_plane/gate_runner.py": {
+            "sha256": "d4da8de1bf5140fa8830bb817e9ae5c97f0cba0bafcd3b551e586ae7ee038606",
+            "bytes": 18514
+          },
+          "tools/control_plane/impact.py": {
+            "sha256": "73e4dddb9c984081ef6ae07cc9ac0182839f87e43181261067a89ce835a25392",
+            "bytes": 9058
+          }
+        },
+        "source_stable": true,
+        "stdout": {
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0,
+          "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/boundaries.stdout"
+        },
+        "stderr": {
+          "sha256": "429e415f420f9d2f87211873ba962ea7cadfc3794f2bb60685aeb8d07deb0531",
+          "bytes": 4070,
+          "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/boundaries.stderr"
+        }
+      },
+      "raw_streams_utf8": {
+        "stdout": "",
+        "stderr": "test_complete_declared_input_cache_hits_and_invalidates (test_gate_boundaries.GateCacheTests.test_complete_declared_input_cache_hits_and_invalidates) ... ok\ntest_non_object_cache_records_are_misses (test_gate_boundaries.GateCacheTests.test_non_object_cache_records_are_misses) ... ok\ntest_production_gates_with_incomplete_inputs_do_not_cache (test_gate_boundaries.GateCacheTests.test_production_gates_with_incomplete_inputs_do_not_cache) ... ok\ntest_real_production_graph_rechecks_same_head_index_changes (test_gate_boundaries.GateCacheTests.test_real_production_graph_rechecks_same_head_index_changes) ... ok\ntest_budget_exception_keeps_message_and_bounded_partial_output (test_gate_boundaries.GateProcessTests.test_budget_exception_keeps_message_and_bounded_partial_output) ... ok\ntest_failed_dependency_is_blocked_and_zero_lines_hide_output (test_gate_boundaries.GateProcessTests.test_failed_dependency_is_blocked_and_zero_lines_hide_output) ... ok\ntest_non_object_configuration_fails_with_a_configuration_error (test_gate_boundaries.GateProcessTests.test_non_object_configuration_fails_with_a_configuration_error) ... ok\ntest_output_budget_fails_instead_of_returning_a_truncated_pass (test_gate_boundaries.GateProcessTests.test_output_budget_fails_instead_of_returning_a_truncated_pass) ... ok\ntest_success_nonzero_and_both_output_streams_are_preserved (test_gate_boundaries.GateProcessTests.test_success_nonzero_and_both_output_streams_are_preserved) ... ok\ntest_timeout_stops_descendant_and_preserves_bounded_diagnostics (test_gate_boundaries.GateProcessTests.test_timeout_stops_descendant_and_preserves_bounded_diagnostics) ... ok\ntest_adoption_only_change_exposes_stale_removal_artifact (test_gate_boundaries.ImpactConsumerTests.test_adoption_only_change_exposes_stale_removal_artifact) ... ok\ntest_invalid_removal_pass_fixture_keeps_its_real_checker_scheduled (test_gate_boundaries.ImpactConsumerTests.test_invalid_removal_pass_fixture_keeps_its_real_checker_scheduled) ... ok\ntest_packaging_change_reaches_existing_typecheck_contract (test_gate_boundaries.ImpactConsumerTests.test_packaging_change_reaches_existing_typecheck_contract) ... ok\ntest_readme_lightweight_gate_preserves_existing_retired_runtime_check (test_gate_boundaries.ImpactConsumerTests.test_readme_lightweight_gate_preserves_existing_retired_runtime_check) ... ok\ntest_real_contract_evidence_and_policy_inputs_are_owned (test_gate_boundaries.ImpactConsumerTests.test_real_contract_evidence_and_policy_inputs_are_owned) ... ok\ntest_removing_bound_artifact_keeps_old_path_even_after_rename_to_prose (test_gate_boundaries.ImpactConsumerTests.test_removing_bound_artifact_keeps_old_path_even_after_rename_to_prose) ... ok\ntest_report_growth_is_checked_in_contract_without_requiring_deep (test_gate_boundaries.ImpactConsumerTests.test_report_growth_is_checked_in_contract_without_requiring_deep) ... ok\ntest_schema_and_intake_fixture_changes_reach_existing_shell_regression (test_gate_boundaries.ImpactConsumerTests.test_schema_and_intake_fixture_changes_reach_existing_shell_regression) ... ok\ntest_unrelated_prose_remains_lightweight (test_gate_boundaries.ImpactConsumerTests.test_unrelated_prose_remains_lightweight) ... ok\ntest_cli_rejects_empty_base_and_preserves_changed_file_mode (test_gate_boundaries.ImpactPathTests.test_cli_rejects_empty_base_and_preserves_changed_file_mode) ... ok\ntest_git_failure_never_becomes_an_empty_change (test_gate_boundaries.ImpactPathTests.test_git_failure_never_becomes_an_empty_change) ... ok\ntest_non_utf8_git_path_fails_closed (test_gate_boundaries.ImpactPathTests.test_non_utf8_git_path_fails_closed) ... ok\ntest_real_git_paths_preserve_literal_names_and_trigger_owned_gates (test_gate_boundaries.ImpactPathTests.test_real_git_paths_preserve_literal_names_and_trigger_owned_gates) ... ok\ntest_rename_out_of_owned_directory_keeps_old_path_in_impact (test_gate_boundaries.ImpactPathTests.test_rename_out_of_owned_directory_keeps_old_path_in_impact) ... ok\n\n----------------------------------------------------------------------\nRan 24 tests in 11.318s\n\nOK\n"
+      }
+    },
+    {
+      "original_record": {
+        "schema": "independent-root-review-run/v1",
+        "label": "ci-dag",
+        "reviewer": "/root/release_governance_audit",
+        "cwd": "/workspace/scratch/712af632e2a5/llm_agent-pr270",
+        "argv": [
+          "bash",
+          "tests/test_ci_incremental_gate_dag.sh"
+        ],
+        "started_at": "2026-10-24T16:00:05.012994+00:00",
+        "source_before": {
+          ".gitlab-ci.yml": {
+            "sha256": "88029613e9d856d9633cafd4995db2f95f470065c69f52d4948ae0182a6db3ee",
+            "bytes": 940
+          },
+          "docs/changes/20261023-evidence-methods/evidence/consolidation-independent-execution.json": {
+            "sha256": "39548a00098eef21654e79299210cbd4fa336c746e178f59108abcffdc548c4d",
+            "bytes": 39778
+          },
+          "docs/changes/20261023-evidence-methods/implementation-map.md": {
+            "sha256": "635812051b3880a819fd403ca0dfc340491b94fde39076ac076c5c187e3946f9",
+            "bytes": 19762
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation-findings.md": {
+            "sha256": "913d6c8fe790a4dcc117931c7a704f2f5bc0be9a833be65c7daccbb5e760751f",
+            "bytes": 6417
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation.json": {
+            "sha256": "5afc7b4161df268325ecff6dba35a92c4abd3197932777ee51b90fd41b899590",
+            "bytes": 32522
+          },
+          "fixtures/reference-repository/removal/pass/removal-plan.json": {
+            "sha256": "af3006a9f496d3e5859c496a29b6457cca18cab7dd83d0a3e146e194f3df8c40",
+            "bytes": 2327
+          },
+          "manifests/comprehensive_optimization_backlog.json": {
+            "sha256": "dcc814b4af52ec498a2585673d9da7274fe92da58e02ee580f2fb01283a74a8b",
+            "bytes": 40199
+          },
+          "manifests/gates.json": {
+            "sha256": "6b946680d8cd9329b1bce74a3e3e4565634daa25203b9cde2c8af3c507d9a8be",
+            "bytes": 16794
+          },
+          "pyproject.toml": {
+            "sha256": "853c9e0c09404f0d65970dd67966de887372946a4a73c4b7689c0061013068ca",
+            "bytes": 1155
+          },
+          "reports/current-status.md": {
+            "sha256": "96fa32f595b14b887a66a5eca9e0e7f8334d23589883864ee81c8fd5348d9d1f",
+            "bytes": 5839
+          },
+          "reports/evidence-methods-absorption-2026-10-23.md": null,
+          "subrepos/adoption-matrix.jsonl": {
+            "sha256": "a0a345e4626725a234a47419dfc073e61f221aec3595f2d960bcb19d0a780b3a",
+            "bytes": 103853
+          },
+          "subrepos/adoption-matrix.md": {
+            "sha256": "da66a91c839169f540175cfcfabea245526657e9e9f47b868ea7e1d4b74493b4",
+            "bytes": 85541
+          },
+          "tests/test_ci_incremental_gate_dag.sh": {
+            "sha256": "c7737a1b585d52bba90a6b7c5106d6e84fca47563fe7f9d3215dcec59d69b3bb",
+            "bytes": 16923
+          },
+          "tests/test_gate_boundaries.py": {
+            "sha256": "4be7ffefc6ec608f1fe7d6564c4e5e1ed74aad165f0b2aa3e695505fc96b6eb4",
+            "bytes": 28573
+          },
+          "tests/test_gate_runner.sh": {
+            "sha256": "c9b9975467c6c966b7fdbcba852fe81fd0c308f0355213857e85f17448a8bd41",
+            "bytes": 1020
+          },
+          "tools/control_plane/active_contracts.py": {
+            "sha256": "4cc0a123b5588f4b13c1ca697903e2fa436b0a1deceb76ad5e474f986340f8fc",
+            "bytes": 7134
+          },
+          "tools/control_plane/gate_runner.py": {
+            "sha256": "d4da8de1bf5140fa8830bb817e9ae5c97f0cba0bafcd3b551e586ae7ee038606",
+            "bytes": 18514
+          },
+          "tools/control_plane/impact.py": {
+            "sha256": "73e4dddb9c984081ef6ae07cc9ac0182839f87e43181261067a89ce835a25392",
+            "bytes": 9058
+          }
+        },
+        "exit_code": 0,
+        "completed_at": "2026-10-24T16:00:05.132430+00:00",
+        "elapsed_seconds": 0.117,
+        "source_after": {
+          ".gitlab-ci.yml": {
+            "sha256": "88029613e9d856d9633cafd4995db2f95f470065c69f52d4948ae0182a6db3ee",
+            "bytes": 940
+          },
+          "docs/changes/20261023-evidence-methods/evidence/consolidation-independent-execution.json": {
+            "sha256": "39548a00098eef21654e79299210cbd4fa336c746e178f59108abcffdc548c4d",
+            "bytes": 39778
+          },
+          "docs/changes/20261023-evidence-methods/implementation-map.md": {
+            "sha256": "635812051b3880a819fd403ca0dfc340491b94fde39076ac076c5c187e3946f9",
+            "bytes": 19762
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation-findings.md": {
+            "sha256": "913d6c8fe790a4dcc117931c7a704f2f5bc0be9a833be65c7daccbb5e760751f",
+            "bytes": 6417
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation.json": {
+            "sha256": "5afc7b4161df268325ecff6dba35a92c4abd3197932777ee51b90fd41b899590",
+            "bytes": 32522
+          },
+          "fixtures/reference-repository/removal/pass/removal-plan.json": {
+            "sha256": "af3006a9f496d3e5859c496a29b6457cca18cab7dd83d0a3e146e194f3df8c40",
+            "bytes": 2327
+          },
+          "manifests/comprehensive_optimization_backlog.json": {
+            "sha256": "dcc814b4af52ec498a2585673d9da7274fe92da58e02ee580f2fb01283a74a8b",
+            "bytes": 40199
+          },
+          "manifests/gates.json": {
+            "sha256": "6b946680d8cd9329b1bce74a3e3e4565634daa25203b9cde2c8af3c507d9a8be",
+            "bytes": 16794
+          },
+          "pyproject.toml": {
+            "sha256": "853c9e0c09404f0d65970dd67966de887372946a4a73c4b7689c0061013068ca",
+            "bytes": 1155
+          },
+          "reports/current-status.md": {
+            "sha256": "96fa32f595b14b887a66a5eca9e0e7f8334d23589883864ee81c8fd5348d9d1f",
+            "bytes": 5839
+          },
+          "reports/evidence-methods-absorption-2026-10-23.md": null,
+          "subrepos/adoption-matrix.jsonl": {
+            "sha256": "a0a345e4626725a234a47419dfc073e61f221aec3595f2d960bcb19d0a780b3a",
+            "bytes": 103853
+          },
+          "subrepos/adoption-matrix.md": {
+            "sha256": "da66a91c839169f540175cfcfabea245526657e9e9f47b868ea7e1d4b74493b4",
+            "bytes": 85541
+          },
+          "tests/test_ci_incremental_gate_dag.sh": {
+            "sha256": "c7737a1b585d52bba90a6b7c5106d6e84fca47563fe7f9d3215dcec59d69b3bb",
+            "bytes": 16923
+          },
+          "tests/test_gate_boundaries.py": {
+            "sha256": "4be7ffefc6ec608f1fe7d6564c4e5e1ed74aad165f0b2aa3e695505fc96b6eb4",
+            "bytes": 28573
+          },
+          "tests/test_gate_runner.sh": {
+            "sha256": "c9b9975467c6c966b7fdbcba852fe81fd0c308f0355213857e85f17448a8bd41",
+            "bytes": 1020
+          },
+          "tools/control_plane/active_contracts.py": {
+            "sha256": "4cc0a123b5588f4b13c1ca697903e2fa436b0a1deceb76ad5e474f986340f8fc",
+            "bytes": 7134
+          },
+          "tools/control_plane/gate_runner.py": {
+            "sha256": "d4da8de1bf5140fa8830bb817e9ae5c97f0cba0bafcd3b551e586ae7ee038606",
+            "bytes": 18514
+          },
+          "tools/control_plane/impact.py": {
+            "sha256": "73e4dddb9c984081ef6ae07cc9ac0182839f87e43181261067a89ce835a25392",
+            "bytes": 9058
+          }
+        },
+        "source_stable": true,
+        "stdout": {
+          "sha256": "6930995dd0ae4e3114c9cc160cd104578245a5cf0d2ae70517eec619f22ce7af",
+          "bytes": 132,
+          "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/ci-dag.stdout"
+        },
+        "stderr": {
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0,
+          "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/ci-dag.stderr"
+        }
+      },
+      "raw_streams_utf8": {
+        "stdout": "[PASS] CI uses gate-derived integration impact, typed control-plane entrypoints, and native-deletion-aware fail-closed GC semantics\n",
+        "stderr": ""
+      }
+    },
+    {
+      "original_record": {
+        "schema": "independent-root-review-run/v1",
+        "label": "diffcheck",
+        "reviewer": "/root/release_governance_audit",
+        "cwd": "/workspace/scratch/712af632e2a5/llm_agent-pr270",
+        "argv": [
+          "git",
+          "diff",
+          "--check"
+        ],
+        "started_at": "2026-10-24T16:00:05.027669+00:00",
+        "source_before": {
+          ".gitlab-ci.yml": {
+            "sha256": "88029613e9d856d9633cafd4995db2f95f470065c69f52d4948ae0182a6db3ee",
+            "bytes": 940
+          },
+          "docs/changes/20261023-evidence-methods/evidence/consolidation-independent-execution.json": {
+            "sha256": "39548a00098eef21654e79299210cbd4fa336c746e178f59108abcffdc548c4d",
+            "bytes": 39778
+          },
+          "docs/changes/20261023-evidence-methods/implementation-map.md": {
+            "sha256": "635812051b3880a819fd403ca0dfc340491b94fde39076ac076c5c187e3946f9",
+            "bytes": 19762
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation-findings.md": {
+            "sha256": "913d6c8fe790a4dcc117931c7a704f2f5bc0be9a833be65c7daccbb5e760751f",
+            "bytes": 6417
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation.json": {
+            "sha256": "5afc7b4161df268325ecff6dba35a92c4abd3197932777ee51b90fd41b899590",
+            "bytes": 32522
+          },
+          "fixtures/reference-repository/removal/pass/removal-plan.json": {
+            "sha256": "af3006a9f496d3e5859c496a29b6457cca18cab7dd83d0a3e146e194f3df8c40",
+            "bytes": 2327
+          },
+          "manifests/comprehensive_optimization_backlog.json": {
+            "sha256": "dcc814b4af52ec498a2585673d9da7274fe92da58e02ee580f2fb01283a74a8b",
+            "bytes": 40199
+          },
+          "manifests/gates.json": {
+            "sha256": "6b946680d8cd9329b1bce74a3e3e4565634daa25203b9cde2c8af3c507d9a8be",
+            "bytes": 16794
+          },
+          "pyproject.toml": {
+            "sha256": "853c9e0c09404f0d65970dd67966de887372946a4a73c4b7689c0061013068ca",
+            "bytes": 1155
+          },
+          "reports/current-status.md": {
+            "sha256": "96fa32f595b14b887a66a5eca9e0e7f8334d23589883864ee81c8fd5348d9d1f",
+            "bytes": 5839
+          },
+          "reports/evidence-methods-absorption-2026-10-23.md": null,
+          "subrepos/adoption-matrix.jsonl": {
+            "sha256": "a0a345e4626725a234a47419dfc073e61f221aec3595f2d960bcb19d0a780b3a",
+            "bytes": 103853
+          },
+          "subrepos/adoption-matrix.md": {
+            "sha256": "da66a91c839169f540175cfcfabea245526657e9e9f47b868ea7e1d4b74493b4",
+            "bytes": 85541
+          },
+          "tests/test_ci_incremental_gate_dag.sh": {
+            "sha256": "c7737a1b585d52bba90a6b7c5106d6e84fca47563fe7f9d3215dcec59d69b3bb",
+            "bytes": 16923
+          },
+          "tests/test_gate_boundaries.py": {
+            "sha256": "4be7ffefc6ec608f1fe7d6564c4e5e1ed74aad165f0b2aa3e695505fc96b6eb4",
+            "bytes": 28573
+          },
+          "tests/test_gate_runner.sh": {
+            "sha256": "c9b9975467c6c966b7fdbcba852fe81fd0c308f0355213857e85f17448a8bd41",
+            "bytes": 1020
+          },
+          "tools/control_plane/active_contracts.py": {
+            "sha256": "4cc0a123b5588f4b13c1ca697903e2fa436b0a1deceb76ad5e474f986340f8fc",
+            "bytes": 7134
+          },
+          "tools/control_plane/gate_runner.py": {
+            "sha256": "d4da8de1bf5140fa8830bb817e9ae5c97f0cba0bafcd3b551e586ae7ee038606",
+            "bytes": 18514
+          },
+          "tools/control_plane/impact.py": {
+            "sha256": "73e4dddb9c984081ef6ae07cc9ac0182839f87e43181261067a89ce835a25392",
+            "bytes": 9058
+          }
+        },
+        "exit_code": 0,
+        "completed_at": "2026-10-24T16:00:05.046111+00:00",
+        "elapsed_seconds": 0.016,
+        "source_after": {
+          ".gitlab-ci.yml": {
+            "sha256": "88029613e9d856d9633cafd4995db2f95f470065c69f52d4948ae0182a6db3ee",
+            "bytes": 940
+          },
+          "docs/changes/20261023-evidence-methods/evidence/consolidation-independent-execution.json": {
+            "sha256": "39548a00098eef21654e79299210cbd4fa336c746e178f59108abcffdc548c4d",
+            "bytes": 39778
+          },
+          "docs/changes/20261023-evidence-methods/implementation-map.md": {
+            "sha256": "635812051b3880a819fd403ca0dfc340491b94fde39076ac076c5c187e3946f9",
+            "bytes": 19762
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation-findings.md": {
+            "sha256": "913d6c8fe790a4dcc117931c7a704f2f5bc0be9a833be65c7daccbb5e760751f",
+            "bytes": 6417
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation.json": {
+            "sha256": "5afc7b4161df268325ecff6dba35a92c4abd3197932777ee51b90fd41b899590",
+            "bytes": 32522
+          },
+          "fixtures/reference-repository/removal/pass/removal-plan.json": {
+            "sha256": "af3006a9f496d3e5859c496a29b6457cca18cab7dd83d0a3e146e194f3df8c40",
+            "bytes": 2327
+          },
+          "manifests/comprehensive_optimization_backlog.json": {
+            "sha256": "dcc814b4af52ec498a2585673d9da7274fe92da58e02ee580f2fb01283a74a8b",
+            "bytes": 40199
+          },
+          "manifests/gates.json": {
+            "sha256": "6b946680d8cd9329b1bce74a3e3e4565634daa25203b9cde2c8af3c507d9a8be",
+            "bytes": 16794
+          },
+          "pyproject.toml": {
+            "sha256": "853c9e0c09404f0d65970dd67966de887372946a4a73c4b7689c0061013068ca",
+            "bytes": 1155
+          },
+          "reports/current-status.md": {
+            "sha256": "96fa32f595b14b887a66a5eca9e0e7f8334d23589883864ee81c8fd5348d9d1f",
+            "bytes": 5839
+          },
+          "reports/evidence-methods-absorption-2026-10-23.md": null,
+          "subrepos/adoption-matrix.jsonl": {
+            "sha256": "a0a345e4626725a234a47419dfc073e61f221aec3595f2d960bcb19d0a780b3a",
+            "bytes": 103853
+          },
+          "subrepos/adoption-matrix.md": {
+            "sha256": "da66a91c839169f540175cfcfabea245526657e9e9f47b868ea7e1d4b74493b4",
+            "bytes": 85541
+          },
+          "tests/test_ci_incremental_gate_dag.sh": {
+            "sha256": "c7737a1b585d52bba90a6b7c5106d6e84fca47563fe7f9d3215dcec59d69b3bb",
+            "bytes": 16923
+          },
+          "tests/test_gate_boundaries.py": {
+            "sha256": "4be7ffefc6ec608f1fe7d6564c4e5e1ed74aad165f0b2aa3e695505fc96b6eb4",
+            "bytes": 28573
+          },
+          "tests/test_gate_runner.sh": {
+            "sha256": "c9b9975467c6c966b7fdbcba852fe81fd0c308f0355213857e85f17448a8bd41",
+            "bytes": 1020
+          },
+          "tools/control_plane/active_contracts.py": {
+            "sha256": "4cc0a123b5588f4b13c1ca697903e2fa436b0a1deceb76ad5e474f986340f8fc",
+            "bytes": 7134
+          },
+          "tools/control_plane/gate_runner.py": {
+            "sha256": "d4da8de1bf5140fa8830bb817e9ae5c97f0cba0bafcd3b551e586ae7ee038606",
+            "bytes": 18514
+          },
+          "tools/control_plane/impact.py": {
+            "sha256": "73e4dddb9c984081ef6ae07cc9ac0182839f87e43181261067a89ce835a25392",
+            "bytes": 9058
+          }
+        },
+        "source_stable": true,
+        "stdout": {
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0,
+          "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/diffcheck.stdout"
+        },
+        "stderr": {
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0,
+          "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/diffcheck.stderr"
+        }
+      },
+      "raw_streams_utf8": {
+        "stdout": "",
+        "stderr": ""
+      }
+    },
+    {
+      "original_record": {
+        "schema": "independent-root-review-run/v1",
+        "label": "gitlab-parity",
+        "reviewer": "/root/release_governance_audit",
+        "cwd": "/workspace/scratch/712af632e2a5/llm_agent-pr270",
+        "argv": [
+          "/workspace/scratch/712af632e2a5/audit-venv/bin/python3",
+          "-c",
+          "import json,yaml;from pathlib import Path;g=yaml.safe_load(Path('.gitlab-ci.yml').read_text());assert g['variables']['GIT_SUBMODULE_STRATEGY']=='none';assert g['contract']['script']==['git submodule update --init --depth=1 agent-dev-kit','python3 -m tools.control_plane.gate_runner --profile contract'];print(json.dumps({'contract':g['contract'],'submodule_strategy':g['variables']['GIT_SUBMODULE_STRATEGY']}))"
+        ],
+        "started_at": "2026-10-24T16:00:34.726862+00:00",
+        "source_before": {
+          ".gitlab-ci.yml": {
+            "sha256": "88029613e9d856d9633cafd4995db2f95f470065c69f52d4948ae0182a6db3ee",
+            "bytes": 940
+          },
+          "docs/changes/20261023-evidence-methods/evidence/consolidation-independent-execution.json": {
+            "sha256": "39548a00098eef21654e79299210cbd4fa336c746e178f59108abcffdc548c4d",
+            "bytes": 39778
+          },
+          "docs/changes/20261023-evidence-methods/implementation-map.md": {
+            "sha256": "635812051b3880a819fd403ca0dfc340491b94fde39076ac076c5c187e3946f9",
+            "bytes": 19762
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation-findings.md": {
+            "sha256": "913d6c8fe790a4dcc117931c7a704f2f5bc0be9a833be65c7daccbb5e760751f",
+            "bytes": 6417
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation.json": {
+            "sha256": "5afc7b4161df268325ecff6dba35a92c4abd3197932777ee51b90fd41b899590",
+            "bytes": 32522
+          },
+          "fixtures/reference-repository/removal/pass/removal-plan.json": {
+            "sha256": "af3006a9f496d3e5859c496a29b6457cca18cab7dd83d0a3e146e194f3df8c40",
+            "bytes": 2327
+          },
+          "manifests/comprehensive_optimization_backlog.json": {
+            "sha256": "dcc814b4af52ec498a2585673d9da7274fe92da58e02ee580f2fb01283a74a8b",
+            "bytes": 40199
+          },
+          "manifests/gates.json": {
+            "sha256": "6b946680d8cd9329b1bce74a3e3e4565634daa25203b9cde2c8af3c507d9a8be",
+            "bytes": 16794
+          },
+          "pyproject.toml": {
+            "sha256": "853c9e0c09404f0d65970dd67966de887372946a4a73c4b7689c0061013068ca",
+            "bytes": 1155
+          },
+          "reports/current-status.md": {
+            "sha256": "96fa32f595b14b887a66a5eca9e0e7f8334d23589883864ee81c8fd5348d9d1f",
+            "bytes": 5839
+          },
+          "reports/evidence-methods-absorption-2026-10-23.md": null,
+          "subrepos/adoption-matrix.jsonl": {
+            "sha256": "a0a345e4626725a234a47419dfc073e61f221aec3595f2d960bcb19d0a780b3a",
+            "bytes": 103853
+          },
+          "subrepos/adoption-matrix.md": {
+            "sha256": "da66a91c839169f540175cfcfabea245526657e9e9f47b868ea7e1d4b74493b4",
+            "bytes": 85541
+          },
+          "tests/test_ci_incremental_gate_dag.sh": {
+            "sha256": "c7737a1b585d52bba90a6b7c5106d6e84fca47563fe7f9d3215dcec59d69b3bb",
+            "bytes": 16923
+          },
+          "tests/test_gate_boundaries.py": {
+            "sha256": "4be7ffefc6ec608f1fe7d6564c4e5e1ed74aad165f0b2aa3e695505fc96b6eb4",
+            "bytes": 28573
+          },
+          "tests/test_gate_runner.sh": {
+            "sha256": "c9b9975467c6c966b7fdbcba852fe81fd0c308f0355213857e85f17448a8bd41",
+            "bytes": 1020
+          },
+          "tools/control_plane/active_contracts.py": {
+            "sha256": "4cc0a123b5588f4b13c1ca697903e2fa436b0a1deceb76ad5e474f986340f8fc",
+            "bytes": 7134
+          },
+          "tools/control_plane/gate_runner.py": {
+            "sha256": "d4da8de1bf5140fa8830bb817e9ae5c97f0cba0bafcd3b551e586ae7ee038606",
+            "bytes": 18514
+          },
+          "tools/control_plane/impact.py": {
+            "sha256": "73e4dddb9c984081ef6ae07cc9ac0182839f87e43181261067a89ce835a25392",
+            "bytes": 9058
+          }
+        },
+        "exit_code": 0,
+        "completed_at": "2026-10-24T16:00:34.792473+00:00",
+        "elapsed_seconds": 0.064,
+        "source_after": {
+          ".gitlab-ci.yml": {
+            "sha256": "88029613e9d856d9633cafd4995db2f95f470065c69f52d4948ae0182a6db3ee",
+            "bytes": 940
+          },
+          "docs/changes/20261023-evidence-methods/evidence/consolidation-independent-execution.json": {
+            "sha256": "39548a00098eef21654e79299210cbd4fa336c746e178f59108abcffdc548c4d",
+            "bytes": 39778
+          },
+          "docs/changes/20261023-evidence-methods/implementation-map.md": {
+            "sha256": "635812051b3880a819fd403ca0dfc340491b94fde39076ac076c5c187e3946f9",
+            "bytes": 19762
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation-findings.md": {
+            "sha256": "913d6c8fe790a4dcc117931c7a704f2f5bc0be9a833be65c7daccbb5e760751f",
+            "bytes": 6417
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation.json": {
+            "sha256": "5afc7b4161df268325ecff6dba35a92c4abd3197932777ee51b90fd41b899590",
+            "bytes": 32522
+          },
+          "fixtures/reference-repository/removal/pass/removal-plan.json": {
+            "sha256": "af3006a9f496d3e5859c496a29b6457cca18cab7dd83d0a3e146e194f3df8c40",
+            "bytes": 2327
+          },
+          "manifests/comprehensive_optimization_backlog.json": {
+            "sha256": "dcc814b4af52ec498a2585673d9da7274fe92da58e02ee580f2fb01283a74a8b",
+            "bytes": 40199
+          },
+          "manifests/gates.json": {
+            "sha256": "6b946680d8cd9329b1bce74a3e3e4565634daa25203b9cde2c8af3c507d9a8be",
+            "bytes": 16794
+          },
+          "pyproject.toml": {
+            "sha256": "853c9e0c09404f0d65970dd67966de887372946a4a73c4b7689c0061013068ca",
+            "bytes": 1155
+          },
+          "reports/current-status.md": {
+            "sha256": "96fa32f595b14b887a66a5eca9e0e7f8334d23589883864ee81c8fd5348d9d1f",
+            "bytes": 5839
+          },
+          "reports/evidence-methods-absorption-2026-10-23.md": null,
+          "subrepos/adoption-matrix.jsonl": {
+            "sha256": "a0a345e4626725a234a47419dfc073e61f221aec3595f2d960bcb19d0a780b3a",
+            "bytes": 103853
+          },
+          "subrepos/adoption-matrix.md": {
+            "sha256": "da66a91c839169f540175cfcfabea245526657e9e9f47b868ea7e1d4b74493b4",
+            "bytes": 85541
+          },
+          "tests/test_ci_incremental_gate_dag.sh": {
+            "sha256": "c7737a1b585d52bba90a6b7c5106d6e84fca47563fe7f9d3215dcec59d69b3bb",
+            "bytes": 16923
+          },
+          "tests/test_gate_boundaries.py": {
+            "sha256": "4be7ffefc6ec608f1fe7d6564c4e5e1ed74aad165f0b2aa3e695505fc96b6eb4",
+            "bytes": 28573
+          },
+          "tests/test_gate_runner.sh": {
+            "sha256": "c9b9975467c6c966b7fdbcba852fe81fd0c308f0355213857e85f17448a8bd41",
+            "bytes": 1020
+          },
+          "tools/control_plane/active_contracts.py": {
+            "sha256": "4cc0a123b5588f4b13c1ca697903e2fa436b0a1deceb76ad5e474f986340f8fc",
+            "bytes": 7134
+          },
+          "tools/control_plane/gate_runner.py": {
+            "sha256": "d4da8de1bf5140fa8830bb817e9ae5c97f0cba0bafcd3b551e586ae7ee038606",
+            "bytes": 18514
+          },
+          "tools/control_plane/impact.py": {
+            "sha256": "73e4dddb9c984081ef6ae07cc9ac0182839f87e43181261067a89ce835a25392",
+            "bytes": 9058
+          }
+        },
+        "source_stable": true,
+        "stdout": {
+          "sha256": "66a85f82c3b9c91226144faff38e97d661393fd0d65585edaecaf533b8afb9d1",
+          "bytes": 198,
+          "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/gitlab-parity.stdout"
+        },
+        "stderr": {
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0,
+          "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/gitlab-parity.stderr"
+        }
+      },
+      "raw_streams_utf8": {
+        "stdout": "{\"contract\": {\"stage\": \"contract\", \"script\": [\"git submodule update --init --depth=1 agent-dev-kit\", \"python3 -m tools.control_plane.gate_runner --profile contract\"]}, \"submodule_strategy\": \"none\"}\n",
+        "stderr": ""
+      }
+    },
+    {
+      "original_record": {
+        "schema": "independent-root-review-run/v1",
+        "label": "independent-probes",
+        "reviewer": "/root/release_governance_audit",
+        "cwd": "/workspace/scratch/712af632e2a5/llm_agent-pr270",
+        "argv": [
+          "/workspace/scratch/712af632e2a5/audit-venv/bin/python3",
+          "/workspace/scratch/712af632e2a5/apply20261024/review-root/independent_probes.py"
+        ],
+        "started_at": "2026-10-24T15:59:47.218499+00:00",
+        "source_before": {
+          ".gitlab-ci.yml": {
+            "sha256": "88029613e9d856d9633cafd4995db2f95f470065c69f52d4948ae0182a6db3ee",
+            "bytes": 940
+          },
+          "docs/changes/20261023-evidence-methods/evidence/consolidation-independent-execution.json": {
+            "sha256": "39548a00098eef21654e79299210cbd4fa336c746e178f59108abcffdc548c4d",
+            "bytes": 39778
+          },
+          "docs/changes/20261023-evidence-methods/implementation-map.md": {
+            "sha256": "635812051b3880a819fd403ca0dfc340491b94fde39076ac076c5c187e3946f9",
+            "bytes": 19762
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation-findings.md": {
+            "sha256": "913d6c8fe790a4dcc117931c7a704f2f5bc0be9a833be65c7daccbb5e760751f",
+            "bytes": 6417
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation.json": {
+            "sha256": "5afc7b4161df268325ecff6dba35a92c4abd3197932777ee51b90fd41b899590",
+            "bytes": 32522
+          },
+          "fixtures/reference-repository/removal/pass/removal-plan.json": {
+            "sha256": "af3006a9f496d3e5859c496a29b6457cca18cab7dd83d0a3e146e194f3df8c40",
+            "bytes": 2327
+          },
+          "manifests/comprehensive_optimization_backlog.json": {
+            "sha256": "dcc814b4af52ec498a2585673d9da7274fe92da58e02ee580f2fb01283a74a8b",
+            "bytes": 40199
+          },
+          "manifests/gates.json": {
+            "sha256": "6b946680d8cd9329b1bce74a3e3e4565634daa25203b9cde2c8af3c507d9a8be",
+            "bytes": 16794
+          },
+          "pyproject.toml": {
+            "sha256": "853c9e0c09404f0d65970dd67966de887372946a4a73c4b7689c0061013068ca",
+            "bytes": 1155
+          },
+          "reports/current-status.md": {
+            "sha256": "96fa32f595b14b887a66a5eca9e0e7f8334d23589883864ee81c8fd5348d9d1f",
+            "bytes": 5839
+          },
+          "reports/evidence-methods-absorption-2026-10-23.md": null,
+          "subrepos/adoption-matrix.jsonl": {
+            "sha256": "a0a345e4626725a234a47419dfc073e61f221aec3595f2d960bcb19d0a780b3a",
+            "bytes": 103853
+          },
+          "subrepos/adoption-matrix.md": {
+            "sha256": "da66a91c839169f540175cfcfabea245526657e9e9f47b868ea7e1d4b74493b4",
+            "bytes": 85541
+          },
+          "tests/test_ci_incremental_gate_dag.sh": {
+            "sha256": "c7737a1b585d52bba90a6b7c5106d6e84fca47563fe7f9d3215dcec59d69b3bb",
+            "bytes": 16923
+          },
+          "tests/test_gate_boundaries.py": {
+            "sha256": "4be7ffefc6ec608f1fe7d6564c4e5e1ed74aad165f0b2aa3e695505fc96b6eb4",
+            "bytes": 28573
+          },
+          "tests/test_gate_runner.sh": {
+            "sha256": "c9b9975467c6c966b7fdbcba852fe81fd0c308f0355213857e85f17448a8bd41",
+            "bytes": 1020
+          },
+          "tools/control_plane/active_contracts.py": {
+            "sha256": "4cc0a123b5588f4b13c1ca697903e2fa436b0a1deceb76ad5e474f986340f8fc",
+            "bytes": 7134
+          },
+          "tools/control_plane/gate_runner.py": {
+            "sha256": "d4da8de1bf5140fa8830bb817e9ae5c97f0cba0bafcd3b551e586ae7ee038606",
+            "bytes": 18514
+          },
+          "tools/control_plane/impact.py": {
+            "sha256": "73e4dddb9c984081ef6ae07cc9ac0182839f87e43181261067a89ce835a25392",
+            "bytes": 9058
+          }
+        },
+        "exit_code": 0,
+        "completed_at": "2026-10-24T15:59:47.635445+00:00",
+        "elapsed_seconds": 0.415,
+        "source_after": {
+          ".gitlab-ci.yml": {
+            "sha256": "88029613e9d856d9633cafd4995db2f95f470065c69f52d4948ae0182a6db3ee",
+            "bytes": 940
+          },
+          "docs/changes/20261023-evidence-methods/evidence/consolidation-independent-execution.json": {
+            "sha256": "39548a00098eef21654e79299210cbd4fa336c746e178f59108abcffdc548c4d",
+            "bytes": 39778
+          },
+          "docs/changes/20261023-evidence-methods/implementation-map.md": {
+            "sha256": "635812051b3880a819fd403ca0dfc340491b94fde39076ac076c5c187e3946f9",
+            "bytes": 19762
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation-findings.md": {
+            "sha256": "913d6c8fe790a4dcc117931c7a704f2f5bc0be9a833be65c7daccbb5e760751f",
+            "bytes": 6417
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation.json": {
+            "sha256": "5afc7b4161df268325ecff6dba35a92c4abd3197932777ee51b90fd41b899590",
+            "bytes": 32522
+          },
+          "fixtures/reference-repository/removal/pass/removal-plan.json": {
+            "sha256": "af3006a9f496d3e5859c496a29b6457cca18cab7dd83d0a3e146e194f3df8c40",
+            "bytes": 2327
+          },
+          "manifests/comprehensive_optimization_backlog.json": {
+            "sha256": "dcc814b4af52ec498a2585673d9da7274fe92da58e02ee580f2fb01283a74a8b",
+            "bytes": 40199
+          },
+          "manifests/gates.json": {
+            "sha256": "6b946680d8cd9329b1bce74a3e3e4565634daa25203b9cde2c8af3c507d9a8be",
+            "bytes": 16794
+          },
+          "pyproject.toml": {
+            "sha256": "853c9e0c09404f0d65970dd67966de887372946a4a73c4b7689c0061013068ca",
+            "bytes": 1155
+          },
+          "reports/current-status.md": {
+            "sha256": "96fa32f595b14b887a66a5eca9e0e7f8334d23589883864ee81c8fd5348d9d1f",
+            "bytes": 5839
+          },
+          "reports/evidence-methods-absorption-2026-10-23.md": null,
+          "subrepos/adoption-matrix.jsonl": {
+            "sha256": "a0a345e4626725a234a47419dfc073e61f221aec3595f2d960bcb19d0a780b3a",
+            "bytes": 103853
+          },
+          "subrepos/adoption-matrix.md": {
+            "sha256": "da66a91c839169f540175cfcfabea245526657e9e9f47b868ea7e1d4b74493b4",
+            "bytes": 85541
+          },
+          "tests/test_ci_incremental_gate_dag.sh": {
+            "sha256": "c7737a1b585d52bba90a6b7c5106d6e84fca47563fe7f9d3215dcec59d69b3bb",
+            "bytes": 16923
+          },
+          "tests/test_gate_boundaries.py": {
+            "sha256": "4be7ffefc6ec608f1fe7d6564c4e5e1ed74aad165f0b2aa3e695505fc96b6eb4",
+            "bytes": 28573
+          },
+          "tests/test_gate_runner.sh": {
+            "sha256": "c9b9975467c6c966b7fdbcba852fe81fd0c308f0355213857e85f17448a8bd41",
+            "bytes": 1020
+          },
+          "tools/control_plane/active_contracts.py": {
+            "sha256": "4cc0a123b5588f4b13c1ca697903e2fa436b0a1deceb76ad5e474f986340f8fc",
+            "bytes": 7134
+          },
+          "tools/control_plane/gate_runner.py": {
+            "sha256": "d4da8de1bf5140fa8830bb817e9ae5c97f0cba0bafcd3b551e586ae7ee038606",
+            "bytes": 18514
+          },
+          "tools/control_plane/impact.py": {
+            "sha256": "73e4dddb9c984081ef6ae07cc9ac0182839f87e43181261067a89ce835a25392",
+            "bytes": 9058
+          }
+        },
+        "source_stable": true,
+        "stdout": {
+          "sha256": "2e63a1f35ddb784f07120015a68cd4de090a2daf668348aafd2aec1681ea45f3",
+          "bytes": 6663,
+          "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/independent-probes.stdout"
+        },
+        "stderr": {
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0,
+          "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/independent-probes.stderr"
+        }
+      },
+      "raw_streams_utf8": {
+        "stdout": "{\n  \"recovery\": {\n    \"published_head\": \"64c5192f2d6aaacf65143223f03190564032facc\",\n    \"recovery_record_sha256\": \"19692c568b12d12907e20ce1a93f9f9070b340413705a6e641b7759a922a5372\",\n    \"synthesized_recovery_only_tree\": \"d7f1319c90c70e989978c6b7e1984df2be59e66b\",\n    \"matches\": 8,\n    \"paths\": [\n      {\n        \"path\": \"docs/changes/20261023-evidence-methods/evidence/consolidation-independent-execution.json\",\n        \"expected_blob\": \"ce4e924d6ab59ab64a7c6103119f74bb86e6fd05\",\n        \"actual_blob\": \"ce4e924d6ab59ab64a7c6103119f74bb86e6fd05\",\n        \"sha256\": \"39548a00098eef21654e79299210cbd4fa336c746e178f59108abcffdc548c4d\",\n        \"match\": true\n      },\n      {\n        \"path\": \"docs/changes/20261023-evidence-methods/implementation-map.md\",\n        \"expected_blob\": \"a3571a202a626c844303d389e99724acfb5a8db8\",\n        \"actual_blob\": \"a3571a202a626c844303d389e99724acfb5a8db8\",\n        \"sha256\": \"635812051b3880a819fd403ca0dfc340491b94fde39076ac076c5c187e3946f9\",\n        \"match\": true\n      },\n      {\n        \"path\": \"docs/changes/20261023-evidence-methods/review-consolidation-findings.md\",\n        \"expected_blob\": \"4b49fb6dab2928a45b2f32088aae331ac36934aa\",\n        \"actual_blob\": \"4b49fb6dab2928a45b2f32088aae331ac36934aa\",\n        \"sha256\": \"913d6c8fe790a4dcc117931c7a704f2f5bc0be9a833be65c7daccbb5e760751f\",\n        \"match\": true\n      },\n      {\n        \"path\": \"docs/changes/20261023-evidence-methods/review-consolidation.json\",\n        \"expected_blob\": \"32715a5cc5344b945af3098f2e921f9dd6d75949\",\n        \"actual_blob\": \"32715a5cc5344b945af3098f2e921f9dd6d75949\",\n        \"sha256\": \"5afc7b4161df268325ecff6dba35a92c4abd3197932777ee51b90fd41b899590\",\n        \"match\": true\n      },\n      {\n        \"path\": \"fixtures/reference-repository/removal/pass/removal-plan.json\",\n        \"expected_blob\": \"9cdd7a8deab12197fe0a7a449772e5811281584d\",\n        \"actual_blob\": \"9cdd7a8deab12197fe0a7a449772e5811281584d\",\n        \"sha256\": \"af3006a9f496d3e5859c496a29b6457cca18cab7dd83d0a3e146e194f3df8c40\",\n        \"match\": true\n      },\n      {\n        \"path\": \"reports/evidence-methods-absorption-2026-10-23.md\",\n        \"expected_blob\": null,\n        \"actual_blob\": null,\n        \"sha256\": null,\n        \"match\": true\n      },\n      {\n        \"path\": \"subrepos/adoption-matrix.jsonl\",\n        \"expected_blob\": \"2a2d2ff72637e341b10dafecb5de7e66d92808b4\",\n        \"actual_blob\": \"2a2d2ff72637e341b10dafecb5de7e66d92808b4\",\n        \"sha256\": \"a0a345e4626725a234a47419dfc073e61f221aec3595f2d960bcb19d0a780b3a\",\n        \"match\": true\n      },\n      {\n        \"path\": \"subrepos/adoption-matrix.md\",\n        \"expected_blob\": \"73ee781e786d0e6d89d93c71c7f5edbe1e3883e0\",\n        \"actual_blob\": \"73ee781e786d0e6d89d93c71c7f5edbe1e3883e0\",\n        \"sha256\": \"da66a91c839169f540175cfcfabea245526657e9e9f47b868ea7e1d4b74493b4\",\n        \"match\": true\n      }\n    ]\n  },\n  \"ownership\": {\n    \"budget_count\": 14,\n    \"budget_unchanged\": true,\n    \"impact_algorithm_unchanged\": true,\n    \"github_workflow_unchanged\": true,\n    \"existing_gate_fields_changed\": [\n      \"root-regression\"\n    ],\n    \"new_gate\": {\n      \"owner\": \"llm_agent\",\n      \"side_effect\": \"none\",\n      \"depends_on\": [],\n      \"inputs\": [\n        \"scripts\",\n        \"tools\",\n        \"manifests\",\n        \"reports\",\n        \"agent-dev-kit/scripts\",\n        \"agent-dev-kit/src\"\n      ],\n      \"outputs\": [],\n      \"cache_policy\": \"disabled\",\n      \"argv\": [\n        \"bash\",\n        \"scripts/check-maintainability-budgets.sh\",\n        \"--strict\",\n        \"--summary-json\"\n      ],\n      \"timeout_seconds\": 60,\n      \"evidence_class\": \"source\"\n    },\n    \"path_probes\": [\n      {\n        \"path\": \"README.md\",\n        \"required\": false,\n        \"direct_gates\": [\n          \"active-contracts\"\n        ]\n      },\n      {\n        \"path\": \"docs/architecture/reviewer-ordinary.md\",\n        \"required\": false,\n        \"direct_gates\": [\n          \"doc-sync\"\n        ]\n      },\n      {\n        \"path\": \"docs/changes/reviewer-prose/notes.md\",\n        \"required\": false,\n        \"direct_gates\": [\n          \"doc-sync\"\n        ]\n      },\n      {\n        \"path\": \"docs/runbooks/reviewer-ordinary.md\",\n        \"required\": false,\n        \"direct_gates\": [\n          \"doc-sync\"\n        ]\n      },\n      {\n        \"path\": \"reports/reviewer-ordinary.md\",\n        \"required\": false,\n        \"direct_gates\": [\n          \"maintenance-budget\"\n        ]\n      },\n      {\n        \"path\": \"reports/optimization/reviewer-ordinary.md\",\n        \"required\": false,\n        \"direct_gates\": [\n          \"maintenance-budget\"\n        ]\n      },\n      {\n        \"path\": \"subrepos/adoption-matrix.md\",\n        \"required\": true,\n        \"direct_gates\": [\n          \"root-regression\"\n        ]\n      },\n      {\n        \"path\": \"schemas/external-practice-candidate.schema.json\",\n        \"required\": true,\n        \"direct_gates\": [\n          \"root-regression\"\n        ]\n      },\n      {\n        \"path\": \"fixtures/external-practice/cycle-plan.json\",\n        \"required\": true,\n        \"direct_gates\": [\n          \"root-regression\"\n        ]\n      },\n      {\n        \"path\": \"pyproject.toml\",\n        \"required\": true,\n        \"direct_gates\": [\n          \"root-regression\"\n        ]\n      },\n      {\n        \"path\": \"reports/README.md\",\n        \"required\": true,\n        \"direct_gates\": [\n          \"maintenance-budget\",\n          \"root-regression\"\n        ]\n      },\n      {\n        \"path\": \"docs/runbooks/runtime-target-activation.md\",\n        \"required\": true,\n        \"direct_gates\": [\n          \"doc-sync\",\n          \"root-regression\"\n        ]\n      },\n      {\n        \"path\": \".github/workflows/ci.yml\",\n        \"required\": true,\n        \"direct_gates\": [\n          \"ci-incremental-dag\",\n          \"root-regression\"\n        ]\n      },\n      {\n        \"path\": \".github/CODEOWNERS\",\n        \"required\": true,\n        \"direct_gates\": [\n          \"root-regression\"\n        ]\n      }\n    ]\n  },\n  \"isolated_rename_delete\": {\n    \"baseline_exit\": 0,\n    \"rename_paths\": [\n      \"docs/architecture/reviewer-moved-evidence.md\",\n      \"subrepos/adoption-matrix.md\"\n    ],\n    \"rename_consumer_exit\": 2,\n    \"rename_consumer_stderr\": \"[FAIL] fixtures/reference-repository/removal/pass/removal-plan.json: reference repository removal artifact is missing or unhashed\\n\",\n    \"rename_deep_required\": true,\n    \"destination_alone_deep_required\": false,\n    \"delete_paths\": [\n      \"subrepos/adoption-matrix.md\"\n    ],\n    \"delete_consumer_exit\": 2,\n    \"delete_consumer_stderr\": \"[FAIL] fixtures/reference-repository/removal/pass/removal-plan.json: reference repository removal artifact is missing or unhashed\\n\",\n    \"delete_deep_required\": true\n  }\n}\n",
+        "stderr": ""
+      }
+    },
+    {
+      "original_record": {
+        "schema": "independent-root-review-run/v1",
+        "label": "mypy-active",
+        "reviewer": "/root/release_governance_audit",
+        "cwd": "/workspace/scratch/712af632e2a5/llm_agent-pr270",
+        "argv": [
+          "/workspace/scratch/712af632e2a5/root-quality-venv/bin/python3",
+          "-m",
+          "mypy",
+          "--config-file",
+          "pyproject.toml",
+          "--cache-dir",
+          "/tmp/root-review-mypy-cache",
+          "tools/control_plane/active_contracts.py"
+        ],
+        "started_at": "2026-10-24T16:00:34.708669+00:00",
+        "source_before": {
+          ".gitlab-ci.yml": {
+            "sha256": "88029613e9d856d9633cafd4995db2f95f470065c69f52d4948ae0182a6db3ee",
+            "bytes": 940
+          },
+          "docs/changes/20261023-evidence-methods/evidence/consolidation-independent-execution.json": {
+            "sha256": "39548a00098eef21654e79299210cbd4fa336c746e178f59108abcffdc548c4d",
+            "bytes": 39778
+          },
+          "docs/changes/20261023-evidence-methods/implementation-map.md": {
+            "sha256": "635812051b3880a819fd403ca0dfc340491b94fde39076ac076c5c187e3946f9",
+            "bytes": 19762
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation-findings.md": {
+            "sha256": "913d6c8fe790a4dcc117931c7a704f2f5bc0be9a833be65c7daccbb5e760751f",
+            "bytes": 6417
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation.json": {
+            "sha256": "5afc7b4161df268325ecff6dba35a92c4abd3197932777ee51b90fd41b899590",
+            "bytes": 32522
+          },
+          "fixtures/reference-repository/removal/pass/removal-plan.json": {
+            "sha256": "af3006a9f496d3e5859c496a29b6457cca18cab7dd83d0a3e146e194f3df8c40",
+            "bytes": 2327
+          },
+          "manifests/comprehensive_optimization_backlog.json": {
+            "sha256": "dcc814b4af52ec498a2585673d9da7274fe92da58e02ee580f2fb01283a74a8b",
+            "bytes": 40199
+          },
+          "manifests/gates.json": {
+            "sha256": "6b946680d8cd9329b1bce74a3e3e4565634daa25203b9cde2c8af3c507d9a8be",
+            "bytes": 16794
+          },
+          "pyproject.toml": {
+            "sha256": "853c9e0c09404f0d65970dd67966de887372946a4a73c4b7689c0061013068ca",
+            "bytes": 1155
+          },
+          "reports/current-status.md": {
+            "sha256": "96fa32f595b14b887a66a5eca9e0e7f8334d23589883864ee81c8fd5348d9d1f",
+            "bytes": 5839
+          },
+          "reports/evidence-methods-absorption-2026-10-23.md": null,
+          "subrepos/adoption-matrix.jsonl": {
+            "sha256": "a0a345e4626725a234a47419dfc073e61f221aec3595f2d960bcb19d0a780b3a",
+            "bytes": 103853
+          },
+          "subrepos/adoption-matrix.md": {
+            "sha256": "da66a91c839169f540175cfcfabea245526657e9e9f47b868ea7e1d4b74493b4",
+            "bytes": 85541
+          },
+          "tests/test_ci_incremental_gate_dag.sh": {
+            "sha256": "c7737a1b585d52bba90a6b7c5106d6e84fca47563fe7f9d3215dcec59d69b3bb",
+            "bytes": 16923
+          },
+          "tests/test_gate_boundaries.py": {
+            "sha256": "4be7ffefc6ec608f1fe7d6564c4e5e1ed74aad165f0b2aa3e695505fc96b6eb4",
+            "bytes": 28573
+          },
+          "tests/test_gate_runner.sh": {
+            "sha256": "c9b9975467c6c966b7fdbcba852fe81fd0c308f0355213857e85f17448a8bd41",
+            "bytes": 1020
+          },
+          "tools/control_plane/active_contracts.py": {
+            "sha256": "4cc0a123b5588f4b13c1ca697903e2fa436b0a1deceb76ad5e474f986340f8fc",
+            "bytes": 7134
+          },
+          "tools/control_plane/gate_runner.py": {
+            "sha256": "d4da8de1bf5140fa8830bb817e9ae5c97f0cba0bafcd3b551e586ae7ee038606",
+            "bytes": 18514
+          },
+          "tools/control_plane/impact.py": {
+            "sha256": "73e4dddb9c984081ef6ae07cc9ac0182839f87e43181261067a89ce835a25392",
+            "bytes": 9058
+          }
+        },
+        "exit_code": 0,
+        "completed_at": "2026-10-24T16:00:35.576086+00:00",
+        "elapsed_seconds": 0.866,
+        "source_after": {
+          ".gitlab-ci.yml": {
+            "sha256": "88029613e9d856d9633cafd4995db2f95f470065c69f52d4948ae0182a6db3ee",
+            "bytes": 940
+          },
+          "docs/changes/20261023-evidence-methods/evidence/consolidation-independent-execution.json": {
+            "sha256": "39548a00098eef21654e79299210cbd4fa336c746e178f59108abcffdc548c4d",
+            "bytes": 39778
+          },
+          "docs/changes/20261023-evidence-methods/implementation-map.md": {
+            "sha256": "635812051b3880a819fd403ca0dfc340491b94fde39076ac076c5c187e3946f9",
+            "bytes": 19762
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation-findings.md": {
+            "sha256": "913d6c8fe790a4dcc117931c7a704f2f5bc0be9a833be65c7daccbb5e760751f",
+            "bytes": 6417
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation.json": {
+            "sha256": "5afc7b4161df268325ecff6dba35a92c4abd3197932777ee51b90fd41b899590",
+            "bytes": 32522
+          },
+          "fixtures/reference-repository/removal/pass/removal-plan.json": {
+            "sha256": "af3006a9f496d3e5859c496a29b6457cca18cab7dd83d0a3e146e194f3df8c40",
+            "bytes": 2327
+          },
+          "manifests/comprehensive_optimization_backlog.json": {
+            "sha256": "dcc814b4af52ec498a2585673d9da7274fe92da58e02ee580f2fb01283a74a8b",
+            "bytes": 40199
+          },
+          "manifests/gates.json": {
+            "sha256": "6b946680d8cd9329b1bce74a3e3e4565634daa25203b9cde2c8af3c507d9a8be",
+            "bytes": 16794
+          },
+          "pyproject.toml": {
+            "sha256": "853c9e0c09404f0d65970dd67966de887372946a4a73c4b7689c0061013068ca",
+            "bytes": 1155
+          },
+          "reports/current-status.md": {
+            "sha256": "96fa32f595b14b887a66a5eca9e0e7f8334d23589883864ee81c8fd5348d9d1f",
+            "bytes": 5839
+          },
+          "reports/evidence-methods-absorption-2026-10-23.md": null,
+          "subrepos/adoption-matrix.jsonl": {
+            "sha256": "a0a345e4626725a234a47419dfc073e61f221aec3595f2d960bcb19d0a780b3a",
+            "bytes": 103853
+          },
+          "subrepos/adoption-matrix.md": {
+            "sha256": "da66a91c839169f540175cfcfabea245526657e9e9f47b868ea7e1d4b74493b4",
+            "bytes": 85541
+          },
+          "tests/test_ci_incremental_gate_dag.sh": {
+            "sha256": "c7737a1b585d52bba90a6b7c5106d6e84fca47563fe7f9d3215dcec59d69b3bb",
+            "bytes": 16923
+          },
+          "tests/test_gate_boundaries.py": {
+            "sha256": "4be7ffefc6ec608f1fe7d6564c4e5e1ed74aad165f0b2aa3e695505fc96b6eb4",
+            "bytes": 28573
+          },
+          "tests/test_gate_runner.sh": {
+            "sha256": "c9b9975467c6c966b7fdbcba852fe81fd0c308f0355213857e85f17448a8bd41",
+            "bytes": 1020
+          },
+          "tools/control_plane/active_contracts.py": {
+            "sha256": "4cc0a123b5588f4b13c1ca697903e2fa436b0a1deceb76ad5e474f986340f8fc",
+            "bytes": 7134
+          },
+          "tools/control_plane/gate_runner.py": {
+            "sha256": "d4da8de1bf5140fa8830bb817e9ae5c97f0cba0bafcd3b551e586ae7ee038606",
+            "bytes": 18514
+          },
+          "tools/control_plane/impact.py": {
+            "sha256": "73e4dddb9c984081ef6ae07cc9ac0182839f87e43181261067a89ce835a25392",
+            "bytes": 9058
+          }
+        },
+        "source_stable": true,
+        "stdout": {
+          "sha256": "5d4b6d285b77932e3d08212c3b4974d0a803f98ec60408ac6ccf6a063fa6c19e",
+          "bytes": 42,
+          "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/mypy-active.stdout"
+        },
+        "stderr": {
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0,
+          "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/mypy-active.stderr"
+        }
+      },
+      "raw_streams_utf8": {
+        "stdout": "Success: no issues found in 1 source file\n",
+        "stderr": ""
+      }
+    },
+    {
+      "original_record": {
+        "schema": "independent-root-review-run/v1",
+        "label": "quality-versions",
+        "reviewer": "/root/release_governance_audit",
+        "cwd": "/workspace/scratch/712af632e2a5/llm_agent-pr270",
+        "argv": [
+          "/workspace/scratch/712af632e2a5/root-quality-venv/bin/python3",
+          "-c",
+          "import importlib.metadata,json,platform;print(json.dumps({\"python\":platform.python_version(),\"ruff\":importlib.metadata.version(\"ruff\"),\"mypy\":importlib.metadata.version(\"mypy\")}))"
+        ],
+        "started_at": "2026-10-24T16:03:05.570973+00:00",
+        "source_before": {
+          ".gitlab-ci.yml": {
+            "sha256": "88029613e9d856d9633cafd4995db2f95f470065c69f52d4948ae0182a6db3ee",
+            "bytes": 940
+          },
+          "docs/changes/20261023-evidence-methods/evidence/consolidation-independent-execution.json": {
+            "sha256": "39548a00098eef21654e79299210cbd4fa336c746e178f59108abcffdc548c4d",
+            "bytes": 39778
+          },
+          "docs/changes/20261023-evidence-methods/implementation-map.md": {
+            "sha256": "635812051b3880a819fd403ca0dfc340491b94fde39076ac076c5c187e3946f9",
+            "bytes": 19762
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation-findings.md": {
+            "sha256": "913d6c8fe790a4dcc117931c7a704f2f5bc0be9a833be65c7daccbb5e760751f",
+            "bytes": 6417
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation.json": {
+            "sha256": "5afc7b4161df268325ecff6dba35a92c4abd3197932777ee51b90fd41b899590",
+            "bytes": 32522
+          },
+          "fixtures/reference-repository/removal/pass/removal-plan.json": {
+            "sha256": "af3006a9f496d3e5859c496a29b6457cca18cab7dd83d0a3e146e194f3df8c40",
+            "bytes": 2327
+          },
+          "manifests/comprehensive_optimization_backlog.json": {
+            "sha256": "dcc814b4af52ec498a2585673d9da7274fe92da58e02ee580f2fb01283a74a8b",
+            "bytes": 40199
+          },
+          "manifests/gates.json": {
+            "sha256": "6b946680d8cd9329b1bce74a3e3e4565634daa25203b9cde2c8af3c507d9a8be",
+            "bytes": 16794
+          },
+          "pyproject.toml": {
+            "sha256": "853c9e0c09404f0d65970dd67966de887372946a4a73c4b7689c0061013068ca",
+            "bytes": 1155
+          },
+          "reports/current-status.md": {
+            "sha256": "96fa32f595b14b887a66a5eca9e0e7f8334d23589883864ee81c8fd5348d9d1f",
+            "bytes": 5839
+          },
+          "reports/evidence-methods-absorption-2026-10-23.md": null,
+          "subrepos/adoption-matrix.jsonl": {
+            "sha256": "a0a345e4626725a234a47419dfc073e61f221aec3595f2d960bcb19d0a780b3a",
+            "bytes": 103853
+          },
+          "subrepos/adoption-matrix.md": {
+            "sha256": "da66a91c839169f540175cfcfabea245526657e9e9f47b868ea7e1d4b74493b4",
+            "bytes": 85541
+          },
+          "tests/test_ci_incremental_gate_dag.sh": {
+            "sha256": "c7737a1b585d52bba90a6b7c5106d6e84fca47563fe7f9d3215dcec59d69b3bb",
+            "bytes": 16923
+          },
+          "tests/test_gate_boundaries.py": {
+            "sha256": "4be7ffefc6ec608f1fe7d6564c4e5e1ed74aad165f0b2aa3e695505fc96b6eb4",
+            "bytes": 28573
+          },
+          "tests/test_gate_runner.sh": {
+            "sha256": "c9b9975467c6c966b7fdbcba852fe81fd0c308f0355213857e85f17448a8bd41",
+            "bytes": 1020
+          },
+          "tools/control_plane/active_contracts.py": {
+            "sha256": "4cc0a123b5588f4b13c1ca697903e2fa436b0a1deceb76ad5e474f986340f8fc",
+            "bytes": 7134
+          },
+          "tools/control_plane/gate_runner.py": {
+            "sha256": "d4da8de1bf5140fa8830bb817e9ae5c97f0cba0bafcd3b551e586ae7ee038606",
+            "bytes": 18514
+          },
+          "tools/control_plane/impact.py": {
+            "sha256": "73e4dddb9c984081ef6ae07cc9ac0182839f87e43181261067a89ce835a25392",
+            "bytes": 9058
+          }
+        },
+        "exit_code": 0,
+        "completed_at": "2026-10-24T16:03:05.637322+00:00",
+        "elapsed_seconds": 0.065,
+        "source_after": {
+          ".gitlab-ci.yml": {
+            "sha256": "88029613e9d856d9633cafd4995db2f95f470065c69f52d4948ae0182a6db3ee",
+            "bytes": 940
+          },
+          "docs/changes/20261023-evidence-methods/evidence/consolidation-independent-execution.json": {
+            "sha256": "39548a00098eef21654e79299210cbd4fa336c746e178f59108abcffdc548c4d",
+            "bytes": 39778
+          },
+          "docs/changes/20261023-evidence-methods/implementation-map.md": {
+            "sha256": "635812051b3880a819fd403ca0dfc340491b94fde39076ac076c5c187e3946f9",
+            "bytes": 19762
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation-findings.md": {
+            "sha256": "913d6c8fe790a4dcc117931c7a704f2f5bc0be9a833be65c7daccbb5e760751f",
+            "bytes": 6417
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation.json": {
+            "sha256": "5afc7b4161df268325ecff6dba35a92c4abd3197932777ee51b90fd41b899590",
+            "bytes": 32522
+          },
+          "fixtures/reference-repository/removal/pass/removal-plan.json": {
+            "sha256": "af3006a9f496d3e5859c496a29b6457cca18cab7dd83d0a3e146e194f3df8c40",
+            "bytes": 2327
+          },
+          "manifests/comprehensive_optimization_backlog.json": {
+            "sha256": "dcc814b4af52ec498a2585673d9da7274fe92da58e02ee580f2fb01283a74a8b",
+            "bytes": 40199
+          },
+          "manifests/gates.json": {
+            "sha256": "6b946680d8cd9329b1bce74a3e3e4565634daa25203b9cde2c8af3c507d9a8be",
+            "bytes": 16794
+          },
+          "pyproject.toml": {
+            "sha256": "853c9e0c09404f0d65970dd67966de887372946a4a73c4b7689c0061013068ca",
+            "bytes": 1155
+          },
+          "reports/current-status.md": {
+            "sha256": "96fa32f595b14b887a66a5eca9e0e7f8334d23589883864ee81c8fd5348d9d1f",
+            "bytes": 5839
+          },
+          "reports/evidence-methods-absorption-2026-10-23.md": null,
+          "subrepos/adoption-matrix.jsonl": {
+            "sha256": "a0a345e4626725a234a47419dfc073e61f221aec3595f2d960bcb19d0a780b3a",
+            "bytes": 103853
+          },
+          "subrepos/adoption-matrix.md": {
+            "sha256": "da66a91c839169f540175cfcfabea245526657e9e9f47b868ea7e1d4b74493b4",
+            "bytes": 85541
+          },
+          "tests/test_ci_incremental_gate_dag.sh": {
+            "sha256": "c7737a1b585d52bba90a6b7c5106d6e84fca47563fe7f9d3215dcec59d69b3bb",
+            "bytes": 16923
+          },
+          "tests/test_gate_boundaries.py": {
+            "sha256": "4be7ffefc6ec608f1fe7d6564c4e5e1ed74aad165f0b2aa3e695505fc96b6eb4",
+            "bytes": 28573
+          },
+          "tests/test_gate_runner.sh": {
+            "sha256": "c9b9975467c6c966b7fdbcba852fe81fd0c308f0355213857e85f17448a8bd41",
+            "bytes": 1020
+          },
+          "tools/control_plane/active_contracts.py": {
+            "sha256": "4cc0a123b5588f4b13c1ca697903e2fa436b0a1deceb76ad5e474f986340f8fc",
+            "bytes": 7134
+          },
+          "tools/control_plane/gate_runner.py": {
+            "sha256": "d4da8de1bf5140fa8830bb817e9ae5c97f0cba0bafcd3b551e586ae7ee038606",
+            "bytes": 18514
+          },
+          "tools/control_plane/impact.py": {
+            "sha256": "73e4dddb9c984081ef6ae07cc9ac0182839f87e43181261067a89ce835a25392",
+            "bytes": 9058
+          }
+        },
+        "source_stable": true,
+        "stdout": {
+          "sha256": "a0e2744c164d2ee9cd93c6d6689fe0a23edbf2a4c902338c615d66cf7b317a40",
+          "bytes": 57,
+          "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/quality-versions.stdout"
+        },
+        "stderr": {
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0,
+          "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/quality-versions.stderr"
+        }
+      },
+      "raw_streams_utf8": {
+        "stdout": "{\"python\": \"3.12.14\", \"ruff\": \"0.16.6\", \"mypy\": \"2.3.1\"}\n",
+        "stderr": ""
+      }
+    },
+    {
+      "original_record": {
+        "schema": "independent-root-review-run/v1",
+        "label": "ruff",
+        "reviewer": "/root/release_governance_audit",
+        "cwd": "/workspace/scratch/712af632e2a5/llm_agent-pr270",
+        "argv": [
+          "/workspace/scratch/712af632e2a5/root-quality-venv/bin/python3",
+          "-m",
+          "ruff",
+          "check",
+          "tools/control_plane/active_contracts.py",
+          "tests/test_gate_boundaries.py"
+        ],
+        "started_at": "2026-10-24T16:00:34.708597+00:00",
+        "source_before": {
+          ".gitlab-ci.yml": {
+            "sha256": "88029613e9d856d9633cafd4995db2f95f470065c69f52d4948ae0182a6db3ee",
+            "bytes": 940
+          },
+          "docs/changes/20261023-evidence-methods/evidence/consolidation-independent-execution.json": {
+            "sha256": "39548a00098eef21654e79299210cbd4fa336c746e178f59108abcffdc548c4d",
+            "bytes": 39778
+          },
+          "docs/changes/20261023-evidence-methods/implementation-map.md": {
+            "sha256": "635812051b3880a819fd403ca0dfc340491b94fde39076ac076c5c187e3946f9",
+            "bytes": 19762
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation-findings.md": {
+            "sha256": "913d6c8fe790a4dcc117931c7a704f2f5bc0be9a833be65c7daccbb5e760751f",
+            "bytes": 6417
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation.json": {
+            "sha256": "5afc7b4161df268325ecff6dba35a92c4abd3197932777ee51b90fd41b899590",
+            "bytes": 32522
+          },
+          "fixtures/reference-repository/removal/pass/removal-plan.json": {
+            "sha256": "af3006a9f496d3e5859c496a29b6457cca18cab7dd83d0a3e146e194f3df8c40",
+            "bytes": 2327
+          },
+          "manifests/comprehensive_optimization_backlog.json": {
+            "sha256": "dcc814b4af52ec498a2585673d9da7274fe92da58e02ee580f2fb01283a74a8b",
+            "bytes": 40199
+          },
+          "manifests/gates.json": {
+            "sha256": "6b946680d8cd9329b1bce74a3e3e4565634daa25203b9cde2c8af3c507d9a8be",
+            "bytes": 16794
+          },
+          "pyproject.toml": {
+            "sha256": "853c9e0c09404f0d65970dd67966de887372946a4a73c4b7689c0061013068ca",
+            "bytes": 1155
+          },
+          "reports/current-status.md": {
+            "sha256": "96fa32f595b14b887a66a5eca9e0e7f8334d23589883864ee81c8fd5348d9d1f",
+            "bytes": 5839
+          },
+          "reports/evidence-methods-absorption-2026-10-23.md": null,
+          "subrepos/adoption-matrix.jsonl": {
+            "sha256": "a0a345e4626725a234a47419dfc073e61f221aec3595f2d960bcb19d0a780b3a",
+            "bytes": 103853
+          },
+          "subrepos/adoption-matrix.md": {
+            "sha256": "da66a91c839169f540175cfcfabea245526657e9e9f47b868ea7e1d4b74493b4",
+            "bytes": 85541
+          },
+          "tests/test_ci_incremental_gate_dag.sh": {
+            "sha256": "c7737a1b585d52bba90a6b7c5106d6e84fca47563fe7f9d3215dcec59d69b3bb",
+            "bytes": 16923
+          },
+          "tests/test_gate_boundaries.py": {
+            "sha256": "4be7ffefc6ec608f1fe7d6564c4e5e1ed74aad165f0b2aa3e695505fc96b6eb4",
+            "bytes": 28573
+          },
+          "tests/test_gate_runner.sh": {
+            "sha256": "c9b9975467c6c966b7fdbcba852fe81fd0c308f0355213857e85f17448a8bd41",
+            "bytes": 1020
+          },
+          "tools/control_plane/active_contracts.py": {
+            "sha256": "4cc0a123b5588f4b13c1ca697903e2fa436b0a1deceb76ad5e474f986340f8fc",
+            "bytes": 7134
+          },
+          "tools/control_plane/gate_runner.py": {
+            "sha256": "d4da8de1bf5140fa8830bb817e9ae5c97f0cba0bafcd3b551e586ae7ee038606",
+            "bytes": 18514
+          },
+          "tools/control_plane/impact.py": {
+            "sha256": "73e4dddb9c984081ef6ae07cc9ac0182839f87e43181261067a89ce835a25392",
+            "bytes": 9058
+          }
+        },
+        "exit_code": 0,
+        "completed_at": "2026-10-24T16:00:34.742261+00:00",
+        "elapsed_seconds": 0.032,
+        "source_after": {
+          ".gitlab-ci.yml": {
+            "sha256": "88029613e9d856d9633cafd4995db2f95f470065c69f52d4948ae0182a6db3ee",
+            "bytes": 940
+          },
+          "docs/changes/20261023-evidence-methods/evidence/consolidation-independent-execution.json": {
+            "sha256": "39548a00098eef21654e79299210cbd4fa336c746e178f59108abcffdc548c4d",
+            "bytes": 39778
+          },
+          "docs/changes/20261023-evidence-methods/implementation-map.md": {
+            "sha256": "635812051b3880a819fd403ca0dfc340491b94fde39076ac076c5c187e3946f9",
+            "bytes": 19762
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation-findings.md": {
+            "sha256": "913d6c8fe790a4dcc117931c7a704f2f5bc0be9a833be65c7daccbb5e760751f",
+            "bytes": 6417
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation.json": {
+            "sha256": "5afc7b4161df268325ecff6dba35a92c4abd3197932777ee51b90fd41b899590",
+            "bytes": 32522
+          },
+          "fixtures/reference-repository/removal/pass/removal-plan.json": {
+            "sha256": "af3006a9f496d3e5859c496a29b6457cca18cab7dd83d0a3e146e194f3df8c40",
+            "bytes": 2327
+          },
+          "manifests/comprehensive_optimization_backlog.json": {
+            "sha256": "dcc814b4af52ec498a2585673d9da7274fe92da58e02ee580f2fb01283a74a8b",
+            "bytes": 40199
+          },
+          "manifests/gates.json": {
+            "sha256": "6b946680d8cd9329b1bce74a3e3e4565634daa25203b9cde2c8af3c507d9a8be",
+            "bytes": 16794
+          },
+          "pyproject.toml": {
+            "sha256": "853c9e0c09404f0d65970dd67966de887372946a4a73c4b7689c0061013068ca",
+            "bytes": 1155
+          },
+          "reports/current-status.md": {
+            "sha256": "96fa32f595b14b887a66a5eca9e0e7f8334d23589883864ee81c8fd5348d9d1f",
+            "bytes": 5839
+          },
+          "reports/evidence-methods-absorption-2026-10-23.md": null,
+          "subrepos/adoption-matrix.jsonl": {
+            "sha256": "a0a345e4626725a234a47419dfc073e61f221aec3595f2d960bcb19d0a780b3a",
+            "bytes": 103853
+          },
+          "subrepos/adoption-matrix.md": {
+            "sha256": "da66a91c839169f540175cfcfabea245526657e9e9f47b868ea7e1d4b74493b4",
+            "bytes": 85541
+          },
+          "tests/test_ci_incremental_gate_dag.sh": {
+            "sha256": "c7737a1b585d52bba90a6b7c5106d6e84fca47563fe7f9d3215dcec59d69b3bb",
+            "bytes": 16923
+          },
+          "tests/test_gate_boundaries.py": {
+            "sha256": "4be7ffefc6ec608f1fe7d6564c4e5e1ed74aad165f0b2aa3e695505fc96b6eb4",
+            "bytes": 28573
+          },
+          "tests/test_gate_runner.sh": {
+            "sha256": "c9b9975467c6c966b7fdbcba852fe81fd0c308f0355213857e85f17448a8bd41",
+            "bytes": 1020
+          },
+          "tools/control_plane/active_contracts.py": {
+            "sha256": "4cc0a123b5588f4b13c1ca697903e2fa436b0a1deceb76ad5e474f986340f8fc",
+            "bytes": 7134
+          },
+          "tools/control_plane/gate_runner.py": {
+            "sha256": "d4da8de1bf5140fa8830bb817e9ae5c97f0cba0bafcd3b551e586ae7ee038606",
+            "bytes": 18514
+          },
+          "tools/control_plane/impact.py": {
+            "sha256": "73e4dddb9c984081ef6ae07cc9ac0182839f87e43181261067a89ce835a25392",
+            "bytes": 9058
+          }
+        },
+        "source_stable": true,
+        "stdout": {
+          "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+          "bytes": 19,
+          "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/ruff.stdout"
+        },
+        "stderr": {
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0,
+          "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/ruff.stderr"
+        }
+      },
+      "raw_streams_utf8": {
+        "stdout": "All checks passed!\n",
+        "stderr": ""
+      }
+    },
+    {
+      "original_record": {
+        "schema": "independent-root-review-run/v1",
+        "label": "status-projection",
+        "reviewer": "/root/release_governance_audit",
+        "cwd": "/workspace/scratch/712af632e2a5/llm_agent-pr270",
+        "argv": [
+          "python3",
+          "-m",
+          "tools.control_plane.status_projection",
+          "--root",
+          "."
+        ],
+        "started_at": "2026-10-24T16:03:29.889166+00:00",
+        "source_before": {
+          ".gitlab-ci.yml": {
+            "sha256": "88029613e9d856d9633cafd4995db2f95f470065c69f52d4948ae0182a6db3ee",
+            "bytes": 940
+          },
+          "docs/changes/20261023-evidence-methods/evidence/consolidation-independent-execution.json": {
+            "sha256": "39548a00098eef21654e79299210cbd4fa336c746e178f59108abcffdc548c4d",
+            "bytes": 39778
+          },
+          "docs/changes/20261023-evidence-methods/implementation-map.md": {
+            "sha256": "635812051b3880a819fd403ca0dfc340491b94fde39076ac076c5c187e3946f9",
+            "bytes": 19762
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation-findings.md": {
+            "sha256": "913d6c8fe790a4dcc117931c7a704f2f5bc0be9a833be65c7daccbb5e760751f",
+            "bytes": 6417
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation.json": {
+            "sha256": "5afc7b4161df268325ecff6dba35a92c4abd3197932777ee51b90fd41b899590",
+            "bytes": 32522
+          },
+          "fixtures/reference-repository/removal/pass/removal-plan.json": {
+            "sha256": "af3006a9f496d3e5859c496a29b6457cca18cab7dd83d0a3e146e194f3df8c40",
+            "bytes": 2327
+          },
+          "manifests/comprehensive_optimization_backlog.json": {
+            "sha256": "dcc814b4af52ec498a2585673d9da7274fe92da58e02ee580f2fb01283a74a8b",
+            "bytes": 40199
+          },
+          "manifests/gates.json": {
+            "sha256": "6b946680d8cd9329b1bce74a3e3e4565634daa25203b9cde2c8af3c507d9a8be",
+            "bytes": 16794
+          },
+          "pyproject.toml": {
+            "sha256": "853c9e0c09404f0d65970dd67966de887372946a4a73c4b7689c0061013068ca",
+            "bytes": 1155
+          },
+          "reports/current-status.md": {
+            "sha256": "96fa32f595b14b887a66a5eca9e0e7f8334d23589883864ee81c8fd5348d9d1f",
+            "bytes": 5839
+          },
+          "reports/evidence-methods-absorption-2026-10-23.md": null,
+          "subrepos/adoption-matrix.jsonl": {
+            "sha256": "a0a345e4626725a234a47419dfc073e61f221aec3595f2d960bcb19d0a780b3a",
+            "bytes": 103853
+          },
+          "subrepos/adoption-matrix.md": {
+            "sha256": "da66a91c839169f540175cfcfabea245526657e9e9f47b868ea7e1d4b74493b4",
+            "bytes": 85541
+          },
+          "tests/test_ci_incremental_gate_dag.sh": {
+            "sha256": "c7737a1b585d52bba90a6b7c5106d6e84fca47563fe7f9d3215dcec59d69b3bb",
+            "bytes": 16923
+          },
+          "tests/test_gate_boundaries.py": {
+            "sha256": "4be7ffefc6ec608f1fe7d6564c4e5e1ed74aad165f0b2aa3e695505fc96b6eb4",
+            "bytes": 28573
+          },
+          "tests/test_gate_runner.sh": {
+            "sha256": "c9b9975467c6c966b7fdbcba852fe81fd0c308f0355213857e85f17448a8bd41",
+            "bytes": 1020
+          },
+          "tools/control_plane/active_contracts.py": {
+            "sha256": "4cc0a123b5588f4b13c1ca697903e2fa436b0a1deceb76ad5e474f986340f8fc",
+            "bytes": 7134
+          },
+          "tools/control_plane/gate_runner.py": {
+            "sha256": "d4da8de1bf5140fa8830bb817e9ae5c97f0cba0bafcd3b551e586ae7ee038606",
+            "bytes": 18514
+          },
+          "tools/control_plane/impact.py": {
+            "sha256": "73e4dddb9c984081ef6ae07cc9ac0182839f87e43181261067a89ce835a25392",
+            "bytes": 9058
+          }
+        },
+        "exit_code": 0,
+        "completed_at": "2026-10-24T16:03:29.955135+00:00",
+        "elapsed_seconds": 0.064,
+        "source_after": {
+          ".gitlab-ci.yml": {
+            "sha256": "88029613e9d856d9633cafd4995db2f95f470065c69f52d4948ae0182a6db3ee",
+            "bytes": 940
+          },
+          "docs/changes/20261023-evidence-methods/evidence/consolidation-independent-execution.json": {
+            "sha256": "39548a00098eef21654e79299210cbd4fa336c746e178f59108abcffdc548c4d",
+            "bytes": 39778
+          },
+          "docs/changes/20261023-evidence-methods/implementation-map.md": {
+            "sha256": "635812051b3880a819fd403ca0dfc340491b94fde39076ac076c5c187e3946f9",
+            "bytes": 19762
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation-findings.md": {
+            "sha256": "913d6c8fe790a4dcc117931c7a704f2f5bc0be9a833be65c7daccbb5e760751f",
+            "bytes": 6417
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation.json": {
+            "sha256": "5afc7b4161df268325ecff6dba35a92c4abd3197932777ee51b90fd41b899590",
+            "bytes": 32522
+          },
+          "fixtures/reference-repository/removal/pass/removal-plan.json": {
+            "sha256": "af3006a9f496d3e5859c496a29b6457cca18cab7dd83d0a3e146e194f3df8c40",
+            "bytes": 2327
+          },
+          "manifests/comprehensive_optimization_backlog.json": {
+            "sha256": "dcc814b4af52ec498a2585673d9da7274fe92da58e02ee580f2fb01283a74a8b",
+            "bytes": 40199
+          },
+          "manifests/gates.json": {
+            "sha256": "6b946680d8cd9329b1bce74a3e3e4565634daa25203b9cde2c8af3c507d9a8be",
+            "bytes": 16794
+          },
+          "pyproject.toml": {
+            "sha256": "853c9e0c09404f0d65970dd67966de887372946a4a73c4b7689c0061013068ca",
+            "bytes": 1155
+          },
+          "reports/current-status.md": {
+            "sha256": "96fa32f595b14b887a66a5eca9e0e7f8334d23589883864ee81c8fd5348d9d1f",
+            "bytes": 5839
+          },
+          "reports/evidence-methods-absorption-2026-10-23.md": null,
+          "subrepos/adoption-matrix.jsonl": {
+            "sha256": "a0a345e4626725a234a47419dfc073e61f221aec3595f2d960bcb19d0a780b3a",
+            "bytes": 103853
+          },
+          "subrepos/adoption-matrix.md": {
+            "sha256": "da66a91c839169f540175cfcfabea245526657e9e9f47b868ea7e1d4b74493b4",
+            "bytes": 85541
+          },
+          "tests/test_ci_incremental_gate_dag.sh": {
+            "sha256": "c7737a1b585d52bba90a6b7c5106d6e84fca47563fe7f9d3215dcec59d69b3bb",
+            "bytes": 16923
+          },
+          "tests/test_gate_boundaries.py": {
+            "sha256": "4be7ffefc6ec608f1fe7d6564c4e5e1ed74aad165f0b2aa3e695505fc96b6eb4",
+            "bytes": 28573
+          },
+          "tests/test_gate_runner.sh": {
+            "sha256": "c9b9975467c6c966b7fdbcba852fe81fd0c308f0355213857e85f17448a8bd41",
+            "bytes": 1020
+          },
+          "tools/control_plane/active_contracts.py": {
+            "sha256": "4cc0a123b5588f4b13c1ca697903e2fa436b0a1deceb76ad5e474f986340f8fc",
+            "bytes": 7134
+          },
+          "tools/control_plane/gate_runner.py": {
+            "sha256": "d4da8de1bf5140fa8830bb817e9ae5c97f0cba0bafcd3b551e586ae7ee038606",
+            "bytes": 18514
+          },
+          "tools/control_plane/impact.py": {
+            "sha256": "73e4dddb9c984081ef6ae07cc9ac0182839f87e43181261067a89ce835a25392",
+            "bytes": 9058
+          }
+        },
+        "source_stable": true,
+        "stdout": {
+          "sha256": "ce2b9e0a473eac240574b29d73326a11b43443c796ef9ba667d382b57afc5b72",
+          "bytes": 1662,
+          "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/status-projection.stdout"
+        },
+        "stderr": {
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0,
+          "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/status-projection.stderr"
+        }
+      },
+      "raw_streams_utf8": {
+        "stdout": "{\n  \"schema\": \"llm-agent-status-projection/v3\",\n  \"status\": \"pass\",\n  \"source\": {\n    \"head\": \"64c5192f2d6aaacf65143223f03190564032facc\",\n    \"adk_gitlink\": \"415590db44e88979185efb850e2339a3f95411ef\",\n    \"adk_lock_commit\": \"415590db44e88979185efb850e2339a3f95411ef\",\n    \"adk_lock_schema\": \"llm-agent-adk-lock/v2\",\n    \"pin_consistent\": true\n  },\n  \"current_projection\": {\n    \"path\": \"reports/current-status.md\",\n    \"schema\": \"llm-agent-current-status/v1\",\n    \"inputs_sha256\": \"ca300d17f832aeca8e2adc61eaee6c29a037bdec50a23f1138152fd8f8392d17\",\n    \"inputs\": {\n      \"adk.lock\": \"ae927bd6fa36d2ec788145b501c2ca7b32e48185\",\n      \"manifests/gates.json\": \"4805b2ba8dac627d016fbdcf39aeafb06f8bad5b\",\n      \"manifests/product_maturity_scorecard.json\": \"47b9efcfe47d028a5481e3d9babf209199ff3b37\",\n      \"manifests/software_m5_policy.json\": \"fbd4bde37746bf843aef1a240ec3e7def249d856\",\n      \"tools/control_plane/status_projection.py\": \"d798cb798d021ceb0746c4da7ce65dacb03b865d\"\n    },\n    \"consistent\": true,\n    \"mismatches\": {}\n  },\n  \"last_verified_baseline\": {\n    \"path\": \"reports/current-status.md\",\n    \"root_product_commit\": \"6b9dce21312b36cad93d9f2bd0fc1c757374f7d7\",\n    \"last_verified_at\": \"2026-09-12\",\n    \"verified_projection_inputs_sha256\": \"3b08c91926792770caa3f4b29a188f53b53ba91b5888624b9bfe06d21f45923d\",\n    \"age_days\": 43,\n    \"history_available\": false,\n    \"relationship_to_head\": \"history-unavailable\",\n    \"is_ancestor\": null,\n    \"source_inputs_match\": false,\n    \"fresh_for_current_source\": false,\n    \"fresh_for_current_head\": false\n  },\n  \"current_evidence_state\": \"source-current-evidence-historical\",\n  \"release_authorized\": false\n}\n",
+        "stderr": ""
+      }
+    },
+    {
+      "original_record": {
+        "schema": "independent-root-review-run/v1",
+        "label": "strict-budget",
+        "reviewer": "/root/release_governance_audit",
+        "cwd": "/workspace/scratch/712af632e2a5/llm_agent-pr270",
+        "argv": [
+          "bash",
+          "scripts/check-maintainability-budgets.sh",
+          "--strict",
+          "--summary-json"
+        ],
+        "started_at": "2026-10-24T16:00:05.002425+00:00",
+        "source_before": {
+          ".gitlab-ci.yml": {
+            "sha256": "88029613e9d856d9633cafd4995db2f95f470065c69f52d4948ae0182a6db3ee",
+            "bytes": 940
+          },
+          "docs/changes/20261023-evidence-methods/evidence/consolidation-independent-execution.json": {
+            "sha256": "39548a00098eef21654e79299210cbd4fa336c746e178f59108abcffdc548c4d",
+            "bytes": 39778
+          },
+          "docs/changes/20261023-evidence-methods/implementation-map.md": {
+            "sha256": "635812051b3880a819fd403ca0dfc340491b94fde39076ac076c5c187e3946f9",
+            "bytes": 19762
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation-findings.md": {
+            "sha256": "913d6c8fe790a4dcc117931c7a704f2f5bc0be9a833be65c7daccbb5e760751f",
+            "bytes": 6417
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation.json": {
+            "sha256": "5afc7b4161df268325ecff6dba35a92c4abd3197932777ee51b90fd41b899590",
+            "bytes": 32522
+          },
+          "fixtures/reference-repository/removal/pass/removal-plan.json": {
+            "sha256": "af3006a9f496d3e5859c496a29b6457cca18cab7dd83d0a3e146e194f3df8c40",
+            "bytes": 2327
+          },
+          "manifests/comprehensive_optimization_backlog.json": {
+            "sha256": "dcc814b4af52ec498a2585673d9da7274fe92da58e02ee580f2fb01283a74a8b",
+            "bytes": 40199
+          },
+          "manifests/gates.json": {
+            "sha256": "6b946680d8cd9329b1bce74a3e3e4565634daa25203b9cde2c8af3c507d9a8be",
+            "bytes": 16794
+          },
+          "pyproject.toml": {
+            "sha256": "853c9e0c09404f0d65970dd67966de887372946a4a73c4b7689c0061013068ca",
+            "bytes": 1155
+          },
+          "reports/current-status.md": {
+            "sha256": "96fa32f595b14b887a66a5eca9e0e7f8334d23589883864ee81c8fd5348d9d1f",
+            "bytes": 5839
+          },
+          "reports/evidence-methods-absorption-2026-10-23.md": null,
+          "subrepos/adoption-matrix.jsonl": {
+            "sha256": "a0a345e4626725a234a47419dfc073e61f221aec3595f2d960bcb19d0a780b3a",
+            "bytes": 103853
+          },
+          "subrepos/adoption-matrix.md": {
+            "sha256": "da66a91c839169f540175cfcfabea245526657e9e9f47b868ea7e1d4b74493b4",
+            "bytes": 85541
+          },
+          "tests/test_ci_incremental_gate_dag.sh": {
+            "sha256": "c7737a1b585d52bba90a6b7c5106d6e84fca47563fe7f9d3215dcec59d69b3bb",
+            "bytes": 16923
+          },
+          "tests/test_gate_boundaries.py": {
+            "sha256": "4be7ffefc6ec608f1fe7d6564c4e5e1ed74aad165f0b2aa3e695505fc96b6eb4",
+            "bytes": 28573
+          },
+          "tests/test_gate_runner.sh": {
+            "sha256": "c9b9975467c6c966b7fdbcba852fe81fd0c308f0355213857e85f17448a8bd41",
+            "bytes": 1020
+          },
+          "tools/control_plane/active_contracts.py": {
+            "sha256": "4cc0a123b5588f4b13c1ca697903e2fa436b0a1deceb76ad5e474f986340f8fc",
+            "bytes": 7134
+          },
+          "tools/control_plane/gate_runner.py": {
+            "sha256": "d4da8de1bf5140fa8830bb817e9ae5c97f0cba0bafcd3b551e586ae7ee038606",
+            "bytes": 18514
+          },
+          "tools/control_plane/impact.py": {
+            "sha256": "73e4dddb9c984081ef6ae07cc9ac0182839f87e43181261067a89ce835a25392",
+            "bytes": 9058
+          }
+        },
+        "exit_code": 0,
+        "completed_at": "2026-10-24T16:00:05.721143+00:00",
+        "elapsed_seconds": 0.716,
+        "source_after": {
+          ".gitlab-ci.yml": {
+            "sha256": "88029613e9d856d9633cafd4995db2f95f470065c69f52d4948ae0182a6db3ee",
+            "bytes": 940
+          },
+          "docs/changes/20261023-evidence-methods/evidence/consolidation-independent-execution.json": {
+            "sha256": "39548a00098eef21654e79299210cbd4fa336c746e178f59108abcffdc548c4d",
+            "bytes": 39778
+          },
+          "docs/changes/20261023-evidence-methods/implementation-map.md": {
+            "sha256": "635812051b3880a819fd403ca0dfc340491b94fde39076ac076c5c187e3946f9",
+            "bytes": 19762
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation-findings.md": {
+            "sha256": "913d6c8fe790a4dcc117931c7a704f2f5bc0be9a833be65c7daccbb5e760751f",
+            "bytes": 6417
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation.json": {
+            "sha256": "5afc7b4161df268325ecff6dba35a92c4abd3197932777ee51b90fd41b899590",
+            "bytes": 32522
+          },
+          "fixtures/reference-repository/removal/pass/removal-plan.json": {
+            "sha256": "af3006a9f496d3e5859c496a29b6457cca18cab7dd83d0a3e146e194f3df8c40",
+            "bytes": 2327
+          },
+          "manifests/comprehensive_optimization_backlog.json": {
+            "sha256": "dcc814b4af52ec498a2585673d9da7274fe92da58e02ee580f2fb01283a74a8b",
+            "bytes": 40199
+          },
+          "manifests/gates.json": {
+            "sha256": "6b946680d8cd9329b1bce74a3e3e4565634daa25203b9cde2c8af3c507d9a8be",
+            "bytes": 16794
+          },
+          "pyproject.toml": {
+            "sha256": "853c9e0c09404f0d65970dd67966de887372946a4a73c4b7689c0061013068ca",
+            "bytes": 1155
+          },
+          "reports/current-status.md": {
+            "sha256": "96fa32f595b14b887a66a5eca9e0e7f8334d23589883864ee81c8fd5348d9d1f",
+            "bytes": 5839
+          },
+          "reports/evidence-methods-absorption-2026-10-23.md": null,
+          "subrepos/adoption-matrix.jsonl": {
+            "sha256": "a0a345e4626725a234a47419dfc073e61f221aec3595f2d960bcb19d0a780b3a",
+            "bytes": 103853
+          },
+          "subrepos/adoption-matrix.md": {
+            "sha256": "da66a91c839169f540175cfcfabea245526657e9e9f47b868ea7e1d4b74493b4",
+            "bytes": 85541
+          },
+          "tests/test_ci_incremental_gate_dag.sh": {
+            "sha256": "c7737a1b585d52bba90a6b7c5106d6e84fca47563fe7f9d3215dcec59d69b3bb",
+            "bytes": 16923
+          },
+          "tests/test_gate_boundaries.py": {
+            "sha256": "4be7ffefc6ec608f1fe7d6564c4e5e1ed74aad165f0b2aa3e695505fc96b6eb4",
+            "bytes": 28573
+          },
+          "tests/test_gate_runner.sh": {
+            "sha256": "c9b9975467c6c966b7fdbcba852fe81fd0c308f0355213857e85f17448a8bd41",
+            "bytes": 1020
+          },
+          "tools/control_plane/active_contracts.py": {
+            "sha256": "4cc0a123b5588f4b13c1ca697903e2fa436b0a1deceb76ad5e474f986340f8fc",
+            "bytes": 7134
+          },
+          "tools/control_plane/gate_runner.py": {
+            "sha256": "d4da8de1bf5140fa8830bb817e9ae5c97f0cba0bafcd3b551e586ae7ee038606",
+            "bytes": 18514
+          },
+          "tools/control_plane/impact.py": {
+            "sha256": "73e4dddb9c984081ef6ae07cc9ac0182839f87e43181261067a89ce835a25392",
+            "bytes": 9058
+          }
+        },
+        "source_stable": true,
+        "stdout": {
+          "sha256": "f177a49a39a0bc9b6598ac50bf4c9bf519c378708f9a2839d496ae06c245a343",
+          "bytes": 11374,
+          "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/strict-budget.stdout"
+        },
+        "stderr": {
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0,
+          "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/strict-budget.stderr"
+        }
+      },
+      "raw_streams_utf8": {
+        "stdout": "{\"schema\":\"llm-agent-maintainability-budget-report/v2\",\"status\":\"pass\",\"strict\":true,\"baseline_date\":\"2026-07-30\",\"root\":\"/workspace/scratch/712af632e2a5/llm_agent-pr270\",\"budget_count\":14,\"evidence_metric_count\":3,\"failures\":[],\"warnings\":[],\"budgets\":[{\"id\":\"root-script-count\",\"metric\":\"file_count\",\"status\":\"pass\",\"observed\":89,\"baseline\":89,\"drift\":0,\"warning_limit\":92,\"hard_limit\":100,\"files_scanned\":89,\"owner\":\"llm-agent-governance\",\"next_action\":\"Consolidate thin wrappers into an existing typed tools.codex_assets entrypoint before adding another root script.\",\"hotspots\":[{\"path\":\"scripts/analyze-repo.sh\",\"value\":1},{\"path\":\"scripts/backup-rollback.sh\",\"value\":1},{\"path\":\"scripts/check-adk-goal-capability.sh\",\"value\":1},{\"path\":\"scripts/check-adk-governance-suite.sh\",\"value\":1},{\"path\":\"scripts/check-adk-harden-readiness.sh\",\"value\":1}]},{\"id\":\"root-report-count\",\"metric\":\"file_count\",\"status\":\"pass\",\"observed\":320,\"baseline\":284,\"drift\":36,\"warning_limit\":320,\"hard_limit\":400,\"files_scanned\":320,\"owner\":\"llm-agent-governance\",\"next_action\":\"Run governed report cleanup and preserve supersession metadata before creating more active reports.\",\"hotspots\":[{\"path\":\"reports/2026-08-01-token-context-governance-v2-release-bundle.json\",\"value\":1},{\"path\":\"reports/README.md\",\"value\":1},{\"path\":\"reports/absorb-review-20260512_115031.md\",\"value\":1},{\"path\":\"reports/absorption-optimization-review-2026-06-15.md\",\"value\":1},{\"path\":\"reports/active-subrepo-diff-scan-2026-07-06.md\",\"value\":1}]},{\"id\":\"root-manifest-count\",\"metric\":\"file_count\",\"status\":\"pass\",\"observed\":18,\"baseline\":15,\"drift\":3,\"warning_limit\":20,\"hard_limit\":25,\"files_scanned\":18,\"owner\":\"llm-agent-governance\",\"next_action\":\"Keep historical snapshots under manifests/history; consolidate active SSOT contracts before adding another root manifest.\",\"hotspots\":[{\"path\":\"manifests/adk_interface.lock.json\",\"value\":1},{\"path\":\"manifests/comprehensive_optimization_backlog.json\",\"value\":1},{\"path\":\"manifests/digital_worker_runtime_pilot.json\",\"value\":1},{\"path\":\"manifests/external_practice_cycle.json\",\"value\":1},{\"path\":\"manifests/external_practice_sources.json\",\"value\":1}]},{\"id\":\"root-largest-shell-lines\",\"metric\":\"max_lines\",\"status\":\"pass\",\"observed\":658,\"baseline\":666,\"drift\":-8,\"warning_limit\":750,\"hard_limit\":900,\"files_scanned\":89,\"owner\":\"llm-agent-governance\",\"next_action\":\"Move reusable parsing and state logic into tools.codex_assets and keep shell as a transport wrapper.\",\"hotspots\":[{\"path\":\"scripts/collect-runtime-target-evidence-package.sh\",\"value\":658},{\"path\":\"scripts/check-architecture-reports.sh\",\"value\":616},{\"path\":\"scripts/check-runtime-targets.sh\",\"value\":591},{\"path\":\"scripts/lib/same-run-evidence.sh\",\"value\":457},{\"path\":\"scripts/check-workspace-entrypoints.sh\",\"value\":422}]},{\"id\":\"root-largest-python-lines\",\"metric\":\"max_lines\",\"status\":\"pass\",\"observed\":1919,\"baseline\":2078,\"drift\":-159,\"warning_limit\":2200,\"hard_limit\":2500,\"files_scanned\":30,\"owner\":\"llm-agent-governance\",\"next_action\":\"Split the named hotspot by capability boundary with contract tests before adding another responsibility.\",\"hotspots\":[{\"path\":\"tools/codex_assets/practice_intake.py\",\"value\":1919},{\"path\":\"tools/codex_assets/reference_repository.py\",\"value\":970},{\"path\":\"tools/codex_assets/maintainability_budget.py\",\"value\":834},{\"path\":\"tools/codex_assets/runtime_smoke_evidence.py\",\"value\":752},{\"path\":\"tools/codex_assets/software_m5_v3_core.py\",\"value\":676}]},{\"id\":\"adk-largest-shell-lines\",\"metric\":\"max_lines\",\"status\":\"pass\",\"observed\":756,\"baseline\":1745,\"drift\":-989,\"warning_limit\":1850,\"hard_limit\":2100,\"files_scanned\":42,\"owner\":\"agent-dev-kit\",\"next_action\":\"Move deterministic governance logic into src/agent_dev_kit and retain a thin stable shell entrypoint.\",\"hotspots\":[{\"path\":\"agent-dev-kit/scripts/check-agent-ecosystem-standards.sh\",\"value\":756},{\"path\":\"agent-dev-kit/scripts/workflow.sh\",\"value\":670},{\"path\":\"agent-dev-kit/scripts/check-harness-loop-engineering-contracts.sh\",\"value\":585},{\"path\":\"agent-dev-kit/scripts/run-embedded-workflow-pilots.sh\",\"value\":525},{\"path\":\"agent-dev-kit/scripts/run-embedded-production-field-pilot.sh\",\"value\":445}]},{\"id\":\"adk-largest-python-lines\",\"metric\":\"max_lines\",\"status\":\"pass\",\"observed\":575,\"baseline\":1054,\"drift\":-479,\"warning_limit\":1150,\"hard_limit\":1400,\"files_scanned\":106,\"owner\":\"agent-dev-kit\",\"next_action\":\"Split the hotspot only along an owned domain boundary and preserve CLI/API compatibility tests.\",\"hotspots\":[{\"path\":\"agent-dev-kit/src/agent_dev_kit/evaluation_runtime.py\",\"value\":575},{\"path\":\"agent-dev-kit/src/agent_dev_kit/_matcher_kernel.py\",\"value\":570},{\"path\":\"agent-dev-kit/src/agent_dev_kit/installation_transaction.py\",\"value\":542},{\"path\":\"agent-dev-kit/src/agent_dev_kit/release.py\",\"value\":536},{\"path\":\"agent-dev-kit/src/agent_dev_kit/agent_platform.py\",\"value\":511}]},{\"id\":\"root-python-import-fan-out\",\"metric\":\"max_import_fan_out\",\"status\":\"pass\",\"observed\":17,\"baseline\":17,\"drift\":0,\"warning_limit\":20,\"hard_limit\":25,\"files_scanned\":30,\"owner\":\"llm-agent-governance\",\"next_action\":\"Split high fan-out typed modules at stable domain ports before adding another dependency.\",\"hotspots\":[{\"path\":\"tools/codex_assets/codex_model_observer.py\",\"value\":17},{\"path\":\"tools/codex_assets/intake_pipeline.py\",\"value\":17},{\"path\":\"tools/codex_assets/m5_signature.py\",\"value\":15},{\"path\":\"tools/codex_assets/maintainability_budget.py\",\"value\":15},{\"path\":\"tools/codex_assets/reference_worktree_identity.py\",\"value\":15}]},{\"id\":\"adk-python-import-fan-out\",\"metric\":\"max_import_fan_out\",\"status\":\"pass\",\"observed\":26,\"baseline\":24,\"drift\":2,\"warning_limit\":28,\"hard_limit\":35,\"files_scanned\":106,\"owner\":\"agent-dev-kit\",\"next_action\":\"Introduce typed internal ports when a module crosses the reviewed import fan-out budget.\",\"hotspots\":[{\"path\":\"agent-dev-kit/src/agent_dev_kit/cli.py\",\"value\":26},{\"path\":\"agent-dev-kit/src/agent_dev_kit/distribution/release_artifacts.py\",\"value\":20},{\"path\":\"agent-dev-kit/src/agent_dev_kit/evaluation_cli.py\",\"value\":18},{\"path\":\"agent-dev-kit/src/agent_dev_kit/release.py\",\"value\":18},{\"path\":\"agent-dev-kit/src/agent_dev_kit/effect_campaign_materializer.py\",\"value\":17}]},{\"id\":\"root-exact-code-duplication\",\"metric\":\"duplicate_content_groups\",\"status\":\"pass\",\"observed\":0,\"baseline\":0,\"drift\":0,\"warning_limit\":1,\"hard_limit\":3,\"files_scanned\":119,\"owner\":\"llm-agent-governance\",\"next_action\":\"Replace exact duplicate implementation files with one typed implementation and thin entrypoints.\",\"hotspots\":[{\"path\":\"<none>\",\"value\":0,\"duplicates\":[]}]},{\"id\":\"adk-exact-code-duplication\",\"metric\":\"duplicate_content_groups\",\"status\":\"pass\",\"observed\":0,\"baseline\":0,\"drift\":0,\"warning_limit\":2,\"hard_limit\":5,\"files_scanned\":301,\"owner\":\"agent-dev-kit\",\"next_action\":\"Consolidate exact duplicate checker or test logic without weakening target-specific assertions.\",\"hotspots\":[{\"path\":\"<none>\",\"value\":0,\"duplicates\":[]}]},{\"id\":\"root-control-plane-python-count\",\"metric\":\"file_count\",\"status\":\"pass\",\"observed\":29,\"baseline\":28,\"drift\":1,\"warning_limit\":31,\"hard_limit\":35,\"files_scanned\":29,\"owner\":\"llm-agent-governance\",\"next_action\":\"Review ownership and consolidate existing typed control-plane modules before adding further modules; do not hide new modules by excluding the directory.\",\"hotspots\":[{\"path\":\"tools/control_plane/__init__.py\",\"value\":1},{\"path\":\"tools/control_plane/active_contracts.py\",\"value\":1},{\"path\":\"tools/control_plane/adk_interface.py\",\"value\":1},{\"path\":\"tools/control_plane/adk_promotion.py\",\"value\":1},{\"path\":\"tools/control_plane/adk_promotion_evidence.py\",\"value\":1}]},{\"id\":\"root-control-plane-largest-python-lines\",\"metric\":\"max_lines\",\"status\":\"pass\",\"observed\":1030,\"baseline\":981,\"drift\":49,\"warning_limit\":1050,\"hard_limit\":1200,\"files_scanned\":29,\"owner\":\"llm-agent-governance\",\"next_action\":\"Split named control-plane hotspots by bounded context with behavioral regression evidence instead of allocating unbounded line budgets.\",\"hotspots\":[{\"path\":\"tools/control_plane/effect_readiness.py\",\"value\":1030},{\"path\":\"tools/control_plane/longitudinal_operation.py\",\"value\":718},{\"path\":\"tools/control_plane/branch_gc.py\",\"value\":591},{\"path\":\"tools/control_plane/qualification_followup.py\",\"value\":573},{\"path\":\"tools/control_plane/gate_runner.py\",\"value\":501}]},{\"id\":\"root-control-plane-python-import-fan-out\",\"metric\":\"max_import_fan_out\",\"status\":\"pass\",\"observed\":14,\"baseline\":14,\"drift\":0,\"warning_limit\":19,\"hard_limit\":23,\"files_scanned\":29,\"owner\":\"llm-agent-governance\",\"next_action\":\"Preserve explicit dependency direction; review the named high-fan-out control-plane module before introducing another cross-context import.\",\"hotspots\":[{\"path\":\"tools/control_plane/adk_interface.py\",\"value\":14},{\"path\":\"tools/control_plane/effect_readiness.py\",\"value\":14},{\"path\":\"tools/control_plane/qualification_followup.py\",\"value\":14},{\"path\":\"tools/control_plane/adk_promotion.py\",\"value\":13},{\"path\":\"tools/control_plane/longitudinal_operation.py\",\"value\":13}]}],\"elapsed_ms\":637.316,\"semantic_axes\":{\"coupling\":{\"status\":\"measured\",\"method\":\"max-import-fan-out\"},\"exact_duplication\":{\"status\":\"measured\",\"method\":\"content-sha256\"},\"churn\":{\"id\":\"repository-churn\",\"metric\":\"churn\",\"risk\":\"medium\",\"enforcement\":\"report-only\",\"enforcement_rationale\":\"A reviewed version-history window and stable churn baseline are not yet available, so a hard threshold would create false precision.\",\"expected_repository_id\":\"llm-agent\",\"expected_population\":null,\"max_age_days\":45,\"owner\":\"llm-agent-governance\",\"next_action\":\"Generate a reviewed git-history numstat snapshot for a fixed revision and time window before proposing a churn budget.\",\"status\":\"not-available\",\"observed\":null,\"unit\":null,\"hotspots\":[],\"source\":null,\"unavailable_reason\":\"No reviewed git-history numstat snapshot is pinned by path, repository identity, revision window and SHA-256.\"},\"owner_concentration\":{\"id\":\"owner-concentration\",\"metric\":\"owner_concentration\",\"risk\":\"high\",\"enforcement\":\"report-only\",\"enforcement_rationale\":\"Ownership concentration is high-risk, but enforcing a threshold without a reviewed scope-to-owner snapshot would treat missing owners as measured zero.\",\"expected_repository_id\":\"llm-agent\",\"expected_population\":null,\"max_age_days\":90,\"owner\":\"llm-agent-governance\",\"next_action\":\"Review critical scopes and primary owners, then pin the ownership snapshot before setting a basis-point budget.\",\"status\":\"not-available\",\"observed\":null,\"unit\":null,\"hotspots\":[],\"source\":null,\"unavailable_reason\":\"No reviewed ownership snapshot is pinned by repository identity, revision window and SHA-256.\"},\"inactive_assets\":{\"id\":\"inactive-assets\",\"metric\":\"inactive_assets\",\"risk\":\"high\",\"enforcement\":\"report-only\",\"enforcement_rationale\":\"Asset retirement decisions require a sanitized invocation window; absent telemetry must not be interpreted as zero activity.\",\"expected_repository_id\":\"llm-agent\",\"expected_population\":null,\"max_age_days\":30,\"owner\":\"llm-agent-governance\",\"next_action\":\"Produce a privacy-reviewed invocation ledger for a fixed window before proposing an inactive-asset threshold.\",\"status\":\"not-available\",\"observed\":null,\"unit\":null,\"hotspots\":[],\"source\":null,\"unavailable_reason\":\"No sanitized invocation ledger is pinned by repository identity, revision window and SHA-256.\"}}}\n",
+        "stderr": ""
+      }
+    },
+    {
+      "original_record": {
+        "schema": "independent-root-review-run/v1",
+        "label": "validation-plan",
+        "reviewer": "/root/release_governance_audit",
+        "cwd": "/workspace/scratch/712af632e2a5/llm_agent-pr270",
+        "argv": [
+          "/workspace/scratch/712af632e2a5/audit-venv/bin/python3",
+          "-m",
+          "tools.codex_assets.validation_plan",
+          "--root",
+          ".",
+          "--summary-json"
+        ],
+        "started_at": "2026-10-24T16:00:13.197010+00:00",
+        "source_before": {
+          ".gitlab-ci.yml": {
+            "sha256": "88029613e9d856d9633cafd4995db2f95f470065c69f52d4948ae0182a6db3ee",
+            "bytes": 940
+          },
+          "docs/changes/20261023-evidence-methods/evidence/consolidation-independent-execution.json": {
+            "sha256": "39548a00098eef21654e79299210cbd4fa336c746e178f59108abcffdc548c4d",
+            "bytes": 39778
+          },
+          "docs/changes/20261023-evidence-methods/implementation-map.md": {
+            "sha256": "635812051b3880a819fd403ca0dfc340491b94fde39076ac076c5c187e3946f9",
+            "bytes": 19762
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation-findings.md": {
+            "sha256": "913d6c8fe790a4dcc117931c7a704f2f5bc0be9a833be65c7daccbb5e760751f",
+            "bytes": 6417
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation.json": {
+            "sha256": "5afc7b4161df268325ecff6dba35a92c4abd3197932777ee51b90fd41b899590",
+            "bytes": 32522
+          },
+          "fixtures/reference-repository/removal/pass/removal-plan.json": {
+            "sha256": "af3006a9f496d3e5859c496a29b6457cca18cab7dd83d0a3e146e194f3df8c40",
+            "bytes": 2327
+          },
+          "manifests/comprehensive_optimization_backlog.json": {
+            "sha256": "dcc814b4af52ec498a2585673d9da7274fe92da58e02ee580f2fb01283a74a8b",
+            "bytes": 40199
+          },
+          "manifests/gates.json": {
+            "sha256": "6b946680d8cd9329b1bce74a3e3e4565634daa25203b9cde2c8af3c507d9a8be",
+            "bytes": 16794
+          },
+          "pyproject.toml": {
+            "sha256": "853c9e0c09404f0d65970dd67966de887372946a4a73c4b7689c0061013068ca",
+            "bytes": 1155
+          },
+          "reports/current-status.md": {
+            "sha256": "96fa32f595b14b887a66a5eca9e0e7f8334d23589883864ee81c8fd5348d9d1f",
+            "bytes": 5839
+          },
+          "reports/evidence-methods-absorption-2026-10-23.md": null,
+          "subrepos/adoption-matrix.jsonl": {
+            "sha256": "a0a345e4626725a234a47419dfc073e61f221aec3595f2d960bcb19d0a780b3a",
+            "bytes": 103853
+          },
+          "subrepos/adoption-matrix.md": {
+            "sha256": "da66a91c839169f540175cfcfabea245526657e9e9f47b868ea7e1d4b74493b4",
+            "bytes": 85541
+          },
+          "tests/test_ci_incremental_gate_dag.sh": {
+            "sha256": "c7737a1b585d52bba90a6b7c5106d6e84fca47563fe7f9d3215dcec59d69b3bb",
+            "bytes": 16923
+          },
+          "tests/test_gate_boundaries.py": {
+            "sha256": "4be7ffefc6ec608f1fe7d6564c4e5e1ed74aad165f0b2aa3e695505fc96b6eb4",
+            "bytes": 28573
+          },
+          "tests/test_gate_runner.sh": {
+            "sha256": "c9b9975467c6c966b7fdbcba852fe81fd0c308f0355213857e85f17448a8bd41",
+            "bytes": 1020
+          },
+          "tools/control_plane/active_contracts.py": {
+            "sha256": "4cc0a123b5588f4b13c1ca697903e2fa436b0a1deceb76ad5e474f986340f8fc",
+            "bytes": 7134
+          },
+          "tools/control_plane/gate_runner.py": {
+            "sha256": "d4da8de1bf5140fa8830bb817e9ae5c97f0cba0bafcd3b551e586ae7ee038606",
+            "bytes": 18514
+          },
+          "tools/control_plane/impact.py": {
+            "sha256": "73e4dddb9c984081ef6ae07cc9ac0182839f87e43181261067a89ce835a25392",
+            "bytes": 9058
+          }
+        },
+        "exit_code": 0,
+        "completed_at": "2026-10-24T16:00:13.312803+00:00",
+        "elapsed_seconds": 0.114,
+        "source_after": {
+          ".gitlab-ci.yml": {
+            "sha256": "88029613e9d856d9633cafd4995db2f95f470065c69f52d4948ae0182a6db3ee",
+            "bytes": 940
+          },
+          "docs/changes/20261023-evidence-methods/evidence/consolidation-independent-execution.json": {
+            "sha256": "39548a00098eef21654e79299210cbd4fa336c746e178f59108abcffdc548c4d",
+            "bytes": 39778
+          },
+          "docs/changes/20261023-evidence-methods/implementation-map.md": {
+            "sha256": "635812051b3880a819fd403ca0dfc340491b94fde39076ac076c5c187e3946f9",
+            "bytes": 19762
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation-findings.md": {
+            "sha256": "913d6c8fe790a4dcc117931c7a704f2f5bc0be9a833be65c7daccbb5e760751f",
+            "bytes": 6417
+          },
+          "docs/changes/20261023-evidence-methods/review-consolidation.json": {
+            "sha256": "5afc7b4161df268325ecff6dba35a92c4abd3197932777ee51b90fd41b899590",
+            "bytes": 32522
+          },
+          "fixtures/reference-repository/removal/pass/removal-plan.json": {
+            "sha256": "af3006a9f496d3e5859c496a29b6457cca18cab7dd83d0a3e146e194f3df8c40",
+            "bytes": 2327
+          },
+          "manifests/comprehensive_optimization_backlog.json": {
+            "sha256": "dcc814b4af52ec498a2585673d9da7274fe92da58e02ee580f2fb01283a74a8b",
+            "bytes": 40199
+          },
+          "manifests/gates.json": {
+            "sha256": "6b946680d8cd9329b1bce74a3e3e4565634daa25203b9cde2c8af3c507d9a8be",
+            "bytes": 16794
+          },
+          "pyproject.toml": {
+            "sha256": "853c9e0c09404f0d65970dd67966de887372946a4a73c4b7689c0061013068ca",
+            "bytes": 1155
+          },
+          "reports/current-status.md": {
+            "sha256": "96fa32f595b14b887a66a5eca9e0e7f8334d23589883864ee81c8fd5348d9d1f",
+            "bytes": 5839
+          },
+          "reports/evidence-methods-absorption-2026-10-23.md": null,
+          "subrepos/adoption-matrix.jsonl": {
+            "sha256": "a0a345e4626725a234a47419dfc073e61f221aec3595f2d960bcb19d0a780b3a",
+            "bytes": 103853
+          },
+          "subrepos/adoption-matrix.md": {
+            "sha256": "da66a91c839169f540175cfcfabea245526657e9e9f47b868ea7e1d4b74493b4",
+            "bytes": 85541
+          },
+          "tests/test_ci_incremental_gate_dag.sh": {
+            "sha256": "c7737a1b585d52bba90a6b7c5106d6e84fca47563fe7f9d3215dcec59d69b3bb",
+            "bytes": 16923
+          },
+          "tests/test_gate_boundaries.py": {
+            "sha256": "4be7ffefc6ec608f1fe7d6564c4e5e1ed74aad165f0b2aa3e695505fc96b6eb4",
+            "bytes": 28573
+          },
+          "tests/test_gate_runner.sh": {
+            "sha256": "c9b9975467c6c966b7fdbcba852fe81fd0c308f0355213857e85f17448a8bd41",
+            "bytes": 1020
+          },
+          "tools/control_plane/active_contracts.py": {
+            "sha256": "4cc0a123b5588f4b13c1ca697903e2fa436b0a1deceb76ad5e474f986340f8fc",
+            "bytes": 7134
+          },
+          "tools/control_plane/gate_runner.py": {
+            "sha256": "d4da8de1bf5140fa8830bb817e9ae5c97f0cba0bafcd3b551e586ae7ee038606",
+            "bytes": 18514
+          },
+          "tools/control_plane/impact.py": {
+            "sha256": "73e4dddb9c984081ef6ae07cc9ac0182839f87e43181261067a89ce835a25392",
+            "bytes": 9058
+          }
+        },
+        "source_stable": true,
+        "stdout": {
+          "sha256": "685e8de48a5b861642a4ba0ba0d2ec6691ee4bf0abebe88351dd7e03a6e46b84",
+          "bytes": 6855,
+          "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/validation-plan.stdout"
+        },
+        "stderr": {
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0,
+          "path": "/workspace/scratch/712af632e2a5/apply20261024/review-root/validation-plan.stderr"
+        }
+      },
+      "raw_streams_utf8": {
+        "stdout": "{\"schema\":\"llm-agent-validation-plan/v1\",\"status\":\"planned\",\"scope\":\"working-tree\",\"snapshot_sha256\":\"a3283b4c1073202cd4988658400aaf9b929aa66c9e00b1ede95ef4c40761b03e\",\"snapshot_contract\":\"managed-diff-v2\",\"tier\":\"L4\",\"reason\":\"release/version/M5/lock surface changed\",\"managed_paths\":[\".gitlab-ci.yml\",\"agent-dev-kit\",\"docs/changes/20261023-evidence-methods/evidence/consolidation-independent-execution.json\",\"docs/changes/20261023-evidence-methods/implementation-map.md\",\"docs/changes/20261023-evidence-methods/review-consolidation-findings.md\",\"docs/changes/20261023-evidence-methods/review-consolidation.json\",\"docs/changes/20261024-impact-coverage/design.md\",\"docs/changes/20261024-impact-coverage/evidence/impact-consumers-red.json\",\"docs/changes/20261024-impact-coverage/evidence/impact-readme-red.json\",\"docs/changes/20261024-impact-coverage/input-consumers.md\",\"docs/changes/20261024-impact-coverage/negative-results.md\",\"docs/changes/20261024-impact-coverage/requirements.md\",\"docs/changes/20261024-impact-coverage/tasks.md\",\"fixtures/reference-repository/removal/pass/removal-plan.json\",\"manifests/gates.json\",\"reports/current-status.md\",\"reports/evidence-methods-absorption-2026-10-23.md\",\"subrepos/adoption-matrix.jsonl\",\"subrepos/adoption-matrix.md\",\"tests/fixtures/effect-readiness-FwcICK/at-signature-index.json\",\"tests/fixtures/effect-readiness-FwcICK/at-signature-owner-review.json\",\"tests/fixtures/effect-readiness-FwcICK/at-signature-review-evidence-observations.txt\",\"tests/fixtures/effect-readiness-FwcICK/at-signature-review-evidence.json\",\"tests/fixtures/effect-readiness-FwcICK/authority-contract.json\",\"tests/fixtures/effect-readiness-FwcICK/authority-registry.json\",\"tests/fixtures/effect-readiness-FwcICK/automated-index.json\",\"tests/fixtures/effect-readiness-FwcICK/automated-owner-review.json\",\"tests/fixtures/effect-readiness-FwcICK/before-late-signature-index.json\",\"tests/fixtures/effect-readiness-FwcICK/before-late-signature-owner-review.json\",\"tests/fixtures/effect-readiness-FwcICK/before-late-signature-review-evidence-observations.txt\",\"tests/fixtures/effect-readiness-FwcICK/before-late-signature-review-evidence.json\",\"tests/fixtures/effect-readiness-FwcICK/before-measurement-index.json\",\"tests/fixtures/effect-readiness-FwcICK/before-measurement-owner-review.json\",\"tests/fixtures/effect-readiness-FwcICK/before-measurement-review-evidence-observations.txt\",\"tests/fixtures/effect-readiness-FwcICK/before-measurement-review-evidence.json\",\"tests/fixtures/effect-readiness-FwcICK/before-registration-index.json\",\"tests/fixtures/effect-readiness-FwcICK/before-registration-owner-review.json\",\"tests/fixtures/effect-readiness-FwcICK/before-registration-review-evidence-observations.txt\",\"tests/fixtures/effect-readiness-FwcICK/before-registration-review-evidence.json\",\"tests/fixtures/effect-readiness-FwcICK/before-signature-index.json\",\"tests/fixtures/effect-readiness-FwcICK/before-signature-owner-review.json\",\"tests/fixtures/effect-readiness-FwcICK/before-signature-review-evidence-observations.txt\",\"tests/fixtures/effect-readiness-FwcICK/before-signature-review-evidence.json\",\"tests/fixtures/effect-readiness-FwcICK/bundle-drift-index.json\",\"tests/fixtures/effect-readiness-FwcICK/bundle-drift-owner-review.json\",\"tests/fixtures/effect-readiness-FwcICK/bundle-drift-package.json\",\"tests/fixtures/effect-readiness-FwcICK/campaign.json\",\"tests/fixtures/effect-readiness-FwcICK/comparison.json\",\"tests/fixtures/effect-readiness-FwcICK/control-drift-index.json\",\"tests/fixtures/effect-readiness-FwcICK/control-drift-owner-review.json\",\"tests/fixtures/effect-readiness-FwcICK/control-drift-package.json\",\"tests/fixtures/effect-readiness-FwcICK/cosign\",\"tests/fixtures/effect-readiness-FwcICK/evidence-index.json\",\"tests/fixtures/effect-readiness-FwcICK/forged-index.json\",\"tests/fixtures/effect-readiness-FwcICK/forged-owner-review.json\",\"tests/fixtures/effect-readiness-FwcICK/forged-receipts.json\",\"tests/fixtures/effect-readiness-FwcICK/late-preregistration-index.json\",\"tests/fixtures/effect-readiness-FwcICK/late-preregistration-owner-review.json\",\"tests/fixtures/effect-readiness-FwcICK/late-preregistration.sigstore.json\",\"tests/fixtures/effect-readiness-FwcICK/measurement.json\",\"tests/fixtures/effect-readiness-FwcICK/owner-review.json\",\"tests/fixtures/effect-readiness-FwcICK/preregistration-package.json\",\"tests/fixtures/effect-readiness-FwcICK/preregistration.sigstore.json\",\"tests/fixtures/effect-readiness-FwcICK/receipt.sigstore.json\",\"tests/fixtures/effect-readiness-FwcICK/receipts.json\",\"tests/fixtures/effect-readiness-FwcICK/review-evidence-observations.txt\",\"tests/fixtures/effect-readiness-FwcICK/review-evidence.json\",\"tests/fixtures/effect-readiness-FwcICK/same-assets-package.json\",\"tests/fixtures/effect-readiness-FwcICK/schema-drift-index.json\",\"tests/fixtures/effect-readiness-FwcICK/schema-drift-owner-review.json\",\"tests/fixtures/effect-readiness-FwcICK/schema-drift-package.json\",\"tests/fixtures/effect-readiness-FwcICK/signature-bound-measurement.json\",\"tests/fixtures/effect-readiness-FwcICK/signature-bound-receipts.json\",\"tests/fixtures/effect-readiness-FwcICK/tampered-index.json\",\"tests/fixtures/effect-readiness-FwcICK/tampered-measurement.json\",\"tests/fixtures/effect-readiness-FwcICK/tampered-owner-review.json\",\"tests/test_ci_incremental_gate_dag.sh\",\"tests/test_gate_boundaries.py\",\"tests/test_gate_runner.sh\",\"tools/control_plane/active_contracts.py\"],\"excluded_paths\":[],\"release_critical_paths\":[\"agent-dev-kit\",\"reports/current-status.md\"],\"shared_contract_paths\":[],\"code_paths\":[\"tests/fixtures/effect-readiness-FwcICK/at-signature-review-evidence-observations.txt\",\"tests/fixtures/effect-readiness-FwcICK/before-late-signature-review-evidence-observations.txt\",\"tests/fixtures/effect-readiness-FwcICK/before-measurement-review-evidence-observations.txt\",\"tests/fixtures/effect-readiness-FwcICK/before-registration-review-evidence-observations.txt\",\"tests/fixtures/effect-readiness-FwcICK/before-signature-review-evidence-observations.txt\",\"tests/fixtures/effect-readiness-FwcICK/cosign\",\"tests/fixtures/effect-readiness-FwcICK/review-evidence-observations.txt\",\"tests/test_ci_incremental_gate_dag.sh\",\"tests/test_gate_boundaries.py\",\"tests/test_gate_runner.sh\",\"tools/control_plane/active_contracts.py\"],\"evidence_only\":false,\"required_checks\":[\"rtk bash agent-dev-kit/scripts/run-local-ci-parity.sh --python all --mode full\",\"rtk bash tests/run_all.sh --fail-fast\",\"rtk scripts/check-all.sh --quick --working-tree\"],\"deferred_until_clean_commit\":[\"rtk bash agent-dev-kit/scripts/devkit.sh release build --out <out>\",\"rtk bash agent-dev-kit/scripts/devkit.sh release rehearse --previous-artifact <previous> --candidate-artifact <candidate>\",\"rtk scripts/check-all.sh --quick --release-clean\"],\"skipped_checks\":[],\"release_execution_boundary\":\"clean-commit-only\"}\n",
+        "stderr": ""
+      }
+    }
+  ]
+}

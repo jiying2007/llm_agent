@@ -1,0 +1,112 @@
+{
+  "schema": "llm-agent-methods-independent-execution/v1",
+  "reviewer": "ai/root/external_methods",
+  "completed_at": "2026-10-23T12:31:17.999986Z",
+  "status": "pass",
+  "working_directory": "llm_agent",
+  "environment": {
+    "python": "/workspace/scratch/694941d81014/tooling/venv/bin/python",
+    "PYTHONPATH": ".",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PATH": "/workspace/scratch/694941d81014/tooling/venv/bin:/usr/local/bin:/usr/bin:/bin",
+    "shell_entry": "/workspace/scratch/694941d81014/tooling/rtk bypass"
+  },
+  "checks": [
+    {
+      "name": "external-practice-public-regression",
+      "command": "rtk bypass env PYTHONDONTWRITEBYTECODE=1 PATH=<venv>:/usr/local/bin:/usr/bin:/bin bash tests/test_external_practice_intake.sh",
+      "exit_code": 0,
+      "observed_output": [
+        "[PASS] manual repository identity, file URL/revision and candidate ID boundaries",
+        "[PASS] external practice intake contracts, providers, security and idempotence passed"
+      ],
+      "scope": "Complete existing public intake regression, including the implementer's eight added metadata cases."
+    },
+    {
+      "name": "independent-method-probes",
+      "command": "rtk bypass env PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=. PATH=<venv>:/usr/local/bin:/usr/bin:/bin <venv>/python docs/changes/20261023-evidence-methods/evidence/independent-review-probes.py",
+      "exit_code": 0,
+      "test_methods": 4,
+      "elapsed_seconds": 0.699,
+      "observed_result": "Ran 4 tests in 0.699s; OK",
+      "scope": [
+        "Public collector replay of the real twelve source metadata rows produces byte-identical candidate JSONL.",
+        "Replayed collection equals frozen collection except measured duration_ms; input and output digests match.",
+        "Restoring only four old repository.full_name values reproduces the independently observed pre-fix complete ledger SHA-256.",
+        "Nine public URL cases preserve complete canonical URL, revision and candidate-ID contract while deriving the intended repository identity.",
+        "A non-allowlisted lookalike host and HTTP URL fail without output publication.",
+        "Twelve source/candidate/decision/matrix mappings and referenced paths are complete, unique and consistent."
+      ]
+    },
+    {
+      "name": "practice-policy",
+      "command": "/workspace/scratch/694941d81014/tooling/rtk bypass env PYTHONDONTWRITEBYTECODE=1 PATH=/workspace/scratch/694941d81014/tooling/venv/bin:/usr/local/bin:/usr/bin:/bin bash scripts/practice-intake.sh check --kind policy --input manifests/external_practice_sources.json",
+      "exit_code": 0,
+      "output": "[PASS] kind=policy records=1 input=/workspace/scratch/694941d81014/llm_agent/manifests/external_practice_sources.json\n"
+    },
+    {
+      "name": "practice-candidate",
+      "command": "/workspace/scratch/694941d81014/tooling/rtk bypass env PYTHONDONTWRITEBYTECODE=1 PATH=/workspace/scratch/694941d81014/tooling/venv/bin:/usr/local/bin:/usr/bin:/bin bash scripts/practice-intake.sh check --kind candidate --input docs/changes/20261023-evidence-methods/candidates.jsonl",
+      "exit_code": 0,
+      "output": "[PASS] kind=candidate records=12 input=/workspace/scratch/694941d81014/llm_agent/docs/changes/20261023-evidence-methods/candidates.jsonl\n"
+    },
+    {
+      "name": "practice-decision",
+      "command": "/workspace/scratch/694941d81014/tooling/rtk bypass env PYTHONDONTWRITEBYTECODE=1 PATH=/workspace/scratch/694941d81014/tooling/venv/bin:/usr/local/bin:/usr/bin:/bin bash scripts/practice-intake.sh check --kind decision --input docs/changes/20261023-evidence-methods/decisions.jsonl",
+      "exit_code": 0,
+      "output": "[PASS] kind=decision records=12 input=/workspace/scratch/694941d81014/llm_agent/docs/changes/20261023-evidence-methods/decisions.jsonl\n"
+    },
+    {
+      "name": "practice-evidence",
+      "command": "/workspace/scratch/694941d81014/tooling/rtk bypass env PYTHONDONTWRITEBYTECODE=1 PATH=/workspace/scratch/694941d81014/tooling/venv/bin:/usr/local/bin:/usr/bin:/bin bash scripts/practice-intake.sh check --kind evidence --input docs/changes/20261023-evidence-methods/collection.json",
+      "exit_code": 0,
+      "output": "[PASS] kind=evidence records=1 input=/workspace/scratch/694941d81014/llm_agent/docs/changes/20261023-evidence-methods/collection.json\n"
+    },
+    {
+      "name": "check-adoption-matrix-structured",
+      "command": "/workspace/scratch/694941d81014/tooling/rtk bypass env PYTHONDONTWRITEBYTECODE=1 PATH=/workspace/scratch/694941d81014/tooling/venv/bin:/usr/local/bin:/usr/bin:/bin bash scripts/check-adoption-matrix-structured.sh .",
+      "exit_code": 0,
+      "output": "[PASS] structured adoption matrix synchronized\n"
+    },
+    {
+      "name": "check-adoption-matrix-status",
+      "command": "/workspace/scratch/694941d81014/tooling/rtk bypass env PYTHONDONTWRITEBYTECODE=1 PATH=/workspace/scratch/694941d81014/tooling/venv/bin:/usr/local/bin:/usr/bin:/bin bash scripts/check-adoption-matrix-status.sh .",
+      "exit_code": 0,
+      "output": "[PASS] adoption-matrix status checks passed\n"
+    },
+    {
+      "name": "check-adoption-real-assets",
+      "command": "/workspace/scratch/694941d81014/tooling/rtk bypass env PYTHONDONTWRITEBYTECODE=1 PATH=/workspace/scratch/694941d81014/tooling/venv/bin:/usr/local/bin:/usr/bin:/bin bash scripts/check-adoption-real-assets.sh .",
+      "exit_code": 0,
+      "output": "[PASS] adoption real asset checks passed checked=230 real_asset_ok=229 matrix_asset_exceptions=1\n"
+    }
+  ],
+  "observations": {
+    "fixed_finding": "METHODS-REVIEW-01",
+    "pre_fix_complete_ledger_sha256": "82033b320cd6ce3211f9499422e96c3952476b219fad29e98cbef8afb83cf35d",
+    "post_fix_complete_ledger_sha256": "0ba319379f12ee1b3d454fbd5ac622699d8b9ad1550173735cc71d3433de6010",
+    "unchanged_source_metadata_sha256": "4bad3191fac50362d3f30ff8290741cd258702c243ddb413da6e2d1e3b3372f6",
+    "unchanged_decisions_sha256": "3d3582391dc2fdf9fd79e67a9a3dbfc4174392df07965b7d0aac0e3294a4109b",
+    "changed_fields": [
+      "EXT-05 repository.full_name",
+      "EXT-06 repository.full_name",
+      "EXT-07 repository.full_name",
+      "EXT-08 repository.full_name"
+    ],
+    "candidate_count": 12,
+    "enhance_count": 9,
+    "observe_source_ids": [
+      "EXT-02",
+      "EXT-10",
+      "EXT-12"
+    ],
+    "manual_semantic_review": "Read implementation-map, matrix rows and done qualification, latest tasks, source policy diff, all source metadata/decisions/runbook, parser diff and red/green implementation evidence."
+  },
+  "source_set_sha256": "fa0b05cf637db56fc0d2b7a48c2de2c10a0babf93a6081394f0f901d6080c167",
+  "limitations": [
+    "Review tests generated outputs only in temporary directories and did not change the frozen source ledger.",
+    "The reviewer read the author's recorded pre-fix red run; it was not re-executed by this reviewer. Independent pre-fix ledger identity and post-fix public behavior were verified.",
+    "No upstream network fetch, paid model, runtime qualification, product/field effect trial, or remote write was performed.",
+    "Structural contract success is separate from semantic correctness, source authenticity, licensing, actual task benefit and delivery authorization."
+  ]
+}

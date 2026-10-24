@@ -1,0 +1,507 @@
+"""Behavioral regressions for Git impact, gate process budgets and pass caches."""
+
+from __future__ import annotations
+
+import json
+import os
+import shutil
+import subprocess
+import sys
+import tempfile
+import time
+import unittest
+from pathlib import Path
+
+from tools.control_plane.gate_runner import _expand_profile, run_profile
+from tools.control_plane.impact import _git_changed_paths, calculate_impact
+from tools.control_plane.process_budget import ProcessBudgetError, run_bounded
+from tools.control_plane.receipts import bind_receipt
+
+REPOSITORY = Path(__file__).resolve().parents[1]
+
+
+def git(root: Path, *args: str) -> bytes:
+    return subprocess.run(
+        ["git", "-C", str(root), *args], check=True, capture_output=True, timeout=30,
+    ).stdout
+
+
+def initialize(root: Path) -> None:
+    git(root, "init", "-q")
+    git(root, "config", "user.name", "Gate Boundary Test")
+    git(root, "config", "user.email", "gate-boundary@example.invalid")
+    git(root, "config", "core.quotePath", "true")
+
+
+def commit(root: Path) -> str:
+    git(root, "add", "-A")
+    git(root, "commit", "-q", "-m", "fixture")
+    return git(root, "rev-parse", "HEAD").decode().strip()
+
+
+def gate(argv: list[str], *, cache: str = "disabled", inputs: tuple[str, ...] = ()) -> dict:
+    return {
+        "owner": "boundary-fixture", "side_effect": "none", "depends_on": [],
+        "inputs": list(inputs), "outputs": [], "cache_policy": cache,
+        "argv": argv, "timeout_seconds": 1, "evidence_class": "test",
+    }
+
+
+class TemporaryRepository(unittest.TestCase):
+    def setUp(self) -> None:
+        self.temporary = tempfile.TemporaryDirectory(prefix="llm-gate-boundary-")
+        self.addCleanup(self.temporary.cleanup)
+        self.root = Path(self.temporary.name)
+        initialize(self.root)
+        (self.root / "manifests").mkdir()
+
+    def manifest(self, gates: dict) -> None:
+        (self.root / "manifests/gates.json").write_text(
+            json.dumps({"schema": "llm-agent-gates/v2", "gates": gates,
+                        "profiles": {"fixture": list(gates)}}), encoding="utf-8",
+        )
+        commit(self.root)
+
+
+class ImpactPathTests(TemporaryRepository):
+    def setUp(self) -> None:
+        super().setUp()
+        shutil.copyfile(REPOSITORY / "manifests/gates.json", self.root / "manifests/gates.json")
+        self.base = commit(self.root)
+
+    def test_real_git_paths_preserve_literal_names_and_trigger_owned_gates(self) -> None:
+        owned = [
+            "tools/中文.py", "tools/with space.py", 'tools/with"quote.py',
+            "tools/with\ttab.py", "tools/with\nnewline.py", "tools/ leading.py",
+            "tools/trailing.py ", "tools/literal\\slash.py",
+        ]
+        unowned = [" tools/not-owned.py", "tools\\not-owned.py"]
+        for name in owned + unowned:
+            path = self.root / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("fixture\n", encoding="utf-8")
+        head = commit(self.root)
+
+        changed = _git_changed_paths(self.root, self.base, head, "two-dot")
+        self.assertEqual(set(owned + unowned), set(changed))
+        for name in owned:
+            with self.subTest(name=name):
+                result = calculate_impact(self.root, [name], group="integration-deep")
+                self.assertTrue(result["required"], result)
+                self.assertIn("root-regression", result["group_gates"])
+                self.assertEqual([name], result["changed_paths"])
+        for name in unowned:
+            with self.subTest(name=name):
+                result = calculate_impact(self.root, [name], group="integration-deep")
+                self.assertFalse(result["required"], result)
+
+    def test_rename_out_of_owned_directory_keeps_old_path_in_impact(self) -> None:
+        (self.root / "tools").mkdir()
+        (self.root / "tools/before.py").write_text("same content\n", encoding="utf-8")
+        base = commit(self.root)
+        (self.root / "docs").mkdir()
+        (self.root / "tools/before.py").rename(self.root / "docs/after.py")
+        head = commit(self.root)
+        changed = _git_changed_paths(self.root, base, head, "two-dot")
+        self.assertEqual(["docs/after.py", "tools/before.py"], changed)
+        self.assertTrue(calculate_impact(self.root, changed, group="integration-deep")["required"])
+
+    def test_git_failure_never_becomes_an_empty_change(self) -> None:
+        for base, head in (("", "HEAD"), ("f" * 40, "HEAD"), (self.base, "missing-head")):
+            with self.subTest(base=base, head=head), self.assertRaises(ValueError):
+                _git_changed_paths(self.root, base, head, "two-dot")
+
+    def test_cli_rejects_empty_base_and_preserves_changed_file_mode(self) -> None:
+        command = [sys.executable, "-m", "tools.control_plane.cli", "impact",
+                   "--root", str(self.root), "--summary-json"]
+        with self.subTest(mode="empty-base"):
+            result = subprocess.run(
+                [*command, "--base", "", "--head", "HEAD"], cwd=REPOSITORY,
+                check=False, capture_output=True, text=True, timeout=10,
+            )
+            self.assertNotEqual(0, result.returncode, result.stdout)
+            self.assertEqual("", result.stdout)
+            self.assertIn("Git impact comparison requires both base and head", result.stderr)
+        with self.subTest(mode="changed-file-only"):
+            result = subprocess.run(
+                [*command, "--changed-file", "tools/中文.py"], cwd=REPOSITORY,
+                check=False, capture_output=True, text=True, timeout=10,
+            )
+            self.assertEqual(0, result.returncode, result.stderr)
+            receipt = json.loads(result.stdout)
+            self.assertTrue(receipt["required"], receipt)
+            self.assertEqual(["tools/中文.py"], receipt["changed_paths"])
+
+    @unittest.skipUnless(os.name == "posix", "raw Git filename bytes")
+    def test_non_utf8_git_path_fails_closed(self) -> None:
+        (self.root / "tools").mkdir()
+        descriptor = os.open(os.fsencode(self.root) + b"/tools/\xff.py", os.O_CREAT | os.O_WRONLY, 0o600)
+        os.close(descriptor)
+        head = commit(self.root)
+        with self.assertRaises(ValueError):
+            _git_changed_paths(self.root, self.base, head, "two-dot")
+
+
+class ImpactConsumerTests(TemporaryRepository):
+    """Changes that break existing consumers must retain a scheduled CI path."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.copy_inputs("manifests/gates.json")
+        self.definition = json.loads((self.root / "manifests/gates.json").read_text(encoding="utf-8"))
+
+    def copy_inputs(self, *paths: str) -> None:
+        for relative in paths:
+            source, target = REPOSITORY / relative, self.root / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            if source.is_dir():
+                shutil.copytree(source, target, dirs_exist_ok=True,
+                                ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+            else:
+                shutil.copyfile(source, target)
+
+    def command(self, *argv: str, source_cwd: bool = False) -> subprocess.CompletedProcess[str]:
+        cwd = REPOSITORY if source_cwd else self.root
+        env = dict(os.environ, PYTHONPATH=str(cwd), PYTHONDONTWRITEBYTECODE="1")
+        env["PATH"] = str(Path(sys.executable).parent) + os.pathsep + env.get("PATH", "")
+        return subprocess.run(argv, cwd=cwd, env=env, check=False, capture_output=True,
+                              text=True, timeout=60)
+
+    def assert_regression_scheduled(self, *paths: str) -> None:
+        result = calculate_impact(self.root, paths, group="integration-deep")
+        self.assertTrue(result["required"], result)
+        scheduled = _expand_profile(self.definition, "integration-extra")
+        self.assertTrue(any("tests/run_all.sh" in self.definition["gates"][name]["argv"]
+                            for name in scheduled), scheduled)
+
+    def removal_fixture(self) -> str:
+        fixture = "fixtures/reference-repository/removal/pass/removal-plan.json"
+        self.copy_inputs("manifests/reference_repository_lifecycle_policy.json",
+                         "fixtures/reference-repository/removal")
+        plan = json.loads((self.root / fixture).read_text(encoding="utf-8"))
+        self.copy_inputs(*set(plan["required_artifacts"].values()))
+        baseline = self.check_removal()
+        self.assertEqual(0, baseline.returncode, baseline.stdout + baseline.stderr)
+        return fixture
+
+    def check_removal(self) -> subprocess.CompletedProcess[str]:
+        return self.command(sys.executable, "-m", "tools.codex_assets.reference_repository",
+                            "--root", str(self.root), "check-removal", "--summary-json",
+                            source_cwd=True)
+
+    def test_report_growth_is_checked_in_contract_without_requiring_deep(self) -> None:
+        config = "manifests/comprehensive_optimization_backlog.json"
+        contract = json.loads((REPOSITORY / config).read_text(encoding="utf-8"))
+        scopes = {path for item in contract["maintainability_budgets"]["budgets"]
+                  for path in item["scope_paths"]}
+        self.copy_inputs("tools", *sorted(scopes))
+        checker = "scripts/check-maintainability-budgets.sh"
+        argv = ("bash", str(REPOSITORY / checker), str(self.root), "--strict", "--summary-json")
+        baseline = self.command(*argv)
+        self.assertEqual(0, baseline.returncode, baseline.stdout + baseline.stderr)
+        report = json.loads(baseline.stdout)
+        count = next(item for item in report["budgets"] if item["id"] == "root-report-count")
+        # Fill only the isolated report population up to the unchanged contract's
+        # current limit, so this remains a one-file boundary if cleanup adds room.
+        for index in range(count["warning_limit"] - count["observed"]):
+            (self.root / f"reports/impact-padding-{index}.md").write_text("fixture\n", encoding="utf-8")
+        if count["observed"] < count["warning_limit"]:
+            baseline = self.command(*argv)
+            self.assertEqual(0, baseline.returncode, baseline.stdout + baseline.stderr)
+        base = commit(self.root)
+        changed = "reports/impact-added-report.md"
+        (self.root / changed).write_text("Ordinary report addition.\n", encoding="utf-8")
+        head = commit(self.root)
+        self.assertEqual([changed], _git_changed_paths(self.root, base, head, "two-dot"))
+        failed = self.command(*argv)
+        self.assertEqual(1, failed.returncode, failed.stdout + failed.stderr)
+        receipt = json.loads(failed.stdout)
+        self.assertIn("root-report-count", receipt["warnings"])
+        self.assertEqual((REPOSITORY / config).read_bytes(), (self.root / config).read_bytes())
+        always_run = _expand_profile(self.definition, "contract")
+        budget_gates = [name for name in always_run if checker in self.definition["gates"][name]["argv"]]
+        self.assertTrue(budget_gates, "the existing strict budget checker needs an always-run contract path")
+        for name in budget_gates:
+            self.assertIn("--strict", self.definition["gates"][name]["argv"])
+            self.assertEqual("disabled", self.definition["gates"][name]["cache_policy"])
+            scheduled_failure = self.command(*self.definition["gates"][name]["argv"])
+            self.assertEqual(1, scheduled_failure.returncode,
+                             scheduled_failure.stdout + scheduled_failure.stderr)
+            self.assertIn("root-report-count", json.loads(scheduled_failure.stdout)["warnings"])
+        result = calculate_impact(self.root, [changed], group="integration-deep")
+        self.assertFalse(result["required"], result)
+        self.assertTrue(set(budget_gates) & set(result["direct_gates"]), result)
+
+    def test_adoption_only_change_exposes_stale_removal_artifact(self) -> None:
+        fixture = self.removal_fixture()
+        plan = json.loads((self.root / fixture).read_text(encoding="utf-8"))
+        changed = plan["required_artifacts"]["adoption_decision"]
+        base = commit(self.root)
+        with (self.root / changed).open("a", encoding="utf-8") as stream:
+            stream.write("\n<!-- impact boundary fixture -->\n")
+        head = commit(self.root)
+        self.assertEqual([changed], _git_changed_paths(self.root, base, head, "two-dot"))
+        failed = self.check_removal()
+        self.assertEqual(2, failed.returncode, failed.stdout + failed.stderr)
+        self.assertIn("artifact hash is stale", failed.stderr)
+        self.assert_regression_scheduled(changed)
+
+    def test_invalid_removal_pass_fixture_keeps_its_real_checker_scheduled(self) -> None:
+        changed = self.removal_fixture()
+        path = self.root / changed
+        plan = json.loads(path.read_text(encoding="utf-8"))
+        plan["mode"] = "apply"
+        path.write_text(json.dumps(plan), encoding="utf-8")
+        failed = self.check_removal()
+        self.assertEqual(2, failed.returncode, failed.stdout + failed.stderr)
+        self.assertIn("must remain a planned dry-run", failed.stderr)
+        self.assert_regression_scheduled(changed)
+
+    def test_removing_bound_artifact_keeps_old_path_even_after_rename_to_prose(self) -> None:
+        fixture = self.removal_fixture()
+        plan = json.loads((self.root / fixture).read_text(encoding="utf-8"))
+        original = plan["required_artifacts"]["adoption_decision"]
+        base = commit(self.root)
+        destination = "docs/architecture/unrelated-note.md"
+        (self.root / destination).parent.mkdir(parents=True)
+        (self.root / original).rename(self.root / destination)
+        head = commit(self.root)
+        changed = _git_changed_paths(self.root, base, head, "two-dot")
+        self.assertEqual(sorted([original, destination]), changed)
+        failed = self.check_removal()
+        self.assertEqual(2, failed.returncode, failed.stdout + failed.stderr)
+        self.assertIn("artifact is missing or unhashed", failed.stderr)
+        self.assert_regression_scheduled(*changed)
+        self.assertFalse(calculate_impact(self.root, [destination], group="integration-deep")["required"])
+
+    def test_schema_and_intake_fixture_changes_reach_existing_shell_regression(self) -> None:
+        self.copy_inputs("tools", "scripts", "manifests", "schemas", "fixtures",
+                         "tests/test_external_practice_intake.sh")
+        policy = json.loads((self.root / "manifests/external_practice_sources.json").read_text())
+        self.copy_inputs(*(provider["input_path"] for provider in policy["providers"].values()
+                           if "input_path" in provider))
+        argv = ("bash", str(self.root / "tests/test_external_practice_intake.sh"))
+        baseline = self.command(*argv)
+        self.assertEqual(0, baseline.returncode, baseline.stdout + baseline.stderr)
+        for changed in ("schemas/external-practice-candidate.schema.json",
+                        "fixtures/external-practice/cycle-plan.json"):
+            with self.subTest(changed=changed):
+                path = self.root / changed
+                original = path.read_bytes()
+                path.write_text("{}\n", encoding="utf-8")
+                failed = self.command(*argv)
+                path.write_bytes(original)
+                self.assertNotEqual(0, failed.returncode, failed.stdout)
+                self.assertNotIn("ModuleNotFoundError", failed.stderr)
+                self.assert_regression_scheduled(changed)
+
+    def test_packaging_change_reaches_existing_typecheck_contract(self) -> None:
+        self.copy_inputs("tools", "pyproject.toml", ".github/workflows/ci.yml",
+                         "tests/test_typecheck_contract.sh")
+        argv = ("bash", str(self.root / "tests/test_typecheck_contract.sh"))
+        baseline = self.command(*argv)
+        self.assertEqual(0, baseline.returncode, baseline.stdout + baseline.stderr)
+        path = self.root / "pyproject.toml"
+        original = path.read_text(encoding="utf-8")
+        self.assertIn("strict = true", original)
+        path.write_text(original.replace("strict = true", "strict = false"), encoding="utf-8")
+        failed = self.command(*argv)
+        self.assertNotEqual(0, failed.returncode, failed.stdout)
+        self.assertIn("AssertionError", failed.stderr)
+        self.assert_regression_scheduled("pyproject.toml")
+
+    def test_real_contract_evidence_and_policy_inputs_are_owned(self) -> None:
+        backlog = json.loads((REPOSITORY / "manifests/comprehensive_optimization_backlog.json").read_text())
+        scorecard = json.loads((REPOSITORY / "manifests/product_maturity_scorecard.json").read_text())
+        policy = json.loads((REPOSITORY / "manifests/external_practice_sources.json").read_text())
+        consumed = {backlog["source_report"]}
+        consumed.update(path for item in backlog["items"] for path in item["implementation_evidence"])
+        consumed.update(path for item in scorecard["dimensions"] for path in item["evidence"])
+        consumed.update(provider["input_path"] for provider in policy["providers"].values()
+                        if "input_path" in provider)
+        for directory in ("fixtures/reference-repository/removal/pass",
+                          "fixtures/external-practice/registration/pass"):
+            for fixture in (REPOSITORY / directory).glob("*.json"):
+                plan = json.loads(fixture.read_text(encoding="utf-8"))
+                consumed.update(plan["required_artifacts"].values())
+        # Derive real existence/content/hash dependencies from the contracts
+        # consumed by the original architecture, maturity, and intake checkers.
+        for changed in sorted(consumed):
+            with self.subTest(changed=changed):
+                self.assertTrue((REPOSITORY / changed).exists(), changed)
+                self.assert_regression_scheduled(changed)
+
+    def test_readme_lightweight_gate_preserves_existing_retired_runtime_check(self) -> None:
+        self.copy_inputs("tools", "scripts", "tests", "manifests", "docs", "README.md")
+        always_run = _expand_profile(self.definition, "contract")
+        consumers = [self.definition["gates"][name]["argv"] for name in always_run
+                     if "tools.control_plane.active_contracts" in self.definition["gates"][name]["argv"]]
+        self.assertEqual(1, len(consumers), consumers)
+        shell = ("bash", str(self.root / "tests/test_active_contracts.sh"))
+        for argv in (shell, consumers[0]):
+            baseline = self.command(*argv)
+            self.assertEqual(0, baseline.returncode, baseline.stdout + baseline.stderr)
+        readme = self.root / "README.md"
+        original = readme.read_text(encoding="utf-8")
+        for retired in ("hermes-agent", "Hermes Agent"):
+            with self.subTest(retired=retired):
+                readme.write_text(original + f"\nRetired runtime: {retired}.\n", encoding="utf-8")
+                failed = self.command(*shell)
+                self.assertNotEqual(0, failed.returncode, failed.stdout)
+                result = calculate_impact(self.root, ["README.md"], group="integration-deep")
+                self.assertFalse(result["required"], result)
+                scheduled_failure = self.command(*consumers[0])
+                self.assertNotEqual(0, scheduled_failure.returncode,
+                                    "the lightweight README consumer lost an existing regression: "
+                                    + scheduled_failure.stdout)
+                self.assertIn("README.md", scheduled_failure.stdout + scheduled_failure.stderr)
+
+    def test_unrelated_prose_remains_lightweight(self) -> None:
+        for changed in ("README.md", "docs/architecture/unrelated-note.md",
+                        "docs/changes/example/notes.md", "docs/runbooks/unrelated-note.md",
+                        "docs/knowledge-candidates/unrelated-note.md", "reports/ordinary-review.md",
+                        "reports/optimization/unrelated-note.md"):
+            with self.subTest(changed=changed):
+                result = calculate_impact(self.root, [changed], group="integration-deep")
+                self.assertFalse(result["required"], result)
+
+
+class GateProcessTests(TemporaryRepository):
+    def execute(self, code: str, *, failure_lines: int = 80) -> dict:
+        self.manifest({"process": gate([sys.executable, "-c", code])})
+        result = run_profile(self.root, "fixture", set(), failure_lines)
+        self.assertEqual(result["receipt_sha256"], bind_receipt(result)["receipt_sha256"])
+        return result
+
+    def test_non_object_configuration_fails_with_a_configuration_error(self) -> None:
+        for value in (None, [], "invalid", 7):
+            with self.subTest(value=value):
+                (self.root / "manifests/gates.json").write_text(json.dumps(value), encoding="utf-8")
+                with self.assertRaisesRegex(ValueError, "gate manifest root must be an object"):
+                    run_profile(self.root, "fixture", set(), 10)
+
+    def test_success_nonzero_and_both_output_streams_are_preserved(self) -> None:
+        result = self.execute("import sys;print('stdout');print('stderr',file=sys.stderr);sys.exit(7)")
+        item = result["gates"][0]
+        self.assertEqual(("fail", 7, "nonzero-exit"),
+                         (item["status"], item["exit_code"], item["failure_reason"]))
+        self.assertIn("stdout", item["output_tail"])
+        self.assertIn("stderr", item["output_tail"])
+
+    def test_output_budget_fails_instead_of_returning_a_truncated_pass(self) -> None:
+        for stream, byte_count in ((1, 2 * 1024 * 1024 + 1), (2, 64 * 1024 + 1)):
+            with self.subTest(stream=stream):
+                result = self.execute(f"import os;os.write({stream}, b'x' * {byte_count})")
+                item = result["gates"][0]
+                self.assertEqual(("fail", "output-budget"), (item["status"], item["failure_reason"]))
+                self.assertIsNone(item["exit_code"])
+                self.assertLessEqual(sum(len(line.encode()) for line in item["output_tail"]),
+                                     2 * 1024 * 1024 + 64 * 1024 + 100)
+
+    @unittest.skipUnless(os.name == "posix", "POSIX process-group cleanup")
+    def test_timeout_stops_descendant_and_preserves_bounded_diagnostics(self) -> None:
+        marker = self.root / "late-child.txt"
+        child = "import pathlib,sys,time;time.sleep(1.5);pathlib.Path(sys.argv[1]).write_text('late')"
+        code = (
+            "import subprocess,sys,time;"
+            f"subprocess.Popen([sys.executable,'-c',{child!r},{str(marker)!r}],"
+            "stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL);"
+            "print('before-timeout',flush=True);time.sleep(30)"
+        )
+        started = time.monotonic()
+        result = self.execute(code)
+        self.assertLess(time.monotonic() - started, 3)
+        item = result["gates"][0]
+        self.assertEqual(("fail", None, "timeout"),
+                         (item["status"], item["exit_code"], item["failure_reason"]))
+        self.assertIn("before-timeout", item["output_tail"])
+        time.sleep(max(0, started + 2.0 - time.monotonic()))
+        self.assertFalse(marker.exists(), "a timed-out gate descendant continued writing")
+
+    def test_failed_dependency_is_blocked_and_zero_lines_hide_output(self) -> None:
+        first = gate([sys.executable, "-c", "import sys;print('failed');sys.exit(3)"])
+        downstream = gate([sys.executable, "-c", "raise AssertionError('must not execute')"])
+        downstream["depends_on"] = ["first"]
+        self.manifest({"first": first, "downstream": downstream})
+        result = run_profile(self.root, "fixture", set(), 0)
+        self.assertEqual(["fail", "blocked"], [item["status"] for item in result["gates"]])
+        self.assertEqual([], result["gates"][0]["output_tail"])
+        self.assertEqual("dependency-blocked", result["gates"][1]["failure_reason"])
+
+    def test_budget_exception_keeps_message_and_bounded_partial_output(self) -> None:
+        with self.assertRaises(ProcessBudgetError) as caught:
+            run_bounded([sys.executable, "-c", "import time;print('ready',flush=True);time.sleep(30)"],
+                        timeout=0.15, max_stdout=1024, max_stderr=1024)
+        self.assertIn("timeout", str(caught.exception))
+        self.assertEqual("timeout", caught.exception.reason)
+        self.assertEqual(b"ready\n", caught.exception.stdout)
+        self.assertEqual(b"", caught.exception.stderr)
+        original = ProcessBudgetError("legacy message")
+        self.assertEqual("legacy message", str(original))
+        self.assertEqual((b"", b""), (original.stdout, original.stderr))
+
+
+class GateCacheTests(TemporaryRepository):
+    def test_non_object_cache_records_are_misses(self) -> None:
+        self.manifest({"pure": gate([sys.executable, "-c", "pass"], cache="content-addressed")})
+        cache = self.root / "pass-cache"
+        first = run_profile(self.root, "fixture", set(), 10, cache)
+        cache_file = cache / (first["gates"][0]["cache_key"] + ".json")
+        for value in (None, [], "invalid", 7):
+            with self.subTest(value=value):
+                cache_file.write_text(json.dumps(value), encoding="utf-8")
+                result = run_profile(self.root, "fixture", set(), 10, cache)
+                self.assertEqual("pass", result["status"])
+                self.assertFalse(result["gates"][0]["cache_hit"])
+
+    def test_complete_declared_input_cache_hits_and_invalidates(self) -> None:
+        (self.root / "input.txt").write_text("good", encoding="utf-8")
+        code = "from pathlib import Path;import sys;sys.exit(0 if Path('input.txt').read_text()=='good' else 4)"
+        self.manifest({"pure": gate([sys.executable, "-c", code], cache="content-addressed", inputs=("input.txt",))})
+        cache = self.root / "pass-cache"
+        first = run_profile(self.root, "fixture", set(), 10, cache)
+        second = run_profile(self.root, "fixture", set(), 10, cache)
+        self.assertEqual("pass", first["status"])
+        self.assertFalse(first["gates"][0]["cache_hit"])
+        self.assertTrue(second["gates"][0]["cache_hit"])
+        (self.root / "input.txt").write_text("bad", encoding="utf-8")
+        third = run_profile(self.root, "fixture", set(), 10, cache)
+        self.assertEqual("fail", third["status"])
+        self.assertFalse(third["gates"][0]["cache_hit"])
+
+    def test_production_gates_with_incomplete_inputs_do_not_cache(self) -> None:
+        manifest = json.loads((REPOSITORY / "manifests/gates.json").read_text(encoding="utf-8"))
+        for name in (
+            "adk-pin", "adk-interface", "codex-pin", "runtime-chain-pin", "gitlink-registry",
+            "reference-pins", "source-hygiene", "status-projection", "active-contracts",
+        ):
+            with self.subTest(gate=name):
+                self.assertEqual("disabled", manifest["gates"][name]["cache_policy"])
+
+    def test_real_production_graph_rechecks_same_head_index_changes(self) -> None:
+        clone = self.root / "source"
+        git(self.root, "clone", "--quiet", "--local", "--no-hardlinks", str(REPOSITORY), str(clone))
+        shutil.copyfile(REPOSITORY / "manifests/gates.json", clone / "manifests/gates.json")
+        cache = self.root / "production-cache"
+        initial_head = git(clone, "rev-parse", "HEAD")
+        baseline = run_profile(clone, "source-hygiene", set(), 10, cache)
+        self.assertEqual("pass", baseline["status"], baseline)
+        (clone / "build").mkdir()
+        (clone / "build/audit.bin").write_bytes(b"harmless boundary fixture")
+        git(clone, "add", "-f", "build/audit.bin")
+        cached = run_profile(clone, "source-hygiene", set(), 10, cache)
+        uncached = run_profile(clone, "source-hygiene", set(), 10)
+        self.assertEqual(("fail", "fail"), (cached["status"], uncached["status"]))
+        self.assertIn("build/audit.bin", "\n".join(cached["gates"][-1]["output_tail"]))
+        self.assertTrue(all(not item["cache_hit"] for item in cached["gates"]))
+        git(clone, "reset", "--quiet", "HEAD", "--", "build/audit.bin")
+        git(clone, "update-index", "--force-remove", "agent-dev-kit")
+        removed = run_profile(clone, "source-hygiene", set(), 10, cache)
+        self.assertEqual("fail", removed["status"], removed)
+        self.assertEqual("fail", removed["gates"][0]["status"])
+        self.assertFalse(removed["gates"][0]["cache_hit"])
+        self.assertEqual(initial_head, git(clone, "rev-parse", "HEAD"))
+
+
+if __name__ == "__main__":
+    unittest.main()

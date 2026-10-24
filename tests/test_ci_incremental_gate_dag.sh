@@ -71,6 +71,7 @@ assert profiles["contract"] == [
     "adk-promotion-transaction",
     "current-status-source-split",
     "ci-incremental-dag",
+    "maintenance-budget",
 ]
 assert profiles["pr-fast"] == ["contract", "doc-sync"]
 assert profiles["integration-extra"] == ["adk-promotion-evidence", "native-target-readiness", "effect-readiness", "root-regression"]
@@ -136,6 +137,8 @@ assert "integration-deep" in gates["ci-incremental-dag"]["impact_groups"]
 assert "integration-deep" in gates["adk-promotion-evidence"]["impact_groups"]
 assert "integration-deep" in gates["native-target-readiness"]["impact_groups"]
 assert "integration-deep" in gates["runtime-chain-pin"]["impact_groups"]
+assert "integration-deep" not in gates["maintenance-budget"].get("impact_groups", [])
+assert "git submodule update --init --depth=1 agent-dev-kit" in gitlab
 assert "adk-integration" not in gates
 assert "adk-quick" not in gates
 assert "adk-checkout" not in json.dumps(manifest, sort_keys=True)

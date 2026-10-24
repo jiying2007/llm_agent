@@ -1,0 +1,19 @@
+test_complete_declared_input_cache_hits_and_invalidates (test_gate_boundaries.GateCacheTests.test_complete_declared_input_cache_hits_and_invalidates) ... ok
+test_non_object_cache_records_are_misses (test_gate_boundaries.GateCacheTests.test_non_object_cache_records_are_misses) ... ok
+test_production_gates_with_incomplete_inputs_do_not_cache (test_gate_boundaries.GateCacheTests.test_production_gates_with_incomplete_inputs_do_not_cache) ... ok
+test_real_production_graph_rechecks_same_head_index_changes (test_gate_boundaries.GateCacheTests.test_real_production_graph_rechecks_same_head_index_changes) ... ok
+test_budget_exception_keeps_message_and_bounded_partial_output (test_gate_boundaries.GateProcessTests.test_budget_exception_keeps_message_and_bounded_partial_output) ... ok
+test_failed_dependency_is_blocked_and_zero_lines_hide_output (test_gate_boundaries.GateProcessTests.test_failed_dependency_is_blocked_and_zero_lines_hide_output) ... ok
+test_non_object_configuration_fails_with_a_configuration_error (test_gate_boundaries.GateProcessTests.test_non_object_configuration_fails_with_a_configuration_error) ... ok
+test_output_budget_fails_instead_of_returning_a_truncated_pass (test_gate_boundaries.GateProcessTests.test_output_budget_fails_instead_of_returning_a_truncated_pass) ... ok
+test_success_nonzero_and_both_output_streams_are_preserved (test_gate_boundaries.GateProcessTests.test_success_nonzero_and_both_output_streams_are_preserved) ... ok
+test_timeout_stops_descendant_and_preserves_bounded_diagnostics (test_gate_boundaries.GateProcessTests.test_timeout_stops_descendant_and_preserves_bounded_diagnostics) ... ok
+test_git_failure_never_becomes_an_empty_change (test_gate_boundaries.ImpactPathTests.test_git_failure_never_becomes_an_empty_change) ... ok
+test_non_utf8_git_path_fails_closed (test_gate_boundaries.ImpactPathTests.test_non_utf8_git_path_fails_closed) ... ok
+test_real_git_paths_preserve_literal_names_and_trigger_owned_gates (test_gate_boundaries.ImpactPathTests.test_real_git_paths_preserve_literal_names_and_trigger_owned_gates) ... ok
+test_rename_out_of_owned_directory_keeps_old_path_in_impact (test_gate_boundaries.ImpactPathTests.test_rename_out_of_owned_directory_keeps_old_path_in_impact) ... ok
+
+----------------------------------------------------------------------
+Ran 14 tests in 6.796s
+
+OK

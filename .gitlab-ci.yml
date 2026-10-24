@@ -17,6 +17,7 @@ default:
 contract:
   stage: contract
   script:
+    - git submodule update --init --depth=1 agent-dev-kit
     - python3 -m tools.control_plane.gate_runner --profile contract
 
 doc-sync:

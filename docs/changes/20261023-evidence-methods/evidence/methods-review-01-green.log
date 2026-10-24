@@ -1,0 +1,3 @@
+[PASS] provider=manual status=complete candidates=8 ledger=/tmp/tmp.F1IMvgzijR/manual-repository-boundaries.jsonl
+[PASS] manual repository identity, file URL/revision and candidate ID boundaries
+[PASS] external practice intake contracts, providers, security and idempotence passed

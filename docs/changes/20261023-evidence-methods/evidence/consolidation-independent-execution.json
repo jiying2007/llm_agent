@@ -1,0 +1,671 @@
+{
+  "schema": "llm-agent-methods-consolidation-review-execution/v1",
+  "reviewer_id": "ai/root/architecture_audit",
+  "implementation_author": "ai/root",
+  "started_at": "2026-10-23T14:18:41.041405+00:00",
+  "base_local_commit": "4c700de642fb8a1755b657e52b760b4384a5129d",
+  "base_remote_commit": "64c5192f2d6aaacf65143223f03190564032facc",
+  "binding_kind": "frozen-file-sha256-snapshot",
+  "implementation_commit_at_review": "not-yet-created",
+  "status": "pass",
+  "executions": [
+    {
+      "argv": [
+        "/workspace/scratch/694941d81014/tooling/rtk",
+        "bypass",
+        "bash",
+        "scripts/check-upstream-intake-readiness.sh",
+        "."
+      ],
+      "cwd": "/workspace/scratch/694941d81014/llm_agent",
+      "started_at": "2026-10-23T14:18:41.331766+00:00",
+      "completed_at": "2026-10-23T14:18:41.354921+00:00",
+      "returncode": 0,
+      "expected_returncode": 0,
+      "stdout": "[PASS] upstream intake readiness checks passed (164 adopt rows)\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/694941d81014/tooling/rtk",
+        "bypass",
+        "bash",
+        "scripts/check-observe-intake-depth.sh",
+        "."
+      ],
+      "cwd": "/workspace/scratch/694941d81014/llm_agent",
+      "started_at": "2026-10-23T14:18:41.355765+00:00",
+      "completed_at": "2026-10-23T14:18:41.363527+00:00",
+      "returncode": 0,
+      "expected_returncode": 0,
+      "stdout": "[PASS] observe intake depth checks passed (11 rows)\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/694941d81014/tooling/rtk",
+        "bypass",
+        "bash",
+        "scripts/check-adoption-matrix-structured.sh",
+        "."
+      ],
+      "cwd": "/workspace/scratch/694941d81014/llm_agent",
+      "started_at": "2026-10-23T14:18:41.364140+00:00",
+      "completed_at": "2026-10-23T14:18:41.402783+00:00",
+      "returncode": 0,
+      "expected_returncode": 0,
+      "stdout": "[PASS] structured adoption matrix synchronized\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/694941d81014/tooling/rtk",
+        "bypass",
+        "bash",
+        "scripts/check-adoption-matrix-status.sh",
+        "."
+      ],
+      "cwd": "/workspace/scratch/694941d81014/llm_agent",
+      "started_at": "2026-10-23T14:18:41.403431+00:00",
+      "completed_at": "2026-10-23T14:18:41.413315+00:00",
+      "returncode": 0,
+      "expected_returncode": 0,
+      "stdout": "[PASS] adoption-matrix status checks passed\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/694941d81014/tooling/rtk",
+        "bypass",
+        "bash",
+        "scripts/check-adoption-evidence-integrity.sh",
+        "."
+      ],
+      "cwd": "/workspace/scratch/694941d81014/llm_agent",
+      "started_at": "2026-10-23T14:18:41.413924+00:00",
+      "completed_at": "2026-10-23T14:18:45.009590+00:00",
+      "returncode": 0,
+      "expected_returncode": 0,
+      "stdout": "[PASS] adoption evidence integrity checks passed (rows=210 paths=621)\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/694941d81014/tooling/rtk",
+        "bypass",
+        "bash",
+        "scripts/check-adoption-real-assets.sh",
+        ".",
+        "--summary-json"
+      ],
+      "cwd": "/workspace/scratch/694941d81014/llm_agent",
+      "started_at": "2026-10-23T14:18:45.011646+00:00",
+      "completed_at": "2026-10-23T14:18:45.077619+00:00",
+      "returncode": 0,
+      "expected_returncode": 0,
+      "stdout": "{\"status\":\"pass\",\"checked\":234,\"real_asset_ok\":233,\"matrix_asset_exceptions\":1,\"failures\":[]}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/694941d81014/tooling/rtk",
+        "bypass",
+        "bash",
+        "tests/test_reference_repository_removal.sh"
+      ],
+      "cwd": "/workspace/scratch/694941d81014/llm_agent",
+      "started_at": "2026-10-23T14:18:45.078553+00:00",
+      "completed_at": "2026-10-23T14:18:45.859792+00:00",
+      "returncode": 0,
+      "expected_returncode": 0,
+      "stdout": "[PASS] reference repository removal plans are hashed, dry-run, and non-destructive\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/694941d81014/tooling/rtk",
+        "bypass",
+        "bash",
+        "tests/test_maintainability_budgets.sh"
+      ],
+      "cwd": "/workspace/scratch/694941d81014/llm_agent",
+      "started_at": "2026-10-23T14:18:45.860973+00:00",
+      "completed_at": "2026-10-23T14:18:50.156109+00:00",
+      "returncode": 0,
+      "expected_returncode": 0,
+      "stdout": "[PASS] maintainability budgets enforce static and evidence metrics with honest availability\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/694941d81014/tooling/rtk",
+        "bypass",
+        "bash",
+        "scripts/check-maintainability-budgets.sh",
+        ".",
+        "--strict",
+        "--summary-json"
+      ],
+      "cwd": "/workspace/scratch/694941d81014/llm_agent",
+      "started_at": "2026-10-23T14:18:50.156982+00:00",
+      "completed_at": "2026-10-23T14:18:51.199283+00:00",
+      "returncode": 0,
+      "expected_returncode": 0,
+      "stdout": "{\"schema\":\"llm-agent-maintainability-budget-report/v2\",\"status\":\"pass\",\"strict\":true,\"baseline_date\":\"2026-07-30\",\"root\":\"/workspace/scratch/694941d81014/llm_agent\",\"budget_count\":14,\"evidence_metric_count\":3,\"failures\":[],\"warnings\":[],\"budgets\":[{\"id\":\"root-script-count\",\"metric\":\"file_count\",\"status\":\"pass\",\"observed\":89,\"baseline\":89,\"drift\":0,\"warning_limit\":92,\"hard_limit\":100,\"files_scanned\":89,\"owner\":\"llm-agent-governance\",\"next_action\":\"Consolidate thin wrappers into an existing typed tools.codex_assets entrypoint before adding another root script.\",\"hotspots\":[{\"path\":\"scripts/analyze-repo.sh\",\"value\":1},{\"path\":\"scripts/backup-rollback.sh\",\"value\":1},{\"path\":\"scripts/check-adk-goal-capability.sh\",\"value\":1},{\"path\":\"scripts/check-adk-governance-suite.sh\",\"value\":1},{\"path\":\"scripts/check-adk-harden-readiness.sh\",\"value\":1}]},{\"id\":\"root-report-count\",\"metric\":\"file_count\",\"status\":\"pass\",\"observed\":320,\"baseline\":284,\"drift\":36,\"warning_limit\":320,\"hard_limit\":400,\"files_scanned\":320,\"owner\":\"llm-agent-governance\",\"next_action\":\"Run governed report cleanup and preserve supersession metadata before creating more active reports.\",\"hotspots\":[{\"path\":\"reports/2026-08-01-token-context-governance-v2-release-bundle.json\",\"value\":1},{\"path\":\"reports/README.md\",\"value\":1},{\"path\":\"reports/absorb-review-20260512_115031.md\",\"value\":1},{\"path\":\"reports/absorption-optimization-review-2026-06-15.md\",\"value\":1},{\"path\":\"reports/active-subrepo-diff-scan-2026-07-06.md\",\"value\":1}]},{\"id\":\"root-manifest-count\",\"metric\":\"file_count\",\"status\":\"pass\",\"observed\":18,\"baseline\":15,\"drift\":3,\"warning_limit\":20,\"hard_limit\":25,\"files_scanned\":18,\"owner\":\"llm-agent-governance\",\"next_action\":\"Keep historical snapshots under manifests/history; consolidate active SSOT contracts before adding another root manifest.\",\"hotspots\":[{\"path\":\"manifests/adk_interface.lock.json\",\"value\":1},{\"path\":\"manifests/comprehensive_optimization_backlog.json\",\"value\":1},{\"path\":\"manifests/digital_worker_runtime_pilot.json\",\"value\":1},{\"path\":\"manifests/external_practice_cycle.json\",\"value\":1},{\"path\":\"manifests/external_practice_sources.json\",\"value\":1}]},{\"id\":\"root-largest-shell-lines\",\"metric\":\"max_lines\",\"status\":\"pass\",\"observed\":658,\"baseline\":666,\"drift\":-8,\"warning_limit\":750,\"hard_limit\":900,\"files_scanned\":89,\"owner\":\"llm-agent-governance\",\"next_action\":\"Move reusable parsing and state logic into tools.codex_assets and keep shell as a transport wrapper.\",\"hotspots\":[{\"path\":\"scripts/collect-runtime-target-evidence-package.sh\",\"value\":658},{\"path\":\"scripts/check-architecture-reports.sh\",\"value\":616},{\"path\":\"scripts/check-runtime-targets.sh\",\"value\":591},{\"path\":\"scripts/lib/same-run-evidence.sh\",\"value\":457},{\"path\":\"scripts/check-workspace-entrypoints.sh\",\"value\":422}]},{\"id\":\"root-largest-python-lines\",\"metric\":\"max_lines\",\"status\":\"pass\",\"observed\":1919,\"baseline\":2078,\"drift\":-159,\"warning_limit\":2200,\"hard_limit\":2500,\"files_scanned\":30,\"owner\":\"llm-agent-governance\",\"next_action\":\"Split the named hotspot by capability boundary with contract tests before adding another responsibility.\",\"hotspots\":[{\"path\":\"tools/codex_assets/practice_intake.py\",\"value\":1919},{\"path\":\"tools/codex_assets/reference_repository.py\",\"value\":970},{\"path\":\"tools/codex_assets/maintainability_budget.py\",\"value\":834},{\"path\":\"tools/codex_assets/runtime_smoke_evidence.py\",\"value\":752},{\"path\":\"tools/codex_assets/software_m5_v3_core.py\",\"value\":676}]},{\"id\":\"adk-largest-shell-lines\",\"metric\":\"max_lines\",\"status\":\"pass\",\"observed\":756,\"baseline\":1745,\"drift\":-989,\"warning_limit\":1850,\"hard_limit\":2100,\"files_scanned\":42,\"owner\":\"agent-dev-kit\",\"next_action\":\"Move deterministic governance logic into src/agent_dev_kit and retain a thin stable shell entrypoint.\",\"hotspots\":[{\"path\":\"agent-dev-kit/scripts/check-agent-ecosystem-standards.sh\",\"value\":756},{\"path\":\"agent-dev-kit/scripts/workflow.sh\",\"value\":670},{\"path\":\"agent-dev-kit/scripts/check-harness-loop-engineering-contracts.sh\",\"value\":585},{\"path\":\"agent-dev-kit/scripts/run-embedded-workflow-pilots.sh\",\"value\":525},{\"path\":\"agent-dev-kit/scripts/run-embedded-production-field-pilot.sh\",\"value\":445}]},{\"id\":\"adk-largest-python-lines\",\"metric\":\"max_lines\",\"status\":\"pass\",\"observed\":575,\"baseline\":1054,\"drift\":-479,\"warning_limit\":1150,\"hard_limit\":1400,\"files_scanned\":106,\"owner\":\"agent-dev-kit\",\"next_action\":\"Split the hotspot only along an owned domain boundary and preserve CLI/API compatibility tests.\",\"hotspots\":[{\"path\":\"agent-dev-kit/src/agent_dev_kit/evaluation_runtime.py\",\"value\":575},{\"path\":\"agent-dev-kit/src/agent_dev_kit/_matcher_kernel.py\",\"value\":570},{\"path\":\"agent-dev-kit/src/agent_dev_kit/installation_transaction.py\",\"value\":542},{\"path\":\"agent-dev-kit/src/agent_dev_kit/release.py\",\"value\":536},{\"path\":\"agent-dev-kit/src/agent_dev_kit/agent_platform.py\",\"value\":511}]},{\"id\":\"root-python-import-fan-out\",\"metric\":\"max_import_fan_out\",\"status\":\"pass\",\"observed\":17,\"baseline\":17,\"drift\":0,\"warning_limit\":20,\"hard_limit\":25,\"files_scanned\":30,\"owner\":\"llm-agent-governance\",\"next_action\":\"Split high fan-out typed modules at stable domain ports before adding another dependency.\",\"hotspots\":[{\"path\":\"tools/codex_assets/codex_model_observer.py\",\"value\":17},{\"path\":\"tools/codex_assets/intake_pipeline.py\",\"value\":17},{\"path\":\"tools/codex_assets/m5_signature.py\",\"value\":15},{\"path\":\"tools/codex_assets/maintainability_budget.py\",\"value\":15},{\"path\":\"tools/codex_assets/reference_worktree_identity.py\",\"value\":15}]},{\"id\":\"adk-python-import-fan-out\",\"metric\":\"max_import_fan_out\",\"status\":\"pass\",\"observed\":26,\"baseline\":24,\"drift\":2,\"warning_limit\":28,\"hard_limit\":35,\"files_scanned\":106,\"owner\":\"agent-dev-kit\",\"next_action\":\"Introduce typed internal ports when a module crosses the reviewed import fan-out budget.\",\"hotspots\":[{\"path\":\"agent-dev-kit/src/agent_dev_kit/cli.py\",\"value\":26},{\"path\":\"agent-dev-kit/src/agent_dev_kit/distribution/release_artifacts.py\",\"value\":20},{\"path\":\"agent-dev-kit/src/agent_dev_kit/evaluation_cli.py\",\"value\":18},{\"path\":\"agent-dev-kit/src/agent_dev_kit/release.py\",\"value\":18},{\"path\":\"agent-dev-kit/src/agent_dev_kit/effect_campaign_materializer.py\",\"value\":17}]},{\"id\":\"root-exact-code-duplication\",\"metric\":\"duplicate_content_groups\",\"status\":\"pass\",\"observed\":0,\"baseline\":0,\"drift\":0,\"warning_limit\":1,\"hard_limit\":3,\"files_scanned\":119,\"owner\":\"llm-agent-governance\",\"next_action\":\"Replace exact duplicate implementation files with one typed implementation and thin entrypoints.\",\"hotspots\":[{\"path\":\"<none>\",\"value\":0,\"duplicates\":[]}]},{\"id\":\"adk-exact-code-duplication\",\"metric\":\"duplicate_content_groups\",\"status\":\"pass\",\"observed\":0,\"baseline\":0,\"drift\":0,\"warning_limit\":2,\"hard_limit\":5,\"files_scanned\":301,\"owner\":\"agent-dev-kit\",\"next_action\":\"Consolidate exact duplicate checker or test logic without weakening target-specific assertions.\",\"hotspots\":[{\"path\":\"<none>\",\"value\":0,\"duplicates\":[]}]},{\"id\":\"root-control-plane-python-count\",\"metric\":\"file_count\",\"status\":\"pass\",\"observed\":29,\"baseline\":28,\"drift\":1,\"warning_limit\":31,\"hard_limit\":35,\"files_scanned\":29,\"owner\":\"llm-agent-governance\",\"next_action\":\"Review ownership and consolidate existing typed control-plane modules before adding further modules; do not hide new modules by excluding the directory.\",\"hotspots\":[{\"path\":\"tools/control_plane/__init__.py\",\"value\":1},{\"path\":\"tools/control_plane/active_contracts.py\",\"value\":1},{\"path\":\"tools/control_plane/adk_interface.py\",\"value\":1},{\"path\":\"tools/control_plane/adk_promotion.py\",\"value\":1},{\"path\":\"tools/control_plane/adk_promotion_evidence.py\",\"value\":1}]},{\"id\":\"root-control-plane-largest-python-lines\",\"metric\":\"max_lines\",\"status\":\"pass\",\"observed\":1030,\"baseline\":981,\"drift\":49,\"warning_limit\":1050,\"hard_limit\":1200,\"files_scanned\":29,\"owner\":\"llm-agent-governance\",\"next_action\":\"Split named control-plane hotspots by bounded context with behavioral regression evidence instead of allocating unbounded line budgets.\",\"hotspots\":[{\"path\":\"tools/control_plane/effect_readiness.py\",\"value\":1030},{\"path\":\"tools/control_plane/longitudinal_operation.py\",\"value\":718},{\"path\":\"tools/control_plane/branch_gc.py\",\"value\":591},{\"path\":\"tools/control_plane/qualification_followup.py\",\"value\":573},{\"path\":\"tools/control_plane/gate_runner.py\",\"value\":501}]},{\"id\":\"root-control-plane-python-import-fan-out\",\"metric\":\"max_import_fan_out\",\"status\":\"pass\",\"observed\":14,\"baseline\":14,\"drift\":0,\"warning_limit\":19,\"hard_limit\":23,\"files_scanned\":29,\"owner\":\"llm-agent-governance\",\"next_action\":\"Preserve explicit dependency direction; review the named high-fan-out control-plane module before introducing another cross-context import.\",\"hotspots\":[{\"path\":\"tools/control_plane/adk_interface.py\",\"value\":14},{\"path\":\"tools/control_plane/effect_readiness.py\",\"value\":14},{\"path\":\"tools/control_plane/qualification_followup.py\",\"value\":14},{\"path\":\"tools/control_plane/adk_promotion.py\",\"value\":13},{\"path\":\"tools/control_plane/longitudinal_operation.py\",\"value\":13}]}],\"elapsed_ms\":946.388,\"semantic_axes\":{\"coupling\":{\"status\":\"measured\",\"method\":\"max-import-fan-out\"},\"exact_duplication\":{\"status\":\"measured\",\"method\":\"content-sha256\"},\"churn\":{\"id\":\"repository-churn\",\"metric\":\"churn\",\"risk\":\"medium\",\"enforcement\":\"report-only\",\"enforcement_rationale\":\"A reviewed version-history window and stable churn baseline are not yet available, so a hard threshold would create false precision.\",\"expected_repository_id\":\"llm-agent\",\"expected_population\":null,\"max_age_days\":45,\"owner\":\"llm-agent-governance\",\"next_action\":\"Generate a reviewed git-history numstat snapshot for a fixed revision and time window before proposing a churn budget.\",\"status\":\"not-available\",\"observed\":null,\"unit\":null,\"hotspots\":[],\"source\":null,\"unavailable_reason\":\"No reviewed git-history numstat snapshot is pinned by path, repository identity, revision window and SHA-256.\"},\"owner_concentration\":{\"id\":\"owner-concentration\",\"metric\":\"owner_concentration\",\"risk\":\"high\",\"enforcement\":\"report-only\",\"enforcement_rationale\":\"Ownership concentration is high-risk, but enforcing a threshold without a reviewed scope-to-owner snapshot would treat missing owners as measured zero.\",\"expected_repository_id\":\"llm-agent\",\"expected_population\":null,\"max_age_days\":90,\"owner\":\"llm-agent-governance\",\"next_action\":\"Review critical scopes and primary owners, then pin the ownership snapshot before setting a basis-point budget.\",\"status\":\"not-available\",\"observed\":null,\"unit\":null,\"hotspots\":[],\"source\":null,\"unavailable_reason\":\"No reviewed ownership snapshot is pinned by repository identity, revision window and SHA-256.\"},\"inactive_assets\":{\"id\":\"inactive-assets\",\"metric\":\"inactive_assets\",\"risk\":\"high\",\"enforcement\":\"report-only\",\"enforcement_rationale\":\"Asset retirement decisions require a sanitized invocation window; absent telemetry must not be interpreted as zero activity.\",\"expected_repository_id\":\"llm-agent\",\"expected_population\":null,\"max_age_days\":30,\"owner\":\"llm-agent-governance\",\"next_action\":\"Produce a privacy-reviewed invocation ledger for a fixed window before proposing an inactive-asset threshold.\",\"status\":\"not-available\",\"observed\":null,\"unit\":null,\"hotspots\":[],\"source\":null,\"unavailable_reason\":\"No sanitized invocation ledger is pinned by repository identity, revision window and SHA-256.\"}}}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/694941d81014/tooling/rtk",
+        "bypass",
+        "bash",
+        "scripts/export-adoption-matrix-jsonl.sh",
+        ".",
+        "/workspace/scratch/694941d81014/closure20261023/root-consolidation-independent/canonical-adoption-matrix.jsonl"
+      ],
+      "cwd": "/workspace/scratch/694941d81014/llm_agent",
+      "started_at": "2026-10-23T14:18:51.200302+00:00",
+      "completed_at": "2026-10-23T14:18:51.214753+00:00",
+      "returncode": 0,
+      "expected_returncode": 0,
+      "stdout": "[OK] adoption matrix jsonl exported: /workspace/scratch/694941d81014/closure20261023/root-consolidation-independent/canonical-adoption-matrix.jsonl\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/694941d81014/tooling/rtk",
+        "bypass",
+        "/workspace/scratch/694941d81014/tooling/venv/bin/python",
+        "-m",
+        "tools.codex_assets.reference_repository",
+        "--root",
+        "/workspace/scratch/694941d81014/llm_agent",
+        "plan-removal",
+        "--repo",
+        "codex",
+        "--as-of",
+        "2026-07-19",
+        "--adoption-decision",
+        "subrepos/adoption-matrix.md",
+        "--evidence-dependency-scan",
+        "reports/subrepo-removal-plan-codex-2026-06-16.md",
+        "--dirty-baseline-review",
+        "subrepos/dirty-baseline.tsv",
+        "--rollback-plan",
+        "reports/subrepo-removal-plan-codex-2026-06-16.md",
+        "--out-json",
+        "/workspace/scratch/694941d81014/closure20261023/root-consolidation-independent/canonical-removal-plan.json",
+        "--out-md",
+        "/workspace/scratch/694941d81014/closure20261023/root-consolidation-independent/canonical-removal-plan.md"
+      ],
+      "cwd": "/workspace/scratch/694941d81014/llm_agent",
+      "started_at": "2026-10-23T14:18:51.222785+00:00",
+      "completed_at": "2026-10-23T14:18:51.351968+00:00",
+      "returncode": 0,
+      "expected_returncode": 0,
+      "stdout": "[PASS] reference repository removal dry-run plan written: /workspace/scratch/694941d81014/closure20261023/root-consolidation-independent/canonical-removal-plan.json\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/694941d81014/tooling/rtk",
+        "bypass",
+        "/workspace/scratch/694941d81014/tooling/venv/bin/python",
+        "-m",
+        "tools.codex_assets.reference_repository",
+        "--root",
+        "/workspace/scratch/694941d81014/llm_agent",
+        "check-removal",
+        "--plan",
+        "/workspace/scratch/694941d81014/closure20261023/root-consolidation-independent/prior-removal-fixture.json",
+        "--no-fixtures",
+        "--summary-json"
+      ],
+      "cwd": "/workspace/scratch/694941d81014/llm_agent",
+      "started_at": "2026-10-23T14:18:51.353379+00:00",
+      "completed_at": "2026-10-23T14:18:51.488474+00:00",
+      "returncode": 2,
+      "expected_returncode": 2,
+      "stdout": "{\"checked\": 0, \"failures\": 1, \"status\": \"fail\"}\n",
+      "stderr": "[FAIL] /workspace/scratch/694941d81014/closure20261023/root-consolidation-independent/prior-removal-fixture.json: reference repository removal artifact hash is stale\n"
+    }
+  ],
+  "sources": [
+    {
+      "base": "repository",
+      "path": "subrepos/adoption-matrix.md",
+      "bytes": 85541,
+      "sha256": "da66a91c839169f540175cfcfabea245526657e9e9f47b868ea7e1d4b74493b4"
+    },
+    {
+      "base": "repository",
+      "path": "subrepos/adoption-matrix.jsonl",
+      "bytes": 103853,
+      "sha256": "a0a345e4626725a234a47419dfc073e61f221aec3595f2d960bcb19d0a780b3a"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/implementation-map.md",
+      "bytes": 19762,
+      "sha256": "635812051b3880a819fd403ca0dfc340491b94fde39076ac076c5c187e3946f9"
+    },
+    {
+      "base": "repository",
+      "path": "docs/runbooks/evidence-driven-optimization.md",
+      "bytes": 4858,
+      "sha256": "821f69318d9608b6f96fc13406707eee2d3040bdfc251e48133063d5f6666ffa"
+    },
+    {
+      "base": "repository",
+      "path": "fixtures/reference-repository/removal/pass/removal-plan.json",
+      "bytes": 2327,
+      "sha256": "af3006a9f496d3e5859c496a29b6457cca18cab7dd83d0a3e146e194f3df8c40"
+    }
+  ],
+  "source_set_sha256": "eb3c1bb5b51f396bb3e38bccb13b1bcd8fd31ea4151f0fa3bab8635bbd902663",
+  "deletions": [
+    {
+      "base": "repository",
+      "path": "reports/evidence-methods-absorption-2026-10-23.md",
+      "base_local_commit": "4c700de642fb8a1755b657e52b760b4384a5129d",
+      "base_remote_commit": "64c5192f2d6aaacf65143223f03190564032facc",
+      "git_blob": "53cda81736ca0b702af426ffbcc7091e47ae2109",
+      "bytes": 10280,
+      "sha256": "50662a903fe77a7915265025f45ab3a62bff4dfccf825b4649c9c034451239f4",
+      "absent_at_review": true,
+      "consolidated_into": "docs/changes/20261023-evidence-methods/implementation-map.md",
+      "content_retention": "Entire report body retained; heading depth adjusted, two self-descriptions changed from report to analysis, and the seven-entry review paragraph accurately converted to historical context."
+    }
+  ],
+  "consolidation_content_diff_after_heading_normalization": [
+    "--- original-report\n",
+    "+++ consolidated-map\n",
+    "@@ -1,5 +1,5 @@\n",
+    " ## 范围与实际来源",
+    " ",
+    "-本报告承接 Owner“全面吸收，全面优化，落地闭环”的授权，对十二项来源分别说明实际落点和限制。来源 URL、固定 revision 或内容摘要、许可证未知项、采集范围保存在 `docs/changes/20261023-evidence-methods/sources.json`；原始十二条 candidate、独立 decision 和 9 ENHANCE / 3 OBSERVE 决定保持不变。",
+    "+本分析承接 Owner“全面吸收，全面优化，落地闭环”的授权，对十二项来源分别说明实际落点和限制。来源 URL、固定 revision 或内容摘要、许可证未知项、采集范围保存在 `docs/changes/20261023-evidence-methods/sources.json`；原始十二条 candidate、独立 decision 和 9 ENHANCE / 3 OBSERVE 决定保持不变。",
+    " ",
+    " 本轮代码增强已随 ADK 8.0.39 发布，精确来源为 `415590db44e88979185efb850e2339a3f95411ef`，tree 为 `51d400e80ba555a49ca85fcfefbd74f7fe499072`。发布证据为 [PR #220](https://github.com/jiying2007/agent-dev-kit/pull/220)、[实际 main CI](https://github.com/jiying2007/agent-dev-kit/actions/runs/39955902743) 和 [v8.0.39](https://github.com/jiying2007/agent-dev-kit/releases/tag/v8.0.39)。Root 接入的原始签名材料在 `reports/promotion/agent-dev-kit/`；组件发布不授予 Native、G22、现场或 Product M5 资格。",
+    "@@ -31,5 +31,5 @@\n",
+    " 既有职责为 `agent-dev-kit/agents/security-compliance-reviewer/AGENTS.md`、`agent-dev-kit/skills/adk-interface-contract-design/SKILL.md` 和 `agent-dev-kit/workflows/release-hardening/WORKFLOW.md`。实现与审核见 `agent-dev-kit/docs/changes/20261023-release-contract/`。不可信日志、外部标题和回执不能替代精确来源、签名主体与发行权威。",
+    " ",
+    "-本报告不声称新增了通用 prompt-injection 防护或验证了所有模型安全行为；OpenAI 平台本身未被引入。方法来源与实际控制的覆盖范围保持分开。",
+    "+本分析不声称新增了通用 prompt-injection 防护或验证了所有模型安全行为；OpenAI 平台本身未被引入。方法来源与实际控制的覆盖范围保持分开。",
+    " ",
+    " ### EXT-11：完整发布集合与同字节验证",
+    "@@ -69,5 +69,5 @@\n",
+    " 本次修正只把四项真实 ADK 代码增强投影到生产矩阵，其余八项完整保留在原 candidate/decision/map。原 `docs/changes/20261023-evidence-methods/review-evidence.json`、requirements/design/tasks 和执行日志保持历史原件；前次方法审核遗漏上述两个 gate，历史 PASS 不继承为本次更正验收。",
+    " ",
+    "-更正后的独立复审须绑定本报告、矩阵 Markdown/JSONL、implementation map、runbook 和 removal fixture 的新摘要，并实际运行以下原始入口：",
+    "+前次矩阵更正的独立复审绑定了当时独立报告、矩阵 Markdown/JSONL、implementation map、runbook 和 removal fixture 共六份文件，并实际运行了以下七个原始入口；该历史记录保留在 `review-projection-correction.json`：",
+    " ",
+    " - `rtk bash scripts/check-upstream-intake-readiness.sh .`"
+  ],
+  "unchanged_guards": [
+    {
+      "base": "repository",
+      "path": "scripts/check-upstream-intake-readiness.sh",
+      "sha256": "85dd214eb7e59b6d03b25191f16174b7dd679d1e5eba15ebfdace116eb43bf70"
+    },
+    {
+      "base": "repository",
+      "path": "scripts/check-observe-intake-depth.sh",
+      "sha256": "cecee43ee13b28e705357e464cd17b9bd69df89cbd62968229b2da7e8313927d"
+    },
+    {
+      "base": "repository",
+      "path": "scripts/check-adoption-matrix-structured.sh",
+      "sha256": "e667d41e99f8bb80a190bf0fa1772968898e25b7ac4f60a85c812e55314bfcff"
+    },
+    {
+      "base": "repository",
+      "path": "scripts/check-adoption-matrix-status.sh",
+      "sha256": "76bf28768a2a9dd2c0be7fa973875a8a2a2e9f9764602340b075424e20cccdef"
+    },
+    {
+      "base": "repository",
+      "path": "scripts/check-adoption-evidence-integrity.sh",
+      "sha256": "86ea1ec79a8b8e0d88741f0081489cc4ba5a0f65e0a6ea20f3e20ae0369c8ec4"
+    },
+    {
+      "base": "repository",
+      "path": "scripts/check-adoption-real-assets.sh",
+      "sha256": "4b8691db4873c423e939cb6bbdafc68d4c6f9883982534ad58762205fc443cf8"
+    },
+    {
+      "base": "repository",
+      "path": "tests/test_reference_repository_removal.sh",
+      "sha256": "65ea2a6e15a6eb366fe6f579a7334a5e9f086014c5f8589fd040d9ee3bc54157"
+    },
+    {
+      "base": "repository",
+      "path": "scripts/export-adoption-matrix-jsonl.sh",
+      "sha256": "802e1fa030c5a119eda87f20937def013e120909cee55b8668e9092f7490916d"
+    },
+    {
+      "base": "repository",
+      "path": "scripts/check-reference-repository-removal.sh",
+      "sha256": "292380dab1782ef9c175d4571a39fa56c5bd075be201d31eac50e44588c8c6f0"
+    },
+    {
+      "base": "repository",
+      "path": "scripts/plan-reference-repository-removal.sh",
+      "sha256": "9235803f6a51df596893106c588d23dd7e7ed5d0e248b69e031fca271bb9acb4"
+    },
+    {
+      "base": "repository",
+      "path": "tools/codex_assets/reference_removal.py",
+      "sha256": "773635dfba7847134c1ca6393e6326182b3b3ceb31d2e8049603994be0b0ebad"
+    },
+    {
+      "base": "repository",
+      "path": "tools/codex_assets/reference_repository.py",
+      "sha256": "d4d64fac97a7234e2352908dc9fed6b909334be5a4662cce3c171dd4be5830d4"
+    },
+    {
+      "base": "repository",
+      "path": "tools/codex_assets/reference_contracts.py",
+      "sha256": "29cd0e7f55c203af3f8a70a8952faedc90d510eefeab4be2d7e64ba0951aaf1c"
+    },
+    {
+      "base": "repository",
+      "path": "tools/codex_assets/intake_io.py",
+      "sha256": "2ccdd060dd64284aab8b1a39c4384de64879e278ed8ae3a7fe20ca974fc31e49"
+    },
+    {
+      "base": "repository",
+      "path": "manifests/reference_repository_lifecycle_policy.json",
+      "sha256": "bdd2596507eba5cfd0e3800622eceb6f1d14b2941010c766e0ee16991ac45e57"
+    },
+    {
+      "base": "repository",
+      "path": "tests/test_maintainability_budgets.sh",
+      "sha256": "cee2cd5a4d2f04b013dfdef45c38688dca94ec7e56bf2dde60c798116c948f76"
+    },
+    {
+      "base": "repository",
+      "path": "scripts/check-maintainability-budgets.sh",
+      "sha256": "cb853284406bd6d630669a613dcf2906d34f38a77c2f96d3675e191f1821e0b6"
+    },
+    {
+      "base": "repository",
+      "path": "tools/codex_assets/maintainability_budget.py",
+      "sha256": "7312a119218439a1726e426eda56690b026c31a2669f14b1d6453acf5ee64054"
+    },
+    {
+      "base": "repository",
+      "path": "manifests/comprehensive_optimization_backlog.json",
+      "sha256": "dcc814b4af52ec498a2585673d9da7274fe92da58e02ee580f2fb01283a74a8b"
+    }
+  ],
+  "preserved_history": [
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/requirements.md",
+      "sha256": "caa6b8ff71120e6ab362ec8cc51c337bc3d06ecf2e5df6757553750c37a557cd"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/design.md",
+      "sha256": "a06522ed1fa37b273fa72d820b5a93302a6bc3f0885ac686bacbaab639666d4e"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/tasks.md",
+      "sha256": "8a1a4243f50fdb39c7442b1dfd096ea28ce4949d89de4fb7b400c38943f354e3"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/sources.json",
+      "sha256": "ba7da4f4bb46e59b835e0dc5dedfba487639b27d861100e6de305d9edfc692aa"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/source-metadata.jsonl",
+      "sha256": "4bad3191fac50362d3f30ff8290741cd258702c243ddb413da6e2d1e3b3372f6"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/candidates.jsonl",
+      "sha256": "0ba319379f12ee1b3d454fbd5ac622699d8b9ad1550173735cc71d3433de6010"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/collection.json",
+      "sha256": "4eb4e6743c8c699f60782431d380480c602b3c799fa9b1cd0a9b3c39f5de2320"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/decisions.jsonl",
+      "sha256": "3d3582391dc2fdf9fd79e67a9a3dbfc4174392df07965b7d0aac0e3294a4109b"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/owner-decision.md",
+      "sha256": "b0c1c6af3f247b10fb83582ea2b2a22ebc0fc201032b5957ff43fdbfafc5caaf"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/review-evidence.json",
+      "sha256": "ade3d294f05deb506fc9d72ff8f0be53feee2346d420372ba05b02139fa83a4f"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/review-findings.md",
+      "sha256": "64cb910798ed3817b57fa90cecc30e4f433d4ebd990c377dec21b1696b6bed26"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/negative-results.md",
+      "sha256": "431ea8d117b19eaf4388e2f5ea59a2a9b08bba518e32f33de4dbb9b1fa8e25f9"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/evidence/independent-review-execution.json",
+      "sha256": "b4679c8aba80b5da61f91ff041d56264295b0726fb043f2481ed0ac3153b21fb"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/evidence/independent-review-probes.py",
+      "sha256": "a9bdb843bb1b95e8c5cf8eaef7fcce433f4bc34ac9b18a5d2b7a574646c2b17b"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/review-projection-correction.json",
+      "sha256": "df270326b796a4daead2b72dd49898785df7572b937ac9ade99022be7514d8b6"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/review-projection-correction-findings.md",
+      "sha256": "d22660328b7f785ed0b814cf2e762deca8843837af85ab3f3023a7486ad99d98"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/evidence/projection-correction-independent-execution.json",
+      "sha256": "2e1c1c3f9e2d3c5366ff4e28ce9087f12d83ce7904d65c1e0c52a33d048ad617"
+    }
+  ],
+  "reports_tree_delta": [
+    "D\treports/evidence-methods-absorption-2026-10-23.md"
+  ],
+  "ledger_preservation": {
+    "sources": 12,
+    "candidates": 12,
+    "decisions": 12,
+    "decision_counts": {
+      "OBSERVE": 3,
+      "ENHANCE": 9
+    },
+    "original_bytes_and_ids_preserved": true
+  },
+  "matrix_projection": {
+    "rows": 210,
+    "production_ids": [
+      "EXT-06",
+      "EXT-08",
+      "EXT-09",
+      "EXT-11"
+    ],
+    "research_enhance_ids": [
+      "EXT-01",
+      "EXT-03",
+      "EXT-04",
+      "EXT-05",
+      "EXT-07"
+    ],
+    "observe_ids": [
+      "EXT-02",
+      "EXT-10",
+      "EXT-12"
+    ],
+    "only_four_evidence_paths_retargeted": true
+  },
+  "published_adk": {
+    "commit": "415590db44e88979185efb850e2339a3f95411ef",
+    "tree": "51d400e80ba555a49ca85fcfefbd74f7fe499072",
+    "source_bindings": [
+      {
+        "base": "repository",
+        "path": "agent-dev-kit/src/agent_dev_kit/atomic_io.py",
+        "sha256": "0a620484ae5954824ca7c93a251df8f8518ee5ec64739d64d9d987f0fb3a1b79"
+      },
+      {
+        "base": "repository",
+        "path": "agent-dev-kit/src/agent_dev_kit/native_campaign.py",
+        "sha256": "52d0b5a37828d8d7d5042da62517e2d65047acb6c9474f2e9703df874cde6b81"
+      },
+      {
+        "base": "repository",
+        "path": "agent-dev-kit/src/agent_dev_kit/native_campaign_contract.py",
+        "sha256": "63f0dbb11fb4d8b2878dedfe9668db797b9182e9f635feccb0a62ea8c2681d91"
+      },
+      {
+        "base": "repository",
+        "path": "agent-dev-kit/src/agent_dev_kit/compiler.py",
+        "sha256": "27e643dee1bbf7a150e8f6f1e0466e043284d57db15eeca77afd8287aad2cce4"
+      },
+      {
+        "base": "repository",
+        "path": "agent-dev-kit/src/agent_dev_kit/release.py",
+        "sha256": "f6a9f42408222a6e1ebccba6baabe57c1df263ab72a6f0a933e0953f6938b8dd"
+      },
+      {
+        "base": "repository",
+        "path": "agent-dev-kit/src/agent_dev_kit/distribution/release_artifacts.py",
+        "sha256": "921dd17150b9687e5120a50111ef640ee04499cf59a0115af9d70874ffd0260b"
+      },
+      {
+        "base": "repository",
+        "path": "agent-dev-kit/src/agent_dev_kit/distribution/archive_io.py",
+        "sha256": "3ce030569ca6b29d8cdc9463cc22057294fb52572ee221e7304caee8381e2c84"
+      },
+      {
+        "base": "repository",
+        "path": "agent-dev-kit/src/agent_dev_kit/distribution/release_contract.py",
+        "sha256": "9c2e8c8753f7c5fcf860d121d5f18900d7c3107b1a777593cb5c188170196126"
+      },
+      {
+        "base": "repository",
+        "path": "agent-dev-kit/agents/architecture-planner/AGENTS.md",
+        "sha256": "c365f27397c82c548c1b1a7528fb2960df58ab6f0d1c64828252375e429a113a"
+      },
+      {
+        "base": "repository",
+        "path": "agent-dev-kit/agents/security-compliance-reviewer/AGENTS.md",
+        "sha256": "0abd4397720aadc778778d400eb2bcf2bf9e30eebe472b676121fba0c72d52c8"
+      },
+      {
+        "base": "repository",
+        "path": "agent-dev-kit/agents/build-release-engineer/AGENTS.md",
+        "sha256": "7d6c552b62282ada68f6dbbd7abac34336011f80320668339e1f267c4c4e76ba"
+      },
+      {
+        "base": "repository",
+        "path": "agent-dev-kit/skills/adk-interface-contract-design/SKILL.md",
+        "sha256": "8e879b5f42eb02d17f8c4f69249a2af8ea31c55f79a1e710329a1ca80c028eeb"
+      },
+      {
+        "base": "repository",
+        "path": "agent-dev-kit/skills/adk-interface-contract-design/references/lifecycle-operation-contract.md",
+        "sha256": "22532bfe0e89fac9596023f0a2b708d46b98722d4acf6adc90bf833e0f82db71"
+      },
+      {
+        "base": "repository",
+        "path": "agent-dev-kit/skills/adk-interface-contract-design/references/tool-effect-contract.md",
+        "sha256": "428be87b2acb671e01581ae83af46dfb0e87c8cdb1d24d11e18a231244b67ea4"
+      },
+      {
+        "base": "repository",
+        "path": "agent-dev-kit/skills/adk-release-versioning/SKILL.md",
+        "sha256": "3bf8f529be16d467cb099a0db7b2534860de7952001f6baa0b990ff189db5988"
+      },
+      {
+        "base": "repository",
+        "path": "agent-dev-kit/workflows/release-hardening/WORKFLOW.md",
+        "sha256": "0b85520437a8e79cdd9b52b94039f52b163c5934385b6eebc9a153a4876047c7"
+      }
+    ]
+  },
+  "maintainability": {
+    "status": "pass",
+    "strict": true,
+    "budget_count": 14,
+    "warnings": [],
+    "failures": [],
+    "root_report_budget": {
+      "id": "root-report-count",
+      "metric": "file_count",
+      "status": "pass",
+      "observed": 320,
+      "baseline": 284,
+      "drift": 36,
+      "warning_limit": 320,
+      "hard_limit": 400,
+      "files_scanned": 320,
+      "owner": "llm-agent-governance",
+      "next_action": "Run governed report cleanup and preserve supersession metadata before creating more active reports.",
+      "hotspots": [
+        {
+          "path": "reports/2026-08-01-token-context-governance-v2-release-bundle.json",
+          "value": 1
+        },
+        {
+          "path": "reports/README.md",
+          "value": 1
+        },
+        {
+          "path": "reports/absorb-review-20260512_115031.md",
+          "value": 1
+        },
+        {
+          "path": "reports/absorption-optimization-review-2026-06-15.md",
+          "value": 1
+        },
+        {
+          "path": "reports/active-subrepo-diff-scan-2026-07-06.md",
+          "value": 1
+        }
+      ]
+    },
+    "budget_config_and_checker_unchanged": true
+  },
+  "canonical_export_byte_match": true,
+  "removal_contract": {
+    "only_fixture_field_changed": "/artifact_sha256/adoption_decision",
+    "old_sha256": "46ca2f731f41b4ab2ad8422bc0eba996749404e8528a37117e4794e0f3e2fcb2",
+    "new_sha256": "da66a91c839169f540175cfcfabea245526657e9e9f47b868ea7e1d4b74493b4",
+    "canonical_plan_object_matches": true,
+    "old_digest_rejected": true
+  },
+  "frozen_sources_and_deletion_stable_during_review": true,
+  "scope_limits": [
+    "Eight original entrypoints plus the strict budget measurement and canonical export/planner/stale-digest check are actual independent executions.",
+    "No production source, thresholds, exclusions, guards, tests, prior review records or old reports were changed by this reviewer.",
+    "Existing ASW contracts remain responsibility references, not new execution receipts; ADK source is unchanged.",
+    "This is a frozen-file review before the next commit and CI, not a full-suite or release authorization.",
+    "64c5192 CI and its matching local 41-pass/1-fail result remain historical failures; old seven-gate PASS is not used to override them.",
+    "Existing dirty-triage and historical Product M5/current candidate blockers remain unchanged."
+  ],
+  "completed_at": "2026-10-23T14:18:51.491714+00:00"
+}

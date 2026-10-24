@@ -1,0 +1,167 @@
+{
+  "schema": "llm-agent-methods-review-fix/v1",
+  "finding": "METHODS-REVIEW-01",
+  "actor": "ai/root/implement_gates",
+  "completed_at_utc": "2026-10-23 12:22:44 UTC",
+  "status": "implemented-awaiting-independent-recheck",
+  "implementation": {
+    "owner": "tools/codex_assets/practice_intake.py:_manual_repository",
+    "change": "Only github.com derives owner/repository from its first two nonempty path segments, stripping .git from the repository segment. Missing repository names return no repository metadata.",
+    "unchanged": "Canonical URL, revision and candidate ID computation are untouched. GitLab nested groups, GitLab file paths and Gitee retain their previous metadata behavior."
+  },
+  "before_sha256": {
+    "tools/codex_assets/practice_intake.py": "58f8dd8a2a31dd74f2520dafc83234fac08c73dc9c5303081ee22f34782fef71",
+    "tests/test_external_practice_intake.sh": "48c3a60b7557776d8bf2663dbf6a4d1d8e0e39dcbbfcbe79fab775a69b0843ea",
+    "docs/changes/20261023-evidence-methods/source-metadata.jsonl": "4bad3191fac50362d3f30ff8290741cd258702c243ddb413da6e2d1e3b3372f6",
+    "docs/changes/20261023-evidence-methods/candidates.jsonl": "82033b320cd6ce3211f9499422e96c3952476b219fad29e98cbef8afb83cf35d",
+    "docs/changes/20261023-evidence-methods/collection.json": "868ca59410bb48d6c5b13a7288985e78c33b102d582af019d271b3a5d1538a1b",
+    "docs/changes/20261023-evidence-methods/decisions.jsonl": "3d3582391dc2fdf9fd79e67a9a3dbfc4174392df07965b7d0aac0e3294a4109b",
+    "docs/changes/20261023-evidence-methods/review-findings.md": "3f3577ec3ddb923cf52803d2750ea48cacb93bbcd07f310b4edd5fe51779349a"
+  },
+  "after_sha256": {
+    "tools/codex_assets/practice_intake.py": "9917a67e87c76419df23b7ab69dd3b1f8134f86de7d3eec80923a74e8fddabfb",
+    "tests/test_external_practice_intake.sh": "c6196a4bd8c0ae45495436788f1c5cde1942aa7dab93be22f193a8118c139c89",
+    "manifests/external_practice_sources.json": "30631fb6937629bfe7a2cc1428773e20cf58058820bca8ca93107cd2fbe459ea",
+    "docs/changes/20261023-evidence-methods/source-metadata.jsonl": "4bad3191fac50362d3f30ff8290741cd258702c243ddb413da6e2d1e3b3372f6",
+    "docs/changes/20261023-evidence-methods/candidates.jsonl": "0ba319379f12ee1b3d454fbd5ac622699d8b9ad1550173735cc71d3433de6010",
+    "docs/changes/20261023-evidence-methods/collection.json": "4eb4e6743c8c699f60782431d380480c602b3c799fa9b1cd0a9b3c39f5de2320",
+    "docs/changes/20261023-evidence-methods/decisions.jsonl": "3d3582391dc2fdf9fd79e67a9a3dbfc4174392df07965b7d0aac0e3294a4109b",
+    "docs/changes/20261023-evidence-methods/review-findings.md": "3f3577ec3ddb923cf52803d2750ea48cacb93bbcd07f310b4edd5fe51779349a"
+  },
+  "checks": {
+    "red": {
+      "command": "/workspace/scratch/694941d81014/tooling/rtk bypass env PYTHONDONTWRITEBYTECODE=1 PATH=/workspace/scratch/694941d81014/tooling/venv/bin:$PATH bash tests/test_external_practice_intake.sh",
+      "started_at_utc": "2026-10-23 12:20:30 UTC",
+      "exit_code": 1,
+      "test": "existing public collect shell regression",
+      "new_metadata_cases": 8,
+      "observed": "The collector exited successfully but the behavior assertion rejected example/agent/blob/<revision>/first.md as a repository identity.",
+      "log": "evidence/methods-review-01-red.log",
+      "source_sha256": "58f8dd8a2a31dd74f2520dafc83234fac08c73dc9c5303081ee22f34782fef71"
+    },
+    "green": {
+      "command": "/workspace/scratch/694941d81014/tooling/rtk bypass env PYTHONDONTWRITEBYTECODE=1 PATH=/workspace/scratch/694941d81014/tooling/venv/bin:$PATH bash tests/test_external_practice_intake.sh",
+      "started_at_utc": "2026-10-23 12:21:06 UTC",
+      "exit_code": 0,
+      "test": "full existing external-practice intake script including eight new public collect metadata cases",
+      "log": "evidence/methods-review-01-green.log"
+    },
+    "reference_repository_regression": {
+      "command": "/workspace/scratch/694941d81014/tooling/rtk bypass env PYTHONDONTWRITEBYTECODE=1 PATH=/workspace/scratch/694941d81014/tooling/venv/bin:$PATH bash tests/test_reference_repository_registration.sh",
+      "started_at_utc": "2026-10-23 12:21:06 UTC",
+      "exit_code": 0,
+      "log": "evidence/methods-review-01-reference.log"
+    },
+    "shell_syntax": {
+      "command": "/workspace/scratch/694941d81014/tooling/rtk bypass bash -n tests/test_external_practice_intake.sh",
+      "started_at_utc": "2026-10-23 12:21:06 UTC",
+      "exit_code": 0
+    },
+    "diff_check": {
+      "command": "/workspace/scratch/694941d81014/tooling/rtk bypass git diff --check",
+      "started_at_utc": "2026-10-23 12:21:06 UTC",
+      "exit_code": 0
+    },
+    "canonical_regeneration": {
+      "command": "/workspace/scratch/694941d81014/tooling/rtk bypass env PYTHONDONTWRITEBYTECODE=1 PATH=/workspace/scratch/694941d81014/tooling/venv/bin:$PATH bash scripts/practice-intake.sh collect --provider manual --input docs/changes/20261023-evidence-methods/source-metadata.jsonl --max-results 12 --as-of 2026-10-23 --out docs/changes/20261023-evidence-methods/candidates.jsonl --evidence-out docs/changes/20261023-evidence-methods/collection.json",
+      "started_at_utc": "2026-10-23 12:21:31 UTC",
+      "exit_code": 0,
+      "candidate_count": 12,
+      "log": "evidence/methods-review-01-canonical-validation.log"
+    },
+    "contract_checks": [
+      {
+        "command": "/workspace/scratch/694941d81014/tooling/rtk bypass env PYTHONDONTWRITEBYTECODE=1 PATH=/workspace/scratch/694941d81014/tooling/venv/bin:$PATH bash scripts/practice-intake.sh check --kind policy --input manifests/external_practice_sources.json",
+        "exit_code": 0
+      },
+      {
+        "command": "/workspace/scratch/694941d81014/tooling/rtk bypass env PYTHONDONTWRITEBYTECODE=1 PATH=/workspace/scratch/694941d81014/tooling/venv/bin:$PATH bash scripts/practice-intake.sh check --kind candidate --input docs/changes/20261023-evidence-methods/candidates.jsonl",
+        "exit_code": 0
+      },
+      {
+        "command": "/workspace/scratch/694941d81014/tooling/rtk bypass env PYTHONDONTWRITEBYTECODE=1 PATH=/workspace/scratch/694941d81014/tooling/venv/bin:$PATH bash scripts/practice-intake.sh check --kind decision --input docs/changes/20261023-evidence-methods/decisions.jsonl",
+        "exit_code": 0
+      },
+      {
+        "command": "/workspace/scratch/694941d81014/tooling/rtk bypass env PYTHONDONTWRITEBYTECODE=1 PATH=/workspace/scratch/694941d81014/tooling/venv/bin:$PATH bash scripts/practice-intake.sh check --kind evidence --input docs/changes/20261023-evidence-methods/collection.json",
+        "exit_code": 0
+      }
+    ],
+    "linkage": {
+      "status": "pass",
+      "candidate_ids": [
+        "epc-0ce4bf0161c102a85f04",
+        "epc-16afc5925f40f38a0078",
+        "epc-4f47b944f7f6e782c3f3",
+        "epc-522c4e7927b0dc4c1ade",
+        "epc-82bbc50eb15b1f26e848",
+        "epc-8790563d89bf0e01e8d4",
+        "epc-8c61c580ae26a7b8e677",
+        "epc-8d6c2395ffcc90414b71",
+        "epc-985315ea1d92eeae12ec",
+        "epc-c1b6b10bc0ac830a13c7",
+        "epc-c8245f8932b0b764d972",
+        "epc-ecfea23bc138bce4f1ad"
+      ],
+      "changes": [
+        {
+          "source_id": "EXT-05",
+          "candidate_id": "epc-82bbc50eb15b1f26e848",
+          "old_full_name": "addyosmani/agent-skills/blob/7d65f5e781e819895d0603912290edca6d2cf2f7/evals/README.md",
+          "new_full_name": "addyosmani/agent-skills",
+          "canonical_url": "https://github.com/addyosmani/agent-skills/blob/7d65f5e781e819895d0603912290edca6d2cf2f7/evals/README.md",
+          "revision": "7d65f5e781e819895d0603912290edca6d2cf2f7"
+        },
+        {
+          "source_id": "EXT-07",
+          "candidate_id": "epc-8790563d89bf0e01e8d4",
+          "old_full_name": "cursor/plugins/blob/00b14f1df36b32a8dd1529324a3a459f6563b127/pstack/skills/benchmark-checklist/SKILL.md",
+          "new_full_name": "cursor/plugins",
+          "canonical_url": "https://github.com/cursor/plugins/blob/00b14f1df36b32a8dd1529324a3a459f6563b127/pstack/skills/benchmark-checklist/SKILL.md",
+          "revision": "00b14f1df36b32a8dd1529324a3a459f6563b127"
+        },
+        {
+          "source_id": "EXT-08",
+          "candidate_id": "epc-16afc5925f40f38a0078",
+          "old_full_name": "cursor/plugins/blob/e5136d82418d2db3165ea1050d17577cd618cc05/pstack/skills/principle-make-operations-idempotent/SKILL.md",
+          "new_full_name": "cursor/plugins",
+          "canonical_url": "https://github.com/cursor/plugins/blob/e5136d82418d2db3165ea1050d17577cd618cc05/pstack/skills/principle-make-operations-idempotent/SKILL.md",
+          "revision": "e5136d82418d2db3165ea1050d17577cd618cc05"
+        },
+        {
+          "source_id": "EXT-06",
+          "candidate_id": "epc-0ce4bf0161c102a85f04",
+          "old_full_name": "mattpocock/skills/blob/321658273cb1d20b76026717d027d505790106d4/skills/engineering/codebase-design/SKILL.md",
+          "new_full_name": "mattpocock/skills",
+          "canonical_url": "https://github.com/mattpocock/skills/blob/321658273cb1d20b76026717d027d505790106d4/skills/engineering/codebase-design/SKILL.md",
+          "revision": "321658273cb1d20b76026717d027d505790106d4"
+        }
+      ],
+      "unchanged_fields": "All candidate fields except four repository.full_name values are unchanged.",
+      "collection_changes": [
+        "ledger_sha256",
+        "jobs[0].duration_ms"
+      ]
+    },
+    "validation_plan": {
+      "scope": "whole shared working tree before this correction",
+      "tier": "L4",
+      "snapshot_sha256": "8c2593db1787128b498e6c45c12e7e3811cc35051f68e8ed307c229ef2449ba5",
+      "reason": "reports/current-status.md was classified as release-critical",
+      "status": "parent-coordinates-final-integration",
+      "required_checks": [
+        "ADK run-local-ci-parity --python all --mode full",
+        "Root tests/run_all.sh --fail-fast",
+        "check-all --quick --working-tree"
+      ]
+    }
+  },
+  "evidence_format": "Logs preserve command output text; trailing spaces on progress/hint lines are removed.",
+  "limits": [
+    "Original reviewer evidence is unchanged; this implementer does not declare independent review complete.",
+    "The twelve candidates remain review-required and unverified-metadata with body_persisted=false and auto_actions=[]. Decisions were not regenerated or edited.",
+    "This is deterministic metadata and collector validation, not live upstream verification, license clearance, runtime qualification or measured task-effect improvement.",
+    "No remote mutation or release operation was performed by this implementer. Final integrated gates and publishing remain parent-owned.",
+    "Knowledge Provider and Execution Policy runtime remain unavailable in this environment; no pass is claimed."
+  ]
+}

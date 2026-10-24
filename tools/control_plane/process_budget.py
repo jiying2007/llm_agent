@@ -9,12 +9,22 @@ import subprocess
 import threading
 import time
 from collections.abc import Mapping, Sequence
+from contextlib import suppress
 from pathlib import Path
 from typing import BinaryIO
 
 
 class ProcessBudgetError(RuntimeError):
     """A command exceeded its declared wall-clock or byte budget."""
+
+    def __init__(
+        self, message: str, *, reason: str = "budget-exceeded",
+        stdout: bytes = b"", stderr: bytes = b"",
+    ) -> None:
+        super().__init__(message)
+        self.reason = reason
+        self.stdout = stdout
+        self.stderr = stderr
 
 
 def run_bounded(
@@ -71,11 +81,16 @@ def run_bounded(
     counts = [0, 0]
     output = [bytearray(), bytearray()]
     closed: set[int] = set()
+
+    def budget_error(message: str, reason: str) -> ProcessBudgetError:
+        return ProcessBudgetError(message, reason=reason,
+                                  stdout=bytes(output[0]), stderr=bytes(output[1]))
+
     try:
         while len(closed) != 2:
             remaining = deadline - time.monotonic()
             if remaining <= 0:
-                raise ProcessBudgetError("command timeout exceeded")
+                raise budget_error("command timeout exceeded", "timeout")
             try:
                 index, chunk = events.get(timeout=min(remaining, 0.05))
             except queue.Empty:
@@ -87,7 +102,9 @@ def run_bounded(
                 raise RuntimeError("unable to read command output") from chunk
             counts[index] += len(chunk)
             if counts[index] > (max_stdout, max_stderr)[index]:
-                raise ProcessBudgetError("command {} byte budget exceeded".format(("stdout", "stderr")[index]))
+                raise budget_error(
+                    "command {} byte budget exceeded".format(("stdout", "stderr")[index]), "output-budget",
+                )
             if index == 0 and stdout_sink is not None:
                 stdout_sink.write(chunk)
             else:
@@ -95,15 +112,13 @@ def run_bounded(
         try:
             return_code = process.wait(timeout=max(0.001, deadline - time.monotonic()))
         except subprocess.TimeoutExpired as exc:
-            raise ProcessBudgetError("command timeout exceeded") from exc
+            raise budget_error("command timeout exceeded", "timeout") from exc
         return subprocess.CompletedProcess(list(command), return_code, bytes(output[0]), bytes(output[1]))
     finally:
         stopped.set()
         if os.name == "posix":
-            try:
+            with suppress(ProcessLookupError):
                 os.killpg(process.pid, signal.SIGKILL)
-            except ProcessLookupError:
-                pass
         elif process.poll() is None:
             process.kill()
         process.wait(timeout=5)

@@ -1,0 +1,285 @@
+{
+  "schema": "llm-agent-method-sources/v1",
+  "retrieved_at": "2026-10-23",
+  "mode": "method-only",
+  "source_review": "Complete audit preceding the user's explicit adoption instruction.",
+  "third_party_content_copied": false,
+  "sources": [
+    {
+      "id": "EXT-01",
+      "title": "OpenAI — Testing Agent Skills Systematically with Evals",
+      "url": "https://developers.openai.com/blog/eval-skills",
+      "date_fetched": "2026-10-23",
+      "published_date": "2026-01-22",
+      "source_type": "official-engineering-article",
+      "method": "分开观察结果、过程、风格和效率，保存 trace 与实际产物，保留少量关键检查。",
+      "adopt_boundary": "复用 ADK 现有测试、回执和路由资产；将触发成功、执行完成、效果改善分开解释。",
+      "avoid_reason": "不据此新增全量 Skill 复验或重复评估平台；方法借鉴不等于依赖托管 Evals API。"
+    },
+    {
+      "id": "EXT-02",
+      "title": "OpenAI — Deprecations",
+      "url": "https://developers.openai.com/api/docs/deprecations",
+      "date_fetched": "2026-10-23",
+      "published_date": null,
+      "source_type": "official-product-lifecycle-documentation",
+      "method": "把外部平台退役作为实际依赖盘点和选型约束；区分方法引用与活跃调用。",
+      "adopt_boundary": "Evals 2026-10-31 只读，Evals dashboard/API 与 Agent Builder 计划于 2026-11-30 关闭；不新增这些依赖。",
+      "avoid_reason": "没有活跃调用时不得制造迁移缺陷；开源 openai/evals 方法参考不等同于托管 Evals API。",
+      "current_status": "官方弃用仅构成两仓选型限制；本轮静态检索未发现需迁移的活跃依赖。"
+    },
+    {
+      "id": "EXT-03",
+      "title": "Anthropic — Demystifying evals for AI agents",
+      "url": "https://www.anthropic.com/research/demystifying-evals-for-ai-agents",
+      "date_fetched": "2026-10-23",
+      "published_date": "2026-01-09",
+      "source_type": "official-engineering-article",
+      "method": "区分轨迹与环境最终 outcome，区分 pass@k 与 pass^k；隔离试验环境，校准 grader，并优先评估实际产物。",
+      "adopt_boundary": "G21/G22/M5 必须使用对应真实环境和可信证据；对重复执行保留成功与失败的完整分母。",
+      "avoid_reason": "不能把不断重试直到一次成功视作稳定性；不能让工具步骤固定序列取代可观察行为验收。"
+    },
+    {
+      "id": "EXT-04",
+      "title": "Anthropic — Harness design for long-running application development",
+      "url": "https://www.anthropic.com/research/harness-design-long-running-apps",
+      "date_fetched": "2026-10-23",
+      "published_date": "2026-03-24",
+      "source_type": "official-engineering-article",
+      "method": "对 harness 组件逐个消融，观察最终结果与成本；审查者的收益依任务难度和模型能力变化。",
+      "adopt_boundary": "逐项验证重复 validator、固定多层审查、全量深测和 checkpoint 的增益，保留已证实有用的保护。",
+      "avoid_reason": "不直接照抄三 agent 结构；不一次性大删；不把所有任务强制套同一重量流程。"
+    },
+    {
+      "id": "EXT-05",
+      "title": "Addy Osmani agent-skills — Skill Evals",
+      "url": "https://github.com/addyosmani/agent-skills/blob/main/evals/README.md",
+      "pinned_url": "https://github.com/addyosmani/agent-skills/blob/7d65f5e781e819895d0603912290edca6d2cf2f7/evals/README.md",
+      "date_fetched": "2026-10-23",
+      "published_date": null,
+      "source_type": "project-original-source",
+      "source_commit": "7d65f5e781e819895d0603912290edca6d2cf2f7",
+      "source_commit_date": "2026-10-13T19:58:19Z",
+      "source_blob_sha": "9c3ba7eb3140d3c9d4834f6035025f2ad4a6ab87",
+      "revision_note": "当前该路径最近一次变更提交；固定提交文件已再次读取，并与当前文件 blob 一致。",
+      "method": "区分结构检查、词法路由近似和真实行为；采用有/无插件对照，触发指标不充当效果分数。",
+      "adopt_boundary": "只补充既有 matcher/routing 结果的解释边界与按需消融方法。",
+      "avoid_reason": "不导入第二套 catalog/runner；不把词法分数作为语义效果；不默认在 CI 调用付费模型。"
+    },
+    {
+      "id": "EXT-06",
+      "title": "Matt Pocock skills — Codebase Design",
+      "url": "https://github.com/mattpocock/skills/blob/main/skills/engineering/codebase-design/SKILL.md",
+      "pinned_url": "https://github.com/mattpocock/skills/blob/321658273cb1d20b76026717d027d505790106d4/skills/engineering/codebase-design/SKILL.md",
+      "date_fetched": "2026-10-23",
+      "published_date": null,
+      "source_type": "project-original-source",
+      "source_commit": "321658273cb1d20b76026717d027d505790106d4",
+      "source_commit_date": "2026-08-19T10:03:37Z",
+      "source_blob_sha": "3f63c8146dd2604b419c929e9876b90c30d410e9",
+      "revision_note": "当前该路径最近一次变更提交，固定提交文件已读取。",
+      "method": "以小接口封装真实复杂度；删除测试识别转发层；通过调用者实际使用的接口验证。",
+      "adopt_boundary": "审查单调用者 wrapper、重复 adapter、为行数阈值拆分的薄模块；保留真实 authority 和责任边界。",
+      "avoid_reason": "不按实现行数与接口行数比例评分架构；不以新抽象掩盖现有简单流程。"
+    },
+    {
+      "id": "EXT-07",
+      "title": "Cursor pstack — Benchmark checklist",
+      "url": "https://github.com/cursor/plugins/blob/main/pstack/skills/benchmark-checklist/SKILL.md",
+      "pinned_url": "https://github.com/cursor/plugins/blob/00b14f1df36b32a8dd1529324a3a459f6563b127/pstack/skills/benchmark-checklist/SKILL.md",
+      "date_fetched": "2026-10-23",
+      "published_date": null,
+      "source_type": "project-original-source",
+      "source_commit": "00b14f1df36b32a8dd1529324a3a459f6563b127",
+      "source_commit_date": "2026-10-10T22:43:23Z",
+      "source_blob_sha": "e901d1fdbc9ffce53e94d6514be7d9a22e771a1a",
+      "revision_note": "当前该路径最近一次变更提交；固定提交文件已再次读取，并与当前文件 blob 一致。",
+      "method": "确认实际工作与正确结果，解释瓶颈，公平配置，交替重复测量，同时报告端到端影响。",
+      "adopt_boundary": "测真实任务总耗时、重复验证、重试、CI 排队和人工介入；把微基准收益映射到完整路径。",
+      "avoid_reason": "不把 no-op 或错误快速返回作为加速；不把毫秒级 helper 改善扩大为整体研发效率提升。"
+    },
+    {
+      "id": "EXT-08",
+      "title": "Cursor pstack — Make Operations Idempotent",
+      "url": "https://github.com/cursor/plugins/blob/main/pstack/skills/principle-make-operations-idempotent/SKILL.md",
+      "pinned_url": "https://github.com/cursor/plugins/blob/e5136d82418d2db3165ea1050d17577cd618cc05/pstack/skills/principle-make-operations-idempotent/SKILL.md",
+      "date_fetched": "2026-10-23",
+      "published_date": null,
+      "source_type": "project-original-source",
+      "source_commit": "e5136d82418d2db3165ea1050d17577cd618cc05",
+      "source_commit_date": "2026-10-15T05:36:44Z",
+      "source_blob_sha": "c93f323d694a4d310515ea27165a093d399bc55e",
+      "revision_note": "当前该路径最近一次变更提交；固定提交文件已再次读取，并与当前文件 blob 一致。",
+      "method": "从实际当前状态与目标状态的差异执行；遗留锁、临时文件、半成品可判定；任何中断点重试均收敛。",
+      "adopt_boundary": "用于安装升级、发布、跨仓 pin、receipt 写入和自动 issue 收敛的中断点验证。",
+      "avoid_reason": "不新增总 orchestrator；不把幂等理解为无条件重复全部副作用。"
+    },
+    {
+      "id": "EXT-09",
+      "title": "OpenAI — Safety in building agents",
+      "url": "https://developers.openai.com/api/docs/guides/agent-builder-safety",
+      "date_fetched": "2026-10-23",
+      "published_date": null,
+      "source_type": "official-legacy-product-documentation",
+      "method": "不可信文本不提升为开发者指令；跨节点传经验证的结构化字段；隔离数据与动作权限。",
+      "adopt_boundary": "日志、回执、模型输出作为数据；发布权限由可信执行策略、身份与实际结果决定。",
+      "avoid_reason": "仅吸收信任边界方法，不引入已弃用 Agent Builder；不照搬逐工具人工确认流程，遵循用户现有授权与本地政策。"
+    },
+    {
+      "id": "EXT-10",
+      "title": "LangGraph — Checkpointers",
+      "url": "https://docs.langchain.com/oss/python/langgraph/checkpointers",
+      "date_fetched": "2026-10-23",
+      "published_date": null,
+      "source_type": "official-framework-documentation",
+      "method": "区分 replay 与恢复已完成外部副作用；显式选择 exit/async/sync 持久化语义及崩溃窗口。",
+      "adopt_boundary": "审查两仓恢复语义是否可能重执行远端提交、发布或 API 请求。",
+      "avoid_reason": "有 checkpoint 不等于 exactly-once；只吸收语义，不增加 LangGraph 依赖。"
+    },
+    {
+      "id": "EXT-11",
+      "title": "GitHub — Immutable releases",
+      "url": "https://docs.github.com/en/code-security/concepts/supply-chain-security/immutable-releases",
+      "date_fetched": "2026-10-23",
+      "published_date": null,
+      "source_type": "official-platform-documentation",
+      "method": "draft 中完成全部 assets 后发布；tag 与 assets 锁定，标题、notes 和 latest 标记仍可修改。",
+      "adopt_boundary": "验收 commit、asset digest、构建主体和完整资产集合；明确发布完成与产品资格区别。",
+      "avoid_reason": "不得使用 latest、标题或 notes 充当不可变资格 authority；release 对象存在不代表内容已完整。"
+    },
+    {
+      "id": "EXT-12",
+      "title": "GitHub — Workflow dependency lockfiles",
+      "url": "https://docs.github.com/en/actions/concepts/security/workflow-dependency-lockfiles",
+      "supporting_urls": [
+        "https://docs.github.com/en/actions/how-tos/secure-your-work/lock-workflow-dependencies"
+      ],
+      "date_fetched": "2026-10-23",
+      "published_date": null,
+      "source_type": "official-platform-documentation",
+      "availability": "public-preview",
+      "plan_requirement": "GitHub Enterprise Cloud",
+      "repository_permission_requirement": "write access",
+      "recommendation": "observe-only",
+      "method": "机器生成 actions.lock，锁定 action 传递依赖、commit 与源仓库数字身份；按 workflow 渐进接入。",
+      "adopt_boundary": "当前仅观察，维持已有 full SHA pin。只有已确认拥有 GitHub Enterprise Cloud 资格且无需新增费用时，才考虑小范围兼容性试验；被调用 reusable workflow 的内部依赖由定义仓库 lockfile 管理。",
+      "avoid_reason": "官方 how-to 限定 GitHub Enterprise Cloud，且仍公开预览。用户不新增付费资源，不能无条件推荐试点或为此升级计划；未采用不构成漏洞；验证前不放松现有 SHA pin，不永久保留两套重复 authority。"
+    }
+  ],
+  "dependency_audit": {
+    "date_checked": "2026-10-23",
+    "repository_heads": {
+      "jiying2007/agent-dev-kit": "bf9ec8164e2c80394ce997f8a8b51515cad4746e",
+      "jiying2007/llm_agent": "7ba2d71e210955464839d5177c0f7d6a86ac072b"
+    },
+    "requested_surfaces": [
+      "src",
+      "tools",
+      ".github",
+      "scripts"
+    ],
+    "scanned_paths": [
+      "agent-dev-kit/src",
+      "agent-dev-kit/tools",
+      "agent-dev-kit/.github",
+      "agent-dev-kit/scripts",
+      "llm_agent/tools",
+      "llm_agent/.github",
+      "llm_agent/scripts"
+    ],
+    "absent_paths": [
+      "llm_agent/src"
+    ],
+    "supplemental_scan": "两仓全局只读搜索，排除 .git、.venv、__pycache__，定位文档、manifest 和 adoption ledger 中的同名引用。",
+    "method": "ripgrep 检索端点、SDK 调用和产品名称，并人工阅读匹配的实现与 contract。未运行 API、model eval 或修改两仓。",
+    "patterns": [
+      "/v1/evals",
+      "/v1/prompts",
+      "client.evals",
+      "openai.evals",
+      ".evals.create",
+      ".evals.retrieve",
+      ".evals.runs",
+      "agent-builder",
+      "agent_builder",
+      "Agent Builder",
+      "prompt_id",
+      "/v1/workflows",
+      "api.openai.com",
+      "from openai",
+      "import openai",
+      "OpenAI(",
+      "AsyncOpenAI("
+    ],
+    "active_hosted_evals_calls_found": 0,
+    "active_agent_builder_calls_found": 0,
+    "active_prompt_objects_calls_found": 0,
+    "result": "NO_ACTIVE_DEPENDENCY_FOUND",
+    "classification": "selection-constraint-only",
+    "conclusion": "在已核实两仓 HEAD 的指定执行面中，未发现 OpenAI 托管 Evals API、Agent Builder 或 /v1/prompts 活跃依赖。本轮不存在由这些平台弃用直接引出的已证实迁移缺陷。",
+    "observed_references": [
+      {
+        "path": "llm_agent/tools/codex_assets/runtime_security.py",
+        "lines": [
+          1,
+          12,
+          81,
+          94
+        ],
+        "classification": "read-only endpoint allowlist",
+        "observation": "唯一 api.openai.com 命中属于配置审查默认可信域名；模块声明不建立 provider/MCP 连接，结果 network_executed=false。"
+      },
+      {
+        "path": "agent-dev-kit/manifests/eval_suites.json",
+        "lines": [
+          4,
+          17
+        ],
+        "classification": "platform-neutral governance contract",
+        "observation": "OpenAI 文档为 citation metadata 与治理参考；reference_boundary 明确禁止启用 hosted eval services、stored completions 或外部 runtime。"
+      },
+      {
+        "path": "agent-dev-kit/manifests/harness_loop_engineering_contracts.json",
+        "lines": [
+          477,
+          480,
+          483,
+          484,
+          486
+        ],
+        "classification": "open-source method reference",
+        "observation": "openai-evals 指向 github.com/openai/evals，observe-method-only，runtime_enabled=false；不是托管 Evals API。"
+      },
+      {
+        "path": "llm_agent/scripts/check-harness-loop-engineering.sh",
+        "lines": [
+          93,
+          186,
+          221
+        ],
+        "classification": "reference registry validation",
+        "observation": "openai-evals 为参考来源 ID 的列表检查，没有远端 Evals 调用。"
+      },
+      {
+        "path": "agent-dev-kit/scripts/check-harness-loop-engineering-contracts.sh",
+        "lines": [
+          113
+        ],
+        "classification": "reference registry validation",
+        "observation": "openai-evals 为 contract 参考来源 ID，没有远端 Evals 调用。"
+      },
+      {
+        "path": "llm_agent/docs/changes/20261020-qualification-followup/external-methods.md",
+        "lines": [
+          135
+        ],
+        "classification": "documented selection boundary",
+        "observation": "既有记录明确只吸收评估方法，不采用收费 Evals API 或模型裁判。"
+      }
+    ],
+    "limitations": [
+      "这是静态依赖审查，不能证明未提供的生产部署、用户目录或外部仓库完全不存在运行时动态配置。",
+      "rtk 在本执行环境不可用；此次只读检索在 scratch 根目录直接调用 rg/sed/git，不安装、不写源仓、不调用模型。"
+    ]
+  }
+}

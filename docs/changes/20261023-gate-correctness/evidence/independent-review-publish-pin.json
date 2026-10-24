@@ -1,0 +1,423 @@
+{
+  "schema": "llm-agent-protected-publish-pin-review/v1",
+  "reviewer": "ai/root/remote_governance",
+  "reviewed_at_utc": "2026-10-23T12:23:48Z",
+  "status": "read-only-checks-complete",
+  "transport": {
+    "tool": "mcp__codex_apps__github_fetch",
+    "method": "GET",
+    "remote_writes": false,
+    "credentials_printed": false
+  },
+  "remote_observation_window_utc": [
+    "2026-10-23T12:21:49Z",
+    "2026-10-23T12:23:48Z"
+  ],
+  "repositories": {
+    "llm_agent": {
+      "branch_source_url": "https://api.github.com/repos/jiying2007/llm_agent/branches/main",
+      "main_sha": "7ba2d71e210955464839d5177c0f7d6a86ac072b",
+      "main_protected": true,
+      "ruleset_source_url": "https://api.github.com/repos/jiying2007/llm_agent/rulesets/23516987",
+      "ruleset": {
+        "id": 23516987,
+        "name": "llm_agent main governance",
+        "target": "branch",
+        "source_type": "Repository",
+        "source": "jiying2007/llm_agent",
+        "enforcement": "active",
+        "conditions": {
+          "ref_name": {
+            "exclude": [],
+            "include": [
+              "refs/heads/main"
+            ]
+          }
+        },
+        "rules": [
+          {
+            "type": "pull_request",
+            "parameters": {
+              "required_approving_review_count": 0,
+              "dismiss_stale_reviews_on_push": false,
+              "required_reviewers": [],
+              "require_code_owner_review": false,
+              "require_last_push_approval": false,
+              "required_review_thread_resolution": false,
+              "require_extra_approval_for_unattributed_changes": true,
+              "allowed_merge_methods": [
+                "squash"
+              ]
+            }
+          },
+          {
+            "type": "required_status_checks",
+            "parameters": {
+              "strict_required_status_checks_policy": true,
+              "do_not_enforce_on_create": false,
+              "required_status_checks": [
+                {
+                  "context": "contract"
+                },
+                {
+                  "context": "doc-sync"
+                },
+                {
+                  "context": "integration-impact"
+                },
+                {
+                  "context": "integration-summary"
+                },
+                {
+                  "context": "software-m5-certify"
+                },
+                {
+                  "context": "branch-gc"
+                }
+              ]
+            }
+          },
+          {
+            "type": "non_fast_forward"
+          },
+          {
+            "type": "deletion"
+          }
+        ],
+        "node_id": "RRS_lACqUmVwb3NpdG9yec5Mc1UszgFm1zs",
+        "created_at": "2026-09-16T09:18:29.466+08:00",
+        "updated_at": "2026-09-16T09:18:29.529+08:00",
+        "bypass_actors": [],
+        "current_user_can_bypass": "never",
+        "_links": {
+          "self": {
+            "href": "https://api.github.com/repos/jiying2007/llm_agent/rulesets/23516987"
+          },
+          "html": {
+            "href": "https://github.com/jiying2007/llm_agent/rules/23516987"
+          }
+        }
+      },
+      "workflow_directory_source_url": "https://api.github.com/repos/jiying2007/llm_agent/contents/.github/workflows?ref=main",
+      "workflow_files": [
+        {
+          "path": ".github/workflows/branch-gc.yml",
+          "sha256": "0ee7730b1dd468010a985178e2829b5defd0d7c50ae48b8689db9bd6e16bf09b",
+          "git_blob": "496c543bd951eb30689f0930f0ad6f47f5bbf708",
+          "source_url": "https://github.com/jiying2007/llm_agent/blob/7ba2d71e210955464839d5177c0f7d6a86ac072b/.github/workflows/branch-gc.yml"
+        },
+        {
+          "path": ".github/workflows/ci.yml",
+          "sha256": "640c9f48c123833f579c568df11ff19d8164e053aa47a753edd88062dac88c20",
+          "git_blob": "37a9a651003c432cd82f0a668ea512b2abd6eba9",
+          "source_url": "https://github.com/jiying2007/llm_agent/blob/7ba2d71e210955464839d5177c0f7d6a86ac072b/.github/workflows/ci.yml"
+        },
+        {
+          "path": ".github/workflows/effect-preregister.yml",
+          "sha256": "29de121926a0073521a6e17508fe0872dbf849ddf665dfefcc8e5c8a89f0ef71",
+          "git_blob": "090fbe19d1d2afcba74d5460bbf981cae4afbc9a",
+          "source_url": "https://github.com/jiying2007/llm_agent/blob/7ba2d71e210955464839d5177c0f7d6a86ac072b/.github/workflows/effect-preregister.yml"
+        },
+        {
+          "path": ".github/workflows/maintainability-candidate.yml",
+          "sha256": "ec16ad05868857aa95cb0e71681065a9c62b5efd98a46e2bae95af27540ee273",
+          "git_blob": "4967f7d36f420bd54ce87fd92a904729e4ee91fe",
+          "source_url": "https://github.com/jiying2007/llm_agent/blob/7ba2d71e210955464839d5177c0f7d6a86ac072b/.github/workflows/maintainability-candidate.yml"
+        },
+        {
+          "path": ".github/workflows/native-governance-control-plane.yml",
+          "sha256": "f0bcda15356bfd80fae6746198c328020af85ed930ad5f3b2cade782873e8f3f",
+          "git_blob": "8a08422ceabe48ae1bd66391c518c88b72430011",
+          "source_url": "https://github.com/jiying2007/llm_agent/blob/7ba2d71e210955464839d5177c0f7d6a86ac072b/.github/workflows/native-governance-control-plane.yml"
+        },
+        {
+          "path": ".github/workflows/qualification-followup.yml",
+          "sha256": "5f4bcf5bbd399e0ce1b97ad3470708e49047a827f807e70c7c7fd7b683995cdf",
+          "git_blob": "289d4c82dc0d958e6cc337919cd0738105bacb77",
+          "source_url": "https://github.com/jiying2007/llm_agent/blob/7ba2d71e210955464839d5177c0f7d6a86ac072b/.github/workflows/qualification-followup.yml"
+        },
+        {
+          "path": ".github/workflows/software-m5-runtime.yml",
+          "sha256": "a5e0d7e2830c1e700d344a6bec1c9cac1f953f797d5b111b97108031935b3d9e",
+          "git_blob": "ffcd77a6d81edfdeb3376cbda72bc16f7b338ab6",
+          "source_url": "https://github.com/jiying2007/llm_agent/blob/7ba2d71e210955464839d5177c0f7d6a86ac072b/.github/workflows/software-m5-runtime.yml"
+        },
+        {
+          "path": ".github/workflows/solo-recovery-drill.yml",
+          "sha256": "3a74ecb61ccc00aa2b2e45a689ef17803896d3408a3514756581903ebbd0abf2",
+          "git_blob": "9b04c79425d7794bf1993097284d3a000c99009b",
+          "source_url": "https://github.com/jiying2007/llm_agent/blob/7ba2d71e210955464839d5177c0f7d6a86ac072b/.github/workflows/solo-recovery-drill.yml"
+        }
+      ],
+      "local_workflow_bytes_match_remote_main_git_blobs": true
+    },
+    "agent-dev-kit": {
+      "branch_source_url": "https://api.github.com/repos/jiying2007/agent-dev-kit/branches/main",
+      "main_sha": "bf9ec8164e2c80394ce997f8a8b51515cad4746e",
+      "main_protected": true,
+      "ruleset_source_url": "https://api.github.com/repos/jiying2007/agent-dev-kit/rulesets/23394761",
+      "ruleset": {
+        "id": 23394761,
+        "name": "ADK main governance",
+        "target": "branch",
+        "source_type": "Repository",
+        "source": "jiying2007/agent-dev-kit",
+        "enforcement": "active",
+        "conditions": {
+          "ref_name": {
+            "exclude": [],
+            "include": [
+              "refs/heads/main"
+            ]
+          }
+        },
+        "rules": [
+          {
+            "type": "pull_request",
+            "parameters": {
+              "required_approving_review_count": 0,
+              "dismiss_stale_reviews_on_push": false,
+              "required_reviewers": [],
+              "require_code_owner_review": false,
+              "require_last_push_approval": false,
+              "required_review_thread_resolution": false,
+              "require_extra_approval_for_unattributed_changes": true,
+              "allowed_merge_methods": [
+                "squash"
+              ]
+            }
+          },
+          {
+            "type": "required_status_checks",
+            "parameters": {
+              "strict_required_status_checks_policy": true,
+              "do_not_enforce_on_create": false,
+              "required_status_checks": [
+                {
+                  "context": "contract-py3.11"
+                },
+                {
+                  "context": "contract-py3.12"
+                },
+                {
+                  "context": "regression-py3.11"
+                },
+                {
+                  "context": "regression-py3.12"
+                },
+                {
+                  "context": "deterministic-eval-package"
+                },
+                {
+                  "context": "static-security"
+                },
+                {
+                  "context": "codeql-python"
+                },
+                {
+                  "context": "dependency-review"
+                },
+                {
+                  "context": "branch-gc-dry-run"
+                },
+                {
+                  "context": "platform-vnext"
+                }
+              ]
+            }
+          },
+          {
+            "type": "non_fast_forward"
+          },
+          {
+            "type": "deletion"
+          }
+        ],
+        "node_id": "RRS_lACqUmVwb3NpdG9yec5JfyOhzgFk-ck",
+        "created_at": "2026-09-15T09:49:50.531+08:00",
+        "updated_at": "2026-09-16T11:46:01.590+08:00",
+        "bypass_actors": [],
+        "current_user_can_bypass": "never",
+        "_links": {
+          "self": {
+            "href": "https://api.github.com/repos/jiying2007/agent-dev-kit/rulesets/23394761"
+          },
+          "html": {
+            "href": "https://github.com/jiying2007/agent-dev-kit/rules/23394761"
+          }
+        }
+      },
+      "workflow_directory_source_url": "https://api.github.com/repos/jiying2007/agent-dev-kit/contents/.github/workflows?ref=main",
+      "workflow_files": [
+        {
+          "path": ".github/workflows/branch-gc.yml",
+          "sha256": "9c88b4fc19147008351bef181a275fb371b986567eadaa2892b5292b8322e47d",
+          "git_blob": "e565e661759c9ff2d210a54a0052a70067c8eb26",
+          "source_url": "https://github.com/jiying2007/agent-dev-kit/blob/bf9ec8164e2c80394ce997f8a8b51515cad4746e/.github/workflows/branch-gc.yml"
+        },
+        {
+          "path": ".github/workflows/ci.yml",
+          "sha256": "8c0b509ca8e46ddf9e67d9aed00d5bd28da73bf831de9a35601a4f625381e910",
+          "git_blob": "775d407e4964b30fd2f8f75d68c46b14cac3e0e8",
+          "source_url": "https://github.com/jiying2007/agent-dev-kit/blob/bf9ec8164e2c80394ce997f8a8b51515cad4746e/.github/workflows/ci.yml"
+        },
+        {
+          "path": ".github/workflows/claude-consumer-contract.yml",
+          "sha256": "2abc7885d7ab3476776ef4cbcbc022d008734ceb3e714381cc994ebdc543526b",
+          "git_blob": "48696597a5a28cf6689f846b66c4c40d71c309fa",
+          "source_url": "https://github.com/jiying2007/agent-dev-kit/blob/bf9ec8164e2c80394ce997f8a8b51515cad4746e/.github/workflows/claude-consumer-contract.yml"
+        },
+        {
+          "path": ".github/workflows/codex-consumer-contract.yml",
+          "sha256": "f1e9e882dd0ee2995ac10d5ffa57ca97451b3ff9143f1019c617830ea2d4bbb9",
+          "git_blob": "c9c693924217a9a7aee20e0768f84853a67f3f03",
+          "source_url": "https://github.com/jiying2007/agent-dev-kit/blob/bf9ec8164e2c80394ce997f8a8b51515cad4746e/.github/workflows/codex-consumer-contract.yml"
+        },
+        {
+          "path": ".github/workflows/digital-worker-contract.yml",
+          "sha256": "3575ad868bebbc6120e39a37f0786d249ec1a4887bcc1a775378c0bc1ac02eee",
+          "git_blob": "22c063aa41ea18e9a7433ac75a6a921098837a44",
+          "source_url": "https://github.com/jiying2007/agent-dev-kit/blob/bf9ec8164e2c80394ce997f8a8b51515cad4746e/.github/workflows/digital-worker-contract.yml"
+        },
+        {
+          "path": ".github/workflows/github-governance-control-plane.yml",
+          "sha256": "a5bc897c9c47f9e4674258ead4056006304edb1ad6971c09babff83875ee1310",
+          "git_blob": "168e34affd01aed625789868276d39fa00dba95f",
+          "source_url": "https://github.com/jiying2007/agent-dev-kit/blob/bf9ec8164e2c80394ce997f8a8b51515cad4746e/.github/workflows/github-governance-control-plane.yml"
+        },
+        {
+          "path": ".github/workflows/native-claude-conformance.yml",
+          "sha256": "4c98d14ec79caf050b69debce84f7a545d9296da55c3053aa6c98275f1ea3a10",
+          "git_blob": "56d76d063a6f1d19c6782465520c121c448f9443",
+          "source_url": "https://github.com/jiying2007/agent-dev-kit/blob/bf9ec8164e2c80394ce997f8a8b51515cad4746e/.github/workflows/native-claude-conformance.yml"
+        },
+        {
+          "path": ".github/workflows/platform.yml",
+          "sha256": "4fc44b40d8d694de63b5d3d6551eef7467fafee84bbfba592eb6e31f56212e42",
+          "git_blob": "fb9f7ad05329b8fc747de528f67c30bc467411af",
+          "source_url": "https://github.com/jiying2007/agent-dev-kit/blob/bf9ec8164e2c80394ce997f8a8b51515cad4746e/.github/workflows/platform.yml"
+        },
+        {
+          "path": ".github/workflows/release-tag-promotion.yml",
+          "sha256": "7d668c81a8d7a8609507f14c1782921525e6544027e64b674b4b4f13507633ae",
+          "git_blob": "76f3b797577d359034c11304f214ace211c58f7b",
+          "source_url": "https://github.com/jiying2007/agent-dev-kit/blob/bf9ec8164e2c80394ce997f8a8b51515cad4746e/.github/workflows/release-tag-promotion.yml"
+        },
+        {
+          "path": ".github/workflows/release.yml",
+          "sha256": "7b9f8676c4720694dc7a4582357668e04fd5b1c37495109d180c7996231d1730",
+          "git_blob": "6c6d0ed5bb3a653d68a38a9cdaae25daf88813cf",
+          "source_url": "https://github.com/jiying2007/agent-dev-kit/blob/bf9ec8164e2c80394ce997f8a8b51515cad4746e/.github/workflows/release.yml"
+        },
+        {
+          "path": ".github/workflows/security-codeql.yml",
+          "sha256": "ff5c60d6824a06490fb59e1dbce327b1fa8f39a8631f1dc4af4d5186e53c4e78",
+          "git_blob": "3981a09c56f9afa4c5a64654b00909f067f06832",
+          "source_url": "https://github.com/jiying2007/agent-dev-kit/blob/bf9ec8164e2c80394ce997f8a8b51515cad4746e/.github/workflows/security-codeql.yml"
+        },
+        {
+          "path": ".github/workflows/security-dependency-review.yml",
+          "sha256": "2cb914a107f72091df0830ca56f04e97d2fb0351533d08ca99ee4026fbe6583e",
+          "git_blob": "36e5e56f31c6200311858f0115a46b2f7797b830",
+          "source_url": "https://github.com/jiying2007/agent-dev-kit/blob/bf9ec8164e2c80394ce997f8a8b51515cad4746e/.github/workflows/security-dependency-review.yml"
+        }
+      ],
+      "local_workflow_bytes_match_remote_main_git_blobs": true
+    }
+  },
+  "root_open_pull_requests": {
+    "url": "https://api.github.com/repos/jiying2007/llm_agent/pulls?state=open&per_page=100",
+    "count": 0,
+    "prs": []
+  },
+  "findings": [],
+  "publish_chain": {
+    "source_urls": [
+      "https://github.com/jiying2007/agent-dev-kit/blob/bf9ec8164e2c80394ce997f8a8b51515cad4746e/.github/workflows/ci.yml",
+      "https://github.com/jiying2007/agent-dev-kit/blob/bf9ec8164e2c80394ce997f8a8b51515cad4746e/.github/workflows/release-tag-promotion.yml",
+      "https://github.com/jiying2007/agent-dev-kit/blob/bf9ec8164e2c80394ce997f8a8b51515cad4746e/.github/workflows/release.yml"
+    ],
+    "checks": [
+      "ADK promotion-evidence runs only for push to main after contract/regression/deterministic/static-security dependencies; its signed artifact is named adk-promotion-evidence-<exact SHA>.",
+      "Tag promotion requires successful push-main workflow_run, checkout equality and current remote main equality; immutable version tags are created annotated or reused only at the same exact commit.",
+      "Reusable publishing accepts workflow_call and requires trusted main workflow_run, exact tag/commit checkout, tag peel equality, protected-main ancestry and source-version agreement.",
+      "CI release authority reads GitHub run metadata and requires canonical workflow name/path, completed success, push, main and exact candidate head SHA. Historical repair must verify its own source CI.",
+      "Packaging validates source, release archive contract, exactly one archive/checksum, nonempty contract and local checksum; publishing verifies an existing identical asset set or creates with --verify-tag, then requires remote immutable=true and per-asset SHA256 digest equality."
+    ],
+    "observed_execution": false,
+    "limitation": "These are read-only source/config checks. No future 8.0.39 publishing run or signing operation is certified by this record."
+  },
+  "root_pin": {
+    "canonical_entrypoint": "scripts/promote-adk.sh -> tools.control_plane.adk_promotion",
+    "plan_argv": [
+      "rtk",
+      "bypass",
+      "bash",
+      "scripts/promote-adk.sh",
+      "--candidate-dir",
+      "<exact ADK checkout>",
+      "--ref",
+      "<full new ADK SHA>",
+      "--updated-at",
+      "2026-10-23",
+      "--promotion-evidence",
+      "<original promotion-evidence.json>",
+      "--promotion-attestation",
+      "<original promotion-attestation.json>",
+      "--summary-json"
+    ],
+    "apply": "Add --apply only in the clean isolated Root worktree required by the existing helper; default invocation is dry-run.",
+    "core_identity_entries": [
+      "agent-dev-kit (gitlink)",
+      "adk.lock",
+      "manifests/adk_interface.lock.json"
+    ],
+    "complete_transaction_entries": [
+      "agent-dev-kit",
+      "adk.lock",
+      "manifests/adk_interface.lock.json",
+      "reports/current-status.md",
+      "reports/promotion/agent-dev-kit/promotion-evidence.json",
+      "reports/promotion/agent-dev-kit/promotion-attestation.json"
+    ],
+    "original_signed_bytes": "Use the original main-push CI artifact JSON and Sigstore bundle. The helper decodes strict UTF-8 and preserves original JSON text; do not reserialize signed evidence.",
+    "preconditions": [
+      "A different exact ADK commit is required; the existing pinned commit is rejected as a no-op.",
+      "Clean index and isolated worktree are required; only the ADK worktree may differ. The current uncommitted gate/method work must first be isolated or committed by its owner before canonical apply.",
+      "The helper stages exactly six entries and rolls them back on transaction failure; it checks pin consistency and regenerates current-status through its canonical owner.",
+      "The helper does not itself establish that a GitHub Release is immutable or freshly available. In the intended sequence, first read and verify exact ADK protected-main CI, immutable release and artifact identity.",
+      "Successful apply is applied-not-verified with requires_fresh_cross_repo_verification=true and release_authorized=false."
+    ],
+    "downstream_ci": [
+      "Root integration impact is required for declared pin and control-plane surfaces; push/PR base SHA is validated before path analysis.",
+      "Root integration-deep validates exact promotion identity/claims/freshness and separately runs Cosign verify-blob against the canonical ADK main CI identity and GitHub OIDC issuer, with bounded retry.",
+      "The same job rechecks pin/interface/worktree and terminal consumer-chain contracts; required integration-summary fails unless integration-deep succeeds.",
+      "Root required ruleset checks are contract, doc-sync, integration-impact, integration-summary, software-m5-certify and branch-gc with strict up-to-date policy."
+    ],
+    "local_signature_verification_performed": false,
+    "local_source_sha256": {
+      "scripts/promote-adk.sh": "827ea6434f95e199c09a25ed563b7415ce4a381286d3588dd6256dc049a510b5",
+      "tools/control_plane/adk_promotion.py": "cce0c8c3f98ba350e7e1fc79c71470c3cc54635382e9f588512b06439e4ba56c",
+      "tools/control_plane/adk_promotion_evidence.py": "de4cde37ed47bd362450833088119f3c696307249f6b3fa9c2ca819998732739",
+      "scripts/check-adk-lock.sh": "6a03be6d4e8473ddb7db66b3fbfe679f5d3455fef139fe1e396c7583d3f4ce8e"
+    }
+  },
+  "automatic_candidate_search": {
+    "checked_in_workflows": {
+      "llm_agent": 8,
+      "agent_dev_kit": 12
+    },
+    "automatic_root_adk_pin_pr_workflow_found": false,
+    "checked_sources": "Both current-main workflow directories were read from GitHub and matched byte-for-byte by Git blob IDs to local files; .github references were searched. ADK Dependabot config declares only pip and github-actions updates.",
+    "current_root_open_pr_count": 0,
+    "conclusion": "The checked-in automatic chain publishes ADK and its signed evidence; it does not create a Root pin PR. Recheck open Root PRs after the new release and integrate any existing candidate before creating another.",
+    "limitation": "The connector did not support the actions/workflows collection endpoint; current main workflow directory reads were used instead. External GitHub Apps, organization automations and off-repository schedulers were not inventoried."
+  },
+  "limits": [
+    "Rulesets were read through their supported endpoint; raw branch-protection administration endpoints and secret settings were not inspected.",
+    "Required approving human reviews are configured as zero; these rulesets must not be described as requiring a two-human review.",
+    "No configured ruleset bypass actors and current_user_can_bypass=never describe the observed ruleset/current connection, not a universal claim about all administrator powers.",
+    "No remote changes, workflow dispatch, publishing, canonical pin apply or new cryptographic verification occurred.",
+    "No local/full CI result is elevated to runtime, effectiveness, product or release authorization."
+  ]
+}

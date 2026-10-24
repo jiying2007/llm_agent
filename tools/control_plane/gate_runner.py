@@ -10,10 +10,13 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from tools.control_plane.process_budget import ProcessBudgetError, run_bounded
 from tools.control_plane.receipts import bind_receipt, content_sha256
 
 _ALLOWED_EVIDENCE_CLASSES = {"source", "test", "runtime", "field", "release"}
 _ALLOWED_CACHE_POLICIES = {"disabled", "content-addressed"}
+_MAX_GATE_STDOUT_BYTES = 2 * 1024 * 1024
+_MAX_GATE_STDERR_BYTES = 64 * 1024
 
 
 @dataclass(frozen=True)
@@ -45,6 +48,8 @@ def _manifest_path(root: Path) -> Path:
 
 def _load(root: Path) -> dict[str, Any]:
     data = json.loads(_manifest_path(root).read_text(encoding="utf-8"))
+    if not isinstance(data, dict):
+        raise ValueError("gate manifest root must be an object")
     if data.get("schema") not in {"llm-agent-gates/v1", "llm-agent-gates/v2"}:
         raise ValueError("unsupported gate manifest schema")
     if not isinstance(data.get("gates"), dict) or not isinstance(data.get("profiles"), dict):
@@ -112,13 +117,17 @@ def _tail(text: str, limit: int) -> list[str]:
     return text.splitlines()[-limit:]
 
 
+def _combined_output(stdout: bytes, stderr: bytes) -> str:
+    separator = b"\n" if stdout and stderr and not stdout.endswith(b"\n") else b""
+    return (stdout + separator + stderr).decode("utf-8", errors="replace")
+
+
 def _source_identity(root: Path) -> dict[str, str]:
     completed = subprocess.run(
         ["git", "-C", str(root), "rev-parse", "HEAD", "HEAD^{tree}"],
         check=False,
         text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
     )
     if completed.returncode != 0:
         raise ValueError(completed.stderr.strip() or "unable to resolve source identity")
@@ -229,6 +238,8 @@ def _cached_pass(path: Path | None, key: str) -> bool:
         data = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return False
+    if not isinstance(data, dict):
+        return False
     return data.get("cache_key") == key and data.get("status") == "pass"
 
 
@@ -334,67 +345,49 @@ def run_profile(
             continue
 
         started = time.monotonic_ns()
+        exit_code: int | None = None
+        failure_reason: str | None = None
         try:
-            completed = subprocess.run(
+            completed = run_bounded(
                 argv,
                 cwd=root,
-                check=False,
-                text=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
                 timeout=timeout_seconds,
+                max_stdout=_MAX_GATE_STDOUT_BYTES,
+                max_stderr=_MAX_GATE_STDERR_BYTES,
             )
-            elapsed_ms = (time.monotonic_ns() - started) // 1_000_000
-            passed = completed.returncode == 0
-            result = GateResult(
-                name=name,
-                status="pass" if passed else "fail",
-                exit_code=completed.returncode,
-                elapsed_ms=int(elapsed_ms),
-                owner=owner,
-                evidence_class=evidence_class,
-                argv=argv,
-                timeout_seconds=timeout_seconds,
-                output_tail=_tail(completed.stdout, failure_lines),
-                missing_capabilities=[],
-                failure_reason=None if passed else "nonzero-exit",
-                depends_on=depends_on,
-                blocked_by=[],
-                inputs=inputs,
-                input_digests=input_digests,
-                outputs=outputs,
-                cache_policy=cache_policy,
-                cache_key=cache_key,
-                cache_hit=False,
-            )
-            if passed and cache_policy == "content-addressed":
-                _write_cache(_cache_path(cache_dir, cache_key), cache_key)
-        except subprocess.TimeoutExpired as exc:
-            elapsed_ms = (time.monotonic_ns() - started) // 1_000_000
-            captured = exc.stdout or ""
-            if isinstance(captured, bytes):
-                captured = captured.decode(errors="replace")
-            result = GateResult(
-                name=name,
-                status="fail",
-                exit_code=None,
-                elapsed_ms=int(elapsed_ms),
-                owner=owner,
-                evidence_class=evidence_class,
-                argv=argv,
-                timeout_seconds=timeout_seconds,
-                output_tail=_tail(captured, failure_lines),
-                missing_capabilities=[],
-                failure_reason="timeout",
-                depends_on=depends_on,
-                blocked_by=[],
-                inputs=inputs,
-                input_digests=input_digests,
-                outputs=outputs,
-                cache_policy=cache_policy,
-                cache_key=cache_key,
-                cache_hit=False,
-            )
+            exit_code = completed.returncode
+            captured = _combined_output(completed.stdout, completed.stderr)
+            if exit_code != 0:
+                failure_reason = "nonzero-exit"
+        except ProcessBudgetError as exc:
+            failure_reason = "timeout" if exc.reason == "timeout" else "output-budget"
+            captured = _combined_output(exc.stdout, exc.stderr)
+            captured += ("\n" if captured and not captured.endswith("\n") else "") + str(exc)
+        elapsed_ms = (time.monotonic_ns() - started) // 1_000_000
+        passed = failure_reason is None
+        result = GateResult(
+            name=name,
+            status="pass" if passed else "fail",
+            exit_code=exit_code,
+            elapsed_ms=int(elapsed_ms),
+            owner=owner,
+            evidence_class=evidence_class,
+            argv=argv,
+            timeout_seconds=timeout_seconds,
+            output_tail=_tail(captured, failure_lines),
+            missing_capabilities=[],
+            failure_reason=failure_reason,
+            depends_on=depends_on,
+            blocked_by=[],
+            inputs=inputs,
+            input_digests=input_digests,
+            outputs=outputs,
+            cache_policy=cache_policy,
+            cache_key=cache_key,
+            cache_hit=False,
+        )
+        if passed and cache_policy == "content-addressed":
+            _write_cache(_cache_path(cache_dir, cache_key), cache_key)
         results.append(result)
         by_name[name] = result
 

@@ -1,0 +1,594 @@
+{
+  "schema": "llm-agent-methods-projection-review-execution/v1",
+  "reviewer_id": "ai/root/architecture_audit",
+  "implementation_author": "ai/root",
+  "started_at": "2026-10-23T13:49:47.747715+00:00",
+  "base_local_commit": "9fd3324b3142990a8351b4b3949941f4c70c2e59",
+  "base_remote_commit": "bc6f7a093ef61f0701fea6acef7b0f2ae217e9d5",
+  "binding_kind": "frozen-file-sha256-snapshot",
+  "implementation_commit_at_review": "not-yet-created",
+  "executions": [
+    {
+      "argv": [
+        "/workspace/scratch/694941d81014/tooling/rtk",
+        "bypass",
+        "bash",
+        "scripts/check-upstream-intake-readiness.sh",
+        "."
+      ],
+      "cwd": "/workspace/scratch/694941d81014/llm_agent",
+      "started_at": "2026-10-23T13:49:48.728376+00:00",
+      "completed_at": "2026-10-23T13:49:48.816533+00:00",
+      "returncode": 0,
+      "expected_returncode": 0,
+      "stdout": "[PASS] upstream intake readiness checks passed (164 adopt rows)\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/694941d81014/tooling/rtk",
+        "bypass",
+        "bash",
+        "scripts/check-observe-intake-depth.sh",
+        "."
+      ],
+      "cwd": "/workspace/scratch/694941d81014/llm_agent",
+      "started_at": "2026-10-23T13:49:48.816729+00:00",
+      "completed_at": "2026-10-23T13:49:48.830345+00:00",
+      "returncode": 0,
+      "expected_returncode": 0,
+      "stdout": "[PASS] observe intake depth checks passed (11 rows)\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/694941d81014/tooling/rtk",
+        "bypass",
+        "bash",
+        "scripts/check-adoption-matrix-structured.sh",
+        "."
+      ],
+      "cwd": "/workspace/scratch/694941d81014/llm_agent",
+      "started_at": "2026-10-23T13:49:48.830524+00:00",
+      "completed_at": "2026-10-23T13:49:48.897651+00:00",
+      "returncode": 0,
+      "expected_returncode": 0,
+      "stdout": "[PASS] structured adoption matrix synchronized\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/694941d81014/tooling/rtk",
+        "bypass",
+        "bash",
+        "scripts/check-adoption-matrix-status.sh",
+        "."
+      ],
+      "cwd": "/workspace/scratch/694941d81014/llm_agent",
+      "started_at": "2026-10-23T13:49:48.897869+00:00",
+      "completed_at": "2026-10-23T13:49:48.921228+00:00",
+      "returncode": 0,
+      "expected_returncode": 0,
+      "stdout": "[PASS] adoption-matrix status checks passed\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/694941d81014/tooling/rtk",
+        "bypass",
+        "bash",
+        "scripts/check-adoption-evidence-integrity.sh",
+        "."
+      ],
+      "cwd": "/workspace/scratch/694941d81014/llm_agent",
+      "started_at": "2026-10-23T13:49:48.921757+00:00",
+      "completed_at": "2026-10-23T13:49:53.541136+00:00",
+      "returncode": 0,
+      "expected_returncode": 0,
+      "stdout": "[PASS] adoption evidence integrity checks passed (rows=210 paths=621)\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/694941d81014/tooling/rtk",
+        "bypass",
+        "bash",
+        "scripts/check-adoption-real-assets.sh",
+        ".",
+        "--summary-json"
+      ],
+      "cwd": "/workspace/scratch/694941d81014/llm_agent",
+      "started_at": "2026-10-23T13:49:53.541696+00:00",
+      "completed_at": "2026-10-23T13:49:53.579501+00:00",
+      "returncode": 0,
+      "expected_returncode": 0,
+      "stdout": "{\"status\":\"pass\",\"checked\":234,\"real_asset_ok\":233,\"matrix_asset_exceptions\":1,\"failures\":[]}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/694941d81014/tooling/rtk",
+        "bypass",
+        "bash",
+        "tests/test_reference_repository_removal.sh"
+      ],
+      "cwd": "/workspace/scratch/694941d81014/llm_agent",
+      "started_at": "2026-10-23T13:49:53.579646+00:00",
+      "completed_at": "2026-10-23T13:49:54.555760+00:00",
+      "returncode": 0,
+      "expected_returncode": 0,
+      "stdout": "[PASS] reference repository removal plans are hashed, dry-run, and non-destructive\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/694941d81014/tooling/rtk",
+        "bypass",
+        "bash",
+        "scripts/export-adoption-matrix-jsonl.sh",
+        ".",
+        "/workspace/scratch/694941d81014/closure20261023/root-methods-projection-independent/canonical-adoption-matrix.jsonl"
+      ],
+      "cwd": "/workspace/scratch/694941d81014/llm_agent",
+      "started_at": "2026-10-23T13:49:54.555970+00:00",
+      "completed_at": "2026-10-23T13:49:54.571324+00:00",
+      "returncode": 0,
+      "expected_returncode": 0,
+      "stdout": "[OK] adoption matrix jsonl exported: /workspace/scratch/694941d81014/closure20261023/root-methods-projection-independent/canonical-adoption-matrix.jsonl\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/694941d81014/tooling/rtk",
+        "bypass",
+        "/workspace/scratch/694941d81014/tooling/venv/bin/python",
+        "-m",
+        "tools.codex_assets.reference_repository",
+        "--root",
+        "/workspace/scratch/694941d81014/llm_agent",
+        "plan-removal",
+        "--repo",
+        "codex",
+        "--as-of",
+        "2026-07-19",
+        "--adoption-decision",
+        "subrepos/adoption-matrix.md",
+        "--evidence-dependency-scan",
+        "reports/subrepo-removal-plan-codex-2026-06-16.md",
+        "--dirty-baseline-review",
+        "subrepos/dirty-baseline.tsv",
+        "--rollback-plan",
+        "reports/subrepo-removal-plan-codex-2026-06-16.md",
+        "--out-json",
+        "/workspace/scratch/694941d81014/closure20261023/root-methods-projection-independent/canonical-removal-plan.json",
+        "--out-md",
+        "/workspace/scratch/694941d81014/closure20261023/root-methods-projection-independent/canonical-removal-plan.md"
+      ],
+      "cwd": "/workspace/scratch/694941d81014/llm_agent",
+      "started_at": "2026-10-23T13:49:54.579888+00:00",
+      "completed_at": "2026-10-23T13:49:54.764908+00:00",
+      "returncode": 0,
+      "expected_returncode": 0,
+      "stdout": "[PASS] reference repository removal dry-run plan written: /workspace/scratch/694941d81014/closure20261023/root-methods-projection-independent/canonical-removal-plan.json\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/694941d81014/tooling/rtk",
+        "bypass",
+        "/workspace/scratch/694941d81014/tooling/venv/bin/python",
+        "-m",
+        "tools.codex_assets.reference_repository",
+        "--root",
+        "/workspace/scratch/694941d81014/llm_agent",
+        "check-removal",
+        "--plan",
+        "/workspace/scratch/694941d81014/closure20261023/root-methods-projection-independent/prior-removal-fixture.json",
+        "--no-fixtures",
+        "--summary-json"
+      ],
+      "cwd": "/workspace/scratch/694941d81014/llm_agent",
+      "started_at": "2026-10-23T13:49:54.773491+00:00",
+      "completed_at": "2026-10-23T13:49:54.966027+00:00",
+      "returncode": 2,
+      "expected_returncode": 2,
+      "stdout": "{\"checked\": 0, \"failures\": 1, \"status\": \"fail\"}\n",
+      "stderr": "[FAIL] /workspace/scratch/694941d81014/closure20261023/root-methods-projection-independent/prior-removal-fixture.json: reference repository removal artifact hash is stale\n"
+    }
+  ],
+  "sources": [
+    {
+      "base": "repository",
+      "path": "subrepos/adoption-matrix.md",
+      "bytes": 85486,
+      "sha256": "46ca2f731f41b4ab2ad8422bc0eba996749404e8528a37117e4794e0f3e2fcb2"
+    },
+    {
+      "base": "repository",
+      "path": "subrepos/adoption-matrix.jsonl",
+      "bytes": 103809,
+      "sha256": "8e7bda3478a4ee15328aa269622724946b155d6a970fe95099bf1e89d1cc7e00"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/implementation-map.md",
+      "bytes": 7721,
+      "sha256": "c84300d2e6f21f7986bdd4eaef6fb8f9a9ff9a0e4d29c8ba27876a355148708c"
+    },
+    {
+      "base": "repository",
+      "path": "docs/runbooks/evidence-driven-optimization.md",
+      "bytes": 4858,
+      "sha256": "821f69318d9608b6f96fc13406707eee2d3040bdfc251e48133063d5f6666ffa"
+    },
+    {
+      "base": "repository",
+      "path": "reports/evidence-methods-absorption-2026-10-23.md",
+      "bytes": 10280,
+      "sha256": "50662a903fe77a7915265025f45ab3a62bff4dfccf825b4649c9c034451239f4"
+    },
+    {
+      "base": "repository",
+      "path": "fixtures/reference-repository/removal/pass/removal-plan.json",
+      "bytes": 2327,
+      "sha256": "b12a3bc22d44f2e550c66bade3b4a946ea928651903b487036949cbd77434a3f"
+    }
+  ],
+  "source_set_sha256": "afcff8336de94f6277f6d06350995ac37a5ac9f0178615fd8645b6ee2fc82284",
+  "unchanged_guards": [
+    {
+      "base": "repository",
+      "path": "scripts/check-upstream-intake-readiness.sh",
+      "sha256": "85dd214eb7e59b6d03b25191f16174b7dd679d1e5eba15ebfdace116eb43bf70"
+    },
+    {
+      "base": "repository",
+      "path": "scripts/check-observe-intake-depth.sh",
+      "sha256": "cecee43ee13b28e705357e464cd17b9bd69df89cbd62968229b2da7e8313927d"
+    },
+    {
+      "base": "repository",
+      "path": "scripts/check-adoption-matrix-structured.sh",
+      "sha256": "e667d41e99f8bb80a190bf0fa1772968898e25b7ac4f60a85c812e55314bfcff"
+    },
+    {
+      "base": "repository",
+      "path": "scripts/check-adoption-matrix-status.sh",
+      "sha256": "76bf28768a2a9dd2c0be7fa973875a8a2a2e9f9764602340b075424e20cccdef"
+    },
+    {
+      "base": "repository",
+      "path": "scripts/check-adoption-evidence-integrity.sh",
+      "sha256": "86ea1ec79a8b8e0d88741f0081489cc4ba5a0f65e0a6ea20f3e20ae0369c8ec4"
+    },
+    {
+      "base": "repository",
+      "path": "scripts/check-adoption-real-assets.sh",
+      "sha256": "4b8691db4873c423e939cb6bbdafc68d4c6f9883982534ad58762205fc443cf8"
+    },
+    {
+      "base": "repository",
+      "path": "tests/test_reference_repository_removal.sh",
+      "sha256": "65ea2a6e15a6eb366fe6f579a7334a5e9f086014c5f8589fd040d9ee3bc54157"
+    },
+    {
+      "base": "repository",
+      "path": "scripts/export-adoption-matrix-jsonl.sh",
+      "sha256": "802e1fa030c5a119eda87f20937def013e120909cee55b8668e9092f7490916d"
+    },
+    {
+      "base": "repository",
+      "path": "scripts/check-reference-repository-removal.sh",
+      "sha256": "292380dab1782ef9c175d4571a39fa56c5bd075be201d31eac50e44588c8c6f0"
+    },
+    {
+      "base": "repository",
+      "path": "scripts/plan-reference-repository-removal.sh",
+      "sha256": "9235803f6a51df596893106c588d23dd7e7ed5d0e248b69e031fca271bb9acb4"
+    },
+    {
+      "base": "repository",
+      "path": "tools/codex_assets/reference_removal.py",
+      "sha256": "773635dfba7847134c1ca6393e6326182b3b3ceb31d2e8049603994be0b0ebad"
+    },
+    {
+      "base": "repository",
+      "path": "tools/codex_assets/reference_repository.py",
+      "sha256": "d4d64fac97a7234e2352908dc9fed6b909334be5a4662cce3c171dd4be5830d4"
+    },
+    {
+      "base": "repository",
+      "path": "tools/codex_assets/reference_contracts.py",
+      "sha256": "29cd0e7f55c203af3f8a70a8952faedc90d510eefeab4be2d7e64ba0951aaf1c"
+    },
+    {
+      "base": "repository",
+      "path": "tools/codex_assets/intake_io.py",
+      "sha256": "2ccdd060dd64284aab8b1a39c4384de64879e278ed8ae3a7fe20ca974fc31e49"
+    },
+    {
+      "base": "repository",
+      "path": "manifests/reference_repository_lifecycle_policy.json",
+      "sha256": "bdd2596507eba5cfd0e3800622eceb6f1d14b2941010c766e0ee16991ac45e57"
+    }
+  ],
+  "preserved_history": [
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/requirements.md",
+      "sha256": "caa6b8ff71120e6ab362ec8cc51c337bc3d06ecf2e5df6757553750c37a557cd"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/design.md",
+      "sha256": "a06522ed1fa37b273fa72d820b5a93302a6bc3f0885ac686bacbaab639666d4e"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/tasks.md",
+      "sha256": "8a1a4243f50fdb39c7442b1dfd096ea28ce4949d89de4fb7b400c38943f354e3"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/sources.json",
+      "sha256": "ba7da4f4bb46e59b835e0dc5dedfba487639b27d861100e6de305d9edfc692aa"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/source-metadata.jsonl",
+      "sha256": "4bad3191fac50362d3f30ff8290741cd258702c243ddb413da6e2d1e3b3372f6"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/candidates.jsonl",
+      "sha256": "0ba319379f12ee1b3d454fbd5ac622699d8b9ad1550173735cc71d3433de6010"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/collection.json",
+      "sha256": "4eb4e6743c8c699f60782431d380480c602b3c799fa9b1cd0a9b3c39f5de2320"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/decisions.jsonl",
+      "sha256": "3d3582391dc2fdf9fd79e67a9a3dbfc4174392df07965b7d0aac0e3294a4109b"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/owner-decision.md",
+      "sha256": "b0c1c6af3f247b10fb83582ea2b2a22ebc0fc201032b5957ff43fdbfafc5caaf"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/review-evidence.json",
+      "sha256": "ade3d294f05deb506fc9d72ff8f0be53feee2346d420372ba05b02139fa83a4f"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/review-findings.md",
+      "sha256": "64cb910798ed3817b57fa90cecc30e4f433d4ebd990c377dec21b1696b6bed26"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/negative-results.md",
+      "sha256": "431ea8d117b19eaf4388e2f5ea59a2a9b08bba518e32f33de4dbb9b1fa8e25f9"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/evidence/independent-review-execution.json",
+      "sha256": "b4679c8aba80b5da61f91ff041d56264295b0726fb043f2481ed0ac3153b21fb"
+    },
+    {
+      "base": "repository",
+      "path": "docs/changes/20261023-evidence-methods/evidence/independent-review-probes.py",
+      "sha256": "a9bdb843bb1b95e8c5cf8eaef7fcce433f4bc34ac9b18a5d2b7a574646c2b17b"
+    }
+  ],
+  "ledger_preservation": {
+    "sources": 12,
+    "candidates": 12,
+    "decisions": 12,
+    "decision_counts": {
+      "OBSERVE": 3,
+      "ENHANCE": 9
+    },
+    "candidate_ids_and_source_ids": {
+      "epc-522c4e7927b0dc4c1ade": "EXT-02",
+      "epc-4f47b944f7f6e782c3f3": "EXT-09",
+      "epc-8d6c2395ffcc90414b71": "EXT-01",
+      "epc-985315ea1d92eeae12ec": "EXT-12",
+      "epc-c1b6b10bc0ac830a13c7": "EXT-11",
+      "epc-c8245f8932b0b764d972": "EXT-10",
+      "epc-82bbc50eb15b1f26e848": "EXT-05",
+      "epc-8790563d89bf0e01e8d4": "EXT-07",
+      "epc-16afc5925f40f38a0078": "EXT-08",
+      "epc-0ce4bf0161c102a85f04": "EXT-06",
+      "epc-8c61c580ae26a7b8e677": "EXT-03",
+      "epc-ecfea23bc138bce4f1ad": "EXT-04"
+    },
+    "candidate_decision_and_source_bytes_unchanged": true
+  },
+  "matrix_projection": {
+    "before_total_rows": 218,
+    "after_total_rows": 210,
+    "before_method_rows": 12,
+    "after_method_rows": [
+      {
+        "date": "2026-10-23",
+        "repo": "mattpocock/skills",
+        "category": "module-ownership",
+        "capability": "EXT-06：Native 文档发布复用 atomic_io，公开 publish 复用 canonical release verifier；保留调用者正常与失败路径",
+        "value": "高",
+        "cost": "中",
+        "risk": "低",
+        "decision": "adopt",
+        "state": "done",
+        "target": "agent-dev-kit",
+        "evidence": "reports/evidence-methods-absorption-2026-10-23.md; agent-dev-kit/src/agent_dev_kit/atomic_io.py; agent-dev-kit/src/agent_dev_kit/native_campaign.py; agent-dev-kit/src/agent_dev_kit/release.py; agent-dev-kit/docs/changes/20261023-output-boundaries/"
+      },
+      {
+        "date": "2026-10-23",
+        "repo": "cursor/plugins",
+        "category": "recovery-correctness",
+        "capability": "EXT-08：输出全集合预检、staging、失败补偿和恢复材料保留；export 使用 writer lock 与路径身份复核",
+        "value": "高",
+        "cost": "中",
+        "risk": "中",
+        "decision": "adopt",
+        "state": "done",
+        "target": "agent-dev-kit",
+        "evidence": "reports/evidence-methods-absorption-2026-10-23.md; agent-dev-kit/src/agent_dev_kit/atomic_io.py; agent-dev-kit/src/agent_dev_kit/native_campaign_contract.py; agent-dev-kit/src/agent_dev_kit/compiler.py; agent-dev-kit/docs/changes/20261023-output-boundaries/"
+      },
+      {
+        "date": "2026-10-23",
+        "repo": "OpenAI agent safety",
+        "category": "trust-boundary",
+        "capability": "EXT-09：固定 Git commit/tree/blob 来源并独立核验 tar 全量 source digest；外部声明不授予 release authority",
+        "value": "高",
+        "cost": "低",
+        "risk": "低",
+        "decision": "adopt",
+        "state": "done",
+        "target": "agent-dev-kit",
+        "evidence": "reports/evidence-methods-absorption-2026-10-23.md; agent-dev-kit/src/agent_dev_kit/distribution/release_artifacts.py; agent-dev-kit/src/agent_dev_kit/distribution/archive_io.py; agent-dev-kit/src/agent_dev_kit/distribution/release_contract.py; agent-dev-kit/docs/changes/20261023-release-contract/"
+      },
+      {
+        "date": "2026-10-23",
+        "repo": "GitHub immutable releases",
+        "category": "release-integrity",
+        "capability": "EXT-11：公开 publish 从 captured snapshot 发布同字节三资产，dry-run 无写；真实 immutable 状态与签名分别验证",
+        "value": "高",
+        "cost": "中",
+        "risk": "低",
+        "decision": "adopt",
+        "state": "done",
+        "target": "agent-dev-kit",
+        "evidence": "reports/evidence-methods-absorption-2026-10-23.md; agent-dev-kit/src/agent_dev_kit/release.py; agent-dev-kit/src/agent_dev_kit/distribution/release_contract.py; agent-dev-kit/docs/changes/20261023-release-contract/"
+      }
+    ],
+    "other_rows_unchanged": true,
+    "retained_production_ids": [
+      "EXT-06",
+      "EXT-08",
+      "EXT-09",
+      "EXT-11"
+    ],
+    "research_enhance_ids": [
+      "EXT-01",
+      "EXT-03",
+      "EXT-04",
+      "EXT-05",
+      "EXT-07"
+    ],
+    "observe_ids": [
+      "EXT-02",
+      "EXT-10",
+      "EXT-12"
+    ]
+  },
+  "published_adk": {
+    "commit": "415590db44e88979185efb850e2339a3f95411ef",
+    "tree": "51d400e80ba555a49ca85fcfefbd74f7fe499072",
+    "source_bindings": [
+      {
+        "base": "repository",
+        "path": "agent-dev-kit/src/agent_dev_kit/atomic_io.py",
+        "sha256": "0a620484ae5954824ca7c93a251df8f8518ee5ec64739d64d9d987f0fb3a1b79"
+      },
+      {
+        "base": "repository",
+        "path": "agent-dev-kit/src/agent_dev_kit/native_campaign.py",
+        "sha256": "52d0b5a37828d8d7d5042da62517e2d65047acb6c9474f2e9703df874cde6b81"
+      },
+      {
+        "base": "repository",
+        "path": "agent-dev-kit/src/agent_dev_kit/native_campaign_contract.py",
+        "sha256": "63f0dbb11fb4d8b2878dedfe9668db797b9182e9f635feccb0a62ea8c2681d91"
+      },
+      {
+        "base": "repository",
+        "path": "agent-dev-kit/src/agent_dev_kit/compiler.py",
+        "sha256": "27e643dee1bbf7a150e8f6f1e0466e043284d57db15eeca77afd8287aad2cce4"
+      },
+      {
+        "base": "repository",
+        "path": "agent-dev-kit/src/agent_dev_kit/release.py",
+        "sha256": "f6a9f42408222a6e1ebccba6baabe57c1df263ab72a6f0a933e0953f6938b8dd"
+      },
+      {
+        "base": "repository",
+        "path": "agent-dev-kit/src/agent_dev_kit/distribution/release_artifacts.py",
+        "sha256": "921dd17150b9687e5120a50111ef640ee04499cf59a0115af9d70874ffd0260b"
+      },
+      {
+        "base": "repository",
+        "path": "agent-dev-kit/src/agent_dev_kit/distribution/archive_io.py",
+        "sha256": "3ce030569ca6b29d8cdc9463cc22057294fb52572ee221e7304caee8381e2c84"
+      },
+      {
+        "base": "repository",
+        "path": "agent-dev-kit/src/agent_dev_kit/distribution/release_contract.py",
+        "sha256": "9c2e8c8753f7c5fcf860d121d5f18900d7c3107b1a777593cb5c188170196126"
+      },
+      {
+        "base": "repository",
+        "path": "agent-dev-kit/agents/architecture-planner/AGENTS.md",
+        "sha256": "c365f27397c82c548c1b1a7528fb2960df58ab6f0d1c64828252375e429a113a"
+      },
+      {
+        "base": "repository",
+        "path": "agent-dev-kit/agents/security-compliance-reviewer/AGENTS.md",
+        "sha256": "0abd4397720aadc778778d400eb2bcf2bf9e30eebe472b676121fba0c72d52c8"
+      },
+      {
+        "base": "repository",
+        "path": "agent-dev-kit/agents/build-release-engineer/AGENTS.md",
+        "sha256": "7d6c552b62282ada68f6dbbd7abac34336011f80320668339e1f267c4c4e76ba"
+      },
+      {
+        "base": "repository",
+        "path": "agent-dev-kit/skills/adk-interface-contract-design/SKILL.md",
+        "sha256": "8e879b5f42eb02d17f8c4f69249a2af8ea31c55f79a1e710329a1ca80c028eeb"
+      },
+      {
+        "base": "repository",
+        "path": "agent-dev-kit/skills/adk-interface-contract-design/references/lifecycle-operation-contract.md",
+        "sha256": "22532bfe0e89fac9596023f0a2b708d46b98722d4acf6adc90bf833e0f82db71"
+      },
+      {
+        "base": "repository",
+        "path": "agent-dev-kit/skills/adk-interface-contract-design/references/tool-effect-contract.md",
+        "sha256": "428be87b2acb671e01581ae83af46dfb0e87c8cdb1d24d11e18a231244b67ea4"
+      },
+      {
+        "base": "repository",
+        "path": "agent-dev-kit/skills/adk-release-versioning/SKILL.md",
+        "sha256": "3bf8f529be16d467cb099a0db7b2534860de7952001f6baa0b990ff189db5988"
+      },
+      {
+        "base": "repository",
+        "path": "agent-dev-kit/workflows/release-hardening/WORKFLOW.md",
+        "sha256": "0b85520437a8e79cdd9b52b94039f52b163c5934385b6eebc9a153a4876047c7"
+      }
+    ]
+  },
+  "canonical_export_byte_match": true,
+  "removal_contract": {
+    "only_fixture_field_changed": "/artifact_sha256/adoption_decision",
+    "old_sha256": "8e33bf87ba1323ad194942537f510c758bd2c31181f68d1f85f23a93565b1c6b",
+    "new_sha256": "46ca2f731f41b4ab2ad8422bc0eba996749404e8528a37117e4794e0f3e2fcb2",
+    "canonical_plan_object_matches": true,
+    "old_digest_rejected": true,
+    "validator_and_test_unchanged": true
+  },
+  "frozen_sources_stable_during_review": true,
+  "scope_limits": [
+    "Source snapshot review before implementation commit; future commit/CI must be bound separately.",
+    "ASW paths were read as existing responsibility contracts, not executed as workflows; no new ASW execution receipt is asserted.",
+    "No new external source/license attestation, paid model call, runtime/field measurement, or product qualification is performed.",
+    "Existing dirty-triage and M5 readiness blocks remain unchanged; these targeted passes do not make the full quick suite green.",
+    "Old independent review and execution evidence remain byte-identical historical records; their prior matrix conclusion is not inherited."
+  ],
+  "completed_at": "2026-10-23T13:49:54.969229+00:00",
+  "status": "pass"
+}

@@ -1,0 +1,159 @@
+{
+  "schema": "llm-agent-gate-correctness-implementation/v1",
+  "created_at_utc": "2026-10-23 12:00:36 UTC",
+  "actor": "ai/root/implement_gates",
+  "base_commit": "7ba2d71e210955464839d5177c0f7d6a86ac072b",
+  "status": "review-fix-focused-pass",
+  "findings": [
+    "ROOT-R1",
+    "ROOT-R2",
+    "ROOT-R3",
+    "ROOT-REVIEW-01"
+  ],
+  "source_files": [
+    {
+      "path": "tools/control_plane/impact.py",
+      "sha256": "73e4dddb9c984081ef6ae07cc9ac0182839f87e43181261067a89ce835a25392"
+    },
+    {
+      "path": "tools/control_plane/gate_runner.py",
+      "sha256": "d4da8de1bf5140fa8830bb817e9ae5c97f0cba0bafcd3b551e586ae7ee038606"
+    },
+    {
+      "path": "tools/control_plane/process_budget.py",
+      "sha256": "9173dd8a1d757cf07fd1d07206b952625ac77a72964f382850b45303607cf887"
+    },
+    {
+      "path": "manifests/gates.json",
+      "sha256": "404d3857d05c79ed8dc310b201dde9d4f41eebb28b85bee172dc199bc58bedd5"
+    },
+    {
+      "path": "tests/test_gate_boundaries.py",
+      "sha256": "f760ff8d89dec9fbec49dcee7d1c76ac0b58ed715adde16417424c35e4ab0e37"
+    },
+    {
+      "path": "tests/test_gate_runner_contract.sh",
+      "sha256": "1aba4076782ea45cfbdddbe1e003c0d4ccfc12a60c59a6c9f8bd0a1e2b265d03"
+    }
+  ],
+  "checks": {
+    "pre_repair_red": {
+      "exit_code": 1,
+      "tests": 12,
+      "failed_subtests": 16,
+      "errors": 1,
+      "elapsed_seconds": 4.409,
+      "record_kind": "observed-tool-output-summary",
+      "reproduced": [
+        "quoted and whitespace path corruption",
+        "rename drops old owned path",
+        "non-UTF8 paths not rejected",
+        "cached PASS after staged forbidden path",
+        "timeout descendant writes late marker",
+        "stdout and stderr over budget pass"
+      ],
+      "new_api_error": "ProcessBudgetError did not yet expose reason/stdout/stderr"
+    },
+    "boundary_final": {
+      "command": "python3 -m unittest discover -s tests -p test_gate_boundaries.py -v",
+      "started_at_utc": "2026-10-23 12:00:06 UTC",
+      "exit_code": 0,
+      "tests": 14,
+      "elapsed_seconds": 6.796,
+      "log": "evidence/boundary-final.log",
+      "phase": "Before ROOT-REVIEW-01; retained historical run. The initial source snapshot is bound in evidence/independent-review-initial.json."
+    },
+    "existing_bounded_io": {
+      "command": "python3 -m unittest discover -s tests -p test_intake_hardening.py -v",
+      "started_at_utc": "2026-10-23 11:57:10 UTC",
+      "exit_code": 0,
+      "tests": 47,
+      "elapsed_seconds": 4.482,
+      "log": "evidence/bounded-io-regression.log",
+      "phase": "After budget exception change; before equivalent contextlib.suppress lint cleanup. Final timeout/stream checks also pass in boundary-final."
+    },
+    "quality": {
+      "ruff": "pass",
+      "mypy": "pass: 3 source files",
+      "diff_check": "pass",
+      "log": "evidence/quality.log",
+      "phase": "Before ROOT-REVIEW-01; repeated after the review fix in checks.review_01."
+    },
+    "validation_plan": {
+      "tier": "L3",
+      "required_checks": [
+        "Root full regression",
+        "ADK quick regression",
+        "check-all --quick --working-tree"
+      ],
+      "status": "parent-coordinates-final-integration"
+    },
+    "production_contract": {
+      "status": "pass",
+      "exit_code": 0,
+      "command": "/workspace/scratch/694941d81014/tooling/rtk bypass env PYTHONDONTWRITEBYTECODE=1 PATH=/workspace/scratch/694941d81014/tooling/venv/bin:$PATH bash tests/test_gate_runner_contract.sh",
+      "started_at_utc": "2026-10-23 12:01:41 UTC",
+      "log": "evidence/production-contract-final.log",
+      "boundary_tests": 14,
+      "contract_graph": "all configured gates pass; receipt identity and capability blocking assertions pass",
+      "initial_failure": {
+        "status": "fail",
+        "exit_code": 1,
+        "diagnostic": "evidence/production-contract-diagnostic.json",
+        "root_cause": "Current status projection digest still binds old manifests/gates.json. Synchronize current projection using its existing owner after final integration; preserve historical qualification and release_authorized=false.",
+        "resolution": "Main agent regenerated the current status projection with its canonical owner; historical qualification and release_authorized=false remain intact."
+      },
+      "phase": "Before ROOT-REVIEW-01. The full contract script was not repeated for the one-line CLI guard correction, per parent scope; the complete boundary suite was repeated."
+    },
+    "review_01": {
+      "status": "implemented-awaiting-independent-recheck",
+      "initial_review": "evidence/independent-review-initial.json",
+      "initial_review_sha256": "5f54c3eda37afb63a78374e2f0e156480470fcc496c42161adad7987c8856264",
+      "change": "main now distinguishes omitted --base (None) from an explicitly empty value, which reaches the existing fail-closed Git validation.",
+      "red": {
+        "command": "/workspace/scratch/694941d81014/tooling/rtk bypass env PYTHONDONTWRITEBYTECODE=1 PATH=/workspace/scratch/694941d81014/tooling/venv/bin:$PATH python3 -m unittest discover -s tests -p test_gate_boundaries.py -k cli_rejects -v",
+        "started_at_utc": "2026-10-23 12:09:25 UTC",
+        "exit_code": 1,
+        "tests": 1,
+        "failures": 1,
+        "elapsed_seconds": 0.231,
+        "log": "evidence/review-01-red.log",
+        "observed": "Explicit empty --base exited 0 with required=false and reason=not-required; the omitted-base changed-file control passed.",
+        "log_normalization": "Trailing spaces removed from unittest progress lines; diagnostic text retained."
+      },
+      "green": {
+        "command": "/workspace/scratch/694941d81014/tooling/rtk bypass env PYTHONDONTWRITEBYTECODE=1 PATH=/workspace/scratch/694941d81014/tooling/venv/bin:$PATH python3 -m unittest discover -s tests -p test_gate_boundaries.py -v",
+        "started_at_utc": "2026-10-23 12:09:33 UTC",
+        "exit_code": 0,
+        "tests": 15,
+        "elapsed_seconds": 5.248,
+        "log": "evidence/review-01-boundary-green.log",
+        "assertions": "Public CLI rejects empty --base without stdout receipt; omitted-base --changed-file mode still returns the required impact."
+      },
+      "quality": {
+        "ruff": {
+          "command": "/workspace/scratch/694941d81014/tooling/rtk bypass env PYTHONDONTWRITEBYTECODE=1 PATH=/workspace/scratch/694941d81014/tooling/venv/bin:$PATH python3 -m ruff check tools/control_plane/impact.py tools/control_plane/gate_runner.py tools/control_plane/process_budget.py tests/test_gate_boundaries.py",
+          "exit_code": 0
+        },
+        "mypy": {
+          "command": "/workspace/scratch/694941d81014/tooling/rtk bypass env PYTHONDONTWRITEBYTECODE=1 PATH=/workspace/scratch/694941d81014/tooling/venv/bin:$PATH python3 -m mypy tools/control_plane/impact.py tools/control_plane/gate_runner.py tools/control_plane/process_budget.py",
+          "exit_code": 0,
+          "source_files": 3
+        },
+        "diff_check": {
+          "command": "/workspace/scratch/694941d81014/tooling/rtk bypass git diff --check",
+          "exit_code": 0
+        },
+        "log": "evidence/review-01-quality.log"
+      }
+    }
+  },
+  "limitations": [
+    "Independent Spec/Quality review and final integrated full checks remain parent-owned.",
+    "No commits, remote changes, runtime qualification or product authorization were performed by this implementer.",
+    "Descendant cleanup is tested for the existing POSIX process-group boundary; this is not a new Windows process-tree guarantee.",
+    "Knowledge Provider and Execution Policy runtime remain unavailable in this environment; no pass is claimed."
+  ],
+  "completed_at_utc": "2026-10-23 12:09:54 UTC",
+  "initial_implementation_completed_at_utc": "2026-10-23 12:02:17 UTC"
+}
