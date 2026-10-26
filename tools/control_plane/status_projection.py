@@ -11,6 +11,8 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
+from tools.codex_assets.intake_io import IntakeError, read_json
+
 PROJECTION_SCHEMA = "llm-agent-status-projection/v3"
 CURRENT_STATUS_SCHEMA = "llm-agent-current-status/v1"
 BEGIN_MARKER = "<!-- BEGIN GENERATED CURRENT SOURCE PROJECTION -->"
@@ -42,12 +44,18 @@ def _kv(path: Path) -> dict[str, str]:
     for line in path.read_text(encoding="utf-8").splitlines():
         if "=" in line:
             key, value = line.split("=", 1)
-            result[key.strip()] = value.strip()
+            key = key.strip()
+            if key in result:
+                raise RuntimeError("adk.lock contains duplicate key")
+            result[key] = value.strip()
     return result
 
 
 def _json_object(path: Path) -> dict[str, Any]:
-    value = json.loads(path.read_text(encoding="utf-8"))
+    try:
+        value = read_json(path, label="status source JSON", max_bytes=1024 * 1024)
+    except IntakeError as exc:
+        raise RuntimeError("status source JSON is invalid or unsafe") from exc
     if not isinstance(value, dict):
         raise RuntimeError(f"{path.name} must contain a JSON object")
     return value
@@ -61,7 +69,10 @@ def _md_fields(path: Path) -> dict[str, str]:
     for line in path.read_text(encoding="utf-8").splitlines():
         match = pattern.match(line)
         if match:
-            fields[match.group(1)] = match.group(2).strip()
+            key = match.group(1)
+            if key in fields:
+                raise RuntimeError("current status contains duplicate field")
+            fields[key] = match.group(2).strip()
     return fields
 
 
