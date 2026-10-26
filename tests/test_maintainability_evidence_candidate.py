@@ -12,7 +12,9 @@ from unittest.mock import patch
 
 from tools.codex_assets.maintainability_budget import BudgetError, evaluate
 from tools.codex_assets import maintainability_budget as budget
-from tools.codex_assets.maintainability_evidence import generate_churn_candidate, write_candidate
+from tools.codex_assets.maintainability_evidence import (
+    _churn_scope_diagnostics, generate_churn_candidate, write_candidate,
+)
 
 
 UTC = timezone.utc
@@ -153,6 +155,38 @@ class MaintainabilityEvidenceCandidateTest(unittest.TestCase):
         self.assertEqual(
             1, evaluate(self.root, config_path, False, "fixture-repo", as_of=AS_OF)["semantic_axes"]["churn"]["observed"]
         )
+
+    def test_scope_diagnostics_is_complete_report_only_and_does_not_change_evidence(self) -> None:
+        candidate = self.candidate()
+        diagnostics = candidate["scope_diagnostics"]
+        self.assertEqual("report-only", diagnostics["status"])
+        self.assertEqual("none-candidate-only", diagnostics["authority"])
+        self.assertEqual("same-complete-evidence-population", diagnostics["coverage"])
+        self.assertEqual(2, diagnostics["changed_lines_total"])
+        self.assertEqual(2, diagnostics["changed_files_total"])
+        self.assertEqual(2, diagnostics["changed_lines_by_scope"]["other"])
+        self.assertEqual(2, candidate["evidence"]["population"]["count"])
+        self.assertEqual("review-required", candidate["status"])
+
+        records = [
+            {"path": "docs/changes/a/evidence/b.json", "additions": 7, "deletions": 3},
+            {"path": "docs/changes/a/design.md", "additions": 1, "deletions": 0},
+            {"path": "tools/control_plane/gate.py", "additions": 2, "deletions": 1},
+            {"path": "tests/test_gate.py", "additions": 1, "deletions": 1},
+            {"path": "manifests/gates.json", "additions": 0, "deletions": 0},
+        ]
+        report = _churn_scope_diagnostics(records)
+        self.assertEqual(16, report["changed_lines_total"])
+        self.assertEqual(4, report["changed_files_total"])
+        self.assertEqual(10, report["changed_lines_by_scope"]["audit-evidence"])
+        self.assertEqual(3, report["changed_lines_by_scope"]["implementation"])
+        self.assertEqual(2, report["changed_lines_by_scope"]["tests"])
+        self.assertEqual(1, report["changed_lines_by_scope"]["change-docs"])
+        self.assertEqual(0, report["changed_files_by_scope"]["manifests"])
+        self.assertEqual(
+            report["changed_lines_total"], sum(report["changed_lines_by_scope"].values())
+        )
+
 
     def test_reverts_and_transient_files_count_as_real_churn(self) -> None:
         # All endpoint file contents match the baseline after the revert.

@@ -145,6 +145,52 @@ def _numstat(root: Path, start: str, end: str, population: set[str]) -> Dict[str
     return records
 
 
+_SCOPE_CLASSES = (
+    "audit-evidence", "change-docs", "documentation", "reports",
+    "tests", "implementation", "manifests", "other",
+)
+
+
+def _churn_scope(path: str) -> str:
+    """Classify complete-population churn for diagnosis, never for gate exclusions."""
+    if path.startswith("docs/changes/"):
+        return "audit-evidence" if "/evidence/" in path else "change-docs"
+    if path.startswith("docs/"):
+        return "documentation"
+    if path.startswith("reports/"):
+        return "reports"
+    if path.startswith("tests/"):
+        return "tests"
+    if path.startswith(("tools/", "scripts/", "src/", ".github/workflows/")):
+        return "implementation"
+    if path.startswith("manifests/"):
+        return "manifests"
+    return "other"
+
+
+def _churn_scope_diagnostics(records: Sequence[Mapping[str, Any]]) -> Mapping[str, Any]:
+    """Additive visibility only; leave authoritative source records and digests intact."""
+    changed_lines = {scope: 0 for scope in _SCOPE_CLASSES}
+    changed_files = {scope: 0 for scope in _SCOPE_CLASSES}
+    for record in records:
+        path = record["path"]
+        churn = record["additions"] + record["deletions"]
+        scope = _churn_scope(path)
+        changed_lines[scope] += churn
+        if churn:
+            changed_files[scope] += 1
+    return {
+        "schema": "llm-agent-maintainability-scope-diagnostics/v1",
+        "status": "report-only",
+        "authority": "none-candidate-only",
+        "coverage": "same-complete-evidence-population",
+        "changed_lines_total": sum(changed_lines.values()),
+        "changed_files_total": sum(changed_files.values()),
+        "changed_lines_by_scope": changed_lines,
+        "changed_files_by_scope": changed_files,
+    }
+
+
 def generate_churn_candidate(
     root: Path,
     repository_id: str,
@@ -230,6 +276,7 @@ def generate_churn_candidate(
         "candidate_id": "churn-{}-{}".format(end[:12], evidence_content_sha256[:12]),
         "evidence_content_sha256": evidence_content_sha256,
         "evidence": evidence,
+        "scope_diagnostics": _churn_scope_diagnostics(records),
         "review": {
             "owner_decision_required": True,
             "backlog_mutation_performed": False,
@@ -322,6 +369,7 @@ def main(argv: Sequence[str] = ()) -> int:
             "candidate_id": candidate["candidate_id"],
             "evidence_content_sha256": candidate["evidence_content_sha256"],
             "record_count": len(candidate["evidence"]["records"]),
+            "scope_diagnostics": candidate["scope_diagnostics"],
             "applied": args.apply,
             "output": written,
             "backlog_mutation_performed": False,
