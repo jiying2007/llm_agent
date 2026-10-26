@@ -21,32 +21,32 @@
   },
   "contracts": {
     "contract_registry_sha256": "debb162515f38b7fd8a1502ba7e581c171b8ec2a8c737ee8df88ab6fdeefbc23",
-    "release_manifest_sha256": "5fad85412d04723d25f8819306e48184e429d4af102a41cc0b0d27c3ee231d08",
-    "schema_set_sha256": "16c3becb453ae39d19af6188763361768c38dc50e3f9af46be1ba7ea9b7de4b7"
+    "release_manifest_sha256": "b6f00d0555c89ca30e50a4e49fd9bf6f45f07b274eed32dafc77d3bae4ddde68",
+    "schema_set_sha256": "9fe3fb4e8fe1f2a85fc85cd0858c439524e2068fadeb4f27b4393f3c8fcbd864"
   },
-  "issued_at": "2026-10-24T17:10:01.411122Z",
+  "issued_at": "2026-10-26T13:44:34.702090Z",
   "provenance": {
     "format": "sigstore-bundle/v1",
     "subject": "promotion-evidence.json"
   },
   "release": {
-    "artifact_sha256": "b5e6220337bc34d326bfaa781a23cf144e1689be8c65d997cda3caac539f9196",
+    "artifact_sha256": "df857a2144a20e13b08e7a0f5ef405857b03fd7196f9e107b3bebe731522908e",
     "release_eligible": true
   },
   "schema": "adk-promotion-evidence/v1",
   "source": {
-    "commit": "80ba8954c7d9f6225a2c5a4a2f0d805e8eb157c4",
+    "commit": "95997abb318144aa6433fb40af4b2f0f1f4ceee4",
     "event": "push",
-    "manifest_blob": "6cfa5195870bfec04ca5f298661c8fa531d649c8",
-    "manifest_sha256": "9139c22ad2800a8e0dd8d382372942472bed4558808532f61664c01d6ac16a45",
+    "manifest_blob": "ec6540141053e19f7ba807ae0dbe95a06511b2d2",
+    "manifest_sha256": "f77a5ece24f70b282e4480b16e2477cacdcba4edd9b93c21d326fec15f04bada",
     "ref": "refs/heads/main",
     "repository": "jiying2007/agent-dev-kit",
     "run_attempt": 1,
-    "run_id": 40114372768,
-    "tree": "cda8f8223beb236bebb08df17908168a883fad90",
-    "version": "8.0.40",
+    "run_id": 40332387373,
+    "tree": "2048198ad81834f5b969bf2c984c4e5654989bc0",
+    "version": "8.1.1",
     "workflow": "agent-dev-kit-ci",
     "workflow_ref": "jiying2007/agent-dev-kit/.github/workflows/ci.yml@refs/heads/main",
-    "workflow_sha": "80ba8954c7d9f6225a2c5a4a2f0d805e8eb157c4"
+    "workflow_sha": "95997abb318144aa6433fb40af4b2f0f1f4ceee4"
   }
 }
