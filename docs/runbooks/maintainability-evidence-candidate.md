@@ -49,3 +49,11 @@ telemetry 推断它们。
 The job runs with `contents: read`, no external model/provider request, and no repository mutation. It records only a `review-required` candidate and compact result as temporary workflow artifacts. If no two distinct eligible revisions exist, it emits explicit `not-available` rather than inventing zero churn; source-history parse or budget errors fail the job. Artifacts expire and must not be described as a reviewed baseline.
 
 Promoting churn to a maintainability budget still requires the existing owner-review steps above. `owner_concentration` and `inactive_assets` remain `not-available` until independent reviewed ownership and genuine sanitized invocation snapshots exist. No new tool or shadow evidence authority is introduced.
+
+## 同一完整人口的可诊断 Churn 分组
+
+`scope_diagnostics` 是 candidate/result 中额外的 **report-only** 视图，不是新的 Evidence Index 或维护预算，也不改变 `llm-agent-maintainability-evidence/v1` 的全人口、记录或 SHA-256。
+
+该视图按已存在的文件路径拆分 `audit-evidence`、`change-docs`、`documentation`、`reports`、`tests`、`implementation`、`manifests`、`other` 八类，报告每类实际变动行数和发生变动的文件数（不把原本就存在的零变动文件算成活跃文件）。`changed_lines_total` 与各类总和必须相等；所有类别包括历史审查证据，**没有任何门禁排除或预算豁免**。
+
+用途：避免海量留存审查证据把真正需要维护的源码或测试热点淹没。所有优化/淘汰仍须基于完整原始证据和对应 Owner 审查；即使 implementation 变动低，也不得推导效果或无风险。
