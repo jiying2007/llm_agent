@@ -116,3 +116,63 @@ if bash "$ROOT/scripts/software-m5.sh" certify --summary-json >"$CERT" 2>/dev/nu
 fi
 
 echo "[PASS] current source is explicitly historical-not-authorized and fail-closed"
+
+# Adversarial source parsing must fail closed independently of the current
+# historical-vs-current product authorization decision.
+python3 - <<'PYSTRICT'
+from pathlib import Path
+from tempfile import TemporaryDirectory
+
+from tools.control_plane.status_projection import _json_object, _kv, _md_fields
+
+with TemporaryDirectory() as temporary:
+    root = Path(temporary)
+    source = root / "scorecard.json"
+    source.write_text('{"overall":{"level":"M3"}}', encoding="utf-8")
+    assert _json_object(source) == {"overall": {"level": "M3"}}
+    invalid_json = [
+        '{"overall":{},"overall":{"level":"M5"}}',
+        '{"overall":{"level":"M3","level":"M5"}}',
+        '{"overall":{"terminal_mature":NaN}}',
+        '{"overall":{"terminal_mature":1e10000}}',
+        '{"overall":' + "[" * 70 + "0" + "]" * 70 + "}",
+        '{"overall":0}' + " " * (1024 * 1024),
+    ]
+    for candidate in invalid_json:
+        source.write_text(candidate, encoding="utf-8")
+        try:
+            _json_object(source)
+        except RuntimeError:
+            pass
+        else:
+            raise AssertionError("invalid product status source JSON accepted")
+    source.write_text('{"overall":{}}', encoding="utf-8")
+    link = root / "alias.json"
+    link.symlink_to(source)
+    try:
+        _json_object(link)
+    except RuntimeError:
+        pass
+    else:
+        raise AssertionError("symlinked status source accepted")
+
+    lock = root / "adk.lock"
+    lock.write_text("agent-dev-kit.version=8.1.1\nagent-dev-kit.version=0.0.0\n", encoding="utf-8")
+    try:
+        _kv(lock)
+    except RuntimeError:
+        pass
+    else:
+        raise AssertionError("duplicate version-lock key accepted")
+
+    status = root / "current-status.md"
+    status.write_text("# Status\n\n- release_authorized: false\n- release_authorized: true\n", encoding="utf-8")
+    try:
+        _md_fields(status)
+    except RuntimeError:
+        pass
+    else:
+        raise AssertionError("duplicate current-product field accepted")
+
+print("[PASS] current product-source JSON, lock and projection fields are strict")
+PYSTRICT
