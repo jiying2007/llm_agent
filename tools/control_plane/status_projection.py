@@ -11,12 +11,14 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
-from tools.codex_assets.intake_io import IntakeError, read_json
+from tools.codex_assets.intake_io import IntakeError, read_bytes, read_json
 
 PROJECTION_SCHEMA = "llm-agent-status-projection/v3"
 CURRENT_STATUS_SCHEMA = "llm-agent-current-status/v1"
 BEGIN_MARKER = "<!-- BEGIN GENERATED CURRENT SOURCE PROJECTION -->"
 END_MARKER = "<!-- END GENERATED CURRENT SOURCE PROJECTION -->"
+MAX_LOCK_BYTES = 64 * 1024
+MAX_STATUS_BYTES = 256 * 1024
 PROJECTION_INPUT_PATHS = (
     "adk.lock",
     "manifests/gates.json",
@@ -39,9 +41,17 @@ def _git(root: Path, *args: str, check: bool = True) -> str:
     return completed.stdout.strip()
 
 
+def _read_status_text(path: Path, *, label: str, limit: int) -> str:
+    """Capture a bounded, regular UTF-8 source snapshot, rejecting symlinks."""
+    try:
+        return read_bytes(path, label=label, max_bytes=limit).decode("utf-8", errors="strict")
+    except (IntakeError, UnicodeError) as exc:
+        raise RuntimeError(label + " is invalid, unsafe or over budget") from exc
+
+
 def _kv(path: Path) -> dict[str, str]:
     result: dict[str, str] = {}
-    for line in path.read_text(encoding="utf-8").splitlines():
+    for line in _read_status_text(path, label="ADK version lock", limit=MAX_LOCK_BYTES).splitlines():
         if "=" in line:
             key, value = line.split("=", 1)
             key = key.strip()
@@ -66,7 +76,7 @@ def _md_fields(path: Path) -> dict[str, str]:
     if not path.exists():
         return fields
     pattern = re.compile(r"^- ([A-Za-z0-9_]+):\s*(.+)$")
-    for line in path.read_text(encoding="utf-8").splitlines():
+    for line in _read_status_text(path, label="current status", limit=MAX_STATUS_BYTES).splitlines():
         match = pattern.match(line)
         if match:
             key = match.group(1)
@@ -197,7 +207,7 @@ def _atomic_write(path: Path, text: str) -> None:
 def refresh_current_status(root: Path) -> dict[str, str]:
     root = root.resolve()
     status_path = root / "reports/current-status.md"
-    existing = status_path.read_text(encoding="utf-8")
+    existing = _read_status_text(status_path, label="current status", limit=MAX_STATUS_BYTES)
     lock = _kv(root / "adk.lock")
     digest = _projection_digest(_projection_inputs(root))
     fields = _expected_current_fields(root, lock, digest)
