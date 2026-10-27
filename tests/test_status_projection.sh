@@ -176,3 +176,64 @@ with TemporaryDirectory() as temporary:
 
 print("[PASS] current product-source JSON, lock and projection fields are strict")
 PYSTRICT
+
+# Status and lock authority must read only bounded regular UTF-8 sources.
+python3 - <<'PYINPUT'
+import os
+import tempfile
+from pathlib import Path
+from tools.control_plane.status_projection import (
+    MAX_LOCK_BYTES, MAX_STATUS_BYTES, _kv, _md_fields, _read_status_text,
+)
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    lock = root / "adk.lock"
+    lock.write_text("schema=llm-agent-adk-lock/v2\nagent-dev-kit.version=8.1.1\n", encoding="utf-8")
+    assert _kv(lock)["agent-dev-kit.version"] == "8.1.1"
+    status = root / "status.md"
+    status.write_text("# Current\n- release_authorized: false\n", encoding="utf-8")
+    assert _md_fields(status)["release_authorized"] == "false"
+    for path, reader, budget in (
+        (lock, _kv, MAX_LOCK_BYTES),
+        (status, _md_fields, MAX_STATUS_BYTES),
+    ):
+        original = path.read_bytes()
+        for data in (b"\xff", b"x" * (budget + 1)):
+            path.write_bytes(data)
+            try:
+                reader(path)
+            except RuntimeError:
+                pass
+            else:
+                raise AssertionError("unsafe or oversized status input passed")
+        path.write_bytes(original)
+        leaf = path.with_name(path.name + ".link")
+        leaf.symlink_to(path)
+        aliased = root / "alias-dir"
+        if not aliased.exists():
+            aliased.symlink_to(root, target_is_directory=True)
+        for unsafe in (leaf, aliased / path.name):
+            try:
+                reader(unsafe)
+            except RuntimeError:
+                pass
+            else:
+                raise AssertionError("symlinked input passed")
+        if hasattr(os, "mkfifo"):
+            fifo = path.with_name(path.name + ".fifo")
+            os.mkfifo(fifo)
+            try:
+                reader(fifo)
+            except RuntimeError:
+                pass
+            else:
+                raise AssertionError("FIFO input passed")
+    try:
+        _read_status_text(status, label="status", limit=0)
+    except RuntimeError:
+        pass
+    else:
+        raise AssertionError("zero budget unexpectedly passed")
+print("[PASS] bounded regular UTF-8 version lock and current-status input")
+PYINPUT
