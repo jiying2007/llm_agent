@@ -10,6 +10,7 @@ rtk python3 -m tools.control_plane.cli qualification-followup --root . --summary
 
 - `scan_status=complete` / 退出 0：六项客观复核均正常结束，允许它们仍然 blocked。
 - `scan_status=error` / 退出 1：执行、预算、JSON/schema 或来源一致性有错误；同时保留其他检查结果。
+- 对三个已完成、不可重写的 #201 历史 archive，若现行受保护 ADK 校验器只因旧 \`validator_sha256\` 被拒绝，则严格核对冻结的历史 record SHA-256、旧校验器指纹、固定 Git base/head/原始 patch、完整证据引用、stage 和 archive provenance。全部匹配时只报告 \`historical-review-validator-stale\`，扫描仍可正常结束，但历史记录 **不能继承为当前来源有效审核**：\`review_verified=false\`、\`delegated_review_verified=false\`、\`qualification_ready=false\`。任何其他异常（包括篡改、缺文件、权限来源漂移）仍按 \`scan_status=error\` 失败关闭。后续真实新审核须另留证据，不改写旧日期、伪造签名或绕过唯一校验器。
 - 每项 `command_exit` 是实际子命令退出码；文件审核证据消费为 null。`result` 保留对应有界原始结果，`remaining_evidence` 与 `next_actions` 指向下一步。
 - `llm-agent-qualification-followup/v2` 报告将 `required_in_current_scope` 标到每项。`required_qualification_ready` 只汇总当前研究/控制工作区必需的五项；`qualification_all_ready` 仍要求六项全部就绪。两者与扫描成功是不同事实。
 - #236 在本范围保持 `status=conditional`、`assessment=not-assessed`、`required_in_current_scope=false`。诊断原始输出继续保留，但不签发 M5；`release_authorized=false`、`may_fill_owner=false` 固定表示本报告没有授权。
