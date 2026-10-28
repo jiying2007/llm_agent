@@ -59,6 +59,15 @@ FROZEN_ARCHIVED_VALIDATOR_SHA256 = {
     "src/agent_dev_kit/readiness_evidence.py": "ef980657486084eea8ab8a03ab357a76a3ed43691aca8d6909b06642764c808b",
 }
 
+
+# Frozen complete 2026-10-20 ADK #201 archive Git trees, checked against both
+# ADK 42ae95d... and the currently pinned v8.1.2 commit. Not SHA256 receipts.
+FROZEN_ARCHIVE_GIT_TREES = {
+    "20261016-skill-catalog-competition": "7d9562a45b1475e3a4a53548bb8d212b804c33f6",
+    "20261016-effort-evidence-v1": "78ff0f10fc81a05ecb3ea1650a8f94f592080ef8",
+    "20261016-skill-description-discovery": "045c467852b07ec0d1b2c8a9cb691da034baa352",
+}
+
 REVIEW_FILES = ("state.yaml", "checklist.md", "verify-report.md", "requirements.md",
                 "design.md", "proposal.md", "tasks.md", "negative-results.md", "review-report.md",
                 "review-evidence.json", "provenance.md")
@@ -419,6 +428,91 @@ def _archive_provenance(location: Path, change: str, review: dict[str, Any]) -> 
 
 
 
+def _frozen_archive_matches_pinned_git(
+    root: Path, location: Path, change: str,
+) -> bool:
+    """Fail closed on changes to ANY frozen archive byte or Git identity.
+
+    A review record does not cover provenance, state, review-report or every
+    historical document. Check original subtree identity, Git index and all
+    regular worktree blobs, including otherwise unreferenced files.
+    """
+    adk = root / "agent-dev-kit"
+    relative = "docs/changes/archive/20261020-" + change
+    expected = FROZEN_ARCHIVE_GIT_TREES.get(change)
+    if (expected is None or location != adk / relative
+            or re.fullmatch(r"[0-9a-f]{40}", expected) is None):
+        return False
+    _reject_symlink_chain(location)
+
+    def git(*args: str) -> bytes:
+        completed = run_bounded(
+            ("git", "-C", str(adk), *args), cwd=root,
+            timeout=8, max_stdout=32 * 1024, max_stderr=1024,
+        )
+        if completed.returncode != 0:
+            raise RuntimeError("frozen archive Git identity cannot be verified")
+        return completed.stdout
+
+    if git("rev-parse", "--verify", "HEAD:" + relative).strip() != expected.encode("ascii"):
+        return False
+    tree_entries = git("ls-tree", "-r", "-z", "--full-tree", "HEAD", "--", relative)
+    index_entries = git("ls-files", "--stage", "-z", "--", relative)
+    # Include even ignored extras: a frozen archive has an exact file set.
+    if git("ls-files", "--others", "-z", "--", relative):
+        return False
+
+    committed: dict[str, tuple[bytes, bytes]] = {}
+    staged: dict[str, tuple[bytes, bytes]] = {}
+    for entry in tree_entries.split(b"\0"):
+        if not entry:
+            continue
+        try:
+            meta, name = entry.split(b"\t", 1)
+            mode, kind, blob = meta.split(b" ")
+            filename = name.decode("utf-8", errors="strict")
+        except (ValueError, UnicodeError):
+            return False
+        if (mode != b"100644" or kind != b"blob"
+                or re.fullmatch(rb"[0-9a-f]{40}", blob) is None
+                or not filename.startswith(relative + "/")
+                or ".." in filename.split("/") or filename in committed):
+            return False
+        committed[filename] = (mode, blob)
+
+    for entry in index_entries.split(b"\0"):
+        if not entry:
+            continue
+        try:
+            meta, name = entry.split(b"\t", 1)
+            mode, blob, stage = meta.split(b" ")
+            filename = name.decode("utf-8", errors="strict")
+        except (ValueError, UnicodeError):
+            return False
+        if (stage != b"0" or filename in staged
+                or re.fullmatch(rb"[0-9a-f]{40}", blob) is None):
+            return False
+        staged[filename] = (mode, blob)
+    if not 1 <= len(committed) <= 64 or staged != committed:
+        return False
+
+    total = 0
+    for filename, (_mode, blob) in sorted(committed.items()):
+        path = adk / filename
+        _reject_symlink_chain(path)
+        raw = read_bytes(path, label="frozen archive byte identity", max_bytes=128 * 1024)
+        total += len(raw)
+        if total > 1024 * 1024:
+            return False
+        object_id = hashlib.sha1(
+            b"blob " + str(len(raw)).encode("ascii") + b"\0" + raw,
+            usedforsecurity=False,
+        ).hexdigest().encode("ascii")
+        if object_id != blob:
+            return False
+    return True
+
+
 def _frozen_archive_validator_drift(
     root: Path, location: Path, change: str, files: Mapping[str, Any], exc: ValueError,
 ) -> bool:
@@ -491,6 +585,8 @@ def _frozen_archive_validator_drift(
             if group == "sources" and base == "record" and name == "evidence/original.patch":
                 original_patch_bound = digest == CHANGE_PATCHES[change]
     if not original_patch_bound:
+        return False
+    if not _frozen_archive_matches_pinned_git(root, location, change):
         return False
     stages = re.findall(
         r"^stage:\s*([a-z-]+)\s*$",

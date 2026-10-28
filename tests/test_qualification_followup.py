@@ -462,12 +462,105 @@ class QualificationFollowupTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             followup._review_paths(self.root)
 
+    def pin_synthetic_archive_tree(self, archived: Path) -> str:
+        """Commit the disposable frozen archive into its exact synthetic Git pin."""
+        adk = self.root / "agent-dev-kit"
+        relative = archived.relative_to(adk).as_posix()
+
+        def git(*args: str) -> str:
+            result = subprocess.run(["git", "-C", str(adk), *args],
+                                    check=True, capture_output=True, text=True)
+            return result.stdout.strip()
+
+        git("add", "--", relative)
+        subprocess.run(
+            ["git", "-C", str(adk), "-c", "user.name=Synthetic Fixture",
+             "-c", "user.email=fixture@example.invalid",
+             "commit", "-qm", "Pin synthetic historical archive"],
+            check=True, capture_output=True,
+        )
+        head = git("rev-parse", "HEAD")
+        subprocess.run(
+            ["git", "-C", str(self.root), "update-index", "--add", "--cacheinfo",
+             "160000," + head + ",agent-dev-kit"], check=True, capture_output=True,
+        )
+        return git("rev-parse", "HEAD:" + relative)
+
+    def test_original_archives_match_exact_pinned_git_tree(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        adk = root / "agent-dev-kit"
+        if not (adk / ".git").exists():
+            self.skipTest("ADK source is not initialized by this job")
+        for change in followup.CHANGE_IDS:
+            with self.subTest(change=change):
+                archived = adk / "docs/changes/archive" / ("20261020-" + change)
+                self.assertTrue(followup._frozen_archive_matches_pinned_git(
+                    root, archived, change
+                ))
+
+    def test_frozen_archive_bytes_reject_unreferenced_provenance_and_index_drift(self) -> None:
+        first, *_ = self.reviewed_changes()
+        archived = self.archive_fixture(first)
+        extra = archived / "unreferenced-material.md"
+        extra.write_text("Synthetic unreviewed historical document.\n", encoding="utf-8")
+        frozen_tree = self.pin_synthetic_archive_tree(archived)
+        with patch.dict(followup.FROZEN_ARCHIVE_GIT_TREES, {first.name: frozen_tree}):
+            def matches():
+                return followup._frozen_archive_matches_pinned_git(self.root, archived, first.name)
+
+            self.assertTrue(matches())
+            provenance = archived / "provenance.md"
+            original = provenance.read_text(encoding="utf-8")
+            for mutation in (
+                original.replace("archived_by: ai/fixture-coordinator",
+                                 "archived_by: ai/forged-archiver"),
+                original + "- repository_head: " + "a" * 40 + "\n",
+            ):
+                provenance.write_text(mutation, encoding="utf-8")
+                self.assertFalse(matches())
+            provenance.write_text(original, encoding="utf-8")
+            self.assertTrue(matches())
+
+            for file in (extra, archived / "state.yaml", archived / "review-report.md"):
+                previous = file.read_bytes() if file.exists() else None
+                file.write_text("forged non-referenced content\n", encoding="utf-8")
+                self.assertFalse(matches())
+                if previous is None:
+                    file.unlink()
+                else:
+                    file.write_bytes(previous)
+                self.assertTrue(matches())
+
+            unknown = archived / "unexpected.md"
+            unknown.write_text("untracked\n", encoding="utf-8")
+            self.assertFalse(matches())
+            unknown.unlink()
+            self.assertTrue(matches())
+
+            previous = extra.read_bytes()
+            extra.unlink()
+            extra.symlink_to(archived / "provenance.md")
+            self.assertFalse(matches())
+            extra.unlink()
+            extra.write_bytes(previous)
+            self.assertTrue(matches())
+
+            extra.write_text("staged-only content\n", encoding="utf-8")
+            subprocess.run(
+                ["git", "-C", str(self.root / "agent-dev-kit"), "add", "--",
+                 extra.relative_to(self.root / "agent-dev-kit").as_posix()],
+                check=True, capture_output=True,
+            )
+            extra.write_bytes(previous)
+            self.assertFalse(matches())
+
     def test_frozen_historical_validator_drift_never_renews_a_review(self) -> None:
         from agent_dev_kit.review_evidence import ReviewEvidenceError
         from tools.control_plane.adk_interface import validate_delegated_review
 
         first, *_ = self.reviewed_changes()
         archive = self.archive_fixture(first)
+        pinned_tree = self.pin_synthetic_archive_tree(archive)
         record_path = archive / "review-evidence.json"
         record = json.loads(record_path.read_text(encoding="utf-8"))
         digest = hashlib.sha256(record_path.read_bytes()).hexdigest()
@@ -478,6 +571,7 @@ class QualificationFollowupTest(unittest.TestCase):
             return validate_delegated_review(*args, **kwargs)
 
         with patch.dict(followup.FROZEN_ARCHIVED_REVIEW_SHA256, {first.name: digest}), \
+                patch.dict(followup.FROZEN_ARCHIVE_GIT_TREES, {first.name: pinned_tree}), \
                 patch.object(followup, "FROZEN_ARCHIVED_VALIDATOR_SHA256", record["validator_sha256"]), \
                 patch("tools.control_plane.adk_interface.validate_delegated_review", side_effect=stale):
             item = followup._review_inventory(self.root)
