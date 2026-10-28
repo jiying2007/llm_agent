@@ -439,7 +439,9 @@ def _frozen_archive_root_pin_matches_committed_head(root: Path, adk: Path) -> bo
     def git(directory: Path, *args: str) -> bytes:
         completed = run_bounded(
             ("git", "-C", str(directory), *args), cwd=root,
-            timeout=8, max_stdout=64 * 1024, max_stderr=1024,
+            # The pinned ADK 8.1.2 manifest is >64 KiB; cap actual bytes
+            # without truncation or assuming a small historical manifest.
+            timeout=8, max_stdout=256 * 1024, max_stderr=1024,
         )
         if completed.returncode != 0:
             raise RuntimeError("committed ADK source pin cannot be verified")
