@@ -45,6 +45,20 @@ CHANGE_PATCHES = dict(zip(CHANGE_IDS, (
     "51c0f3da381bb1559a5039ed8dffa87cac475ab30f9309227aacc76f8591a855",
     "8f2cf5749b057db7b490403b190d6b20c765d2597b4cc17a717d0e17ce293c69",
 ), strict=True))
+
+# Frozen 2026-10-20 ADK #201 archive record identities. This is a strict
+# diagnostic allowlist, never an authorization to carry forward old PASS.
+FROZEN_ARCHIVED_REVIEW_SHA256 = {
+    "20261016-skill-catalog-competition": "a3884e579694cf89c2d2aa8ba0f8daac01e799008bc010645e6d4d72a6167ef2",
+    "20261016-effort-evidence-v1": "2e68154bcb10b2ee6501fc77e5353aa8f97c907d00bcf04711efde655ebaf79b",
+    "20261016-skill-description-discovery": "65ce1275b56b976db864be3fc8df01343d9b851b7b935f72117fe85fac8ad409",
+}
+FROZEN_ARCHIVED_VALIDATOR_SHA256 = {
+    "src/agent_dev_kit/review_evidence.py": "73d85e864a3da125bf94808f19616f52150751a94ccc729ac66f66d2576b8808",
+    "src/agent_dev_kit/strict_json.py": "e11233b8d02d7fb95a8f2f93bfff065a1db84c4ef0820fef6d817600abe8ec98",
+    "src/agent_dev_kit/readiness_evidence.py": "ef980657486084eea8ab8a03ab357a76a3ed43691aca8d6909b06642764c808b",
+}
+
 REVIEW_FILES = ("state.yaml", "checklist.md", "verify-report.md", "requirements.md",
                 "design.md", "proposal.md", "tasks.md", "negative-results.md", "review-report.md",
                 "review-evidence.json", "provenance.md")
@@ -404,6 +418,91 @@ def _archive_provenance(location: Path, change: str, review: dict[str, Any]) -> 
         raise ValueError("archive provenance chronology is invalid")
 
 
+
+def _frozen_archive_validator_drift(
+    root: Path, location: Path, change: str, files: Mapping[str, Any], exc: ValueError,
+) -> bool:
+    """Diagnose a frozen old review, never accept it as current-source PASS.
+
+    The pinned validator checked policy, reviewer and timestamps before the
+    specific fingerprint mismatch. Cross-check frozen bytes, target, original
+    patch, every evidence reference and archive provenance. Any other error
+    remains a scanner failure rather than being downgraded to missing evidence.
+    """
+    # The optional ADK package is installed in runtime/qualification jobs,
+    # not in Root's standalone static type-check environment. Resolve its
+    # exact exception class only when the pinned bridge has raised one.
+    from importlib import import_module
+
+    try:
+        review_error_type = getattr(import_module("agent_dev_kit.review_evidence"),
+                                    "ReviewEvidenceError", None)
+    except ImportError:
+        return False
+    expected = FROZEN_ARCHIVED_REVIEW_SHA256.get(change)
+    if (not isinstance(review_error_type, type)
+            or not isinstance(exc, review_error_type)
+            or str(exc) != "review validator source identity changed"
+            or location.parent.name != "archive" or not expected
+            or files.get("review-evidence.json", {}).get("sha256") != expected):
+        return False
+    record_path = location / "review-evidence.json"
+    raw = read_bytes(record_path, label="frozen historical review", max_bytes=1024 * 1024)
+    if hashlib.sha256(raw).hexdigest() != expected:
+        return False
+    record = decode_json(raw, "frozen historical review")
+    fixed_target = {
+        "base_commit": CHANGE_BASES[change],
+        "head_commit": CHANGE_HEADS[change],
+        "original_patch_sha256": CHANGE_PATCHES[change],
+    }
+    if (not isinstance(record, dict)
+            or record.get("schema") != "adk-review-evidence/v1"
+            or record.get("subject_id") != change or record.get("scope") != "source-change"
+            or record.get("target") != fixed_target
+            or record.get("validator_sha256") != FROZEN_ARCHIVED_VALIDATOR_SHA256
+            or record.get("verdicts") != {"spec": "pass", "quality": "pass"}):
+        return False
+    source_refs, evidence_refs = record.get("sources"), record.get("evidence")
+    if (not isinstance(source_refs, list) or not isinstance(evidence_refs, list)
+            or not source_refs or not evidence_refs
+            or len(source_refs) + len(evidence_refs) > 64):
+        return False
+    original_patch_bound = False
+    seen: set[tuple[str, str]] = set()
+    for group, refs in (("sources", source_refs), ("evidence", evidence_refs)):
+        for ref in refs:
+            if not isinstance(ref, dict) or set(ref) != {"base", "path", "sha256"}:
+                return False
+            base, name, digest = ref["base"], ref["path"], ref["sha256"]
+            if (base not in ("record", "repository") or not isinstance(name, str)
+                    or not name or len(name) > 4096 or "\\" in name
+                    or any(part in ("", ".", "..") for part in name.split("/"))
+                    or name.startswith("/") or not isinstance(digest, str)
+                    or re.fullmatch(r"[0-9a-f]{64}", digest) is None
+                    or (base, name) in seen):
+                return False
+            seen.add((base, name))
+            path = (location if base == "record" else root / "agent-dev-kit") / name
+            _reject_symlink_chain(path)
+            identity = _file_identity(root, path.relative_to(root).as_posix())
+            if identity.get("sha256") != digest:
+                return False
+            if group == "sources" and base == "record" and name == "evidence/original.patch":
+                original_patch_bound = digest == CHANGE_PATCHES[change]
+    if not original_patch_bound:
+        return False
+    stages = re.findall(
+        r"^stage:\s*([a-z-]+)\s*$",
+        read_bytes(location / "state.yaml", label="historical review state", max_bytes=16384)
+        .decode("utf-8"), re.MULTILINE,
+    )
+    if stages != ["archived"]:
+        return False
+    _archive_provenance(location, change, dict(record, record_sha256=expected))
+    return True
+
+
 def _review_inventory(root: Path) -> dict[str, Any]:
     item: dict[str, Any] = {
         "id": "adk-201", "title": "Delegated semantic review of three historical changes",
@@ -436,9 +535,21 @@ def _review_inventory(root: Path) -> dict[str, Any]:
             else:
                 from .adk_interface import validate_delegated_review
 
-                review = validate_delegated_review(root / "agent-dev-kit", location / "review-evidence.json",
-                                                   policy_root=root / "agent-dev-kit",
-                                                   expected_subject=change, expected_scope="source-change")
+                try:
+                    review = validate_delegated_review(
+                        root / "agent-dev-kit", location / "review-evidence.json",
+                        policy_root=root / "agent-dev-kit",
+                        expected_subject=change, expected_scope="source-change",
+                    )
+                except ValueError as exc:
+                    if not _frozen_archive_validator_drift(root, location, change, files, exc):
+                        raise
+                    record.update(reason="historical-review-validator-stale",
+                                  stage="archived", historical_review_record_sha256=files["review-evidence.json"]["sha256"],
+                                  current_source_review_verified=False)
+                    item["result"]["changes"].append(record)
+                    item["remaining_evidence"].append(change + ":historical-review-validator-stale")
+                    continue
                 if review["record_sha256"] != files["review-evidence.json"]["sha256"]:
                     raise ValueError("review record changed during inventory")
                 if review["target"] != {"base_commit": CHANGE_BASES[change], "head_commit": CHANGE_HEADS[change],

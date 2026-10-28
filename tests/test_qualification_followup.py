@@ -462,6 +462,68 @@ class QualificationFollowupTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             followup._review_paths(self.root)
 
+    def test_frozen_historical_validator_drift_never_renews_a_review(self) -> None:
+        from agent_dev_kit.review_evidence import ReviewEvidenceError
+        from tools.control_plane.adk_interface import validate_delegated_review
+
+        first, *_ = self.reviewed_changes()
+        archive = self.archive_fixture(first)
+        record_path = archive / "review-evidence.json"
+        record = json.loads(record_path.read_text(encoding="utf-8"))
+        digest = hashlib.sha256(record_path.read_bytes()).hexdigest()
+
+        def stale(*args, **kwargs):
+            if Path(args[1]) == record_path:
+                raise ReviewEvidenceError("review validator source identity changed")
+            return validate_delegated_review(*args, **kwargs)
+
+        with patch.dict(followup.FROZEN_ARCHIVED_REVIEW_SHA256, {first.name: digest}), \
+                patch.object(followup, "FROZEN_ARCHIVED_VALIDATOR_SHA256", record["validator_sha256"]), \
+                patch("tools.control_plane.adk_interface.validate_delegated_review", side_effect=stale):
+            item = followup._review_inventory(self.root)
+            self.assertEqual(item["scan_status"], "complete", item)
+            self.assertFalse(item["qualification_ready"])
+            self.assertFalse(item["result"]["delegated_review_verified"])
+            self.assertEqual(item["result"]["changes"][0]["reason"], "historical-review-validator-stale")
+            self.assertFalse(item["result"]["changes"][0]["review_verified"])
+            self.assertEqual(item["result"]["changes"][0]["historical_review_record_sha256"], digest)
+
+            source = archive / "requirements.md"
+            before = source.read_text(encoding="utf-8")
+            source.write_text("tampered source\n", encoding="utf-8")
+            self.assertEqual(followup._review_inventory(self.root)["scan_status"], "error")
+            source.write_text(before, encoding="utf-8")
+            provenance = archive / "provenance.md"
+            provenance.write_text(provenance.read_text(encoding="utf-8") +
+                                  "- review_verdict: pass\n", encoding="utf-8")
+            self.assertEqual(followup._review_inventory(self.root)["scan_status"], "error")
+
+    def test_validator_drift_exception_cannot_mask_other_archive_failures(self) -> None:
+        from agent_dev_kit.review_evidence import ReviewEvidenceError
+        from tools.control_plane.adk_interface import validate_delegated_review
+
+        first, *_ = self.reviewed_changes()
+        archive = self.archive_fixture(first)
+        record_path = archive / "review-evidence.json"
+        record = json.loads(record_path.read_text(encoding="utf-8"))
+        digest = hashlib.sha256(record_path.read_bytes()).hexdigest()
+
+        def incorrect(*args, **kwargs):
+            if Path(args[1]) == record_path:
+                raise ReviewEvidenceError("review source or evidence digest does not match")
+            return validate_delegated_review(*args, **kwargs)
+
+        with patch.dict(followup.FROZEN_ARCHIVED_REVIEW_SHA256, {first.name: digest}), \
+                patch.object(followup, "FROZEN_ARCHIVED_VALIDATOR_SHA256", record["validator_sha256"]), \
+                patch("tools.control_plane.adk_interface.validate_delegated_review", side_effect=incorrect):
+            self.assertEqual(followup._review_inventory(self.root)["scan_status"], "error")
+
+        with patch.dict(followup.FROZEN_ARCHIVED_REVIEW_SHA256, {first.name: "0" * 64}), \
+                patch.object(followup, "FROZEN_ARCHIVED_VALIDATOR_SHA256", record["validator_sha256"]), \
+                patch("tools.control_plane.adk_interface.validate_delegated_review",
+                      side_effect=ReviewEvidenceError("review validator source identity changed")):
+            self.assertEqual(followup._review_inventory(self.root)["scan_status"], "error")
+
     def test_archive_requires_matching_unambiguous_provenance(self) -> None:
         first, *_ = self.reviewed_changes()
         archive = self.archive_fixture(first)
