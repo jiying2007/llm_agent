@@ -472,7 +472,9 @@ class QualificationFollowupTest(unittest.TestCase):
                                     check=True, capture_output=True, text=True)
             return result.stdout.strip()
 
-        git("add", "--", relative)
+        manifest = adk / "manifest.json"
+        manifest.write_text('{"version":"fixture-v1"}\n', encoding="utf-8")
+        git("add", "--", relative, "manifest.json")
         subprocess.run(
             ["git", "-C", str(adk), "-c", "user.name=Synthetic Fixture",
              "-c", "user.email=fixture@example.invalid",
@@ -480,11 +482,111 @@ class QualificationFollowupTest(unittest.TestCase):
             check=True, capture_output=True,
         )
         head = git("rev-parse", "HEAD")
+        subtree = git("rev-parse", "HEAD^{tree}")
+        manifest_blob = git("rev-parse", "HEAD:manifest.json")
         subprocess.run(
             ["git", "-C", str(self.root), "update-index", "--add", "--cacheinfo",
              "160000," + head + ",agent-dev-kit"], check=True, capture_output=True,
         )
+        (self.root / "adk.lock").write_text(
+            "schema=llm-agent-adk-lock/v2\n"
+            "agent-dev-kit.version=fixture-v1\n"
+            f"agent-dev-kit.commit={head}\n"
+            f"agent-dev-kit.tree={subtree}\n"
+            f"agent-dev-kit.manifest_blob={manifest_blob}\n"
+            "updated_at=2026-10-28\n", encoding="utf-8",
+        )
+        interface = self.root / "manifests/adk_interface.lock.json"
+        interface.parent.mkdir(parents=True, exist_ok=True)
+        interface.write_text(json.dumps({
+            "schema": "llm-agent-adk-interface-lock/v1", "version": "fixture-v1",
+            "commit": head, "tree": subtree, "manifest_blob": manifest_blob,
+        }) + "\n", encoding="utf-8")
+        subprocess.run(
+            ["git", "-C", str(self.root), "add", "--", "adk.lock",
+             "manifests/adk_interface.lock.json"], check=True, capture_output=True,
+        )
+        subprocess.run(
+            ["git", "-C", str(self.root), "-c", "user.name=Synthetic Fixture",
+             "-c", "user.email=fixture@example.invalid",
+             "commit", "-qm", "Commit synthetic Root ADK pin and locks"],
+            check=True, capture_output=True,
+        )
         return git("rev-parse", "HEAD:" + relative)
+
+    def test_staged_root_gitlink_cannot_replace_committed_root_adk_pin(self) -> None:
+        """An ADK commit B with the same archive tree is still not Root HEAD A."""
+        first, *_ = self.reviewed_changes()
+        archived = self.archive_fixture(first)
+        frozen_tree = self.pin_synthetic_archive_tree(archived)
+        adk = self.root / "agent-dev-kit"
+
+        def git(directory: Path, *args: str) -> str:
+            result = subprocess.run(["git", "-C", str(directory), *args],
+                                    check=True, capture_output=True, text=True)
+            return result.stdout.strip()
+
+        committed_root_pin = git(self.root, "rev-parse", "HEAD:agent-dev-kit")
+        self.assertEqual(committed_root_pin, git(adk, "rev-parse", "HEAD"))
+        with patch.dict(followup.FROZEN_ARCHIVE_GIT_TREES, {first.name: frozen_tree}):
+            self.assertTrue(followup._frozen_archive_matches_pinned_git(
+                self.root, archived, first.name
+            ))
+            subprocess.run(
+                ["git", "-C", str(adk), "-c", "user.name=Synthetic Fixture",
+                 "-c", "user.email=fixture@example.invalid",
+                 "commit", "--allow-empty", "-qm", "Alternate ADK source B, identical archive"],
+                check=True, capture_output=True,
+            )
+            alternate_head = git(adk, "rev-parse", "HEAD")
+            self.assertNotEqual(committed_root_pin, alternate_head)
+            self.assertEqual(frozen_tree, git(
+                adk, "rev-parse", "HEAD:" + archived.relative_to(adk).as_posix()
+            ))
+            subprocess.run(
+                ["git", "-C", str(self.root), "update-index", "--add", "--cacheinfo",
+                 "160000," + alternate_head + ",agent-dev-kit"],
+                check=True, capture_output=True,
+            )
+            self.assertEqual(committed_root_pin, git(self.root, "rev-parse", "HEAD:agent-dev-kit"))
+            self.assertFalse(followup._frozen_archive_matches_pinned_git(
+                self.root, archived, first.name
+            ))
+
+    def test_dirty_root_adk_lock_cannot_claim_original_git_pin(self) -> None:
+        first, *_ = self.reviewed_changes()
+        archived = self.archive_fixture(first)
+        tree = self.pin_synthetic_archive_tree(archived)
+        with patch.dict(followup.FROZEN_ARCHIVE_GIT_TREES, {first.name: tree}):
+            self.assertTrue(followup._frozen_archive_matches_pinned_git(
+                self.root, archived, first.name
+            ))
+            lock = self.root / "adk.lock"
+            original = lock.read_bytes()
+            lock.write_bytes(original + b"extra=forged\\n")
+            self.assertFalse(followup._frozen_archive_matches_pinned_git(
+                self.root, archived, first.name
+            ))
+            lock.write_bytes(original)
+            self.assertTrue(followup._frozen_archive_matches_pinned_git(
+                self.root, archived, first.name
+            ))
+            subprocess.run(
+                ["git", "-C", str(self.root), "add", "--", "adk.lock"],
+                check=True, capture_output=True,
+            )
+            self.assertTrue(followup._frozen_archive_matches_pinned_git(
+                self.root, archived, first.name
+            ))
+            lock.write_bytes(original + b"other=malformed\\n")
+            subprocess.run(
+                ["git", "-C", str(self.root), "add", "--", "adk.lock"],
+                check=True, capture_output=True,
+            )
+            lock.write_bytes(original)
+            self.assertFalse(followup._frozen_archive_matches_pinned_git(
+                self.root, archived, first.name
+            ))
 
     def test_original_archives_match_exact_pinned_git_tree(self) -> None:
         root = Path(__file__).resolve().parents[1]

@@ -428,6 +428,87 @@ def _archive_provenance(location: Path, change: str, review: dict[str, Any]) -> 
 
 
 
+def _frozen_archive_root_pin_matches_committed_head(root: Path, adk: Path) -> bool:
+    """Never substitute staged Root gitlink/locks for the committed authority.
+
+    This supplements the delegated review bridge, which deliberately compares
+    the ADK HEAD against the mutable Root index. Historical stale classification
+    additionally requires committed Root HEAD, index, regular worktree lock
+    files, ADK HEAD/tree/manifest and interface lock all to agree.
+    """
+    def git(directory: Path, *args: str) -> bytes:
+        completed = run_bounded(
+            ("git", "-C", str(directory), *args), cwd=root,
+            timeout=8, max_stdout=64 * 1024, max_stderr=1024,
+        )
+        if completed.returncode != 0:
+            raise RuntimeError("committed ADK source pin cannot be verified")
+        return completed.stdout
+
+    def blob_id(raw: bytes) -> bytes:
+        return hashlib.sha1(
+            b"blob " + str(len(raw)).encode("ascii") + b"\0" + raw,
+            usedforsecurity=False,
+        ).hexdigest().encode("ascii")
+
+    try:
+        committed_pin = git(root, "rev-parse", "--verify", "HEAD:agent-dev-kit").strip()
+        adk_head = git(adk, "rev-parse", "--verify", "HEAD").strip()
+        index_pin = git(root, "ls-files", "--stage", "-z", "--", "agent-dev-kit")
+        if (re.fullmatch(rb"[0-9a-f]{40}", committed_pin) is None
+                or adk_head != committed_pin
+                or index_pin != b"160000 " + committed_pin + b" 0\tagent-dev-kit\0"):
+            return False
+
+        root_inputs: dict[str, bytes] = {}
+        for name in ("adk.lock", "manifests/adk_interface.lock.json"):
+            committed_blob = git(root, "rev-parse", "--verify", "HEAD:" + name).strip()
+            stage = git(root, "ls-files", "--stage", "-z", "--", name)
+            if (re.fullmatch(rb"[0-9a-f]{40}", committed_blob) is None
+                    or stage != b"100644 " + committed_blob + b" 0\t" + name.encode() + b"\0"):
+                return False
+            raw = read_bytes(root / name, label="pinned Root ADK source lock", max_bytes=64 * 1024)
+            if blob_id(raw) != committed_blob:
+                return False
+            root_inputs[name] = raw
+
+        lock: dict[str, str] = {}
+        for line in root_inputs["adk.lock"].decode("utf-8", errors="strict").splitlines():
+            if "=" not in line:
+                return False
+            key, value = line.split("=", 1)
+            if not key or key in lock:
+                return False
+            lock[key] = value
+        interface = decode_json(root_inputs["manifests/adk_interface.lock.json"],
+                                "pinned Root ADK interface lock")
+        manifest = decode_json(git(adk, "show", "HEAD:manifest.json"),
+                               "committed ADK manifest")
+        if not isinstance(interface, dict) or not isinstance(manifest, dict):
+            return False
+        version = manifest.get("version")
+        adk_tree = git(adk, "rev-parse", "--verify", "HEAD^{tree}").strip()
+        manifest_blob = git(adk, "rev-parse", "--verify", "HEAD:manifest.json").strip()
+        if (lock.get("schema") != "llm-agent-adk-lock/v2"
+                or interface.get("schema") != "llm-agent-adk-interface-lock/v1"
+                or not isinstance(version, str) or not version
+                or re.fullmatch(rb"[0-9a-f]{40}", adk_tree) is None
+                or re.fullmatch(rb"[0-9a-f]{40}", manifest_blob) is None):
+            return False
+        identity = {
+            "version": version,
+            "commit": adk_head.decode("ascii"),
+            "tree": adk_tree.decode("ascii"),
+            "manifest_blob": manifest_blob.decode("ascii"),
+        }
+        for key, value in identity.items():
+            if lock.get("agent-dev-kit." + key) != value or interface.get(key) != value:
+                return False
+        return True
+    except (OSError, RuntimeError, ValueError, UnicodeError):
+        return False
+
+
 def _frozen_archive_matches_pinned_git(
     root: Path, location: Path, change: str,
 ) -> bool:
@@ -438,6 +519,8 @@ def _frozen_archive_matches_pinned_git(
     regular worktree blobs, including otherwise unreferenced files.
     """
     adk = root / "agent-dev-kit"
+    if not _frozen_archive_root_pin_matches_committed_head(root, adk):
+        return False
     relative = "docs/changes/archive/20261020-" + change
     expected = FROZEN_ARCHIVE_GIT_TREES.get(change)
     if (expected is None or location != adk / relative
