@@ -429,10 +429,19 @@ def _frozen_archive_validator_drift(
     patch, every evidence reference and archive provenance. Any other error
     remains a scanner failure rather than being downgraded to missing evidence.
     """
-    from agent_dev_kit.review_evidence import ReviewEvidenceError
+    # The optional ADK package is installed in runtime/qualification jobs,
+    # not in Root's standalone static type-check environment. Resolve its
+    # exact exception class only when the pinned bridge has raised one.
+    from importlib import import_module
 
+    try:
+        review_error_type = getattr(import_module("agent_dev_kit.review_evidence"),
+                                    "ReviewEvidenceError", None)
+    except ImportError:
+        return False
     expected = FROZEN_ARCHIVED_REVIEW_SHA256.get(change)
-    if (not isinstance(exc, ReviewEvidenceError)
+    if (not isinstance(review_error_type, type)
+            or not isinstance(exc, review_error_type)
             or str(exc) != "review validator source identity changed"
             or location.parent.name != "archive" or not expected
             or files.get("review-evidence.json", {}).get("sha256") != expected):
