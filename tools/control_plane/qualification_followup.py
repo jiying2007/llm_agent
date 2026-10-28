@@ -443,7 +443,10 @@ def _frozen_archive_matches_pinned_git(
     if (expected is None or location != adk / relative
             or re.fullmatch(r"[0-9a-f]{40}", expected) is None):
         return False
-    _reject_symlink_chain(location)
+    try:
+        _reject_symlink_chain(location)
+    except (OSError, RuntimeError):
+        return False
 
     def git(*args: str) -> bytes:
         completed = run_bounded(
@@ -499,8 +502,12 @@ def _frozen_archive_matches_pinned_git(
     total = 0
     for filename, (_mode, blob) in sorted(committed.items()):
         path = adk / filename
-        _reject_symlink_chain(path)
-        raw = read_bytes(path, label="frozen archive byte identity", max_bytes=128 * 1024)
+        try:
+            _reject_symlink_chain(path)
+            raw = read_bytes(path, label="frozen archive byte identity", max_bytes=128 * 1024)
+        except (OSError, RuntimeError):
+            # The caller turns this strict mismatch into scan_status=error.
+            return False
         total += len(raw)
         if total > 1024 * 1024:
             return False
