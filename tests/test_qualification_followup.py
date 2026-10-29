@@ -6,6 +6,7 @@ import hashlib
 import io
 import json
 import os
+import shutil
 import stat
 import subprocess
 import sys
@@ -68,8 +69,19 @@ class QualificationFollowupTest(unittest.TestCase):
 
     def collect_blocked(self, snapshots: list | None = None) -> dict:
         results = [completed(check, blocked(check)) for check in self.checks]
+        # This disposable unit fixture intentionally has no source tree.
+        # Isolate the five canonical checker semantics from #201 inventory.
+        history = {"id": "adk-201", "title": "Historical source",
+                   "scan_status": "complete", "status": "historical-reviewed",
+                   "qualification_ready": False, "required_in_current_scope": True,
+                   "command": None, "command_exit": None,
+                   "result": {"delegated_review_verified": False,
+                              "historical_review_verified": True,
+                              "semantic_review_performed": False},
+                   "remaining_evidence": [], "next_actions": []}
         with patch.object(followup, "_snapshot", side_effect=snapshots or [self.source, self.source]), \
-                patch.object(followup, "run_bounded", side_effect=results):
+                patch.object(followup, "run_bounded", side_effect=results), \
+                patch.object(followup, "_review_inventory", return_value=history):
             return followup.collect(self.root)
 
     def test_all_blocked_is_complete_read_only_scan(self) -> None:
@@ -339,7 +351,8 @@ class QualificationFollowupTest(unittest.TestCase):
         (change / "state.yaml").write_text("stage: reviewed\nowner_verdict: approved\n", encoding="utf-8")
         (change / "review-report.md").write_text(CANARY, encoding="utf-8")
         item = followup._review_inventory(self.root)
-        self.assertEqual(item["status"], "review-evidence-required")
+        self.assertEqual(item["status"], "error")
+        self.assertEqual(item["scan_status"], "error")
         self.assertFalse(item["qualification_ready"])
         self.assertFalse(item["result"]["delegated_review_verified"])
         self.assertFalse(item["result"]["semantic_review_performed"])
@@ -430,7 +443,11 @@ class QualificationFollowupTest(unittest.TestCase):
         return archive
 
     def test_valid_delegated_reviews_have_a_reachable_ready_path(self) -> None:
-        self.reviewed_changes()
+        # Disposable canonical archived fixture with current-validator bytes:
+        # this checks the successful-validator branch without any production
+        # historical PASS inheritance.
+        for change in self.reviewed_changes():
+            self.archive_fixture(change)
         item = followup._review_inventory(self.root)
         self.assertEqual(item["status"], "ready", item)
         self.assertTrue(item["qualification_ready"])
@@ -461,8 +478,9 @@ class QualificationFollowupTest(unittest.TestCase):
         self.assertFalse(result["qualification_ready"])
 
     def test_archived_review_resolves_once_without_rewriting_its_record(self) -> None:
-        first, *_ = self.reviewed_changes()
-        self.archive_fixture(first)
+        first, *other = self.reviewed_changes()
+        for change in (first, *other):
+            self.archive_fixture(change)
         item = followup._review_inventory(self.root)
         self.assertTrue(item["qualification_ready"], item)
         self.assertEqual(item["result"]["changes"][0]["stage"], "archived")
@@ -669,8 +687,10 @@ class QualificationFollowupTest(unittest.TestCase):
 
     def test_successful_delegated_review_does_not_bypass_frozen_archive(self) -> None:
         """A current-validator PASS must not authorize altered historical bytes."""
-        first, *_ = self.reviewed_changes()
-        archive = self.archive_fixture(first)
+        first, *other = self.reviewed_changes()
+        for change in (first, *other):
+            self.archive_fixture(change)
+        archive = first.parent / "archive" / ("20261020-" + first.name)
         unreferenced = archive / "unreferenced-original.md"
         unreferenced.write_text("Synthetic historical document outside review refs.\n", encoding="utf-8")
         tree = self.pin_synthetic_archive_tree(archive)
@@ -733,6 +753,82 @@ class QualificationFollowupTest(unittest.TestCase):
             self.root, archive, first.name
         ))
 
+    def test_active_change_cannot_replace_frozen_historical_archive(self) -> None:
+        changes = self.reviewed_changes()
+        archives = [self.archive_fixture(change) for change in changes]
+        full = followup._review_inventory(self.root)
+        self.assertEqual(full["scan_status"], "complete", full)
+        # An otherwise valid current-source review can never substitute for
+        # the original immutable archive selected by Root's committed Gitlink.
+        original_active = self.root / "agent-dev-kit/docs/changes" / changes[0].name
+        archives[0].rename(original_active)
+        swapped = followup._review_inventory(self.root)
+        self.assertEqual(swapped["scan_status"], "error")
+        self.assertFalse(swapped["qualification_ready"])
+        self.assertFalse(swapped["result"]["historical_review_verified"])
+        self.assertEqual(
+            swapped["result"]["changes"][0]["reason"],
+            "frozen-historical-archive-required",
+        )
+
+    def test_three_active_fake_historical_changes_never_qualify(self) -> None:
+        self.reviewed_changes()
+        item = followup._review_inventory(self.root)
+        self.assertEqual(item["scan_status"], "error")
+        self.assertFalse(item["qualification_ready"])
+        self.assertFalse(item["result"]["historical_review_verified"])
+        self.assertTrue(all(
+            row.get("reason") == "frozen-historical-archive-required"
+            for row in item["result"]["changes"]
+        ))
+
+    def test_original_three_of_three_cannot_hide_one_two_or_all_missing_archives(self) -> None:
+        """Real materialized archive deletions fail, even with 3/3 old Git success."""
+        from agent_dev_kit.review_evidence import ReviewEvidenceError
+
+        changes = self.reviewed_changes()
+        archived = [self.archive_fixture(change) for change in changes]
+        by_id = {change.name: path for change, path in zip(changes, archived)}
+        review = json.loads((archived[0] / "review-evidence.json").read_text(encoding="utf-8"))
+        original_output = {
+            "schema": followup.HISTORICAL_REVIEW_SCHEMA,
+            "source": {"tag": "v8.0.36",
+                       "commit": "42ae95d146ceb441ff91ea33dbbed581c33de305"},
+            "historical_review_verified": True,
+            "current_source_review_verified": False,
+            "release_authorized": False,
+            "records": {
+                cid: {"record_sha256": hashlib.sha256(
+                    (by_id[cid] / "review-evidence.json").read_bytes()).hexdigest(),
+                    "spec": "pass", "quality": "pass",
+                    "reviewed_at": review["reviewed_at"]}
+                for cid in followup.CHANGE_IDS
+            },
+        }
+        def old_fingerprint(*args, **kwargs):
+            raise ReviewEvidenceError("review validator source identity changed")
+
+        with patch.object(followup, "FROZEN_ARCHIVED_VALIDATOR_SHA256", review["validator_sha256"]), \
+                patch.object(followup, "verify_original_reviews", return_value=original_output), \
+                patch("tools.control_plane.adk_interface.validate_delegated_review",
+                      side_effect=old_fingerprint):
+            complete = followup._review_inventory(self.root)
+            self.assertEqual(complete["scan_status"], "complete", complete)
+            self.assertTrue(complete["result"]["historical_review_verified"])
+            self.assertFalse(complete["qualification_ready"])
+            self.assertFalse(complete["result"]["delegated_review_verified"])
+            for n, directory in enumerate(reversed(archived), 1):
+                shutil.rmtree(directory)
+                missing = followup._review_inventory(self.root)
+                self.assertEqual(missing["scan_status"], "error", missing)
+                self.assertFalse(missing["qualification_ready"])
+                self.assertFalse(missing["result"]["historical_review_verified"])
+                self.assertNotEqual(missing["status"], "historical-reviewed-current-source-unverified")
+                self.assertEqual(
+                    sum(row.get("reason") == "change-package-missing"
+                        for row in missing["result"]["changes"]), n
+                )
+
     def test_frozen_historical_validator_drift_never_renews_a_review(self) -> None:
         from agent_dev_kit.review_evidence import ReviewEvidenceError
         from tools.control_plane.adk_interface import validate_delegated_review
@@ -749,17 +845,41 @@ class QualificationFollowupTest(unittest.TestCase):
                 raise ReviewEvidenceError("review validator source identity changed")
             return validate_delegated_review(*args, **kwargs)
 
+        legacy_fixture = {
+            "schema": followup.HISTORICAL_REVIEW_SCHEMA,
+            "source": {"tag": "v8.0.36", "commit": "42ae95d146ceb441ff91ea33dbbed581c33de305"},
+            "records": {
+                name: {"record_sha256": digest if name == first.name
+                       else followup.FROZEN_ARCHIVED_REVIEW_SHA256[name],
+                       "spec": "pass", "quality": "pass", "reviewed_at": record["reviewed_at"]}
+                for name in followup.CHANGE_IDS
+            },
+            "historical_review_verified": True, "current_source_review_verified": False,
+            "release_authorized": False,
+        }
         with patch.dict(followup.FROZEN_ARCHIVED_REVIEW_SHA256, {first.name: digest}), \
                 patch.dict(followup.FROZEN_ARCHIVE_GIT_TREES, {first.name: pinned_tree}), \
                 patch.object(followup, "FROZEN_ARCHIVED_VALIDATOR_SHA256", record["validator_sha256"]), \
+                patch.object(followup, "verify_original_reviews", return_value=legacy_fixture) as original, \
                 patch("tools.control_plane.adk_interface.validate_delegated_review", side_effect=stale):
             item = followup._review_inventory(self.root)
-            self.assertEqual(item["scan_status"], "complete", item)
+            original.assert_called_once()
+            self.assertEqual(item["scan_status"], "error", item)
             self.assertFalse(item["qualification_ready"])
             self.assertFalse(item["result"]["delegated_review_verified"])
-            self.assertEqual(item["result"]["changes"][0]["reason"], "historical-review-validator-stale")
+            # Only one of three packages is archived in this synthetic
+            # mixed fixture; the original 3/3 Git result cannot make the
+            # current materialized inventory complete.
+            self.assertFalse(item["result"]["historical_review_verified"])
+            self.assertEqual(item["result"]["changes"][0]["reason"], "historical-reviewed")
+            self.assertTrue(item["result"]["changes"][0]["historical_review_verified"])
             self.assertFalse(item["result"]["changes"][0]["review_verified"])
+            self.assertFalse(item["result"]["changes"][0]["current_source_review_verified"])
             self.assertEqual(item["result"]["changes"][0]["historical_review_record_sha256"], digest)
+            with patch.object(followup, "verify_original_reviews", side_effect=ValueError("missing pinned original")):
+                failed = followup._review_inventory(self.root)
+                self.assertEqual(failed["scan_status"], "error")
+                self.assertFalse(failed["qualification_ready"])
 
             source = archive / "requirements.md"
             before = source.read_text(encoding="utf-8")
@@ -869,12 +989,15 @@ class QualificationFollowupTest(unittest.TestCase):
         self.assertFalse(result["qualification_ready"])
 
     def test_review_does_not_skip_the_canonical_lifecycle(self) -> None:
-        first, *_ = self.reviewed_changes()
-        (first / "state.yaml").write_text("stage: verified\n", encoding="utf-8")
+        first, *other = self.reviewed_changes()
+        for change in (first, *other):
+            self.archive_fixture(change)
+        state = first.parent / "archive" / ("20261020-" + first.name) / "state.yaml"
+        state.write_text("stage: verified\n", encoding="utf-8")
         item = followup._review_inventory(self.root)
-        self.assertEqual(item["scan_status"], "complete")
+        self.assertEqual(item["scan_status"], "error")
         self.assertFalse(item["qualification_ready"])
-        self.assertIn("canonical-review-lifecycle-incomplete", item["remaining_evidence"][0])
+        self.assertIn("invalid-or-unavailable-delegated-review", item["remaining_evidence"][0])
 
     def test_review_input_snapshot_includes_authorization_and_all_declared_inputs(self) -> None:
         first, *_ = self.reviewed_changes()
@@ -890,7 +1013,16 @@ class QualificationFollowupTest(unittest.TestCase):
             followup._review_input_paths(self.root, followup._review_paths(self.root))
 
     def test_scope_aware_readiness_does_not_turn_m5_diagnostics_into_certification(self) -> None:
-        self.reviewed_changes()
+        # Required qualification fixture needs all three canonical historical
+        # archives. Active stand-ins are intentionally forbidden for these IDs.
+        for change in self.reviewed_changes():
+            self.archive_fixture(change)
+        # Independently construct the test's validated historical fixture
+        # before mocking the five subprocess checkers. Otherwise the mock
+        # would consume Git's source-pin subprocess calls as checker outputs.
+        history = followup._review_inventory(self.root)
+        self.assertEqual(history["scan_status"], "complete")
+        self.assertTrue(history["qualification_ready"])
         results = []
         for check in self.checks:
             data = blocked(check)
@@ -906,7 +1038,8 @@ class QualificationFollowupTest(unittest.TestCase):
                 data["overall_status"] = "pass"
             results.append(completed(check, data, 0))
         with patch.object(followup, "_snapshot", return_value=self.source), \
-                patch.object(followup, "run_bounded", side_effect=results):
+                patch.object(followup, "run_bounded", side_effect=results), \
+                patch.object(followup, "_review_inventory", return_value=history):
             report = followup.collect(self.root)
         self.assertTrue(report["required_qualification_ready"], report)
         self.assertFalse(report["qualification_all_ready"])

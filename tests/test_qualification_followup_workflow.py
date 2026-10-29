@@ -44,6 +44,17 @@ class QualificationWorkflowBoundaryTests(unittest.TestCase):
         self.assertNotIn("--allow-network", collect["run"])
         self.assertNotIn("--approve", collect["run"])
 
+    def test_original_validator_fetch_is_read_only_and_tag_pinned(self) -> None:
+        install = next(step for step in self.steps if step["name"].startswith("Install the pinned"))
+        script = install["run"]
+        self.assertIn("git submodule update --init --depth=1 agent-dev-kit", script)
+        self.assertIn("git -C agent-dev-kit fetch --depth=1 origin tag v8.0.36", script)
+        self.assertIn("d4b6d5c6c852b54e1f8153a3c9caa8c55d8b3ab8", script)
+        self.assertIn("42ae95d146ceb441ff91ea33dbbed581c33de305", script)
+        self.assertNotIn("checkout v8.0.36", script)
+        self.assertNotIn("pip install", script.split("python -m pip install", 1)[0])
+        self.assertEqual(self.workflow["permissions"], {"contents": "read"})
+
     def test_only_explicit_report_uploaded_even_after_scan_failure(self) -> None:
         upload = next(step for step in self.steps if step.get("uses", "").startswith("actions/upload-artifact@"))
         self.assertIn("always()", upload["if"])

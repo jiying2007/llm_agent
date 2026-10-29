@@ -20,6 +20,7 @@ from typing import Any
 
 from tools.codex_assets.intake_io import _reject_symlink_chain, decode_json, read_bytes
 from tools.control_plane.process_budget import ProcessBudgetError, run_bounded
+from tools.control_plane.historical_review_verification import SCHEMA as HISTORICAL_REVIEW_SCHEMA, verify_original_reviews
 
 SCHEMA = "llm-agent-qualification-followup/v2"
 COMMAND_TIMEOUT = 45.0
@@ -90,7 +91,8 @@ KEY_INPUTS = (
     "agent-dev-kit/src/agent_dev_kit/review_evidence.py",
     "agent-dev-kit/src/agent_dev_kit/strict_json.py",
     "agent-dev-kit/src/agent_dev_kit/readiness_evidence.py",
-    "tools/control_plane/qualification_followup.py", "tools/control_plane/process_budget.py",
+    "tools/control_plane/qualification_followup.py", "tools/control_plane/historical_review_verification.py",
+    "tools/control_plane/process_budget.py",
     "tools/control_plane/effect_readiness.py", "tools/control_plane/longitudinal_operation.py",
     "tools/control_plane/adk_interface.py",
     "tools/control_plane/native_target_readiness.py", "tools/codex_assets/software_m5_diagnostics.py",
@@ -769,13 +771,18 @@ def _review_inventory(root: Path) -> dict[str, Any]:
         "result": {"schema": "llm-agent-delegated-review-inventory/v1", "changes": [],
                    "semantic_review_performed": False, "delegated_review_verified": False},
     }
+    legacy_report: dict[str, Any] | None = None
     for change in CHANGE_IDS:
         record: dict[str, Any] = {"change_id": change, "review_verified": False}
         files: dict[str, Any] = {}
         try:
             location = _change_location(root, change)
             if location is None:
+                # No original-tag reexecution can authenticate a missing
+                # current worktree archive. An incomplete fixed inventory is
+                # a source-integrity scan error, not an eligible qualification.
                 record.update(location=None, reason="change-package-missing", files={})
+                item.update(scan_status="error", status="error")
                 item["result"]["changes"].append(record)
                 item["remaining_evidence"].append(change + ":change-package-missing")
                 continue
@@ -784,6 +791,15 @@ def _review_inventory(root: Path) -> dict[str, Any]:
                 relative = (location / name).relative_to(root).as_posix()
                 files[name] = _file_identity(root, relative)
             record["files"] = files
+            if location.parent.name != "archive":
+                # These three immutable historic Change IDs cannot be
+                # replaced with active, uncommitted packages and a new
+                # syntactically valid current-validator receipt.
+                record["reason"] = "frozen-historical-archive-required"
+                item.update(scan_status="error", status="error")
+                item["result"]["changes"].append(record)
+                item["remaining_evidence"].append(change + ":frozen-historical-archive-required")
+                continue
             # Archive immutability is independent of the live review validator:
             # enforce original record SHA256 and the complete frozen Git tree
             # BEFORE both validator success and old-validator-drift branches.
@@ -806,11 +822,44 @@ def _review_inventory(root: Path) -> dict[str, Any]:
                 except ValueError as exc:
                     if not _frozen_archive_validator_drift(root, location, change, files, exc):
                         raise
-                    record.update(reason="historical-review-validator-stale",
-                                  stage="archived", historical_review_record_sha256=files["review-evidence.json"]["sha256"],
-                                  current_source_review_verified=False)
+                    # The new/current ADK must reject old validator fingerprints.
+                    # But stale alone is not historical verification: reexecute
+                    # the *original* git/tag-pinned v8.0.36 validator in isolation.
+                    if legacy_report is None:
+                        legacy_report = verify_original_reviews(root / "agent-dev-kit")
+                    if (legacy_report.get("schema") != HISTORICAL_REVIEW_SCHEMA
+                            or legacy_report.get("historical_review_verified") is not True
+                            or legacy_report.get("current_source_review_verified") is not False
+                            or legacy_report.get("release_authorized") is not False):
+                        raise ValueError("historical validator did not return bounded historical-only proof")
+                    source = legacy_report.get("source")
+                    if (not isinstance(source, dict)
+                            or source.get("commit") != "42ae95d146ceb441ff91ea33dbbed581c33de305"):
+                        raise ValueError("historical validation provenance is not pinned")
+                    history = legacy_report.get("records")
+                    if (not isinstance(history, dict) or set(history) != set(CHANGE_IDS)
+                            or any(not isinstance(history.get(k), dict)
+                                   or history[k].get("record_sha256") != FROZEN_ARCHIVED_REVIEW_SHA256[k]
+                                   or history[k].get("spec") != "pass"
+                                   or history[k].get("quality") != "pass" for k in CHANGE_IDS)):
+                        raise ValueError("original review execution did not validate all three archives")
+                    verified = history.get(change)
+                    if (not isinstance(verified, dict)
+                            or verified.get("record_sha256") != files["review-evidence.json"]["sha256"]
+                            or verified.get("spec") != "pass" or verified.get("quality") != "pass"):
+                        raise ValueError("historical review did not actually pass original validator")
+                    record.update(
+                        reason="historical-reviewed",
+                        status="historical-reviewed",
+                        stage="archived",
+                        historical_review_verified=True,
+                        historical_validator_source=source["commit"],
+                        historical_review_record_sha256=verified["record_sha256"],
+                        historical_reviewed_at=verified["reviewed_at"],
+                        current_source_review_verified=False,
+                    )
                     item["result"]["changes"].append(record)
-                    item["remaining_evidence"].append(change + ":historical-review-validator-stale")
+                    item["remaining_evidence"].append(change + ":current-source-review-not-verified")
                     continue
                 if review["record_sha256"] != files["review-evidence.json"]["sha256"]:
                     raise ValueError("review record changed during inventory")
@@ -836,6 +885,24 @@ def _review_inventory(root: Path) -> dict[str, Any]:
         item["result"]["changes"].append(record)
         if not record["review_verified"]:
             item["remaining_evidence"].append(change + ":" + record["reason"])
+    # The old tag's complete 3/3 result must not substitute for missing
+    # or active packages in the *current* checkout. Count all three fixed
+    # identities; filtering only archived rows yields vacuous partial PASS.
+    rows = item["result"]["changes"]
+    all_historical = (
+        len(rows) == len(CHANGE_IDS)
+        and {r.get("change_id") for r in rows} == set(CHANGE_IDS)
+        and all(r.get("stage") == "archived"
+                and r.get("historical_review_verified") is True
+                and r.get("review_verified") is False for r in rows)
+    )
+    item["result"]["historical_review_verified"] = bool(all_historical)
+    if legacy_report is not None:
+        item["result"]["original_historical_verification"] = legacy_report["source"]
+        if not all_historical:
+            item.update(scan_status="error", status="error")
+        elif item["scan_status"] == "complete":
+            item["status"] = "historical-reviewed-current-source-unverified"
     ready = item["scan_status"] == "complete" and all(
         record["review_verified"] for record in item["result"]["changes"])
     item["result"]["delegated_review_verified"] = ready
