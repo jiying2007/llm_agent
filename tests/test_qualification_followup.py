@@ -443,7 +443,11 @@ class QualificationFollowupTest(unittest.TestCase):
         return archive
 
     def test_valid_delegated_reviews_have_a_reachable_ready_path(self) -> None:
-        self.reviewed_changes()
+        # Disposable canonical archived fixture with current-validator bytes:
+        # this checks the successful-validator branch without any production
+        # historical PASS inheritance.
+        for change in self.reviewed_changes():
+            self.archive_fixture(change)
         item = followup._review_inventory(self.root)
         self.assertEqual(item["status"], "ready", item)
         self.assertTrue(item["qualification_ready"])
@@ -474,8 +478,9 @@ class QualificationFollowupTest(unittest.TestCase):
         self.assertFalse(result["qualification_ready"])
 
     def test_archived_review_resolves_once_without_rewriting_its_record(self) -> None:
-        first, *_ = self.reviewed_changes()
-        self.archive_fixture(first)
+        first, *other = self.reviewed_changes()
+        for change in (first, *other):
+            self.archive_fixture(change)
         item = followup._review_inventory(self.root)
         self.assertTrue(item["qualification_ready"], item)
         self.assertEqual(item["result"]["changes"][0]["stage"], "archived")
@@ -682,8 +687,10 @@ class QualificationFollowupTest(unittest.TestCase):
 
     def test_successful_delegated_review_does_not_bypass_frozen_archive(self) -> None:
         """A current-validator PASS must not authorize altered historical bytes."""
-        first, *_ = self.reviewed_changes()
-        archive = self.archive_fixture(first)
+        first, *other = self.reviewed_changes()
+        for change in (first, *other):
+            self.archive_fixture(change)
+        archive = first.parent / "archive" / ("20261020-" + first.name)
         unreferenced = archive / "unreferenced-original.md"
         unreferenced.write_text("Synthetic historical document outside review refs.\n", encoding="utf-8")
         tree = self.pin_synthetic_archive_tree(archive)
@@ -744,6 +751,35 @@ class QualificationFollowupTest(unittest.TestCase):
         unexpected.parent.rmdir()
         self.assertTrue(followup._frozen_archive_matches_pinned_git(
             self.root, archive, first.name
+        ))
+
+    def test_active_change_cannot_replace_frozen_historical_archive(self) -> None:
+        changes = self.reviewed_changes()
+        archives = [self.archive_fixture(change) for change in changes]
+        full = followup._review_inventory(self.root)
+        self.assertEqual(full["scan_status"], "complete", full)
+        # An otherwise valid current-source review can never substitute for
+        # the original immutable archive selected by Root's committed Gitlink.
+        original_active = self.root / "agent-dev-kit/docs/changes" / changes[0].name
+        archives[0].rename(original_active)
+        swapped = followup._review_inventory(self.root)
+        self.assertEqual(swapped["scan_status"], "error")
+        self.assertFalse(swapped["qualification_ready"])
+        self.assertFalse(swapped["result"]["historical_review_verified"])
+        self.assertEqual(
+            swapped["result"]["changes"][0]["reason"],
+            "frozen-historical-archive-required",
+        )
+
+    def test_three_active_fake_historical_changes_never_qualify(self) -> None:
+        self.reviewed_changes()
+        item = followup._review_inventory(self.root)
+        self.assertEqual(item["scan_status"], "error")
+        self.assertFalse(item["qualification_ready"])
+        self.assertFalse(item["result"]["historical_review_verified"])
+        self.assertTrue(all(
+            row.get("reason") == "frozen-historical-archive-required"
+            for row in item["result"]["changes"]
         ))
 
     def test_original_three_of_three_cannot_hide_one_two_or_all_missing_archives(self) -> None:
@@ -953,12 +989,15 @@ class QualificationFollowupTest(unittest.TestCase):
         self.assertFalse(result["qualification_ready"])
 
     def test_review_does_not_skip_the_canonical_lifecycle(self) -> None:
-        first, *_ = self.reviewed_changes()
-        (first / "state.yaml").write_text("stage: verified\n", encoding="utf-8")
+        first, *other = self.reviewed_changes()
+        for change in (first, *other):
+            self.archive_fixture(change)
+        state = first.parent / "archive" / ("20261020-" + first.name) / "state.yaml"
+        state.write_text("stage: verified\n", encoding="utf-8")
         item = followup._review_inventory(self.root)
-        self.assertEqual(item["scan_status"], "complete")
+        self.assertEqual(item["scan_status"], "error")
         self.assertFalse(item["qualification_ready"])
-        self.assertIn("canonical-review-lifecycle-incomplete", item["remaining_evidence"][0])
+        self.assertIn("invalid-or-unavailable-delegated-review", item["remaining_evidence"][0])
 
     def test_review_input_snapshot_includes_authorization_and_all_declared_inputs(self) -> None:
         first, *_ = self.reviewed_changes()

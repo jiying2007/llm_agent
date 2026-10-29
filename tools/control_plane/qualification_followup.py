@@ -791,6 +791,15 @@ def _review_inventory(root: Path) -> dict[str, Any]:
                 relative = (location / name).relative_to(root).as_posix()
                 files[name] = _file_identity(root, relative)
             record["files"] = files
+            if location.parent.name != "archive":
+                # These three immutable historic Change IDs cannot be
+                # replaced with active, uncommitted packages and a new
+                # syntactically valid current-validator receipt.
+                record["reason"] = "frozen-historical-archive-required"
+                item.update(scan_status="error", status="error")
+                item["result"]["changes"].append(record)
+                item["remaining_evidence"].append(change + ":frozen-historical-archive-required")
+                continue
             # Archive immutability is independent of the live review validator:
             # enforce original record SHA256 and the complete frozen Git tree
             # BEFORE both validator success and old-validator-drift branches.
