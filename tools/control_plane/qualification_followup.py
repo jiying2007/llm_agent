@@ -10,6 +10,7 @@ import hashlib
 import json
 import os
 import re
+import stat
 import sys
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
@@ -584,14 +585,79 @@ def _frozen_archive_matches_pinned_git(
     if not 1 <= len(committed) <= 64 or staged != committed:
         return False
 
+    # Git does not represent empty directories. Require the complete actual
+    # directory topology, rejecting empty extras and unsupported filesystem
+    # objects even if no tracked file's contents changed.
+    prefix_depth = len(relative.split("/"))
+    allowed_dirs = {relative}
+    for filename in committed:
+        parts = filename.split("/")
+        allowed_dirs.update("/".join(parts[:n]) for n in range(prefix_depth, len(parts)))
+    stack = [location]
+    visited_dirs: set[str] = set()
+    observed_files: set[str] = set()
+    entry_count = 0
+    while stack:
+        folder = stack.pop()
+        try:
+            _reject_symlink_chain(folder)
+            rel = folder.relative_to(adk).as_posix()
+            if rel not in allowed_dirs or rel in visited_dirs or not stat.S_ISDIR(folder.lstat().st_mode):
+                return False
+            visited_dirs.add(rel)
+            with os.scandir(folder) as contents:
+                for entry in contents:
+                    entry_count += 1
+                    if entry_count > 128 or entry.is_symlink():
+                        return False
+                    candidate = Path(entry.path)
+                    name = candidate.relative_to(adk).as_posix()
+                    if entry.is_dir(follow_symlinks=False):
+                        if name not in allowed_dirs:
+                            return False
+                        stack.append(candidate)
+                    elif entry.is_file(follow_symlinks=False):
+                        if name not in committed or name in observed_files:
+                            return False
+                        observed_files.add(name)
+                    else:
+                        return False
+        except (OSError, RuntimeError, ValueError):
+            return False
+    if visited_dirs != allowed_dirs or observed_files != set(committed):
+        return False
+
     total = 0
     for filename, (_mode, blob) in sorted(committed.items()):
         path = adk / filename
+        fd: int | None = None
         try:
             _reject_symlink_chain(path)
-            raw = read_bytes(path, label="frozen archive byte identity", max_bytes=128 * 1024)
+            before = path.lstat()
+            if (not stat.S_ISREG(before.st_mode) or before.st_mode & 0o111
+                    or not hasattr(os, "O_NOFOLLOW") or not hasattr(os, "O_NONBLOCK")):
+                return False
+            fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+            opened = os.fstat(fd)
+            if (not stat.S_ISREG(opened.st_mode) or opened.st_mode & 0o111
+                    or (before.st_dev, before.st_ino, before.st_mode) !=
+                       (opened.st_dev, opened.st_ino, opened.st_mode)
+                    or opened.st_size > 128 * 1024):
+                return False
+            with os.fdopen(fd, "rb", closefd=False) as reader:
+                raw = reader.read(128 * 1024 + 1)
+            after_fd = os.fstat(fd)
+            after_path = path.lstat()
+            def identity(st: os.stat_result) -> tuple[int, int, int, int, int]:
+                return st.st_dev, st.st_ino, st.st_mode, st.st_size, st.st_mtime_ns
+            if identity(after_fd) != identity(opened) or identity(after_path) != identity(opened):
+                return False
         except (OSError, RuntimeError):
-            # The caller turns this strict mismatch into scan_status=error.
+            return False
+        finally:
+            if fd is not None:
+                os.close(fd)
+        if len(raw) > 128 * 1024:
             return False
         total += len(raw)
         if total > 1024 * 1024:
@@ -718,6 +784,14 @@ def _review_inventory(root: Path) -> dict[str, Any]:
                 relative = (location / name).relative_to(root).as_posix()
                 files[name] = _file_identity(root, relative)
             record["files"] = files
+            # Archive immutability is independent of the live review validator:
+            # enforce original record SHA256 and the complete frozen Git tree
+            # BEFORE both validator success and old-validator-drift branches.
+            if location.parent.name == "archive":
+                if (files["review-evidence.json"].get("sha256") !=
+                        FROZEN_ARCHIVED_REVIEW_SHA256.get(change)
+                        or not _frozen_archive_matches_pinned_git(root, location, change)):
+                    raise ValueError("frozen archived review or source identity changed")
             if not files["review-evidence.json"]["present"]:
                 record["reason"] = "delegated-review-evidence-missing"
             else:

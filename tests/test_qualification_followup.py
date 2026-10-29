@@ -8,6 +8,7 @@ import json
 import os
 import subprocess
 import sys
+import stat
 import tempfile
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
@@ -416,6 +417,16 @@ class QualificationFollowupTest(unittest.TestCase):
         }
         (archive / "provenance.md").write_text("# Archive provenance\n\n" + "".join(
             f"- {key}: {value}\n" for key, value in fields.items()), encoding="utf-8")
+        tree = self.pin_synthetic_archive_tree(archive)
+        # Disposable historical fixture: never replace real frozen production
+        # hashes; scope synthetic pins to this unittest only.
+        for mapping, digest in (
+            (followup.FROZEN_ARCHIVE_GIT_TREES, tree),
+            (followup.FROZEN_ARCHIVED_REVIEW_SHA256, hashlib.sha256(record_path.read_bytes()).hexdigest()),
+        ):
+            patcher = patch.dict(mapping, {first.name: digest})
+            patcher.start()
+            self.addCleanup(patcher.stop)
         return archive
 
     def test_valid_delegated_reviews_have_a_reachable_ready_path(self) -> None:
@@ -518,7 +529,7 @@ class QualificationFollowupTest(unittest.TestCase):
         """An ADK commit B with the same archive tree is still not Root HEAD A."""
         first, *_ = self.reviewed_changes()
         archived = self.archive_fixture(first)
-        frozen_tree = self.pin_synthetic_archive_tree(archived)
+        frozen_tree = followup.FROZEN_ARCHIVE_GIT_TREES[first.name]
         adk = self.root / "agent-dev-kit"
 
         def git(directory: Path, *args: str) -> str:
@@ -556,7 +567,7 @@ class QualificationFollowupTest(unittest.TestCase):
     def test_dirty_root_adk_lock_cannot_claim_original_git_pin(self) -> None:
         first, *_ = self.reviewed_changes()
         archived = self.archive_fixture(first)
-        tree = self.pin_synthetic_archive_tree(archived)
+        tree = followup.FROZEN_ARCHIVE_GIT_TREES[first.name]
         with patch.dict(followup.FROZEN_ARCHIVE_GIT_TREES, {first.name: tree}):
             self.assertTrue(followup._frozen_archive_matches_pinned_git(
                 self.root, archived, first.name
@@ -656,13 +667,79 @@ class QualificationFollowupTest(unittest.TestCase):
             extra.write_bytes(previous)
             self.assertFalse(matches())
 
+    def test_successful_delegated_review_does_not_bypass_frozen_archive(self) -> None:
+        """A current-validator PASS must not authorize altered historical bytes."""
+        first, *_ = self.reviewed_changes()
+        archive = self.archive_fixture(first)
+        unreferenced = archive / "unreferenced-original.md"
+        unreferenced.write_text("Synthetic historical document outside review refs.\n", encoding="utf-8")
+        tree = self.pin_synthetic_archive_tree(archive)
+        with patch.dict(followup.FROZEN_ARCHIVE_GIT_TREES, {first.name: tree}):
+            baseline = followup._review_inventory(self.root)
+            self.assertEqual(baseline["scan_status"], "complete", baseline)
+            self.assertTrue(baseline["result"]["changes"][0]["review_verified"])
+            self.assertTrue(baseline["result"]["delegated_review_verified"])
+
+            original = unreferenced.read_bytes()
+            unreferenced.write_bytes(b"modified original outside review evidence\n")
+            changed = followup._review_inventory(self.root)
+            self.assertEqual(changed["scan_status"], "error")
+            self.assertFalse(changed["result"]["changes"][0]["review_verified"])
+            unreferenced.write_bytes(original)
+
+            # Replacing a policy-valid review receipt and updating its
+            # provenance is not a renewal of the original frozen archive.
+            record_path = archive / "review-evidence.json"
+            record = json.loads(record_path.read_text(encoding="utf-8"))
+            record["limitations"].append("Synthetic new historical review record.")
+            write_json(record_path, record)
+            prov = archive / "provenance.md"
+            prov.write_text(prov.read_text(encoding="utf-8").replace(
+                "review_record_sha256: " + followup.FROZEN_ARCHIVED_REVIEW_SHA256[first.name],
+                "review_record_sha256: " + hashlib.sha256(record_path.read_bytes()).hexdigest(),
+            ), encoding="utf-8")
+            replaced = followup._review_inventory(self.root)
+            self.assertEqual(replaced["scan_status"], "error")
+            self.assertFalse(replaced["result"]["changes"][0]["review_verified"])
+
+    def test_archive_chmod_only_and_untracked_empty_directory_are_rejected(self) -> None:
+        first, *_ = self.reviewed_changes()
+        archive = self.archive_fixture(first)
+        self.assertTrue(followup._frozen_archive_matches_pinned_git(
+            self.root, archive, first.name
+        ))
+        file = archive / "provenance.md"
+        original_mode = stat.S_IMODE(file.lstat().st_mode)
+        try:
+            file.chmod(original_mode | stat.S_IXUSR)
+            self.assertFalse(followup._frozen_archive_matches_pinned_git(
+                self.root, archive, first.name
+            ))
+            self.assertEqual(followup._review_inventory(self.root)["scan_status"], "error")
+        finally:
+            file.chmod(original_mode)
+        self.assertTrue(followup._frozen_archive_matches_pinned_git(
+            self.root, archive, first.name
+        ))
+        unexpected = archive / "untracked-empty" / "nested"
+        unexpected.mkdir(parents=True)
+        self.assertFalse(followup._frozen_archive_matches_pinned_git(
+            self.root, archive, first.name
+        ))
+        self.assertEqual(followup._review_inventory(self.root)["scan_status"], "error")
+        unexpected.rmdir()
+        unexpected.parent.rmdir()
+        self.assertTrue(followup._frozen_archive_matches_pinned_git(
+            self.root, archive, first.name
+        ))
+
     def test_frozen_historical_validator_drift_never_renews_a_review(self) -> None:
         from agent_dev_kit.review_evidence import ReviewEvidenceError
         from tools.control_plane.adk_interface import validate_delegated_review
 
         first, *_ = self.reviewed_changes()
         archive = self.archive_fixture(first)
-        pinned_tree = self.pin_synthetic_archive_tree(archive)
+        pinned_tree = followup.FROZEN_ARCHIVE_GIT_TREES[first.name]
         record_path = archive / "review-evidence.json"
         record = json.loads(record_path.read_text(encoding="utf-8"))
         digest = hashlib.sha256(record_path.read_bytes()).hexdigest()
