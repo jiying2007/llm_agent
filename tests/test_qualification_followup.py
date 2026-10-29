@@ -6,6 +6,7 @@ import hashlib
 import io
 import json
 import os
+import shutil
 import stat
 import subprocess
 import sys
@@ -744,6 +745,53 @@ class QualificationFollowupTest(unittest.TestCase):
         self.assertTrue(followup._frozen_archive_matches_pinned_git(
             self.root, archive, first.name
         ))
+
+    def test_original_three_of_three_cannot_hide_one_two_or_all_missing_archives(self) -> None:
+        """Real materialized archive deletions fail, even with 3/3 old Git success."""
+        from agent_dev_kit.review_evidence import ReviewEvidenceError
+
+        changes = self.reviewed_changes()
+        archived = [self.archive_fixture(change) for change in changes]
+        by_id = {change.name: path for change, path in zip(changes, archived)}
+        review = json.loads((archived[0] / "review-evidence.json").read_text(encoding="utf-8"))
+        original_output = {
+            "schema": followup.HISTORICAL_REVIEW_SCHEMA,
+            "source": {"tag": "v8.0.36",
+                       "commit": "42ae95d146ceb441ff91ea33dbbed581c33de305"},
+            "historical_review_verified": True,
+            "current_source_review_verified": False,
+            "release_authorized": False,
+            "records": {
+                cid: {"record_sha256": hashlib.sha256(
+                    (by_id[cid] / "review-evidence.json").read_bytes()).hexdigest(),
+                    "spec": "pass", "quality": "pass",
+                    "reviewed_at": review["reviewed_at"]}
+                for cid in followup.CHANGE_IDS
+            },
+        }
+        def old_fingerprint(*args, **kwargs):
+            raise ReviewEvidenceError("review validator source identity changed")
+
+        with patch.object(followup, "FROZEN_ARCHIVED_VALIDATOR_SHA256", review["validator_sha256"]), \
+                patch.object(followup, "verify_original_reviews", return_value=original_output), \
+                patch("tools.control_plane.adk_interface.validate_delegated_review",
+                      side_effect=old_fingerprint):
+            complete = followup._review_inventory(self.root)
+            self.assertEqual(complete["scan_status"], "complete", complete)
+            self.assertTrue(complete["result"]["historical_review_verified"])
+            self.assertFalse(complete["qualification_ready"])
+            self.assertFalse(complete["result"]["delegated_review_verified"])
+            for n, directory in enumerate(reversed(archived), 1):
+                shutil.rmtree(directory)
+                missing = followup._review_inventory(self.root)
+                self.assertEqual(missing["scan_status"], "error", missing)
+                self.assertFalse(missing["qualification_ready"])
+                self.assertFalse(missing["result"]["historical_review_verified"])
+                self.assertNotEqual(missing["status"], "historical-reviewed-current-source-unverified")
+                self.assertEqual(
+                    sum(row.get("reason") == "change-package-missing"
+                        for row in missing["result"]["changes"]), n
+                )
 
     def test_frozen_historical_validator_drift_never_renews_a_review(self) -> None:
         from agent_dev_kit.review_evidence import ReviewEvidenceError
