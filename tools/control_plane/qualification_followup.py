@@ -10,6 +10,7 @@ import hashlib
 import json
 import os
 import re
+import stat
 import sys
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
@@ -57,6 +58,15 @@ FROZEN_ARCHIVED_VALIDATOR_SHA256 = {
     "src/agent_dev_kit/review_evidence.py": "73d85e864a3da125bf94808f19616f52150751a94ccc729ac66f66d2576b8808",
     "src/agent_dev_kit/strict_json.py": "e11233b8d02d7fb95a8f2f93bfff065a1db84c4ef0820fef6d817600abe8ec98",
     "src/agent_dev_kit/readiness_evidence.py": "ef980657486084eea8ab8a03ab357a76a3ed43691aca8d6909b06642764c808b",
+}
+
+
+# Frozen complete 2026-10-20 ADK #201 archive Git trees, checked against both
+# ADK 42ae95d... and the currently pinned v8.1.2 commit. Not SHA256 receipts.
+FROZEN_ARCHIVE_GIT_TREES = {
+    "20261016-skill-catalog-competition": "7d9562a45b1475e3a4a53548bb8d212b804c33f6",
+    "20261016-effort-evidence-v1": "78ff0f10fc81a05ecb3ea1650a8f94f592080ef8",
+    "20261016-skill-description-discovery": "045c467852b07ec0d1b2c8a9cb691da034baa352",
 }
 
 REVIEW_FILES = ("state.yaml", "checklist.md", "verify-report.md", "requirements.md",
@@ -419,6 +429,248 @@ def _archive_provenance(location: Path, change: str, review: dict[str, Any]) -> 
 
 
 
+def _frozen_archive_root_pin_matches_committed_head(root: Path, adk: Path) -> bool:
+    """Never substitute staged Root gitlink/locks for the committed authority.
+
+    This supplements the delegated review bridge, which deliberately compares
+    the ADK HEAD against the mutable Root index. Historical stale classification
+    additionally requires committed Root HEAD, index, regular worktree lock
+    files, ADK HEAD/tree/manifest and interface lock all to agree.
+    """
+    def git(directory: Path, *args: str) -> bytes:
+        completed = run_bounded(
+            ("git", "-C", str(directory), *args), cwd=root,
+            # The pinned ADK 8.1.2 manifest is >64 KiB; cap actual bytes
+            # without truncation or assuming a small historical manifest.
+            timeout=8, max_stdout=256 * 1024, max_stderr=1024,
+        )
+        if completed.returncode != 0:
+            raise RuntimeError("committed ADK source pin cannot be verified")
+        return completed.stdout
+
+    def blob_id(raw: bytes) -> bytes:
+        return hashlib.sha1(
+            b"blob " + str(len(raw)).encode("ascii") + b"\0" + raw,
+            usedforsecurity=False,
+        ).hexdigest().encode("ascii")
+
+    try:
+        committed_pin = git(root, "rev-parse", "--verify", "HEAD:agent-dev-kit").strip()
+        adk_head = git(adk, "rev-parse", "--verify", "HEAD").strip()
+        index_pin = git(root, "ls-files", "--stage", "-z", "--", "agent-dev-kit")
+        if (re.fullmatch(rb"[0-9a-f]{40}", committed_pin) is None
+                or adk_head != committed_pin
+                or index_pin != b"160000 " + committed_pin + b" 0\tagent-dev-kit\0"):
+            return False
+
+        root_inputs: dict[str, bytes] = {}
+        for name in ("adk.lock", "manifests/adk_interface.lock.json"):
+            committed_blob = git(root, "rev-parse", "--verify", "HEAD:" + name).strip()
+            stage = git(root, "ls-files", "--stage", "-z", "--", name)
+            if (re.fullmatch(rb"[0-9a-f]{40}", committed_blob) is None
+                    or stage != b"100644 " + committed_blob + b" 0\t" + name.encode() + b"\0"):
+                return False
+            raw = read_bytes(root / name, label="pinned Root ADK source lock", max_bytes=64 * 1024)
+            if blob_id(raw) != committed_blob:
+                return False
+            root_inputs[name] = raw
+
+        lock: dict[str, str] = {}
+        for line in root_inputs["adk.lock"].decode("utf-8", errors="strict").splitlines():
+            if "=" not in line:
+                return False
+            key, value = line.split("=", 1)
+            if not key or key in lock:
+                return False
+            lock[key] = value
+        interface = decode_json(root_inputs["manifests/adk_interface.lock.json"],
+                                "pinned Root ADK interface lock")
+        manifest = decode_json(git(adk, "show", "HEAD:manifest.json"),
+                               "committed ADK manifest")
+        if not isinstance(interface, dict) or not isinstance(manifest, dict):
+            return False
+        version = manifest.get("version")
+        adk_tree = git(adk, "rev-parse", "--verify", "HEAD^{tree}").strip()
+        manifest_blob = git(adk, "rev-parse", "--verify", "HEAD:manifest.json").strip()
+        if (lock.get("schema") != "llm-agent-adk-lock/v2"
+                or interface.get("schema") != "llm-agent-adk-interface-lock/v1"
+                or not isinstance(version, str) or not version
+                or re.fullmatch(rb"[0-9a-f]{40}", adk_tree) is None
+                or re.fullmatch(rb"[0-9a-f]{40}", manifest_blob) is None):
+            return False
+        identity = {
+            "version": version,
+            "commit": adk_head.decode("ascii"),
+            "tree": adk_tree.decode("ascii"),
+            "manifest_blob": manifest_blob.decode("ascii"),
+        }
+        for key, value in identity.items():
+            if lock.get("agent-dev-kit." + key) != value or interface.get(key) != value:
+                return False
+        return True
+    except (OSError, RuntimeError, ValueError, UnicodeError):
+        return False
+
+
+def _frozen_archive_matches_pinned_git(
+    root: Path, location: Path, change: str,
+) -> bool:
+    """Fail closed on changes to ANY frozen archive byte or Git identity.
+
+    A review record does not cover provenance, state, review-report or every
+    historical document. Check original subtree identity, Git index and all
+    regular worktree blobs, including otherwise unreferenced files.
+    """
+    adk = root / "agent-dev-kit"
+    if not _frozen_archive_root_pin_matches_committed_head(root, adk):
+        return False
+    relative = "docs/changes/archive/20261020-" + change
+    expected = FROZEN_ARCHIVE_GIT_TREES.get(change)
+    if (expected is None or location != adk / relative
+            or re.fullmatch(r"[0-9a-f]{40}", expected) is None):
+        return False
+    try:
+        _reject_symlink_chain(location)
+    except (OSError, RuntimeError):
+        return False
+
+    def git(*args: str) -> bytes:
+        completed = run_bounded(
+            ("git", "-C", str(adk), *args), cwd=root,
+            timeout=8, max_stdout=32 * 1024, max_stderr=1024,
+        )
+        if completed.returncode != 0:
+            raise RuntimeError("frozen archive Git identity cannot be verified")
+        return completed.stdout
+
+    if git("rev-parse", "--verify", "HEAD:" + relative).strip() != expected.encode("ascii"):
+        return False
+    tree_entries = git("ls-tree", "-r", "-z", "--full-tree", "HEAD", "--", relative)
+    index_entries = git("ls-files", "--stage", "-z", "--", relative)
+    # Include even ignored extras: a frozen archive has an exact file set.
+    if git("ls-files", "--others", "-z", "--", relative):
+        return False
+
+    committed: dict[str, tuple[bytes, bytes]] = {}
+    staged: dict[str, tuple[bytes, bytes]] = {}
+    for entry in tree_entries.split(b"\0"):
+        if not entry:
+            continue
+        try:
+            meta, name = entry.split(b"\t", 1)
+            mode, kind, blob = meta.split(b" ")
+            filename = name.decode("utf-8", errors="strict")
+        except (ValueError, UnicodeError):
+            return False
+        if (mode != b"100644" or kind != b"blob"
+                or re.fullmatch(rb"[0-9a-f]{40}", blob) is None
+                or not filename.startswith(relative + "/")
+                or ".." in filename.split("/") or filename in committed):
+            return False
+        committed[filename] = (mode, blob)
+
+    for entry in index_entries.split(b"\0"):
+        if not entry:
+            continue
+        try:
+            meta, name = entry.split(b"\t", 1)
+            mode, blob, stage = meta.split(b" ")
+            filename = name.decode("utf-8", errors="strict")
+        except (ValueError, UnicodeError):
+            return False
+        if (stage != b"0" or filename in staged
+                or re.fullmatch(rb"[0-9a-f]{40}", blob) is None):
+            return False
+        staged[filename] = (mode, blob)
+    if not 1 <= len(committed) <= 64 or staged != committed:
+        return False
+
+    # Git does not represent empty directories. Require the complete actual
+    # directory topology, rejecting empty extras and unsupported filesystem
+    # objects even if no tracked file's contents changed.
+    prefix_depth = len(relative.split("/"))
+    allowed_dirs = {relative}
+    for filename in committed:
+        parts = filename.split("/")
+        allowed_dirs.update("/".join(parts[:n]) for n in range(prefix_depth, len(parts)))
+    stack = [location]
+    visited_dirs: set[str] = set()
+    observed_files: set[str] = set()
+    entry_count = 0
+    while stack:
+        folder = stack.pop()
+        try:
+            _reject_symlink_chain(folder)
+            rel = folder.relative_to(adk).as_posix()
+            if rel not in allowed_dirs or rel in visited_dirs or not stat.S_ISDIR(folder.lstat().st_mode):
+                return False
+            visited_dirs.add(rel)
+            with os.scandir(folder) as contents:
+                for dir_entry in contents:
+                    entry_count += 1
+                    if entry_count > 128 or dir_entry.is_symlink():
+                        return False
+                    candidate = Path(dir_entry.path)
+                    relative_child = candidate.relative_to(adk).as_posix()
+                    if dir_entry.is_dir(follow_symlinks=False):
+                        if relative_child not in allowed_dirs:
+                            return False
+                        stack.append(candidate)
+                    elif dir_entry.is_file(follow_symlinks=False):
+                        if relative_child not in committed or relative_child in observed_files:
+                            return False
+                        observed_files.add(relative_child)
+                    else:
+                        return False
+        except (OSError, RuntimeError, ValueError):
+            return False
+    if visited_dirs != allowed_dirs or observed_files != set(committed):
+        return False
+
+    total = 0
+    for filename, (_mode, blob) in sorted(committed.items()):
+        path = adk / filename
+        fd: int | None = None
+        try:
+            _reject_symlink_chain(path)
+            before = path.lstat()
+            if (not stat.S_ISREG(before.st_mode) or before.st_mode & 0o111
+                    or not hasattr(os, "O_NOFOLLOW") or not hasattr(os, "O_NONBLOCK")):
+                return False
+            fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+            opened = os.fstat(fd)
+            if (not stat.S_ISREG(opened.st_mode) or opened.st_mode & 0o111
+                    or (before.st_dev, before.st_ino, before.st_mode) !=
+                       (opened.st_dev, opened.st_ino, opened.st_mode)
+                    or opened.st_size > 128 * 1024):
+                return False
+            with os.fdopen(fd, "rb", closefd=False) as reader:
+                raw = reader.read(128 * 1024 + 1)
+            after_fd = os.fstat(fd)
+            after_path = path.lstat()
+            def identity(st: os.stat_result) -> tuple[int, int, int, int, int]:
+                return st.st_dev, st.st_ino, st.st_mode, st.st_size, st.st_mtime_ns
+            if identity(after_fd) != identity(opened) or identity(after_path) != identity(opened):
+                return False
+        except (OSError, RuntimeError):
+            return False
+        finally:
+            if fd is not None:
+                os.close(fd)
+        if len(raw) > 128 * 1024:
+            return False
+        total += len(raw)
+        if total > 1024 * 1024:
+            return False
+        object_id = hashlib.sha1(
+            b"blob " + str(len(raw)).encode("ascii") + b"\0" + raw,
+            usedforsecurity=False,
+        ).hexdigest().encode("ascii")
+        if object_id != blob:
+            return False
+    return True
+
+
 def _frozen_archive_validator_drift(
     root: Path, location: Path, change: str, files: Mapping[str, Any], exc: ValueError,
 ) -> bool:
@@ -492,6 +744,8 @@ def _frozen_archive_validator_drift(
                 original_patch_bound = digest == CHANGE_PATCHES[change]
     if not original_patch_bound:
         return False
+    if not _frozen_archive_matches_pinned_git(root, location, change):
+        return False
     stages = re.findall(
         r"^stage:\s*([a-z-]+)\s*$",
         read_bytes(location / "state.yaml", label="historical review state", max_bytes=16384)
@@ -530,6 +784,14 @@ def _review_inventory(root: Path) -> dict[str, Any]:
                 relative = (location / name).relative_to(root).as_posix()
                 files[name] = _file_identity(root, relative)
             record["files"] = files
+            # Archive immutability is independent of the live review validator:
+            # enforce original record SHA256 and the complete frozen Git tree
+            # BEFORE both validator success and old-validator-drift branches.
+            if location.parent.name == "archive":
+                if (files["review-evidence.json"].get("sha256") !=
+                        FROZEN_ARCHIVED_REVIEW_SHA256.get(change)
+                        or not _frozen_archive_matches_pinned_git(root, location, change)):
+                    raise ValueError("frozen archived review or source identity changed")
             if not files["review-evidence.json"]["present"]:
                 record["reason"] = "delegated-review-evidence-missing"
             else:
