@@ -10,6 +10,9 @@ rtk python3 -m tools.control_plane.cli qualification-followup --root . --summary
 
 - `scan_status=complete` / 退出 0：六项客观复核均正常结束，允许它们仍然 blocked。
 - `scan_status=error` / 退出 1：执行、预算、JSON/schema 或来源一致性有错误；同时保留其他检查结果。
+- 对固定三份 ADK #201 历史归档，现行校验器仍必须真实拒绝旧 `validator_sha256`；仅在 Root 已提交 Gitlink、全部原始归档 Git 字节与旧回执完全匹配后，从被 Git Tag 对象 SHA `d4b6d5c6…`、原提交 `42ae95d…` 与源 Tree `4a034da…` 三重绑定的 **v8.0.36 原版源码**提取原始 validator、原政策/授权及完整源和审核资料，在 Python `-I` 隔离子进程执行三项历史 `validate_review`。该过程不会安装旧版 ADK 覆盖当前包，也不访问网络；workflow 在执行前只读 fetch 该固定 Git Tag。
+- 原版执行确实三项 PASS 且来源、旧校验器、Git 归档与回执摘要均绑定时，记录 `historical-reviewed`、`historical_review_verified=true`，而 `review_verified=false`、`current_source_review_verified=false`、`qualification_ready=false` 与 `release_authorized=false` 保持未就绪。没有旧版 Tag/Git Object、原始文件漂移、旧 validator 报错、未来时间、拒绝源、记录缺失或执行超时，均为 `scan_status=error`；不能偷偷降级为“历史已验证”或制造当前独立审查。
+- 原始 Git Tag/Commit/文件哈希的固定身份来自 [不可变 v8.0.36 Release](https://github.com/jiying2007/agent-dev-kit/releases/tag/v8.0.36) 及原生主线 CI/Promotion Evidence。此复验是有界历史来源验证，**不声称本检查新签发了 Cosign 证明、认证了真人审核身份或当前源码/现场/产品资格**。
 - 历史归档的固定来源还必须是 **Root 已提交 HEAD 的 `agent-dev-kit` Gitlink**，不能由可变 Root Index 伪装。逐字节核对受保护 Root HEAD 的 `adk.lock` / `adk_interface.lock.json` 与 index、工作区普通文件、ADK HEAD/tree/manifest 版本身份，拒绝 staging-only 的 gitlink B 与受保护 HEAD A 不一致（即使 B 的 archive Git Tree 与 A 一样）。
 - 不论新 validator 返回 PASS 还是旧指纹失配，三份历史 archive 必须先验证原始 review record SHA-256、Git 树/索引/工作区全量普通文件与固定 Root 版本锁；任何替换回执、未被回执引用的文件变更或可执行权限位漂移均不得作为新的有效历史审核。使用文件描述符的 `fstat` 核验工作区文件模式和读取身份，并拒绝额外的空目录、嵌套目录和特殊文件。跨文件读取及父目录并发重命名仍不是原子事务，不能当成完全 TOCTOU 防护。
 - 对三份历史 archive，现需先验证原始 ADK Git Tree 与当前固定 ADK HEAD 同一 Tree SHA，并核实所有原始普通文件的 HEAD/index/工作区 blob、文件模式与目录清单；包括未被 review record 引用的 `provenance.md`、`state.yaml`、`review-report.md`、`requirements.md` 等。扫描前的变造、暂存修改、符号链接、未跟踪文件均不得被归为合法 stale，而须 `scan_status=error`。Git Tree SHA-1 是 Git 对象身份，不是回执 SHA-256，不能继承旧审批或产品认证。
