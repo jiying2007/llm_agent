@@ -1017,6 +1017,12 @@ class QualificationFollowupTest(unittest.TestCase):
         # archives. Active stand-ins are intentionally forbidden for these IDs.
         for change in self.reviewed_changes():
             self.archive_fixture(change)
+        # Independently construct the test's validated historical fixture
+        # before mocking the five subprocess checkers. Otherwise the mock
+        # would consume Git's source-pin subprocess calls as checker outputs.
+        history = followup._review_inventory(self.root)
+        self.assertEqual(history["scan_status"], "complete")
+        self.assertTrue(history["qualification_ready"])
         results = []
         for check in self.checks:
             data = blocked(check)
@@ -1032,7 +1038,8 @@ class QualificationFollowupTest(unittest.TestCase):
                 data["overall_status"] = "pass"
             results.append(completed(check, data, 0))
         with patch.object(followup, "_snapshot", return_value=self.source), \
-                patch.object(followup, "run_bounded", side_effect=results):
+                patch.object(followup, "run_bounded", side_effect=results), \
+                patch.object(followup, "_review_inventory", return_value=history):
             report = followup.collect(self.root)
         self.assertTrue(report["required_qualification_ready"], report)
         self.assertFalse(report["qualification_all_ready"])
