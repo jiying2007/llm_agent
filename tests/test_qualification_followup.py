@@ -1013,7 +1013,10 @@ class QualificationFollowupTest(unittest.TestCase):
             followup._review_input_paths(self.root, followup._review_paths(self.root))
 
     def test_scope_aware_readiness_does_not_turn_m5_diagnostics_into_certification(self) -> None:
-        self.reviewed_changes()
+        # Required qualification fixture needs all three canonical historical
+        # archives. Active stand-ins are intentionally forbidden for these IDs.
+        for change in self.reviewed_changes():
+            self.archive_fixture(change)
         results = []
         for check in self.checks:
             data = blocked(check)
