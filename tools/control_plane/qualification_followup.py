@@ -824,7 +824,13 @@ def _review_inventory(root: Path) -> dict[str, Any]:
                             or source.get("commit") != "42ae95d146ceb441ff91ea33dbbed581c33de305"):
                         raise ValueError("historical validation provenance is not pinned")
                     history = legacy_report.get("records")
-                    verified = history.get(change) if isinstance(history, dict) else None
+                    if (not isinstance(history, dict) or set(history) != set(CHANGE_IDS)
+                            or any(not isinstance(history.get(k), dict)
+                                   or history[k].get("record_sha256") != FROZEN_ARCHIVED_REVIEW_SHA256[k]
+                                   or history[k].get("spec") != "pass"
+                                   or history[k].get("quality") != "pass" for k in CHANGE_IDS)):
+                        raise ValueError("original review execution did not validate all three archives")
+                    verified = history.get(change)
                     if (not isinstance(verified, dict)
                             or verified.get("record_sha256") != files["review-evidence.json"]["sha256"]
                             or verified.get("spec") != "pass" or verified.get("quality") != "pass"):

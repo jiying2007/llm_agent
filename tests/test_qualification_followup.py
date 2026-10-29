@@ -749,17 +749,38 @@ class QualificationFollowupTest(unittest.TestCase):
                 raise ReviewEvidenceError("review validator source identity changed")
             return validate_delegated_review(*args, **kwargs)
 
+        legacy_fixture = {
+            "schema": followup.HISTORICAL_REVIEW_SCHEMA,
+            "source": {"tag": "v8.0.36", "commit": "42ae95d146ceb441ff91ea33dbbed581c33de305"},
+            "records": {
+                name: {"record_sha256": digest if name == first.name
+                       else followup.FROZEN_ARCHIVED_REVIEW_SHA256[name],
+                       "spec": "pass", "quality": "pass", "reviewed_at": record["reviewed_at"]}
+                for name in followup.CHANGE_IDS
+            },
+            "historical_review_verified": True, "current_source_review_verified": False,
+            "release_authorized": False,
+        }
         with patch.dict(followup.FROZEN_ARCHIVED_REVIEW_SHA256, {first.name: digest}), \
                 patch.dict(followup.FROZEN_ARCHIVE_GIT_TREES, {first.name: pinned_tree}), \
                 patch.object(followup, "FROZEN_ARCHIVED_VALIDATOR_SHA256", record["validator_sha256"]), \
+                patch.object(followup, "verify_original_reviews", return_value=legacy_fixture) as original, \
                 patch("tools.control_plane.adk_interface.validate_delegated_review", side_effect=stale):
             item = followup._review_inventory(self.root)
+            original.assert_called_once()
             self.assertEqual(item["scan_status"], "complete", item)
             self.assertFalse(item["qualification_ready"])
             self.assertFalse(item["result"]["delegated_review_verified"])
-            self.assertEqual(item["result"]["changes"][0]["reason"], "historical-review-validator-stale")
+            self.assertTrue(item["result"]["historical_review_verified"])
+            self.assertEqual(item["result"]["changes"][0]["reason"], "historical-reviewed")
+            self.assertTrue(item["result"]["changes"][0]["historical_review_verified"])
             self.assertFalse(item["result"]["changes"][0]["review_verified"])
+            self.assertFalse(item["result"]["changes"][0]["current_source_review_verified"])
             self.assertEqual(item["result"]["changes"][0]["historical_review_record_sha256"], digest)
+            with patch.object(followup, "verify_original_reviews", side_effect=ValueError("missing pinned original")):
+                failed = followup._review_inventory(self.root)
+                self.assertEqual(failed["scan_status"], "error")
+                self.assertFalse(failed["qualification_ready"])
 
             source = archive / "requirements.md"
             before = source.read_text(encoding="utf-8")
