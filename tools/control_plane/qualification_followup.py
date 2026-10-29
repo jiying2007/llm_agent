@@ -874,8 +874,11 @@ def _review_inventory(root: Path) -> dict[str, Any]:
             item["remaining_evidence"].append(change + ":" + record["reason"])
     if legacy_report is not None and item["scan_status"] == "complete":
         item["result"]["original_historical_verification"] = legacy_report["source"]
+        # Active, current-validator source changes are not frozen historical
+        # archives; count only archived material in this old-source assessment.
         item["result"]["historical_review_verified"] = all(
-            r.get("historical_review_verified") is True for r in item["result"]["changes"])
+            r.get("historical_review_verified") is True
+            for r in item["result"]["changes"] if r.get("stage") == "archived")
         if item["result"]["historical_review_verified"]:
             item["status"] = "historical-reviewed-current-source-unverified"
     ready = item["scan_status"] == "complete" and all(

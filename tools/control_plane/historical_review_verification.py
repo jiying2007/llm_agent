@@ -150,9 +150,9 @@ def _materialize(raw_tar: bytes, destination: Path) -> None:
 
     required = set(SRC)
     for change in RECORDS:
-        base = f"{ARCHIVE_BASE}/20261020-{change}"
-        required.add(base + "/review-evidence.json")
-        required.add(base + "/evidence/original.patch")
+        relative_archive = f"{ARCHIVE_BASE}/20261020-{change}"
+        required.add(relative_archive + "/review-evidence.json")
+        required.add(relative_archive + "/evidence/original.patch")
     if not required.issubset(names):
         raise ValueError("original archive lacks required source or review bytes")
     fingerprints = {
@@ -164,9 +164,9 @@ def _materialize(raw_tar: bytes, destination: Path) -> None:
             or _sha((destination / AUTHORIZATION).read_bytes()) != AUTHORIZATION_SHA):
         raise ValueError("original policy or authorization bytes differ")
     for change, (expected_record, expected_patch, _) in RECORDS.items():
-        base = destination / ARCHIVE_BASE / ("20261020-" + change)
-        if (_sha((base / "review-evidence.json").read_bytes()) != expected_record
-                or _sha((base / "evidence/original.patch").read_bytes()) != expected_patch):
+        archive_dir = destination / ARCHIVE_BASE / ("20261020-" + change)
+        if (_sha((archive_dir / "review-evidence.json").read_bytes()) != expected_record
+                or _sha((archive_dir / "evidence/original.patch").read_bytes()) != expected_patch):
             raise ValueError("original review or patch bytes differ")
 
 
