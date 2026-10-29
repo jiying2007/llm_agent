@@ -68,8 +68,19 @@ class QualificationFollowupTest(unittest.TestCase):
 
     def collect_blocked(self, snapshots: list | None = None) -> dict:
         results = [completed(check, blocked(check)) for check in self.checks]
+        # This disposable unit fixture intentionally has no source tree.
+        # Isolate the five canonical checker semantics from #201 inventory.
+        history = {"id": "adk-201", "title": "Historical source",
+                   "scan_status": "complete", "status": "historical-reviewed",
+                   "qualification_ready": False, "required_in_current_scope": True,
+                   "command": None, "command_exit": None,
+                   "result": {"delegated_review_verified": False,
+                              "historical_review_verified": True,
+                              "semantic_review_performed": False},
+                   "remaining_evidence": [], "next_actions": []}
         with patch.object(followup, "_snapshot", side_effect=snapshots or [self.source, self.source]), \
-                patch.object(followup, "run_bounded", side_effect=results):
+                patch.object(followup, "run_bounded", side_effect=results), \
+                patch.object(followup, "_review_inventory", return_value=history):
             return followup.collect(self.root)
 
     def test_all_blocked_is_complete_read_only_scan(self) -> None:
@@ -339,7 +350,8 @@ class QualificationFollowupTest(unittest.TestCase):
         (change / "state.yaml").write_text("stage: reviewed\nowner_verdict: approved\n", encoding="utf-8")
         (change / "review-report.md").write_text(CANARY, encoding="utf-8")
         item = followup._review_inventory(self.root)
-        self.assertEqual(item["status"], "review-evidence-required")
+        self.assertEqual(item["status"], "error")
+        self.assertEqual(item["scan_status"], "error")
         self.assertFalse(item["qualification_ready"])
         self.assertFalse(item["result"]["delegated_review_verified"])
         self.assertFalse(item["result"]["semantic_review_performed"])
@@ -768,10 +780,13 @@ class QualificationFollowupTest(unittest.TestCase):
                 patch("tools.control_plane.adk_interface.validate_delegated_review", side_effect=stale):
             item = followup._review_inventory(self.root)
             original.assert_called_once()
-            self.assertEqual(item["scan_status"], "complete", item)
+            self.assertEqual(item["scan_status"], "error", item)
             self.assertFalse(item["qualification_ready"])
             self.assertFalse(item["result"]["delegated_review_verified"])
-            self.assertTrue(item["result"]["historical_review_verified"])
+            # Only one of three packages is archived in this synthetic
+            # mixed fixture; the original 3/3 Git result cannot make the
+            # current materialized inventory complete.
+            self.assertFalse(item["result"]["historical_review_verified"])
             self.assertEqual(item["result"]["changes"][0]["reason"], "historical-reviewed")
             self.assertTrue(item["result"]["changes"][0]["historical_review_verified"])
             self.assertFalse(item["result"]["changes"][0]["review_verified"])

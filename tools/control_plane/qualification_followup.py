@@ -778,7 +778,11 @@ def _review_inventory(root: Path) -> dict[str, Any]:
         try:
             location = _change_location(root, change)
             if location is None:
+                # No original-tag reexecution can authenticate a missing
+                # current worktree archive. An incomplete fixed inventory is
+                # a source-integrity scan error, not an eligible qualification.
                 record.update(location=None, reason="change-package-missing", files={})
+                item.update(scan_status="error", status="error")
                 item["result"]["changes"].append(record)
                 item["remaining_evidence"].append(change + ":change-package-missing")
                 continue
@@ -872,14 +876,23 @@ def _review_inventory(root: Path) -> dict[str, Any]:
         item["result"]["changes"].append(record)
         if not record["review_verified"]:
             item["remaining_evidence"].append(change + ":" + record["reason"])
-    if legacy_report is not None and item["scan_status"] == "complete":
+    # The old tag's complete 3/3 result must not substitute for missing
+    # or active packages in the *current* checkout. Count all three fixed
+    # identities; filtering only archived rows yields vacuous partial PASS.
+    rows = item["result"]["changes"]
+    all_historical = (
+        len(rows) == len(CHANGE_IDS)
+        and {r.get("change_id") for r in rows} == set(CHANGE_IDS)
+        and all(r.get("stage") == "archived"
+                and r.get("historical_review_verified") is True
+                and r.get("review_verified") is False for r in rows)
+    )
+    item["result"]["historical_review_verified"] = bool(all_historical)
+    if legacy_report is not None:
         item["result"]["original_historical_verification"] = legacy_report["source"]
-        # Active, current-validator source changes are not frozen historical
-        # archives; count only archived material in this old-source assessment.
-        item["result"]["historical_review_verified"] = all(
-            r.get("historical_review_verified") is True
-            for r in item["result"]["changes"] if r.get("stage") == "archived")
-        if item["result"]["historical_review_verified"]:
+        if not all_historical:
+            item.update(scan_status="error", status="error")
+        elif item["scan_status"] == "complete":
             item["status"] = "historical-reviewed-current-source-unverified"
     ready = item["scan_status"] == "complete" and all(
         record["review_verified"] for record in item["result"]["changes"])
