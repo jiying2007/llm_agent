@@ -6,9 +6,9 @@ import hashlib
 import io
 import json
 import os
+import stat
 import subprocess
 import sys
-import stat
 import tempfile
 import unittest
 from contextlib import redirect_stderr, redirect_stdout

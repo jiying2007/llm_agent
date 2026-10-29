@@ -606,20 +606,20 @@ def _frozen_archive_matches_pinned_git(
                 return False
             visited_dirs.add(rel)
             with os.scandir(folder) as contents:
-                for entry in contents:
+                for dir_entry in contents:
                     entry_count += 1
-                    if entry_count > 128 or entry.is_symlink():
+                    if entry_count > 128 or dir_entry.is_symlink():
                         return False
-                    candidate = Path(entry.path)
-                    name = candidate.relative_to(adk).as_posix()
-                    if entry.is_dir(follow_symlinks=False):
-                        if name not in allowed_dirs:
+                    candidate = Path(dir_entry.path)
+                    relative_child = candidate.relative_to(adk).as_posix()
+                    if dir_entry.is_dir(follow_symlinks=False):
+                        if relative_child not in allowed_dirs:
                             return False
                         stack.append(candidate)
-                    elif entry.is_file(follow_symlinks=False):
-                        if name not in committed or name in observed_files:
+                    elif dir_entry.is_file(follow_symlinks=False):
+                        if relative_child not in committed or relative_child in observed_files:
                             return False
-                        observed_files.add(name)
+                        observed_files.add(relative_child)
                     else:
                         return False
         except (OSError, RuntimeError, ValueError):
