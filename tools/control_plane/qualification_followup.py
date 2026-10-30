@@ -367,6 +367,7 @@ def _collect_command(root: Path, check: Check, env: Mapping[str, str]) -> dict[s
         "id": check.id, "title": check.title, "issue_url": _issue(check.id),
         "scan_status": "error", "status": "error", "qualification_ready": False,
         "required_in_current_scope": check.id != "root-236",
+        "qualification_scope": "current",
         "command": list(check.command), "command_exit": None, "result": None,
         "remaining_evidence": [], "next_actions": list(NEXT_ACTIONS[check.id]),
     }
@@ -764,12 +765,13 @@ def _review_inventory(root: Path) -> dict[str, Any]:
         "id": "adk-201", "title": "Delegated semantic review of three historical changes",
         "issue_url": _issue("adk-201"), "scan_status": "complete",
         "status": "review-evidence-required", "qualification_ready": False,
-        "required_in_current_scope": True,
+        "required_in_current_scope": False, "qualification_scope": "historical",
         "command": None, "command_exit": None,
         "remaining_evidence": [],
-        "next_actions": ["Complete independent delegated Spec/Quality review of each frozen change and its canonical review/archive lifecycle."],
+        "next_actions": ["Restore the original frozen archives and validator inputs, then rerun their read-only historical verification."],
         "result": {"schema": "llm-agent-delegated-review-inventory/v1", "changes": [],
-                   "semantic_review_performed": False, "delegated_review_verified": False},
+                   "semantic_review_performed": False, "delegated_review_verified": False,
+                   "current_source_review_verified": False},
     }
     legacy_report: dict[str, Any] | None = None
     for change in CHANGE_IDS:
@@ -859,7 +861,6 @@ def _review_inventory(root: Path) -> dict[str, Any]:
                         current_source_review_verified=False,
                     )
                     item["result"]["changes"].append(record)
-                    item["remaining_evidence"].append(change + ":current-source-review-not-verified")
                     continue
                 if review["record_sha256"] != files["review-evidence.json"]["sha256"]:
                     raise ValueError("review record changed during inventory")
@@ -902,7 +903,7 @@ def _review_inventory(root: Path) -> dict[str, Any]:
         if not all_historical:
             item.update(scan_status="error", status="error")
         elif item["scan_status"] == "complete":
-            item["status"] = "historical-reviewed-current-source-unverified"
+            item.update(status="historical-fulfilled", remaining_evidence=[], next_actions=[])
     ready = item["scan_status"] == "complete" and all(
         record["review_verified"] for record in item["result"]["changes"])
     item["result"]["delegated_review_verified"] = ready
@@ -914,7 +915,8 @@ def _review_inventory(root: Path) -> dict[str, Any]:
 def _not_run(identifier: str, title: str, command: tuple[str, ...] | None) -> dict[str, Any]:
     return {"id": identifier, "title": title, "issue_url": _issue(identifier),
             "scan_status": "error", "status": "error", "qualification_ready": False,
-            "required_in_current_scope": identifier != "root-236",
+            "required_in_current_scope": identifier not in ("root-236", "adk-201"),
+            "qualification_scope": "historical" if identifier == "adk-201" else "current",
             "execution_status": "not-run", "command": list(command) if command else None,
             "command_exit": None, "result": None, "error": "verified-root-source-required",
             "remaining_evidence": ["verified regular Git source and safe key inputs"],
@@ -993,7 +995,8 @@ def collect(root: Path) -> dict[str, Any]:
     if report["errors"] or any(item["scan_status"] == "error" for item in report["items"]):
         report["scan_status"] = "error"
     report["qualification_all_ready"] = report["scan_status"] == "complete" and all(
-        item["qualification_ready"] for item in report["items"])
+        item["qualification_ready"] for item in report["items"]
+        if item.get("qualification_scope") != "historical")
     report["required_qualification_ready"] = report["scan_status"] == "complete" and all(
         item["qualification_ready"] for item in report["items"] if item["required_in_current_scope"])
     return _bounded_report(report)

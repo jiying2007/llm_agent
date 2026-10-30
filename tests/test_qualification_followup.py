@@ -73,7 +73,8 @@ class QualificationFollowupTest(unittest.TestCase):
         # Isolate the five canonical checker semantics from #201 inventory.
         history = {"id": "adk-201", "title": "Historical source",
                    "scan_status": "complete", "status": "historical-reviewed",
-                   "qualification_ready": False, "required_in_current_scope": True,
+                   "qualification_ready": False, "required_in_current_scope": False,
+                   "qualification_scope": "historical",
                    "command": None, "command_exit": None,
                    "result": {"delegated_review_verified": False,
                               "historical_review_verified": True,
@@ -817,13 +818,19 @@ class QualificationFollowupTest(unittest.TestCase):
             self.assertTrue(complete["result"]["historical_review_verified"])
             self.assertFalse(complete["qualification_ready"])
             self.assertFalse(complete["result"]["delegated_review_verified"])
+            self.assertEqual(complete["status"], "historical-fulfilled")
+            self.assertEqual(complete["qualification_scope"], "historical")
+            self.assertFalse(complete["required_in_current_scope"])
+            self.assertFalse(complete["result"]["current_source_review_verified"])
+            self.assertEqual(complete["remaining_evidence"], [])
+            self.assertEqual(complete["next_actions"], [])
             for n, directory in enumerate(reversed(archived), 1):
                 shutil.rmtree(directory)
                 missing = followup._review_inventory(self.root)
                 self.assertEqual(missing["scan_status"], "error", missing)
                 self.assertFalse(missing["qualification_ready"])
                 self.assertFalse(missing["result"]["historical_review_verified"])
-                self.assertNotEqual(missing["status"], "historical-reviewed-current-source-unverified")
+                self.assertNotEqual(missing["status"], "historical-fulfilled")
                 self.assertEqual(
                     sum(row.get("reason") == "change-package-missing"
                         for row in missing["result"]["changes"]), n
@@ -1044,6 +1051,49 @@ class QualificationFollowupTest(unittest.TestCase):
         self.assertTrue(report["required_qualification_ready"], report)
         self.assertFalse(report["qualification_all_ready"])
         self.assertFalse(report["items"][0]["qualification_ready"])
+        self.assertFalse(report["release_authorized"])
+
+    def test_fulfilled_history_is_not_a_current_qualification_requirement(self) -> None:
+        current = [
+            {"id": check.id, "scan_status": "complete", "qualification_scope": "current",
+             "qualification_ready": True, "required_in_current_scope": check.id != "root-236"}
+            for check in self.checks
+        ]
+        history = {
+            "id": "adk-201", "scan_status": "complete", "status": "historical-fulfilled",
+            "qualification_scope": "historical", "qualification_ready": False,
+            "required_in_current_scope": False, "remaining_evidence": [], "next_actions": [],
+            "result": {"historical_review_verified": True, "current_source_review_verified": False},
+        }
+        for scan_status in ("complete", "error"):
+            with self.subTest(scan_status=scan_status), \
+                    patch.object(followup, "_snapshot", return_value=self.source), \
+                    patch.object(followup, "_collect_command", side_effect=copy.deepcopy(current)), \
+                    patch.object(followup, "_review_inventory",
+                                 return_value={**history, "scan_status": scan_status}):
+                report = followup.collect(self.root)
+            self.assertEqual(report["qualification_all_ready"], scan_status == "complete")
+            self.assertEqual(report["required_qualification_ready"], scan_status == "complete")
+            self.assertFalse(report["release_authorized"])
+            self.assertFalse(report["items"][-1]["result"]["current_source_review_verified"])
+            self.assertFalse(report["items"][-1]["qualification_ready"])
+
+    def test_unknown_scope_cannot_exempt_a_current_blocker(self) -> None:
+        current = [
+            {"id": check.id, "scan_status": "complete", "qualification_ready": True,
+             "required_in_current_scope": True, "qualification_scope": "current"}
+            for check in self.checks
+        ]
+        current[0].update(qualification_scope="unknown", qualification_ready=False)
+        with patch.object(followup, "_snapshot", return_value=self.source), \
+                patch.object(followup, "_collect_command", side_effect=current), \
+                patch.object(followup, "_review_inventory", return_value={
+                    "id": "adk-201", "scan_status": "complete", "qualification_scope": "historical",
+                    "qualification_ready": False, "required_in_current_scope": False,
+                }):
+            report = followup.collect(self.root)
+        self.assertFalse(report["qualification_all_ready"])
+        self.assertFalse(report["required_qualification_ready"])
         self.assertFalse(report["release_authorized"])
 
     def test_effect_and_longitudinal_review_snapshot_uses_root_source_authority(self) -> None:
