@@ -1,6 +1,6 @@
 schema=llm-agent-adk-lock/v2
-agent-dev-kit.version=8.1.2
-agent-dev-kit.commit=9b4988d02e9e07a26755c29e724df8c87298f65e
-agent-dev-kit.tree=f414b6c5e0fe0b753c1e08b896ec84e3be528422
-agent-dev-kit.manifest_blob=33fbbbde8d7e669382b9cc224ee85e38025dbfa2
-updated_at=2026-10-28
+agent-dev-kit.version=8.1.3
+agent-dev-kit.commit=816bdfb5ee691d30959416912c586d60e3116f53
+agent-dev-kit.tree=e172ca48e74659569e274c064541a9539f7a2f0f
+agent-dev-kit.manifest_blob=e935f825d28eb80202b7e145b84ceab03dd6fc98
+updated_at=2026-10-30
