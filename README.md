@@ -16,6 +16,16 @@
 
 ## 快速入口
 
+按任务选择一个主入口，再查看它报告的具体缺口：
+
+| 我要做什么 | 主入口 | 后续路径与结果解释 |
+| --- | --- | --- |
+| 使用资产 | `rtk run bash agent-dev-kit/scripts/devkit.sh doctor --summary-json` | 环境检查后选 profile、审查安装 plan，按 [ADK 安装与恢复说明](agent-dev-kit/docs/commands.md#install) 操作；Codex 资产仍经 `~/codex` build/plan/apply 到 live。 |
+| 判断当前是否可用 | `rtk run python3 -m tools.control_plane.cli qualification-followup --root . --summary-json` | 查看 `remaining_evidence` 与 `next_actions`；`scan_status=complete` 表示扫描完成。`historical-fulfilled` 只关闭冻结历史任务，当前源码、组件发布、运行态与产品资格分别核对。 |
+| 发布或升级 | `rtk run python3 -m tools.control_plane.cli status --root . --summary-json` | 先核对当前 source/release candidate 身份与 `release_authorized`，再按 [提升规则](scripts/README.md) 运行已有 `promote-adk.sh` 的候选校验和签名验证。需要产品发行时补当前 source-to-live、runtime、field 和 qualification 材料；[历史基线](docs/runbooks/qualification-boundaries.md) 单独保留。 |
+
+以下为维护与取证命令；按需要执行，不把扫描成功或历史通过解释成当前产品放行：
+
 ```bash
 # 本工作区所有命令必须通过 rtk 执行
 rtk scripts/check-adk-harden-readiness.sh . --require-pilot
