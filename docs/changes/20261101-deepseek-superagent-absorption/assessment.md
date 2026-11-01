@@ -4,7 +4,7 @@
 > 本记录是评估、差异清单与变更候选，不是生产资格、Runtime 接入批准或自动部署授权。遵守 [外部实践吸收治理](../../absorption-governance.md)。
 >
 > 上游：DeepSeek Harness Team / [deepseek-ai/dsh-superagent-prototype](https://github.com/deepseek-ai/dsh-superagent-prototype)
-> 固定源码：[\`6337fc823ce20251c8de8085948165c81aaa701e\`](https://github.com/deepseek-ai/dsh-superagent-prototype/tree/6337fc823ce20251c8de8085948165c81aaa701e)
+> 固定源码：[`6337fc823ce20251c8de8085948165c81aaa701e`](https://github.com/deepseek-ai/dsh-superagent-prototype/tree/6337fc823ce20251c8de8085948165c81aaa701e)
 > 检索日期：2026-11-01（UTC+08）；许可证：[MIT](https://github.com/deepseek-ai/dsh-superagent-prototype/blob/6337fc823ce20251c8de8085948165c81aaa701e/LICENSE)
 > 取证方式：GitHub 连接器只读元数据、逐文件源码与文档；没有 clone、依赖安装、执行上游代码或验证上游发布物。
 
