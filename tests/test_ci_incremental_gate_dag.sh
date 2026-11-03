@@ -25,6 +25,10 @@ retired_gc = json.loads((root / "registry/branch_gc_retired.json").read_text(enc
 gitlab = (root / ".gitlab-ci.yml").read_text(encoding="utf-8")
 pyproject = (root / "pyproject.toml").read_text(encoding="utf-8")
 
+# Only protected main is a supported push source; do not revive obsolete master.
+assert re.search(r"(?m)^  push:\\n    branches:\\n      - main\\n  pull_request:", github), "unexpected push branch set"
+assert "      - master\\n" not in github, "retired master push trigger reintroduced"
+
 # The Git comparison must fail closed rather than reclassifying unavailable
 # history as an empty change and suppressing mandatory integration.
 for unavailable_base in ("", "f" * 40):
