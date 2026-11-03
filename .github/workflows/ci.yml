@@ -63,6 +63,9 @@ jobs:
           python -m pip install ./agent-dev-kit
           bash tests/test_qualification_followup.sh
 
+      - name: Verify bounded Goal and execution-efficiency observation
+        run: bash tests/test_goal_efficiency.sh
+
       - name: Validate terminal consumer pin chain
         run: bash tests/test_consumer_chain.sh
 
