@@ -25,6 +25,16 @@ retired_gc = json.loads((root / "registry/branch_gc_retired.json").read_text(enc
 gitlab = (root / ".gitlab-ci.yml").read_text(encoding="utf-8")
 pyproject = (root / "pyproject.toml").read_text(encoding="utf-8")
 
+# Only protected main is a supported push source; do not revive obsolete master.
+assert re.search(r"(?m)^  push:\n    branches:\n      - main\n  pull_request:", github), "unexpected push branch set"
+assert "      - master\n" not in github, "retired master push trigger reintroduced"
+contract_job = github.split("\n  contract:\n", 1)[1].split("\n  doc-sync:\n", 1)[0]
+integration_job = github.split("\n  integration:\n", 1)[1].split("\n  integration-summary:\n", 1)[0]
+for job in (contract_job, integration_job):
+    assert "          cache: pip" in job, "pinned pip download cache must be enabled"
+    assert "            pyproject.toml" in job and "            adk.lock" in job, "cache key must include exact dependency source"
+# Only dependency download caching is permitted: never cache signed receipts, tests, or results.
+
 # The Git comparison must fail closed rather than reclassifying unavailable
 # history as an empty change and suppressing mandatory integration.
 for unavailable_base in ("", "f" * 40):
