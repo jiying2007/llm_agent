@@ -9,9 +9,12 @@ on:
       - '.github/workflows/maintainability-candidate.yml'
       - 'tools/codex_assets/maintainability_evidence.py'
       - 'tests/test_maintainability_evidence_candidate.py'
+      - 'tools/control_plane/actions_cost_audit.py'
+      - 'tests/test_actions_cost_audit.py'
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   group: maintainability-candidate
@@ -60,6 +63,15 @@ jobs:
             --window-started-at "$START_AT" --window-ended-at "$END_AT" \
             --output "$CANDIDATE" --apply --summary-json | tee "$SUMMARY"
 
+      - name: Observe bounded Actions compute footprint (nonbilling)
+        if: github.event_name != 'pull_request'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          python3 -m tools.control_plane.actions_cost_audit \
+            --repository jiying2007/llm_agent --limit 20 \
+            --output "$RUNNER_TEMP/actions-cost-summary.json"
+
       - name: Upload candidate-only evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -68,5 +80,6 @@ jobs:
           path: |
             /tmp/maintainability-summary.json
             /tmp/llm-maintainability-churn-*.json
+            ${{ runner.temp }}/actions-cost-summary.json
           if-no-files-found: error
           retention-days: 14
