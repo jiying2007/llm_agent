@@ -1,9 +1,9 @@
 {
   "schema": "llm-agent-adk-interface-lock/v1",
-  "version": "9.0.0",
-  "commit": "f9984ca91e6b511937137df0558d51d179ff2a8f",
-  "tree": "11a6e235d9d6f2503b8bf2d0f7ae502544b90090",
-  "manifest_blob": "41dcc3e4fd6de3fba8cdd934ae7391184e8092b1",
+  "version": "10.0.0",
+  "commit": "7fce4ace1439a14f03430513d1c54349f06071a6",
+  "tree": "895f61d1d1ccca0a2f884c5771743bace3c2c6d3",
+  "manifest_blob": "ffaa32a0645e6ab0a479954bbe6e90a3af217d54",
   "manifest_mode": "json-only",
   "maturity_contract": "v5",
   "surfaces": {
