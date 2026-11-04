@@ -64,8 +64,9 @@ jobs:
       - name: Install the pinned existing control-plane dependencies
         run: |
           git submodule update --init --depth=1 agent-dev-kit
-          # Original immutable source is fetched as a Git object only; HEAD
-          # remains the exact v8.1.2 Root gitlink, with no legacy package install.
+          # Historical verifier v8.0.36 is fetched only as an immutable Git
+          # object; HEAD stays at the current exact Root-pinned ADK gitlink.
+          # Do not infer the active ADK version from this pinned validator.
           git -C agent-dev-kit fetch --depth=1 origin tag v8.0.36
           test "$(git -C agent-dev-kit rev-parse refs/tags/v8.0.36)" = "d4b6d5c6c852b54e1f8153a3c9caa8c55d8b3ab8"
           test "$(git -C agent-dev-kit rev-parse 'refs/tags/v8.0.36^{commit}')" = "42ae95d146ceb441ff91ea33dbbed581c33de305"

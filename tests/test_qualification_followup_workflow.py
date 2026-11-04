@@ -52,6 +52,8 @@ class QualificationWorkflowBoundaryTests(unittest.TestCase):
         self.assertIn("d4b6d5c6c852b54e1f8153a3c9caa8c55d8b3ab8", script)
         self.assertIn("42ae95d146ceb441ff91ea33dbbed581c33de305", script)
         self.assertNotIn("checkout v8.0.36", script)
+        self.assertNotIn("exact v8.1.2 Root gitlink", self.raw)
+        self.assertIn("HEAD stays at the current exact Root-pinned ADK gitlink", self.raw)
         self.assertNotIn("pip install", script.split("python -m pip install", 1)[0])
         self.assertEqual(self.workflow["permissions"], {"contents": "read"})
 

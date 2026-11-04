@@ -392,6 +392,9 @@ jobs:
           retention-days: 30
 
   software-m5:
+    # Stable required-check context (rulesets depend on this exact name).
+    # Success means state consistency, not necessarily current certification:
+    # HISTORICAL_NOT_AUTHORIZED is an explicit non-release outcome.
     name: software-m5-certify
     if: ${{ always() && needs.contract.result == 'success' && needs.doc-sync.result == 'success' && needs.integration-summary.result == 'success' }}
     needs:
@@ -417,6 +420,8 @@ jobs:
         with:
           cosign-release: v3.1.3
 
+      # Required audit step name is used by consumer hardening tests.
+      # A successful historical-state check still grants no release authority.
       - name: Enforce Software M5 current-or-historical qualification state
         shell: bash
         env:
