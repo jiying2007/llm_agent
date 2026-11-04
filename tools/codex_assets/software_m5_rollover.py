@@ -166,7 +166,7 @@ def _validate_promotion(root: Path, lock: Mapping[str, str]) -> dict[str, Any]:
     evidence = _load_json(root / "reports/promotion/agent-dev-kit/promotion-evidence.json", "promotion evidence")
     source = evidence.get("source")
     release = evidence.get("release")
-    if evidence.get("schema") != "adk-promotion-evidence/v1" or not isinstance(source, dict) or not isinstance(release, dict):
+    if evidence.get("schema") != "adk-promotion-evidence/v2" or not isinstance(source, dict) or not isinstance(release, dict):
         raise RolloverError("promotion evidence schema/source/release is invalid")
     expected = {
         "version": lock["agent-dev-kit.version"],
