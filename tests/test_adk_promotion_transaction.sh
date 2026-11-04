@@ -104,7 +104,7 @@ EVIDENCE="$TMP_DIR/promotion-evidence.json"
 ATTESTATION="$TMP_DIR/promotion-attestation.json"
 cat >"$EVIDENCE" <<JSON
 {
-  "schema":"adk-promotion-evidence/v1",
+  "schema":"adk-promotion-evidence/v2",
   "source":{
     "version":"5.0.0-rc.2",
     "commit":"$NEW_ADK",
@@ -265,20 +265,20 @@ assert good_attestation == Path(attestation_path).read_text(encoding="utf-8")
 
 invalid = {
     "duplicate-top-level": clean.replace(
-        '"schema":"adk-promotion-evidence/v1"',
-        '"schema":"ignored","schema":"adk-promotion-evidence/v1"', 1,
+        '"schema":"adk-promotion-evidence/v2"',
+        '"schema":"ignored","schema":"adk-promotion-evidence/v2"', 1,
     ),
     "duplicate-nested-source": clean.replace(
         '"commit":"' + commit + '"',
         '"commit":"' + "0" * 40 + '","commit":"' + commit + '"', 1,
     ),
     "nonfinite-literal": clean.replace(
-        '"schema":"adk-promotion-evidence/v1"',
-        '"untrusted":NaN,"schema":"adk-promotion-evidence/v1"', 1,
+        '"schema":"adk-promotion-evidence/v2"',
+        '"untrusted":NaN,"schema":"adk-promotion-evidence/v2"', 1,
     ),
     "nonfinite-overflow": clean.replace(
-        '"schema":"adk-promotion-evidence/v1"',
-        '"untrusted":1e999,"schema":"adk-promotion-evidence/v1"', 1,
+        '"schema":"adk-promotion-evidence/v2"',
+        '"untrusted":1e999,"schema":"adk-promotion-evidence/v2"', 1,
     ),
     "oversized-input": clean + (" " * (MAX_PROMOTION_JSON_BYTES + 1)),
 }
