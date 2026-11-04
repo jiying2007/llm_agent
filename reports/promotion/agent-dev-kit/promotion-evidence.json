@@ -2,7 +2,6 @@
   "ci": {
     "contract_matrix": {
       "python": [
-        "3.8",
         "3.11",
         "3.12"
       ],
@@ -11,7 +10,6 @@
     "deterministic_eval_package": "success",
     "regression_matrix": {
       "python": [
-        "3.8",
         "3.11",
         "3.12"
       ],
@@ -20,33 +18,33 @@
     "static_security": "success"
   },
   "contracts": {
-    "contract_registry_sha256": "debb162515f38b7fd8a1502ba7e581c171b8ec2a8c737ee8df88ab6fdeefbc23",
-    "release_manifest_sha256": "4e71816d6f6d5a1a4194ed2d5f4bae12af1261dd7459cae4273fd912cf5785c2",
-    "schema_set_sha256": "9fe3fb4e8fe1f2a85fc85cd0858c439524e2068fadeb4f27b4393f3c8fcbd864"
+    "contract_registry_sha256": "efac468006f649c8a6b15a974c804831700d0934973124b08276da6688239919",
+    "release_manifest_sha256": "467ec23b6772e8cd175700c3c53396314cd6c41e015dc49d43357c897f0c3898",
+    "schema_set_sha256": "e064a7ffeb9e9e5a6f3b700d7ed192ebcccf41052f570cb5785fc0471b47dd9b"
   },
-  "issued_at": "2026-11-03T13:01:29.658743Z",
+  "issued_at": "2026-11-04T03:28:05.495712Z",
   "provenance": {
     "format": "sigstore-bundle/v1",
     "subject": "promotion-evidence.json"
   },
   "release": {
-    "artifact_sha256": "467727131b390df7fdfc528eb56f608bed08f30169bf843f43bf931bb73a202c",
+    "artifact_sha256": "3f18b573f8cfb0fe10c014e1c3d59c6262a6f6d0a803a3fad869347d89db6ba1",
     "release_eligible": true
   },
-  "schema": "adk-promotion-evidence/v1",
+  "schema": "adk-promotion-evidence/v2",
   "source": {
-    "commit": "7fb0009f348c0d1882ccabba5426d19b8abdb744",
+    "commit": "f9984ca91e6b511937137df0558d51d179ff2a8f",
     "event": "push",
-    "manifest_blob": "d6cc820e49aca945191e92277e55651b437075f4",
-    "manifest_sha256": "d51c1f505dafa95444acb52bc7a0c1510c942ce2e166297ae6aac7b8fd8046a1",
+    "manifest_blob": "41dcc3e4fd6de3fba8cdd934ae7391184e8092b1",
+    "manifest_sha256": "de907cf3e87b56047052b1a64bccf4fb372eaf47d32bbe0e93c085db98848991",
     "ref": "refs/heads/main",
     "repository": "jiying2007/agent-dev-kit",
     "run_attempt": 1,
-    "run_id": 41639701937,
-    "tree": "8cd66799a71e581bd349e25cf07248c39b861009",
-    "version": "8.2.2",
+    "run_id": 41766774890,
+    "tree": "11a6e235d9d6f2503b8bf2d0f7ae502544b90090",
+    "version": "9.0.0",
     "workflow": "agent-dev-kit-ci",
     "workflow_ref": "jiying2007/agent-dev-kit/.github/workflows/ci.yml@refs/heads/main",
-    "workflow_sha": "7fb0009f348c0d1882ccabba5426d19b8abdb744"
+    "workflow_sha": "f9984ca91e6b511937137df0558d51d179ff2a8f"
   }
 }
