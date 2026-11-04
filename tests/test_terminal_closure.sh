@@ -30,7 +30,7 @@ PY
 TMP="$(mktemp)"
 trap 'rm -f "$TMP"' EXIT
 
-python3 -m tools.control_plane.terminal_closure --root . --summary-json >"$TMP"
+python3 -m tools.control_plane.terminal_closure --root . --scope qualification --summary-json >"$TMP"
 python3 - "$ROOT" "$TMP" <<'PY'
 import json,sys
 from pathlib import Path
@@ -124,7 +124,7 @@ assert boundary["projection_authorizes_release"] is False, boundary
 PY
 
 set +e
-python3 -m tools.control_plane.terminal_closure --root . --require-terminal --summary-json >/dev/null
+python3 -m tools.control_plane.terminal_closure --root . --scope qualification --require-terminal --summary-json >/dev/null
 rc=$?
 set -e
 python3 - "$TMP" "$rc" <<'PY'
@@ -138,5 +138,18 @@ else:
 PY
 
 python3 -m tools.control_plane.cli terminal-closure --root . --summary-json   | python3 -c 'import json,sys; v=json.load(sys.stdin); assert v["schema"]=="llm-agent-terminal-closure/v1" and v["status"]=="pass", v'
+
+# Research readiness is allowed without native/effect/field evidence, never as a product credential.
+python3 -m tools.control_plane.cli terminal-closure --root . --scope research --require-terminal --summary-json | python3 -c '
+import json,sys
+value=json.load(sys.stdin)
+assert value["scope"]=="research" and value["terminal_ready"] is True, value
+assert value["research_operational_controls_ready"] is True, value
+assert value["release_authorized"] is False and value["field_qualification_claimed"] is False, value
+assert all(b["id"] in {"G21","G22"} for b in value["optional_evidence"]), value
+assert not any(b["id"] in {"G21","G22"} for b in value["external_blockers"]), value
+assert value["domains"]["G21"]["native_verified"] is False, value
+assert value["domains"]["G22"]["effect_evidence_ready"] is False, value
+'
 
 echo '[PASS] terminal closure exposes only real external blockers and no execution authority'

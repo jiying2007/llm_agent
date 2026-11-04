@@ -2,6 +2,13 @@
   "schema": "llm-agent-long-term-asset-qualification/v2",
   "updated_at": "2026-10-16",
   "qualification_scope": "llm_agent control plane plus pinned agent-dev-kit component",
+  "research_scope_policy": {
+    "schema": "llm-agent-research-scope/v1",
+    "required_controls": ["LTA-01", "LTA-03"],
+    "optional_field_evidence": ["LTA-04"],
+    "product_release_authorized": false,
+    "meaning": "Independent field qualification is optional for non-release research and is not inferred from CI."
+  },
   "purpose": "Separate engineering readiness from long-term terminal qualification while treating Digital Worker periodic R2 as an external nonblocking observation rather than a second llm_agent decision authority.",
   "rules": {
     "fail_closed": true,

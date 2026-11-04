@@ -331,7 +331,10 @@ def _g9_projection(root: Path, backlog: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def project(root: Path) -> dict[str, Any]:
+def project(root: Path, *, scope: str = "qualification") -> dict[str, Any]:
+    """Distinguish non-release research readiness from strict qualification."""
+    if scope not in {"research", "qualification"}:
+        raise ValueError("unsupported terminal scope")
     root = root.resolve()
     backlog = _backlog_projection(root)
     native = project_native_readiness(root)
@@ -403,16 +406,51 @@ def project(root: Path) -> dict[str, Any]:
             f"backlog={sorted(backlog_open)} readiness={sorted(readiness_open)}"
         )
 
-    terminal_ready = software_ready and not blockers and not backlog_open
+    controls_ready = True
+    if scope == "research":
+        qualification = _load_object(
+            root / "manifests/long_term_asset_qualification.json",
+            "research scope policy",
+        )
+        policy = qualification.get("research_scope_policy")
+        if (
+            not isinstance(policy, dict)
+            or policy.get("schema") != "llm-agent-research-scope/v1"
+            or policy.get("required_controls") != ["LTA-01", "LTA-03"]
+            or policy.get("optional_field_evidence") != ["LTA-04"]
+            or policy.get("product_release_authorized") is not False
+        ):
+            raise ValueError("invalid research scope policy")
+        requirements = {
+            item["id"]: item
+            for item in qualification.get("qualification_requirements", [])
+            if isinstance(item, dict) and isinstance(item.get("id"), str)
+        }
+        controls_ready = all(
+            requirements.get(item_id, {}).get("status") == "pass"
+            for item_id in policy["required_controls"]
+        )
+    # The strict view keeps G21/G22 as blockers. Only non-release research
+    # treats missing authentic native/effect evidence as optional. No evidence
+    # receipt or historical/field/product certification is rewritten.
+    optional = (
+        [item for item in blockers if item["id"] in {"G21", "G22"}]
+        if scope == "research"
+        else []
+    )
+    mandatory = [item for item in blockers if item not in optional]
+    required_open = backlog_open - ({"G21", "G22"} if scope == "research" else set())
+    terminal_ready = software_ready and controls_ready and not mandatory and not required_open
     terminal_status = (
-        "ready"
-        if terminal_ready
-        else "blocked-external-evidence"
-        if software_ready
+        "ready" if terminal_ready else
+        "blocked-external-evidence" if software_ready and controls_ready
         else "blocked-software"
     )
     return {
         "schema": SCHEMA,
+        "scope": scope,
+        "research_operational_controls_ready": controls_ready,
+        "field_qualification_claimed": False,
         "status": "pass",
         "terminal_status": terminal_status,
         "terminal_ready": terminal_ready,
@@ -442,7 +480,8 @@ def project(root: Path) -> dict[str, Any]:
                 "blockers": effect["blockers"],
             },
         },
-        "external_blockers": blockers,
+        "external_blockers": mandatory,
+        "optional_evidence": optional,
         "authority_boundary": {
             "projection_has_execution_authority": False,
             "projection_may_fill_owner_review": False,
@@ -458,11 +497,12 @@ def main(argv: list[str] | None = None) -> int:
         description="Project terminal llm_agent/ADK closure and remaining external facts"
     )
     parser.add_argument("--root", default=".")
+    parser.add_argument("--scope", choices=("research", "qualification"), default="research")
     parser.add_argument("--require-terminal", action="store_true")
     parser.add_argument("--summary-json", action="store_true")
     args = parser.parse_args(argv)
     try:
-        result = project(Path(args.root))
+        result = project(Path(args.root), scope=args.scope)
     except (OSError, ValueError, json.JSONDecodeError) as exc:
         result = {
             "schema": SCHEMA,
