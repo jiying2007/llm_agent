@@ -67,7 +67,7 @@ blob = '3' * 40
 }), encoding='utf-8')
 issued = dt.datetime.now(dt.UTC).isoformat().replace('+00:00', 'Z')
 evidence = {
-    'schema': 'adk-promotion-evidence/v1',
+    'schema': 'adk-promotion-evidence/v2',
     'issued_at': issued,
     'source': {
         'repository': 'jiying2007/agent-dev-kit',
@@ -90,8 +90,8 @@ evidence = {
         'release_manifest_sha256': '8' * 64,
     },
     'ci': {
-        'contract_matrix': {'status': 'success', 'python': ['3.8', '3.11', '3.12']},
-        'regression_matrix': {'status': 'success', 'python': ['3.8', '3.11', '3.12']},
+        'contract_matrix': {'status': 'success', 'python': ['3.11', '3.12']},
+        'regression_matrix': {'status': 'success', 'python': ['3.11', '3.12']},
         'static_security': 'success',
         'deterministic_eval_package': 'success',
     },
@@ -107,11 +107,17 @@ bad = json.loads(json.dumps(evidence))
 bad['ci']['regression_matrix']['status'] = 'failure'
 (root / 'bad-ci.json').write_text(json.dumps(bad), encoding='utf-8')
 bad = json.loads(json.dumps(evidence))
-bad['ci']['regression_matrix']['python'] = ['3.11', '3.12']
-(root / 'bad-missing-python38.json').write_text(json.dumps(bad), encoding='utf-8')
+bad['ci']['regression_matrix']['python'] = ['3.12']
+(root / 'bad-missing-python311.json').write_text(json.dumps(bad), encoding='utf-8')
 bad = json.loads(json.dumps(evidence))
 bad['source']['ref'] = 'refs/pull/1/merge'
 (root / 'bad-ref.json').write_text(json.dumps(bad), encoding='utf-8')
+bad = json.loads(json.dumps(evidence))
+bad['schema'] = 'adk-promotion-evidence/v1'
+(root / 'bad-legacy-schema.json').write_text(json.dumps(bad), encoding='utf-8')
+bad = json.loads(json.dumps(evidence))
+bad['ci']['contract_matrix']['python'] = ['3.8', '3.11', '3.12']
+(root / 'bad-extra-python38.json').write_text(json.dumps(bad), encoding='utf-8')
 bad = json.loads(json.dumps(evidence))
 bad['issued_at'] = '2020-01-01T00:00:00Z'
 (root / 'stale.json').write_text(json.dumps(bad), encoding='utf-8')
@@ -123,7 +129,7 @@ python3 -m tools.control_plane.adk_promotion_evidence \
   --interface "$TMP/interface.json" \
   --summary-json
 
-for bad in bad-identity bad-ci bad-missing-python38 bad-ref stale; do
+for bad in bad-identity bad-ci bad-missing-python311 bad-extra-python38 bad-legacy-schema bad-ref stale; do
   if python3 -m tools.control_plane.adk_promotion_evidence \
       --evidence "$TMP/$bad.json" \
       --lock "$TMP/adk.lock" \

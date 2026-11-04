@@ -198,7 +198,7 @@ def _validate_promotion(root: Path, policy: Mapping[str, Any], *, verify_signatu
         "manifest_blob": release["candidate_manifest_blob"],
     }
     source = evidence.get("source")
-    if evidence.get("schema") != "adk-promotion-evidence/v1" or not isinstance(source, dict):
+    if evidence.get("schema") != "adk-promotion-evidence/v2" or not isinstance(source, dict):
         raise M5Error("promotion evidence schema/source is invalid")
     for field, value in expected.items():
         if source.get(field) != value:

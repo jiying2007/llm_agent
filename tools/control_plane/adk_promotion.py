@@ -173,8 +173,8 @@ def _validate_portable_inputs(
     evidence_text, evidence = _read_json_text(evidence_path, "promotion evidence")
     source = evidence.get("source")
     provenance = evidence.get("provenance")
-    if evidence.get("schema") != "adk-promotion-evidence/v1":
-        raise RuntimeError("promotion evidence schema must be adk-promotion-evidence/v1")
+    if evidence.get("schema") != "adk-promotion-evidence/v2":
+        raise RuntimeError("promotion evidence schema must be adk-promotion-evidence/v2")
     if not isinstance(source, Mapping):
         raise RuntimeError("promotion evidence source must be an object")
     expected = asdict(identity)
