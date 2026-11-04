@@ -17,6 +17,11 @@ assert lta['schema'] == 'llm-agent-long-term-asset-qualification/v2'
 assert lta['rules']['fail_closed'] is True
 assert lta['rules']['terminal_requires_all_qualification_requirements'] is True
 assert lta['rules']['qualification_pending_does_not_block_iteration'] is True
+research = lta['research_scope_policy']
+assert research['schema'] == 'llm-agent-research-scope/v1'
+assert research['required_controls'] == ['LTA-01', 'LTA-03']
+assert research['optional_field_evidence'] == ['LTA-04']
+assert research['product_release_authorized'] is False
 
 iteration = lta['iteration_readiness']
 assert iteration == {
