@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import unittest
-from tools.codex_assets.actions_cost_audit import summarize, SCHEMA
+from tools.codex_assets.actions_cost_audit import _NoRedirect, summarize, SCHEMA
 
 
 def run(run_id: int, name: str, conclusion: str, jobs: list[dict], sha: str = "a" * 40) -> dict:
@@ -36,6 +36,19 @@ class CostAuditTests(unittest.TestCase):
         self.assertEqual(breakdown["skipped_jobs"], 1)
         self.assertEqual(breakdown["jobs_without_finished_timestamps"], 1)
         self.assertEqual(breakdown["cancelled_runs"], 1)
+
+
+    def test_unfinished_run_and_redirect_remain_explicit(self) -> None:
+        value = summarize("jiying2007/llm_agent", [
+            run(4, "CI", None, []),
+        ])
+        self.assertEqual(value["sampled_runs"], 1)
+        self.assertEqual(value["runs_without_final_conclusion"], 1)
+        self.assertEqual(value["workflow_breakdown"][0]["runs_without_final_conclusion"], 1)
+        self.assertIsNone(value["billable_minutes"])
+        with self.assertRaisesRegex(ValueError, "redirect refused"):
+            _NoRedirect().redirect_request(None, None, 302, "Found", {},
+                                           "https://example.invalid/token")
 
     def test_missing_identity_duplicate_and_negative_duration_fail_closed(self) -> None:
         with self.assertRaises(ValueError):

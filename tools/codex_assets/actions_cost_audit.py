@@ -7,13 +7,13 @@ No raw logs, artifacts, secrets, model usage, or repository writes are requested
 from __future__ import annotations
 
 import argparse
-from collections import Counter, defaultdict
-from datetime import datetime
 import json
 import os
-from pathlib import Path
 import re
 import urllib.request
+from collections import Counter, defaultdict
+from datetime import datetime
+from pathlib import Path
 from typing import Any
 
 SCHEMA = "llm-agent-actions-cost-observation/v1"
@@ -37,6 +37,7 @@ def summarize(repository: str, samples: list[dict[str, Any]]) -> dict[str, Any]:
     by_name: dict[str, dict[str, Any]] = defaultdict(lambda: {
         "runs": 0, "jobs": 0, "observed_job_seconds": 0,
         "jobs_without_finished_timestamps": 0, "cancelled_runs": 0, "skipped_jobs": 0,
+        "runs_without_final_conclusion": 0,
     })
     seen_ids: set[int] = set()
     identical_heads: Counter[tuple[str, str, str]] = Counter()
@@ -54,6 +55,8 @@ def summarize(repository: str, samples: list[dict[str, Any]]) -> dict[str, Any]:
         count = by_name[name]
         count["runs"] += 1
         conclusion = sample.get("conclusion")
+        if conclusion is None:
+            count["runs_without_final_conclusion"] += 1
         if conclusion == "cancelled":
             count["cancelled_runs"] += 1
         elif conclusion not in (None, "success", "failure", "skipped", "timed_out", "action_required", "neutral"):
@@ -93,6 +96,7 @@ def summarize(repository: str, samples: list[dict[str, Any]]) -> dict[str, Any]:
         "repository": repository, "sampled_runs": counts["runs"],
         "observed_job_wall_minutes": round(sum(x["observed_job_seconds"] for x in rows) / 60, 2),
         "possible_same_head_repetitions": sum(max(0, count - 1) for count in identical_heads.values()),
+        "runs_without_final_conclusion": sum(x["runs_without_final_conclusion"] for x in rows),
         "workflow_breakdown": rows,
         "billable_minutes": None, "usd_cost": None,
         "limitations": [
@@ -100,9 +104,16 @@ def summarize(repository: str, samples: list[dict[str, Any]]) -> dict[str, Any]:
             "Only latest-attempt job pages are counted; retries and older attempts can be omitted.",
             "Sample is most recent N runs, not a representative historical billing period.",
             "Skipped and unfinished jobs do not have observable completed wall durations.",
+            "Unfinished workflow runs remain explicit and cannot be treated as zero spend.",
         ],
         "qualification_authority": "none",
     }
+
+
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req: Any, fp: Any, code: int, msg: str,
+                         headers: Any, newurl: str) -> None:
+        raise ValueError("GitHub API redirect refused")
 
 
 def _api_json(url: str, token: str | None) -> dict[str, Any]:
@@ -112,7 +123,7 @@ def _api_json(url: str, token: str | None) -> dict[str, Any]:
     if token:
         headers["Authorization"] = "Bearer " + token
     request = urllib.request.Request(url, headers=headers, method="GET")
-    with urllib.request.urlopen(request, timeout=8) as response:
+    with urllib.request.build_opener(_NoRedirect()).open(request, timeout=8) as response:
         raw = response.read(MAX_RESPONSE + 1)
     if len(raw) > MAX_RESPONSE:
         raise ValueError("GitHub API payload exceeded size budget")
