@@ -170,3 +170,23 @@ as after `observed_through` and the 30-day eligibility time. Rehashing a
 late event cannot retroactively authorize an older owner review. The test
 fixture verifies both early-review rejection and explicitly later simulated
 approval without creating any real field record or owner decision.
+
+## 研究完成状态与真实证据的最小词汇（2026-11-04）
+
+- `pass`: 只用于某一明确的命令、源码和证据范围实际通过；必须附可追溯记录。
+- `pending`: 当前用途有资格要求，但客观前提或真实证据尚不具备；例如现阶段 G21/G22/LTA-04 的真实认证。
+- `not_required`: 当前明确选择研发/源码集成用途，产品发布及现场资格对本次任务不适用；**不是认证 PASS**。
+- `not_evaluated`: 对真实使用效果、真实模型对照或费用尚未执行测量；不得自动变成 `pass` 或零费用。
+
+关闭 Issue 是工作流事实，不是证据事实；G21/G22/LTA-04 历史跟踪条目关闭（not_planned）后，只有对应 canonical certifier 可以改变资格判定。Product M5 #236 仍按实际发布需求独立启动。任何审查报告都不得从 GitHub PR/Issue 状态继承 Native/field/product pass。
+
+## Actions 成本观察（只读，复用现有每周维护工作流）
+
+`tools.codex_assets.actions_cost_audit` 使用固定 GitHub REST 只读端点，观察最近最多 30 个 Run 的 latest-attempt Jobs 时长；权限仅 `actions:read`。每周已有的 Maintainability 工作流复用同一 Runner 上传 JSON，不新增定时工作流，不发送 provider/model 调用。
+
+```bash
+GITHUB_TOKEN=... python3 -m tools.codex_assets.actions_cost_audit \
+  --repository jiying2007/llm_agent --limit 20 --output /tmp/actions-cost-summary.json
+```
+
+报告中的 `observed_job_wall_minutes` **不是计费分钟、Token 或美元**。GitHub 的 workflow/run usage API 已进入退役流程，脚本故意不把其返回值当成长期收费权威；对缺失时间和 API 不可达报告 unknown/unavailable，不冒充零成本。评估流程扇出或重复运行时，先比较同 SHA 的运行和 job wall time，再在不降低保护性 CI 门禁的前提下通过缓存、路径影响面、合并相近 scheduled tasks 等方式优化。真实账单只能由授权的计费系统独立获取。
