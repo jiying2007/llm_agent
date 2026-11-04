@@ -182,10 +182,10 @@ approval without creating any real field record or owner decision.
 
 ## Actions 成本观察（只读，复用现有每周维护工作流）
 
-`tools.control_plane.actions_cost_audit` 使用固定 GitHub REST 只读端点，观察最近最多 30 个 Run 的 latest-attempt Jobs 时长；权限仅 `actions:read`。每周已有的 Maintainability 工作流复用同一 Runner 上传 JSON，不新增定时工作流，不发送 provider/model 调用。
+`tools.codex_assets.actions_cost_audit` 使用固定 GitHub REST 只读端点，观察最近最多 30 个 Run 的 latest-attempt Jobs 时长；权限仅 `actions:read`。每周已有的 Maintainability 工作流复用同一 Runner 上传 JSON，不新增定时工作流，不发送 provider/model 调用。
 
 ```bash
-GITHUB_TOKEN=... python3 -m tools.control_plane.actions_cost_audit \
+GITHUB_TOKEN=... python3 -m tools.codex_assets.actions_cost_audit \
   --repository jiying2007/llm_agent --limit 20 --output /tmp/actions-cost-summary.json
 ```
 

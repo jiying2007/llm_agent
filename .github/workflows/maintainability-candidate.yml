@@ -9,7 +9,7 @@ on:
       - '.github/workflows/maintainability-candidate.yml'
       - 'tools/codex_assets/maintainability_evidence.py'
       - 'tests/test_maintainability_evidence_candidate.py'
-      - 'tools/control_plane/actions_cost_audit.py'
+      - 'tools/codex_assets/actions_cost_audit.py'
       - 'tests/test_actions_cost_audit.py'
 
 permissions:
@@ -68,7 +68,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
-          python3 -m tools.control_plane.actions_cost_audit \
+          python3 -m tools.codex_assets.actions_cost_audit \
             --repository jiying2007/llm_agent --limit 20 \
             --output "$RUNNER_TEMP/actions-cost-summary.json"
 

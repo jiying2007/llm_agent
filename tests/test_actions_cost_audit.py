@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import unittest
-from tools.control_plane.actions_cost_audit import summarize, SCHEMA
+from tools.codex_assets.actions_cost_audit import summarize, SCHEMA
 
 
 def run(run_id: int, name: str, conclusion: str, jobs: list[dict], sha: str = "a" * 40) -> dict:
