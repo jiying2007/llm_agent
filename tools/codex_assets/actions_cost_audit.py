@@ -31,7 +31,7 @@ def _utc(value: Any) -> datetime:
 
 
 def summarize(repository: str, samples: list[dict[str, Any]]) -> dict[str, Any]:
-    if not REPO_RE.fullmatch(repository) or len(samples) > 100:
+    if not REPO_RE.fullmatch(repository) or ".." in repository.split("/") or len(samples) > 100:
         raise ValueError("invalid repository or excessive sample size")
     counts: Counter[str] = Counter()
     by_name: dict[str, dict[str, Any]] = defaultdict(lambda: {
@@ -123,7 +123,7 @@ def _api_json(url: str, token: str | None) -> dict[str, Any]:
 
 
 def sample_live(repository: str, limit: int, token: str | None) -> list[dict[str, Any]]:
-    if not REPO_RE.fullmatch(repository) or not 1 <= limit <= 30:
+    if not REPO_RE.fullmatch(repository) or ".." in repository.split("/") or not 1 <= limit <= 30:
         raise ValueError("repository or run sample limit is invalid")
     base = "https://api.github.com/repos/" + repository + "/actions"
     data = _api_json(base + "/runs?per_page=" + str(limit), token)
