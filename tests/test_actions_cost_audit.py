@@ -50,6 +50,24 @@ class CostAuditTests(unittest.TestCase):
             _NoRedirect().redirect_request(None, None, 302, "Found", {},
                                            "https://example.invalid/token")
 
+
+    def test_stale_and_startup_failure_are_valid_terminal_states(self) -> None:
+        # GitHub can report these genuine conclusions even without completed jobs.
+        # They must not invalidate the entire bounded cost observation.
+        result = summarize("jiying2007/llm_agent", [
+            run(5, "CI", "stale", []),
+            run(6, "CI", "startup_failure", []),
+        ])
+        self.assertEqual(result["status"], "observation-only")
+        self.assertEqual(result["sampled_runs"], 2)
+        self.assertEqual(result["observed_job_wall_minutes"], 0)
+        self.assertEqual(result["workflow_breakdown"][0]["stale_runs"], 1)
+        self.assertEqual(result["workflow_breakdown"][0]["startup_failure_runs"], 1)
+        self.assertIsNone(result["billable_minutes"])
+        self.assertIsNone(result["usd_cost"])
+        with self.assertRaisesRegex(ValueError, "unsupported workflow conclusion"):
+            summarize("jiying2007/llm_agent", [run(7, "CI", "invented-status", [])])
+
     def test_missing_identity_duplicate_and_negative_duration_fail_closed(self) -> None:
         with self.assertRaises(ValueError):
             summarize("../evil", [])
