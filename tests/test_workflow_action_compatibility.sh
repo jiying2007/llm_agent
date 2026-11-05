@@ -85,6 +85,27 @@ for action in ("actions/checkout", "actions/setup-python", "actions/upload-artif
     if seen[action] == 0:
         failures.append(f"required workflow action not found: {action}")
 
+# The active Root control plane and every hosted Python job use one exact
+# interpreter.  This checks the real workflow source, never historical receipts.
+import tomllib
+project = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))
+if project["project"]["requires-python"] != ">=3.12,<3.13":
+    failures.append("Root control plane must require exactly Python 3.12")
+if project["tool"]["ruff"]["target-version"] != "py312":
+    failures.append("Ruff target is not py312")
+if project["tool"]["mypy"]["python_version"] != "3.12":
+    failures.append("Mypy target is not Python 3.12")
+hosted_python_jobs = 0
+for path in workflows:
+    body = path.read_text(encoding="utf-8")
+    versions = re.findall(r"(?m)^\s+python-version:\s*['\"]?([^\s'\"#]+)", body)
+    hosted_python_jobs += len(versions)
+    for version in versions:
+        if version != "3.12":
+            failures.append(f"{path.relative_to(root)} has noncanonical Python version: {version}")
+if hosted_python_jobs < 8:
+    failures.append("too few pinned hosted Python jobs inspected")
+
 if failures:
     raise SystemExit("\n".join(failures))
 
