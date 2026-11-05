@@ -37,7 +37,7 @@ def summarize(repository: str, samples: list[dict[str, Any]]) -> dict[str, Any]:
     by_name: dict[str, dict[str, Any]] = defaultdict(lambda: {
         "runs": 0, "jobs": 0, "observed_job_seconds": 0,
         "jobs_without_finished_timestamps": 0, "cancelled_runs": 0, "skipped_jobs": 0,
-        "runs_without_final_conclusion": 0,
+        "runs_without_final_conclusion": 0, "stale_runs": 0, "startup_failure_runs": 0,
     })
     seen_ids: set[int] = set()
     identical_heads: Counter[tuple[str, str, str]] = Counter()
@@ -59,6 +59,10 @@ def summarize(repository: str, samples: list[dict[str, Any]]) -> dict[str, Any]:
             count["runs_without_final_conclusion"] += 1
         if conclusion == "cancelled":
             count["cancelled_runs"] += 1
+        elif conclusion == "stale":
+            count["stale_runs"] += 1
+        elif conclusion == "startup_failure":
+            count["startup_failure_runs"] += 1
         elif conclusion not in (None, "success", "failure", "skipped", "timed_out", "action_required", "neutral"):
             raise ValueError("unsupported workflow conclusion")
         sha = sample.get("head_sha")
@@ -105,6 +109,7 @@ def summarize(repository: str, samples: list[dict[str, Any]]) -> dict[str, Any]:
             "Sample is most recent N runs, not a representative historical billing period.",
             "Skipped and unfinished jobs do not have observable completed wall durations.",
             "Unfinished workflow runs remain explicit and cannot be treated as zero spend.",
+            "Stale/startup-failure runs may have no finished jobs; observed minutes do not prove zero spend.",
         ],
         "qualification_authority": "none",
     }
