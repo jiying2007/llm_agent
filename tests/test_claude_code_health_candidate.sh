@@ -38,6 +38,22 @@ receipt["receipt_sha256"]=hashlib.sha256(canonical.encode()).hexdigest()
 (root/".adk-install-receipt.json").write_text(json.dumps(receipt),encoding="utf-8")
 PY
 bash "$CHECK" "$ROOT_LIVE" strict | grep -q 'native_certified=false'
+cp "$ROOT_LIVE/.adk-install-receipt.json" "$TMP/receipt-good.json"
+python3 - "$ROOT_LIVE" <<'PY'
+import hashlib, json, pathlib, sys
+path=pathlib.Path(sys.argv[1])/".adk-install-receipt.json"
+receipt=json.loads(path.read_text())
+receipt["installed"][0].pop("file_mode")
+canonical=json.dumps({k:v for k,v in receipt.items() if k!="receipt_sha256"},
+                     sort_keys=True,separators=(",",":"),ensure_ascii=False)+"\\n"
+receipt["receipt_sha256"]=hashlib.sha256(canonical.encode()).hexdigest()
+path.write_text(json.dumps(receipt))
+PY
+if bash "$CHECK" "$ROOT_LIVE" strict >/dev/null 2>&1; then
+  echo "[FAIL] strict preflight accepted a receipt with missing file mode" >&2
+  exit 1
+fi
+cp "$TMP/receipt-good.json" "$ROOT_LIVE/.adk-install-receipt.json"
 printf 'modified\n' >> "$ROOT_LIVE/skills/adk-example/SKILL.md"
 if bash "$CHECK" "$ROOT_LIVE" strict >/dev/null 2>&1; then
   echo "[FAIL] strict preflight accepted modified installed Skill" >&2
