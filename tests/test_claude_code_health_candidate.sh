@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
+# Exercise the fixture under a restrictive caller umask; SKILL.md mode is explicit.
+umask 0077
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 CHECK="$ROOT/scripts/adapters/claude-code-health.sh"
 TMP="$(mktemp -d)"
