@@ -3,6 +3,8 @@ import subprocess
 import tempfile
 import unittest
 import os
+import shlex
+import shutil
 
 ROOT = Path(__file__).resolve().parents[1]
 CHECKER = ROOT / "scripts/check-stale-references.sh"
@@ -45,6 +47,46 @@ class StaleReferenceScopeTest(unittest.TestCase):
             result = self.check(root)
             self.assertEqual(1, result.returncode)
             self.assertIn("validate_assets.sh", result.stderr)
+
+    def test_scan_runs_without_pcre2_and_still_rejects_stale_guidance(self):
+        # Simulate a ripgrep build without PCRE2, even on CI hosts that have it.
+        real_rg = shutil.which("rg")
+        self.assertIsNotNone(real_rg, "ripgrep is a required test dependency")
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp) / "workspace"
+            root.mkdir()
+            guidance = root / "AGENTS.md"
+            guidance.write_text("current guidance\n", encoding="utf-8")
+
+            bin_dir = Path(temp) / "bin"
+            bin_dir.mkdir()
+            rg = bin_dir / "rg"
+            rg.write_text(
+                "#!/bin/sh\n"
+                "for arg do\n"
+                "  if [ \"$arg\" = \"--pcre2\" ]; then\n"
+                "    echo 'PCRE2 is not available in this build of ripgrep' >&2\n"
+                "    exit 2\n"
+                "  fi\n"
+                "done\n"
+                + "exec " + shlex.quote(real_rg) + " \"$@\"\n",
+                encoding="utf-8",
+            )
+            rg.chmod(0o755)
+            env = dict(os.environ, PATH=str(bin_dir) + os.pathsep + os.environ["PATH"])
+
+            def scan():
+                return subprocess.run(
+                    ["bash", str(CHECKER), str(root)],
+                    cwd=temp, env=env, text=True, capture_output=True,
+                )
+
+            clean = scan()
+            self.assertEqual(0, clean.returncode, clean.stdout + clean.stderr)
+            guidance.write_text("scripts/validate_assets.sh\n", encoding="utf-8")
+            stale = scan()
+            self.assertEqual(1, stale.returncode, stale.stdout + stale.stderr)
+            self.assertIn("validate_assets.sh", stale.stderr)
 
     def test_missing_ripgrep_fails_closed(self):
         with tempfile.TemporaryDirectory() as temp:
