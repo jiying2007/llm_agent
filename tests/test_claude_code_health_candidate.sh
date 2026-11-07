@@ -8,6 +8,7 @@ HOME_ROOT="$TMP/home"
 mkdir -p "$HOME_ROOT/.claude/skills/adk-example" "$HOME_ROOT/.claude/commands"
 ROOT_LIVE="$HOME_ROOT/.claude"
 printf '%s\n' '---' 'name: adk-example' 'description: example fixture' '---' '# Example' > "$ROOT_LIVE/skills/adk-example/SKILL.md"
+chmod 0644 "$ROOT_LIVE/skills/adk-example/SKILL.md"
 printf '%s\n' '{"theme":"light"}' > "$ROOT_LIVE/settings.json"
 bash "$CHECK" "$ROOT_LIVE" minimal | grep -q 'native_certified=false'
 bash "$CHECK" "$ROOT_LIVE" security | grep -q '\[PASS\]'
@@ -38,6 +39,18 @@ receipt["receipt_sha256"]=hashlib.sha256(canonical.encode()).hexdigest()
 (root/".adk-install-receipt.json").write_text(json.dumps(receipt),encoding="utf-8")
 PY
 bash "$CHECK" "$ROOT_LIVE" strict | grep -q 'native_certified=false'
+# Mode validation must reject a tampered installation without depending on the caller umask.
+chmod 0600 "$ROOT_LIVE/skills/adk-example/SKILL.md"
+if bash "$CHECK" "$ROOT_LIVE" strict >"$TMP/mode-drift.log" 2>&1; then
+  echo "[FAIL] strict preflight accepted installed asset permission drift" >&2
+  exit 1
+fi
+if ! grep -q "ADK installed asset permissions drifted" "$TMP/mode-drift.log"; then
+  echo "[FAIL] strict preflight rejected mode drift for an unexpected reason" >&2
+  cat "$TMP/mode-drift.log" >&2
+  exit 1
+fi
+chmod 0644 "$ROOT_LIVE/skills/adk-example/SKILL.md"
 cp "$ROOT_LIVE/.adk-install-receipt.json" "$TMP/receipt-good.json"
 python3 - "$ROOT_LIVE" <<'PY'
 import hashlib, json, pathlib, sys

@@ -68,7 +68,7 @@ for rel in "${SCAN_PATHS[@]}"; do
     # Change records retain prior snapshots and negative command examples;
     # they are provenance rather than active installation guidance.
     scan_status=0
-    rg -n --pcre2 \
+    rg -n \
       -g '!reports/archive/**' \
       -g '!agent-dev-kit/reports/archive/**' \
       -g '!**/docs/archive/**' \
