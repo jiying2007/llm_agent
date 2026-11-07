@@ -174,3 +174,28 @@ rtk bash ~/codex/scripts/apply.sh --plan ~/codex/build/apply-plan.json --dry-run
 - 不允许 adapter `target_ids` 指向 disabled target。
 - 不允许用参考子仓 dirty 状态作为 runtime target 证据。
 - 不允许 dry-run 出现覆盖或删除而没有解释来源、影响和回滚方式。
+
+## Claude Code candidate preflight (2026-11-07)
+
+The ADK-only Claude consumer source is now maintained in
+[jiying2007/claude](https://github.com/jiying2007/claude).
+For **isolated or operator-owned** Claude homes, Root provides an optional
+read-only diagnostic:
+
+```bash
+bash scripts/adapters/claude-code-health.sh /absolute/claude-config minimal
+bash scripts/adapters/claude-code-health.sh /absolute/claude-config security
+bash scripts/adapters/claude-code-health.sh /absolute/claude-config strict
+```
+
+This script checks source-layout files, absence of legacy Superpowers activation,
+and, in strict mode, the SHA-256 integrity of an ADK v3 local install receipt plus
+managed file bytes/modes. It does **not** verify signed upstream release authority
+or native Claude Code discovery/load/trigger. The fixture test synthesizes receipts
+for **negative regression only**, not for qualification.
+
+The existing `claude-code-home` runtime target and adapter must **stay disabled**,
+with no active source/live chain or live write permission, until an independently
+reviewed, actual target deploy and native authenticated campaign produces the
+required runtime evidence. Do not enable the target merely because source-level
+preflight succeeds. `llm_agent` remains a report-only observer.
