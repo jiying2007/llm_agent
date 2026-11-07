@@ -48,6 +48,11 @@ jobs:
           python -m pip install '.[quality]'
           python -m mypy --config-file pyproject.toml
 
+      - name: Verify Claude ADK-only candidate health preflight
+        run: |
+          bash -n scripts/adapters/claude-code-health.sh tests/test_claude_code_health_candidate.sh
+          bash tests/test_claude_code_health_candidate.sh
+
       - name: Verify bounded cache-only intake
         run: bash tests/test_intake_hardening.sh
 
