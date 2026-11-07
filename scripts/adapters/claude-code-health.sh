@@ -155,8 +155,11 @@ try:
             if row.get("installed_sha256") != digest(path):
                 fail("ADK installed asset digest mismatch")
             declared_mode = row.get("file_mode")
-            if (os.name != "nt" and isinstance(declared_mode, str)
-                and stat.S_IMODE(path.stat().st_mode) != int(declared_mode, 8)):
+            if (not isinstance(declared_mode, str)
+                or len(declared_mode) != 4 or declared_mode[0] != "0"
+                or any(digit not in "01234567" for digit in declared_mode)):
+                fail("ADK installed asset mode is missing or invalid")
+            if os.name != "nt" and stat.S_IMODE(path.stat().st_mode) != int(declared_mode, 8):
                 fail("ADK installed asset permissions drifted")
 
     print(f"[PASS] Claude {profile} source-layout preflight: skills={len(discovered)}; native_certified=false")
