@@ -45,7 +45,7 @@ path=pathlib.Path(sys.argv[1])/".adk-install-receipt.json"
 receipt=json.loads(path.read_text())
 receipt["installed"][0].pop("file_mode")
 canonical=json.dumps({k:v for k,v in receipt.items() if k!="receipt_sha256"},
-                     sort_keys=True,separators=(",",":"),ensure_ascii=False)+"\\n"
+                     sort_keys=True,separators=(",",":"),ensure_ascii=False)+"\n"
 receipt["receipt_sha256"]=hashlib.sha256(canonical.encode()).hexdigest()
 path.write_text(json.dumps(receipt))
 PY
