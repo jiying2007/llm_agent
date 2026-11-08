@@ -54,18 +54,29 @@ llm_agent devkit — 工作区统一入口
   devkit.sh diff 14
   devkit.sh health
   devkit.sh cleanup --dry-run
+
+说明：ADK 资产的严格验证使用另一个 CLI：
+  bash agent-dev-kit/scripts/devkit.sh validate --strict
 EOF
 }
 
 # --- 子命令: check ----------------------------------------------------------
 cmd_check() {
-  local mode="--quick"
+  local mode="--quick" selected=""
   for arg in "$@"; do
     case "${arg}" in
-      --smoke) mode="--smoke" ;;
-      --quick) mode="--quick" ;;
-      --full)  mode="--full" ;;
-      *)       echo "[WARN] check 未知参数: ${arg}" >&2 ;;
+      --smoke|--quick|--full)
+        if [[ -n "$selected" && "$selected" != "$arg" ]]; then
+          echo "[ERROR] check 参数冲突: ${selected} 与 ${arg}" >&2
+          return 2
+        fi
+        mode="$arg"
+        selected="$arg"
+        ;;
+      *)
+        echo "[ERROR] check 不支持参数: ${arg}（仅支持 --smoke、--quick、--full）" >&2
+        return 2
+        ;;
     esac
   done
 
@@ -157,6 +168,10 @@ cmd_cleanup() {
   for arg in "$@"; do
     case "${arg}" in
       --dry-run) dry_run="--dry-run" ;;
+      *)
+        echo "[ERROR] cleanup 不支持参数: ${arg}（仅支持 --dry-run）" >&2
+        return 2
+        ;;
     esac
   done
 
@@ -189,6 +204,11 @@ case "${SUBCMD}" in
   weekly-report) cmd_weekly_report "$@" ;;
   cleanup)      cmd_cleanup "$@" ;;
   help|-h|--help) show_help ;;
+  validate)
+    echo "[ERROR] validate 属于 agent-dev-kit，不属于 llm_agent devkit。" >&2
+    echo "[INFO] 正确入口: bash agent-dev-kit/scripts/devkit.sh validate --strict" >&2
+    exit 2
+    ;;
   *)
     echo -e "${RED}[ERROR] 未知子命令: ${SUBCMD}${NC}" >&2
     echo "运行 'devkit.sh help' 查看可用命令。" >&2
