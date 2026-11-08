@@ -335,22 +335,24 @@ scripts/check-agents-coverage.sh .
   - 根 `AGENTS.md` 是否保持 slim-entry 预算，并指向 registry、adoption matrix 和维护指南
   - 根 `AGENTS.md` 不再逐个列出参考子仓；完整清单以 `subrepos/registry.csv` 为准。
 
-## 4. 新仓库接入
+## 4. 参考仓受审查登记（唯一入口）
 
-当有新参考仓库需要纳入 llm_agent 治理时，使用一键接入脚本：
+新参考仓应先经 `docs/runbooks/external-practice-intake.md` 产出候选与独立决策，再按
+`docs/runbooks/reference-repository-lifecycle.md` 进行登记。默认只生成
+`reference-repository-onboarding/v1` dry-run 计划，不自动 clone、改写其它仓库
+`AGENTS.md`、`registry.csv` 或 `adoption-matrix.md`。
 
 ```bash
-scripts/new-repo-onboard.sh <repo-path> [--adopt|--observe|--selective|--pilot]
+# 查看候选、独立决策、来源绑定与事务提交所需参数
+rtk scripts/onboard-reference-repository.sh . --help
+
+# 查看当前参考仓登记合同与阻塞
+rtk scripts/check-reference-repository-registration.sh . --summary-json
 ```
 
-功能：
-- 自动注册到 `registry.csv`
-- 生成/追加仓库 `AGENTS.md`
-- 更新 `adoption-matrix.md`
-- 运行基础检查
-- 生成接入报告到 `reports/`
-
-详细流程参见：`docs/runbooks/new-repo-onboarding.md`
+只有受审查的 `ADOPT` 候选、独立决策、真实安全/重复/分析证据、干净 Git 源和
+显式授权的 `--apply --materialization local-submodule` 才能修改受管元数据。
+未形成有效决策时保持 `observe/review-required`，不得以原有“一键接入”绕过门禁。
 
 ## 5. 备份回滚
 
@@ -402,9 +404,8 @@ scripts/devkit.sh help
 scripts/devkit.sh check --quick
 scripts/devkit.sh check --full
 
-# 新仓库接入
-scripts/devkit.sh onboard <repo-path> --adopt
-scripts/devkit.sh onboard <repo-path> --observe
+# 参考仓登记：必须先有受审查的候选与独立决策
+rtk scripts/onboard-reference-repository.sh . --help
 
 # 子仓同步
 scripts/devkit.sh sync fetch

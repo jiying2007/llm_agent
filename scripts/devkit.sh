@@ -28,9 +28,6 @@ llm_agent devkit — 工作区统一入口
                                    --quick  跳过重复的耗时综合/release gate（默认）
                                    --full   运行全部检查
 
-  onboard <repo-path> [--adopt|--observe]
-                                 新仓库接入治理
-
   sync [fetch|pull|status]       子仓同步
                                    fetch   拉取远端更新（默认）
                                    pull    对 sync_mode=pull 的子仓执行 ff-only 拉取
@@ -49,11 +46,13 @@ llm_agent devkit — 工作区统一入口
 
 示例:
   devkit.sh check --quick
-  devkit.sh onboard ../my-repo --adopt
   devkit.sh sync fetch
   devkit.sh diff 14
   devkit.sh health
   devkit.sh cleanup --dry-run
+
+参考仓登记必须先完成候选与独立决策，再使用受审查的脚本：
+  bash scripts/onboard-reference-repository.sh . --help
 
 说明：ADK 资产的严格验证使用另一个 CLI：
   bash agent-dev-kit/scripts/devkit.sh validate --strict
@@ -87,25 +86,6 @@ cmd_check() {
   fi
 
   bash "${check_script}" ${mode}
-}
-
-# --- 子命令: onboard --------------------------------------------------------
-cmd_onboard() {
-  if [[ $# -lt 1 ]]; then
-    echo -e "${RED}[ERROR] 用法: devkit.sh onboard <repo-path> [--adopt|--observe]${NC}" >&2
-    exit 1
-  fi
-
-  local repo_path="$1"
-  shift
-
-  local onboard_script="${SCRIPT_DIR}/new-repo-onboard.sh"
-  if [[ ! -x "${onboard_script}" ]]; then
-    echo -e "${RED}[ERROR] new-repo-onboard.sh 不存在或不可执行${NC}" >&2
-    exit 1
-  fi
-
-  bash "${onboard_script}" "${repo_path}" "$@"
 }
 
 # --- 子命令: sync -----------------------------------------------------------
@@ -196,7 +176,11 @@ shift
 
 case "${SUBCMD}" in
   check)        cmd_check "$@" ;;
-  onboard)      cmd_onboard "$@" ;;
+  onboard)
+    echo "[ERROR] Root devkit onboard 已退役，禁止未经独立审查直接修改 registry、AGENTS.md 或 adoption-matrix。" >&2
+    echo "[INFO] 请先完成候选与独立决策，再使用: bash scripts/onboard-reference-repository.sh . --help" >&2
+    exit 2
+    ;;
   sync)         cmd_sync "$@" ;;
   diff)         cmd_diff "$@" ;;
   health)       cmd_health "$@" ;;
