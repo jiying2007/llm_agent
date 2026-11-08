@@ -2,7 +2,6 @@
   "ci": {
     "contract_matrix": {
       "python": [
-        "3.11",
         "3.12"
       ],
       "status": "success"
@@ -10,7 +9,6 @@
     "deterministic_eval_package": "success",
     "regression_matrix": {
       "python": [
-        "3.11",
         "3.12"
       ],
       "status": "success"
@@ -19,32 +17,32 @@
   },
   "contracts": {
     "contract_registry_sha256": "efac468006f649c8a6b15a974c804831700d0934973124b08276da6688239919",
-    "release_manifest_sha256": "3149846e51f0481b4e9f05672e4ca6c510bad2079d0ba5d4fee2c38c5a314f4c",
-    "schema_set_sha256": "e064a7ffeb9e9e5a6f3b700d7ed192ebcccf41052f570cb5785fc0471b47dd9b"
+    "release_manifest_sha256": "46e608091d979c3a290766913e621c8b6d639c07168ff175c4806a6e5828751d",
+    "schema_set_sha256": "82dbc29ce95ca72e9213f3040c50017307b74b287ea4aa1afe2898a4db19c4ca"
   },
-  "issued_at": "2026-11-05T00:36:48.458041Z",
+  "issued_at": "2026-11-07T15:44:07.104221Z",
   "provenance": {
     "format": "sigstore-bundle/v1",
     "subject": "promotion-evidence.json"
   },
   "release": {
-    "artifact_sha256": "445cae3afed7e8ef450117ca2cd65782d0d1fb75ce9f059a6a50f040daad9a33",
+    "artifact_sha256": "4726b1c9ff942e80a0ee0108432f6ea7a4609bd982fc55a4f106bed33eb255e8",
     "release_eligible": true
   },
   "schema": "adk-promotion-evidence/v2",
   "source": {
-    "commit": "af4304d080aa32753b5d717f591fb6d2d715b8fb",
+    "commit": "fe6066c81e3d96c50311a0d73c38d749df0d9cbd",
     "event": "push",
-    "manifest_blob": "a2a63358f4ab6e9cc2d2beb53d0ea2f446bceb09",
-    "manifest_sha256": "f427e04809301c82e2f6bf6ae98aa3183efbcdc783c2f077232db62495c2825f",
+    "manifest_blob": "517c9d93d82d10f77b58a73390d668f1db55242e",
+    "manifest_sha256": "f64c3467d13c092b54001128ce8a116205147119daa6f70c7d402511bab685b0",
     "ref": "refs/heads/main",
     "repository": "jiying2007/agent-dev-kit",
     "run_attempt": 1,
-    "run_id": 41941940061,
-    "tree": "afe146a0efcc50f244f96899f82897cb897d6c81",
-    "version": "10.0.5",
+    "run_id": 42387379074,
+    "tree": "d5aaded1ced7cdb1b523ca1752b2c856a6be9390",
+    "version": "11.0.0",
     "workflow": "agent-dev-kit-ci",
     "workflow_ref": "jiying2007/agent-dev-kit/.github/workflows/ci.yml@refs/heads/main",
-    "workflow_sha": "af4304d080aa32753b5d717f591fb6d2d715b8fb"
+    "workflow_sha": "fe6066c81e3d96c50311a0d73c38d749df0d9cbd"
   }
 }

@@ -1,9 +1,9 @@
 {
   "schema": "llm-agent-adk-interface-lock/v1",
-  "version": "10.0.5",
-  "commit": "af4304d080aa32753b5d717f591fb6d2d715b8fb",
-  "tree": "afe146a0efcc50f244f96899f82897cb897d6c81",
-  "manifest_blob": "a2a63358f4ab6e9cc2d2beb53d0ea2f446bceb09",
+  "version": "11.0.0",
+  "commit": "fe6066c81e3d96c50311a0d73c38d749df0d9cbd",
+  "tree": "d5aaded1ced7cdb1b523ca1752b2c856a6be9390",
+  "manifest_blob": "517c9d93d82d10f77b58a73390d668f1db55242e",
   "manifest_mode": "json-only",
   "maturity_contract": "v5",
   "surfaces": {
@@ -26,5 +26,5 @@
     "tests/test_runtime_control.py",
     "src/agent_dev_kit/runtime_control"
   ],
-  "updated_at": "2026-11-05"
+  "updated_at": "2026-11-08"
 }
