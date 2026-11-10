@@ -18,7 +18,7 @@ from tools.codex_assets.intake_io import IntakeError, read_bytes, read_json
 from .evidence_paths import resolve_regular_evidence_path
 from .process_budget import run_bounded
 
-INTERFACE_SCHEMA = "llm-agent-adk-interface-lock/v1"
+INTERFACE_SCHEMA = "llm-agent-adk-interface-source/v2"
 LOCK_SCHEMA = "llm-agent-adk-lock/v2"
 
 _SURFACES = {
@@ -168,29 +168,6 @@ def _gitlink(root: Path) -> str:
     return fields[1]
 
 
-def interface_payload(identity: Mapping[str, str], updated_at: str) -> dict[str, Any]:
-    required = ("version", "commit", "tree", "manifest_blob")
-    missing = [key for key in required if not identity.get(key)]
-    if missing:
-        raise ValueError("missing ADK interface identity fields: " + ", ".join(missing))
-    return {
-        "schema": INTERFACE_SCHEMA,
-        "version": identity["version"],
-        "commit": identity["commit"],
-        "tree": identity["tree"],
-        "manifest_blob": identity["manifest_blob"],
-        "manifest_mode": "json-only",
-        "maturity_contract": "v5",
-        "surfaces": dict(_SURFACES),
-        "deprecated_surfaces": list(_DEPRECATED),
-        "updated_at": updated_at,
-    }
-
-
-def render_interface_lock(identity: Mapping[str, str], updated_at: str) -> str:
-    return json.dumps(interface_payload(identity, updated_at), ensure_ascii=False, indent=2) + "\n"
-
-
 def _validate_pinned_worktree(root: Path, expected: Mapping[str, str | None]) -> list[str]:
     worktree = root / "agent-dev-kit"
     failures: list[str] = []
@@ -219,50 +196,49 @@ def _validate_pinned_worktree(root: Path, expected: Mapping[str, str | None]) ->
 
 
 def validate(root: Path, *, require_worktree: bool = False) -> dict[str, Any]:
+    """Check one pinned ADK identity against canonical API surfaces.
+
+    Interface contract lives in this module; it is not a second version lock.
+    The indexed gitlink is the source authority, with the remaining legacy
+    adk.lock verified as a dependent projection until its consumer cutover.
+    """
     root = root.resolve()
     lock = _read_lock(root / "adk.lock")
-    interface = json.loads((root / "manifests" / "adk_interface.lock.json").read_text(encoding="utf-8"))
-    failures: list[str] = []
-
-    if interface.get("schema") != INTERFACE_SCHEMA:
-        failures.append("unsupported interface lock schema")
-
     expected = {
         "version": lock.get("agent-dev-kit.version"),
         "commit": lock.get("agent-dev-kit.commit"),
         "tree": lock.get("agent-dev-kit.tree"),
         "manifest_blob": lock.get("agent-dev-kit.manifest_blob"),
     }
+    failures: list[str] = []
     for key, value in expected.items():
         if not value:
-            failures.append(f"adk.lock missing {key}")
-        elif interface.get(key) != value:
-            failures.append(f"interface {key} does not match adk.lock")
-
-    if expected.get("commit") and _gitlink(root) != expected["commit"]:
-        failures.append("ADK gitlink does not match interface/lock commit")
-    if interface.get("manifest_mode") != "json-only":
-        failures.append("ADK interface must declare json-only manifest mode")
-    if interface.get("maturity_contract") != "v5":
-        failures.append("ADK interface must declare v5 maturity contract")
-    if interface.get("surfaces") != _SURFACES:
-        failures.append("ADK interface surfaces drifted from the supported v5 contract")
-    if interface.get("deprecated_surfaces") != _DEPRECATED:
-        failures.append("ADK deprecated-surface contract drifted")
+            failures.append("adk.lock missing " + key)
+    pinned_gitlink = _gitlink(root)
+    if expected["commit"] != pinned_gitlink:
+        failures.append("ADK gitlink differs from source identity projection")
     if require_worktree:
         failures.extend(_validate_pinned_worktree(root, expected))
-
+        if not failures:
+            try:
+                resolved = source_pin(root)
+                for key, value in resolved.items():
+                    if value != expected.get(key):
+                        failures.append("ADK source projection differs from Git authority: " + key)
+            except (OSError, ValueError) as exc:
+                failures.append(str(exc))
     return {
         "schema": INTERFACE_SCHEMA,
         "status": "pass" if not failures else "fail",
         "identity": expected,
-        "gitlink": _gitlink(root),
+        "gitlink": pinned_gitlink,
         "surfaces": dict(_SURFACES),
         "deprecated_surfaces": list(_DEPRECATED),
+        "manifest_mode": "json-only",
+        "maturity_contract": "v5",
         "worktree_checked": require_worktree,
         "failures": failures,
     }
-
 
 
 PIN_SCHEMA = "llm-agent-adk-source-pin/v1"
@@ -584,7 +560,7 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(result, ensure_ascii=False, sort_keys=True))
     else:
         if result["status"] == "pass":
-            print("[PASS] ADK interface lock matches gitlink, adk.lock and required source surfaces")
+            print("[PASS] ADK source interface matches Git pin, generated lock, and canonical surfaces")
         else:
             for failure in result.get("failures", []):
                 print(f"[FAIL] {failure}", file=sys.stderr)
