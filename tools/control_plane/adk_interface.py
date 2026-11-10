@@ -420,6 +420,98 @@ def verify_sigstore(evidence_path: Path, bundle_path: Path) -> None:
 
 
 
+
+def verify_native_release_contract(
+    root: Path,
+    identity: Mapping[str, str],
+    archive_path: Path,
+    release_contract: Mapping[str, Any],
+    release_metadata: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Bind a GitHub immutable Release artifact, manifest and source pin.
+
+    This pure check is distinct from the signed artifact attestation: the
+    latter is verified through GitHub's Sigstore-backed attestation service.
+    """
+    name = "agent-dev-kit-" + identity["version"] + ".tar.gz"
+    if archive_path.name != name:
+        raise ValueError("release archive name differs from pinned ADK version")
+    archive = read_bytes(archive_path, label="ADK immutable release archive", max_bytes=128 * 1024 * 1024)
+    digest = hashlib.sha256(archive).hexdigest()
+    if release_contract.get("schema") != "adk-release-artifact-contract-set/v1":
+        raise ValueError("unsupported ADK release contract schema")
+    if release_contract.get("status") != "pass":
+        raise ValueError("ADK release contract is not successful")
+    contracts = release_contract.get("artifacts")
+    if not isinstance(contracts, list) or len(contracts) != 1 or not isinstance(contracts[0], dict):
+        raise ValueError("ADK release contract must identify one archive")
+    item = contracts[0]
+    expected_manifest_sha256 = hashlib.sha256(
+        read_bytes(root / "agent-dev-kit" / "manifest.json", label="pinned ADK manifest", max_bytes=MAX_JSON)
+    ).hexdigest()
+    if (
+        item.get("schema") != "adk-release-artifact-contract/v1"
+        or item.get("status") != "pass"
+        or item.get("artifact") != name
+        or item.get("version") != identity["version"]
+        or item.get("release_eligible") is not True
+        or item.get("artifact_sha256") != digest
+        or item.get("manifest_sha256") != expected_manifest_sha256
+    ):
+        raise ValueError("release contract source identity, hash or eligibility is invalid")
+    if (
+        release_metadata.get("tag_name") != "v" + identity["version"]
+        or release_metadata.get("immutable") is not True
+        or release_metadata.get("draft") is not False
+        or release_metadata.get("prerelease") is not False
+    ):
+        raise ValueError("upstream Release must be immutable, published and match pinned version")
+    assets = release_metadata.get("assets")
+    if not isinstance(assets, list):
+        raise ValueError("upstream Release asset list is missing")
+    exact = [asset for asset in assets if isinstance(asset, dict) and asset.get("name") == name]
+    if len(exact) != 1 or exact[0].get("digest") != "sha256:" + digest or exact[0].get("size") != len(archive):
+        raise ValueError("GitHub Release asset digest/size differs from downloaded content")
+    return {
+        "schema": PIN_SCHEMA,
+        "status": "pass",
+        "identity": dict(identity),
+        "artifact_sha256": digest,
+        "source_authority": "git-submodule-index",
+        "evidence_origin": "immutable-upstream-release",
+        "signature_verified": False,
+        "runtime_qualified": False,
+        "device_qualified": False,
+    }
+
+
+def verify_native_release_attestation(archive_path: Path, identity: Mapping[str, str]) -> int:
+    """Enforce native Release signer and pinned source commit, not an unsigned JSON claim."""
+    command = [
+        "gh", "attestation", "verify", str(archive_path),
+        "--repo", PRODUCER,
+        "--signer-workflow", PRODUCER + "/.github/workflows/release.yml",
+        "--source-digest", identity["commit"],
+        "--source-ref", "refs/heads/main",
+        "--format", "json",
+    ]
+    try:
+        proc = subprocess.run(command, check=False, capture_output=True, text=True, timeout=120)
+    except (FileNotFoundError, subprocess.TimeoutExpired) as exc:
+        raise ValueError("native GitHub Release attestation verification unavailable") from exc
+    if proc.returncode != 0:
+        raise ValueError("native Release attestation is invalid: " + proc.stderr[-500:])
+    if len(proc.stdout) > MAX_JSON:
+        raise ValueError("native Release attestation output exceeded the size limit")
+    try:
+        items = json.loads(proc.stdout)
+    except json.JSONDecodeError as exc:
+        raise ValueError("native Release attestation output is invalid JSON") from exc
+    if not isinstance(items, list) or not items or not all(isinstance(item, dict) for item in items):
+        raise ValueError("no native Release attestation could be verified")
+    return len(items)
+
+
 def source_pin_main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Verify ADK single Git pin and optional external signed evidence")
     parser.add_argument("--root", default=".")
@@ -427,13 +519,33 @@ def source_pin_main(argv: list[str] | None = None) -> int:
     parser.add_argument("--attestation")
     parser.add_argument("--run-json")
     parser.add_argument("--release-json")
+    parser.add_argument("--release-archive")
+    parser.add_argument("--release-contract")
     parser.add_argument("--summary-json", action="store_true")
     args = parser.parse_args(argv)
     result: dict[str, Any]
     try:
         identity = source_pin(Path(args.root))
         paths = (args.evidence, args.attestation, args.run_json, args.release_json)
-        if any(paths):
+        if args.release_archive or args.release_contract:
+            if not args.release_archive or not args.release_contract or not args.release_json or any(paths[:3]):
+                raise ValueError("native Release mode needs archive, contract and metadata without CI bundle inputs")
+            release_contract = _object(
+                read_json(Path(args.release_contract), label="ADK immutable Release contract", max_bytes=MAX_JSON),
+                "release contract",
+            )
+            release_metadata = _object(
+                read_json(Path(args.release_json), label="ADK immutable Release metadata", max_bytes=MAX_JSON),
+                "Release metadata",
+            )
+            result = verify_native_release_contract(
+                Path(args.root), identity, Path(args.release_archive), release_contract, release_metadata,
+            )
+            result["verified_attestation_count"] = verify_native_release_attestation(
+                Path(args.release_archive), identity,
+            )
+            result["signature_verified"] = True
+        elif any(paths):
             if not all(paths):
                 raise ValueError("signed evidence, Sigstore bundle, run and Release metadata must be supplied together")
             evidence = _object(read_json(Path(args.evidence), label="ADK signed evidence", max_bytes=MAX_JSON), "evidence")

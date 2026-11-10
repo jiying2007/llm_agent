@@ -243,6 +243,70 @@ jobs:
       - name: Install pinned ADK for source-layer consumer regression
         run: python -m pip install ./agent-dev-kit
 
+      - name: Verify native immutable ADK Release on exact gitlink changes
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.CODEX_SAFE_FAMILY_READ_TOKEN || github.token }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
+          PUSH_BEFORE_SHA: ${{ github.event.before || '' }}
+        run: |
+          set -euo pipefail
+          python -m tools.control_plane.adk_interface --source-pin --root . --summary-json \
+            > /tmp/adk-source-pin-receipt.json
+          if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
+            base_sha="$PR_BASE_SHA"
+          elif [[ "$GITHUB_EVENT_NAME" == "push" ]]; then
+            base_sha="$PUSH_BEFORE_SHA"
+          else
+            echo '{"schema":"adk-native-release-check/v1","status":"not-required","reason":"explicit-dispatch"}' \
+              > /tmp/adk-native-release-receipt.json
+            exit 0
+          fi
+          [[ "$base_sha" =~ ^[0-9a-f]{40}$ && "$base_sha" != 0000000000000000000000000000000000000000 ]] || {
+            echo '[FAIL] missing trusted parent commit for ADK pin comparison' >&2
+            exit 1
+          }
+          # Git API read avoids deepening a shallow PR checkout and changing
+          # historical ancestry semantics used by source qualification checks.
+          old_pin="$(gh api "repos/$GITHUB_REPOSITORY/git/trees/$base_sha" \
+            --jq '.tree[] | select(.path=="agent-dev-kit" and .mode=="160000" and .type=="commit") | .sha')"
+          [[ "$old_pin" =~ ^[0-9a-f]{40}$ ]] || {
+            echo '[FAIL] trusted base ADK gitlink unavailable' >&2
+            exit 1
+          }
+          current_pin="$(git ls-files -s -- agent-dev-kit | awk '$1=="160000" {print $2}')"
+          [[ "$current_pin" =~ ^[0-9a-f]{40}$ ]] || { echo '[FAIL] ADK gitlink absent' >&2; exit 1; }
+          if [[ "$old_pin" == "$current_pin" ]]; then
+            echo '{"schema":"adk-native-release-check/v1","status":"not-required","reason":"unchanged-gitlink"}' \
+              > /tmp/adk-native-release-receipt.json
+            exit 0
+          fi
+          version="$(python -c 'import json; print(json.load(open("/tmp/adk-source-pin-receipt.json"))["identity"]["version"])')"
+          [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || {
+            echo '[FAIL] pinned ADK version is not a stable release' >&2
+            exit 1
+          }
+          mkdir -p "$RUNNER_TEMP/adk-native-release"
+          gh release download "v$version" -R jiying2007/agent-dev-kit \
+            --pattern "agent-dev-kit-$version.tar.gz" \
+            --pattern "agent-dev-kit-$version.tar.gz.sha256" \
+            --pattern release-contract.json --dir "$RUNNER_TEMP/adk-native-release"
+          (cd "$RUNNER_TEMP/adk-native-release" && sha256sum --check "agent-dev-kit-$version.tar.gz.sha256")
+          gh api -H "X-GitHub-Api-Version: 2026-03-10" \
+            "repos/jiying2007/agent-dev-kit/releases/tags/v$version" \
+            > "$RUNNER_TEMP/adk-native-release/release.json"
+          git -C agent-dev-kit fetch origin "refs/tags/v$version:refs/tags/v$version"
+          test "$(git -C agent-dev-kit rev-parse "refs/tags/v$version^{commit}")" = "$current_pin" || {
+            echo '[FAIL] ADK release tag does not point to the pinned commit' >&2
+            exit 1
+          }
+          python -m tools.control_plane.adk_interface --source-pin --root . \
+            --release-archive "$RUNNER_TEMP/adk-native-release/agent-dev-kit-$version.tar.gz" \
+            --release-contract "$RUNNER_TEMP/adk-native-release/release-contract.json" \
+            --release-json "$RUNNER_TEMP/adk-native-release/release.json" --summary-json \
+            > /tmp/adk-native-release-receipt.json
+          echo '[PASS] immutable ADK Release digest, signer, source commit and ref verified'
+
       - name: Verify portable promotion evidence claims
         run: >-
           python -m tools.control_plane.cli promotion-evidence
@@ -308,6 +372,8 @@ jobs:
           path: |
             /tmp/llm-agent-integration-receipt.json
             /tmp/adk-attestation-verification.txt
+            /tmp/adk-source-pin-receipt.json
+            /tmp/adk-native-release-receipt.json
             /tmp/adk-interface-worktree.json
             /tmp/runtime-chain-receipt.json
             /tmp/llm-agent-integration-gate-receipt.json

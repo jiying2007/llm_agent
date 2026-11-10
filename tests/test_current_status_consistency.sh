@@ -6,8 +6,18 @@ CHECKER="$ROOT/scripts/check-current-status-consistency.sh"
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "$TMP_DIR"' EXIT
 
-"$CHECKER" "$ROOT" --summary-json >"$TMP_DIR/release-clean.json"
-"$CHECKER" "$ROOT" --worktree-integration --summary-json >"$TMP_DIR/working-tree.json"
+if ! "$CHECKER" "$ROOT" --summary-json >"$TMP_DIR/release-clean.json"; then
+  echo "[FAIL] release-clean status consistency contract:" >&2
+  tail -c 3000 "$TMP_DIR/release-clean.json" >&2
+  echo "[INFO] canonical current-source projection diagnostic:" >&2
+  python3 -m tools.control_plane.status_projection --root "$ROOT" --summary-json >&2 || true
+  exit 1
+fi
+if ! "$CHECKER" "$ROOT" --worktree-integration --summary-json >"$TMP_DIR/working-tree.json"; then
+  echo "[FAIL] working-tree status consistency contract:" >&2
+  tail -c 3000 "$TMP_DIR/working-tree.json" >&2
+  exit 1
+fi
 
 python3 - "$TMP_DIR/release-clean.json" "$TMP_DIR/working-tree.json" "$ROOT/adk.lock" <<'PY'
 import json
