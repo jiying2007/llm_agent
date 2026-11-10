@@ -69,6 +69,13 @@ class CallBudgetTests(unittest.TestCase):
                 self.assertEqual(reserve(value, self.state, POLICY)["status"], "blocked")
         self.assertFalse(self.state["calls"])
 
+    def test_expensive_average_first_requests_compaction(self) -> None:
+        big = request(inp=223700)
+        self.assertEqual(reserve(big, self.state, POLICY)["reason"], "compact-first")
+        self.assertFalse(self.state["calls"])
+        big["compaction_checked"] = True
+        self.assertEqual(reserve(big, self.state, POLICY)["reason"], "hard-input-limit")
+
     def test_high_risk_exception_requires_host_override(self) -> None:
         value = request(inp=300000)
         value.update(compaction_checked=True, risk="high",
@@ -231,7 +238,7 @@ class CallBudgetTests(unittest.TestCase):
             ]
             done = subprocess.run(command, text=True, capture_output=True, check=False)
             self.assertEqual(done.returncode, 2, done.stdout + done.stderr)
-            self.assertEqual(json.loads(done.stdout)["reason"], "hard-input-limit")
+            self.assertEqual(json.loads(done.stdout)["reason"], "long-context-price-cliff")
 
 
 if __name__ == "__main__":

@@ -247,12 +247,12 @@ def reserve(
 
     inp = data["input_tokens_bound"]
     exception = data["exception"] is not None and allow_exception
-    if inp > caps["hard_input_tokens"] and not exception:
-        return _decision("blocked", "hard-input-limit", request_id=rid)
-    if inp >= caps["price_cliff_input_tokens"] and not exception:
-        return _decision("blocked", "long-context-price-cliff", request_id=rid)
     if inp >= caps["compact_input_tokens"] and not data["compaction_checked"]:
         return _decision("hold", "compact-first", request_id=rid)
+    if inp >= caps["price_cliff_input_tokens"] and not exception:
+        return _decision("blocked", "long-context-price-cliff", request_id=rid)
+    if inp > caps["hard_input_tokens"] and not exception:
+        return _decision("blocked", "hard-input-limit", request_id=rid)
     if inp > caps["soft_input_tokens"] and not exception:
         return _decision("hold", "review-long-context", request_id=rid)
 
