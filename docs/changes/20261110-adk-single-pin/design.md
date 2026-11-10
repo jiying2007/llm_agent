@@ -43,3 +43,26 @@ input digest are updated exactly; no device or release authorization changes.
 The interface-lock and adk.lock files remain present for M5, source promotion,
 status projection and other consumers until a larger contract-wide migration can
 replace them without losing fail-closed invariants.
+
+## Parallel interface lock retirement
+
+The interface schema, surface map and deprecated surface set now have exactly
+one authority: `tools/control_plane/adk_interface.py`. Its validator derives
+the source commit through the root index gitlink and checks the remaining
+legacy `adk.lock` as a dependent projection, optionally cross-checking the
+exact pinned ADK checkout. A separate
+`manifests/adk_interface.lock.json` is no longer staged, consumed or committed.
+
+The source-only ADK promotion stages the Gitlink, derived legacy lock and the
+generated status projection. The separate signed M5 promotion lane stages
+signed evidence/attestation only when explicitly supplied and never treats
+ordinary source promotion as native runtime qualification. The historical
+portable evidence validator can still validate an **explicitly supplied test
+fixture** interface, but no default active interface lock is required.
+
+Product maturity, active LTA source evidence and qualification followup now
+point at the canonical interface implementation. Generated current-source
+status was refreshed from the exact changed source manifests. Further
+retirement of `adk.lock` remains a separate larger migration due to measured
+runtime and Software M5 certifier requirements; its values must not acquire
+independent authorization authority.
