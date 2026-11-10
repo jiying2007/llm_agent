@@ -13,7 +13,7 @@ import sys
 workflow = Path(sys.argv[1]).read_text(encoding="utf-8")
 for must in (
     "Verify native immutable ADK Release on exact gitlink changes",
-    "git rev-parse \"$base_sha:agent-dev-kit\"",
+    "git/trees/$base_sha",
     "git -C agent-dev-kit fetch origin",
     "sha256sum --check",
     "--source-pin --root .",
@@ -23,6 +23,7 @@ for must in (
     "/tmp/adk-native-release-receipt.json",
 ):
     assert must in workflow, must
+assert "git fetch --no-tags origin \"$base_sha\"" not in workflow
 PY
 
 python3 - "$ROOT" <<'PY'
