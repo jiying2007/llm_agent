@@ -94,7 +94,13 @@ with tempfile.TemporaryDirectory(prefix="adk-single-pin-") as tmp:
     (adk / "manifest.json").write_text('{"version":"9.2.2"}\n', encoding="utf-8")
     expect_fail(lambda: source_pin(root), "dirty manifest")
     git(adk, "checkout", "--", "manifest.json")
-    git(root, "update-index", "--cacheinfo", "160000," + "0" * 40 + ",agent-dev-kit")
+    # A real, distinct commit is needed: Git refuses all-zero gitlink SHA.
+    (adk / "fixture-drift.txt").write_text("second valid commit\n", encoding="utf-8")
+    git(adk, "add", "fixture-drift.txt")
+    git(adk, "commit", "-qm", "second valid ADK fixture")
+    second_commit = git(adk, "rev-parse", "HEAD")
+    git(root, "update-index", "--cacheinfo", "160000," + commit + ",agent-dev-kit")
+    assert second_commit != commit
     expect_fail(lambda: source_pin(root), "gitlink differs from worktree")
 
 print("[PASS] single Git pin and signed-claim boundaries; stale authentic evidence is not arbitrarily expired")
