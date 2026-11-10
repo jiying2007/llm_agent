@@ -4,6 +4,27 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 PYTHONPATH="$ROOT" python3 -m tools.control_plane.adk_interface --source-pin --root "$ROOT" --summary-json \
   | python3 -c 'import json,sys; p=json.load(sys.stdin); assert p["status"]=="pass",p; assert p["signature_verified"] is False'
 
+
+# A changed ADK gitlink must take the same protected CI path as the native signer check.
+python3 - "$ROOT/.github/workflows/ci.yml" <<'PY'
+from pathlib import Path
+import sys
+
+workflow = Path(sys.argv[1]).read_text(encoding="utf-8")
+for must in (
+    "Verify native immutable ADK Release on exact gitlink changes",
+    "git rev-parse \"$base_sha:agent-dev-kit\"",
+    "git -C agent-dev-kit fetch origin",
+    "sha256sum --check",
+    "--source-pin --root .",
+    "--release-archive",
+    "--release-contract",
+    "--release-json",
+    "/tmp/adk-native-release-receipt.json",
+):
+    assert must in workflow, must
+PY
+
 python3 - "$ROOT" <<'PY'
 import datetime as dt
 import hashlib
