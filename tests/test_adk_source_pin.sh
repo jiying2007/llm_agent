@@ -6,12 +6,16 @@ PYTHONPATH="$ROOT" python3 -m tools.control_plane.adk_interface --source-pin --r
 
 python3 - "$ROOT" <<'PY'
 import datetime as dt
+import hashlib
 import json
 import subprocess
 import tempfile
+from unittest.mock import patch
 from pathlib import Path
 
-from tools.control_plane.adk_interface import check_claims, source_pin
+from tools.control_plane.adk_interface import (
+    check_claims, source_pin, verify_native_release_contract, verify_native_release_attestation,
+)
 
 def git(cwd, *args):
     p = subprocess.run(["git", "-C", str(cwd), *args], check=True,
@@ -90,6 +94,62 @@ with tempfile.TemporaryDirectory(prefix="adk-single-pin-") as tmp:
     mutated_release["assets"][0]["digest"] = "sha256:" + "0" * 64
     expect_fail(lambda: check_claims(identity, evidence, run, mutated_release), "wrong release digest")
     expect_fail(lambda: check_claims(identity, evidence, {**run, "conclusion": "failure"}, release), "failed main CI")
+
+
+    # Native immutable Release proof survives short CI artifact retention.
+    archive = root / "agent-dev-kit-9.2.1.tar.gz"
+    archive.write_bytes(b"fixture immutable release archive")
+    artifact_sha = hashlib.sha256(archive.read_bytes()).hexdigest()
+    manifest_sha = hashlib.sha256((adk / "manifest.json").read_bytes()).hexdigest()
+    contract = {
+        "schema": "adk-release-artifact-contract-set/v1", "status": "pass",
+        "artifacts": [{
+            "schema": "adk-release-artifact-contract/v1",
+            "status": "pass", "artifact": archive.name, "version": "9.2.1",
+            "artifact_sha256": artifact_sha, "manifest_sha256": manifest_sha,
+            "release_eligible": True,
+        }],
+    }
+    released = {
+        "tag_name": "v9.2.1", "immutable": True, "draft": False, "prerelease": False,
+        "assets": [{"name": archive.name, "digest": "sha256:" + artifact_sha,
+                    "size": archive.stat().st_size}],
+    }
+    native = verify_native_release_contract(root, identity, archive, contract, released)
+    assert native["status"] == "pass" and native["source_authority"] == "git-submodule-index"
+    assert native["signature_verified"] is False
+    invalid = json.loads(json.dumps(released))
+    invalid["immutable"] = False
+    expect_fail(lambda: verify_native_release_contract(root, identity, archive, contract, invalid), "mutable Release")
+    invalid = json.loads(json.dumps(released))
+    invalid["assets"][0]["digest"] = "sha256:" + "0" * 64
+    expect_fail(lambda: verify_native_release_contract(root, identity, archive, contract, invalid), "wrong artifact digest")
+    invalid = json.loads(json.dumps(contract))
+    invalid["artifacts"][0]["manifest_sha256"] = "0" * 64
+    expect_fail(lambda: verify_native_release_contract(root, identity, archive, invalid, released), "wrong manifest hash")
+    invalid = json.loads(json.dumps(contract))
+    invalid["artifacts"][0]["release_eligible"] = False
+    expect_fail(lambda: verify_native_release_contract(root, identity, archive, invalid, released), "ineligible artifact")
+    archive.write_bytes(b"tampered archive payload")
+    expect_fail(lambda: verify_native_release_contract(root, identity, archive, contract, released), "tampered archive")
+    archive.write_bytes(b"fixture immutable release archive")
+
+    valid_gh = subprocess.CompletedProcess(args=[], returncode=0,
+                                          stdout='[{"attestation":{},"verificationResult":{}}]', stderr="")
+    with patch("tools.control_plane.adk_interface.subprocess.run", return_value=valid_gh) as command:
+        assert verify_native_release_attestation(archive, identity) == 1
+        called = command.call_args.args[0]
+        assert "--signer-workflow" in called and "jiying2007/agent-dev-kit/.github/workflows/release.yml" in called
+        assert "--source-digest" in called and commit in called
+        assert "--source-ref" in called and "refs/heads/main" in called
+    with patch("tools.control_plane.adk_interface.subprocess.run", return_value=subprocess.CompletedProcess(
+        args=[], returncode=1, stdout="", stderr="untrusted signer",
+    )):
+        expect_fail(lambda: verify_native_release_attestation(archive, identity), "untrusted signature")
+    with patch("tools.control_plane.adk_interface.subprocess.run", return_value=subprocess.CompletedProcess(
+        args=[], returncode=0, stdout="[]", stderr="",
+    )):
+        expect_fail(lambda: verify_native_release_attestation(archive, identity), "empty attestation")
 
     (adk / "manifest.json").write_text('{"version":"9.2.2"}\n', encoding="utf-8")
     expect_fail(lambda: source_pin(root), "dirty manifest")
