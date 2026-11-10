@@ -25,6 +25,13 @@ ATTESTATION_PATH = "reports/promotion/agent-dev-kit/promotion-attestation.json"
 # Matches the shared Sigstore bundle input budget. Avoid unbounded or ambiguous
 # local staging even when the protected CI separately verifies the signature.
 MAX_PROMOTION_JSON_BYTES = 1024 * 1024
+SOURCE_PROMOTION_PATHS = (
+    "agent-dev-kit",
+    "adk.lock",
+    INTERFACE_PATH,
+    "reports/current-status.md",
+)
+
 PROMOTION_PATHS = (
     "agent-dev-kit",
     "adk.lock",
@@ -297,6 +304,73 @@ def apply_promotion(
         raise
 
 
+
+def apply_source_promotion(
+    root: Path,
+    identity: CandidateIdentity,
+    lock_text: str,
+    interface_text: str,
+) -> list[str]:
+    """Stage only source and generated projections; CI must verify the immutable Release.
+
+    This is *not* a release certificate or a product-qualification operation.
+    Existing signed Product M5 evidence remains unchanged and is never borrowed
+    or re-signed to authenticate this candidate.
+    """
+    if not _root_clean_for_promotion(root):
+        raise RuntimeError("source promotion needs a clean index and isolated ADK checkout")
+    old = _current_gitlink(root)
+    if old == identity.commit:
+        raise RuntimeError("source promotion candidate is already pinned")
+    candidate = root / "agent-dev-kit"
+    if _git(candidate, "rev-parse", "HEAD") != identity.commit:
+        raise RuntimeError("candidate checkout HEAD must match the requested ADK source")
+    # Reject unrelated, non-fast-forward submodule replacement.
+    result = subprocess.run(
+        ["git", "-C", str(candidate), "merge-base", "--is-ancestor", old, identity.commit],
+        check=False, capture_output=True, text=True, timeout=30,
+    )
+    if result.returncode != 0:
+        raise RuntimeError("ADK candidate does not descend from the previously pinned commit")
+
+    lock_path = root / "adk.lock"
+    interface_path = root / INTERFACE_PATH
+    status_path = root / "reports/current-status.md"
+    previous = (
+        lock_path.read_text(encoding="utf-8"),
+        interface_path.read_text(encoding="utf-8"),
+        status_path.read_text(encoding="utf-8"),
+    )
+    try:
+        _atomic_write(lock_path, lock_text)
+        _atomic_write(interface_path, interface_text)
+        _git(root, "update-index", "--add", "--cacheinfo", f"160000,{identity.commit},agent-dev-kit")
+        refresh_current_status(root)
+        _git(root, "add", "--", "adk.lock", INTERFACE_PATH, "reports/current-status.md")
+        staged_paths = _staged_paths(root)
+        if staged_paths != sorted(SOURCE_PROMOTION_PATHS):
+            raise RuntimeError(
+                "source-only promotion staged unexpected files: "
+                f"expected={sorted(SOURCE_PROMOTION_PATHS)}, actual={staged_paths}"
+            )
+        completed = subprocess.run(
+            ["bash", "scripts/check-adk-lock.sh", ".", "--pin-only"],
+            cwd=root, check=False, capture_output=True, text=True, timeout=30,
+        )
+        if completed.returncode != 0:
+            raise RuntimeError("source-only pin verification failed: " + completed.stdout.strip()[:500])
+        if project(root, dt.date.today()).get("status") != "pass":
+            raise RuntimeError("source-only generated status projection verification failed")
+        return staged_paths
+    except Exception:
+        _restore(lock_path, previous[0])
+        _restore(interface_path, previous[1])
+        _restore(status_path, previous[2])
+        _git(root, "reset", "-q", "HEAD", "--", *SOURCE_PROMOTION_PATHS, check=False)
+        raise
+
+
+
 def promotion_receipt(
     *,
     root: Path,
@@ -310,6 +384,7 @@ def promotion_receipt(
     evidence_sha256: str | None,
     attestation_sha256: str | None,
     staged_paths: list[str],
+    source_only: bool = False,
 ) -> dict[str, object]:
     payload: dict[str, object] = {
         "schema": PROMOTION_SCHEMA,
@@ -325,10 +400,11 @@ def promotion_receipt(
         "promotion_evidence_sha256": evidence_sha256,
         "promotion_attestation_sha256": attestation_sha256,
         "staged_paths": staged_paths,
-        "staged_transaction_complete": staged_paths == sorted(PROMOTION_PATHS),
+        "staged_transaction_complete": staged_paths == sorted(SOURCE_PROMOTION_PATHS if source_only else PROMOTION_PATHS),
         "updated_at": updated_at,
         "requires_fresh_cross_repo_verification": True,
-        "verification_model": "portable-attested-evidence",
+        "verification_model": "immutable-release-ci-required" if source_only else "portable-attested-evidence",
+        "source_only": source_only,
         "release_authorized": False,
     }
     return bind_receipt(payload)
@@ -344,6 +420,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--updated-at", required=True, help="Explicit YYYY-MM-DD provenance date")
     parser.add_argument("--promotion-evidence", help="Portable ADK promotion-evidence.json")
     parser.add_argument("--promotion-attestation", help="Detached Sigstore promotion attestation bundle")
+    parser.add_argument("--source-only", action="store_true", help="Stage Git source/projections only; protected CI must verify immutable Release provenance")
     parser.add_argument(
         "--apply",
         action="store_true",
@@ -372,7 +449,9 @@ def main(argv: list[str] | None = None) -> int:
         staged_paths: list[str] = []
         evidence_text: str | None = None
         attestation_text: str | None = None
-        if args.promotion_evidence or args.promotion_attestation or args.apply:
+        if args.source_only and (args.promotion_evidence or args.promotion_attestation):
+            raise RuntimeError("source-only promotion must not re-label signed evidence as source checks")
+        if not args.source_only and (args.promotion_evidence or args.promotion_attestation or args.apply):
             if not args.promotion_evidence or not args.promotion_attestation:
                 raise RuntimeError("promotion evidence and attestation are both required for an applied promotion")
             evidence_text, attestation_text = _validate_portable_inputs(
@@ -380,7 +459,10 @@ def main(argv: list[str] | None = None) -> int:
                 Path(args.promotion_evidence),
                 Path(args.promotion_attestation),
             )
-        if args.apply:
+        if args.apply and args.source_only:
+            staged_paths = apply_source_promotion(root, identity, lock_text, interface_text)
+            status = "staged-not-verified"
+        elif args.apply:
             assert evidence_text is not None and attestation_text is not None
             staged_paths = apply_promotion(
                 root,
@@ -405,6 +487,7 @@ def main(argv: list[str] | None = None) -> int:
                 hashlib.sha256(attestation_text.encode("utf-8")).hexdigest() if attestation_text else None
             ),
             staged_paths=staged_paths,
+            source_only=args.source_only,
         )
         if args.receipt_out:
             write_receipt(Path(args.receipt_out), result)
