@@ -37,15 +37,13 @@ for line in Path(sys.argv[3]).read_text(encoding="utf-8").splitlines():
         lock[key] = value
 
 assert result == receipt, (result, receipt)
-assert result["schema"] == "llm-agent-adk-promotion/v4", result
+assert result["schema"] == "llm-agent-adk-promotion/v5", result
 assert result["status"] == "planned", result
 assert result["mode"] == "dry-run", result
 assert result["candidate"]["commit"] == lock["agent-dev-kit.commit"], result
 assert result["candidate"]["tree"] == lock["agent-dev-kit.tree"], result
 assert result["candidate"]["manifest_blob"] == lock["agent-dev-kit.manifest_blob"], result
 assert result["lock_schema"] == "llm-agent-adk-lock/v2", result
-assert result["interface_schema"] == "llm-agent-adk-interface-lock/v1", result
-assert re.fullmatch(r"[0-9a-f]{64}", result["interface_sha256"]), result
 assert re.fullmatch(r"[0-9a-f]{40}", result["source"]["head"]), result
 assert re.fullmatch(r"[0-9a-f]{40}", result["source"]["tree"]), result
 assert re.fullmatch(r"[0-9a-f]{64}", result["receipt_sha256"]), result
@@ -60,4 +58,4 @@ tampered["status"] = "applied-not-verified"
 assert bind_receipt(tampered)["receipt_sha256"] != result["receipt_sha256"], result
 PY
 
-echo "[PASS] ADK promotion receipt binds lock, interface identity and rejects tampering"
+echo "[PASS] ADK promotion receipt binds Git pin, generated lock identity and rejects tampering"
