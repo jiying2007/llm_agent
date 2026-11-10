@@ -7,6 +7,8 @@
 - runbooks/wechat-metadata-intake.md — 微信公众号 metadata-only 研究与候选转换边界
 - runbooks/ — 运维 runbook
 
+- runbooks/model-call-budget.md — 模型调用前预留、调用后结算及实际网关接入说明（当前未接入）
+
 ## 全局资产文档
 其他文档（quick-start、best-practices、troubleshooting 等）已迁移到 agent-dev-kit/docs/。
 安装 adk 后可通过 `devkit.sh` 访问完整文档。
