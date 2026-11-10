@@ -20,6 +20,8 @@ from pathlib import Path
 
 data = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
 assert data["status"] == "pass", data
+assert data["schema"] == "llm-agent-adk-interface-source/v2", data
+assert not Path("manifests/adk_interface.lock.json").exists(), "duplicated interface version lock must stay retired"
 identity = data["identity"]
 for key in ("commit", "tree", "manifest_blob"):
     assert re.fullmatch(r"[0-9a-f]{40}", identity[key]), (key, identity)
