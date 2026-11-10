@@ -40,6 +40,7 @@ LOCK
 python3 - "$FIXTURE" "$OLD" "$OLD_TREE" "$OLD_MANIFEST" <<'PY'
 import json,sys
 from pathlib import Path
+root,commit,tree,blob=sys.argv[1:]
 Path(root,"manifests/gates.json").write_text("{}\n")
 Path(root,"manifests/product_maturity_scorecard.json").write_text(json.dumps({
  "overall":{"level":"M3","terminal_mature":False,"field_status":"not-qualified"},
