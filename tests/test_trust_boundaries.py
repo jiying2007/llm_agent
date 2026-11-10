@@ -123,7 +123,7 @@ class PromotionInputTest(unittest.TestCase):
             path = Path(temp) / "evidence.json"
             path.write_text(raw, encoding="utf-8")
             return verify_evidence_claims(evidence_path=path, lock_path=lock or ROOT / "adk.lock",
-                                         interface_path=interface or ROOT / "manifests/adk_interface.lock.json")
+                                         interface_path=interface)
 
     def test_normal_canonical_evidence_preserved(self):
         self.assertEqual("pass", self.verify(json.dumps(self.evidence))["status"])
@@ -151,7 +151,10 @@ class PromotionInputTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             base = Path(temp)
             interface = base / "interface.json"
-            raw = (ROOT / "manifests/adk_interface.lock.json").read_text()
+            raw = json.dumps({
+                "schema": "llm-agent-adk-interface-lock/v1",
+                **{key: self.evidence["source"][key] for key in ("version", "commit", "tree", "manifest_blob")},
+            })
             interface.write_text('{"schema":"wrong",' + raw.lstrip()[1:])
             with self.assertRaises(ValueError):
                 self.verify(json.dumps(self.evidence), interface=interface)
