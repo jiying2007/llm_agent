@@ -266,8 +266,14 @@ jobs:
             echo '[FAIL] missing trusted parent commit for ADK pin comparison' >&2
             exit 1
           }
-          git fetch --no-tags origin "$base_sha"
-          old_pin="$(git rev-parse "$base_sha:agent-dev-kit")"
+          # Git API read avoids deepening a shallow PR checkout and changing
+          # historical ancestry semantics used by source qualification checks.
+          old_pin="$(gh api "repos/$GITHUB_REPOSITORY/git/trees/$base_sha" \
+            --jq '.tree[] | select(.path=="agent-dev-kit" and .mode=="160000" and .type=="commit") | .sha')"
+          [[ "$old_pin" =~ ^[0-9a-f]{40}$ ]] || {
+            echo '[FAIL] trusted base ADK gitlink unavailable' >&2
+            exit 1
+          }
           current_pin="$(git ls-files -s -- agent-dev-kit | awk '$1=="160000" {print $2}')"
           [[ "$current_pin" =~ ^[0-9a-f]{40}$ ]] || { echo '[FAIL] ADK gitlink absent' >&2; exit 1; }
           if [[ "$old_pin" == "$current_pin" ]]; then
