@@ -1,0 +1,35 @@
+name: one-off-adk-source-export
+
+on:
+  push:
+    branches: [audit/adk-terminal-source-export-20261110]
+    paths: [.github/workflows/one-off-adk-source-export.yml]
+permissions:
+  contents: read
+jobs:
+  export:
+    if: github.repository == 'jiying2007/llm_agent'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          submodules: false
+          fetch-depth: 1
+      - name: Materialize exact public pinned ADK source for offline refactor
+        shell: bash
+        run: |
+          set -euo pipefail
+          git submodule update --init --depth=1 agent-dev-kit
+          git -C agent-dev-kit rev-parse HEAD
+          tar --exclude='./.git/modules/codex' --exclude='./codex' \
+              --exclude='./.venv' --exclude='./node_modules' \
+              -czf "$RUNNER_TEMP/adk-terminal-source.tar.gz" -C "$GITHUB_WORKSPACE" .
+          du -h "$RUNNER_TEMP/adk-terminal-source.tar.gz"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: adk-terminal-source-snapshot
+          path: ${{ runner.temp }}/adk-terminal-source.tar.gz
+          retention-days: 1
+          if-no-files-found: error
