@@ -520,7 +520,7 @@
       "inputs": [
         "adk.lock",
         "codex.lock",
-        "reports/promotion/agent-dev-kit/promotion-evidence.json",
+        "tools/control_plane/adk_interface.py",
         "tools/control_plane/runtime_chain.py"
       ],
       "impact_groups": [
