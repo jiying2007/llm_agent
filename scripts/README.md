@@ -21,7 +21,7 @@ repo,group,priority,sync_mode,branch,enabled,notes,status,owner,last_reviewed_on
 
 ### 当前源码与资格状态
 
-当前 source identity 只读取 `adk.lock`、`manifests/adk_interface.lock.json` 与 `reports/current-status.md` 的生成投影，不在手册维护版本或资格副本。
+当前 source identity 只读取 Git 子模块、`adk.lock` 兼容投影与 `reports/current-status.md` 的生成投影，不在手册维护版本或资格副本。
 
 2026-05-23 的说明保留于 `reports/optimization/2026-09-25/historical-script-status-2026-05-23.md`，仅为历史记录。组件发布、运行时证据、产品资格分别判断；`release_authorized=false` 时不得沿用历史资格。Codex 仍只走 `agent-dev-kit -> ~/codex -> ~/.codex`，本仓不直接写 live HOME。
 

@@ -101,10 +101,6 @@ for fixture in (Path(sys.argv[2]), Path(sys.argv[3])):
                 prefix = f"agent-dev-kit.{key}="
                 lock_lines = [prefix + value if line.startswith(prefix) else line for line in lock_lines]
             lock_path.write_text("\n".join(lock_lines) + "\n")
-            interface_path = fixture / "manifests/adk_interface.lock.json"
-            interface = json.loads(interface_path.read_text())
-            interface.update(identity)
-            interface_path.write_text(json.dumps(interface, indent=2) + "\n")
     # References are not Root product source. Drop only these generated copies;
     # no source repository is touched or promoted into the fixture gitlinks.
     pins = json.loads((source / "manifests/reference_pins.json").read_text())

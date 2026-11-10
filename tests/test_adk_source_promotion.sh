@@ -40,10 +40,7 @@ LOCK
 python3 - "$FIXTURE" "$OLD" "$OLD_TREE" "$OLD_MANIFEST" <<'PY'
 import json,sys
 from pathlib import Path
-from tools.control_plane.adk_interface import interface_payload
 root,commit,tree,blob=sys.argv[1:]
-payload=interface_payload({"version":"9.0.0","commit":commit,"tree":tree,"manifest_blob":blob},"2026-11-10")
-Path(root,"manifests/adk_interface.lock.json").write_text(json.dumps(payload)+"\n")
 Path(root,"manifests/gates.json").write_text("{}\n")
 Path(root,"manifests/product_maturity_scorecard.json").write_text(json.dumps({
  "overall":{"level":"M3","terminal_mature":False,"field_status":"not-qualified"},
@@ -73,12 +70,12 @@ python3 -m tools.control_plane.adk_promotion --root "$FIXTURE" \
 python3 - "$TMP/result.json" "$NEW" <<'PY'
 import json,sys
 p=json.load(open(sys.argv[1],encoding="utf-8"))
-assert p["schema"]=="llm-agent-adk-promotion/v4",p
+assert p["schema"]=="llm-agent-adk-promotion/v5",p
 assert p["source_only"] is True and p["status"]=="staged-not-verified",p
 assert p["release_authorized"] is False,p
 assert p["verification_model"]=="immutable-release-ci-required",p
 assert p["staged_paths"]==sorted([
-  "agent-dev-kit","adk.lock","manifests/adk_interface.lock.json","reports/current-status.md"
+  "agent-dev-kit","adk.lock","reports/current-status.md"
 ]),p
 assert p["staged_transaction_complete"] is True,p
 assert p["candidate"]["commit"]==sys.argv[2],p
@@ -88,7 +85,7 @@ PY
 [[ "$(git -C "$FIXTURE" ls-files -s agent-dev-kit | awk '{print $2}')" == "$NEW" ]]
 [[ "$(sha256sum "$FIXTURE/reports/promotion/agent-dev-kit/promotion-evidence.json" | cut -d' ' -f1)" == "$EVIDENCE_SHA" ]]
 [[ "$(sha256sum "$FIXTURE/reports/promotion/agent-dev-kit/promotion-attestation.json" | cut -d' ' -f1)" == "$ATTEST_SHA" ]]
-[[ "$(git -C "$FIXTURE" diff --cached --name-only | wc -l)" -eq 4 ]]
+[[ "$(git -C "$FIXTURE" diff --cached --name-only | wc -l)" -eq 3 ]]
 
 git -C "$FIXTURE" reset --hard -q "$BASE"
 if SOURCE_PROMOTION_TEST_FORCE_FAIL=1 python3 -m tools.control_plane.adk_promotion \
@@ -105,4 +102,4 @@ if python3 -m tools.control_plane.adk_promotion --root "$FIXTURE" \
   echo "[FAIL] source-only mode accepted signed evidence substitution" >&2
   exit 1
 fi
-echo "[PASS] source-only ADK upgrade stages four source paths and preserves independent M5 evidence"
+echo "[PASS] source-only ADK upgrade stages three source paths and preserves independent M5 evidence"

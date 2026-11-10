@@ -13,13 +13,11 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 
 from tools.codex_assets.intake_io import IntakeError, decode_json, read_bytes
-from tools.control_plane.adk_interface import render_interface_lock
 from tools.control_plane.receipts import bind_receipt, write_receipt
 from tools.control_plane.status_projection import project, refresh_current_status
 
 LOCK_SCHEMA = "llm-agent-adk-lock/v2"
-PROMOTION_SCHEMA = "llm-agent-adk-promotion/v4"
-INTERFACE_PATH = "manifests/adk_interface.lock.json"
+PROMOTION_SCHEMA = "llm-agent-adk-promotion/v5"
 EVIDENCE_PATH = "reports/promotion/agent-dev-kit/promotion-evidence.json"
 ATTESTATION_PATH = "reports/promotion/agent-dev-kit/promotion-attestation.json"
 # Matches the shared Sigstore bundle input budget. Avoid unbounded or ambiguous
@@ -28,14 +26,12 @@ MAX_PROMOTION_JSON_BYTES = 1024 * 1024
 SOURCE_PROMOTION_PATHS = (
     "agent-dev-kit",
     "adk.lock",
-    INTERFACE_PATH,
     "reports/current-status.md",
 )
 
 PROMOTION_PATHS = (
     "agent-dev-kit",
     "adk.lock",
-    INTERFACE_PATH,
     "reports/current-status.md",
     EVIDENCE_PATH,
     ATTESTATION_PATH,
@@ -202,18 +198,15 @@ def _validate_portable_inputs(
 def _rollback_transaction(
     root: Path,
     lock_path: Path,
-    interface_path: Path,
     status_path: Path,
     evidence_path: Path,
     attestation_path: Path,
     previous_lock: str | None,
-    previous_interface: str | None,
     previous_status: str | None,
     previous_evidence: str | None,
     previous_attestation: str | None,
 ) -> None:
     _restore(lock_path, previous_lock)
-    _restore(interface_path, previous_interface)
     _restore(status_path, previous_status)
     _restore(evidence_path, previous_evidence)
     _restore(attestation_path, previous_attestation)
@@ -224,7 +217,6 @@ def apply_promotion(
     root: Path,
     identity: CandidateIdentity,
     lock_text: str,
-    interface_text: str,
     evidence_text: str,
     attestation_text: str,
 ) -> list[str]:
@@ -234,12 +226,10 @@ def apply_promotion(
         )
 
     lock_path = root / "adk.lock"
-    interface_path = root / INTERFACE_PATH
     status_path = root / "reports" / "current-status.md"
     evidence_path = root / EVIDENCE_PATH
     attestation_path = root / ATTESTATION_PATH
     previous_lock = lock_path.read_text(encoding="utf-8") if lock_path.exists() else None
-    previous_interface = interface_path.read_text(encoding="utf-8") if interface_path.exists() else None
     previous_status = status_path.read_text(encoding="utf-8") if status_path.exists() else None
     previous_evidence = evidence_path.read_text(encoding="utf-8") if evidence_path.exists() else None
     previous_attestation = attestation_path.read_text(encoding="utf-8") if attestation_path.exists() else None
@@ -249,7 +239,6 @@ def apply_promotion(
 
     try:
         _atomic_write(lock_path, lock_text)
-        _atomic_write(interface_path, interface_text)
         _atomic_write(evidence_path, evidence_text)
         _atomic_write(attestation_path, attestation_text)
         _git(root, "update-index", "--add", "--cacheinfo", f"160000,{identity.commit},agent-dev-kit")
@@ -259,7 +248,6 @@ def apply_promotion(
             "add",
             "--",
             "adk.lock",
-            INTERFACE_PATH,
             "reports/current-status.md",
             EVIDENCE_PATH,
             ATTESTATION_PATH,
@@ -291,12 +279,10 @@ def apply_promotion(
         _rollback_transaction(
             root,
             lock_path,
-            interface_path,
             status_path,
             evidence_path,
             attestation_path,
             previous_lock,
-            previous_interface,
             previous_status,
             previous_evidence,
             previous_attestation,
@@ -309,7 +295,6 @@ def apply_source_promotion(
     root: Path,
     identity: CandidateIdentity,
     lock_text: str,
-    interface_text: str,
 ) -> list[str]:
     """Stage only source and generated projections; CI must verify the immutable Release.
 
@@ -334,19 +319,16 @@ def apply_source_promotion(
         raise RuntimeError("ADK candidate does not descend from the previously pinned commit")
 
     lock_path = root / "adk.lock"
-    interface_path = root / INTERFACE_PATH
     status_path = root / "reports/current-status.md"
     previous = (
         lock_path.read_text(encoding="utf-8"),
-        interface_path.read_text(encoding="utf-8"),
         status_path.read_text(encoding="utf-8"),
     )
     try:
         _atomic_write(lock_path, lock_text)
-        _atomic_write(interface_path, interface_text)
         _git(root, "update-index", "--add", "--cacheinfo", f"160000,{identity.commit},agent-dev-kit")
         refresh_current_status(root)
-        _git(root, "add", "--", "adk.lock", INTERFACE_PATH, "reports/current-status.md")
+        _git(root, "add", "--", "adk.lock", "reports/current-status.md")
         staged_paths = _staged_paths(root)
         if staged_paths != sorted(SOURCE_PROMOTION_PATHS):
             raise RuntimeError(
@@ -364,8 +346,7 @@ def apply_source_promotion(
         return staged_paths
     except Exception:
         _restore(lock_path, previous[0])
-        _restore(interface_path, previous[1])
-        _restore(status_path, previous[2])
+        _restore(status_path, previous[1])
         _git(root, "reset", "-q", "HEAD", "--", *SOURCE_PROMOTION_PATHS, check=False)
         raise
 
@@ -380,7 +361,6 @@ def promotion_receipt(
     mode: str,
     status: str,
     lock_lines: list[str],
-    interface_sha256: str,
     evidence_sha256: str | None,
     attestation_sha256: str | None,
     staged_paths: list[str],
@@ -395,8 +375,6 @@ def promotion_receipt(
         "candidate": asdict(identity),
         "lock_schema": LOCK_SCHEMA,
         "lock": lock_lines,
-        "interface_schema": "llm-agent-adk-interface-lock/v1",
-        "interface_sha256": interface_sha256,
         "promotion_evidence_sha256": evidence_sha256,
         "promotion_attestation_sha256": attestation_sha256,
         "staged_paths": staged_paths,
@@ -425,7 +403,7 @@ def main(argv: list[str] | None = None) -> int:
         "--apply",
         action="store_true",
         help=(
-            "Stage gitlink, lock, interface, generated current-status, promotion evidence and attestation "
+            "Stage gitlink, lock, current-status and optional M5 evidence and attestation "
             "as one transaction; default is dry-run"
         ),
     )
@@ -441,7 +419,6 @@ def main(argv: list[str] | None = None) -> int:
     try:
         identity = candidate_identity(candidate_dir, args.ref)
         lock_text = render_lock(identity, args.updated_at)
-        interface_text = render_interface_lock(asdict(identity), args.updated_at)
         lock_lines = lock_text.splitlines()
         before = _current_gitlink(root)
         mode = "apply" if args.apply else "dry-run"
@@ -460,7 +437,7 @@ def main(argv: list[str] | None = None) -> int:
                 Path(args.promotion_attestation),
             )
         if args.apply and args.source_only:
-            staged_paths = apply_source_promotion(root, identity, lock_text, interface_text)
+            staged_paths = apply_source_promotion(root, identity, lock_text)
             status = "staged-not-verified"
         elif args.apply:
             assert evidence_text is not None and attestation_text is not None
@@ -468,7 +445,6 @@ def main(argv: list[str] | None = None) -> int:
                 root,
                 identity,
                 lock_text,
-                interface_text,
                 evidence_text,
                 attestation_text,
             )
@@ -481,7 +457,6 @@ def main(argv: list[str] | None = None) -> int:
             mode=mode,
             status=status,
             lock_lines=lock_lines,
-            interface_sha256=hashlib.sha256(interface_text.encode("utf-8")).hexdigest(),
             evidence_sha256=hashlib.sha256(evidence_text.encode("utf-8")).hexdigest() if evidence_text else None,
             attestation_sha256=(
                 hashlib.sha256(attestation_text.encode("utf-8")).hexdigest() if attestation_text else None

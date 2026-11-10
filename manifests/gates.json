@@ -35,7 +35,6 @@
       ],
       "inputs": [
         "adk.lock",
-        "manifests/adk_interface.lock.json",
         "tools/control_plane/adk_interface.py"
       ],
       "impact_groups": [

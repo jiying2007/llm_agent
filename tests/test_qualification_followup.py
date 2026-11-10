@@ -526,20 +526,13 @@ class QualificationFollowupTest(unittest.TestCase):
             f"agent-dev-kit.manifest_blob={manifest_blob}\n"
             "updated_at=2026-10-28\n", encoding="utf-8",
         )
-        interface = self.root / "manifests/adk_interface.lock.json"
-        interface.parent.mkdir(parents=True, exist_ok=True)
-        interface.write_text(json.dumps({
-            "schema": "llm-agent-adk-interface-lock/v1", "version": "fixture-v1",
-            "commit": head, "tree": subtree, "manifest_blob": manifest_blob,
-        }) + "\n", encoding="utf-8")
         subprocess.run(
-            ["git", "-C", str(self.root), "add", "--", "adk.lock",
-             "manifests/adk_interface.lock.json"], check=True, capture_output=True,
+            ["git", "-C", str(self.root), "add", "--", "adk.lock"], check=True, capture_output=True,
         )
         subprocess.run(
             ["git", "-C", str(self.root), "-c", "user.name=Synthetic Fixture",
              "-c", "user.email=fixture@example.invalid",
-             "commit", "-qm", "Commit synthetic Root ADK pin and locks"],
+             "commit", "-qm", "Commit synthetic Root ADK pin and projection"],
             check=True, capture_output=True,
         )
         return git("rev-parse", "HEAD:" + relative)

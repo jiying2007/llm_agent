@@ -65,7 +65,7 @@ Root 控制面的统一 Python 入口是 `llm-ctl`（`pyproject.toml`）；GitHu
 - `manifests/product_maturity_scorecard.json`：当前产品成熟度机器 SSOT。
 - `manifests/gates.json`：当前验证门禁 DAG 的声明式入口；旧 Product M5 task pack 已归档到 `manifests/history/product_maturity_task_pack-2026-09-16.json`，不能当作当前剩余门禁。
 - `manifests/long_term_asset_qualification.json`：Product M5 之上的长期资产终态资格 SSOT；单人维护、LTA-01～LTA-04 与 terminal blocker 均在此 fail-closed 判定。
-- `manifests/adk_interface.lock.json`：当前 ADK 跨仓接口身份与 active/deprecated surface contract。
+- `tools/control_plane/adk_interface.py`：ADK 跨仓接口契约；版本身份只信任 Git 子模块提交。
 - `manifests/reference_pins.json`：非 source reference repository 的 exact commit / URL SSOT。
 - `manifests/gitlinks.json`：Root managed dependency gitlink registry；终态仅保留 ADK 与 Codex。
 - `manifests/digital_worker_runtime_pilot.json`：`digital-worker + agent-dev-kit + llm_agent` 联合 Runtime Pilot 的 report-only 证据合同；Runtime 输出不得替代 Verification PASS。
@@ -88,7 +88,7 @@ Root 控制面的统一 Python 入口是 `llm-ctl`（`pyproject.toml`）；GitHu
 - **`agent-dev-kit` 是 Root 当前 managed source dependency；`codex` gitlink 仅保留 frozen evidence/replay identity。** 当前 Codex CLI 活动 source 始终是外部 `~/codex`，再经 build/plan/apply 到 `~/.codex`。不得通过推进 Root 内 `codex` gitlink 来替代活动 runtime source 更新。OpenSpec、digital-worker、superpowers、vibeflow 等研究/试点仓只保留 exact reference pin，并按需物化到用户 cache。
 - reference pin 是 evidence identity，不是 runtime enablement，也不允许递归 checkout 重新引入 Root source dependency。
 - 不把第三方参考资产或 ADK 导出资产直接复制进 `~/.codex`；必须先进入 `~/codex` 的源资产与 manifest 治理链路。
-- `agent-dev-kit/manifest.json` 是 ADK 唯一结构化 Manifest SSOT；当前跨仓身份由 `adk.lock` 与 `manifests/adk_interface.lock.json` 原子绑定，不维护平行 Manifest 镜像。
+- `agent-dev-kit/manifest.json` 是 ADK 唯一结构化 Manifest SSOT；当前跨仓身份由 Git 子模块提交唯一确定，`adk.lock` 只是被校验的兼容投影，不维护平行 Manifest 镜像。
 - direct target 安装必须先生成 plan，再 apply 并保留 receipt；回滚拒绝已漂移的托管资产。
 - 仓库不提供自动吸收写入口；静态分析不能直接修改 adoption matrix 或 ADK。
 - 没有命令证据，不声明“完成”“可发布”“可在生产使用”。

@@ -232,8 +232,7 @@ def _validate_promotion(root: Path, policy: Mapping[str, Any], *, verify_signatu
         bundle = read_bytes(attestation_path, label="promotion attestation", max_bytes=4 * 1024 * 1024)
         if decode_json(payload, label="promotion evidence") != evidence or decode_json(bundle, label="promotion attestation") != attestation:
             raise ValueError("promotion inputs changed during validation")
-        verify_evidence_claims(evidence_path=evidence_path, lock_path=root / "adk.lock",
-                               interface_path=root / "manifests/adk_interface.lock.json")
+        verify_evidence_claims(evidence_path=evidence_path, lock_path=root / "adk.lock")
         verified = (verify(payload, bundle, repository="jiying2007/agent-dev-kit") if verify_signature else
                     {"evidence_sha256": hashlib.sha256(payload).hexdigest(),
                      "attestation_sha256": hashlib.sha256(bundle).hexdigest()})
