@@ -129,7 +129,7 @@ def validate_request(value: dict[str, Any]) -> dict[str, Any]:
         _identity(value[name], name)
     _integer(value["input_tokens_bound"], "input_tokens_bound", allow_zero=False)
     _integer(value["max_output_tokens"], "max_output_tokens", allow_zero=False)
-    _integer(value["quoted_max_charge_fen"], "quoted_max_charge_fen")
+    _integer(value["quoted_max_charge_fen"], "quoted_max_charge_fen", allow_zero=False)
     if type(value["compaction_checked"]) is not bool or value["risk"] not in {"normal", "high"}:
         raise BudgetError("request-classification-invalid")
     exception = value["exception"]
@@ -390,25 +390,17 @@ def _main() -> int:
     sub = parser.add_subparsers(dest="command", required=True)
     reserve_cli = sub.add_parser("reserve", help="Atomic pre-dispatch budget reservation")
     reserve_cli.add_argument("--request", type=Path, required=True)
-    reserve_cli.add_argument("--allow-reviewed-exception", action="store_true")
     settle_cli = sub.add_parser("settle", help="Post-dispatch usage settlement")
     settle_cli.add_argument("--usage", type=Path, required=True)
-    replan_cli = sub.add_parser("replan", help="Reset stall counter after externally verified replan")
-    replan_cli.add_argument("--workflow-id", required=True)
-    replan_cli.add_argument("--session-id", required=True)
-    replan_cli.add_argument("--evidence-sha256", required=True)
     sub.add_parser("report", help="Bounded daily accounting by workflow")
     args = parser.parse_args()
     try:
         policy = validate_policy(_read(args.policy))
         with ledger(args.state, write=args.command != "report") as current:
             if args.command == "reserve":
-                result = reserve(_read(args.request), current, policy,
-                                 allow_exception=args.allow_reviewed_exception)
+                result = reserve(_read(args.request), current, policy)
             elif args.command == "settle":
                 result = settle(_read(args.usage), current)
-            elif args.command == "replan":
-                result = replan(current, args.workflow_id, args.session_id, args.evidence_sha256)
             else:
                 result = report(current, policy)
         print(json.dumps(result, ensure_ascii=False, sort_keys=True))

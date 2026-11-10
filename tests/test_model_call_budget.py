@@ -98,7 +98,8 @@ class CallBudgetTests(unittest.TestCase):
     def test_bad_inputs_and_prompt_injection_are_rejected(self) -> None:
         for field, bad in (
             ("input_tokens_bound", True), ("max_output_tokens", 0),
-            ("quoted_max_charge_fen", -1), ("model", "x\nPROMPT"),
+            ("quoted_max_charge_fen", -1), ("quoted_max_charge_fen", 0),
+            ("model", "x\nPROMPT"),
             ("input_tokens_bound", None), ("request_id", ""),
         ):
             with self.subTest(field=field):
@@ -223,6 +224,34 @@ class CallBudgetTests(unittest.TestCase):
             with self.assertRaises(BudgetError):
                 with ledger(alias):
                     pass
+
+    def test_cli_cannot_self_approve_high_cost_or_fabricate_replan(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            payload = request(inp=300000)
+            payload.update(compaction_checked=True, risk="high",
+                           exception={"approval_id": "review-123", "reason_code": "incident"})
+            req = root / "request.json"
+            req.write_text(json.dumps(payload), encoding="utf-8")
+            base = [
+                sys.executable, "-m", "tools.codex_assets.model_call_budget",
+                "--policy", str(DEFAULT_POLICY), "--state", str(root / "ledger.json"),
+            ]
+            denied = subprocess.run(base + ["reserve", "--request", str(req)],
+                                    capture_output=True, text=True, check=False)
+            self.assertEqual(denied.returncode, 2)
+            self.assertEqual(json.loads(denied.stdout)["reason"], "long-context-price-cliff")
+            bypass = subprocess.run(base + ["reserve", "--request", str(req),
+                                             "--allow-reviewed-exception"],
+                                    capture_output=True, text=True, check=False)
+            self.assertNotEqual(bypass.returncode, 0)
+            replan_attempt = subprocess.run(base + ["replan", "--workflow-id", "adk",
+                                                     "--session-id", "session-1",
+                                                     "--evidence-sha256", DIGEST],
+                                            capture_output=True, text=True, check=False)
+            self.assertNotEqual(replan_attempt.returncode, 0)
+            self.assertFalse((root / "ledger.json").exists() and
+                             json.loads((root / "ledger.json").read_text())["calls"])
 
     def test_cli_rejects_huge_request_before_dispatch(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

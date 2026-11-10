@@ -8,7 +8,7 @@ Root 提供纯标准库的模型调用预算组件 tools/codex_assets/model_call
 
 ## 唯一可信调用入口：两段式
 
-1. Runtime / 网关使用真实 tokenizer 与完整请求消息计算保守输入上界 input_tokens_bound，配置 max_output_tokens；依渠道价目表计算 quoted_max_charge_fen。不能把 UTF-8 字节数等同 token，更不能相信模型自己提供的数字或审批。
+1. Runtime / 网关使用真实 tokenizer 与完整请求消息计算保守输入上界 input_tokens_bound，配置 max_output_tokens；依渠道价目表计算 strictly positive 的 quoted_max_charge_fen；付费请求缺失报价或使用零价会被拒绝。不能把 UTF-8 字节数等同 token，更不能相信模型自己提供的数字或审批。
 2. 每次调用生成不可重复 request_id，绑定 workflow_id、session_id、model；只提供数字与脱敏标识，不把 prompt、工具日志、会话历史、密钥放入预算账本。
 3. **调用前 reserve**：只有退出码 0 且 status=allow 时允许发送模型请求。hold 必须先压缩上下文或经证据支持的 replan；blocked/error 不可发送。为避免网络结果不明后重复扣费，同一 request_id 重放会被拒绝。
 4. **调用后 settle**：以可信中转的原始 Usage 计量、缓存输入、输出 Token 与实际 billed_fen 结算。若已经发送但 usage 不可用，settle 使用 outcome=unavailable，四个计费/用量字段填 null，并保留最初预算预留，不能视作免费。
@@ -46,7 +46,7 @@ python3 -m tools.codex_assets.model_call_budget \
   --state "$HOME/.local/state/llm-agent/model-call-budget.json" report
 ~~~
 
-结算 JSON 全字段为：schema=llm-agent-model-call-settlement/v1、request_id、outcome (success/error/unavailable)、input_tokens、cached_input_tokens、output_tokens、billed_fen、progress_evidence_sha256（无可信进展填 null）。重规划命令是 replan --workflow-id ... --session-id ... --evidence-sha256 ...；仅上游真正验证新的决策或阶段产物后才可使用。
+结算 JSON 全字段为：schema=llm-agent-model-call-settlement/v1、request_id、outcome (success/error/unavailable)、input_tokens、cached_input_tokens、output_tokens、billed_fen、progress_evidence_sha256（无可信进展填 null）。重规划不是开放的 CLI 命令：仅可信 Host 核验新的目标/产物证据后调用 Python API 的 replan(...)，避免 Agent 随意提供 64 位摘要就重置空转计数。
 
 ## 限额初值及优化动作
 
@@ -65,7 +65,7 @@ python3 -m tools.codex_assets.model_call_budget \
 | 共享账本日 Token | 50M | 各工作流合计 |
 | 无有效进展 | 连续 3 次 | hold + evidence-bound replan |
 
-高风险例外要求 host 独立核验审批后，再携带审批 ID 和原因码，并启用 --allow-reviewed-exception。CLI 标志本身 **不构成权限控制**；模型文本不能自我审批。
+高风险例外要求可信 Host 独立核验真实审批和来源，再通过受保护的 Python API 调用 reserve(..., allow_exception=True)；普通 CLI 不提供自我批准的开关。模型生成的文本、审批 ID 或口令字符串不能单独构成授权。
 
 模型降级策略：只在探路、检索、日志摘要等低风险任务选择经质量验证的轻量模型；涉及安全、发布、架构、代码审查或不明根因时保留高能力模型。分级选型不硬编码具体提供商价格或名称。
 
