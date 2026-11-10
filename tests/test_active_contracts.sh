@@ -19,6 +19,11 @@ root = Path(sys.argv[2])
 assert data["status"] == "pass", data
 assert data["item_count"] >= 22, data
 assert data["failures"] == [], data
+from tools.control_plane.adk_interface import _DEPRECATED
+assert _DEPRECATED and "manifest.yaml" in _DEPRECATED
+active_contract_source = (root / "tools/control_plane/active_contracts.py").read_text(encoding="utf-8")
+assert "adk_interface.lock.json" not in active_contract_source
+assert "from tools.control_plane.adk_interface import _DEPRECATED" in active_contract_source
 assert not (root / "manifests/runtime_health_adapters.json").exists()
 assert not (root / "manifests/reference_repository_registration_policy.json").exists()
 assert not (root / "manifests/reference_repository_removal_policy.json").exists()
