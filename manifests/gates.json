@@ -356,12 +356,9 @@
         "adk-interface"
       ],
       "inputs": [
-        "adk.lock",
-        "manifests/adk_interface.lock.json",
-        "reports/promotion/agent-dev-kit/promotion-evidence.json",
-        "reports/promotion/agent-dev-kit/promotion-attestation.json",
-        "tools/control_plane/adk_promotion_evidence.py",
-        "scripts/check-adk-promotion-evidence.sh"
+        ".gitmodules",
+        "tools/control_plane/adk_interface.py",
+        "scripts/check-adk-source-pin.sh"
       ],
       "impact_groups": [
         "integration-deep"
@@ -370,11 +367,11 @@
       "cache_policy": "disabled",
       "argv": [
         "bash",
-        "scripts/check-adk-promotion-evidence.sh",
-        "."
+        "scripts/check-adk-source-pin.sh",
+        "--summary-json"
       ],
       "timeout_seconds": 120,
-      "evidence_class": "release"
+      "evidence_class": "source"
     },
     "maintenance-budget": {
       "owner": "llm_agent",

@@ -6,36 +6,30 @@ TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 cd "$ROOT"
 
-python3 - "$ROOT/scripts/check-adk-promotion-evidence.sh" "$ROOT/.github/workflows/ci.yml" <<'PY'
+python3 - "$ROOT/.github/workflows/ci.yml" "$ROOT/tools/control_plane/adk_interface.py" <<'PY'
 from pathlib import Path
 import sys
 
-script = Path(sys.argv[1]).read_text(encoding="utf-8")
-workflow = Path(sys.argv[2]).read_text(encoding="utf-8")
-
+workflow = Path(sys.argv[1]).read_text(encoding="utf-8")
+authority = Path(sys.argv[2]).read_text(encoding="utf-8")
 for token in (
-    "cosign verify-blob",
-    "--bundle \"$ATTESTATION\"",
-    "--certificate-identity 'https://github.com/jiying2007/agent-dev-kit/.github/workflows/ci.yml@refs/heads/main'",
-    "--certificate-oidc-issuer 'https://token.actions.githubusercontent.com'",
-):
-    assert token in script, token
-
-for token in (
-    "cosign-release: v3.1.3",
-    "cosign verify-blob",
-    "--bundle reports/promotion/agent-dev-kit/promotion-attestation.json",
-    "--certificate-identity https://github.com/jiying2007/agent-dev-kit/.github/workflows/ci.yml@refs/heads/main",
-    "--certificate-oidc-issuer https://token.actions.githubusercontent.com",
+    "Verify native immutable ADK Release on exact gitlink changes",
+    "--release-archive",
+    "--release-contract",
+    "gh release download",
+    "/tmp/adk-native-release-receipt.json",
 ):
     assert token in workflow, token
-
-for retired in ("--use-signed-timestamps", "--rfc3161-timestamp-path"):
-    assert retired not in script, retired
-    assert retired not in workflow, retired
-
-for retired in ("cosign initialize", "trusted_root.json", "--trusted-root", "--new-bundle-format"):
-    assert retired not in script, retired
+for token in (
+    '"gh", "attestation", "verify"',
+    "--signer-workflow",
+    "--source-digest",
+    "--source-ref",
+):
+    assert token in authority, token
+assert "--bundle reports/promotion/agent-dev-kit/promotion-attestation.json" not in workflow
+for unsafe in ("--insecure-ignore-tlog", "--trusted-root", "--new-bundle-format"):
+    assert unsafe not in workflow, unsafe
 PY
 
 python3 - "$TMP" <<'PY'
