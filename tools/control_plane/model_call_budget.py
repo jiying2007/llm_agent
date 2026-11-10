@@ -286,10 +286,10 @@ def reserve(
     }
     return _decision(
         "allow", "reserved", request_id=rid, day=day,
-        "tokens_reserved": requested_tokens,
-        "charge_reserved_fen": data["quoted_max_charge_fen"],
-        "above_target": inp > caps["target_input_tokens"],
-        "exception": exception,
+        tokens_reserved=requested_tokens,
+        charge_reserved_fen=data["quoted_max_charge_fen"],
+        above_target=inp > caps["target_input_tokens"],
+        exception=exception,
     )
 
 
@@ -328,8 +328,9 @@ def settle(value: dict[str, Any], state: dict[str, Any]) -> dict[str, Any]:
     state["no_progress"][key] = 0 if data["progress_evidence_sha256"] else previous + 1
     return _decision(
         "recorded", "settled", request_id=rid, usage_observed=observed,
-        "billing_verified": observed, "no_progress_turns": state["no_progress"][key],
-        "budget_allocation_fen": entry["allocated_fen"],
+        billing_verified=False, usage_reported=observed,
+        no_progress_turns=state["no_progress"][key],
+        budget_allocation_fen=entry["allocated_fen"],
     )
 
 
