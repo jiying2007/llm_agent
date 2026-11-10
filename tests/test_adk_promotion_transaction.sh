@@ -48,20 +48,6 @@ agent-dev-kit.tree=$OLD_TREE
 agent-dev-kit.manifest_blob=$OLD_MANIFEST
 updated_at=2026-09-10
 LOCK
-python3 - "$ROOT" "$FIXTURE" "$OLD_ADK" "$OLD_TREE" "$OLD_MANIFEST" <<'PY'
-import json, sys
-from pathlib import Path
-root, fixture, commit, tree, manifest_blob = sys.argv[1:]
-sys.path.insert(0, root)
-from tools.control_plane.adk_interface import interface_payload
-payload = interface_payload(
-    {"version":"5.0.0-rc.2","commit":commit,"tree":tree,"manifest_blob":manifest_blob},
-    "2026-09-10",
-)
-Path(fixture, "manifests", "adk_interface.lock.json").write_text(
-    json.dumps(payload, indent=2) + "\n", encoding="utf-8"
-)
-PY
 cat >"$FIXTURE/reports/current-status.md" <<'STATUS'
 # Current Product Status
 
@@ -135,17 +121,16 @@ result = json.loads(Path(summary_path).read_text(encoding="utf-8"))
 expected_paths = sorted([
     "adk.lock",
     "agent-dev-kit",
-    "manifests/adk_interface.lock.json",
     "reports/current-status.md",
     "reports/promotion/agent-dev-kit/promotion-evidence.json",
     "reports/promotion/agent-dev-kit/promotion-attestation.json",
 ])
 assert result["status"] == "applied-not-verified", result
-assert result["schema"] == "llm-agent-adk-promotion/v4", result
+assert result["schema"] == "llm-agent-adk-promotion/v5", result
 assert result["staged_paths"] == expected_paths, result
 assert result["staged_transaction_complete"] is True, result
 assert result["verification_model"] == "portable-attested-evidence", result
-for key in ("interface_sha256", "promotion_evidence_sha256", "promotion_attestation_sha256"):
+for key in ("promotion_evidence_sha256", "promotion_attestation_sha256"):
     assert isinstance(result[key], str) and len(result[key]) == 64, result
 staged = subprocess.check_output(
     ["git", "-C", str(root), "diff", "--cached", "--name-only"], text=True
@@ -335,4 +320,4 @@ else:
 print("[PASS] promotion preflight rejects duplicate/nonfinite/oversized/symlinked JSON")
 PY
 
-echo '[PASS] ADK promotion stages one six-path source+evidence transaction and rolls back atomically'
+echo '[PASS] ADK promotion stages one five-path source+evidence transaction and rolls back atomically'

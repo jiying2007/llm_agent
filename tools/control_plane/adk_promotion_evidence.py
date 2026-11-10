@@ -72,20 +72,20 @@ def verify_evidence_claims(
     *,
     evidence_path: Path,
     lock_path: Path,
-    interface_path: Path,
+    interface_path: Path | None = None,
     now: dt.datetime | None = None,
     max_age_days: int = 30,
 ) -> dict[str, Any]:
     try:
         evidence = read_json(evidence_path, label="promotion evidence")
-        interface = read_json(interface_path, label="interface lock")
+        interface = read_json(interface_path, label="historical interface lock") if interface_path is not None else None
     except IntakeError as exc:
         raise ValueError(str(exc)) from exc
     lock = _load_lock(lock_path)
     if not isinstance(evidence, Mapping):
         raise ValueError("promotion evidence root must be an object")
-    if not isinstance(interface, Mapping):
-        raise ValueError("interface lock root must be an object")
+    if interface_path is not None and not isinstance(interface, Mapping):
+        raise ValueError("historical interface lock root must be an object")
     if evidence.get("schema") != EVIDENCE_SCHEMA:
         raise ValueError(f"promotion evidence schema must be {EVIDENCE_SCHEMA}")
 
@@ -120,8 +120,8 @@ def verify_evidence_claims(
         actual = source.get(key)
         if actual != expected:
             raise ValueError(f"promotion evidence source.{key} does not match adk.lock")
-        if interface.get(key) != expected:
-            raise ValueError(f"interface lock {key} does not match adk.lock")
+        if interface_path is not None and isinstance(interface, Mapping) and interface.get(key) != expected:
+            raise ValueError(f"historical interface lock {key} does not match adk.lock")
 
     _expect_hex(source.get("commit"), HEX40, "source.commit")
     _expect_hex(source.get("tree"), HEX40, "source.tree")
@@ -181,7 +181,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Verify portable ADK promotion evidence claims")
     parser.add_argument("--evidence", default="reports/promotion/agent-dev-kit/promotion-evidence.json")
     parser.add_argument("--lock", default="adk.lock")
-    parser.add_argument("--interface", default="manifests/adk_interface.lock.json")
+    parser.add_argument("--interface", help="Optional historical interface identity fixture (not an active version lock)")
     parser.add_argument("--max-age-days", type=int, default=30)
     parser.add_argument("--summary-json", action="store_true")
     args = parser.parse_args(argv)
@@ -189,7 +189,7 @@ def main(argv: list[str] | None = None) -> int:
         result = verify_evidence_claims(
             evidence_path=Path(args.evidence),
             lock_path=Path(args.lock),
-            interface_path=Path(args.interface),
+            interface_path=Path(args.interface) if args.interface else None,
             max_age_days=args.max_age_days,
         )
     except (OSError, ValueError, json.JSONDecodeError) as exc:

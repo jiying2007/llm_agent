@@ -37,8 +37,7 @@ def _verify_signature(root: Path, verifier: Path, verifier_sha256: str,
     core._load_object(trusted_root, "trusted root")
     evidence = root / "reports/promotion/agent-dev-kit/promotion-evidence.json"
     bundle = root / "reports/promotion/agent-dev-kit/promotion-attestation.json"
-    claims = verify_evidence_claims(evidence_path=evidence, lock_path=root / "adk.lock",
-                                    interface_path=root / "manifests/adk_interface.lock.json")
+    claims = verify_evidence_claims(evidence_path=evidence, lock_path=root / "adk.lock")
     core._load_object(bundle, "promotion attestation")
     payload = read_bytes(evidence, label="promotion evidence", max_bytes=4 * 1024 * 1024)
     bundle_sha = core._sha256_file(bundle)

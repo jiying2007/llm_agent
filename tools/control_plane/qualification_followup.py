@@ -74,7 +74,7 @@ REVIEW_FILES = ("state.yaml", "checklist.md", "verify-report.md", "requirements.
                 "design.md", "proposal.md", "tasks.md", "negative-results.md", "review-report.md",
                 "review-evidence.json", "provenance.md")
 KEY_INPUTS = (
-    "adk.lock", "manifests/adk_interface.lock.json", "manifests/long_term_asset_qualification.json",
+    "adk.lock", "manifests/long_term_asset_qualification.json",
     "manifests/software_m5_policy.json", "manifests/software_m5_pilot_ledger.json",
     "manifests/product_maturity_scorecard.json", "reports/current-status.md",
     "reports/field-evidence/software-m5-v5-events.jsonl",
@@ -437,8 +437,8 @@ def _frozen_archive_root_pin_matches_committed_head(root: Path, adk: Path) -> bo
 
     This supplements the delegated review bridge, which deliberately compares
     the ADK HEAD against the mutable Root index. Historical stale classification
-    additionally requires committed Root HEAD, index, regular worktree lock
-    files, ADK HEAD/tree/manifest and interface lock all to agree.
+    additionally requires committed Root HEAD/index, the remaining source
+    projection lock, and exact ADK HEAD/tree/manifest identities to agree.
     """
     def git(directory: Path, *args: str) -> bytes:
         completed = run_bounded(
@@ -467,7 +467,7 @@ def _frozen_archive_root_pin_matches_committed_head(root: Path, adk: Path) -> bo
             return False
 
         root_inputs: dict[str, bytes] = {}
-        for name in ("adk.lock", "manifests/adk_interface.lock.json"):
+        for name in ("adk.lock",):
             committed_blob = git(root, "rev-parse", "--verify", "HEAD:" + name).strip()
             stage = git(root, "ls-files", "--stage", "-z", "--", name)
             if (re.fullmatch(rb"[0-9a-f]{40}", committed_blob) is None
@@ -486,17 +486,14 @@ def _frozen_archive_root_pin_matches_committed_head(root: Path, adk: Path) -> bo
             if not key or key in lock:
                 return False
             lock[key] = value
-        interface = decode_json(root_inputs["manifests/adk_interface.lock.json"],
-                                "pinned Root ADK interface lock")
         manifest = decode_json(git(adk, "show", "HEAD:manifest.json"),
                                "committed ADK manifest")
-        if not isinstance(interface, dict) or not isinstance(manifest, dict):
+        if not isinstance(manifest, dict):
             return False
         version = manifest.get("version")
         adk_tree = git(adk, "rev-parse", "--verify", "HEAD^{tree}").strip()
         manifest_blob = git(adk, "rev-parse", "--verify", "HEAD:manifest.json").strip()
         if (lock.get("schema") != "llm-agent-adk-lock/v2"
-                or interface.get("schema") != "llm-agent-adk-interface-lock/v1"
                 or not isinstance(version, str) or not version
                 or re.fullmatch(rb"[0-9a-f]{40}", adk_tree) is None
                 or re.fullmatch(rb"[0-9a-f]{40}", manifest_blob) is None):
@@ -508,7 +505,7 @@ def _frozen_archive_root_pin_matches_committed_head(root: Path, adk: Path) -> bo
             "manifest_blob": manifest_blob.decode("ascii"),
         }
         for key, value in identity.items():
-            if lock.get("agent-dev-kit." + key) != value or interface.get(key) != value:
+            if lock.get("agent-dev-kit." + key) != value:
                 return False
         return True
     except (OSError, RuntimeError, ValueError, UnicodeError):

@@ -86,7 +86,7 @@
       "id": "source-valid",
       "status": "pass",
       "evidence": [
-        "manifests/adk_interface.lock.json",
+        "tools/control_plane/adk_interface.py",
         "manifests/gitlinks.json",
         "tests/test_adk_interface_lock.sh"
       ]
