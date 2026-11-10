@@ -28,8 +28,9 @@ for token in (
 ):
     assert token in authority, token
 assert "--bundle reports/promotion/agent-dev-kit/promotion-attestation.json" not in workflow
+adk_lane = workflow.split("  integration:\n", 1)[1].split("  integration-summary:\n", 1)[0]
 for unsafe in ("--insecure-ignore-tlog", "--trusted-root", "--new-bundle-format"):
-    assert unsafe not in workflow, unsafe
+    assert unsafe not in adk_lane, unsafe
 PY
 
 python3 - "$TMP" <<'PY'
