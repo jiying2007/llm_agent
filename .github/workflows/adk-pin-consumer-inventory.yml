@@ -1,0 +1,32 @@
+name: adk-pin-consumer-inventory
+
+on:
+  push:
+    branches: [audit/adk-pin-consumer-inventory-20261110]
+    paths: [.github/workflows/adk-pin-consumer-inventory.yml]
+
+permissions:
+  contents: read
+
+jobs:
+  inventory:
+    if: github.repository == 'jiying2007/llm_agent'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: false
+          persist-credentials: false
+      - name: Read-only audit of ADK lock consumers
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '== FILES / source and CI paths =='
+          git grep -l -E 'adk\.lock|adk_interface\.lock\.json|promotion-evidence\.json|promotion-attestation\.json' \
+            -- tools scripts tests manifests .github 2>/dev/null | head -n 120 || true
+          echo '== PRIMARY SOURCE REFERENCES =='
+          git grep -n -E 'adk\.lock|adk_interface\.lock\.json|promotion-evidence\.json|promotion-attestation\.json' \
+            -- tools/control_plane tools/codex_assets scripts tests .github/workflows manifests/gates.json 2>/dev/null \
+            | head -n 210 || true
+          echo '== DONE =='
