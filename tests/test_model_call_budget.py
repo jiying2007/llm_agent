@@ -117,6 +117,42 @@ class CallBudgetTests(unittest.TestCase):
         p["caps"]["daily_spend_fen_per_workflow"] = 110
         self.assertEqual(reserve(request("r-5", charge=20), self.state, p)["reason"], "daily-charge-budget")
 
+    def test_global_budget_across_independent_workflows(self) -> None:
+        p = copy.deepcopy(POLICY)
+        p["caps"]["daily_calls_global"] = 1
+        reserve(request(workflow="a"), self.state, p)
+        self.assertEqual(reserve(request("r-2", workflow="b"), self.state, p)["reason"],
+                         "global-daily-call-budget")
+        p = copy.deepcopy(POLICY)
+        p["caps"]["daily_tokens_global"] = 4000
+        self.assertEqual(reserve(request("r-3", workflow="b"), self.state, p)["reason"],
+                         "global-daily-token-budget")
+        p = copy.deepcopy(POLICY)
+        p["caps"]["daily_spend_fen_global"] = 110
+        self.assertEqual(reserve(request("r-4", charge=20, workflow="b"), self.state, p)["reason"],
+                         "global-daily-charge-budget")
+        self.assertEqual(report(self.state, POLICY)["global"]["requests"], 1)
+
+    def test_parallel_reservations_are_locked(self) -> None:
+        from concurrent.futures import ThreadPoolExecutor
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "ledger.json"
+            p = copy.deepcopy(POLICY)
+            p["caps"]["daily_calls_per_workflow"] = 3
+            p["caps"]["daily_calls_global"] = 3
+
+            def attempt(n: int) -> str:
+                with ledger(path) as current:
+                    return reserve(request("parallel-" + str(n)), current, p)["status"]
+
+            with ThreadPoolExecutor(max_workers=8) as pool:
+                outcomes = list(pool.map(attempt, range(16)))
+            self.assertEqual(outcomes.count("allow"), 3)
+            self.assertEqual(outcomes.count("blocked"), 13)
+            with ledger(path, write=False) as current:
+                self.assertEqual(report(current, p)["global"]["requests"], 3)
+
     def test_settlement_and_idempotency(self) -> None:
         reserve(request(), self.state, POLICY)
         result = settle(settlement(), self.state)

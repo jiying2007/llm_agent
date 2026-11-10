@@ -59,7 +59,10 @@ python3 -m tools.codex_assets.model_call_budget \
 | 渠道高价阈值 | 272K | 外部批准+真实渠道价目核对 |
 | 每 workflow 日调用 | 256 次 | 默认阻断超额 |
 | 每 workflow 日 Token 额度 | 25M | 预留+结算控制，包括缓存输入 |
-| 每 workflow 日费用 | ¥200 | 接口必须给可信价格上界 |
+| 每 workflow 日费用 | ¥200 | 单 workflow 配额，不替代全局上限 |
+| 共享账本日费用 | ¥200 | 全局跨 workflow 累计，不可拆账本绕过 |
+| 共享账本日调用 | 512 次 | 各工作流合计 |
+| 共享账本日 Token | 50M | 各工作流合计 |
 | 无有效进展 | 连续 3 次 | hold + evidence-bound replan |
 
 高风险例外要求 host 独立核验审批后，再携带审批 ID 和原因码，并启用 --allow-reviewed-exception。CLI 标志本身 **不构成权限控制**；模型文本不能自我审批。

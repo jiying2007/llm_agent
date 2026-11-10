@@ -104,6 +104,7 @@ def validate_policy(value: dict[str, Any]) -> dict[str, Any]:
         "hard_input_tokens", "price_cliff_input_tokens",
         "daily_calls_per_workflow", "daily_tokens_per_workflow",
         "daily_spend_fen_per_workflow", "no_progress_turns",
+        "daily_calls_global", "daily_tokens_global", "daily_spend_fen_global",
     }
     if not isinstance(caps, dict) or set(caps) != names:
         raise BudgetError("policy-caps-invalid")
@@ -260,11 +261,17 @@ def reserve(
         return _decision("hold", "no-progress-replan-required", request_id=rid)
 
     day = _day(policy, now)
-    related = [x for x in state["calls"].values()
-               if x["day"] == day and x["workflow_id"] == data["workflow_id"]]
+    today = [x for x in state["calls"].values() if x["day"] == day]
+    related = [x for x in today if x["workflow_id"] == data["workflow_id"]]
     tokens = sum(x["allocated_tokens"] for x in related)
     fen = sum(x["allocated_fen"] for x in related)
     requested_tokens = inp + data["max_output_tokens"]
+    if len(today) >= caps["daily_calls_global"]:
+        return _decision("blocked", "global-daily-call-budget", request_id=rid)
+    if sum(x["allocated_tokens"] for x in today) + requested_tokens > caps["daily_tokens_global"]:
+        return _decision("blocked", "global-daily-token-budget", request_id=rid)
+    if sum(x["allocated_fen"] for x in today) + data["quoted_max_charge_fen"] > caps["daily_spend_fen_global"]:
+        return _decision("blocked", "global-daily-charge-budget", request_id=rid)
     if len(related) >= caps["daily_calls_per_workflow"]:
         return _decision("blocked", "daily-call-budget", request_id=rid)
     if tokens + requested_tokens > caps["daily_tokens_per_workflow"]:
@@ -366,8 +373,14 @@ def report(state: dict[str, Any], policy: dict[str, Any], now: datetime | None =
         item["unknown_usage"] += entry["status"] == "settled" and entry["usage"] is None
         if entry["usage"] is not None:
             item["cached_input_tokens_observed"] += entry["usage"]["cached_input_tokens"]
+    overall = {
+        "requests": sum(x["requests"] for x in by_workflow.values()),
+        "tokens_allocated": sum(x["tokens_allocated"] for x in by_workflow.values()),
+        "cny_fen_allocated": sum(x["cny_fen_allocated"] for x in by_workflow.values()),
+        "unknown_usage": sum(x["unknown_usage"] for x in by_workflow.values()),
+    }
     return {"schema": SCHEMA, "status": "observed-not-provider-certified", "day": day,
-            "workflows": by_workflow, "contains_raw_prompts": False}
+            "workflows": by_workflow, "global": overall, "contains_raw_prompts": False}
 
 
 def _main() -> int:
