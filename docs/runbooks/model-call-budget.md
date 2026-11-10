@@ -2,7 +2,7 @@
 
 ## 状态
 
-Root 提供纯标准库的模型调用预算组件 tools/control_plane/model_call_budget.py；不调用任何模型、不接收 prompt、不传输密钥。清单 manifests/model_call_budget.json 的状态是 requires-host-integration。**提交此代码不代表当前 Codex / API 中转站已开始拦截请求。**
+Root 提供纯标准库的模型调用预算组件 tools/codex_assets/model_call_budget.py；不调用任何模型、不接收 prompt、不传输密钥。清单 manifests/model_call_budget.json 的状态是 requires-host-integration。**提交此代码不代表当前 Codex / API 中转站已开始拦截请求。**
 
 预算参数基于 2026-11-09 用户账单提出：272K 为该渠道报告的分档阈值，不能外推到所有模型和代理。接入前必须与提供商真实 Token 计数、报价和账单核对。计时使用北京时间自然日，费用单位为人民币分。
 
@@ -34,15 +34,15 @@ Root 提供纯标准库的模型调用预算组件 tools/control_plane/model_cal
 ~~~
 
 ~~~bash
-python3 -m tools.control_plane.model_call_budget \
+python3 -m tools.codex_assets.model_call_budget \
   --state "$HOME/.local/state/llm-agent/model-call-budget.json" \
   reserve --request /safe/input/request.json
 
-python3 -m tools.control_plane.model_call_budget \
+python3 -m tools.codex_assets.model_call_budget \
   --state "$HOME/.local/state/llm-agent/model-call-budget.json" \
   settle --usage /safe/input/settlement.json
 
-python3 -m tools.control_plane.model_call_budget \
+python3 -m tools.codex_assets.model_call_budget \
   --state "$HOME/.local/state/llm-agent/model-call-budget.json" report
 ~~~
 

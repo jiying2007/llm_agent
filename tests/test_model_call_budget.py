@@ -9,7 +9,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from tools.control_plane.model_call_budget import (
+from tools.codex_assets.model_call_budget import (
     BudgetError, DEFAULT_POLICY, empty_state, ledger, replan, report, reserve,
     settle, validate_policy,
 )
@@ -189,7 +189,7 @@ class CallBudgetTests(unittest.TestCase):
             value["compaction_checked"] = True
             path.write_text(json.dumps(value), encoding="utf-8")
             command = [
-                sys.executable, "-m", "tools.control_plane.model_call_budget",
+                sys.executable, "-m", "tools.codex_assets.model_call_budget",
                 "--policy", str(DEFAULT_POLICY), "--state", str(root / "state.json"),
                 "reserve", "--request", str(path),
             ]
