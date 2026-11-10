@@ -161,7 +161,7 @@
       ],
       "inputs": [
         "README.md",
-        "manifests/adk_interface.lock.json",
+        "tools/control_plane/adk_interface.py",
         "manifests/comprehensive_optimization_backlog.json",
         "manifests/report_registry.json",
         "tools/control_plane/active_contracts.py"
