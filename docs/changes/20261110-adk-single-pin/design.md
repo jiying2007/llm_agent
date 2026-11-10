@@ -23,3 +23,23 @@ physical-device qualification.
 Transition boundary: old signed CI promotion inputs and parallel lock files
 remain temporarily as existing consumer fixtures. Retire them only after
 status projection, runtime chain, release CLI and dependent tests migrate.
+
+## Consumer inventory and first removal tranche
+
+A read-only GitHub Actions inventory of the current Root code (run 42819326430)
+located the parallel ADK lock in core identity, M5 runtime qualification, runtime
+chains, recovery, status projection, tests and governance policies. It is not
+safe to remove all lock files simply because Git commit identity is sufficient
+for source pinning: product credentials and report input hashes have independent
+consumers.
+
+This tranche migrates the **active governance deprecated-surface checker**
+to the single existing ADK interface authority instead of reading
+`manifests/adk_interface.lock.json`. LTA source assertion derives from the
+indexed Gitlink and the pinned manifest through `source_pin`, not from a parallel
+version string. The active-contract gate dependency and generated current-status
+input digest are updated exactly; no device or release authorization changes.
+
+The interface-lock and adk.lock files remain present for M5, source promotion,
+status projection and other consumers until a larger contract-wide migration can
+replace them without losing fail-closed invariants.
