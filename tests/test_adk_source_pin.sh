@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-PYTHONPATH="$ROOT" python3 -m tools.control_plane.adk_source_pin --root "$ROOT" --summary-json \
+PYTHONPATH="$ROOT" python3 -m tools.control_plane.adk_interface --source-pin --root "$ROOT" --summary-json \
   | python3 -c 'import json,sys; p=json.load(sys.stdin); assert p["status"]=="pass",p; assert p["signature_verified"] is False'
 
 python3 - "$ROOT" <<'PY'
@@ -11,7 +11,7 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-from tools.control_plane.adk_source_pin import check_claims, source_pin
+from tools.control_plane.adk_interface import check_claims, source_pin
 
 def git(cwd, *args):
     p = subprocess.run(["git", "-C", str(cwd), *args], check=True,
