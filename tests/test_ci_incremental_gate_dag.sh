@@ -250,7 +250,7 @@ integration_workflow = github.split("  integration:\n", 1)[1].split("  integrati
 assert "--trusted-root" not in integration_workflow
 assert "--new-bundle-format" not in github
 assert "--insecure-ignore-tlog" not in github
-assert "jiying2007/agent-dev-kit/.github/workflows/release.yml" in adk_interface
+assert 'PRODUCER + "/.github/workflows/release.yml"' in adk_interface
 assert "refs/heads/main" in adk_interface
 assert "Root ADK integration was REQUIRED but did not pass" in github
 assert "ADK integration: NOT_REQUIRED" in github
