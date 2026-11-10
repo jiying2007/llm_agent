@@ -8,6 +8,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from tools.control_plane.adk_interface import _DEPRECATED
+
 SCHEMA = "llm-agent-active-contract-check/v1"
 
 
@@ -50,7 +52,6 @@ def validate(root: Path, as_of: dt.date) -> dict[str, Any]:
     root = root.resolve()
     backlog_path = root / "manifests" / "comprehensive_optimization_backlog.json"
     backlog = json.loads(backlog_path.read_text(encoding="utf-8"))
-    interface = json.loads((root / "manifests" / "adk_interface.lock.json").read_text(encoding="utf-8"))
     failures: list[str] = []
     adk_checkout_available = (root / "agent-dev-kit" / "manifest.json").is_file()
 
@@ -75,9 +76,12 @@ def validate(root: Path, as_of: dt.date) -> dict[str, Any]:
     except (OSError, ValueError, json.JSONDecodeError) as exc:
         failures.append(str(exc))
 
-    deprecated = interface.get("deprecated_surfaces", [])
-    if not isinstance(deprecated, list) or not all(isinstance(item, str) and item for item in deprecated):
-        failures.append("interface deprecated_surfaces must be a non-empty string list")
+    # One interface authority owns the deprecated-surface contract.
+    # The generated interface lock duplicates this declaration and must not
+    # independently redefine which surfaces are retired.
+    deprecated = list(_DEPRECATED)
+    if not deprecated or any(not isinstance(item, str) or not item for item in deprecated):
+        failures.append("canonical ADK deprecated surfaces must be non-empty strings")
         deprecated = []
 
     active_texts = {

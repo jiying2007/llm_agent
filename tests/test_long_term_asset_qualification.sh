@@ -9,10 +9,12 @@ import json
 import re
 from pathlib import Path
 
+from tools.control_plane.adk_interface import source_pin
+
 root = Path('.')
 lta = json.loads((root / 'manifests/long_term_asset_qualification.json').read_text())
 scorecard = json.loads((root / 'manifests/product_maturity_scorecard.json').read_text())
-lock = json.loads((root / 'manifests/adk_interface.lock.json').read_text())
+adk_identity = source_pin(root)
 recovery_path = root / 'reports/long-term-assets/solo-maintainer-recovery-current.json'
 recovery = json.loads(recovery_path.read_text())
 runbook = root / 'docs/runbooks/solo-maintainer-continuity.md'
@@ -68,7 +70,7 @@ assert lta['lifecycle']['llm_agent']['component_release_required'] is False
 assert lta['lifecycle']['agent_dev_kit']['model'] == 'versioned-component'
 assert lta['lifecycle']['agent_dev_kit']['component_release_required'] is True
 assert 'current_release' not in lta['lifecycle']['agent_dev_kit']
-assert lock['version']
+assert adk_identity['version'] and re.fullmatch(r'[a-f0-9]{40}', adk_identity['commit'])
 
 iteration = lta['iteration_readiness']
 assert iteration['development'] == 'ready'
