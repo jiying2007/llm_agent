@@ -307,35 +307,6 @@ jobs:
             > /tmp/adk-native-release-receipt.json
           echo '[PASS] immutable ADK Release digest, signer, source commit and ref verified'
 
-      - name: Verify portable promotion evidence claims
-        run: >-
-          python -m tools.control_plane.cli promotion-evidence
-          --evidence reports/promotion/agent-dev-kit/promotion-evidence.json
-          --lock adk.lock
-          --interface manifests/adk_interface.lock.json
-          --summary-json
-          > /tmp/llm-agent-integration-receipt.json
-
-      - name: Verify keyless ADK Sigstore bundle with bounded trust refresh retries
-        run: |
-          set -euo pipefail
-          for attempt in 1 2 3; do
-            echo "[INFO] Sigstore verification attempt ${attempt}/3"
-            if cosign initialize && cosign verify-blob \
-              --bundle reports/promotion/agent-dev-kit/promotion-attestation.json \
-              --certificate-identity https://github.com/jiying2007/agent-dev-kit/.github/workflows/ci.yml@refs/heads/main \
-              --certificate-oidc-issuer https://token.actions.githubusercontent.com \
-              reports/promotion/agent-dev-kit/promotion-evidence.json \
-              > /tmp/adk-attestation-verification.txt; then
-              exit 0
-            fi
-            if [[ "${attempt}" -eq 3 ]]; then
-              echo "[FAIL] Sigstore bundle verification failed after 3 strict attempts" >&2
-              exit 1
-            fi
-            sleep "$((attempt * 2))"
-          done
-
       - name: Re-run root-side exact interface contracts
         run: |
           bash scripts/check-adk-lock.sh . --pin-only
@@ -370,8 +341,6 @@ jobs:
         with:
           name: llm-agent-integration-evidence
           path: |
-            /tmp/llm-agent-integration-receipt.json
-            /tmp/adk-attestation-verification.txt
             /tmp/adk-source-pin-receipt.json
             /tmp/adk-native-release-receipt.json
             /tmp/adk-interface-worktree.json
@@ -404,17 +373,17 @@ jobs:
           fi
           if [[ "$REQUIRED" == "true" ]]; then
             if [[ "$INTEGRATION_RESULT" != "success" ]]; then
-              echo "[FAIL] promotion evidence verification was REQUIRED but did not pass (integration=$INTEGRATION_RESULT)" >&2
+              echo "[FAIL] Root ADK integration was REQUIRED but did not pass (integration=$INTEGRATION_RESULT)" >&2
               exit 1
             fi
-            echo "### ADK promotion evidence: PASS ($REASON)" >> "$GITHUB_STEP_SUMMARY"
+            echo "### ADK integration: PASS ($REASON; native Release proof required on gitlink changes)" >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
           if [[ "$INTEGRATION_RESULT" == "failure" || "$INTEGRATION_RESULT" == "cancelled" ]]; then
-            echo "[FAIL] optional promotion evidence verification ran but did not pass: $INTEGRATION_RESULT" >&2
+            echo "[FAIL] optional ADK integration ran but did not pass: $INTEGRATION_RESULT" >&2
             exit 1
           fi
-          echo '### ADK promotion evidence: NOT_REQUIRED' >> "$GITHUB_STEP_SUMMARY"
+          echo '### ADK integration: NOT_REQUIRED' >> "$GITHUB_STEP_SUMMARY"
 
   software-m5-ci-receipt:
     name: software-m5-ci-receipt

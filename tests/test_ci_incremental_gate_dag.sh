@@ -217,7 +217,7 @@ assert "tools.control_plane.cli gate" in github
 assert "tools.control_plane.cli impact" in github
 assert "tools.control_plane.cli status" in github
 assert "tools.control_plane.cli runtime-chain" in github
-assert "tools.control_plane.cli promotion-evidence" in github
+assert "tools.control_plane.adk_interface --source-pin" in github
 assert len(re.findall(r"--profile\s+integration-extra(?:\s|$)", github)) == 1
 assert "/tmp/llm-agent-integration-gate-receipt.json" in github
 assert "--group integration-deep" in github
@@ -230,26 +230,30 @@ contract_workflow = github.split("  contract:\n", 1)[1].split("  doc-sync:\n", 1
 assert contract_workflow.index("git submodule update --init --depth=1 agent-dev-kit") < contract_workflow.index("bash tests/test_software_m5_rollover.sh")
 assert "/tmp/runtime-chain-receipt.json" in github
 
-# Existing evidence/trust semantics must not weaken while routing through llm-ctl.
-assert "promotion-attestation" in github and "promotion-evidence" in github
+# Trust source identity is local Git, while immutable upstream release proof
+# is independently verified in CI only when the gitlink changes.
+adk_interface = (root / "tools/control_plane/adk_interface.py").read_text(encoding="utf-8")
+assert "Verify native immutable ADK Release on exact gitlink changes" in github
+assert "git/trees/$base_sha" in github
+assert 'git fetch --no-tags origin "$base_sha"' not in github
+assert "gh release download" in github and "sha256sum --check" in github
+assert "--release-archive" in github and "--release-contract" in github
+assert "--source-digest" in adk_interface and "--source-ref" in adk_interface
+assert '"gh", "attestation", "verify"' in adk_interface
 assert "sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6" in github
 assert "cosign-release: v3.1.3" in github
 assert "sudo apt-get install -y ripgrep" in github
-assert "cosign initialize" in github
-assert "for attempt in 1 2 3" in github
-assert "failed after 3 strict attempts" in github
 assert "trusted_root.json" not in github
-assert "cosign verify-blob" in github
 assert "--use-signed-timestamps" not in github
 assert "--rfc3161-timestamp-path" not in github
 integration_workflow = github.split("  integration:\n", 1)[1].split("  integration-summary:\n", 1)[0]
 assert "--trusted-root" not in integration_workflow
 assert "--new-bundle-format" not in github
 assert "--insecure-ignore-tlog" not in github
-assert "--certificate-identity https://github.com/jiying2007/agent-dev-kit/.github/workflows/ci.yml@refs/heads/main" in github
-assert "--certificate-oidc-issuer https://token.actions.githubusercontent.com" in github
-assert "promotion evidence verification was REQUIRED but did not pass" in github
-assert "ADK promotion evidence: NOT_REQUIRED" in github
+assert 'PRODUCER + "/.github/workflows/release.yml"' in adk_interface
+assert "refs/heads/main" in adk_interface
+assert "Root ADK integration was REQUIRED but did not pass" in github
+assert "ADK integration: NOT_REQUIRED" in github
 assert re.search(r"integration-impact:\n(?:.|\n)*?needs:\n\s+- contract\n\s+- doc-sync", github)
 assert re.search(r"integration:\n(?:.|\n)*?needs:\n\s+- contract\n\s+- doc-sync\n\s+- integration-impact", github)
 assert "needs.integration-summary.result == 'success'" in github
