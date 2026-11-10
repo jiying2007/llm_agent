@@ -9,6 +9,8 @@ trap 'rm -rf "$TMP_DIR"' EXIT
 if ! "$CHECKER" "$ROOT" --summary-json >"$TMP_DIR/release-clean.json"; then
   echo "[FAIL] release-clean status consistency contract:" >&2
   tail -c 3000 "$TMP_DIR/release-clean.json" >&2
+  echo "[INFO] canonical current-source projection diagnostic:" >&2
+  python3 -m tools.control_plane.status_projection --root "$ROOT" --summary-json >&2 || true
   exit 1
 fi
 if ! "$CHECKER" "$ROOT" --worktree-integration --summary-json >"$TMP_DIR/working-tree.json"; then
