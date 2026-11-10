@@ -68,6 +68,7 @@ jobs:
       - name: Verify report-only qualification follow-up boundaries
         run: |
           git submodule update --init --depth=1 agent-dev-kit
+          bash scripts/check-adk-source-pin.sh --summary-json
           python -m pip install ./agent-dev-kit
           bash tests/test_qualification_followup.sh
 
