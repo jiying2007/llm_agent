@@ -49,6 +49,7 @@ jobs:
             --repo "$repo" \
             --signer-workflow "$repo/.github/workflows/release.yml" \
             --source-digest "$commit" \
+            --source-ref refs/heads/main \
             --format json > "$RUNNER_TEMP/adk-release/attestation-result.json"
           python3 - "$RUNNER_TEMP/adk-release/attestation-result.json" <<'PY'
           import json,sys
