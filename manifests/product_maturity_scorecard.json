@@ -95,7 +95,7 @@
       ],
       "status": "verified",
       "evidence": [
-        "manifests/adk_interface.lock.json",
+        "tools/control_plane/adk_interface.py",
         "tools/codex_assets/software_m5_v3.py"
       ]
     },
@@ -245,7 +245,7 @@
       ],
       "status": "verified",
       "evidence": [
-        "manifests/adk_interface.lock.json",
+        "tools/control_plane/adk_interface.py",
         "reports/runtime-evidence/claude-code-owner-attestation-v2-2026-08-30.json"
       ]
     },
