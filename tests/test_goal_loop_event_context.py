@@ -56,6 +56,40 @@ class PreflightTests(unittest.TestCase):
             self.assertFalse(r["owns_goal_completion"])
             self.assertFalse(r["raw_prompt_included"])
 
+    def test_wait_events_with_stale_model_action_never_poll(self) -> None:
+        for kind in ("heartbeat", "ci_pending"):
+            with self.subTest(kind=kind):
+                waiting = snapshot(kind, action="model")
+                first = build_plan(waiting)
+                self.assertEqual(first["action"], "skip-model")
+                self.assertEqual(first["reason"], "awaiting-material-event")
+                self.assertFalse(first["model_invocation_required"])
+                self.assertEqual(first["cursor_commit_condition"], "read-only-observation")
+                # A fresh heartbeat fingerprint alone cannot authorize another
+                # model turn while the underlying CI/work is still pending.
+                waiting["event_sha256"] = "f" * 64
+                self.assertEqual(build_plan(waiting, first["next_cursor"])["action"], "skip-model")
+
+                high = snapshot(kind, action="model", risk="high")
+                result = build_plan(high)
+                self.assertEqual(result["action"], "needs-review")
+                self.assertFalse(result["model_invocation_required"])
+
+        # Genuine material events can still request semantic reasoning.
+        for kind in ("user_updated", "ci_failed", "source_changed"):
+            self.assertEqual(build_plan(snapshot(kind, action="model"))["action"], "invoke-model")
+
+    def test_review_gate_precedes_stale_tool_and_verify(self) -> None:
+        for pending in ("tool", "verify"):
+            with self.subTest(pending=pending):
+                review = snapshot("review_required", action=pending)
+                result = build_plan(review)
+                self.assertEqual(result["action"], "needs-review")
+                self.assertEqual(result["reason"], "review-before-deterministic-action")
+                self.assertEqual(result["cursor_commit_condition"], "after-reviewed-escalation")
+                self.assertFalse(result["model_invocation_required"])
+                self.assertEqual(build_plan(review, result["next_cursor"])["action"], "needs-review")
+
     def test_repeated_model_decision_and_source_change(self) -> None:
         s = snapshot("ci_failed", "model")
         first = build_plan(s)
