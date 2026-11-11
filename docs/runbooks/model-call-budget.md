@@ -69,6 +69,8 @@ blocked / error 不应发送。原始证据保留在外部受控文件，模型�
 高风险任务可以在可信 Host 真正审核后使用 reserve(..., allow_exception=True)；
 CLI 不提供可自批的高价例外。高风险权限/签名/迁移等证据不能因为压缩而缺失。
 
+真实 Host 在调用 `reserve` 前，应先使用 [Goal/Loop 事件预检](goal-loop-token-efficiency.md) 判断当前是否需要模型；如果预检返回 `skip-model`、`run-tool` 或 `run-verification`，不要为了形成一条调用记录而额外发起模型请求。`needs-review` 不能被当作 `skip-model`。原始事件证据与 cursor 由 Host 核验和保存，不进入模型历史。
+
 ## Goal / Loop 的高效率执行协议
 
 1. **一目标一状态**：先读当前 Goal、验收 ID、受影响文件与最后 checkpoint（目标状态建议 ≤8 KiB）。长历史、全量日志、旧对话不自动注入；按需查原始证据指针。

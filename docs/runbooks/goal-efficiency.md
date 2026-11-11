@@ -27,6 +27,12 @@
 
 当可信执行器已有请求级用量时，可按 `docs/runbooks/model-call-budget.md` 调用 `python3 -m tools.codex_assets.model_call_budget --state /path/to/ledger.json report`；其中 `goals` 汇总仅为带来源的诊断，不授予 Goal 完成资格。无真实输入/输出 usage 时 `input_tokens_per_progress=null`，相同证据哈希不可重复算新进展。默认最多返回 10 个 token 消耗最高的 Goal 统计项，避免报告本身再进入长上下文循环。
 
+### 事件预检与最小上下文
+
+`python3 -m tools.codex_assets.goal_loop_event_context preflight --snapshot <path> [--previous <cursor>]` 对 Host 提供的完整、已验证事件状态进行确定性分类：同一事件不重复模型推理，CI等待/工具/验证优先走代码；只把输出中的 `llm_packet` 交给模型，其余完整原文保留为 evidence raw_ref。命令只读、无 daemon，详见 [事件预检 Runbook](goal-loop-token-efficiency.md)。cursor 必须在实际模型/工具执行回执被核对后才推进。
+
+同一批10个以上真实任务可用 `goal_loop_event_context compare --baseline ... --candidate ...` 对比 Token/验收与完成率；只返回观察建议，不授予 Goal 完成或发布资格。
+
 ## Token 与验收
 
 只有原始 ADK runtime_control.state/v1 包含已观察的 usage.observed_at，才可追加 --runtime-state RUNTIME.json 读取 input/output/cached/reasoning/total tokens。没有真实观察一律 UNKNOWN，不当成零。即使有记录也仅为 REPORTED_UNVERIFIED，不能伪称 Provider 验签、计费凭证或跨执行器消重。禁止 bytes/4 替代真实 usage；不能因绿色 CI 自动认定 Goal 达成。
