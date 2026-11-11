@@ -215,8 +215,10 @@ def build_plan(snapshot: dict[str, Any], prior: dict[str, Any] | None = None) ->
         # A stale queued model action is not evidence of new work. A changing
         # heartbeat/event SHA must never turn CI waiting into LLM polling.
         # High-risk inconsistency remains visible rather than auto-skipped.
-        if snapshot["risk"] == "high":
-            action, reason = "needs-review", "high-risk-awaiting-material-event"
+        if snapshot["risk"] == "high" or any(
+            entry["priority"] == "critical" for entry in changed
+        ):
+            action, reason = "needs-review", "wait-event-requires-review"
         else:
             action, reason = "skip-model", "awaiting-material-event"
     elif snapshot["pending_action"] in ("tool", "verify"):
