@@ -123,11 +123,6 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install document gate dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ripgrep
-
       - name: Run document synchronization gate through typed control plane
         run: >-
           python -m tools.control_plane.cli gate
