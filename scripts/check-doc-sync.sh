@@ -45,7 +45,7 @@ root_agents_tokens=(
 )
 
 for token in "${root_agents_tokens[@]}"; do
-  if ! rg -q --fixed-strings -- "${token}" "${ROOT_AGENTS}"; then
+  if ! grep -Fq -- "${token}" "${ROOT_AGENTS}"; then
     echo "[FAIL] root AGENTS.md missing slim-entry token: ${token}" >&2
     exit 2
   fi
@@ -97,7 +97,7 @@ readme_tokens=(
 )
 
 for token in "${readme_tokens[@]}"; do
-  if ! rg -q --fixed-strings -- "${token}" "${SCRIPTS_README}"; then
+  if ! grep -Fq -- "${token}" "${SCRIPTS_README}"; then
     echo "[FAIL] scripts/README.md missing token: ${token}" >&2
     exit 2
   fi
@@ -109,7 +109,7 @@ retired_operator_doc_tokens=(
   "agent-dev-kit/scripts/check-profile-coherence.sh"
 )
 for token in "${retired_operator_doc_tokens[@]}"; do
-  if rg -q --fixed-strings -- "${token}" "${SCRIPTS_README}"; then
+  if grep -Fq -- "${token}" "${SCRIPTS_README}"; then
     echo "[FAIL] scripts/README.md references retired operator path: ${token}" >&2
     exit 2
   fi
@@ -201,7 +201,7 @@ done
 
 matrix_tokens=("类别标签" "验收状态" "codex-cookbook")
 for token in "${matrix_tokens[@]}"; do
-  if ! rg -q --fixed-strings -- "${token}" "${ADOPTION_MATRIX}"; then
+  if ! grep -Fq -- "${token}" "${ADOPTION_MATRIX}"; then
     echo "[FAIL] adoption-matrix missing token: ${token}" >&2
     exit 2
   fi

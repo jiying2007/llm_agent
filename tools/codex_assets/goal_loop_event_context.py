@@ -205,6 +205,22 @@ def build_plan(snapshot: dict[str, Any], prior: dict[str, Any] | None = None) ->
     reason = "no-model-action"
     if not complete:
         action, reason = "needs-review", "incomplete-state-observation"
+    elif (snapshot["event_kind"] == "review_required"
+          and snapshot["pending_action"] in ("tool", "verify")):
+        # A review gate is not a tool-execution authorization. Do not let an
+        # old queued deterministic action silently bypass a fresh review.
+        action, reason = "needs-review", "review-before-deterministic-action"
+    elif (snapshot["event_kind"] in ("heartbeat", "ci_pending")
+          and snapshot["pending_action"] == "model"):
+        # A stale queued model action is not evidence of new work. A changing
+        # heartbeat/event SHA must never turn CI waiting into LLM polling.
+        # High-risk inconsistency remains visible rather than auto-skipped.
+        if snapshot["risk"] == "high" or any(
+            entry["priority"] == "critical" for entry in changed
+        ):
+            action, reason = "needs-review", "wait-event-requires-review"
+        else:
+            action, reason = "skip-model", "awaiting-material-event"
     elif snapshot["pending_action"] in ("tool", "verify"):
         # The caller is only allowed to persist a previous cursor AFTER the
         # corresponding tool/verification receipt has been checked. A repeated

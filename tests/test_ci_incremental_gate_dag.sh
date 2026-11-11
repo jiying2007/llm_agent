@@ -242,7 +242,12 @@ assert "--source-digest" in adk_interface and "--source-ref" in adk_interface
 assert '"gh", "attestation", "verify"' in adk_interface
 assert "sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6" in github
 assert "cosign-release: v3.1.3" in github
-assert "sudo apt-get install -y ripgrep" in github
+# The integration runner must verify a pinned official rg artifact rather
+# than depend on mutable Ubuntu APT mirrors during the contract gate.
+assert "gh release download 14.1.1 -R BurntSushi/ripgrep" in github
+assert "4cf9f2741e6c465ffdb7c26f38056a59e2a2544b51f7cc128ef28337eeae4d8e" in github
+assert 'sha256sum --check -' in github
+assert "sudo apt-get install -y ripgrep" not in github
 assert "trusted_root.json" not in github
 assert "--use-signed-timestamps" not in github
 assert "--rfc3161-timestamp-path" not in github

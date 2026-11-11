@@ -18,8 +18,10 @@
    事件类型、明确的下一动作和最多 64 个证据索引。完整工具日志、diff、CI 原始记录保留在外部。
    所有 input/previous 均为受信 Host 的机械事实；不能让模型自行编造新 SHA 或审批。
 2. **仅调用一次确定性 preflight**：
-   - CI pending、无待执行步骤、heartbeat → `skip-model`。
-   - 明确的确定性工具或验证 → `run-tool` / `run-verification`，不消耗 LLM 推理。
+   - CI pending、无待执行步骤、heartbeat → `skip-model`；即使 Host 残留旧 `pending_action=model`，
+     无新增关键证据的普通风险等待事件也不得触发新模型轮次；高风险状态或新增 `critical` 证据 → `needs-review`。
+   - 明确的确定性工具或验证 → `run-tool` / `run-verification`，不消耗 LLM 推理；
+     但若事件为 `review_required`，必须先 `needs-review`，不得由旧的待执行工具动作绕过。
    - 用户目标变化、真正新的源码/CI 错误/审核要求、当前需要语义判断 → `invoke-model`。
    - 同 Goal、同阶段、相同规范化状态再要求模型判断 → `skip-model`；高风险重复/未知/证据溢出 → `needs-review`，绝不静默跳过高风险。
 3. **模型仅接收 `llm_packet`**：目标与阶段标识、状态指纹、精简 changed evidence（最多8）和 raw_ref。
