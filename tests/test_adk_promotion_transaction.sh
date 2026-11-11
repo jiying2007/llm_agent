@@ -27,6 +27,7 @@ OLD_MANIFEST="$(git -C "$CANDIDATE" rev-parse HEAD:manifest.json)"
 
 # Minimal parent repo and projection inputs.
 git -C "$FIXTURE" init -q
+printf "/adk.lock\n" >"$FIXTURE/.gitignore"
 git -C "$FIXTURE" config user.email fixture@example.invalid
 git -C "$FIXTURE" config user.name Fixture
 cp "$ROOT/tools/control_plane/status_projection.py" "$FIXTURE/tools/control_plane/status_projection.py"
@@ -70,13 +71,14 @@ CHECK
 chmod +x "$FIXTURE/scripts/check-adk-lock.sh"
 printf 'sentinel\n' >"$FIXTURE/sentinel.txt"
 
-git -C "$FIXTURE" add adk.lock manifests reports scripts sentinel.txt tools agent-dev-kit
+git -C "$FIXTURE" add .gitignore manifests reports scripts sentinel.txt tools agent-dev-kit
 git -C "$FIXTURE" commit -q -m 'fixture seed'
 BASELINE="$(git -C "$FIXTURE" rev-parse HEAD)"
 sed -i "s/BASELINE_PLACEHOLDER/$BASELINE/" "$FIXTURE/reports/current-status.md"
 git -C "$FIXTURE" add reports/current-status.md
 git -C "$FIXTURE" commit -q -m 'bind historical baseline'
 PARENT_HEAD="$(git -C "$FIXTURE" rev-parse HEAD)"
+cp "$FIXTURE/adk.lock" "$TMP_DIR/old-derived-cache"
 
 # Advance only the nested ADK candidate.
 printf 'candidate\n' >"$CANDIDATE/candidate.txt"
@@ -119,7 +121,6 @@ summary_path, root_text, expected_commit = sys.argv[1:]
 root = Path(root_text)
 result = json.loads(Path(summary_path).read_text(encoding="utf-8"))
 expected_paths = sorted([
-    "adk.lock",
     "agent-dev-kit",
     "reports/current-status.md",
     "reports/promotion/agent-dev-kit/promotion-evidence.json",
@@ -152,6 +153,7 @@ PY
 
 # Failure after mutation must restore all six transaction paths.
 git -C "$FIXTURE" reset --hard -q "$PARENT_HEAD"
+cp "$TMP_DIR/old-derived-cache" "$FIXTURE/adk.lock"
 rm -rf "$FIXTURE/reports/promotion"
 if PROMOTION_TEST_FORCE_FAIL=1 python3 -m tools.control_plane.adk_promotion \
   --root "$FIXTURE" \
@@ -202,6 +204,7 @@ mapfile -t PRESTAGED < <(git -C "$FIXTURE" diff --cached --name-only)
 
 # Evidence identity mismatch must fail before staging anything.
 git -C "$FIXTURE" reset --hard -q "$PARENT_HEAD"
+cp "$TMP_DIR/old-derived-cache" "$FIXTURE/adk.lock"
 python3 - "$EVIDENCE" "$TMP_DIR/bad-evidence.json" <<'PY'
 import json, sys
 src, dst = sys.argv[1:]
@@ -320,4 +323,4 @@ else:
 print("[PASS] promotion preflight rejects duplicate/nonfinite/oversized/symlinked JSON")
 PY
 
-echo '[PASS] ADK promotion stages one five-path source+evidence transaction and rolls back atomically'
+echo '[PASS] ADK promotion stages one four-path source+evidence transaction and rolls back atomically'

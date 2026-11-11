@@ -152,7 +152,7 @@
       "automation_eligible": false,
       "evidence": [
         "subrepos/registry.csv",
-        "adk.lock"
+        "agent-dev-kit"
       ],
       "owner": "adk-team",
       "repo": "agent-dev-kit",

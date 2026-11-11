@@ -41,7 +41,7 @@
 | `subrepos/adoption-matrix.jsonl` | 候选矩阵结构化导出 | 由 Markdown 矩阵机械生成，供脚本低 token 读取 |
 | `subrepos/phase-gate.env` | 是否允许追踪上游更新 | 默认先压实 adk，再开门同步 |
 | `subrepos/dirty-baseline.tsv` | observe 子仓预期 dirty 状态 | 区分已知参考仓噪音与本轮风险 dirty |
-| `adk.lock` | adk 版本和子模块指针锁 | adk 升级或子模块指针变化时同步更新 |
+| `agent-dev-kit` Gitlink | 唯一 ADK 版本指针 | 受保护升级 PR 更新；`adk.lock` 是忽略且可重新生成的临时消费缓存，不提交 |
 | `manifests/` | external-practice source/cycle、reference repository lifecycle、runtime target/adapter 声明 | 修改后必须运行对应 contract 检查 |
 | `fixtures/external-practice/` | 多来源 candidate/decision/cycle 和 repository handoff 正负样例 | 修改后必须运行 practice intake 测试 |
 | `tests/` | 根仓定向回归测试 | 新增脚本或 fixture 后补相应测试入口 |

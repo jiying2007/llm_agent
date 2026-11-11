@@ -25,13 +25,11 @@ ATTESTATION_PATH = "reports/promotion/agent-dev-kit/promotion-attestation.json"
 MAX_PROMOTION_JSON_BYTES = 1024 * 1024
 SOURCE_PROMOTION_PATHS = (
     "agent-dev-kit",
-    "adk.lock",
     "reports/current-status.md",
 )
 
 PROMOTION_PATHS = (
     "agent-dev-kit",
-    "adk.lock",
     "reports/current-status.md",
     EVIDENCE_PATH,
     ATTESTATION_PATH,
@@ -247,7 +245,6 @@ def apply_promotion(
             root,
             "add",
             "--",
-            "adk.lock",
             "reports/current-status.md",
             EVIDENCE_PATH,
             ATTESTATION_PATH,
@@ -321,14 +318,14 @@ def apply_source_promotion(
     lock_path = root / "adk.lock"
     status_path = root / "reports/current-status.md"
     previous = (
-        lock_path.read_text(encoding="utf-8"),
+        lock_path.read_text(encoding="utf-8") if lock_path.is_file() else None,
         status_path.read_text(encoding="utf-8"),
     )
     try:
         _atomic_write(lock_path, lock_text)
         _git(root, "update-index", "--add", "--cacheinfo", f"160000,{identity.commit},agent-dev-kit")
         refresh_current_status(root)
-        _git(root, "add", "--", "adk.lock", "reports/current-status.md")
+        _git(root, "add", "--", "reports/current-status.md")
         staged_paths = _staged_paths(root)
         if staged_paths != sorted(SOURCE_PROMOTION_PATHS):
             raise RuntimeError(
@@ -418,7 +415,12 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         identity = candidate_identity(candidate_dir, args.ref)
-        lock_text = render_lock(identity, args.updated_at)
+        # Derived compatibility cache must be byte-identical on every checkout.
+        # Caller provenance date is kept only in the receipt, not the cache.
+        immutable_source_date = _git(candidate_dir, "show", "-s", "--format=%cs", identity.commit)
+        if not dt.date.fromisoformat(immutable_source_date):
+            raise RuntimeError("candidate commit date is unavailable")
+        lock_text = render_lock(identity, immutable_source_date)
         lock_lines = lock_text.splitlines()
         before = _current_gitlink(root)
         mode = "apply" if args.apply else "dry-run"

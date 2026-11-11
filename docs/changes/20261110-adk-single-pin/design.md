@@ -66,3 +66,19 @@ status was refreshed from the exact changed source manifests. Further
 retirement of `adk.lock` remains a separate larger migration due to measured
 runtime and Software M5 certifier requirements; its values must not acquire
 independent authorization authority.
+
+## Terminal single Gitlink authority (phase 4)
+
+The only committed current ADK source version identity is the `agent-dev-kit`
+Gitlink. The legacy `adk.lock` path is Git-ignored and is deterministically
+hydrated from the pinned ADK manifest/tree/commit and its immutable commit date.
+The hydration utility refuses symlinks and preexisting mismatched cache bytes.
+Generated source status now binds the Gitlink commit directly in its input digest,
+not the cache file. Any checkout recreates the same consumer view before tests.
+
+Root source-only promotion stages only the Gitlink and regenerated
+`reports/current-status.md`; a certificate from the immutable ADK Release
+remains mandatory on changed Gitlinks in protected CI. Software M5 signed
+promotion evidence and native/field qualification remain independent. The
+old `adk.lock` schema persists as an internal consumption format but is not
+an independent version authority or required Git asset.

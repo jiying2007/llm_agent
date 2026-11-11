@@ -18,7 +18,7 @@ FORBIDDEN_PREFIXES = (
 )
 FORBIDDEN_SUFFIXES = (".pyc", ".pyo", ".lock")
 FORBIDDEN_PATHS = {".github/workflows/software-m5-runtime-smoke.yml"}
-ALLOW_LOCKS = {"adk.lock", "codex.lock"}
+ALLOW_LOCKS = {"codex.lock"}
 
 
 def tracked_paths(root: Path) -> list[str]:

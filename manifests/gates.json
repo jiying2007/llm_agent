@@ -6,7 +6,7 @@
       "side_effect": "none",
       "depends_on": [],
       "inputs": [
-        "adk.lock",
+        "tools/control_plane/adk_interface.py",
         ".gitmodules",
         "scripts/check-adk-lock.sh"
       ],
@@ -34,7 +34,6 @@
         "adk-pin"
       ],
       "inputs": [
-        "adk.lock",
         "tools/control_plane/adk_interface.py"
       ],
       "impact_groups": [
@@ -130,7 +129,7 @@
         "adk-interface"
       ],
       "inputs": [
-        "adk.lock",
+        "tools/control_plane/adk_interface.py",
         "manifests/gates.json",
         "manifests/product_maturity_scorecard.json",
         "manifests/software_m5_policy.json",
@@ -517,9 +516,8 @@
         "codex-pin"
       ],
       "inputs": [
-        "adk.lock",
-        "codex.lock",
         "tools/control_plane/adk_interface.py",
+        "codex.lock",
         "tools/control_plane/runtime_chain.py"
       ],
       "impact_groups": [
@@ -546,7 +544,7 @@
         "adk-promotion-evidence"
       ],
       "inputs": [
-        "adk.lock",
+        "tools/control_plane/adk_interface.py",
         "manifests/comprehensive_optimization_backlog.json",
         "tools/control_plane/native_target_readiness.py"
       ],
@@ -576,7 +574,7 @@
         "adk-promotion-evidence"
       ],
       "inputs": [
-        "adk.lock",
+        "tools/control_plane/adk_interface.py",
         "manifests/comprehensive_optimization_backlog.json",
         "reports/runtime-evidence/effect-value/evidence-index.json",
         "tools/control_plane/effect_readiness.py",

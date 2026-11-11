@@ -36,7 +36,7 @@ from unittest.mock import patch
 from pathlib import Path
 
 from tools.control_plane.adk_interface import (
-    check_claims, source_pin, verify_native_release_contract, verify_native_release_attestation,
+    check_claims, source_pin, materialize_lock_projection, verify_native_release_contract, verify_native_release_attestation,
 )
 
 def git(cwd, *args):
@@ -70,6 +70,28 @@ with tempfile.TemporaryDirectory(prefix="adk-single-pin-") as tmp:
     git(root, "commit", "-qm", "pin fixture adk")
     identity = source_pin(root)
     assert identity["commit"] == commit and identity["version"] == "9.2.1"
+
+    cache = root / "adk.lock"
+    derived = materialize_lock_projection(root)
+    assert derived == identity and cache.is_file() and not cache.is_symlink()
+    lines = dict(line.split("=",1) for line in cache.read_text().splitlines())
+    assert lines["schema"] == "llm-agent-adk-lock/v2"
+    assert lines["agent-dev-kit.commit"] == commit and lines["agent-dev-kit.version"] == identity["version"]
+    assert git(root, "ls-files", "adk.lock") == "", "derived cache must not be tracked"
+    original_cache = cache.read_bytes()
+    assert materialize_lock_projection(root) == identity
+    assert cache.read_bytes() == original_cache
+    cache.write_bytes(original_cache + b"\nforged=value\n")
+    expect_fail(lambda: materialize_lock_projection(root), "divergent cache must fail closed")
+    cache.write_bytes(original_cache)
+    cache.unlink()
+    unsafe = root / "outside.json"
+    unsafe.write_text("sentinel", encoding="utf-8")
+    cache.symlink_to(unsafe)
+    expect_fail(lambda: materialize_lock_projection(root), "symlinked cache must fail closed")
+    assert unsafe.read_text() == "sentinel"
+    cache.unlink()
+    materialize_lock_projection(root)
 
     issued = (dt.datetime.now(dt.UTC) - dt.timedelta(days=366)).isoformat().replace("+00:00", "Z")
     evidence = {

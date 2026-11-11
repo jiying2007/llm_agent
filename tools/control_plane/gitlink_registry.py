@@ -108,10 +108,14 @@ def check(root: Path) -> dict[str, Any]:
         kind = entry.get("kind")
         if kind not in {"managed-dependency", "frozen-evidence-dependency"}:
             raise RuntimeError(f"unsupported gitlink kind for {path}: {kind!r}")
-        if kind in {"managed-dependency", "frozen-evidence-dependency"}:
+        if kind == "managed-dependency":
+            # Git's stage-0 submodule commit is the only source version pin.
+            if entry.get("identity_source") != "indexed-gitlink" or "lock" in entry:
+                raise RuntimeError(f"managed dependency {path} must use its exact Gitlink as identity")
+        elif kind == "frozen-evidence-dependency":
             lock_name = entry.get("lock")
             if not isinstance(lock_name, str) or not (root / lock_name).is_file():
-                raise RuntimeError(f"{kind} {path} requires an existing lock file")
+                raise RuntimeError(f"{kind} {path} requires its historical evidence lock")
 
     return {
         "schema": "llm-agent-gitlink-check/v2",

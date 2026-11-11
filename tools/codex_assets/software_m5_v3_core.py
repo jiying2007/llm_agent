@@ -447,11 +447,21 @@ def _validate_qualification_record(root: Path, policy: Mapping[str, Any]) -> dic
             raise ValueError("root source differs from signed CI baseline outside qualification outputs")
         from tools.codex_assets.validation_plan import _reference_roots, _excluded
         unknown = source_git(root, "ls-files", "--others", "-z", timeout=30)
+        if unknown.returncode != 0:
+            raise ValueError("root untracked-source scan unavailable")
+        unknown_names = [name for name in unknown.stdout.decode("utf-8").split("\0") if name]
+        if "adk.lock" in unknown_names:
+            # Generated consumer metadata may be untracked, but it is not an
+            # independent authorization. Verify its bytes against the indexed
+            # Gitlink and exact pinned manifest before excepting it.
+            from tools.control_plane.adk_interface import materialize_lock_projection
+            materialize_lock_projection(root)
         reference_roots = _reference_roots(root)
-        if unknown.returncode != 0 or any(
-                name not in allowed and not _excluded(name, reference_roots)
+        if any(
+                name not in allowed and name != "adk.lock"
+                and not _excluded(name, reference_roots)
                 and "__pycache__" not in Path(name).parts
-                for name in unknown.stdout.decode("utf-8").split("\0") if name):
+                for name in unknown_names):
             raise ValueError("root source contains inputs not covered by signed CI baseline")
     except (ValueError, TypeError, KeyError, OSError, RuntimeError) as exc:
         raise M5Error(f"M5 qualification CI evidence rejected: {exc}") from exc

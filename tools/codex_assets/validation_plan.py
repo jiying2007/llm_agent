@@ -39,7 +39,6 @@ PROTECTED_ROOTS = {
 }
 RUNTIME_OUTPUT_ROOTS = {"hermes", "hermes_data", "team-codex-assets"}
 RELEASE_CRITICAL = (
-    "adk.lock",
     "agent-dev-kit",
     "agent-dev-kit/.version-lock",
     "agent-dev-kit/manifest.json",
@@ -66,7 +65,7 @@ CODE_PREFIXES = (
 )
 SSOT_EVIDENCE = (
     "reports/current-status.md", "reports/adk-v*", "reports/runtime-evidence/",
-    "manifests/", "adk.lock", "agent-dev-kit",
+    "manifests/", "agent-dev-kit",
 )
 
 

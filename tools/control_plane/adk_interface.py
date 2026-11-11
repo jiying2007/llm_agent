@@ -4,6 +4,8 @@ import argparse
 import datetime as dt
 import hashlib
 import importlib
+import os
+import tempfile
 import json
 import re
 import subprocess
@@ -296,6 +298,49 @@ def source_pin(root: Path) -> dict[str, str]:
     return {"version": version, "commit": commit, "tree": tree, "manifest_blob": blob}
 
 
+
+def materialize_lock_projection(root: Path) -> dict[str, str]:
+    """Deterministically materialize one untracked consumer cache from exact Git pin.
+
+    No version in the cache is authoritative. Unsafe/symlink targets fail
+    closed, and the original Gitlink/manifest identities are checked before
+    any write. The timestamp is the immutable upstream commit date, never
+    the time of the local command or environment clock.
+    """
+    root = root.resolve()
+    identity = source_pin(root)
+    upstream_date = _git(root / "agent-dev-kit", "show", "-s", "--format=%cs", identity["commit"])
+    if re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", upstream_date) is None:
+        raise ValueError("pinned upstream commit date is invalid")
+    content = (
+        "schema=llm-agent-adk-lock/v2\n"
+        f"agent-dev-kit.version={identity['version']}\n"
+        f"agent-dev-kit.commit={identity['commit']}\n"
+        f"agent-dev-kit.tree={identity['tree']}\n"
+        f"agent-dev-kit.manifest_blob={identity['manifest_blob']}\n"
+        f"updated_at={upstream_date}\n"
+    )
+    target = root / "adk.lock"
+    if target.is_symlink() or (target.exists() and not target.is_file()):
+        raise ValueError("generated ADK consumer cache must be a regular non-symlink file")
+    if target.exists():
+        if target.read_bytes() != content.encode("utf-8"):
+            raise ValueError("ADK source cache differs from exact pinned Git identity; refusing silent overwrite")
+        return identity
+    fd, scratch = tempfile.mkstemp(prefix=".adk-source-cache-", dir=str(root))
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as stream:
+            stream.write(content)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(scratch, target)
+    finally:
+        if os.path.exists(scratch):
+            os.unlink(scratch)
+    return identity
+
+
+
 def _object(value: Any, label: str) -> Mapping[str, Any]:
     if not isinstance(value, dict):
         raise ValueError(label + " must be a JSON object")
@@ -498,10 +543,11 @@ def source_pin_main(argv: list[str] | None = None) -> int:
     parser.add_argument("--release-archive")
     parser.add_argument("--release-contract")
     parser.add_argument("--summary-json", action="store_true")
+    parser.add_argument("--materialize-lock", action="store_true")
     args = parser.parse_args(argv)
     result: dict[str, Any]
     try:
-        identity = source_pin(Path(args.root))
+        identity = materialize_lock_projection(Path(args.root)) if args.materialize_lock else source_pin(Path(args.root))
         paths = (args.evidence, args.attestation, args.run_json, args.release_json)
         if args.release_archive or args.release_contract:
             if not args.release_archive or not args.release_contract or not args.release_json or any(paths[:3]):

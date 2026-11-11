@@ -127,7 +127,7 @@ emit_summary_json() {
   local root_script_files root_manifest_files root_report_files adk_agents adk_core_skills adk_optional_skills adk_profiles adk_workflows adk_test_files adk_manifest_files
   branch="$(git -C "${ROOT_DIR}" branch --show-current 2>/dev/null || true)"
   adk_version="$(jq -r '.version' "${ROOT_DIR}/agent-dev-kit/manifest.json")"
-  locked_commit="$(awk -F'=' '$1=="agent-dev-kit.commit"{print $2; exit}' "${ROOT_DIR}/adk.lock" 2>/dev/null || true)"
+  locked_commit="$(git -C "${ROOT_DIR}" ls-files -s agent-dev-kit 2>/dev/null | awk '$1=="160000"{print $2; exit}')"
   gitlink_commit="$(git -C "${ROOT_DIR}" ls-files -s agent-dev-kit 2>/dev/null | awk '$1=="160000"{print $2; exit}')"
   active_repos="$(awk -F',' 'NR>1 && $6=="yes" && $8=="active"{count++} END{print count+0}' "${registry}" 2>/dev/null || echo 0)"
   disabled_repos="$(awk -F',' 'NR>1 && ($6!="yes" || $8!="active"){count++} END{print count+0}' "${registry}" 2>/dev/null || echo 0)"
@@ -148,6 +148,10 @@ emit_summary_json() {
   if [[ -n "${locked_commit}" && -n "${gitlink_commit}" && "${locked_commit}" == "${gitlink_commit}" ]]; then
     strict_state="ok"
   elif [[ -n "${locked_commit}" || -n "${gitlink_commit}" ]]; then
+    strict_state="drift"
+  fi
+  # A cached file is never allowed to authorize an identity itself.
+  if ! bash "${ROOT_DIR}/scripts/check-adk-lock.sh" "${ROOT_DIR}" --pin-only >/dev/null 2>&1; then
     strict_state="drift"
   fi
 

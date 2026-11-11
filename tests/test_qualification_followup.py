@@ -576,40 +576,32 @@ class QualificationFollowupTest(unittest.TestCase):
                 self.root, archived, first.name
             ))
 
-    def test_dirty_root_adk_lock_cannot_claim_original_git_pin(self) -> None:
+    def test_dirty_pinned_manifest_and_index_cannot_claim_original_git_pin(self) -> None:
         first, *_ = self.reviewed_changes()
         archived = self.archive_fixture(first)
         tree = followup.FROZEN_ARCHIVE_GIT_TREES[first.name]
+        adk = self.root / "agent-dev-kit"
+        manifest = adk / "manifest.json"
+        original = manifest.read_bytes()
         with patch.dict(followup.FROZEN_ARCHIVE_GIT_TREES, {first.name: tree}):
-            self.assertTrue(followup._frozen_archive_matches_pinned_git(
-                self.root, archived, first.name
-            ))
-            lock = self.root / "adk.lock"
-            original = lock.read_bytes()
-            lock.write_bytes(original + b"extra=forged\\n")
-            self.assertFalse(followup._frozen_archive_matches_pinned_git(
-                self.root, archived, first.name
-            ))
-            lock.write_bytes(original)
-            self.assertTrue(followup._frozen_archive_matches_pinned_git(
-                self.root, archived, first.name
-            ))
+            matches = lambda: followup._frozen_archive_matches_pinned_git(self.root, archived, first.name)
+            self.assertTrue(matches())
+            manifest.write_bytes(original + b" ")
+            self.assertFalse(matches(), "dirty ADK manifest must not authenticate committed source")
+            manifest.write_bytes(original)
+            self.assertTrue(matches())
+            manifest.write_bytes(original + b" ")
             subprocess.run(
-                ["git", "-C", str(self.root), "add", "--", "adk.lock"],
+                ["git", "-C", str(adk), "add", "--", "manifest.json"],
                 check=True, capture_output=True,
             )
-            self.assertTrue(followup._frozen_archive_matches_pinned_git(
-                self.root, archived, first.name
-            ))
-            lock.write_bytes(original + b"other=malformed\\n")
+            manifest.write_bytes(original)
+            self.assertFalse(matches(), "staged but hidden manifest drift must be detected")
             subprocess.run(
-                ["git", "-C", str(self.root), "add", "--", "adk.lock"],
+                ["git", "-C", str(adk), "reset", "-q", "HEAD", "--", "manifest.json"],
                 check=True, capture_output=True,
             )
-            lock.write_bytes(original)
-            self.assertFalse(followup._frozen_archive_matches_pinned_git(
-                self.root, archived, first.name
-            ))
+            self.assertTrue(matches())
 
     def test_original_archives_match_exact_pinned_git_tree(self) -> None:
         root = Path(__file__).resolve().parents[1]

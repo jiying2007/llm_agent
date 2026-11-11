@@ -13,3 +13,5 @@ dist/
 .mypy_cache/
 .ruff_cache/
 reports/field-evidence/software-m5-events.jsonl.lock
+# Derived from the indexed agent-dev-kit Gitlink; never a second committed version authority.
+/adk.lock

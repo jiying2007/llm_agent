@@ -39,9 +39,14 @@ if __name__ == "__main__":
     parser.add_argument("source", type=Path)
     parser.add_argument("destination", type=Path)
     parser.add_argument("--owned-only", action="store_true")
+    parser.add_argument("--include-derived-adk-cache", action="store_true", help="Fixture-only copy of validated local derived cache")
     args = parser.parse_args()
     source, destination = args.source, args.destination
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
     from tools.codex_assets.validation_plan import _changed_paths
     changed, _ = _changed_paths(source, "HEAD", False)
+    if args.include_derived_adk_cache:
+        from tools.control_plane.adk_interface import materialize_lock_projection
+        materialize_lock_projection(source)
+        changed = list(changed) + ["adk.lock"]
     snapshot(source, destination, changed, include_subrepos=not args.owned_only)

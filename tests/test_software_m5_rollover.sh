@@ -46,11 +46,11 @@ assert (root / "reports/field-evidence/software-m5-independent-pilot-start-2026-
 PY
 echo "[INFO] rollover baseline assertions PASS" >&2
 
-if ! python3 "$ROOT/tests/m5_snapshot_fixture.py" "$ROOT" "$GOOD"; then
+if ! python3 "$ROOT/tests/m5_snapshot_fixture.py" "$ROOT" "$GOOD" --include-derived-adk-cache; then
   echo "[FAIL] failed to copy GOOD rollover fixture" >&2
   exit 1
 fi
-if ! python3 "$ROOT/tests/m5_snapshot_fixture.py" "$ROOT" "$BAD"; then
+if ! python3 "$ROOT/tests/m5_snapshot_fixture.py" "$ROOT" "$BAD" --include-derived-adk-cache; then
   echo "[FAIL] failed to copy BAD rollover fixture" >&2
   exit 1
 fi
@@ -100,6 +100,21 @@ for fixture in (Path(sys.argv[2]), Path(sys.argv[3])):
             for key, value in identity.items():
                 prefix = f"agent-dev-kit.{key}="
                 lock_lines = [prefix + value if line.startswith(prefix) else line for line in lock_lines]
+            # The synthetic child is a *new* commit: its deterministic cache
+            # date must come from that commit rather than the copied release.
+            # Otherwise the test becomes flaky when UTC crosses midnight.
+            synthetic_date = subprocess.check_output(
+                ["git", "-C", str(child), "show", "-s", "--format=%cs", identity["commit"]],
+                text=True,
+            ).strip()
+            if len(synthetic_date) != 10 or synthetic_date[4] != "-" or synthetic_date[7] != "-":
+                raise AssertionError("synthetic ADK commit date is invalid")
+            lock_lines = [
+                "updated_at=" + synthetic_date if line.startswith("updated_at=") else line
+                for line in lock_lines
+            ]
+            if sum(line.startswith("updated_at=") for line in lock_lines) != 1:
+                raise AssertionError("synthetic source cache must have one deterministic date")
             lock_path.write_text("\n".join(lock_lines) + "\n")
     # References are not Root product source. Drop only these generated copies;
     # no source repository is touched or promoted into the fixture gitlinks.

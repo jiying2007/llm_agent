@@ -16,6 +16,7 @@ OLD="$(git -C "$CHILD" rev-parse HEAD)"
 OLD_TREE="$(git -C "$CHILD" rev-parse HEAD^{tree})"
 OLD_MANIFEST="$(git -C "$CHILD" rev-parse HEAD:manifest.json)"
 git -C "$FIXTURE" init -q
+printf "/adk.lock\n" >"$FIXTURE/.gitignore"
 git -C "$FIXTURE" config user.name Fixture
 git -C "$FIXTURE" config user.email fixture@example.invalid
 cp "$ROOT/tools/control_plane/status_projection.py" "$FIXTURE/tools/control_plane/status_projection.py"
@@ -51,13 +52,14 @@ PY
 printf '# Current Product Status\n\n- root_product_commit: PLACEHOLDER\n- last_verified_at: 2026-11-10\n- verified_projection_inputs_sha256: historical\n' >"$FIXTURE/reports/current-status.md"
 printf '{"historical":"signed-m5-evidence"}\n' >"$FIXTURE/reports/promotion/agent-dev-kit/promotion-evidence.json"
 printf '{"historical":"signed-m5-bundle"}\n' >"$FIXTURE/reports/promotion/agent-dev-kit/promotion-attestation.json"
-git -C "$FIXTURE" add agent-dev-kit adk.lock manifests reports scripts tools
+git -C "$FIXTURE" add .gitignore agent-dev-kit manifests reports scripts tools
 git -C "$FIXTURE" commit -qm "seed root"
 BASE="$(git -C "$FIXTURE" rev-parse HEAD)"
 sed -i "s/PLACEHOLDER/$BASE/" "$FIXTURE/reports/current-status.md"
 git -C "$FIXTURE" add reports/current-status.md
 git -C "$FIXTURE" commit -qm "bind baseline"
 BASE="$(git -C "$FIXTURE" rev-parse HEAD)"
+cp "$FIXTURE/adk.lock" "$TMP/old-derived-cache"
 
 printf '{"version":"9.0.1"}\n' >"$CHILD/manifest.json"
 git -C "$CHILD" add manifest.json
@@ -75,7 +77,7 @@ assert p["source_only"] is True and p["status"]=="staged-not-verified",p
 assert p["release_authorized"] is False,p
 assert p["verification_model"]=="immutable-release-ci-required",p
 assert p["staged_paths"]==sorted([
-  "agent-dev-kit","adk.lock","reports/current-status.md"
+  "agent-dev-kit","reports/current-status.md"
 ]),p
 assert p["staged_transaction_complete"] is True,p
 assert p["candidate"]["commit"]==sys.argv[2],p
@@ -85,9 +87,10 @@ PY
 [[ "$(git -C "$FIXTURE" ls-files -s agent-dev-kit | awk '{print $2}')" == "$NEW" ]]
 [[ "$(sha256sum "$FIXTURE/reports/promotion/agent-dev-kit/promotion-evidence.json" | cut -d' ' -f1)" == "$EVIDENCE_SHA" ]]
 [[ "$(sha256sum "$FIXTURE/reports/promotion/agent-dev-kit/promotion-attestation.json" | cut -d' ' -f1)" == "$ATTEST_SHA" ]]
-[[ "$(git -C "$FIXTURE" diff --cached --name-only | wc -l)" -eq 3 ]]
+[[ "$(git -C "$FIXTURE" diff --cached --name-only | wc -l)" -eq 2 ]]
 
 git -C "$FIXTURE" reset --hard -q "$BASE"
+cp "$TMP/old-derived-cache" "$FIXTURE/adk.lock"
 if SOURCE_PROMOTION_TEST_FORCE_FAIL=1 python3 -m tools.control_plane.adk_promotion \
   --root "$FIXTURE" --updated-at 2026-11-10 --source-only --apply >/dev/null 2>&1; then
   echo "[FAIL] source promotion accepted forced pin verification failure" >&2
@@ -102,4 +105,4 @@ if python3 -m tools.control_plane.adk_promotion --root "$FIXTURE" \
   echo "[FAIL] source-only mode accepted signed evidence substitution" >&2
   exit 1
 fi
-echo "[PASS] source-only ADK upgrade stages three source paths and preserves independent M5 evidence"
+echo "[PASS] source-only ADK upgrade stages two source paths and preserves independent M5 evidence"

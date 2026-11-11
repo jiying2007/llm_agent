@@ -13,7 +13,6 @@ on:
       - 'reports/runtime-evidence/**'
       - 'docs/changes/20261020-qualification-followup/**'
       - 'agent-dev-kit'
-      - 'adk.lock'
   push:
     branches: [main]
     paths:
@@ -27,7 +26,6 @@ on:
       - 'reports/runtime-evidence/**'
       - 'docs/changes/20261020-qualification-followup/**'
       - 'agent-dev-kit'
-      - 'adk.lock'
   schedule:
     - cron: '23 1 * * *' # 09:23 Asia/Shanghai; not a real-time execution guarantee.
   workflow_dispatch:
@@ -64,6 +62,7 @@ jobs:
       - name: Install the pinned existing control-plane dependencies
         run: |
           git submodule update --init --depth=1 agent-dev-kit
+          python -m tools.control_plane.adk_interface --source-pin --materialize-lock --root . --summary-json
           # Historical verifier v8.0.36 is fetched only as an immutable Git
           # object; HEAD stays at the current exact Root-pinned ADK gitlink.
           # Do not infer the active ADK version from this pinned validator.
