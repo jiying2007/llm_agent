@@ -158,8 +158,8 @@ class PreflightTests(unittest.TestCase):
         self.assertEqual(build_plan(s)["reason"], "incomplete-state-observation")
 
     def test_incremental_changed_evidence_only(self) -> None:
-        prior = build_plan(snapshot(action="model", items=[evidence(1), evidence(2)]))["next_cursor"]
-        future = snapshot(action="model", items=[evidence(1), evidence(2, B), evidence(3, C)])
+        prior = build_plan(snapshot(kind="ci_failed", action="model", items=[evidence(1), evidence(2)]))["next_cursor"]
+        future = snapshot(kind="ci_failed", action="model", items=[evidence(1), evidence(2, B), evidence(3, C)])
         result = build_plan(future, prior)
         self.assertEqual(result["action"], "invoke-model")
         self.assertEqual({x["id"] for x in result["llm_packet"]["evidence"]},
@@ -177,7 +177,7 @@ class PreflightTests(unittest.TestCase):
         self.assertEqual(high["action"], "needs-review")
 
     def test_completeness_transition_changes_fingerprint(self) -> None:
-        current = snapshot(action="model")
+        current = snapshot(kind="ci_failed", action="model")
         current["observation_complete"] = False
         previous = build_plan(current)["next_cursor"]
         current["observation_complete"] = True
