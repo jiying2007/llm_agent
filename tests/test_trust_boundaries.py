@@ -13,6 +13,16 @@ from tools.codex_assets import intake_io as input_io
 
 ROOT = Path(__file__).resolve().parents[1]
 
+# Immutable historical claim fixture, not the current Root source authorization.
+# A promotion regression must never rewrite signed historical source fields to
+# match a newer Gitlink just so a positive parser test passes.
+HISTORICAL_ADK_IDENTITY = {
+    "version": "11.2.2",
+    "commit": "e7527342ea8704f967a4369aa5cf8c7a72e6c229",
+    "tree": "56fc091c77d6028c4e5e678a615a3de902077ba0",
+    "manifest_blob": "3dce391ee5148d895c0afc8a9fa5375b7270e30d",
+}
+
 
 class EndpointTrustTest(unittest.TestCase):
     def test_configuration_preflight_error_is_normalized(self):
@@ -117,16 +127,40 @@ class EndpointTrustTest(unittest.TestCase):
 class PromotionInputTest(unittest.TestCase):
     def setUp(self):
         self.evidence = json.loads((ROOT / "reports/promotion/agent-dev-kit/promotion-evidence.json").read_text())
+        self.assertEqual(
+            HISTORICAL_ADK_IDENTITY,
+            {key: self.evidence["source"][key] for key in HISTORICAL_ADK_IDENTITY},
+        )
+
+    @staticmethod
+    def historical_lock_text():
+        return "schema=llm-agent-adk-lock/v2\\n" + "".join(
+            f"agent-dev-kit.{key}={value}\\n"
+            for key, value in HISTORICAL_ADK_IDENTITY.items()
+        )
 
     def verify(self, raw, interface=None, lock=None):
         with tempfile.TemporaryDirectory() as temp:
             path = Path(temp) / "evidence.json"
             path.write_text(raw, encoding="utf-8")
-            return verify_evidence_claims(evidence_path=path, lock_path=lock or ROOT / "adk.lock",
+            # Claim parser positive cases use a frozen historical identity, not
+            # the generated lock for a newer ADK source.
+            historical_lock = Path(temp) / "historical-adk.lock"
+            historical_lock.write_text(self.historical_lock_text(), encoding="utf-8")
+            return verify_evidence_claims(evidence_path=path, lock_path=lock or historical_lock,
                                          interface_path=interface)
 
     def test_normal_canonical_evidence_preserved(self):
         self.assertEqual("pass", self.verify(json.dumps(self.evidence))["status"])
+
+    def test_historical_promotion_cannot_authorize_current_adk_gitlink(self):
+        current_lock = (ROOT / "adk.lock").read_text(encoding="utf-8")
+        self.assertNotIn(
+            f"agent-dev-kit.commit={HISTORICAL_ADK_IDENTITY['commit']}\\n",
+            current_lock,
+        )
+        with self.assertRaisesRegex(ValueError, r"promotion evidence source\\."):
+            self.verify(json.dumps(self.evidence), lock=ROOT / "adk.lock")
 
     def test_exact_integer_ids_and_workflow_identity(self):
         for key, value in (("run_id", True), ("run_attempt", True), ("workflow_sha", "0" * 40)):
@@ -159,7 +193,7 @@ class PromotionInputTest(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.verify(json.dumps(self.evidence), interface=interface)
             lock = base / "adk.lock"
-            lock.write_text((ROOT / "adk.lock").read_text() + "\nagent-dev-kit.version=duplicate\n")
+            lock.write_text(self.historical_lock_text() + "agent-dev-kit.version=duplicate\\n")
             with self.assertRaises(ValueError):
                 self.verify(json.dumps(self.evidence), lock=lock)
 
