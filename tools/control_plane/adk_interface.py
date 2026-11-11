@@ -467,9 +467,16 @@ def verify_native_release_contract(
     if not isinstance(contracts, list) or len(contracts) != 1 or not isinstance(contracts[0], dict):
         raise ValueError("ADK release contract must identify one archive")
     item = contracts[0]
-    expected_manifest_sha256 = hashlib.sha256(
-        read_bytes(root / "agent-dev-kit" / "manifest.json", label="pinned ADK manifest", max_bytes=MAX_JSON)
-    ).hexdigest()
+    # ADK release_contract._canonical_manifest_sha256 hashes normalized JSON,
+    # not the raw manifest bytes (which retain insignificant formatting).
+    manifest = _object(
+        read_json(root / "agent-dev-kit" / "manifest.json", label="pinned ADK manifest", max_bytes=MAX_JSON),
+        "pinned ADK manifest",
+    )
+    canonical_manifest = (
+        json.dumps(manifest, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n"
+    ).encode("utf-8")
+    expected_manifest_sha256 = hashlib.sha256(canonical_manifest).hexdigest()
     if (
         item.get("schema") != "adk-release-artifact-contract/v1"
         or item.get("status") != "pass"
