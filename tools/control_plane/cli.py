@@ -17,6 +17,8 @@ _COMMAND_MODULES = {
     "terminal-closure": "tools.control_plane.terminal_closure",
     "longitudinal-operation": "tools.control_plane.longitudinal_operation",
     "qualification-followup": "tools.control_plane.qualification_followup",
+    "goal-efficiency": "tools.control_plane.goal_efficiency",
+    "goal-loop": "tools.codex_assets.goal_loop_event_context",
     "long-term-rehearsal": "tools.control_plane.long_term_asset_rehearsal",
     "promotion-evidence": "tools.control_plane.adk_promotion_evidence",
     "reference-pins": "tools.control_plane.reference_pins",

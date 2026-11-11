@@ -69,6 +69,27 @@ python3 -m tools.codex_assets.goal_loop_event_context \
 真实 Host 从输出中持久化 `next_cursor`，并只在适用执行结果确认后更新。
 状态缺项、事件查询不完整、旧 cursor 属于别的 Goal、非法路径/字段，返回非零而不是假装无变化。
 
+## 现有 llm-ctl 入口与执行回执去重
+
+无需新增 Python 入口或后台服务，既有控制面命令可以直接执行：
+
+```bash
+llm-ctl goal-loop preflight --snapshot /safe/meta/current.json
+llm-ctl goal-loop preflight --snapshot /safe/meta/current.json --previous /safe/meta/acknowledged.json
+llm-ctl goal-loop attribute --trace /safe/meta/usage.json
+llm-ctl goal-loop compare --baseline /safe/meta/baseline.json --candidate /safe/meta/candidate.json
+```
+
+**只有成功执行并由 Host 验证过结果的 cursor 才能放入 `--previous`。**
+当 Goal/阶段/事件/原始证据完全一致，第二次 `run-tool` 或 `run-verification`
+不再重新执行，而返回 `skip-model` + `previously-acknowledged-unchanged-action`；
+新 HEAD、新事件 SHA 或新的证据重新开放对应动作。高风险重复确定性操作必须复核，
+不能仅凭有相同 cursor 就省略审查。单纯运行 preflight **不会**提交 cursor。
+
+cursor 只是来源已由 Host 核实的事件观察记录，不是 Goal 终态或生产审批凭据；
+`llm-ctl goal-efficiency` 可同时展示当前 ADK Goal 的状态和预检建议，
+但观察报告不会输出未确认可提交的 next_cursor。Host 仍须执行并核实动作回执。
+
 ## Tool / Skill 与上下文瘦身
 
 - 数据搜集优先本地脚本/GitHub API 一次性**批量查询**；`raw_ref` 保留完整可审计来源，
