@@ -277,6 +277,41 @@ class CallBudgetTests(unittest.TestCase):
         self.assertEqual(reserve(request("r-4"), self.state, POLICY)["status"], "allow")
         self.assertEqual(settle(settlement("r-4", DIGEST), self.state)["no_progress_turns"], 0)
 
+    def test_no_duplicate_goal_stop_when_canonical_host_progress_is_verified(self) -> None:
+        for i in range(3):
+            rid = "stalled-" + str(i)
+            self.assertEqual(reserve(request(rid), self.state, POLICY)["status"], "allow")
+            settle(settlement(rid), self.state)
+        # Standalone provider-neutral budget guard keeps its original anti-stall gate.
+        self.assertEqual(reserve(request("standalone-next"), self.state, POLICY)["reason"],
+                         "no-progress-replan-required")
+        # Trusted host checks exact canonical Execution Policy before delegating
+        # progress authority. This does NOT delegate safety/context/idempotency.
+        allowed = reserve(request("canonical-next"), self.state, POLICY,
+                          verified_external_progress_gate=True)
+        self.assertEqual(allowed["status"], "allow")
+        self.assertEqual(allowed["progress_control"], "canonical-host-verified")
+        self.assertTrue(allowed["root_no_progress_observed"])
+        self.assertEqual(self.state["no_progress"]["adk|session-1|unattributed"], 3)
+        long = request("canonical-long", inp=200001)
+        long["compaction_checked"] = True
+        self.assertEqual(reserve(long, self.state, POLICY,
+                                 verified_external_progress_gate=True)["reason"],
+                         "hard-input-limit")
+        with self.assertRaises(BudgetError):
+            reserve(request("invalid-flag"), self.state, POLICY,
+                    verified_external_progress_gate=1)
+
+    def test_canonical_progress_delegation_cannot_replay_identical_context(self) -> None:
+        first = request("same-a")
+        first.update(goal_id="goal-a", phase_id="phase-1", context_sha256="d" * 64)
+        self.assertEqual(reserve(first, self.state, POLICY)["status"], "allow")
+        again = request("same-b")
+        again.update(goal_id="goal-a", phase_id="phase-1", context_sha256="d" * 64)
+        self.assertEqual(reserve(again, self.state, POLICY,
+                                 verified_external_progress_gate=True)["reason"],
+                         "identical-goal-context")
+
     def test_progress_requires_valid_digest_and_success(self) -> None:
         reserve(request(), self.state, POLICY)
         data = settlement("r-1", "not-sha")

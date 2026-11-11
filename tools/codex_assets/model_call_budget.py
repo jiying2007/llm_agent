@@ -242,11 +242,19 @@ def _day(policy: dict[str, Any], now: datetime | None = None) -> str:
 def reserve(
     request: dict[str, Any], state: dict[str, Any], policy: dict[str, Any],
     *, allow_exception: bool = False, now: datetime | None = None,
+    verified_external_progress_gate: bool = False,
 ) -> dict[str, Any]:
-    """Make one bounded reservation. The caller MUST verify approval out-of-band."""
+    """Reserve once. Host must verify any external approval/progress gate out of band.
+
+    A positive verified_external_progress_gate is only legitimate AFTER the
+    trusted host checks the canonical Execution Policy for this exact Goal.
+    CLI callers cannot set it; this module never trusts model-generated claims.
+    """
     caps = validate_policy(policy)["caps"]
     data = validate_request(request)
     _state(state)
+    if type(verified_external_progress_gate) is not bool:
+        raise BudgetError("external-progress-gate-flag-invalid")
     rid = data["request_id"]
     digest = _fingerprint(data)
     if rid in state["calls"]:
@@ -265,8 +273,12 @@ def reserve(
         return _decision("hold", "review-long-context", request_id=rid)
 
     key = _session_key(data["workflow_id"], data["session_id"], data["goal_id"])
-    if state["no_progress"].get(key, 0) >= caps["no_progress_turns"]:
+    stalled = state["no_progress"].get(key, 0) >= caps["no_progress_turns"]
+    if stalled and not verified_external_progress_gate:
         return _decision("hold", "no-progress-replan-required", request_id=rid)
+    # When canonical Goal progress has already been VERIFIED by the host,
+    # do not impose a second independent Goal stop. All per-request safety,
+    # context deduplication and explicit exception checks stay in force.
 
     # Repeat prevention is based on the trusted host's full-context digest,
     # never on similar token counts or model names. The field is optional so
@@ -307,6 +319,8 @@ def reserve(
         above_target=inp > caps["target_input_tokens"],
         long_context_price_advisory=inp >= caps["price_cliff_input_tokens"],
         exception=exception,
+        progress_control="canonical-host-verified" if verified_external_progress_gate else "fallback-standalone",
+        root_no_progress_observed=stalled,
     )
 
 
