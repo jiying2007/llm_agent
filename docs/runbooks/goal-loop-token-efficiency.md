@@ -19,7 +19,7 @@
    所有 input/previous 均为受信 Host 的机械事实；不能让模型自行编造新 SHA 或审批。
 2. **仅调用一次确定性 preflight**：
    - CI pending、无待执行步骤、heartbeat → `skip-model`；即使 Host 残留旧 `pending_action=model`，
-     普通风险的等待事件也不得触发新模型轮次。高风险矛盾状态 → `needs-review`。
+     无新增关键证据的普通风险等待事件也不得触发新模型轮次；高风险状态或新增 `critical` 证据 → `needs-review`。
    - 明确的确定性工具或验证 → `run-tool` / `run-verification`，不消耗 LLM 推理；
      但若事件为 `review_required`，必须先 `needs-review`，不得由旧的待执行工具动作绕过。
    - 用户目标变化、真正新的源码/CI 错误/审核要求、当前需要语义判断 → `invoke-model`。
