@@ -21,6 +21,12 @@
 
 必须明确绑定同一次 run、attempt 和精确 source SHA；截断分页、重复 ID、错误来源、异常时间立即失败。job_seconds_sum 为所有已完成 Job 历时合计，observed_wall_seconds 是可观察的首末 Job 区间，两者都不是 GitHub 实际计费或模型成本。部分执行中标记 PARTIAL，不能声称 CI 已成功。
 
+## Goal / Loop 实际 Token 效率
+
+本仓库模型调用预算已改为 **无每日费用硬上限、无每日 Token/调用次数硬停止**。对 Goal/Loop 的效果应从同一组真实任务的 Tokens/新验收、重复上下文、nonclosing_calls、恢复耗时和完成率衡量，不以每日花费下降代替效率提升。
+
+当可信执行器已有请求级用量时，可按 `docs/runbooks/model-call-budget.md` 调用 `python3 -m tools.codex_assets.model_call_budget --state /path/to/ledger.json report`；其中 `goals` 汇总仅为带来源的诊断，不授予 Goal 完成资格。无真实输入/输出 usage 时 `input_tokens_per_progress=null`，相同证据哈希不可重复算新进展。默认最多返回 10 个 token 消耗最高的 Goal 统计项，避免报告本身再进入长上下文循环。
+
 ## Token 与验收
 
 只有原始 ADK runtime_control.state/v1 包含已观察的 usage.observed_at，才可追加 --runtime-state RUNTIME.json 读取 input/output/cached/reasoning/total tokens。没有真实观察一律 UNKNOWN，不当成零。即使有记录也仅为 REPORTED_UNVERIFIED，不能伪称 Provider 验签、计费凭证或跨执行器消重。禁止 bytes/4 替代真实 usage；不能因绿色 CI 自动认定 Goal 达成。

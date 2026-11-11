@@ -1,7 +1,9 @@
-"""Provider-neutral, pre-dispatch LLM token/cost guard.
+"""Provider-neutral Goal/Loop token efficiency advisory and request guard.
 
-The host MUST call reserve before sending a model request and settle after receiving
-provider usage. This module never sends prompts or invokes a provider.
+No daily monetary, call-count or token-volume quota: long-running work is
+governed by context quality, repeated work, verifiable progress and host gates.
+The trusted host must reserve before dispatch and settle observed usage after.
+No prompt, provider call or tool output is handled by this module.
 """
 from __future__ import annotations
 
@@ -19,8 +21,8 @@ from pathlib import Path
 from typing import Any, Iterator
 from zoneinfo import ZoneInfo
 
-SCHEMA = "llm-agent-model-call-budget/v1"
-REQUEST_SCHEMA = "llm-agent-model-call/v1"
+SCHEMA = "llm-agent-model-call-budget/v2"
+REQUEST_SCHEMA = "llm-agent-model-call/v2"
 SETTLEMENT_SCHEMA = "llm-agent-model-call-settlement/v1"
 STATE_SCHEMA = "llm-agent-model-call-ledger/v1"
 ID = re.compile(r"[A-Za-z0-9_.:/-]{1,96}\Z")
@@ -102,9 +104,7 @@ def validate_policy(value: dict[str, Any]) -> dict[str, Any]:
     names = {
         "target_input_tokens", "compact_input_tokens", "soft_input_tokens",
         "hard_input_tokens", "price_cliff_input_tokens",
-        "daily_calls_per_workflow", "daily_tokens_per_workflow",
-        "daily_spend_fen_per_workflow", "no_progress_turns",
-        "daily_calls_global", "daily_tokens_global", "daily_spend_fen_global",
+        "no_progress_turns",
     }
     if not isinstance(caps, dict) or set(caps) != names:
         raise BudgetError("policy-caps-invalid")
@@ -122,6 +122,7 @@ def validate_request(value: dict[str, Any]) -> dict[str, Any]:
         "schema", "request_id", "workflow_id", "session_id", "model",
         "input_tokens_bound", "max_output_tokens", "quoted_max_charge_fen",
         "compaction_checked", "risk", "exception",
+        "goal_id", "phase_id", "context_sha256",
     }
     if set(value) != fields or value["schema"] != REQUEST_SCHEMA:
         raise BudgetError("request-schema-invalid")
@@ -129,9 +130,16 @@ def validate_request(value: dict[str, Any]) -> dict[str, Any]:
         _identity(value[name], name)
     _integer(value["input_tokens_bound"], "input_tokens_bound", allow_zero=False)
     _integer(value["max_output_tokens"], "max_output_tokens", allow_zero=False)
-    _integer(value["quoted_max_charge_fen"], "quoted_max_charge_fen", allow_zero=False)
+    # Prices are telemetry, not permission or a daily limit. Missing/zero is valid.
+    if value["quoted_max_charge_fen"] is not None:
+        _integer(value["quoted_max_charge_fen"], "quoted_max_charge_fen")
     if type(value["compaction_checked"]) is not bool or value["risk"] not in {"normal", "high"}:
         raise BudgetError("request-classification-invalid")
+    for name in ("goal_id", "phase_id"):
+        if value[name] is not None:
+            _identity(value[name], name)
+    if value["context_sha256"] is not None:
+        _sha(value["context_sha256"], "context_sha256")
     exception = value["exception"]
     if exception is not None:
         if (not isinstance(exception, dict) or set(exception) != {"approval_id", "reason_code"}
@@ -158,8 +166,10 @@ def validate_settlement(value: dict[str, Any]) -> dict[str, Any]:
         )):
             raise BudgetError("unavailable-usage-must-be-null")
     else:
-        for name in ("input_tokens", "cached_input_tokens", "output_tokens", "billed_fen"):
+        for name in ("input_tokens", "cached_input_tokens", "output_tokens"):
             _integer(value[name], name)
+        if value["billed_fen"] is not None:
+            _integer(value["billed_fen"], "billed_fen")
         if value["cached_input_tokens"] > value["input_tokens"]:
             raise BudgetError("cached-exceeds-input")
     if value["progress_evidence_sha256"] is not None:
@@ -220,8 +230,8 @@ def _decision(status: str, reason: str, **data: Any) -> dict[str, Any]:
     return {"schema": SCHEMA, "status": status, "reason": reason, **data}
 
 
-def _session_key(workflow: str, session: str) -> str:
-    return workflow + "|" + session
+def _session_key(workflow: str, session: str, goal_id: str | None = None) -> str:
+    return workflow + "|" + session + "|" + (goal_id or "unattributed")
 
 
 def _day(policy: dict[str, Any], now: datetime | None = None) -> str:
@@ -249,35 +259,29 @@ def reserve(
     exception = data["exception"] is not None and allow_exception
     if inp >= caps["compact_input_tokens"] and not data["compaction_checked"]:
         return _decision("hold", "compact-first", request_id=rid)
-    if inp >= caps["price_cliff_input_tokens"] and not exception:
-        return _decision("blocked", "long-context-price-cliff", request_id=rid)
     if inp > caps["hard_input_tokens"] and not exception:
         return _decision("blocked", "hard-input-limit", request_id=rid)
     if inp > caps["soft_input_tokens"] and not exception:
         return _decision("hold", "review-long-context", request_id=rid)
 
-    key = _session_key(data["workflow_id"], data["session_id"])
+    key = _session_key(data["workflow_id"], data["session_id"], data["goal_id"])
     if state["no_progress"].get(key, 0) >= caps["no_progress_turns"]:
         return _decision("hold", "no-progress-replan-required", request_id=rid)
 
+    # Repeat prevention is based on the trusted host's full-context digest,
+    # never on similar token counts or model names. The field is optional so
+    # uninstrumented hosts retain the usual contextual safety checks.
+    if data["context_sha256"] is not None:
+        for previous in state["calls"].values():
+            if (previous.get("workflow_id") == data["workflow_id"]
+                    and previous.get("session_id") == data["session_id"]
+                    and previous.get("goal_id") == data["goal_id"]
+                    and previous.get("phase_id") == data["phase_id"]
+                    and previous.get("context_sha256") == data["context_sha256"]):
+                return _decision("hold", "identical-goal-context", request_id=rid)
+
     day = _day(policy, now)
-    today = [x for x in state["calls"].values() if x["day"] == day]
-    related = [x for x in today if x["workflow_id"] == data["workflow_id"]]
-    tokens = sum(x["allocated_tokens"] for x in related)
-    fen = sum(x["allocated_fen"] for x in related)
     requested_tokens = inp + data["max_output_tokens"]
-    if len(today) >= caps["daily_calls_global"]:
-        return _decision("blocked", "global-daily-call-budget", request_id=rid)
-    if sum(x["allocated_tokens"] for x in today) + requested_tokens > caps["daily_tokens_global"]:
-        return _decision("blocked", "global-daily-token-budget", request_id=rid)
-    if sum(x["allocated_fen"] for x in today) + data["quoted_max_charge_fen"] > caps["daily_spend_fen_global"]:
-        return _decision("blocked", "global-daily-charge-budget", request_id=rid)
-    if len(related) >= caps["daily_calls_per_workflow"]:
-        return _decision("blocked", "daily-call-budget", request_id=rid)
-    if tokens + requested_tokens > caps["daily_tokens_per_workflow"]:
-        return _decision("blocked", "daily-token-budget", request_id=rid)
-    if fen + data["quoted_max_charge_fen"] > caps["daily_spend_fen_per_workflow"]:
-        return _decision("blocked", "daily-charge-budget", request_id=rid)
 
     state["calls"][rid] = {
         "request_sha256": digest,
@@ -288,6 +292,11 @@ def reserve(
         "status": "reserved",
         "allocated_tokens": requested_tokens,
         "allocated_fen": data["quoted_max_charge_fen"],
+        "input_tokens_bound": inp,
+        "max_output_tokens": data["max_output_tokens"],
+        "goal_id": data["goal_id"],
+        "phase_id": data["phase_id"],
+        "context_sha256": data["context_sha256"],
         "usage": None,
         "settlement_sha256": None,
     }
@@ -296,6 +305,7 @@ def reserve(
         tokens_reserved=requested_tokens,
         charge_reserved_fen=data["quoted_max_charge_fen"],
         above_target=inp > caps["target_input_tokens"],
+        long_context_price_advisory=inp >= caps["price_cliff_input_tokens"],
         exception=exception,
     )
 
@@ -326,32 +336,53 @@ def settle(value: dict[str, Any], state: dict[str, Any]) -> dict[str, Any]:
         }
         entry["allocated_tokens"] = data["input_tokens"] + data["output_tokens"]
         entry["allocated_fen"] = data["billed_fen"]
+    evidence = data["progress_evidence_sha256"]
+    new_evidence = bool(evidence) and not any(
+        other.get("workflow_id") == entry["workflow_id"]
+        and other.get("session_id") == entry["session_id"]
+        and other.get("goal_id") == entry.get("goal_id")
+        and other.get("evidence_sha256") == evidence
+        for other_id, other in state["calls"].items() if other_id != rid
+    )
     entry["usage"] = usage
     entry["status"] = "settled"
     entry["settlement_sha256"] = digest
-    entry["evidence_sha256"] = data["progress_evidence_sha256"]
-    key = _session_key(entry["workflow_id"], entry["session_id"])
+    entry["evidence_sha256"] = evidence
+    entry["new_progress"] = bool(new_evidence)
+    key = _session_key(entry["workflow_id"], entry["session_id"], entry.get("goal_id"))
     previous = state["no_progress"].get(key, 0)
-    state["no_progress"][key] = 0 if data["progress_evidence_sha256"] else previous + 1
+    state["no_progress"][key] = 0 if new_evidence else previous + 1
     return _decision(
         "recorded", "settled", request_id=rid, usage_observed=observed,
         billing_verified=False, usage_reported=observed,
+        new_progress=bool(new_evidence),
         no_progress_turns=state["no_progress"][key],
         budget_allocation_fen=entry["allocated_fen"],
     )
 
 
-def replan(state: dict[str, Any], workflow: str, session: str, evidence_sha256: str) -> dict[str, Any]:
-    """Requires a verified changed plan/evidence, not a heartbeat or retry."""
+def replan(
+    state: dict[str, Any], workflow: str, session: str, evidence_sha256: str,
+    *, goal_id: str | None = None, prior_plan_sha256: str,
+    revised_plan_sha256: str,
+) -> dict[str, Any]:
+    """Trusted-host API; only a changed plan plus evidence can reset a stalled Goal."""
     _state(state)
     _identity(workflow, "workflow_id")
     _identity(session, "session_id")
+    if goal_id is not None:
+        _identity(goal_id, "goal_id")
     digest = _sha(evidence_sha256, "replan_evidence_sha256")
-    key = _session_key(workflow, session)
+    before = _sha(prior_plan_sha256, "prior_plan_sha256")
+    after = _sha(revised_plan_sha256, "revised_plan_sha256")
+    if before == after or digest in (before, after):
+        raise BudgetError("replan-must-change-plan-with-independent-evidence")
+    key = _session_key(workflow, session, goal_id)
     if key not in state["no_progress"]:
-        raise BudgetError("replan-without-session-history")
+        raise BudgetError("replan-without-goal-history")
     state["no_progress"][key] = 0
-    return _decision("recorded", "replanned", evidence_sha256=digest)
+    return _decision("recorded", "replanned", evidence_sha256=digest,
+                     plan_changed=True)
 
 
 def report(state: dict[str, Any], policy: dict[str, Any], now: datetime | None = None) -> dict[str, Any]:
@@ -359,28 +390,61 @@ def report(state: dict[str, Any], policy: dict[str, Any], now: datetime | None =
     validate_policy(policy)
     day = _day(policy, now)
     by_workflow: dict[str, dict[str, Any]] = {}
+    by_goal: dict[str, dict[str, Any]] = {}
     for entry in state["calls"].values():
         if entry["day"] != day:
             continue
-        item = by_workflow.setdefault(entry["workflow_id"], {
+        workflow = entry["workflow_id"]
+        item = by_workflow.setdefault(workflow, {
             "requests": 0, "reserved": 0, "tokens_allocated": 0,
-            "cny_fen_allocated": 0, "unknown_usage": 0, "cached_input_tokens_observed": 0,
+            "cny_fen_allocated": 0, "unpriced_calls": 0,
+            "unknown_usage": 0, "cached_input_tokens_observed": 0,
         })
         item["requests"] += 1
         item["reserved"] += entry["status"] == "reserved"
         item["tokens_allocated"] += entry["allocated_tokens"]
-        item["cny_fen_allocated"] += entry["allocated_fen"]
+        item["cny_fen_allocated"] += entry["allocated_fen"] or 0
+        item["unpriced_calls"] += entry["allocated_fen"] is None
         item["unknown_usage"] += entry["status"] == "settled" and entry["usage"] is None
         if entry["usage"] is not None:
             item["cached_input_tokens_observed"] += entry["usage"]["cached_input_tokens"]
+        # Do not mistake missing progress evidence for completion. Both goal
+        # and phase identities are optional, and raw context never appears here.
+        goal_key = workflow + "/" + (entry.get("goal_id") or "unattributed")
+        goal = by_goal.setdefault(goal_key, {
+            "calls": 0, "input_tokens_observed": 0, "unknown_usage": 0,
+            "new_progress_events": 0, "nonclosing_calls": 0,
+        })
+        goal["calls"] += 1
+        usage = entry.get("usage")
+        if usage is not None:
+            goal["input_tokens_observed"] += usage["input_tokens"]
+        else:
+            goal["unknown_usage"] += 1
+        if entry.get("status") == "settled":
+            goal["new_progress_events"] += bool(entry.get("new_progress", False))
+            goal["nonclosing_calls"] += not entry.get("new_progress", False)
+
+    for goal in by_goal.values():
+        count = goal["new_progress_events"]
+        goal["input_tokens_per_progress"] = (
+            round(goal["input_tokens_observed"] / count)
+            if count and not goal["unknown_usage"] else None
+        )
     overall = {
         "requests": sum(x["requests"] for x in by_workflow.values()),
         "tokens_allocated": sum(x["tokens_allocated"] for x in by_workflow.values()),
         "cny_fen_allocated": sum(x["cny_fen_allocated"] for x in by_workflow.values()),
+        "unpriced_calls": sum(x["unpriced_calls"] for x in by_workflow.values()),
         "unknown_usage": sum(x["unknown_usage"] for x in by_workflow.values()),
     }
+    # Bound this human/agent summary; the complete ledger remains external.
+    top_goals = sorted(by_goal.items(), key=lambda x: (-x[1]["input_tokens_observed"], x[0]))[:10]
     return {"schema": SCHEMA, "status": "observed-not-provider-certified", "day": day,
-            "workflows": by_workflow, "global": overall, "contains_raw_prompts": False}
+            "workflows": by_workflow, "global": overall,
+            "goals": dict(top_goals), "goals_total": len(by_goal),
+            "truncated_goal_summaries": max(0, len(by_goal) - len(top_goals)),
+            "contains_raw_prompts": False, "hard_daily_limits": False}
 
 
 def _main() -> int:
