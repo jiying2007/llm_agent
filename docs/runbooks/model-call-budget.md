@@ -1,85 +1,108 @@
-# 模型调用 Token 与费用预算：运行时接入
+# Goal / Loop Token 效率与模型调用观察
 
-## 状态
+## 状态与唯一职责
 
-Root 提供纯标准库的模型调用预算组件 tools/codex_assets/model_call_budget.py；不调用任何模型、不接收 prompt、不传输密钥。清单 manifests/model_call_budget.json 的状态是 requires-host-integration。**提交此代码不代表当前 Codex / API 中转站已开始拦截请求。**
+统一实现：tools/codex_assets/model_call_budget.py；策略：manifests/model_call_budget.json。
+此文件是可信模型调用执行器的无模型、无 prompt 控制组件，不是另一套 Goal 调度器。
+当前仍标记 requires-host-integration：尚未接入真实中转站，因此不能宣称已优化真实账单。
 
-预算参数基于 2026-11-09 用户账单提出：272K 为该渠道报告的分档阈值，不能外推到所有模型和代理。接入前必须与提供商真实 Token 计数、报价和账单核对。计时使用北京时间自然日，费用单位为人民币分。
+**本策略没有每日人民币费用上限，也没有每日总调用次数或 Token 的硬停止规则。**
+费用、缓存命中、工作流日 Token 只作为观测指标。不能以 ¥200/日为目标阻断有效 Goal。
+用户投入应该用“验证通过的里程碑 / Token”和“有效工作轮次”衡量，而不是靠切断预算改善统计。
 
-## 唯一可信调用入口：两段式
+## 请求前：轻量化但不丢关键证据
 
-1. Runtime / 网关使用真实 tokenizer 与完整请求消息计算保守输入上界 input_tokens_bound，配置 max_output_tokens；依渠道价目表计算 strictly positive 的 quoted_max_charge_fen；付费请求缺失报价或使用零价会被拒绝。不能把 UTF-8 字节数等同 token，更不能相信模型自己提供的数字或审批。
-2. 每次调用生成不可重复 request_id，绑定 workflow_id、session_id、model；只提供数字与脱敏标识，不把 prompt、工具日志、会话历史、密钥放入预算账本。
-3. **调用前 reserve**：只有退出码 0 且 status=allow 时允许发送模型请求。hold 必须先压缩上下文或经证据支持的 replan；blocked/error 不可发送。为避免网络结果不明后重复扣费，同一 request_id 重放会被拒绝。
-4. **调用后 settle**：以可信中转的原始 Usage 计量、缓存输入、输出 Token 与实际 billed_fen 结算。若已经发送但 usage 不可用，settle 使用 outcome=unavailable，四个计费/用量字段填 null，并保留最初预算预留，不能视作免费。
-5. 只有调用方验证了新测试、commit 或真正阶段产物，才记录 progress_evidence_sha256；没有可验证成果时填 null。连续三次无进展后需通过验证真实变更的 replan，而非简单 heartbeat。
-6. 通过 report 按 workflow 汇总日 Token/成本，只有接入真实中转账单并验证身份后才能声称 provider-billed；默认回执 billing_verified=false。
+可信 Host 对完整请求计算真实 input_tokens_bound；不要用字节数或仅凭缓存命中率代替测量。
+调用每次带固定 schema=llm-agent-model-call/v2 和：
+- request_id、workflow_id、session_id、model；
+- goal_id / phase_id：有明确 Goal 时带稳定 ID；其他任务设 null，不伪造目标；
+- context_sha256：对完整待提交请求的规范字节求 SHA-256；没有可验证摘要设 null。仅在同一 Goal / Phase 内，同一个摘要重复才进入 hold，不能单看长度就认定重复；
+- input_tokens_bound、max_output_tokens、compaction_checked、risk、exception；
+- quoted_max_charge_fen：可填 null，零或非负整数；**只记录报价，不是允许调用的条件或成本上限**。
 
-## 格式样例
+示例：
 
 ~~~json
 {
-  "schema": "llm-agent-model-call/v1",
-  "request_id": "call-001",
-  "workflow_id": "llm-agent",
+  "schema": "llm-agent-model-call/v2",
+  "request_id": "call-unique-001",
+  "workflow_id": "main-research",
   "session_id": "session-001",
+  "goal_id": "goal-123",
+  "phase_id": "slice-1",
+  "context_sha256": null,
   "model": "gpt-6.1-sol",
   "input_tokens_bound": 48000,
   "max_output_tokens": 4096,
-  "quoted_max_charge_fen": 80,
+  "quoted_max_charge_fen": null,
   "compaction_checked": false,
   "risk": "normal",
   "exception": null
 }
 ~~~
 
+运行（状态路径须由真实 Host 自己管理，以下只展示离线本地调用形式）：
+
 ~~~bash
 python3 -m tools.codex_assets.model_call_budget \
-  --state "$HOME/.local/state/llm-agent/model-call-budget.json" \
-  reserve --request /safe/input/request.json
-
+  --state /tmp/model-call-ledger.json reserve --request /tmp/request.json
 python3 -m tools.codex_assets.model_call_budget \
-  --state "$HOME/.local/state/llm-agent/model-call-budget.json" \
-  settle --usage /safe/input/settlement.json
-
+  --state /tmp/model-call-ledger.json settle --usage /tmp/settlement.json
 python3 -m tools.codex_assets.model_call_budget \
-  --state "$HOME/.local/state/llm-agent/model-call-budget.json" report
+  --state /tmp/model-call-ledger.json report
 ~~~
 
-结算 JSON 全字段为：schema=llm-agent-model-call-settlement/v1、request_id、outcome (success/error/unavailable)、input_tokens、cached_input_tokens、output_tokens、billed_fen、progress_evidence_sha256（无可信进展填 null）。重规划不是开放的 CLI 命令：仅可信 Host 核验新的目标/产物证据后调用 Python API 的 replan(...)，避免 Agent 随意提供 64 位摘要就重置空转计数。
+只有 reserve 返回 status=allow 且 exit 0 时才可发送模型请求。hold 表示先压缩或重规划；
+blocked / error 不应发送。原始证据保留在外部受控文件，模型默认只获取局部检索窗口。
+不自动重试请求 ID，远程写操作结果未知时先对账。
 
-## 限额初值及优化动作
+## 上下文优化（不是按日截断）
 
-| 维度 | 初始配置 | 行为 |
-|---|---:|---|
-| 单次输入目标 | 48K | 超过目标提示，非自动失败 |
-| 压缩触发 | 96K | 必须先压缩，保留原始证据 |
-| 软上限 | 128K | 超过须审查/例外 |
-| 默认硬上限 | 200K | 未经批准不调用 |
-| 渠道高价阈值 | 272K | 外部批准+真实渠道价目核对 |
-| 每 workflow 日调用 | 256 次 | 默认阻断超额 |
-| 每 workflow 日 Token 额度 | 25M | 预留+结算控制，包括缓存输入 |
-| 每 workflow 日费用 | ¥200 | 单 workflow 配额，不替代全局上限 |
-| 共享账本日费用 | ¥200 | 全局跨 workflow 累计，不可拆账本绕过 |
-| 共享账本日调用 | 512 次 | 各工作流合计 |
-| 共享账本日 Token | 50M | 各工作流合计 |
-| 无有效进展 | 连续 3 次 | hold + evidence-bound replan |
+| 输入上下文 | 默认动作 |
+|---|---|
+| ≤48K Token | 目标范围；根据需求读取必要原文 |
+| ≥96K | 先输出带证据引用的阶段摘要，缩小下一轮上下文 |
+| >128K | 常规任务暂停并检查是否需要读全量材料 |
+| >200K | 常规任务阻断，需要受信 Host 的明确高风险例外 |
+| ≥272K | **仅记录该账单渠道的长上下文价格档位告警**，不是费用阻断规则 |
 
-高风险例外要求可信 Host 独立核验真实审批和来源，再通过受保护的 Python API 调用 reserve(..., allow_exception=True)；普通 CLI 不提供自我批准的开关。模型生成的文本、审批 ID 或口令字符串不能单独构成授权。
+高风险任务可以在可信 Host 真正审核后使用 reserve(..., allow_exception=True)；
+CLI 不提供可自批的高价例外。高风险权限/签名/迁移等证据不能因为压缩而缺失。
 
-模型降级策略：只在探路、检索、日志摘要等低风险任务选择经质量验证的轻量模型；涉及安全、发布、架构、代码审查或不明根因时保留高能力模型。分级选型不硬编码具体提供商价格或名称。
+## Goal / Loop 的高效率执行协议
 
-减少上下文的执行规则：任务开始先 L0 项目地图，读取一个 primary Skill，references 和工具 schema 只在触发时加载；工具默认提供不超过约 2K Token 的相关摘要及 raw_evidence 可回读位置，禁止重复灌入整个日志；阶段切换只携带成功标准、当前差异、未解决问题、验证工件和最多三个下一步。尽量用 GitHub Actions 事件驱动替代模型轮询 CI。不可为节省 Token 丢弃安全/权限/迁移等原文证据。
+1. **一目标一状态**：先读当前 Goal、验收 ID、受影响文件与最后 checkpoint（目标状态建议 ≤8 KiB）。长历史、全量日志、旧对话不自动注入；按需查原始证据指针。
+2. **先本地再推理**：对确定性操作（目录定位、CI 状态、校验脚本、散列比对）使用本地工具与 GitHub Actions；不用强模型重复解释无变化的结果。
+3. **执行可关闭批次**：一次选 1–4 个边界清晰的纵向交付，小修改用 targeted tests；一批闭合后才跑受影响的完整门禁，避免每个微步骤都做全量复审。
+4. **按新证据判断进度**：仅接受当前 Goal 的真正新增验证产物、解决的新 blocker/假设或关闭的验收项；相同 evidence SHA 再上报不算进展。无新增证据的调用累加 nonclosing_calls。
+5. **去重与反空转**：可信 Host 可提供当前 prompt/context 的 SHA；同 Goal / Phase 完全相同上下文不再次推理。连续三次没有验证新进展，停止盲重试并进入 replan；新 Goal 不继承旧 Goal 的停滞计数。
+6. **重规划必须改变方案**：仅可信 Host 调用 Python API 的 replan(...)，并提供 prior_plan_sha256、revised_plan_sha256 和独立 evidence_sha256；前后计划相同、摘要无效时拒绝。模型不得自行申请重置。
+7. **阶段交接而非整轮复述**：checkpoint 只存目标、正在执行的验收、已验证证据、关键未解决问题、最新 commit/CI 引用和最多三个下一动作；不向新阶段重新发送全部聊天。
+8. **终态验收**：每一 Goal 完成时核对原始验收分母、真实证据和未关闭项；高风险场景仍保留完整审查。未完成的任务不得通过缓存命中率、测试数量或 token 下降冒充成功。
 
-## 部署与验收限制
+## 调用后：记录效果，不限制费用
 
-- 文件锁和原子写入仅约束**共享本地状态路径的同一主机**；多主机或多容器要由真正网关使用中心化原子计数器，不能靠不同本地状态文件自称全局限额。
-- 组件不是模型代理或透明网络拦截器；不在每次真实请求前调用 reserve 并拒绝非 allow 时，就没有成本控制效果。请求报价、Token 上界、审批和证据都必须来源于不可被 Agent 任意伪造的 trusted host。
-- 实际落地分为：一次历史脱敏请求 shadow replay → 网关集成 → 端到端高价拒绝测试 → 扣费对账和完成质量 A/B 回归 → 更新状态。未获得以上实际运行证据，不声明真正节约人民币。
-- 不修改 ADK gitlink/跨仓锁、Sigstore、现有 KWS 工作流和 Codex / ChatGPT Work 共享额度。
+settle 使用 llm-agent-model-call-settlement/v1；input/cached/output 为可观测整数；
+billed_fen 可为 null（提供商未报告价格），不是零。没有任何 usage 时用 outcome=unavailable
+并保留保守 Token 预留。需要报告区分真实观测与未知状态。
+
+report 按 workflow、Goal 汇总：
+- requests、tokens_allocated、cached_input_tokens_observed、unpriced_calls（没有报价/价格的次数）；
+- goals 按可观测输入 Token 取前 10 项，列出 calls / input_tokens_observed /
+  new_progress_events / nonclosing_calls / input_tokens_per_progress；
+- 分母为零或存在未知 usage 时，input_tokens_per_progress 返回 null，不能伪造效益；省略更多目标详情，完整原始账本可回读；
+- status=observed-not-provider-certified；不能用这些数字代替供应商原始账单。
+
+既有本地 file lock 只保护单机共享存储；多机真实网关需要中心化幂等预留/结算，
+不能绕过 host approval 或生产门禁。当前 Root 没有实际模型代理接入，仍需 Issue #322 的
+真实 Token 轨迹与前后对照，不能声称真实费用已经下降。
+
+## 验证
 
 ~~~bash
 bash tests/test_model_call_budget.sh
 ~~~
 
-测试必须覆盖 200K/272K、压缩前置、128K 软审查、预算超额、并发预留、结算缺失、重复 ID、无进展、软/硬异常和不可相信的报价。单元测试证明的是本地逻辑，不能替代真实 provider 集成证据。
+重点验证：没有每日费用或调用量硬停止、跨 Goal 停滞互不污染、同 Goal/Phase 相同上下文拒绝重复、
+同证据再次上报不算新进展、计划无变化不能重置、并发本地账本、无报价/usage 区分、
+高风险例外仍由可信 Host 审批。

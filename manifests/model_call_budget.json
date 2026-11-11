@@ -1,5 +1,5 @@
 {
-  "schema": "llm-agent-model-call-budget/v1",
+  "schema": "llm-agent-model-call-budget/v2",
   "status": "requires-host-integration",
   "timezone": "Asia/Shanghai",
   "caps": {
@@ -8,12 +8,6 @@
     "soft_input_tokens": 128000,
     "hard_input_tokens": 200000,
     "price_cliff_input_tokens": 272000,
-    "daily_calls_per_workflow": 256,
-    "daily_tokens_per_workflow": 25000000,
-    "daily_spend_fen_per_workflow": 20000,
-    "no_progress_turns": 3,
-    "daily_calls_global": 512,
-    "daily_tokens_global": 50000000,
-    "daily_spend_fen_global": 20000
+    "no_progress_turns": 3
   }
 }
