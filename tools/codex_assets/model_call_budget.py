@@ -255,6 +255,8 @@ def reserve(
     _state(state)
     if type(verified_external_progress_gate) is not bool:
         raise BudgetError("external-progress-gate-flag-invalid")
+    if verified_external_progress_gate and data["goal_id"] is None:
+        raise BudgetError("external-progress-gate-requires-goal-id")
     rid = data["request_id"]
     digest = _fingerprint(data)
     if rid in state["calls"]:

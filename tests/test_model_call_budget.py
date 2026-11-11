@@ -278,28 +278,36 @@ class CallBudgetTests(unittest.TestCase):
         self.assertEqual(settle(settlement("r-4", DIGEST), self.state)["no_progress_turns"], 0)
 
     def test_no_duplicate_goal_stop_when_canonical_host_progress_is_verified(self) -> None:
+        def goal_request(rid: str, inp: int = 1200) -> dict:
+            value = request(rid, inp=inp)
+            value["goal_id"] = "goal-a"
+            return value
+
         for i in range(3):
             rid = "stalled-" + str(i)
-            self.assertEqual(reserve(request(rid), self.state, POLICY)["status"], "allow")
+            self.assertEqual(reserve(goal_request(rid), self.state, POLICY)["status"], "allow")
             settle(settlement(rid), self.state)
         # Standalone provider-neutral budget guard keeps its original anti-stall gate.
-        self.assertEqual(reserve(request("standalone-next"), self.state, POLICY)["reason"],
+        self.assertEqual(reserve(goal_request("standalone-next"), self.state, POLICY)["reason"],
                          "no-progress-replan-required")
         # Trusted host checks exact canonical Execution Policy before delegating
         # progress authority. This does NOT delegate safety/context/idempotency.
-        allowed = reserve(request("canonical-next"), self.state, POLICY,
+        allowed = reserve(goal_request("canonical-next"), self.state, POLICY,
                           verified_external_progress_gate=True)
         self.assertEqual(allowed["status"], "allow")
         self.assertEqual(allowed["progress_control"], "canonical-host-verified")
         self.assertTrue(allowed["root_no_progress_observed"])
-        self.assertEqual(self.state["no_progress"]["adk|session-1|unattributed"], 3)
-        long = request("canonical-long", inp=200001)
+        self.assertEqual(self.state["no_progress"]["adk|session-1|goal-a"], 3)
+        long = goal_request("canonical-long", inp=200001)
         long["compaction_checked"] = True
         self.assertEqual(reserve(long, self.state, POLICY,
                                  verified_external_progress_gate=True)["reason"],
                          "hard-input-limit")
         with self.assertRaises(BudgetError):
-            reserve(request("invalid-flag"), self.state, POLICY,
+            reserve(request("unattributed"), self.state, POLICY,
+                    verified_external_progress_gate=True)
+        with self.assertRaises(BudgetError):
+            reserve(goal_request("invalid-flag"), self.state, POLICY,
                     verified_external_progress_gate=1)
 
     def test_canonical_progress_delegation_cannot_replay_identical_context(self) -> None:
