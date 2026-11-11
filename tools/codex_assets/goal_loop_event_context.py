@@ -8,6 +8,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import os
 import re
 import stat
@@ -19,6 +20,9 @@ CURSOR_SCHEMA = "llm-agent-goal-loop-cursor/v1"
 PLAN_SCHEMA = "llm-agent-goal-loop-context-plan/v1"
 EXPERIMENT_SCHEMA = "llm-agent-goal-loop-comparison-set/v1"
 REPORT_SCHEMA = "llm-agent-goal-loop-comparison/v1"
+TRACE_SCHEMA = "llm-agent-goal-loop-usage-trace/v1"
+TRACE_REPORT_SCHEMA = "llm-agent-goal-loop-attribution/v1"
+MAX_TRACE_BYTES = 4 * 1024 * 1024
 ID = re.compile(r"[A-Za-z0-9_.:/-]{1,96}\Z")
 SHA40 = re.compile(r"[0-9a-f]{40}\Z")
 SHA64 = re.compile(r"[0-9a-f]{64}\Z")
@@ -41,7 +45,7 @@ def _pairs(items: list[tuple[str, Any]]) -> dict[str, Any]:
     return out
 
 
-def _read(path: Path) -> dict[str, Any]:
+def _read(path: Path, *, max_bytes: int = MAX_FILE) -> dict[str, Any]:
     if path.is_symlink():
         raise PreflightError("symlink-input")
     try:
@@ -49,10 +53,10 @@ def _read(path: Path) -> dict[str, Any]:
         with os.fdopen(fd, "rb") as handle:
             if not stat.S_ISREG(os.fstat(handle.fileno()).st_mode):
                 raise PreflightError("non-regular-input")
-            raw = handle.read(MAX_FILE + 1)
+            raw = handle.read(max_bytes + 1)
     except OSError as exc:
         raise PreflightError("unreadable-input") from exc
-    if not raw or len(raw) > MAX_FILE:
+    if not raw or len(raw) > max_bytes:
         raise PreflightError("input-size-invalid")
     try:
         value = json.loads(raw.decode("utf-8"), object_pairs_hook=_pairs,
@@ -353,12 +357,103 @@ def compare_trials(baseline: dict[str, Any], candidate: dict[str, Any]) -> dict[
     }
 
 
+
+def attribute_usage(value: dict[str, Any]) -> dict[str, Any]:
+    """Reconcile host-tokenized segments to provider-reported input tokens.
+
+    This is observational. Provider hidden tokens and tokenizer mismatch remain
+    explicit unattributed input rather than fabricated category savings.
+    """
+    data = _fields(value, {"schema", "source", "tokenizer_verified", "requests"}, "usage-trace")
+    if data["schema"] != TRACE_SCHEMA or data["source"] != "provider-usage":
+        raise PreflightError("usage-source-invalid")
+    if type(data["tokenizer_verified"]) is not bool:
+        raise PreflightError("tokenizer-trust-invalid")
+    rows = data["requests"]
+    if not isinstance(rows, list) or not 0 < len(rows) <= 10000:
+        raise PreflightError("usage-requests-count-invalid")
+    allowed = {"rules", "tool_schemas", "history", "tool_results",
+               "project_source", "goal_state", "current_delta", "other"}
+    count: dict[str, int] = {key: 0 for key in allowed}
+    seen: set[str] = set()
+    workflow_counts: dict[str, dict[str, int]] = {}
+    inputs: list[int] = []
+    total_input = total_cached = total_output = unknown = zero_output = 0
+    for entry in rows:
+        r = _fields(entry, {"request_id", "workflow_id", "goal_id", "input_tokens",
+                            "cached_input_tokens", "output_tokens", "segments"}, "usage-request")
+        req_id = _id(r["request_id"], "request-id")
+        workflow = _id(r["workflow_id"], "workflow-id")
+        if r["goal_id"] is not None:
+            _id(r["goal_id"], "goal-id")
+        if req_id in seen:
+            raise PreflightError("duplicate-request-id")
+        seen.add(req_id)
+        inp = _int(r["input_tokens"], "input_tokens")
+        cached = _int(r["cached_input_tokens"], "cached_input_tokens")
+        output = _int(r["output_tokens"], "output_tokens")
+        if not 0 < inp or cached > inp:
+            raise PreflightError("usage-counters-invalid")
+        if not isinstance(r["segments"], list) or len(r["segments"]) > len(allowed):
+            raise PreflightError("usage-segments-invalid")
+        subtotal = 0
+        kinds: set[str] = set()
+        for piece in r["segments"]:
+            part = _fields(piece, {"kind", "tokens"}, "usage-segment")
+            kind = part["kind"]
+            if kind not in allowed or kind in kinds:
+                raise PreflightError("usage-segment-kind-invalid")
+            kinds.add(kind)
+            n = _int(part["tokens"], "segment-tokens")
+            count[kind] += n
+            subtotal += n
+        if subtotal > inp:
+            raise PreflightError("segments-exceed-provider-input")
+        unknown += inp - subtotal
+        total_input += inp
+        total_cached += cached
+        total_output += output
+        zero_output += (output == 0)
+        inputs.append(inp)
+        item = workflow_counts.setdefault(workflow, {"calls": 0, "input_tokens": 0, "output_tokens": 0})
+        item["calls"] += 1
+        item["input_tokens"] += inp
+        item["output_tokens"] += output
+    ordered = sorted(inputs)
+    def percentile(fraction: float) -> int:
+        return ordered[max(0, math.ceil(fraction * len(ordered)) - 1)]
+    by_type = [
+        {"category": key, "tokens": val, "share_of_input_pct": round(val * 100 / total_input, 2)}
+        for key, val in sorted(count.items(), key=lambda pair: (-pair[1], pair[0]))
+    ]
+    top = [
+        {"workflow_id": key, **item}
+        for key, item in sorted(workflow_counts.items(), key=lambda pair: (-pair[1]["input_tokens"], pair[0]))[:10]
+    ]
+    return {
+        "schema": TRACE_REPORT_SCHEMA, "status": "observed-not-provider-certified",
+        "attribution_status": "COMPLETE" if data["tokenizer_verified"] and unknown == 0 else "PARTIAL",
+        "requests": len(rows), "input_tokens": total_input,
+        "cached_input_tokens": total_cached, "output_tokens": total_output,
+        "cache_hit_pct": round(100 * total_cached / total_input, 2),
+        "mean_input_tokens": round(total_input / len(rows), 2),
+        "median_input_tokens": percentile(0.5), "p95_input_tokens": percentile(0.95),
+        "over_272k_calls": sum(1 for x in inputs if x > 272000),
+        "zero_output_calls": zero_output, "unattributed_input_tokens": unknown,
+        "input_breakdown": by_type, "top_workflows": top,
+        "workflow_count": len(workflow_counts), "raw_messages_included": False,
+        "daily_cost_hard_limit": False, "owns_goal_completion": False,
+    }
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     choices = parser.add_subparsers(dest="command", required=True)
     preflight = choices.add_parser("preflight")
     preflight.add_argument("--snapshot", type=Path, required=True)
     preflight.add_argument("--previous", type=Path)
+    trace = choices.add_parser("attribute")
+    trace.add_argument("--trace", type=Path, required=True)
     comparison = choices.add_parser("compare")
     comparison.add_argument("--baseline", type=Path, required=True)
     comparison.add_argument("--candidate", type=Path, required=True)
@@ -366,6 +461,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         if args.command == "preflight":
             response = build_plan(_read(args.snapshot), _read(args.previous) if args.previous else None)
+        elif args.command == "attribute":
+            response = attribute_usage(_read(args.trace, max_bytes=MAX_TRACE_BYTES))
         else:
             response = compare_trials(_read(args.baseline), _read(args.candidate))
     except (PreflightError, OSError, ValueError, KeyError) as exc:

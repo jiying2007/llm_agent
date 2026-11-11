@@ -122,6 +122,54 @@ python3 -m tools.codex_assets.goal_loop_event_context \
 返回 `candidate_for_review=true` **只表示可提交进一步审核**，不是 release、Goal 完成、
 生产效果证据或真实网关部署。不存在任何用户隐式背景任务或轮询。
 
+## 请求级输入构成归因（先测再优化）
+
+有真实模型 Host 时，建议将**供应商实际 usage** 与 Host 的逐段 tokenizer
+计数统一成不含 prompt 的一份小型 trace。新命令处理最多 1 万条、4 MiB 的纯数字元数据，
+即使像 11 月 9 日那样有 3,669 次调用，也只返回一份简短汇总。
+没有来源可信的逐段计量，则不能把该天约 820M Token 强行分摊到某个 Skill 或日志文件。
+
+~~~json
+{
+  "schema": "llm-agent-goal-loop-usage-trace/v1",
+  "source": "provider-usage",
+  "tokenizer_verified": true,
+  "requests": [
+    {
+      "request_id": "req-1",
+      "workflow_id": "research",
+      "goal_id": "goal-1",
+      "input_tokens": 50000,
+      "cached_input_tokens": 48000,
+      "output_tokens": 500,
+      "segments": [
+        {"kind": "rules", "tokens": 2000},
+        {"kind": "tool_schemas", "tokens": 3000},
+        {"kind": "history", "tokens": 40000},
+        {"kind": "current_delta", "tokens": 4000}
+      ]
+    }
+  ]
+}
+~~~
+
+~~~bash
+python3 -m tools.codex_assets.goal_loop_event_context \
+  attribute --trace /safe/meta/provider-usage.json
+~~~
+
+支持的分段是 rules、tool_schemas、history、tool_results、project_source、
+goal_state、current_delta、other。分段相加不得大于 provider 输入；
+差额保留为 unattributed_input_tokens，不能凭空“分配”给历史或缓存。
+tokenizer 未验证、存在差额时 attribution_status=PARTIAL。
+统计每工作流输入总量、缓存比例、p50/p95、>272K 次数、零输出次数与最大构成。
+这里的 272K 是**用户所提供渠道账单的观察口径**，不是所有模型通用的计价规则，也不是拒绝阈值。
+
+缓存策略依据实际 provider API 能力评审：稳定系统/工具前缀在前，增量证据在后；
+新模型支持的显式缓存断点与延迟工具加载，需要先通过目标 provider 支持性和
+同任务成本/正确性对照，再配置。不可频繁压缩而让 97.6% 的既有缓存优势全部失效。
+不传入未经验证的新参数，不借优化改变审批、安全和完整验收。
+
 ## 本地和 CI 验证
 
 ```bash

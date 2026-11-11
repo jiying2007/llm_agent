@@ -10,7 +10,7 @@ import unittest
 from pathlib import Path
 
 from tools.codex_assets.goal_loop_event_context import (
-    PreflightError, build_plan, compare_trials, _read,
+    PreflightError, build_plan, compare_trials, attribute_usage, _read,
 )
 
 A, B, C = "a" * 64, "b" * 64, "c" * 64
@@ -201,6 +201,74 @@ class PairedTests(unittest.TestCase):
         self.cand["tasks"][0]["prompt"] = "secret"
         with self.assertRaises(PreflightError):
             compare_trials(self.base, self.cand)
+
+
+def metered_request(n: int, total: int = 10000) -> dict:
+    return {
+        "request_id": "request-" + str(n), "workflow_id": "goal-loop",
+        "goal_id": "research", "input_tokens": total,
+        "cached_input_tokens": total - 100, "output_tokens": 100,
+        "segments": [{"kind": "history", "tokens": total - 1000},
+                     {"kind": "current_delta", "tokens": 1000}],
+    }
+
+
+class AttributionTests(unittest.TestCase):
+    def test_real_usage_shape_and_3669_call_bounded_summary(self) -> None:
+        trace = {
+            "schema": "llm-agent-goal-loop-usage-trace/v1",
+            "source": "provider-usage", "tokenizer_verified": True,
+            "requests": [metered_request(i) for i in range(3669)],
+        }
+        result = attribute_usage(trace)
+        self.assertEqual(result["attribution_status"], "COMPLETE")
+        self.assertEqual(result["requests"], 3669)
+        self.assertEqual(result["input_tokens"], 36690000)
+        self.assertEqual(result["input_breakdown"][0]["category"], "history")
+        self.assertEqual(result["workflow_count"], 1)
+        self.assertLess(len(json.dumps(result)), 5000)
+        self.assertFalse(result["daily_cost_hard_limit"])
+
+    def test_unassigned_input_never_credited_to_a_category(self) -> None:
+        trace = {
+            "schema": "llm-agent-goal-loop-usage-trace/v1",
+            "source": "provider-usage", "tokenizer_verified": True,
+            "requests": [metered_request(0, 280000)],
+        }
+        trace["requests"][0]["segments"] = [{"kind": "history", "tokens": 200000}]
+        result = attribute_usage(trace)
+        self.assertEqual(result["attribution_status"], "PARTIAL")
+        self.assertEqual(result["unattributed_input_tokens"], 80000)
+        self.assertEqual(result["over_272k_calls"], 1)
+
+    def test_trace_bad_counts_duplicates_and_prompt_injection_rejected(self) -> None:
+        base = {
+            "schema": "llm-agent-goal-loop-usage-trace/v1",
+            "source": "provider-usage", "tokenizer_verified": True,
+            "requests": [metered_request(0)],
+        }
+        for mutated in (
+            {"requests": [metered_request(0), metered_request(0)]},
+            {"requests": [dict(metered_request(0), input_tokens=None)]},
+            {"requests": [dict(metered_request(0), prompt="SECRET")]},
+            {"requests": [dict(metered_request(0), cached_input_tokens=999999)]},
+            {"source": "model-inferred"},
+        ):
+            with self.subTest(mutated=mutated):
+                item = copy.deepcopy(base)
+                item.update(mutated)
+                with self.assertRaises(PreflightError):
+                    attribute_usage(item)
+
+    def test_mismatched_segment_counts_are_rejected(self) -> None:
+        trace = {
+            "schema": "llm-agent-goal-loop-usage-trace/v1",
+            "source": "provider-usage", "tokenizer_verified": True,
+            "requests": [metered_request(0)],
+        }
+        trace["requests"][0]["segments"] = [{"kind": "history", "tokens": 20000}]
+        with self.assertRaises(PreflightError):
+            attribute_usage(trace)
 
 
 class CliTests(unittest.TestCase):
