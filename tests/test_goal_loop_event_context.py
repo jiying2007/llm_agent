@@ -74,6 +74,11 @@ class PreflightTests(unittest.TestCase):
                 result = build_plan(high)
                 self.assertEqual(result["action"], "needs-review")
                 self.assertFalse(result["model_invocation_required"])
+                critical = snapshot(kind, action="model", items=[evidence(1, priority="critical")])
+                flagged = build_plan(critical)
+                self.assertEqual(flagged["action"], "needs-review")
+                self.assertEqual(flagged["reason"], "wait-event-requires-review")
+                self.assertFalse(flagged["model_invocation_required"])
 
         # Genuine material events can still request semantic reasoning.
         for kind in ("user_updated", "ci_failed", "source_changed"):
