@@ -71,6 +71,15 @@ CLI 不提供可自批的高价例外。高风险权限/签名/迁移等证据�
 
 真实 Host 在调用 `reserve` 前，应先使用 [Goal/Loop 事件预检](goal-loop-token-efficiency.md) 判断当前是否需要模型；如果预检返回 `skip-model`、`run-tool` 或 `run-verification`，不要为了形成一条调用记录而额外发起模型请求。`needs-review` 不能被当作 `skip-model`。原始事件证据与 cursor 由 Host 核验和保存，不进入模型历史。
 
+## 与原生 Goal/Execution Policy 的单一收敛权威
+
+该模块仍是可信 Host 的**逐模型调用**安全/上下文保护，不拥有 Goal 权限或原验收的终态决策。
+- **独立接入、无原生 Goal Engine**：`reserve` 默认的 3 轮无新增证据 `hold` 继续生效，防止盲目重发。
+- **已验证的原生 Execution Policy**：只有真正可信的 Host 在同一 Goal/Thread 上独立核验了 canonical progress gate，且请求携带非空、已核实的 `goal_id`，该 gate 明确允许本次执行，才可通过 Python API `reserve(..., verified_external_progress_gate=True)` 将收敛控制委托给唯一引擎。该布尔值不是模型声明，也不是普通 CLI 开关；不表示 release、安全、合规或人工许可。
+- 委托**仅**避免重复的 no-progress stop；相同完整上下文 SHA、请求 ID 幂等、单次 96K/128K/200K 上下文保护、必要原文审核和真实 Host 权限依然生效。可在响应中的 `progress_control` 与 `root_no_progress_observed` 核对来源。无受信原生 gate 时不得声称已委托。
+- 静态 200K 是当前未接入时的保守保护值，不代表所有模型物理上下文窗口；真正 Host 尚未获证时不得任意放宽。校准需核对 provider 对应模型实际上下文窗口、保留输出和提示缓存行为及 A/B 验收。
+- 两层的成本和目标收敛状态应当区分；绝不通过日费用/总调用数硬限停止有效 Goal。
+
 ## Goal / Loop 的高效率执行协议
 
 1. **一目标一状态**：先读当前 Goal、验收 ID、受影响文件与最后 checkpoint（目标状态建议 ≤8 KiB）。长历史、全量日志、旧对话不自动注入；按需查原始证据指针。
