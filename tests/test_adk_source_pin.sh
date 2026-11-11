@@ -58,7 +58,7 @@ with tempfile.TemporaryDirectory(prefix="adk-single-pin-") as tmp:
     git(adk, "init", "-q")
     git(adk, "config", "user.name", "Fixture")
     git(adk, "config", "user.email", "fixture@example.invalid")
-    (adk / "manifest.json").write_text('{"version":"9.2.1"}\n', encoding="utf-8")
+    (adk / "manifest.json").write_text('{\n  "version": "9.2.1"\n}\n', encoding="utf-8")
     git(adk, "add", "manifest.json")
     git(adk, "commit", "-qm", "fixture adk")
     commit = git(adk, "rev-parse", "HEAD")
@@ -144,7 +144,12 @@ with tempfile.TemporaryDirectory(prefix="adk-single-pin-") as tmp:
     archive = root / "agent-dev-kit-9.2.1.tar.gz"
     archive.write_bytes(b"fixture immutable release archive")
     artifact_sha = hashlib.sha256(archive.read_bytes()).hexdigest()
-    manifest_sha = hashlib.sha256((adk / "manifest.json").read_bytes()).hexdigest()
+    manifest_source = (adk / "manifest.json").read_bytes()
+    manifest_data = json.loads(manifest_source.decode("utf-8"))
+    manifest_sha = hashlib.sha256(
+        (json.dumps(manifest_data, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")
+    ).hexdigest()
+    assert manifest_sha != hashlib.sha256(manifest_source).hexdigest(), "fixture must distinguish canonical from raw hash"
     contract = {
         "schema": "adk-release-artifact-contract-set/v1", "status": "pass",
         "artifacts": [{
@@ -171,6 +176,9 @@ with tempfile.TemporaryDirectory(prefix="adk-single-pin-") as tmp:
     invalid = json.loads(json.dumps(contract))
     invalid["artifacts"][0]["manifest_sha256"] = "0" * 64
     expect_fail(lambda: verify_native_release_contract(root, identity, archive, invalid, released), "wrong manifest hash")
+    invalid = json.loads(json.dumps(contract))
+    invalid["artifacts"][0]["manifest_sha256"] = hashlib.sha256(manifest_source).hexdigest()
+    expect_fail(lambda: verify_native_release_contract(root, identity, archive, invalid, released), "raw hash is not canonical")
     invalid = json.loads(json.dumps(contract))
     invalid["artifacts"][0]["release_eligible"] = False
     expect_fail(lambda: verify_native_release_contract(root, identity, archive, invalid, released), "ineligible artifact")
