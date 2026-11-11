@@ -252,7 +252,7 @@ jobs:
           mkdir -p "$RUNNER_TEMP/ripgrep-bin"
           tar -xzf "$RUNNER_TEMP/$asset" -C "$RUNNER_TEMP/ripgrep-bin" \
             --strip-components=1 "ripgrep-14.1.1-x86_64-unknown-linux-musl/rg"
-          test "$("$RUNNER_TEMP/ripgrep-bin/rg" --version | head -n 1)" = "ripgrep 14.1.1"
+          "$RUNNER_TEMP/ripgrep-bin/rg" --version | grep -Eq '^ripgrep 14[.]1[.]1([[:space:]]|$)'
           echo "$RUNNER_TEMP/ripgrep-bin" >> "$GITHUB_PATH"
 
       - name: Install root regression dependencies
