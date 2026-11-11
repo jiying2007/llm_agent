@@ -88,7 +88,7 @@ Root 控制面的统一 Python 入口是 `llm-ctl`（`pyproject.toml`）；GitHu
 - **`agent-dev-kit` 是 Root 当前 managed source dependency；`codex` gitlink 仅保留 frozen evidence/replay identity。** 当前 Codex CLI 活动 source 始终是外部 `~/codex`，再经 build/plan/apply 到 `~/.codex`。不得通过推进 Root 内 `codex` gitlink 来替代活动 runtime source 更新。OpenSpec、digital-worker、superpowers、vibeflow 等研究/试点仓只保留 exact reference pin，并按需物化到用户 cache。
 - reference pin 是 evidence identity，不是 runtime enablement，也不允许递归 checkout 重新引入 Root source dependency。
 - 不把第三方参考资产或 ADK 导出资产直接复制进 `~/.codex`；必须先进入 `~/codex` 的源资产与 manifest 治理链路。
-- `agent-dev-kit/manifest.json` 是 ADK 唯一结构化 Manifest SSOT；当前跨仓身份由 Git 子模块提交唯一确定，`adk.lock` 只是被校验的兼容投影，不维护平行 Manifest 镜像。
+- `agent-dev-kit/manifest.json` 是 ADK 唯一结构化 Manifest SSOT；当前跨仓身份由 Git 子模块提交唯一确定，`adk.lock` 改为忽略的、从 Git 提交确定性生成的消费缓存；不再提交第二份版本锁，不维护平行 Manifest 镜像。
 - direct target 安装必须先生成 plan，再 apply 并保留 receipt；回滚拒绝已漂移的托管资产。
 - 仓库不提供自动吸收写入口；静态分析不能直接修改 adoption matrix 或 ADK。
 - 没有命令证据，不声明“完成”“可发布”“可在生产使用”。

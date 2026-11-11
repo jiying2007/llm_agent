@@ -1,5 +1,4 @@
 # Cross-repository identity, release and governance contracts require owner review.
-/adk.lock @jiying2007
 /agent-dev-kit @jiying2007
 /manifests/gates.json @jiying2007
 /manifests/gitlinks.json @jiying2007

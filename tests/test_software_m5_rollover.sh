@@ -46,11 +46,11 @@ assert (root / "reports/field-evidence/software-m5-independent-pilot-start-2026-
 PY
 echo "[INFO] rollover baseline assertions PASS" >&2
 
-if ! python3 "$ROOT/tests/m5_snapshot_fixture.py" "$ROOT" "$GOOD"; then
+if ! python3 "$ROOT/tests/m5_snapshot_fixture.py" "$ROOT" "$GOOD" --include-derived-adk-cache; then
   echo "[FAIL] failed to copy GOOD rollover fixture" >&2
   exit 1
 fi
-if ! python3 "$ROOT/tests/m5_snapshot_fixture.py" "$ROOT" "$BAD"; then
+if ! python3 "$ROOT/tests/m5_snapshot_fixture.py" "$ROOT" "$BAD" --include-derived-adk-cache; then
   echo "[FAIL] failed to copy BAD rollover fixture" >&2
   exit 1
 fi

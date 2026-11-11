@@ -5,10 +5,10 @@
     "unknown_gitlink_forbidden": true,
     "all_gitlinks_must_be_submodules": true,
     "submodule_path_must_be_registered": true,
-    "managed_dependency_requires_lock": true,
     "reference_repositories_must_use_reference_pins": true,
     "opaque_pins_registry": "manifests/reference_pins.json",
-    "frozen_evidence_dependency_requires_lock": true
+    "frozen_evidence_dependency_requires_lock": true,
+    "managed_dependency_identity": "indexed-gitlink"
   },
   "gitlinks": [
     {
@@ -16,7 +16,7 @@
       "kind": "managed-dependency",
       "required": true,
       "url": "https://github.com/jiying2007/agent-dev-kit.git",
-      "lock": "adk.lock"
+      "identity_source": "indexed-gitlink"
     },
     {
       "path": "codex",

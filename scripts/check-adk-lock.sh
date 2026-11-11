@@ -29,7 +29,25 @@ lock_value() {
   awk -F'=' -v key="$key" '$1 == key {print $2; exit}' "${LOCK}"
 }
 
-[[ -f "${LOCK}" ]] || fail "missing adk.lock"
+# Pure Git index verification also works in a read-only, uninitialized
+# checkout (e.g. source-hygiene gate fixtures). This never asserts manifest,
+# release, or product qualification. Those checks require the real submodule.
+if [[ "${PIN_ONLY}" -eq 1 && ! -f "${LOCK}" && ! -f "${MANIFEST_JSON}" ]]; then
+  record="$(git -C "${ROOT}" ls-files -s -- agent-dev-kit)" || fail "ADK gitlink cannot be inspected"
+  [[ "${record}" =~ ^160000[[:space:]]+([0-9a-f]{40})[[:space:]]+0[[:space:]]+agent-dev-kit$ ]] \
+    || fail "ADK gitlink is not an exact stage-0 commit"
+  echo "[PASS] ADK indexed gitlink ${BASH_REMATCH[1]} (source-only, checkout unavailable, release unqualified)"
+  exit 0
+fi
+
+if [[ ! -f "${LOCK}" ]]; then
+  [[ -f "${ROOT}/agent-dev-kit/manifest.json" ]] || fail "initialize the pinned agent-dev-kit submodule before hydrating its metadata cache"
+  PYTHONPATH="${ROOT}${PYTHONPATH:+:${PYTHONPATH}}" \
+    python3 -m tools.control_plane.adk_interface --source-pin --materialize-lock --root "${ROOT}" \
+      --summary-json >/dev/null || fail "cannot derive the ADK cache from its exact Git pin"
+fi
+[[ ! -L "${LOCK}" && -f "${LOCK}" ]] || fail "missing or unsafe derived ADK source cache"
+
 
 schema="$(lock_value "schema")"
 locked_version="$(lock_value "agent-dev-kit.version")"

@@ -38,6 +38,9 @@ USAGE
 done
 
 export PYTHONPATH="$SCRIPT_ROOT${PYTHONPATH:+:$PYTHONPATH}"
+if [[ ! -f "${ROOT}/adk.lock" ]]; then
+  python3 -m tools.control_plane.adk_interface --source-pin --materialize-lock --root "${ROOT}" --summary-json >/dev/null
+fi
 
 python3 - "$ROOT" "$SUMMARY_JSON" "$WORKTREE_INTEGRATION" <<'PY'
 from __future__ import annotations

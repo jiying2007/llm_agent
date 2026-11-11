@@ -74,7 +74,7 @@ REVIEW_FILES = ("state.yaml", "checklist.md", "verify-report.md", "requirements.
                 "design.md", "proposal.md", "tasks.md", "negative-results.md", "review-report.md",
                 "review-evidence.json", "provenance.md")
 KEY_INPUTS = (
-    "adk.lock", "manifests/long_term_asset_qualification.json",
+    "manifests/long_term_asset_qualification.json",
     "manifests/software_m5_policy.json", "manifests/software_m5_pilot_ledger.json",
     "manifests/product_maturity_scorecard.json", "reports/current-status.md",
     "reports/field-evidence/software-m5-v5-events.jsonl",
@@ -433,81 +433,47 @@ def _archive_provenance(location: Path, change: str, review: dict[str, Any]) -> 
 
 
 def _frozen_archive_root_pin_matches_committed_head(root: Path, adk: Path) -> bool:
-    """Never substitute staged Root gitlink/locks for the committed authority.
+    """Anchor review authority to the *committed* Root gitlink and exact ADK blobs.
 
-    This supplements the delegated review bridge, which deliberately compares
-    the ADK HEAD against the mutable Root index. Historical stale classification
-    additionally requires committed Root HEAD/index, the remaining source
-    projection lock, and exact ADK HEAD/tree/manifest identities to agree.
+    A generated compatibility metadata file is never evidence of source
+    authenticity. Both Root index/HEAD and ADK worktree/index/HEAD must agree.
     """
     def git(directory: Path, *args: str) -> bytes:
         completed = run_bounded(
             ("git", "-C", str(directory), *args), cwd=root,
-            # The pinned ADK 8.1.2 manifest is >64 KiB; cap actual bytes
-            # without truncation or assuming a small historical manifest.
             timeout=8, max_stdout=256 * 1024, max_stderr=1024,
         )
         if completed.returncode != 0:
             raise RuntimeError("committed ADK source pin cannot be verified")
         return completed.stdout
 
-    def blob_id(raw: bytes) -> bytes:
+    def git_blob_id(raw: bytes) -> bytes:
         return hashlib.sha1(
             b"blob " + str(len(raw)).encode("ascii") + b"\0" + raw,
             usedforsecurity=False,
         ).hexdigest().encode("ascii")
 
     try:
-        committed_pin = git(root, "rev-parse", "--verify", "HEAD:agent-dev-kit").strip()
-        adk_head = git(adk, "rev-parse", "--verify", "HEAD").strip()
+        committed = git(root, "rev-parse", "--verify", "HEAD:agent-dev-kit").strip()
+        child_head = git(adk, "rev-parse", "--verify", "HEAD").strip()
         index_pin = git(root, "ls-files", "--stage", "-z", "--", "agent-dev-kit")
-        if (re.fullmatch(rb"[0-9a-f]{40}", committed_pin) is None
-                or adk_head != committed_pin
-                or index_pin != b"160000 " + committed_pin + b" 0\tagent-dev-kit\0"):
+        if (re.fullmatch(rb"[0-9a-f]{40}", committed) is None
+                or child_head != committed
+                or index_pin != b"160000 " + committed + b" 0\tagent-dev-kit\0"):
             return False
-
-        root_inputs: dict[str, bytes] = {}
-        for name in ("adk.lock",):
-            committed_blob = git(root, "rev-parse", "--verify", "HEAD:" + name).strip()
-            stage = git(root, "ls-files", "--stage", "-z", "--", name)
-            if (re.fullmatch(rb"[0-9a-f]{40}", committed_blob) is None
-                    or stage != b"100644 " + committed_blob + b" 0\t" + name.encode() + b"\0"):
-                return False
-            raw = read_bytes(root / name, label="pinned Root ADK source lock", max_bytes=64 * 1024)
-            if blob_id(raw) != committed_blob:
-                return False
-            root_inputs[name] = raw
-
-        lock: dict[str, str] = {}
-        for line in root_inputs["adk.lock"].decode("utf-8", errors="strict").splitlines():
-            if "=" not in line:
-                return False
-            key, value = line.split("=", 1)
-            if not key or key in lock:
-                return False
-            lock[key] = value
-        manifest = decode_json(git(adk, "show", "HEAD:manifest.json"),
-                               "committed ADK manifest")
-        if not isinstance(manifest, dict):
+        tree = git(adk, "rev-parse", "--verify", "HEAD^{tree}").strip()
+        blob = git(adk, "rev-parse", "--verify", "HEAD:manifest.json").strip()
+        index_manifest = git(adk, "ls-files", "--stage", "-z", "--", "manifest.json")
+        if (re.fullmatch(rb"[0-9a-f]{40}", tree) is None
+                or re.fullmatch(rb"[0-9a-f]{40}", blob) is None
+                or index_manifest != b"100644 " + blob + b" 0\tmanifest.json\0"):
             return False
-        version = manifest.get("version")
-        adk_tree = git(adk, "rev-parse", "--verify", "HEAD^{tree}").strip()
-        manifest_blob = git(adk, "rev-parse", "--verify", "HEAD:manifest.json").strip()
-        if (lock.get("schema") != "llm-agent-adk-lock/v2"
-                or not isinstance(version, str) or not version
-                or re.fullmatch(rb"[0-9a-f]{40}", adk_tree) is None
-                or re.fullmatch(rb"[0-9a-f]{40}", manifest_blob) is None):
+        raw_manifest = read_bytes(adk / "manifest.json", label="committed ADK manifest",
+                                  max_bytes=256 * 1024)
+        if git_blob_id(raw_manifest) != blob:
             return False
-        identity = {
-            "version": version,
-            "commit": adk_head.decode("ascii"),
-            "tree": adk_tree.decode("ascii"),
-            "manifest_blob": manifest_blob.decode("ascii"),
-        }
-        for key, value in identity.items():
-            if lock.get("agent-dev-kit." + key) != value:
-                return False
-        return True
+        manifest = decode_json(raw_manifest, "committed ADK manifest")
+        return isinstance(manifest, dict) and isinstance(manifest.get("version"), str) and bool(manifest["version"])
     except (OSError, RuntimeError, ValueError, UnicodeError):
         return False
 

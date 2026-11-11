@@ -13,6 +13,13 @@ if ! python3 -c 'import yaml, jsonschema' >/dev/null 2>&1; then
   exit 2
 fi
 
+# Recreate the deterministic, ignored ADK compatibility view from Git identity
+# before any test reads it. The checkout is the only version authority.
+python3 -m tools.control_plane.adk_interface --source-pin --materialize-lock --root "$ROOT_DIR" --summary-json >/dev/null || {
+  echo "[FAIL] cannot hydrate exact pinned ADK source cache" >&2
+  exit 2
+}
+
 VERBOSE=0
 FAIL_FAST=0
 TIMING_JSON=""

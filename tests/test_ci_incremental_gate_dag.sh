@@ -32,7 +32,7 @@ contract_job = github.split("\n  contract:\n", 1)[1].split("\n  doc-sync:\n", 1)
 integration_job = github.split("\n  integration:\n", 1)[1].split("\n  integration-summary:\n", 1)[0]
 for job in (contract_job, integration_job):
     assert "          cache: pip" in job, "pinned pip download cache must be enabled"
-    assert "            pyproject.toml" in job and "            adk.lock" in job, "cache key must include exact dependency source"
+    assert "            pyproject.toml" in job and "            .gitmodules" in job, "cache key must include exact dependency source"
 # Only dependency download caching is permitted: never cache signed receipts, tests, or results.
 
 # The Git comparison must fail closed rather than reclassifying unavailable
@@ -170,9 +170,9 @@ readme = impact("README.md")
 assert readme["required"] is False, readme
 assert "active-contracts" in readme["direct_gates"], readme
 
-adk = impact("adk.lock")
+adk = impact("agent-dev-kit")
 assert adk["required"] is True, adk
-assert {"adk-pin", "adk-interface", "runtime-chain-pin"}.issubset(adk["group_gates"]), adk
+assert {"adk-pin", "adk-interface", "runtime-chain-pin"}.issubset(set(adk["group_gates"]) | set(adk["downstream_group_gates"])), adk
 
 adk_gitlink = impact("agent-dev-kit")
 assert adk_gitlink["required"] is True and "adk-pin" in adk_gitlink["group_gates"], adk_gitlink

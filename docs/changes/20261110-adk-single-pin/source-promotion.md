@@ -13,7 +13,7 @@ git diff --cached --check
 git diff --cached --name-status
 ```
 
-3. The staging transaction changes only `agent-dev-kit`, `adk.lock`, `manifests/adk_interface.lock.json`, and `reports/current-status.md`, then validates pin consistency and source projection. It does **not** copy new upstream CI promotion-evidence.json or Sigstore bundle into Root.
+3. The staging transaction changes only `agent-dev-kit` and `reports/current-status.md`, then validates pin consistency and source projection. It does **not** copy new upstream CI promotion-evidence.json or Sigstore bundle into Root.
 4. Commit and open a protected PR. On an ADK Gitlink change, the existing Root `integration-deep` workflow checks the *immutable release* archive SHA-256, release contract and native GitHub attestation bound to the exact ADK commit/source-ref and approved signer workflow. CI must be green; source-only staging cannot claim publication.
 
 ## Safety and proof boundaries
@@ -21,4 +21,4 @@ git diff --cached --name-status
 - Source-only result status is `staged-not-verified`, `release_authorized=false`, `verification_model=immutable-release-ci-required`. This is not a signed receipt.
 - The previously stored Software M5 signed qualification evidence remains independent and untouched. A future M5 requalification still requires its own current, valid signed promotion evidence and measured runtime/field qualification.
 - Pre-staged unrelated edits, non-descendant ADK commits, mismatched child checkout, a failed pin check or broken status projection must cause rollback. The rollback test asserts all four modified paths and the Git index are restored, without rewriting product evidence.
-- During the transition, `adk.lock` and interface-lock are still generated **compatibility projections**, not independent source authorities. Later removal requires moving their remaining consumers and tests to the single Git index identity.
+- During the transition, The old interface lock has been deleted; `adk.lock` is now a Git-ignored, deterministically generated consumer cache from the exact indexed Gitlink. No duplicate lock is committed.

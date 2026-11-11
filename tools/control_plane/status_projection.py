@@ -20,7 +20,7 @@ END_MARKER = "<!-- END GENERATED CURRENT SOURCE PROJECTION -->"
 MAX_LOCK_BYTES = 64 * 1024
 MAX_STATUS_BYTES = 256 * 1024
 PROJECTION_INPUT_PATHS = (
-    "adk.lock",
+    "agent-dev-kit",
     "manifests/gates.json",
     "manifests/product_maturity_scorecard.json",
     "manifests/software_m5_policy.json",
@@ -111,6 +111,14 @@ def _ancestry(root: Path, ancestor: str, descendant: str) -> bool | None:
 def _projection_inputs(root: Path) -> dict[str, str]:
     values: dict[str, str] = {}
     for relative in PROJECTION_INPUT_PATHS:
+        if relative == "agent-dev-kit":
+            # The stage-0 Gitlink commit, not an untracked cache or directory
+            # hash, is the authoritative content identity for this input.
+            index = _git(root, "ls-files", "-s", "--", "agent-dev-kit").split()
+            if len(index) != 4 or index[0] != "160000" or index[2] != "0":
+                raise RuntimeError("ADK projection input must be an exact stage-0 Gitlink")
+            values[relative] = index[1]
+            continue
         path = root / relative
         if not path.is_file():
             raise RuntimeError(f"projection input missing: {relative}")
@@ -208,6 +216,9 @@ def refresh_current_status(root: Path) -> dict[str, str]:
     root = root.resolve()
     status_path = root / "reports/current-status.md"
     existing = _read_status_text(status_path, label="current status", limit=MAX_STATUS_BYTES)
+    if not (root / "adk.lock").is_file():
+        from tools.control_plane.adk_interface import materialize_lock_projection
+        materialize_lock_projection(root)
     lock = _kv(root / "adk.lock")
     digest = _projection_digest(_projection_inputs(root))
     fields = _expected_current_fields(root, lock, digest)
@@ -236,6 +247,9 @@ def project(root: Path, today: dt.date) -> dict[str, Any]:
     if len(index) < 2 or index[0] != "160000":
         raise RuntimeError("agent-dev-kit is not tracked as a gitlink")
     gitlink = index[1]
+    if not (root / "adk.lock").is_file():
+        from tools.control_plane.adk_interface import materialize_lock_projection
+        materialize_lock_projection(root)
     lock = _kv(root / "adk.lock")
     lock_commit = lock.get("agent-dev-kit.commit", "")
     pin_consistent = lock.get("schema") == "llm-agent-adk-lock/v2" and bool(lock_commit) and gitlink == lock_commit
