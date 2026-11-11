@@ -9,6 +9,7 @@
 
 - runbooks/model-call-budget.md — 现有模型调用用量观察与安全边界（无日费用硬限）
 - runbooks/goal-loop-token-efficiency.md — Goal/Loop 事件预检、增量证据与10任务配对评测
+- 现有 `llm-ctl goal-loop` / `llm-ctl goal-efficiency` — 分别输出事件预检与 Goal 状态合并观察（无后台运行）
 
 ## 全局资产文档
 其他文档（quick-start、best-practices、troubleshooting 等）已迁移到 agent-dev-kit/docs/。

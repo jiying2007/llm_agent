@@ -2,11 +2,14 @@
 from __future__ import annotations
 
 import json
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 
 from tools.control_plane.goal_efficiency import ObservationError, observe
+from tools.codex_assets.goal_loop_event_context import build_plan
 
 SHA = "a" * 40
 
@@ -35,6 +38,17 @@ def runtime() -> dict:
         "input_tokens": 400, "output_tokens": 150, "cached_input_tokens": 200,
         "reasoning_tokens": 50, "total_tokens": 600,
     }}
+
+
+def goal_event(kind: str = "ci_pending", action: str = "none") -> dict:
+    return {
+        "schema": "llm-agent-goal-loop-snapshot/v1", "workflow_id": "adk",
+        "goal_id": "EP-293", "phase_id": "CI-review", "risk": "normal",
+        "source_sha": SHA, "plan_sha256": "a" * 64,
+        "state_sha256": "b" * 64, "event_sha256": "c" * 64,
+        "event_kind": kind, "pending_action": action, "observation_complete": True,
+        "evidence": [],
+    }
 
 
 class GoalEfficiencyTests(unittest.TestCase):
@@ -117,6 +131,62 @@ class GoalEfficiencyTests(unittest.TestCase):
                 with self.assertRaises(ObservationError):
                     observe(self.save("state.json", checkpoint()),
                             runtime_state=self.save("runtime.json", state))
+
+    def test_event_preflight_integrated_into_goal_observation(self) -> None:
+        state = self.save("state.json", checkpoint())
+        event = self.save("event.json", goal_event())
+        report = observe(state, event_snapshot=event)
+        self.assertEqual(report["event_preflight"]["status"], "ADVISORY_ONLY")
+        self.assertEqual(report["event_preflight"]["action"], "skip-model")
+        self.assertFalse(report["event_preflight"]["model_invocation_required"])
+        self.assertEqual(report["event_preflight"]["llm_packet"]["goal_id"], "EP-293")
+        self.assertFalse(report["goal_completion_verified"])
+        self.assertNotIn("next_cursor", report["event_preflight"])
+
+        changed = goal_event("ci_failed", "model")
+        report = observe(state, event_snapshot=self.save("failure.json", changed))
+        self.assertEqual(report["event_preflight"]["action"], "invoke-model")
+        prior = build_plan(changed)["next_cursor"]
+        report = observe(state, event_snapshot=self.save("failure2.json", changed),
+                         event_cursor=self.save("cursor.json", prior))
+        self.assertEqual(report["event_preflight"]["action"], "skip-model")
+
+    def test_wrong_goal_and_untrusted_event_cursor_fail_closed(self) -> None:
+        state = self.save("state.json", checkpoint())
+        event = goal_event("ci_failed", "model")
+        event["goal_id"] = "other-goal"
+        with self.assertRaises(ObservationError):
+            observe(state, event_snapshot=self.save("other.json", event))
+
+        event["goal_id"] = "EP-293"
+        event_path = self.save("event.json", event)
+        with self.assertRaises(ObservationError):
+            observe(state, event_cursor=self.save("unattached.json", {}))
+        wrong = build_plan(event)["next_cursor"]
+        wrong["phase_id"] = "other-phase"
+        with self.assertRaises(ValueError):
+            observe(state, event_snapshot=event_path,
+                    event_cursor=self.save("wrong.json", wrong))
+        alias = self.root / "event-link.json"
+        alias.symlink_to(event_path)
+        with self.assertRaises(ObservationError):
+            observe(state, event_snapshot=alias)
+
+    def test_existing_llm_ctl_routes_goal_event_preflight(self) -> None:
+        src = self.save("event-cli.json", goal_event())
+        result = subprocess.run(
+            [sys.executable, "-m", "tools.control_plane.cli",
+             "goal-loop", "preflight", "--snapshot", str(src)],
+            capture_output=True, text=True, check=False,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(json.loads(result.stdout)["action"], "skip-model")
+        result = subprocess.run(
+            [sys.executable, "-m", "tools.control_plane.cli", "goal-efficiency", "--help"],
+            capture_output=True, text=True, check=False,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("--event-snapshot", result.stdout)
 
     def test_bad_adk_checkpoint_and_untrusted_files_rejected(self) -> None:
         for change in ({"schema_version": "adk.current-state/v0"},

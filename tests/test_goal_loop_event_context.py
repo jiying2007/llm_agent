@@ -80,6 +80,38 @@ class PreflightTests(unittest.TestCase):
             self.assertEqual(r["action"], expected)
             self.assertFalse(r["model_invocation_required"])
 
+    def test_acknowledged_identical_tool_and_verify_do_not_replay(self) -> None:
+        for pending in ("tool", "verify"):
+            with self.subTest(pending=pending):
+                event = snapshot(action=pending)
+                first = build_plan(event)
+                self.assertEqual(
+                    first["action"], "run-tool" if pending == "tool" else "run-verification"
+                )
+                # Only a Host-acknowledged completion cursor may be reused.
+                repeated = build_plan(event, first["next_cursor"])
+                self.assertEqual(repeated["action"], "skip-model")
+                self.assertEqual(repeated["reason"], "previously-acknowledged-unchanged-action")
+                changed = copy.deepcopy(event)
+                changed["event_sha256"] = "d" * 64
+                self.assertEqual(build_plan(changed, first["next_cursor"])["action"], first["action"])
+
+    def test_high_risk_deterministic_replay_requires_review(self) -> None:
+        event = snapshot(action="verify", risk="high")
+        prior = build_plan(event)["next_cursor"]
+        next_ = build_plan(event, prior)
+        self.assertEqual(next_["action"], "needs-review")
+        self.assertEqual(next_["reason"], "high-risk-repeated-deterministic-action")
+
+    def test_cursor_fingerprint_and_evidence_must_agree(self) -> None:
+        event = snapshot(kind="ci_failed", action="model", items=[evidence(1)])
+        original = build_plan(event)
+        prior = copy.deepcopy(original["next_cursor"])
+        prior["evidence"][0]["sha256"] = B
+        # A forged matching fingerprint with contradictory evidence cannot
+        # turn a new decision into a skip.
+        self.assertEqual(build_plan(event, prior)["action"], "invoke-model")
+
     def test_unknown_completion_requires_review_not_fake_done(self) -> None:
         self.assertEqual(build_plan(snapshot("ci_completed"))["action"], "needs-review")
         s = snapshot()

@@ -33,6 +33,26 @@
 
 同一批10个以上真实任务可用 `goal_loop_event_context compare --baseline ... --candidate ...` 对比 Token/验收与完成率；只返回观察建议，不授予 Goal 完成或发布资格。
 
+### 与现有控制面合并展示
+
+不新建 Goal 对象，可在当前 ADK current-state 只读报告上增加一次事件预检：
+
+```bash
+llm-ctl goal-efficiency \
+  --current-state /safe/meta/goal-current.json \
+  --event-snapshot /safe/meta/goal-event.json \
+  --event-cursor /safe/meta/acknowledged-cursor.json
+```
+
+首轮尚无已确认 cursor 时去掉 `--event-cursor`。报告中的
+`event_preflight.status=ADVISORY_ONLY` 只是 Host 可采纳的动作建议：
+`skip-model` / `run-tool` / `run-verification` / `invoke-model` / `needs-review`。
+事件 `goal_id` 必须与 current-state 的 `goal_ref` 一致；旧 Goal 的 cursor、
+符号链接事件或不完整元数据一律拒绝。
+报告故意不输出 `next_cursor`，避免“观察完成”被误当作“工具/模型已成功执行”。
+受信 Host 在执行回执确认后，另从 `llm-ctl goal-loop preflight` 获取对应 cursor，
+不得以本报告授权真正模型请求或 Goal 终态。
+
 ## Token 与验收
 
 只有原始 ADK runtime_control.state/v1 包含已观察的 usage.observed_at，才可追加 --runtime-state RUNTIME.json 读取 input/output/cached/reasoning/total tokens。没有真实观察一律 UNKNOWN，不当成零。即使有记录也仅为 REPORTED_UNVERIFIED，不能伪称 Provider 验签、计费凭证或跨执行器消重。禁止 bytes/4 替代真实 usage；不能因绿色 CI 自动认定 Goal 达成。

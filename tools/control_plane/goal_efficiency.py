@@ -163,7 +163,9 @@ def _jobs(path: Path | None, run_id: int | None, attempt: int | None,
 
 def observe(current_state: Path, *, runtime_state: Path | None = None,
             jobs: Path | None = None, run_id: int | None = None,
-            attempt: int | None = None, head_sha: str | None = None) -> dict[str, Any]:
+            attempt: int | None = None, head_sha: str | None = None,
+            event_snapshot: Path | None = None,
+            event_cursor: Path | None = None) -> dict[str, Any]:
     from agent_dev_kit.planning_state import check_current_state
 
     state, digest = _read(current_state)
@@ -172,7 +174,31 @@ def observe(current_state: Path, *, runtime_state: Path | None = None,
         raise ObservationError("invalid or changed ADK current-state")
     if len(state["evidence_refs"]) > 64 or len(state["history_refs"]) > 64 or len(state["blockers"]) > 32:
         raise ObservationError("unbounded current-state")
-    return {
+    if event_cursor is not None and event_snapshot is None:
+        raise ObservationError("event cursor requires a matching current event snapshot")
+    event_preflight = None
+    if event_snapshot is not None:
+        # The ADK current-state remains authoritative. A new event must carry
+        # the same Goal identity; never use a cursor to invent completion.
+        from tools.codex_assets.goal_loop_event_context import build_plan
+
+        event, _ = _read(event_snapshot)
+        if event.get("goal_id") != state["goal_ref"]:
+            raise ObservationError("event Goal does not match ADK current-state")
+        prior, _ = _read(event_cursor) if event_cursor is not None else (None, None)
+        advice = build_plan(event, prior)
+        # Do not expose next_cursor in this observational report. The Host can
+        # obtain and commit it via goal-loop preflight after verifying the
+        # actual model/tool/verification execution receipt.
+        event_preflight = {
+            "status": "ADVISORY_ONLY", "action": advice["action"],
+            "reason": advice["reason"], "fingerprint": advice["fingerprint"],
+            "model_invocation_required": advice["model_invocation_required"],
+            "llm_packet": advice["llm_packet"],
+            "cursor_commit_condition": advice["cursor_commit_condition"],
+            "owns_goal_completion": False,
+        }
+    result = {
         "schema_version": SCHEMA, "status": "OBSERVED_NOT_CERTIFIED",
         "current_state": {"schema_version": "adk.current-state/v1",
                           "input_sha256": digest, "goal_ref": state["goal_ref"],
@@ -186,6 +212,9 @@ def observe(current_state: Path, *, runtime_state: Path | None = None,
         "limitations": ["Input provenance must be independently checked",
                         "No live Goal or billing access; no completion inferred from CI"],
     }
+    if event_preflight is not None:
+        result["event_preflight"] = event_preflight
+    return result
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -196,11 +225,15 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--run-id", type=int)
     parser.add_argument("--attempt", type=int)
     parser.add_argument("--head-sha")
+    parser.add_argument("--event-snapshot", type=Path)
+    parser.add_argument("--event-cursor", type=Path)
     args = parser.parse_args(argv)
     try:
         result = observe(args.current_state, runtime_state=args.runtime_state,
                          jobs=args.jobs, run_id=args.run_id,
-                         attempt=args.attempt, head_sha=args.head_sha)
+                         attempt=args.attempt, head_sha=args.head_sha,
+                         event_snapshot=args.event_snapshot,
+                         event_cursor=args.event_cursor)
     except (ObservationError, ValueError, OSError, KeyError) as exc:
         print(json.dumps({"schema_version": SCHEMA, "status": "REJECTED",
                           "reason": str(exc), "goal_completion_verified": False,

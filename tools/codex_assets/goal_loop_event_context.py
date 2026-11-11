@@ -195,16 +195,29 @@ def build_plan(snapshot: dict[str, Any], prior: dict[str, Any] | None = None) ->
     deferred = max(0, len(changed) - MAX_PACKET)
     unshown_critical = any(e["priority"] == "critical" for e in changed[MAX_PACKET:])
     complete = snapshot["observation_complete"]
-    repeated = bool(cursor and cursor["fingerprint"] == fingerprint)
+    # A fingerprint cannot be treated as an execution receipt if its evidence
+    # index contradicts the current snapshot. The trusted host still owns
+    # receipt verification before persisting next_cursor.
+    same_evidence = bool(cursor and sorted(cursor["evidence"], key=lambda e: e["id"]) == tracked["evidence"])
+    repeated = bool(cursor and cursor["fingerprint"] == fingerprint and same_evidence)
 
     action = "skip-model"
     reason = "no-model-action"
     if not complete:
         action, reason = "needs-review", "incomplete-state-observation"
-    elif snapshot["pending_action"] == "tool":
-        action, reason = "run-tool", "deterministic-tool-action"
-    elif snapshot["pending_action"] == "verify":
-        action, reason = "run-verification", "deterministic-verification"
+    elif snapshot["pending_action"] in ("tool", "verify"):
+        # The caller is only allowed to persist a previous cursor AFTER the
+        # corresponding tool/verification receipt has been checked. A repeated
+        # cursor is therefore an acknowledged deterministic action, not a new
+        # job that must run again. Do not skip high-risk review.
+        if repeated and snapshot["risk"] == "high":
+            action, reason = "needs-review", "high-risk-repeated-deterministic-action"
+        elif repeated:
+            action, reason = "skip-model", "previously-acknowledged-unchanged-action"
+        elif snapshot["pending_action"] == "tool":
+            action, reason = "run-tool", "deterministic-tool-action"
+        else:
+            action, reason = "run-verification", "deterministic-verification"
     elif snapshot["pending_action"] == "model" or snapshot["event_kind"] in (
         "user_updated", "ci_failed", "source_changed", "review_required",
     ):
