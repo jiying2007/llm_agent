@@ -27,6 +27,8 @@
 ## 4. Token、Hub 与连续性
 
 - 先摘要后原文；按 stable/dynamic/evidence/excluded 管理，压缩保留目标、证据、fallback 和最多 3 个下一步。
+- Goal/Loop 先用事件/状态指纹判断是否真有变化：CI等待/心跳由确定性工具处理，不重复调用模型；有新证据时只传目标、当前阶段和差异指针，见 `docs/runbooks/goal-loop-token-efficiency.md`。
+- 高风险或事件证据不完整时先复核原文，不把去重/压缩当成完成验收；禁止用每日费用硬限额停止有效 Goal。
 - 项目事实、决策、runbook、release、debug 或长期结论先运行：
 
 ```bash

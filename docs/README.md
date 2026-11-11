@@ -7,7 +7,8 @@
 - runbooks/wechat-metadata-intake.md — 微信公众号 metadata-only 研究与候选转换边界
 - runbooks/ — 运维 runbook
 
-- runbooks/model-call-budget.md — Goal/Loop Token 效率、无日费用上限的模型调用观察和真实网关接入（当前未接入）
+- runbooks/model-call-budget.md — 现有模型调用用量观察与安全边界（无日费用硬限）
+- runbooks/goal-loop-token-efficiency.md — Goal/Loop 事件预检、增量证据与10任务配对评测
 
 ## 全局资产文档
 其他文档（quick-start、best-practices、troubleshooting 等）已迁移到 agent-dev-kit/docs/。
