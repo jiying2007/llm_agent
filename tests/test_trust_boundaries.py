@@ -134,8 +134,8 @@ class PromotionInputTest(unittest.TestCase):
 
     @staticmethod
     def historical_lock_text():
-        return "schema=llm-agent-adk-lock/v2\\n" + "".join(
-            f"agent-dev-kit.{key}={value}\\n"
+        return "schema=llm-agent-adk-lock/v2\n" + "".join(
+            f"agent-dev-kit.{key}={value}\n"
             for key, value in HISTORICAL_ADK_IDENTITY.items()
         )
 
@@ -156,10 +156,10 @@ class PromotionInputTest(unittest.TestCase):
     def test_historical_promotion_cannot_authorize_current_adk_gitlink(self):
         current_lock = (ROOT / "adk.lock").read_text(encoding="utf-8")
         self.assertNotIn(
-            f"agent-dev-kit.commit={HISTORICAL_ADK_IDENTITY['commit']}\\n",
+            f"agent-dev-kit.commit={HISTORICAL_ADK_IDENTITY['commit']}\n",
             current_lock,
         )
-        with self.assertRaisesRegex(ValueError, r"promotion evidence source\\."):
+        with self.assertRaisesRegex(ValueError, r"promotion evidence source\."):
             self.verify(json.dumps(self.evidence), lock=ROOT / "adk.lock")
 
     def test_exact_integer_ids_and_workflow_identity(self):
@@ -193,7 +193,7 @@ class PromotionInputTest(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.verify(json.dumps(self.evidence), interface=interface)
             lock = base / "adk.lock"
-            lock.write_text(self.historical_lock_text() + "agent-dev-kit.version=duplicate\\n")
+            lock.write_text(self.historical_lock_text() + "agent-dev-kit.version=duplicate\n")
             with self.assertRaises(ValueError):
                 self.verify(json.dumps(self.evidence), lock=lock)
 
