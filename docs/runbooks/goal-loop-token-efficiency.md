@@ -162,6 +162,7 @@ python3 -m tools.codex_assets.goal_loop_event_context \
       "request_id": "req-1",
       "workflow_id": "research",
       "goal_id": "goal-1",
+      "model": "gpt-6.1-sol",
       "input_tokens": 50000,
       "cached_input_tokens": 48000,
       "output_tokens": 500,
@@ -193,6 +194,7 @@ goal_state、current_delta、other。分段相加不得大于 provider 输入；
 差额保留为 unattributed_input_tokens，不能凭空“分配”给历史或缓存。
 tokenizer 未验证、存在差额时 attribution_status=PARTIAL。
 统计每工作流输入总量、缓存比例、p50/p95、>272K 次数、零输出次数与最大构成。
+可选的 `model` 字段仅允许不含空白的受信模型 ID，用于按模型汇总输入、缓存、请求次数、超过 272K 次数及已观察的真实扣费。最多输出 10 个高用量模型并保留截断计数；缺失模型字段不会猜测或归入其他模型的费用。模型身份未经 Host/Provider 核验时不应填充；只读归因不代表真实模型调度、费用结算或执行完成。
 这里的 272K 是**用户所提供渠道账单的观察口径**，不是所有模型通用的计价规则，也不是拒绝阈值。
 
 缓存策略依据实际 provider API 能力评审：稳定系统/工具前缀在前，增量证据在后；
