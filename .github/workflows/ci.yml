@@ -108,8 +108,8 @@ jobs:
           retention-days: 14
 
   doc-sync:
+    # This read-only gate is independent of the contract job.
     name: doc-sync
-    needs: contract
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout root source
@@ -139,10 +139,9 @@ jobs:
           retention-days: 14
 
   integration-impact:
+    # Classify exact Git diff concurrently; the integration job still waits
+    # for contract, doc-sync, and this classifier to succeed.
     name: integration-impact
-    needs:
-      - contract
-      - doc-sync
     runs-on: ubuntu-24.04
     outputs:
       required: ${{ steps.impact.outputs.required }}
