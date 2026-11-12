@@ -448,6 +448,11 @@ def attribute_usage(value: dict[str, Any]) -> dict[str, Any]:
         if r["goal_id"] is not None:
             _id(r["goal_id"], "goal-id")
         model = _id(r["model"], "model") if "model" in r else None
+        if model is not None and (
+            model.startswith((".", "/")) or "://" in model
+            or any(segment in ("", ".", "..") for segment in model.split("/"))
+        ):
+            raise PreflightError("model-invalid")
         if req_id in seen:
             raise PreflightError("duplicate-request-id")
         seen.add(req_id)
