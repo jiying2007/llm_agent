@@ -238,6 +238,26 @@ class PairedTests(unittest.TestCase):
         self.assertIsNone(result["tokens_per_milestone_saving_pct"])
         self.assertFalse(result["candidate_for_review"])
 
+    def test_provider_cost_increase_blocks_token_only_improvement(self) -> None:
+        for task_before, task_after in zip(self.base["tasks"], self.cand["tasks"]):
+            task_before["billed_fen"] = 100
+            task_after["billed_fen"] = 130
+        report = compare_trials(self.base, self.cand)
+        self.assertTrue(report["cost_regression"])
+        self.assertEqual("PAIRED", report["cost_evidence_status"])
+        self.assertLess(report["cost_per_milestone_saving_pct"], 0)
+        self.assertFalse(report["candidate_for_review"])
+
+    def test_unknown_or_partial_provider_cost_never_fabricates_savings(self) -> None:
+        self.base["tasks"][0]["billed_fen"] = 100
+        result = compare_trials(self.base, self.cand)
+        self.assertEqual("UNAVAILABLE", result["cost_evidence_status"])
+        self.assertIsNone(result["cost_per_milestone_saving_pct"])
+        self.assertIsNone(result["candidate_fen_per_verified_milestone"])
+        self.cand["tasks"][0]["billed_fen"] = -1
+        with self.assertRaises(PreflightError):
+            compare_trials(self.base, self.cand)
+
     def test_quality_regressions_fail_closed(self) -> None:
         self.cand["tasks"][0]["completed"] = False
         result = compare_trials(self.base, self.cand)
@@ -311,6 +331,38 @@ class AttributionTests(unittest.TestCase):
         self.assertEqual(result["attribution_status"], "PARTIAL")
         self.assertEqual(result["unattributed_input_tokens"], 80000)
         self.assertEqual(result["over_272k_calls"], 1)
+
+    def test_provider_billing_and_cache_write_subsets_are_observed(self) -> None:
+        trace = {"schema": "llm-agent-goal-loop-usage-trace/v1",
+                 "source": "provider-usage", "tokenizer_verified": True,
+                 "requests": [dict(metered_request(0), billed_fen=25,
+                                   cache_write_tokens_30m=60, cache_write_tokens_12h=40)]}
+        report = attribute_usage(trace)
+        self.assertEqual(report["provider_billed_fen_total"], 25)
+        self.assertEqual(report["provider_cost_status"], "COMPLETE")
+        self.assertEqual(report["cache_write_30m_tokens_observed"], 60)
+        self.assertEqual(report["cache_write_12h_tokens_observed"], 40)
+        self.assertEqual(report["uncached_input_tokens"], 100)
+        self.assertEqual(report["input_tokens"], 10000)  # writes are a subset, not additive
+        trace["requests"].append(metered_request(1))
+        report = attribute_usage(trace)
+        self.assertEqual(report["provider_cost_status"], "PARTIAL")
+        self.assertIsNone(report["provider_billed_fen_total"])
+        self.assertEqual(report["provider_billed_fen_observed"], 25)
+
+    def test_invalid_cache_write_metrics_fail_closed(self) -> None:
+        base = {"schema": "llm-agent-goal-loop-usage-trace/v1",
+                "source": "provider-usage", "tokenizer_verified": True,
+                "requests": [metered_request(0)]}
+        for extra in ({"cache_write_tokens_30m": 1},
+                      {"cache_write_tokens_30m": 101, "cache_write_tokens_12h": 0},
+                      {"billed_fen": -1},
+                      {"cache_write_tokens_30m": True, "cache_write_tokens_12h": 0}):
+            with self.subTest(extra=extra):
+                data = copy.deepcopy(base)
+                data["requests"][0].update(extra)
+                with self.assertRaises(PreflightError):
+                    attribute_usage(data)
 
     def test_trace_bad_counts_duplicates_and_prompt_injection_rejected(self) -> None:
         base = {
