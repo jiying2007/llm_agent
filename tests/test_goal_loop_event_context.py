@@ -358,6 +358,49 @@ class AttributionTests(unittest.TestCase):
         self.assertIsNone(report["provider_billed_fen_total"])
         self.assertEqual(report["provider_billed_fen_observed"], 25)
 
+
+    def test_model_cost_hotspots_are_bounded_and_unknown_not_attributed(self) -> None:
+        trace = {"schema": "llm-agent-goal-loop-usage-trace/v1",
+                 "source": "provider-usage", "tokenizer_verified": True,
+                 "requests": [
+                     dict(metered_request(0, 10000), model="gpt-6.1-sol", billed_fen=21),
+                     dict(metered_request(1, 20000), model="gpt-6.1-sol", billed_fen=42),
+                     dict(metered_request(2, 280000), model="gpt-6-astra"),
+                     metered_request(3),
+                 ]}
+        report = attribute_usage(trace)
+        self.assertEqual(report["model_count"], 2)
+        self.assertEqual(report["model_observation_calls"], 3)
+        self.assertEqual(report["unattributed_model_calls"], 1)
+        self.assertEqual(report["top_models"][0]["model"], "gpt-6-astra")
+        self.assertIsNone(report["top_models"][0]["billed_fen_total"])
+        self.assertEqual(report["top_models"][0]["over_272k_calls"], 1)
+        self.assertEqual(report["top_models"][1]["cached_input_tokens"], 29800)
+        self.assertEqual(report["top_models"][1]["billed_fen_total"], 63)
+        self.assertEqual(report["provider_cost_status"], "PARTIAL")
+        self.assertIsNone(report["provider_billed_fen_total"])
+
+    def test_model_groups_limit_cardinality_without_dropping_totals(self) -> None:
+        requests = [dict(metered_request(i), model="model-" + str(i), billed_fen=1)
+                    for i in range(15)]
+        report = attribute_usage({"schema": "llm-agent-goal-loop-usage-trace/v1",
+                                  "source": "provider-usage", "tokenizer_verified": True,
+                                  "requests": requests})
+        self.assertEqual(report["model_count"], 15)
+        self.assertEqual(len(report["top_models"]), 10)
+        self.assertEqual(report["truncated_model_summaries"], 5)
+        self.assertEqual(report["provider_billed_fen_total"], 15)
+        self.assertEqual(report["requests"], 15)
+
+    def test_untrusted_or_malformed_model_identity_is_rejected(self) -> None:
+        for bad in (None, 7, "../MODEL", "model with spaces", "x" * 200):
+            with self.subTest(model=bad):
+                trace = {"schema": "llm-agent-goal-loop-usage-trace/v1",
+                         "source": "provider-usage", "tokenizer_verified": True,
+                         "requests": [dict(metered_request(0), model=bad)]}
+                with self.assertRaises(PreflightError):
+                    attribute_usage(trace)
+
     def test_invalid_cache_write_metrics_fail_closed(self) -> None:
         base = {"schema": "llm-agent-goal-loop-usage-trace/v1",
                 "source": "provider-usage", "tokenizer_verified": True,

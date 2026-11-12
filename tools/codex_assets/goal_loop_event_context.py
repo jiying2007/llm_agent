@@ -432,19 +432,22 @@ def attribute_usage(value: dict[str, Any]) -> dict[str, Any]:
     count: dict[str, int] = {key: 0 for key in allowed}
     seen: set[str] = set()
     workflow_counts: dict[str, dict[str, int]] = {}
+    model_counts: dict[str, dict[str, int]] = {}
+    model_observed = 0
     inputs: list[int] = []
     total_input = total_cached = total_output = unknown = zero_output = 0
     observed_fen = cost_observed = write_observed = writes_30m = writes_12h = 0
     for entry in rows:
         required = {"request_id", "workflow_id", "goal_id", "input_tokens",
                     "cached_input_tokens", "output_tokens", "segments"}
-        optional = {"billed_fen", "cache_write_tokens_30m", "cache_write_tokens_12h"}
+        optional = {"billed_fen", "cache_write_tokens_30m", "cache_write_tokens_12h", "model"}
         present = (set(entry) & optional) if isinstance(entry, dict) else set()
         r = _fields(entry, required | present, "usage-request")
         req_id = _id(r["request_id"], "request-id")
         workflow = _id(r["workflow_id"], "workflow-id")
         if r["goal_id"] is not None:
             _id(r["goal_id"], "goal-id")
+        model = _id(r["model"], "model") if "model" in r else None
         if req_id in seen:
             raise PreflightError("duplicate-request-id")
         seen.add(req_id)
@@ -494,6 +497,21 @@ def attribute_usage(value: dict[str, Any]) -> dict[str, Any]:
         item["calls"] += 1
         item["input_tokens"] += inp
         item["output_tokens"] += output
+        if model is not None:
+            model_observed += 1
+            bucket = model_counts.setdefault(model, {
+                "calls": 0, "input_tokens": 0, "cached_input_tokens": 0,
+                "output_tokens": 0, "over_272k_calls": 0,
+                "billed_fen_observed": 0, "billed_fen_observation_calls": 0,
+            })
+            bucket["calls"] += 1
+            bucket["input_tokens"] += inp
+            bucket["cached_input_tokens"] += cached
+            bucket["output_tokens"] += output
+            bucket["over_272k_calls"] += (inp > 272000)
+            if billed is not None:
+                bucket["billed_fen_observed"] += billed
+                bucket["billed_fen_observation_calls"] += 1
     ordered = sorted(inputs)
     def percentile(fraction: float) -> int:
         return ordered[max(0, math.ceil(fraction * len(ordered)) - 1)]
@@ -504,6 +522,16 @@ def attribute_usage(value: dict[str, Any]) -> dict[str, Any]:
     top = [
         {"workflow_id": key, **item}
         for key, item in sorted(workflow_counts.items(), key=lambda pair: (-pair[1]["input_tokens"], pair[0]))[:10]
+    ]
+    top_models = [
+        {
+            "model": name, **metrics,
+            "billed_fen_total": (
+                metrics["billed_fen_observed"]
+                if metrics["billed_fen_observation_calls"] == metrics["calls"] else None
+            ),
+        }
+        for name, metrics in sorted(model_counts.items(), key=lambda pair: (-pair[1]["input_tokens"], pair[0]))[:10]
     ]
     return {
         "schema": TRACE_REPORT_SCHEMA, "status": "observed-not-provider-certified",
@@ -524,7 +552,12 @@ def attribute_usage(value: dict[str, Any]) -> dict[str, Any]:
         "over_272k_calls": sum(1 for x in inputs if x > 272000),
         "zero_output_calls": zero_output, "unattributed_input_tokens": unknown,
         "input_breakdown": by_type, "top_workflows": top,
-        "workflow_count": len(workflow_counts), "raw_messages_included": False,
+        "workflow_count": len(workflow_counts),
+        "top_models": top_models, "model_count": len(model_counts),
+        "model_observation_calls": model_observed,
+        "unattributed_model_calls": len(rows) - model_observed,
+        "truncated_model_summaries": max(0, len(model_counts) - len(top_models)),
+        "raw_messages_included": False,
         "daily_cost_hard_limit": False, "owns_goal_completion": False,
     }
 
