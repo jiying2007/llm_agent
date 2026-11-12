@@ -259,7 +259,10 @@ assert 'PRODUCER + "/.github/workflows/release.yml"' in adk_interface
 assert "refs/heads/main" in adk_interface
 assert "Root ADK integration was REQUIRED but did not pass" in github
 assert "ADK integration: NOT_REQUIRED" in github
-assert re.search(r"integration-impact:\n(?:.|\n)*?needs:\n\s+- contract\n\s+- doc-sync", github)
+doc_sync_job = github.split("  doc-sync:\n", 1)[1].split("  integration-impact:\n", 1)[0]
+impact_job = github.split("  integration-impact:\n", 1)[1].split("  integration:\n", 1)[0]
+assert not re.search(r"(?m)^    needs:", doc_sync_job), "doc-sync must run alongside contract"
+assert not re.search(r"(?m)^    needs:", impact_job), "impact classification must not wait for unrelated checks"
 assert re.search(r"integration:\n(?:.|\n)*?needs:\n\s+- contract\n\s+- doc-sync\n\s+- integration-impact", github)
 assert "needs.integration-summary.result == 'success'" in github
 assert "bash scripts/software-m5.sh \\" in github
