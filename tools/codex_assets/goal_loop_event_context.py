@@ -301,7 +301,8 @@ def _experiment(value: dict[str, Any]) -> tuple[str, dict[str, dict[str, Any]]]:
               "input_tokens", "cached_input_tokens", "output_tokens",
               "nonclosing_calls", "repeated_context_calls", "first_useful_action_ms"}
     for task in data["tasks"]:
-        item = _fields(task, fields | ({"billed_fen"} if "billed_fen" in task else set()), "task")
+        optional = {"billed_fen"} if isinstance(task, dict) and "billed_fen" in task else set()
+        item = _fields(task, fields | optional, "task")
         task_id = _id(item["task_id"], "task-id")
         if task_id in seen or type(item["completed"]) is not bool:
             raise PreflightError("duplicate-or-malformed-task")
@@ -438,7 +439,8 @@ def attribute_usage(value: dict[str, Any]) -> dict[str, Any]:
         required = {"request_id", "workflow_id", "goal_id", "input_tokens",
                     "cached_input_tokens", "output_tokens", "segments"}
         optional = {"billed_fen", "cache_write_tokens_30m", "cache_write_tokens_12h"}
-        r = _fields(entry, required | (set(entry) & optional), "usage-request")
+        present = (set(entry) & optional) if isinstance(entry, dict) else set()
+        r = _fields(entry, required | present, "usage-request")
         req_id = _id(r["request_id"], "request-id")
         workflow = _id(r["workflow_id"], "workflow-id")
         if r["goal_id"] is not None:
