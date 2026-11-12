@@ -165,6 +165,9 @@ python3 -m tools.codex_assets.goal_loop_event_context \
       "input_tokens": 50000,
       "cached_input_tokens": 48000,
       "output_tokens": 500,
+      "billed_fen": null,
+      "cache_write_tokens_30m": null,
+      "cache_write_tokens_12h": null,
       "segments": [
         {"kind": "rules", "tokens": 2000},
         {"kind": "tool_schemas", "tokens": 3000},
@@ -180,6 +183,10 @@ python3 -m tools.codex_assets.goal_loop_event_context \
 python3 -m tools.codex_assets.goal_loop_event_context \
   attribute --trace /safe/meta/provider-usage.json
 ~~~
+
+如真实 Provider/渠道提供请求级已扣费用，可选填非负整数 `billed_fen`（人民币分）；缺失或不可信时留 `null`，不能把预估价格冒充扣费。
+对于支持细分缓存写入计数的 Provider，可成对填入 `cache_write_tokens_30m` 和 `cache_write_tokens_12h`（必须都为非负整数，或都为 null），其和不得超过非缓存输入；缓存写入是输入的一部分，**不能重复加到总输入 Token**。
+归因同时输出已观察费用、覆盖调用数和仅在全部有凭据时才出现的 `provider_billed_fen_total`。配对试验也允许每任务添加 `billed_fen`，若真实费用/里程碑上升则不能因 Token 下降晋级；缺失费用仍不得声称费用节省。
 
 支持的分段是 rules、tool_schemas、history、tool_results、project_source、
 goal_state、current_delta、other。分段相加不得大于 provider 输入；

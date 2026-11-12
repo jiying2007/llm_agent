@@ -301,7 +301,7 @@ def _experiment(value: dict[str, Any]) -> tuple[str, dict[str, dict[str, Any]]]:
               "input_tokens", "cached_input_tokens", "output_tokens",
               "nonclosing_calls", "repeated_context_calls", "first_useful_action_ms"}
     for task in data["tasks"]:
-        item = _fields(task, fields, "task")
+        item = _fields(task, fields | ({"billed_fen"} if "billed_fen" in task else set()), "task")
         task_id = _id(item["task_id"], "task-id")
         if task_id in seen or type(item["completed"]) is not bool:
             raise PreflightError("duplicate-or-malformed-task")
@@ -313,6 +313,8 @@ def _experiment(value: dict[str, Any]) -> tuple[str, dict[str, dict[str, Any]]]:
         if (item["input_tokens"] is not None and item["cached_input_tokens"] is not None
                 and item["cached_input_tokens"] > item["input_tokens"]):
             raise PreflightError("cached-input-exceeds-total-input")
+        if item.get("billed_fen") is not None:
+            _int(item["billed_fen"], "billed_fen")
         seen[task_id] = item
     return data["task_set_sha256"], seen
 
@@ -357,6 +359,20 @@ def compare_trials(baseline: dict[str, Any], candidate: dict[str, Any]) -> dict[
         cand_nonclosing <= base_nonclosing and cand_repeated <= base_repeated
         and (not latency_complete or avg_after_ms <= avg_before_ms * 1.10)
     )
+    # Real billed cost may rise when cached-prefix writes become more expensive
+    # even if token counts fall. Missing provider charges remain unknown, not zero.
+    cost_complete = complete and all(
+        t.get("billed_fen") is not None for t in list(base.values()) + list(cand.values())
+    )
+    before_fen = sum(t["billed_fen"] for t in base.values()) if cost_complete else 0
+    after_fen = sum(t["billed_fen"] for t in cand.values()) if cost_complete else 0
+    cost_saving_pct = (
+        round(100 * (1 - (after_fen / after_milestones) /
+                     (before_fen / before_milestones)), 2)
+        if cost_complete and before_fen > 0 else None
+    )
+    cost_regression = bool(cost_complete and
+                           after_fen * before_milestones > before_fen * after_milestones)
     return {
         "schema": REPORT_SCHEMA, "status": "observed-not-provider-certified",
         "evidence_status": "PAIRED" if complete else "INSUFFICIENT",
@@ -371,6 +387,15 @@ def compare_trials(baseline: dict[str, Any], candidate: dict[str, Any]) -> dict[
             round(after_tokens / after_milestones, 2) if complete else None
         ),
         "tokens_per_milestone_saving_pct": savings,
+        "cost_evidence_status": "PAIRED" if cost_complete else "UNAVAILABLE",
+        "baseline_fen_per_verified_milestone": (
+            round(before_fen / before_milestones, 2) if cost_complete else None
+        ),
+        "candidate_fen_per_verified_milestone": (
+            round(after_fen / after_milestones, 2) if cost_complete else None
+        ),
+        "cost_per_milestone_saving_pct": cost_saving_pct,
+        "cost_regression": cost_regression,
         "baseline_nonclosing_calls": base_nonclosing,
         "candidate_nonclosing_calls": cand_nonclosing,
         "baseline_repeated_context_calls": base_repeated,
@@ -380,7 +405,7 @@ def compare_trials(baseline: dict[str, Any], candidate: dict[str, Any]) -> dict[
         "efficiency_regression": not no_efficiency_regression,
         "candidate_for_review": bool(
             complete and no_regressions and no_efficiency_regression
-            and savings is not None and savings > 0
+            and not cost_regression and savings is not None and savings > 0
         ),
         "owns_goal_completion": False,
     }
@@ -408,9 +433,12 @@ def attribute_usage(value: dict[str, Any]) -> dict[str, Any]:
     workflow_counts: dict[str, dict[str, int]] = {}
     inputs: list[int] = []
     total_input = total_cached = total_output = unknown = zero_output = 0
+    observed_fen = cost_observed = write_observed = writes_30m = writes_12h = 0
     for entry in rows:
-        r = _fields(entry, {"request_id", "workflow_id", "goal_id", "input_tokens",
-                            "cached_input_tokens", "output_tokens", "segments"}, "usage-request")
+        required = {"request_id", "workflow_id", "goal_id", "input_tokens",
+                    "cached_input_tokens", "output_tokens", "segments"}
+        optional = {"billed_fen", "cache_write_tokens_30m", "cache_write_tokens_12h"}
+        r = _fields(entry, required | (set(entry) & optional), "usage-request")
         req_id = _id(r["request_id"], "request-id")
         workflow = _id(r["workflow_id"], "workflow-id")
         if r["goal_id"] is not None:
@@ -423,6 +451,22 @@ def attribute_usage(value: dict[str, Any]) -> dict[str, Any]:
         output = _int(r["output_tokens"], "output_tokens")
         if not 0 < inp or cached > inp:
             raise PreflightError("usage-counters-invalid")
+        billed = r.get("billed_fen")
+        if billed is not None:
+            observed_fen += _int(billed, "billed_fen")
+            cost_observed += 1
+        write_30m = r.get("cache_write_tokens_30m")
+        write_12h = r.get("cache_write_tokens_12h")
+        if (write_30m is None) != (write_12h is None):
+            raise PreflightError("cache-write-pair-incomplete")
+        if write_30m is not None:
+            short_write = _int(write_30m, "cache_write_tokens_30m")
+            long_write = _int(write_12h, "cache_write_tokens_12h")
+            if short_write + long_write > inp - cached:
+                raise PreflightError("cache-writes-exceed-uncached-input")
+            writes_30m += short_write
+            writes_12h += long_write
+            write_observed += 1
         if not isinstance(r["segments"], list) or len(r["segments"]) > len(allowed):
             raise PreflightError("usage-segments-invalid")
         subtotal = 0
@@ -465,6 +509,14 @@ def attribute_usage(value: dict[str, Any]) -> dict[str, Any]:
         "requests": len(rows), "input_tokens": total_input,
         "cached_input_tokens": total_cached, "output_tokens": total_output,
         "cache_hit_pct": round(100 * total_cached / total_input, 2),
+        "uncached_input_tokens": total_input - total_cached,
+        "cache_write_30m_tokens_observed": writes_30m,
+        "cache_write_12h_tokens_observed": writes_12h,
+        "cache_write_observation_calls": write_observed,
+        "provider_billed_fen_observed": observed_fen,
+        "provider_billed_fen_total": observed_fen if cost_observed == len(rows) else None,
+        "provider_billed_fen_observation_calls": cost_observed,
+        "provider_cost_status": "COMPLETE" if cost_observed == len(rows) else "PARTIAL",
         "mean_input_tokens": round(total_input / len(rows), 2),
         "median_input_tokens": percentile(0.5), "p95_input_tokens": percentile(0.95),
         "over_272k_calls": sum(1 for x in inputs if x > 272000),
