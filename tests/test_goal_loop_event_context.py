@@ -288,6 +288,14 @@ class PairedTests(unittest.TestCase):
         with self.assertRaises(PreflightError):
             compare_trials(self.base, altered)
 
+    def test_non_mapping_trial_row_is_a_validation_error(self) -> None:
+        for bad in (None, 42, ["not", "a", "task"]):
+            with self.subTest(bad=bad):
+                altered = copy.deepcopy(self.cand)
+                altered["tasks"][0] = bad
+                with self.assertRaises(PreflightError):
+                    compare_trials(self.base, altered)
+
     def test_prompt_field_cannot_enter_ledger(self) -> None:
         self.cand["tasks"][0]["prompt"] = "secret"
         with self.assertRaises(PreflightError):
@@ -372,6 +380,9 @@ class AttributionTests(unittest.TestCase):
         }
         for mutated in (
             {"requests": [metered_request(0), metered_request(0)]},
+            {"requests": [None]},
+            {"requests": [42]},
+            {"requests": [["malformed"]]},
             {"requests": [dict(metered_request(0), input_tokens=None)]},
             {"requests": [dict(metered_request(0), prompt="SECRET")]},
             {"requests": [dict(metered_request(0), cached_input_tokens=999999)]},
