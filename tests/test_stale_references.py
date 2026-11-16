@@ -83,7 +83,7 @@ class StaleReferenceScopeTest(unittest.TestCase):
 
             clean = scan()
             self.assertEqual(0, clean.returncode, clean.stdout + clean.stderr)
-            guidance.write_text("scripts/validate_assets.sh\n", encoding="utf-8")
+            guidance.write_text("scripts/" + "validate_assets.sh\n", encoding="utf-8")
             stale = scan()
             self.assertEqual(1, stale.returncode, stale.stdout + stale.stderr)
             self.assertIn("validate_assets.sh", stale.stderr)

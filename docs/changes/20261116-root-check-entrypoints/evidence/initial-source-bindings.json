@@ -1,0 +1,78 @@
+{
+  "canonical_base": "f6183571e4bb9bc853e9c9fb8b49902601a863aa",
+  "tested_local_base": "eddb3a2baf1158c016c8326694412d2231bcc1c1",
+  "identical_base_tree": "2cde39bc2235fced4b53a996ec902dae8318e39c",
+  "frozen_source": "ffc4b2ffc008a53bee536bd154564920ad1564ee",
+  "source_tree": "48eac2fa24630f20e5047d5d9822657d5706e92a",
+  "original_patch_sha256": "2618c8e4db94c92f5b290e618077ac4e6df132f6524280355190a772442573e2",
+  "files": [
+    {
+      "path": "docs/changes/20261116-root-check-entrypoints/design.md",
+      "bytes": 1801,
+      "sha256": "be45b0e148fe5196f9d0de17cc7972ae63eb0de473020bdf9a7e6e042675a54b",
+      "git_blob": "cd2fec1096dc53e2595d0d89e64ed4e9150a4851"
+    },
+    {
+      "path": "docs/changes/20261116-root-check-entrypoints/requirements.md",
+      "bytes": 1633,
+      "sha256": "17fe76f72e1a6e589a3331f1b7979f8cdafee3981f69c5330e8a915d4bfa99ce",
+      "git_blob": "f046a52612a87779986e0d8daf40ce19e978fac7"
+    },
+    {
+      "path": "docs/changes/20261116-root-check-entrypoints/tasks.md",
+      "bytes": 913,
+      "sha256": "799adab7634e4f82decc0974616e3ac89bee92d087a649f18d9295bfca19a470",
+      "git_blob": "61fae2641ddf78781fe2e3a6712ee373e79ac169"
+    },
+    {
+      "path": "docs/changes/20261116-root-check-entrypoints/verification.md",
+      "bytes": 2900,
+      "sha256": "4ae87c6ad0c75171c3f2fc394f2c174dcb1ec228623a6439083f1af93601115d",
+      "git_blob": "939b054b081d8c52944ed7692b400390c0db361a"
+    },
+    {
+      "path": "scripts/README.md",
+      "bytes": 34460,
+      "sha256": "acfc3baf56e01cbe5a133c8ff5b05092e55d89ca1d38d123e99b5c57cb2f4d5c",
+      "git_blob": "02c203e78c1d12930d35f89172f2840b00280bec"
+    },
+    {
+      "path": "scripts/check-adk-harden-readiness.sh",
+      "bytes": 7544,
+      "sha256": "b4d1b1daece7b5a14f9440b09c7c260a2b22edced15df8850078402c27cb8016",
+      "git_blob": "6f12b27292bdbd5222f6806598d507b680db3510"
+    },
+    {
+      "path": "scripts/check-adk-source-pin.sh",
+      "bytes": 329,
+      "sha256": "02caa8705c4ddaa031bd51c61111be71955cd52e4479ce8af47e4116c6306bbe",
+      "git_blob": "026e6f8d3be287829027ed854eff74e5016d2ec9"
+    },
+    {
+      "path": "tests/test_adk_source_pin.sh",
+      "bytes": 13293,
+      "sha256": "1032bdcd1deb6de0efd9456f76494227e2868443823b7202ebaee17bd611683d",
+      "git_blob": "f2afcd004ab77b50948185f6b28833d566bae601"
+    },
+    {
+      "path": "tests/test_stale_references.py",
+      "bytes": 5345,
+      "sha256": "d1f7c9f180e5e373f500c547f39dbd3f99c62524a96626c5081cb40015f8f626",
+      "git_blob": "e68680e7cb5638c185ffa1dcb5694de5ab68515c"
+    },
+    {
+      "path": "tests/test_validation_plan.py",
+      "bytes": 9868,
+      "sha256": "34a26c1e04a1f1fd1c7528ea3f4e58b1ccb8ec93d9b21162fbb421eaaa9556e5",
+      "git_blob": "77e9794553d42b3691534e5da159a97b9e93c93c"
+    },
+    {
+      "path": "tools/codex_assets/validation_plan.py",
+      "bytes": 10774,
+      "sha256": "e32f49d3f93440815acb901a0023e165dd64625610577603cad53d7609c08cee",
+      "git_blob": "778f554b17eacfcbb586798b6cb0a237725b52e7"
+    }
+  ],
+  "execution_boundary": "Implementer commands ran before the source freeze; original snapshots and later documentation completion remain explicit. This file binds the final reviewed source, not a claim of prior execution on this commit.",
+  "original_patch_location": "implementation-bundle.json:files[name=original.patch]"
+}

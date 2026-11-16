@@ -1,0 +1,84 @@
+{
+  "canonical_base": "f6183571e4bb9bc853e9c9fb8b49902601a863aa",
+  "tested_local_base": "eddb3a2baf1158c016c8326694412d2231bcc1c1",
+  "identical_base_tree": "2cde39bc2235fced4b53a996ec902dae8318e39c",
+  "initial_rejected_source": "ffc4b2ffc008a53bee536bd154564920ad1564ee",
+  "initial_source_binding": {
+    "path": "initial-source-bindings.json",
+    "sha256": "b4e3ff4a9c0511fd0422c60f2069447209a362eb94099ae8eacfc96a15fdcfd2"
+  },
+  "unchanged_initial_implementation_bundle_sha256": "28d69831afa2a95c3c2fa181edc98579afc41bb32abfe2f2aa98593cedc7d4ac",
+  "frozen_source": "9359d79a735bcd09008665c0fbcc8a7fb6fd99aa",
+  "source_tree": "3aa25089595c95e65ab99044a1037b84737b86b1",
+  "original_patch_sha256": "41d89e44df054f64a771f471eb84a8db1afa78b78e7fd767e70202e4535e1271",
+  "original_patch_location": "review-fix-bundle.json:canonical-final-source.patch",
+  "files": [
+    {
+      "path": "docs/changes/20261116-root-check-entrypoints/design.md",
+      "bytes": 1801,
+      "sha256": "be45b0e148fe5196f9d0de17cc7972ae63eb0de473020bdf9a7e6e042675a54b",
+      "git_blob": "cd2fec1096dc53e2595d0d89e64ed4e9150a4851"
+    },
+    {
+      "path": "docs/changes/20261116-root-check-entrypoints/requirements.md",
+      "bytes": 1633,
+      "sha256": "17fe76f72e1a6e589a3331f1b7979f8cdafee3981f69c5330e8a915d4bfa99ce",
+      "git_blob": "f046a52612a87779986e0d8daf40ce19e978fac7"
+    },
+    {
+      "path": "docs/changes/20261116-root-check-entrypoints/tasks.md",
+      "bytes": 1504,
+      "sha256": "358782d640c2f7509dc966ca5526b3f4428d73dfb5f6f937b460e36802565071",
+      "git_blob": "203f687be2b68f221f374809cd4da5e1ff9f35d5"
+    },
+    {
+      "path": "docs/changes/20261116-root-check-entrypoints/verification.md",
+      "bytes": 5531,
+      "sha256": "cec3cb46ecad6ff9870273afac604e51a5c3ce00eb03b71bd60927a4eedb5752",
+      "git_blob": "fc4550e6bf7bf2b46bb127d2bca603e20ad80c17"
+    },
+    {
+      "path": "scripts/README.md",
+      "bytes": 34460,
+      "sha256": "acfc3baf56e01cbe5a133c8ff5b05092e55d89ca1d38d123e99b5c57cb2f4d5c",
+      "git_blob": "02c203e78c1d12930d35f89172f2840b00280bec"
+    },
+    {
+      "path": "scripts/check-adk-harden-readiness.sh",
+      "bytes": 7544,
+      "sha256": "b4d1b1daece7b5a14f9440b09c7c260a2b22edced15df8850078402c27cb8016",
+      "git_blob": "6f12b27292bdbd5222f6806598d507b680db3510"
+    },
+    {
+      "path": "scripts/check-adk-source-pin.sh",
+      "bytes": 414,
+      "sha256": "2b21be01560b14d6a6d64e2a7e60303707f19805a1894e4b1817e0655394e851",
+      "git_blob": "fb3c89b41ad9e632e92001a103f8ec4d83d4a3fb"
+    },
+    {
+      "path": "tests/test_adk_source_pin.sh",
+      "bytes": 16065,
+      "sha256": "cdc6a41e78d25d9575ffd84a69990ca90f10a9b7c39a8a6c11577224f305da27",
+      "git_blob": "ef23e3db626961fd5a21c9949d3f64b21e903a69"
+    },
+    {
+      "path": "tests/test_stale_references.py",
+      "bytes": 5345,
+      "sha256": "d1f7c9f180e5e373f500c547f39dbd3f99c62524a96626c5081cb40015f8f626",
+      "git_blob": "e68680e7cb5638c185ffa1dcb5694de5ab68515c"
+    },
+    {
+      "path": "tests/test_validation_plan.py",
+      "bytes": 9868,
+      "sha256": "34a26c1e04a1f1fd1c7528ea3f4e58b1ccb8ec93d9b21162fbb421eaaa9556e5",
+      "git_blob": "77e9794553d42b3691534e5da159a97b9e93c93c"
+    },
+    {
+      "path": "tools/codex_assets/validation_plan.py",
+      "bytes": 10774,
+      "sha256": "e32f49d3f93440815acb901a0023e165dd64625610577603cad53d7609c08cee",
+      "git_blob": "778f554b17eacfcbb586798b6cb0a237725b52e7"
+    }
+  ],
+  "execution_boundary": "R1 RED/GREEN executed before this source freeze with the same regression test and recorded wrapper hashes. Documentation completed later. R2/R3 source remains byte-identical to the initial reviewed source. Initial quick 45/52 is preserved; no new full/quick run or clean-commit execution is claimed."
+}

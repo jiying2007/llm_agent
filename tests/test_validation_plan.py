@@ -1,9 +1,14 @@
 import unittest
 import subprocess
 import tempfile
+import re
+import shlex
 from pathlib import Path
 
 from tools.codex_assets.validation_plan import _changed_paths, _reference_roots, classify
+
+ROOT = Path(__file__).resolve().parents[1]
+PARITY = ROOT / "agent-dev-kit/scripts/run-local-ci-parity.sh"
 
 
 class ValidationPlanTests(unittest.TestCase):
@@ -12,6 +17,40 @@ class ValidationPlanTests(unittest.TestCase):
         self.assertEqual("L4", value["tier"])
         self.assertEqual("clean-commit-only", value["release_execution_boundary"])
         self.assertTrue(value["deferred_until_clean_commit"])
+
+    def assert_supported_parity_arguments(self, arguments):
+        # The actual pinned parser exits before Docker on --dry-run.
+        result = subprocess.run(["bash", str(PARITY), *arguments, "--dry-run"],
+                                cwd=ROOT, capture_output=True, text=True, timeout=15)
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        self.assertIn("python=3.12 ", result.stdout)
+        self.assertIn("mode=full\n", result.stdout)
+        self.assertIn("release_authority=none\n", result.stdout)
+
+    def test_emitted_l4_parity_command_is_accepted_by_pinned_adk(self):
+        value = classify(["agent-dev-kit"], "a" * 64, "working-tree")
+        command, = [shlex.split(item) for item in value["required_checks"]
+                    if "run-local-ci-parity.sh" in item]
+        self.assertEqual(["rtk", "bash", "agent-dev-kit/scripts/run-local-ci-parity.sh"], command[:3])
+        self.assert_supported_parity_arguments(command[3:])
+
+    def test_harden_receipt_arguments_are_accepted_by_pinned_adk(self):
+        script = (ROOT / "scripts/check-adk-harden-readiness.sh").read_text(encoding="utf-8")
+        match = re.search(r'receipt_check_output="\$\((.*?)\)"', script, re.DOTALL)
+        self.assertIsNotNone(match, "harden must keep its actual parity receipt invocation")
+        command = shlex.split(match.group(1).replace("\\\n", ""))
+        self.assertEqual(["bash", "${ADK_DIR}/scripts/run-local-ci-parity.sh"], command[:2])
+        self.assertEqual("2>&1", command[-1])
+        arguments = command[2:-1]
+        self.assertIn("--check-receipt", arguments)
+        self.assert_supported_parity_arguments(arguments)
+
+    def test_pinned_parity_rejects_unsupported_selector(self):
+        result = subprocess.run(["bash", str(PARITY), "--python", "all", "--mode", "full", "--dry-run"],
+                                cwd=ROOT, capture_output=True, text=True, timeout=15)
+        self.assertEqual(2, result.returncode)
+        self.assertIn("--python must be 3.12", result.stderr)
+        self.assertNotIn("transport=docker", result.stdout)
 
     def test_code_surface_uses_l3(self):
         value = classify(["tools/codex_assets/example.py"], "b" * 64, "working-tree")

@@ -128,9 +128,9 @@ echo "[INFO] gate=${GATE_FILE}"
 if [[ "${CHECK_FULL_SUITE}" -eq 1 ]]; then
   receipt_check_output=""
   if receipt_check_output="$(bash "${ADK_DIR}/scripts/run-local-ci-parity.sh" \
-    --python all --mode full --check-receipt 2>&1)"; then
+    --python 3.12 --mode full --check-receipt 2>&1)"; then
     PARITY_RECEIPT_REUSED=1
-    echo "[PASS] reuse snapshot-bound Python 3.11/3.12 full parity receipt"
+    echo "[PASS] reuse snapshot-bound Python 3.12 full parity receipt"
   else
     echo "[INFO] no reusable supported-full parity receipt; require supported host Python"
     ADK_REQUIRE_SUPPORTED_PYTHON=1 bash "${ADK_DIR}/scripts/devkit.sh" validate --quick --summary-json >/dev/null
