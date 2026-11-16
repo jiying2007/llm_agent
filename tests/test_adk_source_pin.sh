@@ -30,7 +30,9 @@ python3 - "$ROOT" <<'PY'
 import datetime as dt
 import hashlib
 import json
+import os
 import subprocess
+import sys
 import tempfile
 from unittest.mock import patch
 from pathlib import Path
@@ -51,7 +53,28 @@ def expect_fail(fn, reason):
         return
     raise AssertionError("negative case unexpectedly succeeded: " + reason)
 
-with tempfile.TemporaryDirectory(prefix="adk-single-pin-") as tmp:
+workspace = Path(sys.argv[1]).resolve()
+wrapper = workspace / "scripts/check-adk-source-pin.sh"
+
+def cli(root, *arguments, cwd, wrapped=False):
+    environment = dict(os.environ, PYTHONDONTWRITEBYTECODE="1")
+    if wrapped:
+        environment.pop("PYTHONPATH", None)
+        environment.pop("PYTHONSAFEPATH", None)
+        command = ["bash", str(wrapper), *arguments]
+    else:
+        environment["PYTHONPATH"] = str(workspace)
+        command = [sys.executable, "-m", "tools.control_plane.adk_interface",
+                   "--source-pin", "--root", str(root), *arguments]
+    return subprocess.run(command, cwd=cwd, env=environment,
+                          capture_output=True, text=True, timeout=15)
+
+def same_result(actual, expected, status):
+    assert actual.returncode == expected.returncode == status, (actual, expected)
+    assert actual.stdout == expected.stdout, (actual.stdout, expected.stdout)
+    assert actual.stderr == expected.stderr, (actual.stderr, expected.stderr)
+
+with tempfile.TemporaryDirectory(prefix="adk single pin ") as tmp:
     root = Path(tmp)
     adk = root / "agent-dev-kit"
     adk.mkdir()
@@ -70,6 +93,66 @@ with tempfile.TemporaryDirectory(prefix="adk-single-pin-") as tmp:
     git(root, "commit", "-qm", "pin fixture adk")
     identity = source_pin(root)
     assert identity["commit"] == commit and identity["version"] == "9.2.1"
+
+    # Real wrapper and interface, with no import-path help from the caller.
+    expected = cli(root, "--summary-json", cwd=root.parent)
+    for arguments in (
+        (str(root), "--summary-json"),
+        (root.name, "--summary-json"),
+        ("--root", str(root), "--summary-json"),
+        ("--root", root.name, "--summary-json"),
+    ):
+        same_result(cli(root, *arguments, cwd=root.parent, wrapped=True), expected, 0)
+    same_result(cli(workspace, "--summary-json", cwd=root.parent, wrapped=True),
+                cli(workspace, "--summary-json", cwd=root.parent), 0)
+    same_result(cli(root, str(root), "--unknown-option", cwd=root.parent, wrapped=True),
+                cli(root, "--unknown-option", cwd=root.parent), 2)
+
+    # A caller-owned tools package must not replace the real verifier.
+    shadow = root / "caller with shadow tools"
+    package = shadow / "tools/control_plane"
+    package.mkdir(parents=True)
+    (shadow / "tools/__init__.py").write_text("", encoding="utf-8")
+    (package / "__init__.py").write_text("", encoding="utf-8")
+    (package / "adk_interface.py").write_text(
+        'print("controlled-cwd-shadow-verifier")\nraise SystemExit(0)\n', encoding="utf-8")
+    archive = shadow / "agent-dev-kit-9.2.1.tar.gz"
+    contract_file = shadow / "relative contract.json"
+    release_file = shadow / "relative release.json"
+    archive.write_bytes(b"controlled invalid release fixture")
+    contract_file.write_text('{}\n', encoding="utf-8")
+    release_file.write_text('{}\n', encoding="utf-8")
+    evidence_flags = ("--release-archive", "--release-contract", "--release-json")
+    evidence_files = (archive, contract_file, release_file)
+    absolute_evidence = tuple(value for flag, path in zip(evidence_flags, evidence_files)
+                              for value in (flag, str(path)))
+    relative_evidence = tuple(value for flag, path in zip(evidence_flags, evidence_files)
+                              for value in (flag, path.name))
+    # Read these actual files, then fail schema validation before any attestation call.
+    evidence_result = cli(root, "--summary-json", *absolute_evidence, cwd=workspace)
+    assert evidence_result.returncode == 1 and "unsupported ADK release contract schema" in evidence_result.stdout
+    trusted = cli(root, "--summary-json", cwd=workspace)
+    missing_root = shadow / "missing root"
+    cases = (
+        ("valid-root", (str(root), "--summary-json"), trusted, 0),
+        ("relative-flag-root", ("--root", "..", "--summary-json"), trusted, 0),
+        ("default-root", ("--summary-json",), cli(workspace, "--summary-json", cwd=workspace), 0),
+        ("unknown-option", (str(root), "--unknown-option"),
+         cli(root, "--unknown-option", cwd=workspace), 2),
+        ("invalid-root", (str(missing_root), "--summary-json"),
+         cli(missing_root, "--summary-json", cwd=workspace), 1),
+        ("relative-evidence", ("..", "--summary-json", *relative_evidence), evidence_result, 1),
+    )
+    failures = []
+    for name, arguments, reference, status in cases:
+        actual = cli(root, *arguments, cwd=shadow, wrapped=True)
+        print(f"shadow-cwd/{name}: exit={actual.returncode} expected={status}")
+        try:
+            same_result(actual, reference, status)
+        except AssertionError as exc:
+            failures.append((name, str(exc)))
+    assert not failures, failures
+    print("[PASS] caller-owned tools cannot shadow the actual source-pin verifier")
 
     cache = root / "adk.lock"
     derived = materialize_lock_projection(root)
@@ -205,6 +288,8 @@ with tempfile.TemporaryDirectory(prefix="adk-single-pin-") as tmp:
 
     (adk / "manifest.json").write_text('{"version":"9.2.2"}\n', encoding="utf-8")
     expect_fail(lambda: source_pin(root), "dirty manifest")
+    same_result(cli(root, str(root), "--summary-json", cwd=root.parent, wrapped=True),
+                cli(root, "--summary-json", cwd=root.parent), 1)
     git(adk, "checkout", "--", "manifest.json")
     # A real, distinct commit is needed: Git refuses all-zero gitlink SHA.
     (adk / "fixture-drift.txt").write_text("second valid commit\n", encoding="utf-8")
@@ -214,6 +299,8 @@ with tempfile.TemporaryDirectory(prefix="adk-single-pin-") as tmp:
     git(root, "update-index", "--cacheinfo", "160000," + commit + ",agent-dev-kit")
     assert second_commit != commit
     expect_fail(lambda: source_pin(root), "gitlink differs from worktree")
+    same_result(cli(root, str(root), "--summary-json", cwd=root.parent, wrapped=True),
+                cli(root, "--summary-json", cwd=root.parent), 1)
 
 print("[PASS] single Git pin and signed-claim boundaries; stale authentic evidence is not arbitrarily expired")
 PY

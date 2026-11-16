@@ -153,7 +153,7 @@ scripts/check-official-docs-adoption-review.sh .
 
 release-clean 模式校验 `adk.lock`、`agent-dev-kit/manifest.json`、ADK worktree 和根仓 gitlink commit 完全一致；working-tree integration 模式允许父仓 gitlink 暂未提交，但要求 lock 匹配 ADK worktree，且新 commit 必须继承已记录 gitlink，防止把分叉历史伪装成待集成状态。
 
-`check-adk-harden-readiness.sh` 的完整 ADK suite 只接受 Python 3.11+；旧解释器必须 fail-fast，不能产生 release-grade harden pass。旧环境只可显式使用 `--skip-full-suite` 执行非发布治理检查，并另行提供受控 Python 3.11/3.12 full parity。
+`check-adk-harden-readiness.sh` 的完整 ADK suite 只接受 Python 3.12；不支持的解释器必须 fail-fast，不能产生 release-grade harden pass。旧环境只可显式使用 `--skip-full-suite` 执行非发布治理检查，并另行提供受控 Python 3.12 full parity。
 子仓状态检查脚本：
 
 ```bash

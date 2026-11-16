@@ -24,7 +24,7 @@ TIERS = {
         "rtk scripts/check-all.sh --quick --working-tree",
     ],
     "L4": [
-        "rtk bash agent-dev-kit/scripts/run-local-ci-parity.sh --python all --mode full",
+        "rtk bash agent-dev-kit/scripts/run-local-ci-parity.sh --python 3.12 --mode full",
         "rtk bash tests/run_all.sh --fail-fast",
         "rtk scripts/check-all.sh --quick --working-tree",
     ],
