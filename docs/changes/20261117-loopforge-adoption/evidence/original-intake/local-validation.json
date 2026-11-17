@@ -1,0 +1,51 @@
+{
+  "scope": "documentation-evidence-only",
+  "base": "e288e406eb2262f354e36e69ce93b5fb46a70b49",
+  "tier": "L1",
+  "results": [
+    {
+      "status": "fulfilled",
+      "value": {
+        "name": "diff-check",
+        "chunk_id": "4e0c4e",
+        "wall_time_seconds": 0.000030782,
+        "exit_code": 0,
+        "original_token_count": 0,
+        "output": ""
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "name": "doc-sync",
+        "chunk_id": "284aa8",
+        "wall_time_seconds": 0.000029598,
+        "exit_code": 0,
+        "original_token_count": 12,
+        "output": "[PASS] docs and governance files are in sync\n"
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "name": "agents-coverage",
+        "chunk_id": "05610e",
+        "wall_time_seconds": 0.000032374,
+        "exit_code": 0,
+        "original_token_count": 170,
+        "output": "repo                         path       coverage  \n---------------------------- ---------- ----------\nOpenSpec                     CACHE      ROOT-SSOT \nagent-dev-kit                YES        LOCAL     \nmattpocock-skills            CACHE      ROOT-SSOT \noh-my-codex                  CACHE      OVERLAY   \nplanning-with-files          CACHE      ROOT-SSOT \nsuperpowers                  CACHE      ROOT-SSOT \nvibeflow                     CACHE      OVERLAY   \nscale-engine                 CACHE      ROOT-SSOT \ndigital-worker               CACHE      ROOT-SSOT \n\n[SUMMARY] active=9 root_ssot=6 local=1 overlay=2 missing_path=0 root_agents_lines=46\n[OK] AGENTS coverage complete\n"
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "name": "token-budget",
+        "chunk_id": "199474",
+        "wall_time_seconds": 4.819948937,
+        "exit_code": 0,
+        "original_token_count": 173,
+        "output": "{\"status\":\"pass\",\"budget_status\":\"warning\",\"estimate_method\":\"utf8-bytes-ceil-div-4\",\"governance_json_bytes\":1538,\"governance_json_limit\":3500,\"root_agents_bytes\":3886,\"root_agents_soft_limit\":3400,\"root_agents_estimated_tokens\":972,\"adk_agents_bytes\":2914,\"adk_agents_soft_limit\":2975,\"adk_agents_estimated_tokens\":729,\"global_agents_bytes\":0,\"global_agents_soft_limit\":3825,\"global_agents_estimated_tokens\":0,\"global_agents_status\":\"not-found\",\"cumulative_agents_bytes\":6800,\"cumulative_agents_soft_limit\":10200,\"cumulative_agents_limit\":12000,\"cumulative_agents_estimated_tokens\":1700,\"max_root_lines\":512,\"max_root_file\":\"scripts/README.md\",\"summary_scripts\":6,\"warnings\":1,\"failures\":0}\n"
+      }
+    }
+  ]
+}
