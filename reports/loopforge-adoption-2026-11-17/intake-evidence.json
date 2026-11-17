@@ -1,0 +1,37 @@
+{
+  "as_of": "2026-11-17",
+  "auto_actions": [],
+  "boundaries": {
+    "adk_modified": false,
+    "article_body_persisted": false,
+    "credentials_persisted": false,
+    "decision_generated": false,
+    "external_code_executed": false,
+    "live_runtime_modified": false,
+    "network_write": false,
+    "repository_modified": false
+  },
+  "candidate_count": 7,
+  "deduplicated_count": 0,
+  "jobs": [
+    {
+      "candidate_count": 7,
+      "deduplicated_count": 0,
+      "duration_ms": 1,
+      "error_code": null,
+      "id": "manual-collect",
+      "input_ref": "reports/loopforge-adoption-2026-11-17/source-metadata.jsonl",
+      "input_sha256": "28f4640b9623529eeb094c4bbb36d00ed38deeb775863bf2a3d0b67a8070f26f",
+      "mode": "manual",
+      "provider": "manual",
+      "rate_limit": {},
+      "request": null,
+      "status": "complete",
+      "transport": "ledger-only"
+    }
+  ],
+  "ledger_sha256": "660df8d9c07a304507adc1e9a0e761014c277a89a998a0747642a845d85195ce",
+  "mode": "report-only",
+  "schema": "external-practice-cycle-evidence/v1",
+  "status": "complete"
+}
