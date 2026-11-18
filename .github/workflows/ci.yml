@@ -48,33 +48,6 @@ jobs:
       - name: Install declared control-plane dependencies
         run: python -m pip install .
 
-      - name: Generate exact 11.4.4 source-only promotion in isolated worktree
-        run: |
-          set -euo pipefail
-          promotion_worktree="$RUNNER_TEMP/adk-method-source-worktree"
-          promotion_output="$RUNNER_TEMP/adk-method-source-output"
-          test ! -e "$promotion_worktree"
-          test ! -e "$promotion_output"
-          mkdir -p "$promotion_output"
-          git worktree add --detach "$promotion_worktree" HEAD
-          git -C "$promotion_worktree" submodule update --init --no-recommend-shallow agent-dev-kit
-          git -C "$promotion_worktree/agent-dev-kit" checkout --detach af62502ec9a5be1abf98f040e7488a0b7a9ec504
-          (
-            cd "$promotion_worktree"
-            bash scripts/promote-adk.sh --source-only --candidate-dir agent-dev-kit \
-              --ref af62502ec9a5be1abf98f040e7488a0b7a9ec504 --updated-at 2026-11-18 \
-              --apply --receipt-out "$promotion_output/receipt.json" --summary-json
-          )
-          cp "$promotion_worktree/reports/current-status.md" "$promotion_output/current-status.md"
-
-      - name: Upload original 11.4.4 source-only promotion transaction
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: adk-method-source-generation-11.4.4
-          path: ${{ runner.temp }}/adk-method-source-output/
-          if-no-files-found: error
-          retention-days: 14
-
       - name: Type-check scoped control-plane safety contracts
         run: |
           python -m pip install '.[quality]'
