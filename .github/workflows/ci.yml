@@ -48,6 +48,36 @@ jobs:
       - name: Install declared control-plane dependencies
         run: python -m pip install .
 
+      # Temporary generation transport; removed before this PR's final consumer commit.
+      # This isolated worktree creates staged-not-verified source evidence only.
+      - name: Generate source-only promotion in an isolated worktree
+        shell: bash
+        run: |
+          set -euo pipefail
+          promotion_worktree="$RUNNER_TEMP/adk-method-source-worktree"
+          promotion_output="$RUNNER_TEMP/adk-method-source-output"
+          test ! -e "$promotion_worktree"
+          test ! -e "$promotion_output"
+          mkdir -p "$promotion_output"
+          git worktree add --detach "$promotion_worktree" HEAD
+          git -C "$promotion_worktree" submodule update --init --no-recommend-shallow agent-dev-kit
+          git -C "$promotion_worktree/agent-dev-kit" checkout --detach bf292c412ae12168dd09a76b6edcb945f3dbdcd1
+          (
+            cd "$promotion_worktree"
+            bash scripts/promote-adk.sh --source-only --candidate-dir agent-dev-kit \
+              --ref bf292c412ae12168dd09a76b6edcb945f3dbdcd1 --updated-at 2026-11-18 \
+              --apply --receipt-out "$promotion_output/receipt.json" --summary-json
+          )
+          cp "$promotion_worktree/reports/current-status.md" "$promotion_output/current-status.md"
+
+      - name: Upload source-only generation evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: adk-method-source-generation-11.4.3
+          path: ${{ runner.temp }}/adk-method-source-output/
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Type-check scoped control-plane safety contracts
         run: |
           python -m pip install '.[quality]'
