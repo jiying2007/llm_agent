@@ -149,8 +149,20 @@ rtk bash agent-dev-kit/tests/run_all.sh --fail-fast
 
 完成声明必须包含命令、退出码、摘要、证据路径和层级。live network/pilot 未执行时必须写 `not-run`，不能用 fixture 代替。
 
-## 8. 长期知识
+## 8. 长期方法与知识
 
 - 长期保存脱敏 source/decision/validation/retirement 结论，不保存 raw response、正文、token、cache 或一次性日志。
 - Knowledge Hub 只接收 reviewing/validated candidate；active promotion 仍需 owner gate。
-- 历史报告和 adoption matrix 作为 provenance 保留，不重新解释为活跃入口。
+- 历史报告和 adoption matrix 的历史记录作为 provenance 保留，不重新解释为当前授权。
+
+需要复用的方法按 [七字段方法记录](runbooks/evidence-driven-optimization.md#8-方法记录) 写入已有 change、decision 或 implementation map；用原 candidate/decision/change ID 和稳定证据路径关联，不新增平行台账或 schema。已有内容直接引用，小幅文字修订不重复建立方法记录。
+
+| 材料 | 权威与维护边界 |
+|---|---|
+| 规范 | 本文件、当前 schema 与 canonical gate 规定边界；变更沿原 change/review 流程，候选或历史结论不能覆盖 |
+| 默认实践 | 已批准 Skill/runbook 说明适用条件与推荐步骤；按任务选用，偏离时记录实际条件与理由，不放宽规范 |
+| 实验候选 | 未验证假设、比较方案和 method-only 观察保留在既有候选/变更材料；不能仅凭采纳理由默认启用或宣称有效 |
+| 历史证据 | 固定 source、任务与当时结果供追溯；当前决策重新核对适用性，不继承旧版本的效果或资格 |
+
+这四类只解释材料权威，不新增状态机。来源与取舍由 decision 承担，机制与资产落点由 change 承担，验证与真实效果由原测试/评测回执承担；导航只链接这些事实。生产 adoption matrix 仍只投影符合生产 intake 合同的真实资产，method-only 的沉淀不登记为生产 done。
+

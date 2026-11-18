@@ -12,6 +12,7 @@
 ## 2. 路由与 SSOT
 
 - 外部实践 intake：`docs/runbooks/external-practice-intake.md`；只生成 review-required candidate。
+- Skill/方法迭代：`docs/llm-agent-maintenance-guide.md#21-按问题查找方法`；复用现有规范、七字段记录和分层验证，不新增平行台账。
 - 参考仓生命周期：`docs/runbooks/reference-repository-lifecycle.md`；candidate 与 ADOPT decision 分离，默认 dry-run。
 - 检查/同步/差异/分析：`scripts/check-all.sh`、`scripts/sync-subrepos.sh`、`scripts/diff-scan.sh`、`scripts/analyze-repo.sh`。
 - 优化/发布/吸收：`agent-dev-kit/scripts/devkit.sh`、`scripts/version-manager.sh`、`docs/absorption-governance.md`。
@@ -44,3 +45,4 @@ rtk bash ~/codex/scripts/knowledge-provider.sh context --cwd "$PWD" --query "<�
 - 外部参考只作输入；生产资产由 ADK manifest/handoff 声明。公众号仅 metadata，不保存正文、不自动吸收。
 - 轻量门禁：`rtk scripts/check-doc-sync.sh .`、`rtk scripts/check-agents-coverage.sh .`、`rtk scripts/check-token-budget.sh . --summary-json`。
 - 非平凡验证先运行 `rtk python3 -m tools.codex_assets.validation_plan --root . --summary-json`；按L1-L4执行，harden优先复用同snapshot supported-full receipt，Codex刷新仍走完整source-to-live。
+
