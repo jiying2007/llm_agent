@@ -165,4 +165,3 @@ rtk bash agent-dev-kit/tests/run_all.sh --fail-fast
 | 历史证据 | 固定 source、任务与当时结果供追溯；当前决策重新核对适用性，不继承旧版本的效果或资格 |
 
 这四类只解释材料权威，不新增状态机。来源与取舍由 decision 承担，机制与资产落点由 change 承担，验证与真实效果由原测试/评测回执承担；导航只链接这些事实。生产 adoption matrix 仍只投影符合生产 intake 合同的真实资产，method-only 的沉淀不登记为生产 done。
-

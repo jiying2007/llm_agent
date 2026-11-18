@@ -45,4 +45,3 @@ rtk bash ~/codex/scripts/knowledge-provider.sh context --cwd "$PWD" --query "<�
 - 外部参考只作输入；生产资产由 ADK manifest/handoff 声明。公众号仅 metadata，不保存正文、不自动吸收。
 - 轻量门禁：`rtk scripts/check-doc-sync.sh .`、`rtk scripts/check-agents-coverage.sh .`、`rtk scripts/check-token-budget.sh . --summary-json`。
 - 非平凡验证先运行 `rtk python3 -m tools.codex_assets.validation_plan --root . --summary-json`；按L1-L4执行，harden优先复用同snapshot supported-full receipt，Codex刷新仍走完整source-to-live。
-
