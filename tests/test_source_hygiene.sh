@@ -15,4 +15,12 @@ assert data["status"] == "pass", data
 assert data["violations"] == [], data
 PY
 
-echo "[PASS] source hygiene contract"
+# Retired Root scripts must not reintroduce a second version authority or direct live restore.
+for retired in scripts/version-manager.sh scripts/backup-rollback.sh; do
+  if [[ -e "$ROOT/$retired" || -L "$ROOT/$retired" ]]; then
+    echo "[FAIL] retired Root control path reintroduced: $retired" >&2
+    exit 1
+  fi
+done
+
+echo "[PASS] source hygiene contract and retired Root surface"

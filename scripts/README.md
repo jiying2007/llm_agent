@@ -354,18 +354,9 @@ rtk scripts/check-reference-repository-registration.sh . --summary-json
 显式授权的 `--apply --materialization local-submodule` 才能修改受管元数据。
 未形成有效决策时保持 `observe/review-required`，不得以原有“一键接入”绕过门禁。
 
-## 5. 备份回滚
+## 5. 受保护回退
 
-```bash
-scripts/backup-rollback.sh [ACTION] [OPTIONS]
-```
-
-功能：
-- 提供安装资产的备份和回滚能力。
-- `backup`：创建当前 `~/.codex` 的完整备份快照；生产变更优先使用 `~/codex` apply plan / rollback。
-- `rollback`：从已有备份点恢复 `~/.codex`；常规资产回滚优先走 `~/codex/scripts/rollback.sh`。
-- `list`：列出所有可用备份点。
-- 支持自动清理过期备份。
+Root 不直接备份、覆盖或恢复 `~/.codex`。源码版本回退通过 Git 受保护 PR 和精确 ADK pin 重新验证；运行资产回退由 `~/codex` 的已审查计划、回滚与健康检查负责，必须保持原审批和证据。不得对 live root 进行通用目录删除或直接解包覆盖。
 
 ## 6. 全局 codex 目标策略校验
 
@@ -448,18 +439,18 @@ scripts/health-check.sh --summary-json
 - 输出通过/失败/警告三级状态报告。
 - `--summary-json` 输出低 token JSON 摘要，包含实时 `status`、`subrepo_state`、root scripts/manifests/reports 与 ADK agents/skills/profiles/workflows/tests/manifests 数量；这是当前资产数量 SSOT，active 文档不得硬编码这些可变统计。
 
-## 10. 版本管理
+## 10. ADK 源码升级与版本身份
+
+Root 不维护独立工作区版本，也不维护可手工锁定的 `manifest.yaml`。
+`agent-dev-kit` Gitlink 是唯一 ADK source pin；忽略的 `adk.lock` 只能由原控制面按 Git 身份生成。
+升级时在干净的受审查候选工作树使用原 `scripts/promote-adk.sh`，由受保护 PR 的 CI 核验不可变发行、签名、接口、消费链和当前状态投影。仅生成 source-only 事务不构成产品放行。
 
 ```bash
-scripts/version-manager.sh [ACTION] [OPTIONS]
+rtk python3 -m tools.control_plane.cli status --root . --summary-json
+rtk bash scripts/check-adk-lock.sh . --pin-only
 ```
 
-功能：
-- 管理 `agent-dev-kit` 的版本锁定和升级路径。
-- `check`：检查当前版本状态。
-- `lock`：锁定当前版本号。
-- `upgrade`：执行版本升级并验证。
-- 支持版本回退和变更日志生成。
+具体操作与回退边界见 `docs/runbooks/production-deployment.md`。
 
 ## 11. 自动生成周报
 
