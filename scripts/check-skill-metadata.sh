@@ -12,7 +12,20 @@ fi
 
 collect_manifest_items() {
   local section="$1"
-  jq -r --arg section "$section" '.[$section][] | [.name, .path, (.quality_tier // "")] | join("|")' "$MANIFEST"
+  # Slurp the whole file before producing rows: malformed trailing input must
+  # never leave a partial successful inventory through process substitution.
+  jq -sr --arg section "$section" '
+    if length != 1 or (.[0] | type) != "object" then
+      error("manifest must contain exactly one JSON object")
+    else
+      .[0][$section] |
+      if type != "array" or length == 0 then
+        error("skill section missing or empty: " + $section)
+      else
+        .[] | [.name, .path, (.quality_tier // "")] | join("|")
+      end
+    end
+  ' "$MANIFEST"
 }
 
 frontmatter_value() {
@@ -33,8 +46,22 @@ frontmatter_value() {
 
 fail_count=0
 
-mapfile -t core_items < <(collect_manifest_items "skills")
-mapfile -t optional_items < <(collect_manifest_items "optional_skills")
+
+# Command substitution preserves jq's failure status, unlike mapfile < <(...).
+core_raw="$(collect_manifest_items "skills")" || {
+  echo "[FAIL] invalid core skill manifest inventory" >&2
+  exit 2
+}
+optional_raw="$(collect_manifest_items "optional_skills")" || {
+  echo "[FAIL] invalid optional skill manifest inventory" >&2
+  exit 2
+}
+[[ -n "$core_raw" && -n "$optional_raw" ]] || {
+  echo "[FAIL] empty skill manifest inventory" >&2
+  exit 2
+}
+mapfile -t core_items <<< "$core_raw"
+mapfile -t optional_items <<< "$optional_raw"
 
 if [[ ${#core_items[@]} -eq 0 ]]; then
   echo "[FAIL] manifest skills section is empty" >&2
