@@ -39,13 +39,15 @@ assert requirements['LTA-01']['status'] == 'pass'
 assert requirements['LTA-03']['status'] == 'pass'
 
 lta02 = requirements['LTA-02']
-assert lta02['status'] == 'delegated_nonblocking_observation'
-assert lta02['affects'] == ['runtime-portability-observation']
-assert lta02['implementation_status'] == 'observer-ready'
-assert lta02['pending_evidence'] == 'fresh-digital-worker-periodic-r2-qualification-receipt-for-observation'
+assert lta02['status'] == 'retired_nonblocking_historical'
+assert lta02['affects'] == []
+assert lta02['implementation_status'] == 'retired-historical-only'
+assert lta02['pending_evidence'] is None
 assert lta02['required_evidence_level'] == 'R2-periodic-real-provider-substitution'
 assert lta02['r1_binding_conformance_is_terminal_evidence'] is False
-assert lta02['qualification_authority'] == 'jiying2007/digital-worker'
+assert lta02['qualification_authority'] is None
+assert lta02['historical_qualification_authority'] == 'jiying2007/digital-worker'
+assert lta02['active_runtime_qualification'] is False
 assert lta02['terminal_blocking'] is False
 
 ownership = runtime_pilot['execution_ownership']
@@ -75,6 +77,9 @@ assert lta04['pilot_start_at'] == '2026-09-12T04:19:00Z'
 assert lta04['earliest_qualification_at'] == '2026-10-12T04:19:00Z'
 assert lta04['minimum_calendar_days'] == 30
 assert lta04['pending_evidence'] == 'real-end-window-field-observation-and-reviewed-summary-evidence'
+assert lta04['retired_pilot_repository'] is True
+assert lta04['historical_pilot_only'] is True
+assert lta04['new_independent_pilot_required_for_future_qualification'] is True
 
 terminal = lta['terminal']
 assert terminal == {
