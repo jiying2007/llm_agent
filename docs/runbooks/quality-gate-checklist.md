@@ -1,6 +1,6 @@
 # 质量门禁 Check 脚本 Runbook
 
-本 runbook 覆盖 `scripts/` 目录下 10 个质量门禁检查脚本的用途、用法、通过标准与失败排查。
+本 runbook 记录现有质量门禁检查脚本的用途、用法、通过标准与失败排查；实际运行集合以 CI 与入口脚本为准。
 
 ---
 
@@ -119,13 +119,13 @@ scripts/check-runtime-targets.sh [WORKSPACE_ROOT] --summary-json
 **通过标准**:
 - `schema_version=1` 且 `status=active`。
 - `default_target` 指向已声明 target。
-- 默认 target 当前为 `codex`，`source_repo=~/codex`，`live_root=~/.codex`。
+- 默认 target 当前为 `codex-home`（runtime kind 为 `codex`），`source_repo=~/codex`，`live_root=~/.codex`。
 - 默认 target 与 `adk.lock` 的 `codex.source` / `codex.target` 一致。
 - `subrepos/registry.csv` 的 `codex` 行保持 `runtime-target`、`enabled=no`、`status=disabled`、`intake_policy=pilot-first`。
-- 支持的 runtime kind 至少包含 `codex`、`claude-code`、`hermes-agent`、`opencode`。
+- 当前声明的 runtime kind 为 `codex`、`claude-code`、`opencode`，后两者仍是禁用候选，不能视为 active target。
 
 **失败排查**:
-- manifest 与 `adk.lock` 不一致 → 先确认真实 source/live 链路，再同步两处事实。
+- manifest 与 `adk.lock` 不一致 → 以 Gitlink 和已审查的 target 声明为准重新生成临时 `adk.lock`，不得手工维护第二份版本事实。
 - registry 缺少 `codex` 行或状态不符 → 恢复 runtime-target 禁用参考仓语义，避免把 `~/codex` 当参考子仓同步。
 - target check 脚本缺失或不可执行 → 修复脚本入口和文件权限后复跑。
 
@@ -151,7 +151,7 @@ scripts/check-reference-dirty-triage.sh . --date YYYY-MM-DD --summary-json
 
 ## 7. check-runtime-health.sh
 
-**用途**: 读取 `manifests/runtime_targets.json` 的默认或指定 target，再通过 `manifests/runtime_health_adapters.json` 中的 `target.health_adapter` 绑定分发到只读健康检查 adapter。当前 active target 是 `codex-home`，因此会调用 `check-global-codex-health.sh`。
+**用途**: 读取 `manifests/runtime_targets.json` 的默认或指定 target，再通过 `manifests/runtime_targets.json` 内的 `health_adapters` 和 `target.health_adapter` 绑定分发到只读健康检查 adapter。当前 active target 是 `codex-home`，因此会调用 `check-global-codex-health.sh`。
 
 **用法**:
 ```bash
@@ -207,7 +207,7 @@ scripts/check-global-codex-health.sh [CODEX_ROOT] [PROFILE]
 
 ---
 
-## 9. check-global-codex-target-policy.sh
+## 10. check-global-codex-target-policy.sh
 
 **用途**: 确保工作区未回退到使用本地 `codex/` 目录，强制使用 `~/codex` 作为声明式资产仓库，并由它 apply 到全局 `~/.codex`。该检查也会联动 `check-runtime-targets.sh`，确保 target registry 没有漂移。
 
@@ -227,7 +227,7 @@ scripts/check-global-codex-target-policy.sh [WORKSPACE_ROOT]
 
 ---
 
-## 7. check-adk-target-evidence.sh
+## 11. check-adk-target-evidence.sh
 
 **用途**: 防止 `adoption-matrix` 只更新 `llm_agent` 报告却声明已经落地到 `agent-dev-kit`。
 
@@ -243,7 +243,7 @@ scripts/check-adk-target-evidence.sh [WORKSPACE_ROOT]
 **失败排查**:
 - `[FAIL] adk target evidence checks failed` → 要么把实践真正回灌到 `agent-dev-kit` 资产并补 evidence，要么把 `target` 降为 `llm_agent` / `reference-only`。
 
-## 8. check-observe-intake-depth.sh
+## 12. check-observe-intake-depth.sh
 
 **用途**: 校验 `observe + done` 行具备 Agent/Skill/Workflow 三层证据及 intake 任务包报告。当无 `observe+done` 行时自动通过。
 
@@ -263,7 +263,7 @@ scripts/check-observe-intake-depth.sh [WORKSPACE_ROOT]
 
 ---
 
-## 9. check-runtime-routing.sh
+## 13. check-runtime-routing.sh
 
 **用途**: 校验当前 ADK JSON Manifest 的核心 profile、路由矩阵、Skill 和 runbook；随后执行触发冲突检查与 ADK strict validator。
 
@@ -284,7 +284,7 @@ rtk scripts/check-runtime-routing.sh [WORKSPACE_ROOT]
 
 ---
 
-## 10. check-skill-metadata.sh
+## 14. check-skill-metadata.sh
 
 **用途**: 校验 `agent-dev-kit` 中所有 skill 的 `SKILL.md` 元数据完整性。
 
@@ -305,7 +305,7 @@ rtk scripts/check-skill-metadata.sh [WORKSPACE_ROOT]
 
 ---
 
-## 11. check-skill-routing-conflicts.sh
+## 15. check-skill-routing-conflicts.sh
 
 **用途**: 检测 core 与 optional Skill frontmatter 中归一化后的 `triggers` 是否被多个 Skill 重复声明。
 
