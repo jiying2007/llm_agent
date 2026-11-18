@@ -37,8 +37,8 @@
 |---|---|---|
 | `AGENTS.md` | 工作区入口、意图路由、硬边界和高频验证入口 | 只在路由、硬边界或高频入口变化时同步更新；不得承载完整子仓清单 |
 | `subrepos/registry.csv` | 参考子仓单一清单 | 新增/禁用子仓必须更新 |
-| `subrepos/adoption-matrix.md` | 候选采纳矩阵 | 每个候选必须有决策、状态、目标层和证据 |
-| `subrepos/adoption-matrix.jsonl` | 候选矩阵结构化导出 | 由 Markdown 矩阵机械生成，供脚本低 token 读取 |
+| `subrepos/adoption-matrix.md` | 生产采纳矩阵 | 符合原生产/参考仓 intake 合同的条目记录决策、状态、目标层和证据；method-only 研究沿原 decision/change 记录 |
+| `subrepos/adoption-matrix.jsonl` | 生产采纳矩阵结构化导出 | 由 Markdown 矩阵机械生成，供脚本低 token 读取 |
 | `subrepos/phase-gate.env` | 是否允许追踪上游更新 | 默认先压实 adk，再开门同步 |
 | `subrepos/dirty-baseline.tsv` | observe 子仓预期 dirty 状态 | 区分已知参考仓噪音与本轮风险 dirty |
 | `agent-dev-kit` Gitlink | 唯一 ADK 版本指针 | 受保护升级 PR 更新；`adk.lock` 是忽略且可重新生成的临时消费缓存，不提交 |
@@ -50,6 +50,22 @@
 | `agent-dev-kit/` | adk 源资产与测试 | 所有候选能力先在这里压实并导出 |
 | `~/codex` | 本机 Codex CLI 声明式资产仓库 | 吸收 adk 资产，执行 build/doctor/apply，再影响 `~/.codex` |
 
+### 2.1 按问题查找方法
+
+本表只导航，具体要求以链接文档及其原有合同为准。ADK 路径随本仓 Gitlink 读取；上游 main 和历史报告不能代表当前已消费行为。
+
+| 当前问题 | 方法入口 | 应回读的结果 |
+|---|---|---|
+| 外部实践是否值得吸收 | [吸收规范](absorption-governance.md) 与 [intake](runbooks/external-practice-intake.md) | 既有 candidate、独立 decision、取舍与目标资产 |
+| Skill 应增强、组合还是新增 | [Skill 整理](../agent-dev-kit/docs/runbooks/skill-curation-delivery.md) | 职责、唯一触发、core/optional/reject 与依赖边界 |
+| 澄清、头脑风暴或方案挑战是否有效 | [交互发现评测](../agent-dev-kit/docs/evals/interactive-discovery-evaluation.md) | 真实对话、决策质量、用户负担与未测项 |
+| 重复失败或性能问题如何改进 | [以实际结果驱动优化](runbooks/evidence-driven-optimization.md) | 原失败、最小改动、对照与七字段方法记录 |
+| Skill 是否改善任务质量与成本 | [Skill 行为回归](../agent-dev-kit/optional-skills/adk-skill-composition-governance/references/skill-behavior-evaluation.md) | 同任务原始轨迹、最终产物、负收益与真实用量 |
+| Goal/Loop 是否存在无效调用 | [事件预检与 Token 对照](runbooks/goal-loop-token-efficiency.md) | Host 事件、已确认回执、成对用量及接入状态 |
+| ADK 成果如何由 Root 消费 | [发布与升级入口](../README.md#快速入口) | 精确 source/release、消费验证与当前状态投影 |
+
+研究方法通过 decision/change/runbook 关联；生产资产通过原 adoption matrix 与 ADK manifest 关联。两者共享证据指针，不合并验收语义，也不另建方法状态台账。
+
 ## 3. 维护流程
 
 ### 3.0 AGENTS 瘦身边界
@@ -57,7 +73,7 @@
 根 `AGENTS.md` 是 AI 进入本仓时的低 token 入口，不是治理资料库。维护时遵循以下分流：
 
 - 子仓是否纳入治理、owner、状态、复审日期：写入 `subrepos/registry.csv`。
-- 候选实践的采纳/观察/拒绝、目标层和证据：写入 `subrepos/adoption-matrix.md`。
+- 外部实践候选及五项研究决策：沿既有 candidate/decision 工件记录；仅符合原生产/参考仓 intake 合同的条目投影到 `subrepos/adoption-matrix.md`，method-only 研究不强制入矩阵。
 - 可复现维护流程、门禁解释、source-to-live 证据链：写入本指南或对应 runbook。
 - 一次性试跑、复核、周报、证据包：写入 `reports/`。
 - 根 `AGENTS.md` 只保留意图路由、命令硬约束、吸收边界、常用验证入口和文档分流。
@@ -181,7 +197,7 @@ rtk scripts/diff-scan.sh . 7 reports/weekly-change-report.md
 
 ### 3.5 候选吸收
 
-候选吸收先走统一 `external-practice-candidate/v1 -> owner decision -> ADK change`。不使用跨来源分数，不把 star 或官方身份当作批准；只有独立 decision 和可审查证据齐全后，才更新 `subrepos/adoption-matrix.md` 或进入 reference repository lifecycle。
+候选吸收先走统一 `external-practice-candidate/v1 -> owner decision -> ADK change`。不使用跨来源分数，不把 star 或官方身份当作批准；独立 decision 和可审查证据齐全后，再按原合同判断是否投影到 `subrepos/adoption-matrix.md` 或进入 reference repository lifecycle。method-only 研究保留在原 decision/change，不强制入生产矩阵。
 
 ### 3.5.1 微信公众号账号研究归档
 
@@ -241,8 +257,10 @@ rtk tests/test_reference_repository_registration.sh
 rtk tests/test_reference_repository_removal.sh
 ```
 
-1. 在 `subrepos/adoption-matrix.md` 增加候选行。
-2. 给出 `adopt/observe/reject`。
+以下步骤仅适用于符合原生产/参考仓 intake 合同的矩阵条目；method-only 研究不执行此投影。
+
+1. 在 `subrepos/adoption-matrix.md` 增加对应条目并引用原 decision/证据。
+2. 按既有生产矩阵字段给出 `adopt/observe/reject`；这些小写值与外部研究决策的五项大写枚举是不同合同，不能机械互换。
 3. 对 `adopt + done`，必须有本地证据路径。
 4. 对 delivery 类 adopt，必须覆盖 Agent/Skill/Workflow 至少一层。
 5. 对安全、脚本、第三方资产，先走 `adk-security-supply-chain`。
@@ -256,22 +274,23 @@ rtk scripts/check-upstream-intake-readiness.sh .
 rtk scripts/check-adk-harden-readiness.sh . --require-pilot
 ```
 
-## 4. adk 变更分级
+## 4. 以实际影响选择验证
 
-| 变更类型 | 最小验证 | 说明 |
-|---|---|---|
-| 文档说明 | `rtk scripts/check-doc-sync.sh .` | 若涉及 adk docs，还应跑 adk 相关测试 |
-| runbook / workflow 文档 | `rtk agent-dev-kit/tests/run_all.sh` | 防止 catalog、格式、引用漂移 |
-| Agent/Skill 内容 | `rtk agent-dev-kit/tests/run_all.sh` | 会覆盖 frontmatter、内容质量、触发矩阵 |
-| profile / manifest | `rtk agent-dev-kit/tests/test_profile_coherence.sh` + `rtk agent-dev-kit/tests/run_all.sh` | 防止继承重复与未知引用 |
-| install / convert 脚本 | `rtk agent-dev-kit/tests/run_all.sh` | 必须覆盖安装、转换、dry-run |
-| external-practice manifest/schema | `rtk scripts/check-practice-intake.sh .` + `rtk tests/test_external_practice_intake.sh` | 防止 provider、candidate/decision/cycle、网络和正文边界漂移 |
-| external-practice fixture | `rtk tests/test_external_practice_intake.sh` | 七个 provider、Gitee degraded、幂等、redaction、预算和旧 schema 负例必须一致 |
-| Reference repository registration | `rtk scripts/check-reference-repository-registration.sh .` + `rtk tests/test_reference_repository_registration.sh` | 只接受 v1 candidate + 独立 `ADOPT` decision；默认 dry-run，不吸收 ADK |
-| Reference repository removal | `rtk scripts/check-reference-repository-removal.sh .` + `rtk tests/test_reference_repository_removal.sh` | 只生成/校验带 artifact hash 的 removal plan，禁止自动删除 |
-| Reference remote freshness | `rtk tests/test_reference_remote_audit.sh` | 默认离线；显式 `--allow-network` 后只观察 pin 与远端 HEAD，不更新 pin 或 dirty checkout |
-| root 门禁脚本 | `rtk scripts/check-adk-harden-readiness.sh . --require-pilot` | 影响生产放行链路 |
-| `~/codex -> ~/.codex` 部署 | `rtk scripts/check-adk-harden-readiness.sh . --require-pilot` + `~/codex` apply plan / dry-run / health 证据 | 必须保留 backup |
+非平凡变更先运行同一个 validation planner，由它根据实际 diff、共享合同和发布输入选择 L1–L4；本指南不维护另一套按文件类型固定全量的门禁表。
+
+```bash
+rtk python3 -m tools.codex_assets.validation_plan --root . --summary-json
+```
+
+| 实际影响 | 核对 planner 及定向验证是否覆盖 |
+|---|---|
+| 说明、索引与引用 | 文档同步和引用；若修改执行指令、验收或机器合同，补其行为验证，不能仅凭 `.md` 归为纯说明 |
+| Agent/Skill/Workflow/Profile | 实际触发、相邻负例、职责与依赖；全量范围由原计划和合同决定 |
+| 脚本、公共接口或发布输入 | 受影响调用者、正常与失败路径、所需完整回归和发布检查 |
+| 外部实践与参考仓生命周期 | 原 intake/registration/removal 检查，保留 candidate/decision、网络、来源和 dry-run 边界 |
+| `~/codex -> ~/.codex` 部署 | 完整 source-to-live、plan/dry-run/apply、backup 与运行健康证据，不能用文档验证替代 |
+
+按计划执行并记录命令、退出码和输入身份；未知影响或未解释失败先补证据。受保护 required CI、独立审核和发布合同仍适用，planner 不授予豁免或发布权限。同 snapshot 的可信 supported-full receipt 可沿原机制复用；工作树、环境或工具变化后重新判定，不能只凭 Git HEAD 复用旧结论。各专用检查见 [脚本手册](../scripts/README.md)。
 
 ## 5. 生产部署流程
 

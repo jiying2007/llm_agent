@@ -12,6 +12,7 @@
 ## 2. 路由与 SSOT
 
 - 外部实践 intake：`docs/runbooks/external-practice-intake.md`；只生成 review-required candidate。
+- Skill/方法迭代：`docs/llm-agent-maintenance-guide.md#21-按问题查找方法`；复用现有规范、七字段记录和分层验证，不新增平行台账。
 - 参考仓生命周期：`docs/runbooks/reference-repository-lifecycle.md`；candidate 与 ADOPT decision 分离，默认 dry-run。
 - 检查/同步/差异/分析：`scripts/check-all.sh`、`scripts/sync-subrepos.sh`、`scripts/diff-scan.sh`、`scripts/analyze-repo.sh`。
 - 优化/发布/吸收：`agent-dev-kit/scripts/devkit.sh`、`scripts/version-manager.sh`、`docs/absorption-governance.md`。
