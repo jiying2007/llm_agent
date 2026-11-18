@@ -32,6 +32,23 @@ git -C "${TMP_DIR}" \
   -c user.email="check-all@example.invalid" \
   commit -q -m "fixture"
 
+# A smoke gate must not silently skip missing mandatory checks.
+if bash "${TMP_DIR}/scripts/check-all.sh" --smoke >"${TMP_DIR}/smoke-missing.out" 2>&1; then
+  echo "[FAIL] smoke gate silently accepted missing required scripts" >&2
+  exit 1
+fi
+rg -q --fixed-strings -- "required smoke check missing or not a regular file: check-adk-lock.sh" "${TMP_DIR}/smoke-missing.out"
+
+# A full gate with no discovered checks must also fail closed.
+mkdir -p "${TMP_DIR}/empty-suite/scripts/lib"
+cp "${ROOT}/scripts/check-all.sh" "${TMP_DIR}/empty-suite/scripts/check-all.sh"
+cp "${ROOT}/scripts/lib/same-run-evidence.sh" "${TMP_DIR}/empty-suite/scripts/lib/same-run-evidence.sh"
+if bash "${TMP_DIR}/empty-suite/scripts/check-all.sh" --full >"${TMP_DIR}/empty-suite.out" 2>&1; then
+  echo "[FAIL] empty full check suite incorrectly passed" >&2
+  exit 1
+fi
+rg -q --fixed-strings -- "no check scripts discovered" "${TMP_DIR}/empty-suite.out"
+
 result_json="${TMP_DIR}/result.json"
 output="${TMP_DIR}/output.txt"
 if bash "${TMP_DIR}/scripts/check-all.sh" \
