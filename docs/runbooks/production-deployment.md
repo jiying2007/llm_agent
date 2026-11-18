@@ -1,425 +1,59 @@
-# 生产部署运行手册
+# 生产部署与回退（Root / ADK）
 
-## 概述
+本手册只描述当前有效的**源码消费**与**运行资产交付**。Root 本身不是 Agent runtime，不直接写 `~/.codex`，不得使用旧工作区版本锁、通用目录恢复或未审查的安装脚本替代 Gitlink / CI 验证。
 
-本手册指导如何将 agent-dev-kit 交接到 `~/codex`，再由 `~/codex` apply 到 `~/.codex` 生产运行目录。
+## 1. 身份和职责
 
-## 前置条件
+| 层 | 唯一事实源 | 允许动作 |
+| --- | --- | --- |
+| ADK 组件 | `agent-dev-kit/manifest.json`、已验证 commit/tag、不可变 Release 及摘要 | 构建、测试、发行纯 Agent/Skill 资产 |
+| Root 消费 | Root 的 `agent-dev-kit` Gitlink、生成的 `reports/current-status.md` | 受保护 PR 更新 source pin 并运行跨仓验收 |
+| Codex 声明式源 | `~/codex` 的自身 Manifest、构建与 apply/rollback 记录 | 独立审查后发布到 live |
+| Codex live | `~/.codex` | 只接收 `~/codex` 经过批准的 apply，不从 Root 直接写 |
+| 产品资格 | 当前源码身份对应的 runtime/field/owner 证据 | 单独认证，**不能**从组件发行或历史 M5 继承 |
 
-### 1. 环境要求
-- Bash 4.0+
-- Git 2.0+
-- 足够的磁盘空间
-- 网络访问权限
+Root 的 `adk.lock` 是忽略的可重建缓存，不是第二套版本权威。
 
-### 2. 权限要求
-- 读写 `~/codex` 声明式资产仓库
-- 由 `~/codex` 生成并写入 `~/.codex` 的权限
-- 执行脚本权限
-- 创建备份权限
+## 2. 组件升级：先发行，后精确消费
 
-### 3. 依赖检查
+1. 在 ADK 为**一个明确改动**提交有界需求、验证与回滚说明。需要修改公共 API、安装、版本或发布时，先检索消费者并在受保护 PR 完成完整回归。
+2. 使用原 `agent-dev-kit/scripts/version-manager.sh` 将 Manifest 与受管版本字段一起前移；禁止只改 README 或手工改动已发布标签。
+3. ADK 合并后以实际主线 CI、签名/摘要及不可变 Release 为准。若主线未发行、`latest` 倒退或 tag 与源码不符，停止 Root 晋级。
+4. 在**干净、已审查的候选工作树**中复用 `scripts/promote-adk.sh --source-only --apply` 生成 Root 消费事务。事务仅包含 Gitlink 与生成状态投影；临时构建步骤不能进入最终 main。
+5. Root PR 必须通过独立审查、不可变发行摘要与来源校验、接口合同、消费链和原有完整 CI；受保护合并后再核验 actual-main CI 和签名回执。
+
 ```bash
-bash scripts/health-check.sh check-dependencies
+# 均在 llm_agent 受治理工作区、已准备好 rtk / Python 3.12 环境中执行
+rtk python3 -m tools.control_plane.cli status --root . --summary-json
+rtk bash scripts/check-adk-lock.sh . --pin-only
+rtk bash scripts/check-current-status-consistency.sh .
+# source-only --apply 仅限经批准的升级候选，不能在普通工作目录盲跑
 ```
 
-## 部署流程
+来源与消费就绪不等于 `release_authorized=true`；状态以生成投影和产品资格证据独立判断。
 
-### 1. 准备阶段
+## 3. Codex source-to-live
 
-#### 1.1 验证源代码
+只有明确的 live 交付意图、环境可用和授权范围可核实，才进入 `~/codex`：
+
 ```bash
-# 运行所有测试
-bash tests/run_all.sh
-
-# 运行质量检查
-bash scripts/quality-gate-check.sh check-all
-
-# 运行健康检查
-bash scripts/health-check.sh check-all
-```
-
-#### 1.2 创建备份
-```bash
-# 备份当前运行目录；常规回滚优先使用 ~/codex apply plan
-rtk bash ~/codex/scripts/backup.sh
-```
-
-#### 1.3 锁定版本
-```bash
-# 锁定版本
-bash scripts/version-manager.sh lock --version 1.0.0
-```
-
-### 2. 部署阶段
-
-#### 2.1 构建并应用 Codex 源资产
-```bash
-# agent-dev-kit 保持平台中立，不直接写入 ~/.codex，也不提供 Codex 专属 handoff 命令
-bash scripts/devkit.sh validate --strict
-
-# 在 ~/codex 中构建、预览并应用声明式 Codex Home 资产
 rtk bash ~/codex/scripts/build.sh
 rtk bash ~/codex/scripts/doctor.sh --scope all
 rtk bash ~/codex/scripts/plan.sh --target ~/.codex --prune-stale --output ~/codex/build/apply-plan.json
 rtk bash ~/codex/scripts/apply.sh --plan ~/codex/build/apply-plan.json --dry-run
-rtk bash ~/codex/scripts/apply.sh --plan ~/codex/build/apply-plan.json
-rtk bash ~/codex/scripts/check.sh
 ```
 
-#### 2.2 验证交接与运行目录
-```bash
-# 验证 adk 资产
-bash scripts/devkit.sh validate --strict
+审查计划中所有新增、覆盖、删除和权限变化，取得 owner 的本次授权后，才由 `~/codex` 执行正式 apply 与 live health。以上命令是既有接口示例，实际参数以检出的 `~/codex` 版本和它的 `--help` 为准。Root 不替代这个过程，不以静态 smoke 代替宿主验证。
 
-# 验证 ~/codex 构建、治理和 live 状态
-cd ~/codex
-rtk bash scripts/doctor.sh --scope all
-```
+## 4. 故障处理与回退
 
-#### 2.3 配置环境
-```bash
-# 检查配置
-bash scripts/health-check.sh check-configuration
+- **ADK 发行失败**：暂停消费；保留失败日志和上个不可变版本，不重写或移动已发布标签。
+- **Root 消费失败**：保持现有 pin；通过受保护修复 PR 重新生成、核验 Gitlink/状态投影，不手改生成区域。
+- **live apply 失败或运行退化**：按 `~/codex` 的已审查 rollback/恢复能力和最新有效计划处理，再独立执行健康检查；不对 `~/.codex` 使用通用 `rm -rf` 或直接解包恢复。
+- **资格验证失败**：状态保持 `HISTORICAL_NOT_AUTHORIZED` / `release_authorized=false`，直到新身份获得新鲜签名、runtime 和 field 证据。
 
-# 验证配置
-cat manifest.yaml
-```
+## 5. 最小交付回执
 
-### 3. 验证阶段
+记录精确 ADK commit、Release/tag/digest、Root merge commit、两仓 CI URL、是否实际执行 source-to-live、live 变更计划/审批与健康结果，以及未测/阻断项。历史的原始失败和最后一次 M5 基线不得清空、篡改或重新贴到当前源码身份。
 
-#### 3.1 运行测试
-```bash
-# 运行所有测试
-bash tests/run_all.sh
-
-# 运行集成测试
-bash tests/test_integration.sh
-```
-
-#### 3.2 质量检查
-```bash
-# 运行质量门禁检查
-bash scripts/quality-gate-check.sh check-all
-
-# 运行健康检查
-bash scripts/health-check.sh check-all
-```
-
-#### 3.3 功能验证
-```bash
-# 创建测试变更
-bash scripts/workflow.sh propose --change test-deploy --title "测试部署"
-
-# 验证工作流
-bash scripts/workflow.sh apply --change test-deploy
-bash scripts/workflow.sh verify --change test-deploy
-bash scripts/workflow.sh review --change test-deploy --result pass --blockers 0 --majors 0 --minors 0
-bash scripts/workflow.sh archive --change test-deploy
-```
-
-### 4. 收尾阶段
-
-#### 4.1 生成文档
-```bash
-# 生成变更日志
-bash scripts/version-manager.sh changelog --version 1.0.0
-
-# 生成部署报告
-echo "部署完成: $(date)" > deploy-report.txt
-echo "版本: 1.0.0" >> deploy-report.txt
-echo "状态: 成功" >> deploy-report.txt
-```
-
-#### 4.2 清理临时文件
-```bash
-# 清理测试数据
-rm -rf docs/changes/test-deploy
-
-# 清理临时文件
-rm -rf /tmp/adk-*
-```
-
-#### 4.3 通知相关人员
-```bash
-# 发送部署通知
-echo "agent-dev-kit 1.0.0 部署完成" | mail -s "部署通知" team@example.com
-```
-
-## 回滚流程
-
-### 1. 识别问题
-```bash
-# 检查错误日志
-tail -100 /var/log/adk.log
-
-# 运行健康检查
-bash scripts/health-check.sh check-all --verbose
-```
-
-### 2. 执行回滚
-```bash
-# 回滚到上一版本
-bash scripts/backup-rollback.sh rollback --target ~/.codex --version pre-deploy
-
-# 或使用版本管理器
-bash scripts/version-manager.sh downgrade --target 0.9.0 --force
-```
-
-### 3. 验证回滚
-```bash
-# 验证回滚结果
-bash scripts/health-check.sh check-all
-
-# 运行测试
-bash tests/run_all.sh
-```
-
-## 监控和维护
-
-### 1. 定期检查
-```bash
-# 每日健康检查
-bash scripts/health-check.sh check-all
-
-# 每周质量检查
-bash scripts/quality-gate-check.sh check-all
-```
-
-### 2. 备份管理
-```bash
-# 列出备份
-bash scripts/backup-rollback.sh list
-
-# 验证备份
-bash scripts/backup-rollback.sh verify --version 1.0.0
-```
-
-### 3. 版本管理
-```bash
-# 查看当前版本
-bash scripts/version-manager.sh current
-
-# 比较版本
-bash scripts/version-manager.sh compare --version 1.0.0 --target 1.1.0
-```
-
-## 故障处理
-
-### 1. 交接或 apply 失败
-```bash
-# 检查错误日志
-bash scripts/health-check.sh check-all --verbose
-
-# 修复问题后重新验证 ADK，并在 ~/codex 侧重新 build / apply dry-run
-bash scripts/devkit.sh validate --strict
-rtk bash ~/codex/scripts/build.sh
-rtk bash ~/codex/scripts/plan.sh --target ~/.codex --prune-stale --output ~/codex/build/apply-plan.json
-rtk bash ~/codex/scripts/apply.sh --plan ~/codex/build/apply-plan.json --dry-run
-```
-
-### 2. 测试失败
-```bash
-# 运行单个测试
-bash tests/test_validate.sh
-
-# 查看测试输出
-bash tests/run_all.sh 2>&1 | tee test-output.log
-
-# 修复问题
-# 重新测试
-bash tests/run_all.sh
-```
-
-### 3. 质量问题
-```bash
-# 运行质量检查
-bash scripts/quality-gate-check.sh check-all --verbose
-
-# 修复问题
-# 重新检查
-bash scripts/quality-gate-check.sh check-all
-```
-
-## 性能优化
-
-### 1. 磁盘空间
-```bash
-# 清理旧备份
-find ~/.backups -name "*.tar.gz" -mtime +30 -delete
-
-# 压缩文件
-tar -czf backup.tar.gz docs/changes/
-```
-
-### 2. 网络优化
-```bash
-# 使用本地镜像
-git config --local url."file:///path/to/mirror".insteadOf "https://github.com/"
-
-# 压缩传输
-git config --global core.compression 9
-```
-
-### 3. 并行处理
-```bash
-# 并行运行测试
-bash tests/run_all.sh &
-
-# 并行处理文件
-find . -name "*.sh" -exec parallel bash {} \;
-```
-
-## 安全考虑
-
-### 1. 权限管理
-```bash
-# 设置文件权限
-chmod 755 scripts/*.sh
-chmod 644 manifest.yaml
-```
-
-### 2. 备份安全
-```bash
-# 加密备份
-gpg --encrypt --recipient user@example.com backup.tar.gz
-
-# 安全存储
-mv backup.tar.gz.gpg /secure/backup/
-```
-
-### 3. 日志管理
-```bash
-# 配置日志轮转
-cat > /etc/logrotate.d/adk <<EOF
-/var/log/adk.log {
-    daily
-    rotate 7
-    compress
-    delaycompress
-    missingok
-    notifempty
-}
-EOF
-```
-
-## 文档更新
-
-### 1. 更新部署文档
-```bash
-# 更新部署手册
-vim docs/runbooks/production-deployment.md
-
-# 提交变更
-git add docs/runbooks/production-deployment.md
-git commit -m "docs: 更新部署手册"
-```
-
-### 2. 更新变更日志
-```bash
-# 生成变更日志
-bash scripts/version-manager.sh changelog --version 1.0.0
-
-# 提交变更
-git add CHANGELOG-1.0.0.md
-git commit -m "docs: 添加变更日志"
-```
-
-## 团队协作
-
-### 1. 通知团队
-```bash
-# 发送通知
-echo "部署完成，请验证" | mail -s "部署通知" team@example.com
-
-# 更新状态
-echo "部署状态: 成功" > /shared/status.txt
-```
-
-### 2. 知识分享
-```bash
-# 分享部署经验
-vim docs/explorations/deployment-experience/exploration.md
-
-# 提交分享
-git add docs/explorations/
-git commit -m "docs: 分享部署经验"
-```
-
-## 持续改进
-
-### 1. 收集反馈
-```bash
-# 记录反馈
-vim docs/feedback.md
-
-# 分析反馈
-grep -i "问题" docs/feedback.md
-```
-
-### 2. 改进流程
-```bash
-# 更新部署手册
-vim docs/runbooks/production-deployment.md
-
-# 提交改进
-git add docs/runbooks/production-deployment.md
-git commit -m "docs: 改进部署流程"
-```
-
-### 3. 自动化改进
-```bash
-# 创建自动化脚本
-vim scripts/auto-deploy.sh
-
-# 测试自动化
-bash scripts/auto-deploy.sh --dry-run
-```
-
-## 附录
-
-### 1. 常用命令
-```bash
-# 健康检查
-bash scripts/health-check.sh check-all
-
-# 质量检查
-bash scripts/quality-gate-check.sh check-all
-
-# 备份管理
-bash scripts/backup-rollback.sh backup --target ~/.codex
-
-# 版本管理
-bash scripts/version-manager.sh current
-```
-
-### 2. 配置文件
-```bash
-# 主配置
-manifest.yaml
-
-# 领域语言
-CONTEXT.md
-
-# 版本锁定
-.version-lock
-```
-
-### 3. 日志文件
-```bash
-# 部署日志
-/var/log/adk.log
-
-# 测试日志
-test-output.log
-
-# 错误日志
-error.log
-```
-
-### 4. 相关文档
-- [快速入门指南](../quick-start.md)
-- [使用指南](../usage.md)
-- [命令参考](../commands.md)
-- [故障排除指南](../troubleshooting.md)
-- [最佳实践](../best-practices.md)
+参见 [Root 维护指南](../llm-agent-maintenance-guide.md)、[运行态激活](runtime-target-activation.md)、[资格边界](qualification-boundaries.md)。
