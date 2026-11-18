@@ -12,7 +12,18 @@ fi
 
 collect_manifest_items() {
   local section="$1"
-  jq -r --arg section "$section" '.[$section][] | [.name, .path] | join("|")' "$MANIFEST"
+  jq -sr --arg section "$section" '
+    if length != 1 or (.[0] | type) != "object" then
+      error("manifest must contain exactly one JSON object")
+    else
+      .[0][$section] |
+      if type != "array" or length == 0 then
+        error("skill section missing or empty: " + $section)
+      else
+        .[] | [.name, .path] | join("|")
+      end
+    end
+  ' "$MANIFEST"
 }
 
 collect_triggers() {
@@ -35,25 +46,40 @@ tmp_file="$(mktemp)"
 trap 'rm -f "${tmp_file}"' EXIT
 
 append_items() {
-  local section="$1"
+  local section="$1" inventory="$2"
   local item name path file trigger normalized
 
   while IFS= read -r item; do
     [[ -z "${item}" ]] && continue
     IFS='|' read -r name path <<< "${item}"
     file="${ADK_DIR}/${path}"
-    [[ -f "${file}" ]] || continue
+    if [[ ! -f "${file}" || -L "${file}" ]]; then
+      echo "[FAIL] missing or unsafe skill file: ${file}" >&2
+      return 2
+    fi
 
     while IFS= read -r trigger; do
       normalized="$(printf "%s" "${trigger}" | sed -E 's/[[:space:]]+/ /g; s/^ //; s/ $//')"
       [[ -z "${normalized}" ]] && continue
       printf "%s\t%s\t%s\n" "${normalized}" "${name}" "${section}" >> "${tmp_file}"
     done < <(collect_triggers "${file}")
-  done < <(collect_manifest_items "${section}")
+  done <<< "${inventory}"
 }
 
-append_items "skills"
-append_items "optional_skills"
+core_raw="$(collect_manifest_items "skills")" || {
+  echo "[FAIL] invalid core skill manifest inventory" >&2
+  exit 2
+}
+optional_raw="$(collect_manifest_items "optional_skills")" || {
+  echo "[FAIL] invalid optional skill manifest inventory" >&2
+  exit 2
+}
+[[ -n "$core_raw" && -n "$optional_raw" ]] || {
+  echo "[FAIL] empty skill manifest inventory" >&2
+  exit 2
+}
+append_items "skills" "$core_raw"
+append_items "optional_skills" "$optional_raw"
 
 if [[ ! -s "${tmp_file}" ]]; then
   echo "[FAIL] no triggers found in manifest skills" >&2
