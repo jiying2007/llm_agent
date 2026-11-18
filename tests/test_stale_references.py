@@ -95,19 +95,19 @@ class StaleReferenceScopeTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp) / "workspace"
             root.mkdir()
-            (root / "AGENTS.md").write_text("active guidance\\n", encoding="utf-8")
+            (root / "AGENTS.md").write_text("active guidance\n", encoding="utf-8")
             guide = root / "agent-dev-kit/docs/runbooks/live.md"
             guide.parent.mkdir(parents=True)
-            guide.write_text("current usage\\n", encoding="utf-8")
+            guide.write_text("current usage\n", encoding="utf-8")
 
             bin_dir = Path(temp) / "bin"
             bin_dir.mkdir()
             calls = Path(temp) / "rg-calls.txt"
             shim = bin_dir / "rg"
             shim.write_text(
-                "#!/bin/sh\\n"
-                'printf "1\\n" >> "$ADK_STALE_RG_COUNT"\\n'
-                + "exec " + shlex.quote(real_rg) + ' "$@"\\n',
+                "#!/bin/sh\n"
+                'printf "1\n" >> "$ADK_STALE_RG_COUNT"\n'
+                + "exec " + shlex.quote(real_rg) + ' "$@"\n',
                 encoding="utf-8",
             )
             shim.chmod(0o755)
@@ -125,7 +125,7 @@ class StaleReferenceScopeTest(unittest.TestCase):
             self.assertEqual(1, len(calls.read_text(encoding="utf-8").splitlines()))
             calls.write_text("", encoding="utf-8")
 
-            guide.write_text("scripts/" + "validate_assets.sh\\n", encoding="utf-8")
+            guide.write_text("scripts/" + "validate_assets.sh\n", encoding="utf-8")
             stale = scan()
             self.assertEqual(1, stale.returncode)
             self.assertIn("validate_assets.sh", stale.stderr)
