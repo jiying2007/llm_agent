@@ -238,6 +238,24 @@ class PairedTests(unittest.TestCase):
         self.assertIsNone(result["tokens_per_milestone_saving_pct"])
         self.assertFalse(result["candidate_for_review"])
 
+    def test_zero_token_trial_is_insufficient_not_division_or_fake_savings(self) -> None:
+        for zero_side in ("baseline", "candidate", "both"):
+            with self.subTest(zero_side=zero_side):
+                baseline, candidate = copy.deepcopy(self.base), copy.deepcopy(self.cand)
+                for group, data in (("baseline", baseline), ("candidate", candidate)):
+                    if zero_side not in (group, "both"):
+                        continue
+                    for row in data["tasks"]:
+                        row["input_tokens"] = 0
+                        row["cached_input_tokens"] = 0
+                        row["output_tokens"] = 0
+                        row["billed_fen"] = 0
+                report = compare_trials(baseline, candidate)
+                self.assertEqual(report["evidence_status"], "INSUFFICIENT")
+                self.assertEqual(report["cost_evidence_status"], "UNAVAILABLE")
+                self.assertIsNone(report["tokens_per_milestone_saving_pct"])
+                self.assertFalse(report["candidate_for_review"])
+
     def test_provider_cost_increase_blocks_token_only_improvement(self) -> None:
         for task_before, task_after in zip(self.base["tasks"], self.cand["tasks"]):
             task_before["billed_fen"] = 100
@@ -437,6 +455,18 @@ class AttributionTests(unittest.TestCase):
                 with self.assertRaises(PreflightError):
                     attribute_usage(item)
 
+    def test_unhashable_segment_identity_rejected_as_preflight_error(self) -> None:
+        for invalid in ([], {}, ["history"], {"kind": "history"}):
+            with self.subTest(invalid=invalid):
+                trace = {
+                    "schema": "llm-agent-goal-loop-usage-trace/v1",
+                    "source": "provider-usage", "tokenizer_verified": True,
+                    "requests": [metered_request(0)],
+                }
+                trace["requests"][0]["segments"][0]["kind"] = invalid
+                with self.assertRaisesRegex(PreflightError, "usage-segment-kind-invalid"):
+                    attribute_usage(trace)
+
     def test_mismatched_segment_counts_are_rejected(self) -> None:
         trace = {
             "schema": "llm-agent-goal-loop-usage-trace/v1",
@@ -476,6 +506,12 @@ class CliTests(unittest.TestCase):
             link.symlink_to(p)
             with self.assertRaises(PreflightError):
                 _read(link)
+            valid = Path(d) / "valid.json"
+            valid.write_text('{"ok": true}', encoding="utf-8")
+            parent_link = Path(d) / "alias-dir"
+            parent_link.symlink_to(Path(d), target_is_directory=True)
+            with self.assertRaisesRegex(PreflightError, "symlink-input"):
+                _read(parent_link / "valid.json")
 
 
 if __name__ == "__main__":
