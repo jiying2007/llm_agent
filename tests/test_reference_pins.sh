@@ -53,6 +53,22 @@ if python3 -m tools.control_plane.reference_pins \
   exit 1
 fi
 
+# Retired evidence remains verifiable by exact commit but must not be fetched
+# from a deleted repository, even when an explicit ID is supplied.
+if python3 -m tools.control_plane.reference_pins \
+  --root "$ROOT" \
+  --plan digital-worker \
+  --cache-root "$CACHE_TMP/cache" \
+  >"$TMP/retired.out" 2>&1; then
+  echo '[FAIL] retired Digital Worker pin unexpectedly produced materialization plan' >&2
+  exit 1
+fi
+rg -q 'retired historical reference' "$TMP/retired.out"
+[[ ! -e "$CACHE_TMP/cache/digital-worker" ]] || {
+  echo '[FAIL] retired pin created a cache directory' >&2
+  exit 1
+}
+
 if [[ -e "$CACHE_TMP/cache/OpenSpec" ]]; then
   echo '[FAIL] plan-only command unexpectedly materialized a repository' >&2
   exit 1

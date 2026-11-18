@@ -19,6 +19,9 @@ cli = cli_path.read_text(encoding="utf-8")
 assert data["schema_version"] == 5, data
 assert data["contract_version"] == "1.6", data
 assert data["status"] == "report-only", data
+assert data["lifecycle"] == "retired-historical-only", data
+assert data["active_qualification"] is False, data
+assert data["retired_at"] == "2026-11-18", data
 assert data["terminal_replaceability_evidence_level"] == "R2-periodic-real-provider-substitution", data
 
 assert "periodic_r2_qualification" in data["roles"]["digital-worker"], data
@@ -84,12 +87,15 @@ assert "same_verifier_and_reviewer_standard" not in rules
 
 requirements = {item["id"]: item for item in lta["qualification_requirements"]}
 lta02 = requirements["LTA-02"]
-assert lta02["status"] == "delegated_nonblocking_observation", lta02
-assert lta02["implementation_status"] == "observer-ready", lta02
+assert lta02["status"] == "retired_nonblocking_historical", lta02
+assert lta02["implementation_status"] == "retired-historical-only", lta02
 assert lta02["required_evidence_level"] == "R2-periodic-real-provider-substitution", lta02
-assert lta02["qualification_authority"] == "jiying2007/digital-worker", lta02
+assert lta02["qualification_authority"] is None, lta02
+assert lta02["historical_qualification_authority"] == "jiying2007/digital-worker", lta02
+assert lta02["active_runtime_qualification"] is False, lta02
+assert lta02["pending_evidence"] is None, lta02
 assert lta02["terminal_blocking"] is False, lta02
-assert lta02["affects"] == ["runtime-portability-observation"], lta02
+assert lta02["affects"] == [], lta02
 assert "certifier" not in lta02 and "certifier_command" not in lta02, lta02
 
 assert '"runtime-portability": "tools.control_plane.runtime_portability"' not in cli
@@ -104,4 +110,4 @@ for retired in (
     assert retired not in text, retired
 PY
 
-echo '[PASS] llm_agent observes Digital Worker periodic R2 qualification without duplicate certifier authority'
+echo '[PASS] former Digital Worker R2 contract is historical and does not claim active qualification'

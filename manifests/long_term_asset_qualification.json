@@ -1,15 +1,20 @@
 {
   "schema": "llm-agent-long-term-asset-qualification/v2",
-  "updated_at": "2026-10-16",
+  "updated_at": "2026-11-18",
   "qualification_scope": "llm_agent control plane plus pinned agent-dev-kit component",
   "research_scope_policy": {
     "schema": "llm-agent-research-scope/v1",
-    "required_controls": ["LTA-01", "LTA-03"],
-    "optional_field_evidence": ["LTA-04"],
+    "required_controls": [
+      "LTA-01",
+      "LTA-03"
+    ],
+    "optional_field_evidence": [
+      "LTA-04"
+    ],
     "product_release_authorized": false,
     "meaning": "Independent field qualification is optional for non-release research and is not inferred from CI."
   },
-  "purpose": "Separate engineering readiness from long-term terminal qualification while treating Digital Worker periodic R2 as an external nonblocking observation rather than a second llm_agent decision authority.",
+  "purpose": "Separate engineering readiness from long-term terminal qualification; the discontinued Digital Worker R2 observer is historical evidence only. LTA-04 remains unqualified until genuinely new independent field evidence and review.",
   "rules": {
     "fail_closed": true,
     "no_simulated_external_evidence": true,
@@ -25,7 +30,7 @@
     "qualification_pending": [
       "LTA-04"
     ],
-    "meaning": "Development, integration and control-plane operation are ready. Digital Worker owns periodic R2 qualification; llm_agent observes it without re-certification. Only real longitudinal LTA-04 evidence remains a llm_agent terminal requirement."
+    "meaning": "Engineering and control-plane development can continue; historical Digital Worker R2 evidence cannot establish current runtime portability. LTA-04 is the only remaining Root terminal requirement and is not automatically qualified."
   },
   "maintainer_model": {
     "type": "solo",
@@ -106,7 +111,8 @@
         "reports/runtime-evidence/codex-v5-runtime-smoke-2026-08-30.json",
         "manifests/digital_worker_runtime_pilot.json"
       ],
-      "note": "Runtime replaceability qualification authority is Digital Worker. llm_agent retains runtime health/evolution observation only."
+      "note": "Historical Digital Worker R2 evidence remains readable but no longer represents an active qualification authority; current runtime conformance requires its own fresh native evidence.",
+      "evidence_scope": "historical-evidence-only"
     },
     {
       "id": "product-qualified",
@@ -176,21 +182,22 @@
     {
       "id": "LTA-02",
       "name": "multi-runtime-portability-observation",
-      "status": "delegated_nonblocking_observation",
-      "affects": [
-        "runtime-portability-observation"
-      ],
-      "implementation_status": "observer-ready",
+      "status": "retired_nonblocking_historical",
+      "affects": [],
+      "implementation_status": "retired-historical-only",
       "required_healthy_runtime_bindings": 2,
       "required_evidence_level": "R2-periodic-real-provider-substitution",
       "r1_binding_conformance_is_terminal_evidence": false,
-      "acceptance": "Digital Worker owns periodic R2 qualification. llm_agent may observe a fresh Digital Worker qualification receipt for runtime-practice analysis but must not re-certify provider evidence or make R2 a llm_agent terminal blocker.",
-      "pending_evidence": "fresh-digital-worker-periodic-r2-qualification-receipt-for-observation",
+      "acceptance": "Digital Worker periodic R2 qualification was retired after repository decommissioning on 2026-11-18. Preserve exact historical receipts; no current provider substitution or fresh R2 qualification is implied. Root does not re-certify or count R2 as a terminal blocker.",
+      "pending_evidence": null,
       "evidence": [
         "manifests/digital_worker_runtime_pilot.json"
       ],
-      "qualification_authority": "jiying2007/digital-worker",
-      "terminal_blocking": false
+      "qualification_authority": null,
+      "terminal_blocking": false,
+      "historical_qualification_authority": "jiying2007/digital-worker",
+      "retired_at": "2026-11-18",
+      "active_runtime_qualification": false
     },
     {
       "id": "LTA-03",
@@ -222,7 +229,7 @@
       "pilot_start_at": "2026-09-12T04:19:00Z",
       "minimum_calendar_days": 30,
       "earliest_qualification_at": "2026-10-12T04:19:00Z",
-      "acceptance": "At least 30 days of independent pilot observation are summarized with incidents, regressions, recovery events, and unresolved risks represented explicitly. Every scoped field event, including incidents/regressions/recoveries, must be attributed to a human operator registered to this pilot. The current pilot must have a real digest-bound field pilot_observed event attributed to a registered human operator within the last 24 hours of the summarized observation window, at or after the 30-day threshold; a start-only ledger or unregistered actor and rehashed summary are not sufficient. The canonical summary and all field evidence must be tracked and unchanged relative to Git HEAD, and alternative summary paths are review-only. The summary review, performed by a registered human operator or an independent AI reviewer delegated under the pinned ADK review policy, must occur after the latest event recorded_at bound by the complete field ledger, including any late-recorded observation. Zero observed incidents/regressions/recoveries are valid only when represented explicitly; unresolved blocking risks or a review hold keep terminal qualification pending.",
+      "acceptance": "The earlier Digital Worker pilot source was retired on 2026-11-18 and is only historical provenance. It cannot be extended or treated as fresh observations. LTA-04 remains pending: a new independently registered real pilot, at least 30 days of field events, genuine end-window observation, and a reviewed digest-bound summary are required before any new terminal certification. No simulated or historical-only evidence qualifies.",
       "certifier": "tools.control_plane.longitudinal_operation",
       "certifier_command": "python3 -m tools.control_plane.cli longitudinal-operation --root . --summary-json",
       "default_evidence_path": "reports/long-term-assets/longitudinal-operation-current.json",
@@ -230,7 +237,10 @@
       "evidence": [
         "manifests/software_m5_pilot_ledger.json",
         "reports/field-evidence/software-m5-v5-events.jsonl"
-      ]
+      ],
+      "retired_pilot_repository": true,
+      "historical_pilot_only": true,
+      "new_independent_pilot_required_for_future_qualification": true
     }
   ],
   "terminal_readiness": {
@@ -249,7 +259,7 @@
     "rehearsal_simulated": true,
     "rehearsal_terminal_qualified": false,
     "simulated_evidence_counts_as_real": false,
-    "meaning": "Engineering and integration are ready. Digital Worker periodic R2 is observed but nonblocking here. LTA-04 real longitudinal evidence is the only remaining llm_agent terminal qualification requirement."
+    "meaning": "Engineering and integration are ready. Digital Worker R2 observation is retired historical evidence, not a current qualification service. LTA-04 remains pending and its retired pilot cannot silently be treated as live evidence."
   },
   "terminal": {
     "qualified": false,

@@ -48,34 +48,6 @@ jobs:
       - name: Install declared control-plane dependencies
         run: python -m pip install .
 
-      - name: Generate ADK 11.4.9 exact source-only transaction in isolated worktree
-        run: |
-          set -euo pipefail
-          promotion_worktree="$RUNNER_TEMP/adk-converged-source-worktree"
-          promotion_output="$RUNNER_TEMP/adk-converged-source-output"
-          test ! -e "$promotion_worktree"
-          test ! -e "$promotion_output"
-          mkdir -p "$promotion_output"
-          git worktree add --detach "$promotion_worktree" HEAD
-          git -C "$promotion_worktree" submodule update --init --no-recommend-shallow agent-dev-kit
-          git -C "$promotion_worktree/agent-dev-kit" fetch origin 1b4a9a48d001358bc9d4c9b94f87db44e2f2bac3
-          git -C "$promotion_worktree/agent-dev-kit" checkout --detach 1b4a9a48d001358bc9d4c9b94f87db44e2f2bac3
-          (
-            cd "$promotion_worktree"
-            bash scripts/promote-adk.sh --source-only --candidate-dir agent-dev-kit \
-              --ref 1b4a9a48d001358bc9d4c9b94f87db44e2f2bac3 --updated-at 2026-11-18 \
-              --apply --receipt-out "$promotion_output/receipt.json" --summary-json
-          )
-          cp "$promotion_worktree/reports/current-status.md" "$promotion_output/current-status.md"
-
-      - name: Upload original ADK 11.4.9 source-only transaction
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: adk-converged-source-generation-11.4.9
-          path: ${{ runner.temp }}/adk-converged-source-output/
-          if-no-files-found: error
-          retention-days: 14
-
       - name: Type-check scoped control-plane safety contracts
         run: |
           python -m pip install '.[quality]'
