@@ -88,6 +88,49 @@ class StaleReferenceScopeTest(unittest.TestCase):
             self.assertEqual(1, stale.returncode, stale.stdout + stale.stderr)
             self.assertIn("validate_assets.sh", stale.stderr)
 
+
+    def test_many_paths_use_one_scan_without_hiding_active_results(self):
+        real_rg = shutil.which("rg")
+        self.assertIsNotNone(real_rg, "ripgrep is a required test dependency")
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp) / "workspace"
+            root.mkdir()
+            (root / "AGENTS.md").write_text("active guidance\\n", encoding="utf-8")
+            guide = root / "agent-dev-kit/docs/runbooks/live.md"
+            guide.parent.mkdir(parents=True)
+            guide.write_text("current usage\\n", encoding="utf-8")
+
+            bin_dir = Path(temp) / "bin"
+            bin_dir.mkdir()
+            calls = Path(temp) / "rg-calls.txt"
+            shim = bin_dir / "rg"
+            shim.write_text(
+                "#!/bin/sh\\n"
+                'printf "1\\n" >> "$ADK_STALE_RG_COUNT"\\n'
+                + "exec " + shlex.quote(real_rg) + ' "$@"\\n',
+                encoding="utf-8",
+            )
+            shim.chmod(0o755)
+            env = dict(os.environ, PATH=str(bin_dir) + os.pathsep + os.environ["PATH"],
+                       ADK_STALE_RG_COUNT=str(calls))
+
+            def scan():
+                return subprocess.run(
+                    ["bash", str(CHECKER), str(root)],
+                    cwd=temp, env=env, text=True, capture_output=True,
+                )
+
+            clean = scan()
+            self.assertEqual(0, clean.returncode, clean.stdout + clean.stderr)
+            self.assertEqual(1, len(calls.read_text(encoding="utf-8").splitlines()))
+            calls.write_text("", encoding="utf-8")
+
+            guide.write_text("scripts/" + "validate_assets.sh\\n", encoding="utf-8")
+            stale = scan()
+            self.assertEqual(1, stale.returncode)
+            self.assertIn("validate_assets.sh", stale.stderr)
+            self.assertEqual(1, len(calls.read_text(encoding="utf-8").splitlines()))
+
     def test_missing_ripgrep_fails_closed(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
