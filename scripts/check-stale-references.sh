@@ -58,29 +58,36 @@ declare -a PATTERNS=(
   'devkit\.sh install[^\n]*(--tool[ =]codex|--target[ =][^\n]*~/.codex)'
 )
 
-tmpfile="$(mktemp)"
-trap 'rm -f "${tmpfile}"' EXIT
-
+# Build one eligible-path set and invoke ripgrep once for all patterns.
+# The original per-path × per-pattern loop spawned hundreds of scans and
+# repeatedly walked the same documentation tree.
+declare -a ACTIVE_PATHS=()
 for rel in "${SCAN_PATHS[@]}"; do
   path="${ROOT}/${rel}"
-  [[ -e "${path}" ]] || continue
-  for pattern in "${PATTERNS[@]}"; do
-    # Change records retain prior snapshots and negative command examples;
-    # they are provenance rather than active installation guidance.
-    scan_status=0
-    rg -n \
-      -g '!reports/archive/**' \
-      -g '!agent-dev-kit/reports/archive/**' \
-      -g '!**/docs/archive/**' \
-      -g '!**/docs/changes/**' \
-      -- "${pattern}" "${path}" \
-      >>"${tmpfile}" || scan_status=$?
-    if [[ "$scan_status" -gt 1 ]]; then
-      echo "[FAIL] stale reference scan failed: ${rel} (exit=${scan_status})" >&2
-      exit "$scan_status"
-    fi
-  done
+  [[ ! -e "${path}" ]] || ACTIVE_PATHS+=("${path}")
 done
+
+declare -a PATTERN_ARGS=()
+for pattern in "${PATTERNS[@]}"; do
+  PATTERN_ARGS+=(-e "${pattern}")
+done
+
+tmpfile="$(mktemp)"
+trap 'rm -f "${tmpfile}"' EXIT
+if (( ${#ACTIVE_PATHS[@]} > 0 )); then
+  scan_status=0
+  # Change records retain snapshots and negative examples, not active guidance.
+  rg -n \
+    -g '!reports/archive/**' \
+    -g '!agent-dev-kit/reports/archive/**' \
+    -g '!**/docs/archive/**' \
+    -g '!**/docs/changes/**' \
+    "${PATTERN_ARGS[@]}" -- "${ACTIVE_PATHS[@]}" >"${tmpfile}" || scan_status=$?
+  if [[ "${scan_status}" -gt 1 ]]; then
+    echo "[FAIL] stale reference scan failed (exit=${scan_status})" >&2
+    exit "${scan_status}"
+  fi
+fi
 
 if [[ -s "${tmpfile}" ]]; then
   echo "[FAIL] stale active references found" >&2
