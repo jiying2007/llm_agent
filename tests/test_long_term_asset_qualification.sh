@@ -68,6 +68,11 @@ assert required_controls <= set(maintainer['compensating_controls'])
 assert lta['lifecycle']['llm_agent']['model'] == 'non-release-workspace'
 assert lta['lifecycle']['llm_agent']['component_release_required'] is False
 assert lta['lifecycle']['agent_dev_kit']['model'] == 'versioned-component'
+# Living metadata must not quietly reactivate the retired Digital Worker R2.
+assert 'retired historical evidence' in lta['lifecycle']['agent_dev_kit']['note']
+assert 'LTA-02 has been retired' in lta['dependency_closure']['agent_dev_kit']['note']
+assert 'delegated nonblocking observation' not in lta['lifecycle']['agent_dev_kit']['note']
+assert 'LTA-02 and LTA-04 remain separate qualification requirements' not in lta['dependency_closure']['agent_dev_kit']['note']
 assert lta['lifecycle']['agent_dev_kit']['component_release_required'] is True
 assert 'current_release' not in lta['lifecycle']['agent_dev_kit']
 assert adk_identity['version'] and re.fullmatch(r'[a-f0-9]{40}', adk_identity['commit'])

@@ -59,7 +59,7 @@
       "model": "versioned-component",
       "identity": "signed-release-plus-exact-source",
       "component_release_required": true,
-      "note": "ADK lifecycle classification is stable here; current component version/commit/tree are derived exclusively from the indexed Gitlink, with signed provenance validated independently. Digital Worker periodic R2 is a delegated nonblocking observation; LTA-04 is the only remaining llm_agent qualification requirement."
+      "note": "ADK lifecycle classification is stable here; current component version/commit/tree are derived exclusively from the indexed Gitlink, with signed provenance validated independently. Digital Worker R2 is retired historical evidence, not an active qualification authority; LTA-04 alone remains a pending llm_agent long-term qualification requirement."
     }
   },
   "dependency_closure": {
@@ -83,7 +83,7 @@
       "promotion_artifact_id": 10430631584,
       "promotion_artifact_sha256": "f56851a19d7d18d7787d088408bc7d812e44adf56f69c73479869aa139277136",
       "terminal_effect": "internal-dependency-closure-only",
-      "note": "ADK native governance, strict stale-base rejection/requalification, exact-head merge, fresh-main qualification, keyless GitHub OIDC promotion, branch GC, and issue closure are terminally complete. LTA-02 and LTA-04 remain separate qualification requirements."
+      "note": "ADK native governance, strict stale-base rejection/requalification, exact-head merge, fresh-main qualification, keyless GitHub OIDC promotion, branch GC, and issue closure are terminally complete. LTA-02 has been retired as nonblocking historical evidence; LTA-04 alone remains a pending long-term qualification requirement."
     }
   },
   "qualification_layers": [
