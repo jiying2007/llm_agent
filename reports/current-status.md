@@ -68,6 +68,6 @@ Component publication 与产品资格相互独立。GitHub tag/Release 是否存
 
 ## Product-M5 Follow-ups / Pending Long-Term-Asset Qualification
 
-Product M5 已不再要求第二位 human operator；本仓采用明确的单人维护模型。LTA-01 原生 GitHub 治理已由 trusted-local Administration apply、hosted-authoritative ruleset verifier 和 generic merged-PR GC subtraction 闭环；LTA-03 clean-room recovery/rollback 已由 fresh-main hosted drill 与 `reports/long-term-assets/solo-maintainer-recovery-current.json` 闭环。Digital Worker 现在是 periodic R2 runtime replaceability 的唯一 qualification authority；`llm_agent` 只观察其 fresh receipt/状态用于 runtime 演进分析，R2 不再是本仓 terminal blocker。剩余长期资产终态资格待完成项只有 LTA-04：至少 30 天独立 pilot 观察与真实总结证据。
+Product M5 已不再要求第二位 human operator；本仓采用明确的单人维护模型。LTA-01 原生 GitHub 治理已由 trusted-local Administration apply、hosted-authoritative ruleset verifier 和 generic merged-PR GC subtraction 闭环；LTA-03 clean-room recovery/rollback 已由 fresh-main hosted drill 与 `reports/long-term-assets/solo-maintainer-recovery-current.json` 闭环。Digital Worker 已退役；此前 periodic R2 合同与 exact-pin 现场证据仅保留历史追溯，不存在当前 fresh R2 qualification authority，不能借旧数据宣称 R2 PASS。R2 不属于本仓 terminal blocker。剩余长期资产终态资格待完成项只有 LTA-04：至少 30 天独立 pilot 观察与真实总结证据。
 
 LTA-04 对既有 Product M5 是 follow-up，对 Long-Term Asset Qualification 则是唯一剩余的 fail-closed qualification requirement。若任何观察暴露真实 P0/P1 产品缺陷，应重新打开对应的 product maturity gate；“尚未执行”本身不允许被写成 PASS，也不允许通过复制历史证据绕过。

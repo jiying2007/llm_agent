@@ -19,6 +19,9 @@ cli = cli_path.read_text(encoding="utf-8")
 assert data["schema_version"] == 5, data
 assert data["contract_version"] == "1.6", data
 assert data["status"] == "report-only", data
+assert data["lifecycle"] == "retired-historical-only", data
+assert data["active_qualification"] is False, data
+assert data["retired_at"] == "2026-11-18", data
 assert data["terminal_replaceability_evidence_level"] == "R2-periodic-real-provider-substitution", data
 
 assert "periodic_r2_qualification" in data["roles"]["digital-worker"], data
@@ -104,4 +107,4 @@ for retired in (
     assert retired not in text, retired
 PY
 
-echo '[PASS] llm_agent observes Digital Worker periodic R2 qualification without duplicate certifier authority'
+echo '[PASS] former Digital Worker R2 contract is historical and does not claim active qualification'

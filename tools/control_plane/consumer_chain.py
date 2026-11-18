@@ -173,7 +173,10 @@ def check(root: Path, *, require_codex_worktree: bool = False) -> dict[str, Any]
     return {
         "schema": "llm-agent-consumer-chain-check/v1",
         "status": "pass",
-        "chain": "agent-dev-kit release -> codex runtime distribution -> digital-worker independent consumer evidence",
+        "chain": "historical ADK release -> Codex runtime distribution -> retired Digital Worker pilot evidence",
+        "qualification_scope": "historical-evidence-integrity-only",
+        "active_runtime_qualification": False,
+        "retired_at": "2026-11-18",
         "mode": "worktree" if require_codex_worktree else "pin-only",
         "agent_dev_kit": {
             "version": codex_lock["agent-dev-kit.version"],
@@ -197,7 +200,7 @@ def check(root: Path, *, require_codex_worktree: bool = False) -> dict[str, Any]
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Validate ADK release -> Codex -> digital-worker consumer chain")
+    parser = argparse.ArgumentParser(description="Validate historical ADK/Codex/retired Digital Worker evidence integrity")
     parser.add_argument("--root", default=".")
     parser.add_argument("--require-codex-worktree", action="store_true")
     parser.add_argument("--summary-json", action="store_true")
@@ -214,7 +217,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.summary_json:
         print(json.dumps(result, ensure_ascii=False, sort_keys=True))
     else:
-        print("[PASS] ADK release -> Codex -> digital-worker consumer chain is consistent")
+        print("[PASS] historical ADK/Codex/Digital Worker evidence is intact; no current R2 qualification")
     return 0
 
 

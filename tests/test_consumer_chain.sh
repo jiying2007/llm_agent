@@ -13,6 +13,9 @@ from pathlib import Path
 
 receipt = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
 assert receipt["status"] == "pass", receipt
+assert receipt["qualification_scope"] == "historical-evidence-integrity-only", receipt
+assert receipt["active_runtime_qualification"] is False, receipt
+assert receipt["retired_at"] == "2026-11-18", receipt
 assert receipt["mode"] == "pin-only", receipt
 assert receipt["agent_dev_kit"]["version"] == "5.1.1", receipt
 assert len(receipt["agent_dev_kit"]["commit"]) == 40, receipt
@@ -163,4 +166,4 @@ finally:
 assert consumer._pilot_binding(root, pin) == baseline
 PY
 
-echo '[PASS] ADK release -> Codex -> digital-worker consumer identity is exact, bounded and fail-closed'
+echo '[PASS] retired Digital Worker historical consumer evidence is exact, bounded and not current R2 qualification'

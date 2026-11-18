@@ -20,7 +20,7 @@ recovery = json.loads(recovery_path.read_text())
 runbook = root / 'docs/runbooks/solo-maintainer-continuity.md'
 
 assert lta['schema'] == 'llm-agent-long-term-asset-qualification/v2'
-assert lta['updated_at'] == '2026-10-16'
+assert lta['updated_at'] == '2026-11-18'
 assert lta['rules'] == {
     'fail_closed': True,
     'no_simulated_external_evidence': True,
@@ -37,7 +37,7 @@ assert 'zero mandatory human approvals' in runbook_text.lower()
 # The living continuity runbook must not contradict the machine LTA authority.
 assert 'LTA-01 is currently **partially proven but still blocked**' not in runbook_text
 assert 'LTA-01 is narrowed to the native main ruleset' not in runbook_text
-assert 'delegated nonblocking R2 observation' in runbook_text
+assert 'retired historical R2 observation' in runbook_text
 assert 'LTA-04 remains independently blocked' in runbook_text
 assert 'canonical machine authority' in runbook_text
 team_pilot = (root / 'docs/runbooks/team-pilot-acceptance.md').read_text(encoding='utf-8')
@@ -105,17 +105,19 @@ assert set(lta01['required_status_checks']) == {
 }
 
 lta02 = requirements['LTA-02']
-assert lta02['status'] == 'delegated_nonblocking_observation'
-assert lta02['implementation_status'] == 'observer-ready'
+assert lta02['status'] == 'retired_nonblocking_historical'
+assert lta02['implementation_status'] == 'retired-historical-only'
 assert lta02['required_healthy_runtime_bindings'] >= 2
 assert lta02['required_evidence_level'] == 'R2-periodic-real-provider-substitution'
 assert lta02['r1_binding_conformance_is_terminal_evidence'] is False
-assert lta02['qualification_authority'] == 'jiying2007/digital-worker'
+assert lta02['qualification_authority'] is None
+assert lta02['historical_qualification_authority'] == 'jiying2007/digital-worker'
+assert lta02['active_runtime_qualification'] is False
 assert lta02['terminal_blocking'] is False
 assert 'certifier' not in lta02
 assert 'certifier_command' not in lta02
-assert lta02['pending_evidence'] == 'fresh-digital-worker-periodic-r2-qualification-receipt-for-observation'
-assert lta02['affects'] == ['runtime-portability-observation']
+assert lta02['pending_evidence'] is None
+assert lta02['affects'] == []
 
 lta03 = requirements['LTA-03']
 assert lta03['status'] == 'pass'
@@ -131,7 +133,10 @@ lta04 = requirements['LTA-04']
 assert lta04['status'] == 'observation_window_in_progress'
 assert lta04['implementation_status'] == 'certifier-ready'
 assert lta04['pilot_id'] == 'software-m5-v5-independent-pilot-20260912'
-assert lta04['repository_id'] == 'digital-worker'
+assert lta04['repository_id'] == 'digital-worker'  # Historical source identity, not an active repository
+assert lta04['retired_pilot_repository'] is True
+assert lta04['historical_pilot_only'] is True
+assert lta04['new_independent_pilot_required_for_future_qualification'] is True
 assert lta04['pilot_start_at'] == '2026-09-12T04:19:00Z'
 assert lta04['minimum_calendar_days'] == 30
 assert lta04['earliest_qualification_at'] == '2026-10-12T04:19:00Z'
