@@ -120,7 +120,11 @@ discover_check_scripts() {
   if [[ "${CHECK_MODE}" == "smoke" ]]; then
     for base in "${SMOKE_SCRIPTS[@]}"; do
       f="${SCRIPT_DIR}/${base}"
-      [[ -f "${f}" ]] && scripts+=("${f}")
+      if [[ ! -f "${f}" || -L "${f}" ]]; then
+        echo "[FAIL] required smoke check missing or not a regular file: ${base}" >&2
+        return 2
+      fi
+      scripts+=("${f}")
     done
     printf '%s\n' "${scripts[@]}"
     return 0
@@ -145,6 +149,15 @@ discover_check_scripts() {
   done
   printf '%s\n' "${scripts[@]}"
 }
+
+# Resolve the complete inventory before running any checks. Process substitution
+# hides the producer's exit code; command substitution makes a missing required
+# smoke gate or an empty full suite fail closed instead of reporting success.
+DISCOVERED_CHECKS="$(discover_check_scripts)" || exit 2
+if [[ -z "${DISCOVERED_CHECKS}" ]]; then
+  echo "[FAIL] no check scripts discovered; refusing an empty successful gate" >&2
+  exit 2
+fi
 
 # --- 执行 -------------------------------------------------------------------
 declare -a RESULT_NAMES=()
@@ -349,7 +362,7 @@ while IFS= read -r script_path; do
     fi
   fi
 
-done < <(discover_check_scripts)
+done <<< "${DISCOVERED_CHECKS}"
 
 if [[ -f "${SAME_RUN_REUSE_REPORT}" && ! -L "${SAME_RUN_REUSE_REPORT}" ]]; then
   while IFS=$'\t' read -r reused_consumer reused_producer; do
