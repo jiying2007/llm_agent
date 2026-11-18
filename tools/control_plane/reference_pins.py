@@ -181,6 +181,8 @@ def plan(root: Path, pin_id: str, cache_root: str | None = None) -> dict[str, An
         raise RuntimeError(f"unknown reference pin id: {pin_id}")
     if pin.get("kind") != "reference-repo":
         raise RuntimeError(f"reference pin {pin_id} is not a materializable reference-repo")
+    if pin.get("lifecycle") == "retired-historical-reference":
+        raise RuntimeError(f"retired historical reference {pin_id} cannot be materialized or activated")
     base = _cache_root(cache_root)
     if base == Path.home().resolve() or any(paths_overlap(base, denied) for denied in (root.resolve(), *protected_roots(root))):
         raise RuntimeError("reference cache overlaps workspace or protected source/live root")

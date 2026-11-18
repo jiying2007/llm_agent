@@ -54,7 +54,7 @@ Root 控制面的统一 Python 入口是 `llm-ctl`（`pyproject.toml`）；GitHu
 
 `qualification-followup` 复用六项既有判据，收集精确来源、实际退出码、剩余证据与下一步。只读 workflow 在相关源码变更及每日北京时间 09:23 复核并保留 30 天 artifact；定时执行可能延迟，必须检查报告实际采集时间。退出 0 仅表示扫描完整，真实 Owner、native/field/effect 证据与 Product M5 授权仍以各自 canonical gate 为准。详见 [资格复核](docs/runbooks/qualification-followup.md)。
 
-`digital-worker` 是 periodic R2 runtime replaceability 的唯一 qualification authority；`llm_agent` 只观察其 fresh qualification receipt、runtime health 与长期演进，不再对 provider evidence 做第二次 R2 认证。R2 blocked/stale/not-run 不阻塞 llm_agent 日常开发，也不成为 llm_agent 的 terminal blocker。
+`digital-worker` 已退役，不再提供周期性 R2 runtime replaceability 资格回执。历史 exact-pin、原始现场事件和既有消费者验证仅用于追溯，不能升级为当前 R2 PASS；Root 不建立第二套 R2 认证。R2 当前未测不阻塞日常开发，长期资产资格中的 LTA-04 仍须真实独立现场证据。
 
 `longitudinal-operation` 只读取现有 Software M5 append-only field ledger/event log 与 LTA-04 summary，不创建现场事件，也不会把 Product M5 的初始资格重新改成 30 天门禁。当前独立 pilot 从 `2026-09-12T04:19:00Z` 开始，因此 LTA-04 最早在 `2026-10-12T04:19:00Z` 之后才可能通过。到期后 summary 必须绑定当前 event-chain head，并显式表示 incident、regression、recovery 和 unresolved risk；即使数量为 0 也必须明确写出。存在 blocking risk 或 review hold 时仍返回 `BLOCKED`。
 
@@ -68,7 +68,7 @@ Root 控制面的统一 Python 入口是 `llm-ctl`（`pyproject.toml`）；GitHu
 - `tools/control_plane/adk_interface.py`：ADK 跨仓接口契约；版本身份只信任 Git 子模块提交。
 - `manifests/reference_pins.json`：非 source reference repository 的 exact commit / URL SSOT。
 - `manifests/gitlinks.json`：Root managed dependency gitlink registry；终态仅保留 ADK 与 Codex。
-- `manifests/digital_worker_runtime_pilot.json`：`digital-worker + agent-dev-kit + llm_agent` 联合 Runtime Pilot 的 report-only 证据合同；Runtime 输出不得替代 Verification PASS。
+- `manifests/digital_worker_runtime_pilot.json`：已退役 Digital Worker R2 联合试点的历史只读证据合同，不能作为现行 Runtime 或 Verification PASS。
 - `tools/control_plane/longitudinal_operation.py`：LTA-04 30 天独立 pilot 纵向运营 summary 的只读、fail-closed 认证器。
 - `scripts/README.md`：子仓治理、门禁和同步脚本说明。
 - `AGENTS.md`：本工作区代理执行规则与维护记录。
@@ -85,7 +85,7 @@ Root 控制面的统一 Python 入口是 `llm-ctl`（`pyproject.toml`）；GitHu
 ## 维护原则
 
 - 先压实 ADK，再追踪参考仓更新。
-- **`agent-dev-kit` 是 Root 当前 managed source dependency；`codex` gitlink 仅保留 frozen evidence/replay identity。** 当前 Codex CLI 活动 source 始终是外部 `~/codex`，再经 build/plan/apply 到 `~/.codex`。不得通过推进 Root 内 `codex` gitlink 来替代活动 runtime source 更新。OpenSpec、digital-worker、superpowers、vibeflow 等研究/试点仓只保留 exact reference pin，并按需物化到用户 cache。
+- **`agent-dev-kit` 是 Root 当前 managed source dependency；`codex` gitlink 仅保留 frozen evidence/replay identity。** 当前 Codex CLI 活动 source 始终是外部 `~/codex`，再经 build/plan/apply 到 `~/.codex`。不得通过推进 Root 内 `codex` gitlink 来替代活动 runtime source 更新。OpenSpec、superpowers、vibeflow 等研究仓按需使用 exact reference pin；digital-worker 仅保留不可变历史证据身份，不再作为可物化的活跃参考仓。
 - reference pin 是 evidence identity，不是 runtime enablement，也不允许递归 checkout 重新引入 Root source dependency。
 - 不把第三方参考资产或 ADK 导出资产直接复制进 `~/.codex`；必须先进入 `~/codex` 的源资产与 manifest 治理链路。
 - `agent-dev-kit/manifest.json` 是 ADK 唯一结构化 Manifest SSOT；当前跨仓身份由 Git 子模块提交唯一确定，`adk.lock` 改为忽略的、从 Git 提交确定性生成的消费缓存；不再提交第二份版本锁，不维护平行 Manifest 镜像。
@@ -126,7 +126,7 @@ rtk scripts/check-adk-harden-readiness.sh . --require-pilot
 3. 若修改根仓脚本、契约或治理资产：运行 `rtk tests/run_all.sh`；全量门禁使用 `rtk scripts/check-all.sh --full --result-json <artifact>` 留存逐项状态和耗时。
 4. 若影响生产部署、`~/codex` 分发或 `~/.codex`：运行 `rtk scripts/check-adk-harden-readiness.sh . --require-pilot`，并在 `~/codex` 侧执行 build/apply dry-run。
 5. 若评估 reference repo 更新：先更新/审查 `manifests/reference_pins.json` 的 exact commit，再显式 materialize 到 cache 执行分析；审查结构化 decision/task pack 后才允许创建 ADK change artifact。
-6. 若观察 R2：只消费 Digital Worker 当前 periodic qualification receipt/状态用于 runtime 演进分析；不得在 Root 重新认证 R2，也不得把 R2 状态写成 llm_agent terminal gate。
+6. R2 已退役：只允许审查 Digital Worker 的历史 exact-pin 证据；不再等待或消费所谓最新 periodic qualification receipt，不得把既有 R2 试点误写成当前运行资格。
 7. 若推进 LTA-04：只可追加真实独立 pilot 的 hash-chain 现场事件，并在满足至少 30 个自然日后由负责人审核真实的 `reports/long-term-assets/longitudinal-operation-current.json`，精确绑定当前 event-chain head，显式汇总 incident/regression/recovery/unresolved risk（包括零计数）。缺少完整窗口证据或有效审核时 certifier 必须保持 BLOCKED；禁止用 synthetic fixture 作为资格证据。
 
 当前源码与历史产品资格的判定规则见 `docs/runbooks/qualification-boundaries.md`；历史 M5 PASS 不自动授权新 ADK 源码。

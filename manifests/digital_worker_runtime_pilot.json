@@ -2,7 +2,7 @@
   "schema_version": 5,
   "contract_version": "1.6",
   "status": "report-only",
-  "purpose": "Observer contract for Digital Worker periodic R2 qualification and runtime-practice evolution without creating a second R2 decision authority.",
+  "purpose": "Retired historical observer contract for former Digital Worker R2 qualification; no fresh periodic qualification authority or running workflow is available. Existing evidence and declared frozen identities remain audit-only.",
   "roles": {
     "digital-worker": [
       "work_item",
@@ -241,5 +241,8 @@
     "llm_agent_must_not_recertify_r2": true,
     "independent_verifier_must_be_distinct_from_provider_execution_actors": true
   },
-  "completion": "R2 qualification is owned by Digital Worker: Codex and Claude execute the same frozen real task, replay postflight passes, and an independent Digital Worker verifier actor distinct from both provider execution actors emits the qualification receipt. llm_agent may observe freshness/status for evolution analysis but does not re-certify R2."
+  "completion": "R2 qualification is owned by Digital Worker: Codex and Claude execute the same frozen real task, replay postflight passes, and an independent Digital Worker verifier actor distinct from both provider execution actors emits the qualification receipt. llm_agent may observe freshness/status for evolution analysis but does not re-certify R2.",
+  "lifecycle": "retired-historical-only",
+  "retired_at": "2026-11-18",
+  "active_qualification": false
 }

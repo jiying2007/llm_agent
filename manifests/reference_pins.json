@@ -41,7 +41,8 @@
       "path": "digital-worker",
       "url": "https://github.com/jiying2007/digital-worker.git",
       "commit": "4a94231d26df1aeaeba336e6a4e2327db5a3bd44",
-      "notes": "Independent pilot repository identity; not a Root source dependency and not recursively checked out."
+      "notes": "Retired, immutable historical reference pin for prior field pilot evidence; do not interpret as active repository, current qualification authority, source dependency or runtime enablement.",
+      "lifecycle": "retired-historical-reference"
     },
     {
       "id": "mattpocock-skills",

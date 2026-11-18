@@ -5,7 +5,8 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
-# The real repository must remain BLOCKED before the configured 30-day window.
+# The real retired pilot must remain BLOCKED at any observation time; it
+# cannot be converted into a fresh qualification by clock advancement.
 set +e
 python3 -m tools.control_plane.longitudinal_operation \
   --root "$ROOT" \
@@ -13,17 +14,35 @@ python3 -m tools.control_plane.longitudinal_operation \
   --summary-json >"$TMP/current.json"
 CURRENT_RC=$?
 set -e
-[[ "$CURRENT_RC" -eq 2 ]] || { echo "[FAIL] current LTA-04 should be BLOCKED before 30 days" >&2; exit 1; }
+[[ "$CURRENT_RC" -eq 2 ]] || { echo "[FAIL] retired LTA-04 pilot must remain BLOCKED" >&2; exit 1; }
 python3 - "$TMP/current.json" <<'PY'
 import json
 import sys
 from pathlib import Path
 value = json.loads(Path(sys.argv[1]).read_text())
 assert value["status"] == "blocked", value
-assert value["reason"] == "observation-window-not-complete", value
-assert value["eligible_after"] == "2026-10-12T04:19:00Z", value
+assert value["reason"] == "retired-pilot-requalification-required", value
+assert value["historical_evidence_is_not_current"] is True, value
 assert value["pilot_id"] == "software-m5-v5-independent-pilot-20260912", value
 assert value["repository_id"] == "digital-worker", value
+PY
+
+# Even after the historical 30-day threshold, retirement is a hard stop.
+set +e
+python3 -m tools.control_plane.longitudinal_operation \
+  --root "$ROOT" \
+  --as-of 2026-12-18T11:35:00Z \
+  --summary-json >"$TMP/retired-after-threshold.json"
+RETIRED_RC=$?
+set -e
+[[ "$RETIRED_RC" -eq 2 ]] || { echo "[FAIL] retired pilot passed with a later clock" >&2; exit 1; }
+python3 - "$TMP/retired-after-threshold.json" <<'PY'
+import json
+import sys
+from pathlib import Path
+receipt = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+assert receipt["status"] == "blocked", receipt
+assert receipt["reason"] == "retired-pilot-requalification-required", receipt
 PY
 
 FIXTURE="$TMP/fixture"
