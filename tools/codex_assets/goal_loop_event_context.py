@@ -46,8 +46,15 @@ def _pairs(items: list[tuple[str, Any]]) -> dict[str, Any]:
 
 
 def _read(path: Path, *, max_bytes: int = MAX_FILE) -> dict[str, Any]:
-    if path.is_symlink():
-        raise PreflightError("symlink-input")
+    # O_NOFOLLOW protects only the last path component. A symlinked
+    # ancestor must not silently bypass the explicit no-symlinks boundary.
+    current = path.absolute()
+    while True:
+        if current.is_symlink():
+            raise PreflightError("symlink-input")
+        if current.parent == current:
+            break
+        current = current.parent
     try:
         fd = os.open(path, os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_NONBLOCK", 0))
         with os.fdopen(fd, "rb") as handle:
@@ -335,7 +342,10 @@ def compare_trials(baseline: dict[str, Any], candidate: dict[str, Any]) -> dict[
         after_tokens = sum(t["input_tokens"] + t["output_tokens"] for t in cand.values())
         before_milestones = sum(t["verified_milestones"] for t in base.values())
         after_milestones = sum(t["verified_milestones"] for t in cand.values())
-        complete = bool(before_milestones and after_milestones)
+        # A 10-task set with zero provider tokens is not a measurable
+        # efficiency comparison. Never divide by zero or claim 100% savings.
+        complete = bool(before_milestones and after_milestones
+                        and before_tokens > 0 and after_tokens > 0)
     else:
         before_tokens = after_tokens = before_milestones = after_milestones = 0
     no_regressions = all(
@@ -484,7 +494,7 @@ def attribute_usage(value: dict[str, Any]) -> dict[str, Any]:
         for piece in r["segments"]:
             part = _fields(piece, {"kind", "tokens"}, "usage-segment")
             kind = part["kind"]
-            if kind not in allowed or kind in kinds:
+            if not isinstance(kind, str) or kind not in allowed or kind in kinds:
                 raise PreflightError("usage-segment-kind-invalid")
             kinds.add(kind)
             n = _int(part["tokens"], "segment-tokens")
