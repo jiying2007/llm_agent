@@ -610,6 +610,17 @@ def check(root: Path, *, evidence_path: Path | None = None, as_of: datetime | No
     root = root.resolve()
     now = (as_of or datetime.now(UTC)).astimezone(UTC).replace(microsecond=0)
     requirement = _lta04(root)
+    # A decommissioned pilot cannot regain current qualification merely by
+    # appending observations or supplying a rehashed historical summary.
+    # Fresh qualification must be registered as a new independent pilot.
+    if requirement.get("retired_pilot_repository") is True:
+        raise LongitudinalBlocked(json.dumps({
+            "qualification": "LTA-04",
+            "pilot_id": requirement["pilot_id"],
+            "repository_id": requirement["repository_id"],
+            "reason": "retired-pilot-requalification-required",
+            "historical_evidence_is_not_current": True,
+        }, ensure_ascii=False, sort_keys=True))
     _, event_log, events, started = _ledger_state(root, requirement, now)
     minimum_days = int(requirement["minimum_calendar_days"])
     eligible_after = started + timedelta(days=minimum_days)
