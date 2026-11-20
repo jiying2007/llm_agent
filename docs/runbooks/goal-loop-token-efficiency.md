@@ -212,3 +212,17 @@ bash tests/test_model_call_budget.sh
 负例重点：不同 Goal/cursor 混用、重复工具证据、伪造 raw_ref、CI 不完整、首次与重复执行、
 高风险复审、证据溢出、测试效果样本小于10、任务集合漂移、缺失 usage、验收退化。
 该检查与现有 `tests/run_all.sh` 的机械回归互补，不代表有真实模型 Token 收益。
+
+## 受信 Host 接入验收（保持 Root #322 未闭环）
+
+下面是**真实宿主所必须完成的应用集成步骤**，不是仓库 CI 可以代理的工作。本仓可检查 helper 的 schema、负例、cursor 和配对比较，但无法证明任何第三方/桌面 Host 已改变模型调用行为。
+
+1. Host 提供能审计的调用前事件指纹、`goal_id/phase_id/source_sha` 和已确认的 `plan/state/event` 摘要；Root 只消费可信来源，不请求模型生成身份字段。
+2. 在每一次候选模型请求**之前**执行既有 `llm-ctl goal-loop preflight`，真实分支观测：`skip-model` 不产生 provider request；`run-tool/run-verification` 交给已授权执行器；`needs-review` 停止自动执行；只有 `invoke-model` 可继续调用。
+3. 仅把 `llm_packet` 发送给模型，不将完整 preflight 输出或旧会话重注入；High Risk / 证据溢出需读可信 raw evidence 并遵守原审查。
+4. Host 核验动作回执和幂等结果后推进 cursor；模型调用结果未知必须对账，不能先提交 cursor 再猜测成功。
+5. 将 provider usage 与 Host 逐段 tokenizer、实际缓存/费用来源分别绑定，不把累计会话 token_count、bytes/4 或静态快照冒充 provider billed usage。
+6. 预注册同任务、同验收分母、同工具/权限的 **至少 10 个真实 Goal**，同时报告正确率、完成率、Token/已验证里程碑、空转调用、缓存、实际费用和超大上下文次数；缺失记 UNKNOWN。
+7. Host 接口、实际 `skip-model` 无模型请求日志、执行回执、真实 usage、原始对照和独立效果判定全部有来源才可关闭 [Root #322](https://github.com/jiying2007/llm_agent/issues/322)；缺 Host 控制权限时维持 `requires-host-integration`，不得合成“省 Token”成功数据。
+
+本小节不增加预算硬限、不创建新的 schedule/daemon/Goal/Execution Policy 或私有仓库依赖。
