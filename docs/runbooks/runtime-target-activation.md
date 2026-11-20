@@ -69,7 +69,7 @@
 
 - `subrepos/registry.csv` 必须有对应 runtime target 策略记录。
 - 当前 `codex` registry 行必须保持 `group=runtime-target`、`enabled=no`、`status=disabled`、`intake_policy=pilot-first`，notes 提到 `~/codex` 和 `~/.codex`。
-- Codex 默认 target 必须匹配 `adk.lock` 的 `codex.source` 与 `codex.target`。
+- Codex 默认 target 的有效 source/live 路径以 `manifests/runtime_targets.json`、`manifests/gitlinks.json`、`agent-dev-kit` Gitlink 和现有 `~/codex → ~/.codex` apply 回执联合校验；`adk.lock` 是按 Git 精确身份生成的忽略缓存，不是独立的 `codex.source/target` 版本事实源。冻结的 `codex.lock` 仅记录旧证据身份，不用于推进当前 live。
 - 不得创建 workspace-local `codex/` 目录替代 `~/codex`。
 
 ## 4. Explain Target
@@ -199,3 +199,8 @@ with no active source/live chain or live write permission, until an independentl
 reviewed, actual target deploy and native authenticated campaign produces the
 required runtime evidence. Do not enable the target merely because source-level
 preflight succeeds. `llm_agent` remains a report-only observer.
+
+## SDD / 设计探索实际宿主可用性（不扩增强制 footprint）
+- 使用 SDD/头脑风暴或 Goal/Loop 前，在已批准的 `~/codex` source → `~/.codex` apply 链路中核对 `adk-structured-requirements-questioning`、`adk-requirements-triage`、`adk-interface-contract-design`、`adk-task-breakdown` 是否已安装、可被目标 Codex 发现并以真实任务触发；不存在不应强行列为已可用。
+- 默认最小运行时 footprint 继续只包含既有基础 Skills，不在没有 native conformance 的情况下把 SDD/Explore 全量提升为必装；有特定任务需要时由已审核的 profile 导出和 `~/codex` 计划安装。部署后的纯 Skill 不需要 ADK Python 运行时。
+- `skill loaded` 不是 `design succeeds`；实际多轮/SDD 质量仍按 `agent-dev-kit/docs/evals/interactive-discovery-evaluation.md` 的真实效果评测另行验证，缺证据写 `not-measured`。

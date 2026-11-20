@@ -20,6 +20,8 @@
 
 | 我要做什么 | 主入口 | 后续路径与结果解释 |
 | --- | --- | --- |
+| 开展头脑风暴 / SDD 开发 | [ADK 原生交互设计](agent-dev-kit/skills/adk-structured-requirements-questioning/SKILL.md) 与 [SDD 最小路径](agent-dev-kit/docs/runbooks/spec-driven-delivery.md) | 需求未决才探索、行为差异复用已有 Canonical Change Contract；检查目标 Host 是否真实安装，源码存在不代表可用。 |
+| 优化 Goal/Loop Token 效率 | [真实 Host 接入验收](docs/runbooks/goal-loop-token-efficiency.md#受信-host-接入验收保持-root-322-未闭环) | 先验证模型调用前 skip/实际回执/真实 usage；缺 Host 仍标 requires-host-integration，不把静态验证当节省。 |
 | 使用资产 | `rtk run bash agent-dev-kit/scripts/devkit.sh doctor --summary-json` | 环境检查后选 profile、审查安装 plan，按 [ADK 安装与恢复说明](agent-dev-kit/docs/commands.md#install) 操作；Codex 资产仍经 `~/codex` build/plan/apply 到 live。 |
 | 判断研究工作区是否就绪 | `rtk run python3 -m tools.control_plane.cli terminal-closure --root . --scope research --require-terminal --summary-json` | 默认研究终态不要求 G21/G22 真实外部证据或 LTA-04 现场资格；严格资质另见 [研究与认证范围](docs/runbooks/research-operational-scope.md)。工程就绪不代表可发布产品。 |
 | 发布或升级 | `rtk run python3 -m tools.control_plane.cli status --root . --summary-json` | 先核对当前 source/release candidate 身份与 `release_authorized`，再按 [提升规则](scripts/README.md) 运行已有 `promote-adk.sh` 的候选校验和签名验证。需要产品发行时补当前 source-to-live、runtime、field 和 qualification 材料；[历史基线](docs/runbooks/qualification-boundaries.md) 单独保留。 |

@@ -25,7 +25,7 @@
 
 不推荐在 `llm_agent` 中直接改 `~/.codex` 运行资产。生产运行资产应先由 `agent-dev-kit` 导出，经 `~/codex` 注册到 `src/codex-home/` 与 `manifests/`，再由 `~/codex/scripts/build.sh` 和 `~/codex/scripts/apply.sh` 注入 `~/.codex`。报告需记录 adk 版本、profile、optional skill、`~/codex` build/apply 证据和 `~/.codex` 健康检查结果。
 
-运行态 target registry 与健康检查 adapter contract 统一位于 `manifests/runtime_targets.json`。当前默认 target 是 `codex-home`；`check-runtime-targets.sh` 会验证它与 `adk.lock`、`subrepos/registry.csv`、统一 adapter contract 和 runtime 检查脚本一致。新增 `claude-code`、`opencode` 等运行态时，先按 `docs/runbooks/runtime-target-activation.md` 补 source/live chain、只读 health adapter、写入策略和候选阻断证据，再允许成为 active target。
+运行态 target registry 与健康检查 adapter contract 统一位于 `manifests/runtime_targets.json`。当前默认 target 是 `codex-home`；`check-runtime-targets.sh` 会检查生成态锁缓存、`subrepos/registry.csv`、统一 adapter contract 和 runtime 检查脚本；真正的版本身份来自 `agent-dev-kit` Gitlink，不由忽略的 `adk.lock` 独立定义。新增 `claude-code`、`opencode` 等运行态时，先按 `docs/runbooks/runtime-target-activation.md` 补 source/live chain、只读 health adapter、写入策略和候选阻断证据，再允许成为 active target。
 
 参考子仓 dirty 只允许通过 `subrepos/dirty-baseline.tsv` 和 `reports/reference-dirty-triage-YYYY-MM-DD.*` 解释，不允许在治理提交中静默清理或混入参考仓文件。baseline 必须区分 `mode/content/type/untracked/staged` 并声明 `commit-snapshot-only`；`generate-reference-dirty-triage.sh` 只读采集分类与 status sample，`check-reference-dirty-triage.sh` 默认选择 latest valid schema v2 报告，并按当天日期重新判断 baseline 是否过期。深度分析必须通过 `analyze-repo.sh` 的安全 `git archive` 快照读取，并与固定提交的原始 Git tree/blob OID 有界对账。报告只写根仓 `reports/repo-analysis/<repo>/<commit>/`，并固定生成 `analysis.json`、`decision-candidate.json`、`task-pack.json`。`source.snapshot_coverage` 显式报告 export-ignore 遗漏、export-subst 内容替换以及符号链接/gitlink 缺口；它完整且文本覆盖完成时才允许 `static-complete`，否则为 `static-partial`。覆盖状态与预算详见 [reference intake](runbooks/reference-intake.md)；决策必须保持 `review-required`，不能直接写入 ADK。
 
@@ -60,6 +60,7 @@
 | Skill 应增强、组合还是新增 | [Skill 整理](../agent-dev-kit/docs/runbooks/skill-curation-delivery.md) | 职责、唯一触发、core/optional/reject 与依赖边界 |
 | 澄清、头脑风暴或方案挑战是否有效 | [交互发现评测](../agent-dev-kit/docs/evals/interactive-discovery-evaluation.md) | 真实对话、决策质量、用户负担与未测项 |
 | 重复失败或性能问题如何改进 | [以实际结果驱动优化](runbooks/evidence-driven-optimization.md) | 原失败、最小改动、对照与七字段方法记录 |
+| 实际功能/跨仓协议是否需要 SDD | [ADK SDD 最小路径](../agent-dev-kit/docs/runbooks/spec-driven-delivery.md) | 既有 Canonical Change Contract 的需求 Delta、调用方/被调方契约、正负验收与反向规格核对；小修不得强制加模板 |
 | Skill 是否改善任务质量与成本 | [Skill 行为回归](../agent-dev-kit/optional-skills/adk-skill-composition-governance/references/skill-behavior-evaluation.md) | 同任务原始轨迹、最终产物、负收益与真实用量 |
 | Goal/Loop 是否存在无效调用 | [事件预检与 Token 对照](runbooks/goal-loop-token-efficiency.md) | Host 事件、已确认回执、成对用量及接入状态 |
 | ADK 成果如何由 Root 消费 | [发布与升级入口](../README.md#快速入口) | 精确 source/release、消费验证与当前状态投影 |
