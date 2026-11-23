@@ -133,6 +133,7 @@ cursor 只是来源已由 Host 核实的事件观察记录，不是 Goal 终态�
 
 以上仅是字段样例，不足10条**不能产生有效 A/B 结论**。不含 prompt、密钥、日志或私人文件。
 `input_tokens` / `output_tokens` 缺失必须填 null，不得按0算节省。
+从已有真实观察补录 `wrong_routes`、`rework_rounds`、`repeated_verifications`，按同一任务验收和口径成对填写。三个字段均可省略或为 null，只有两侧覆盖完整时才输出该指标的总数。已配对样本出现恶化时，相应的质量或效率门禁拒绝晋级候选。
 
 ```bash
 python3 -m tools.codex_assets.goal_loop_event_context \
@@ -142,6 +143,7 @@ python3 -m tools.codex_assets.goal_loop_event_context \
 
 对比真实 Token/验证里程碑、已完成目标、nonclosing_calls、重复上下文调用，
 不能仅看 Token 下降；质量退化或任务集合漂移不允许成为晋级候选。
+`usage_task_pairs` 和 `insufficient_reasons` 给出用量覆盖和不可比较原因，可在接入真实采集前复查已有观察的缺项。
 返回 `candidate_for_review=true` **只表示可提交进一步审核**，不是 release、Goal 完成、
 生产效果证据或真实网关部署。不存在任何用户隐式背景任务或轮询。
 
@@ -224,5 +226,13 @@ bash tests/test_model_call_budget.sh
 5. 将 provider usage 与 Host 逐段 tokenizer、实际缓存/费用来源分别绑定，不把累计会话 token_count、bytes/4 或静态快照冒充 provider billed usage。
 6. 预注册同任务、同验收分母、同工具/权限的 **至少 10 个真实 Goal**，同时报告正确率、完成率、Token/已验证里程碑、空转调用、缓存、实际费用和超大上下文次数；缺失记 UNKNOWN。
 7. Host 接口、实际 `skip-model` 无模型请求日志、执行回执、真实 usage、原始对照和独立效果判定全部有来源才可关闭 [Root #322](https://github.com/jiying2007/llm_agent/issues/322)；缺 Host 控制权限时维持 `requires-host-integration`，不得合成“省 Token”成功数据。
+
+### 批量实现与集中验证的对照项
+
+先用一个真实、已授权的长任务做先导。冻结共同验收、允许的写集、提前验证条件和批末检查命令。以原有逐项校验方式为基线，对照先完成同批可逆改动再验证的方式。缺乏根因证据时两组都先做最小复现。原有共享契约、权限、发布和集成门禁继续生效。
+
+已接入的宿主可将正常风险、已获授权且暂无待执行动作的中间改动送为 `event_kind=batch_edit`、`pending_action=none`。预检给出 `skip-model / batch-awaiting-verification-boundary` 和 `retain-prior-cursor`，保留上次已确认的 cursor，首次观察时返回 `null`。高风险、关键证据、观测不完整或存在待执行动作时进入审查。冻结批末差异后使用 `source_changed` 和 `pending_action=verify`，收到真实验证回执后才确认 cursor。其他 `source_changed` 路径保持原语义。
+
+事件至少覆盖 CI 等待、同输入重复通知、一条新证据、一次批次失败和一次断点恢复。由宿主记录每类事件触发的模型请求、验证命令及其输入摘要，核对是否保留原验收分母。将验证调用次数、重复检查耗时、首个已验证批次耗时、整任务完成情况及返工与模型 usage 一并比较。先导只校准采集和验收，正式判断仍需等上面的 10 个真实 Goal 按协议完成。
 
 本小节不增加预算硬限、不创建新的 schedule/daemon/Goal/Execution Policy 或私有仓库依赖。

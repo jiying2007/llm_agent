@@ -10,6 +10,13 @@
 - **组件发布**：ADK GitHub immutable Release、签名推广与精确制品 digest；不自动产生新的 field/product 资格。
 - **长期资格**：`manifests/long_term_asset_qualification.json`。LTA-04 只接受实际独立现场日志、完整摘要和可验证审核；摘要审核支持注册人类或同一 ADK 政策委派的独立 AI，真实 field event 操作者仍须是试点登记的人类。
 
+源码迭代结束后，用以下只读入口对账当前身份和现场进度。Product M5 的正式核验沿用 `software-m5.sh`，收集与当前候选匹配的受保护发布、宿主和产品证据后再执行认证。LTA-04 若缺试点或现场证据，先确认实际候选、独立环境及登记操作者，再由原试点流程采集事件和审核记录。
+
+```bash
+rtk python3 -m tools.control_plane.status_projection --root . --summary-json
+rtk python3.12 -m tools.control_plane.cli longitudinal-operation --root . --summary-json
+```
+
 ## GitHub 必需检查的绿色状态不等于产品授权
 
 原生 main ruleset 的检查名必须保持 `software-m5-certify`，以确保老的 required context 不因更名变成未受保护的检查。但该作业在历史证据状态下返回绿色，仅表示**正确识别并拒绝了当前源码的产品发布资格**，不是当前源码通过 M5 认证。检查的 summary 和 warning 必须明确写出 `CURRENT SOURCE NOT CERTIFIED / RELEASE NOT AUTHORIZED`；其机器收据保留 `qualification_state=HISTORICAL_NOT_AUTHORIZED`、`release_authorized=false`。任何发布消费者必须另行要求真实当前源码认证及精确身份，禁止以 job success、CI 绿色或组件 Release 推导产品放行。

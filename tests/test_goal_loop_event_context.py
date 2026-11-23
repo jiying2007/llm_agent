@@ -48,6 +48,48 @@ def experiment(rows: list[dict]) -> dict:
 
 
 class PreflightTests(unittest.TestCase):
+    def test_batch_observations_defer_but_frozen_diff_verifies_once(self) -> None:
+        cursor = None
+        for marker in ("a", "b", "c"):
+            event = snapshot("batch_edit")
+            event["state_sha256"] = marker * 64
+            result = build_plan(event, cursor)
+            self.assertEqual("skip-model", result["action"])
+            self.assertEqual("batch-awaiting-verification-boundary", result["reason"])
+            cursor = result["next_cursor"]
+        frozen = snapshot("source_changed", action="verify", items=[evidence(1)])
+        result = build_plan(frozen, cursor)
+        self.assertEqual("run-verification", result["action"])
+        self.assertEqual("after-model-or-tool-receipt", result["cursor_commit_condition"])
+        self.assertEqual("skip-model", build_plan(frozen, result["next_cursor"])["action"])
+
+    def test_batch_does_not_acknowledge_new_evidence_before_receipt(self) -> None:
+        old = evidence(1)
+        changed = evidence(1, B)
+        fresh = evidence(2)
+        prior = build_plan(snapshot("source_changed", "verify", items=[old]))["next_cursor"]
+        for original_cursor in (None, prior):
+            with self.subTest(with_prior=original_cursor is not None):
+                batch = build_plan(snapshot("batch_edit", items=[changed, fresh]), original_cursor)
+                self.assertEqual("retain-prior-cursor", batch["cursor_commit_condition"])
+                self.assertEqual(original_cursor, batch["next_cursor"])
+                for kind, action in (("source_changed", "verify"), ("ci_failed", "model")):
+                    boundary = build_plan(snapshot(kind, action, items=[changed, fresh]), batch["next_cursor"])
+                    self.assertEqual(
+                        [changed["raw_ref"], fresh["raw_ref"]],
+                        [item["raw_ref"] for item in boundary["llm_packet"]["evidence"]],
+                    )
+
+    def test_batch_observations_require_review_for_risk_or_queued_action(self) -> None:
+        for event in (snapshot("batch_edit", action="verify"), snapshot("batch_edit", action="tool"),
+                      snapshot("batch_edit", action="model"), snapshot("batch_edit", risk="high"),
+                      snapshot("batch_edit", items=[evidence(1, priority="critical")])):
+            with self.subTest(event=event):
+                self.assertEqual("needs-review", build_plan(event)["action"])
+        incomplete = snapshot("batch_edit")
+        incomplete["observation_complete"] = False
+        self.assertEqual("incomplete-state-observation", build_plan(incomplete)["reason"])
+
     def test_ci_pending_and_heartbeat_do_not_invoke(self) -> None:
         for kind in ("ci_pending", "heartbeat"):
             r = build_plan(snapshot(kind))
@@ -216,6 +258,15 @@ class PreflightTests(unittest.TestCase):
 
 
 class PairedTests(unittest.TestCase):
+    def test_empty_matching_task_sets_report_insufficient_evidence(self) -> None:
+        result = compare_trials(experiment([]), experiment([]))
+        self.assertEqual("INSUFFICIENT", result["evidence_status"])
+        self.assertEqual(["insufficient-task-pairs"], result["insufficient_reasons"])
+        self.assertEqual(0, result["tasks_paired"])
+        self.assertIsNone(result["baseline_mean_first_useful_action_ms"])
+        self.assertIsNone(result["candidate_mean_first_useful_action_ms"])
+        self.assertFalse(result["candidate_for_review"])
+
     def setUp(self) -> None:
         self.base = experiment([task(str(i), 12000) for i in range(10)])
         self.cand = experiment([task(str(i), 3000) for i in range(10)])
@@ -232,11 +283,40 @@ class PairedTests(unittest.TestCase):
         result = compare_trials(experiment(self.base["tasks"][:9]),
                                 experiment(self.cand["tasks"][:9]))
         self.assertEqual(result["evidence_status"], "INSUFFICIENT")
+        self.assertEqual(["insufficient-task-pairs"], result["insufficient_reasons"])
         self.cand["tasks"][0]["input_tokens"] = None
         self.cand["tasks"][0]["cached_input_tokens"] = None
         result = compare_trials(self.base, self.cand)
+        self.assertEqual(["missing-paired-usage"], result["insufficient_reasons"])
+        self.assertEqual(9, result["usage_task_pairs"])
         self.assertIsNone(result["tokens_per_milestone_saving_pct"])
         self.assertFalse(result["candidate_for_review"])
+
+    def test_partial_operational_metrics_stay_unknown_and_known_regressions_block_review(self) -> None:
+        before, after = self.base["tasks"][0], self.cand["tasks"][0]
+        for name, gate in (("wrong_routes", "quality_regression"),
+                           ("rework_rounds", "efficiency_regression"),
+                           ("repeated_verifications", "efficiency_regression")):
+            with self.subTest(name=name):
+                before[name], after[name] = 0, 1
+                result = compare_trials(self.base, self.cand)
+                metric = result["extra_metrics"][name]
+                self.assertEqual(1, metric["tasks_paired"])
+                self.assertIsNone(metric["candidate_total"])
+                self.assertTrue(result[gate])
+                self.assertFalse(result["candidate_for_review"])
+                after[name] = 0
+                clean_partial = compare_trials(self.base, self.cand)["extra_metrics"][name]
+                self.assertIsNone(clean_partial["regression"])
+                del before[name], after[name]
+
+    def test_fully_paired_operational_metrics_report_totals(self) -> None:
+        for before, after in zip(self.base["tasks"], self.cand["tasks"]):
+            before["wrong_routes"], after["wrong_routes"] = 1, 0
+        result = compare_trials(self.base, self.cand)
+        self.assertEqual({"tasks_paired": 10, "baseline_total": 10, "candidate_total": 0,
+                          "regression": False}, result["extra_metrics"]["wrong_routes"])
+        self.assertEqual(0, result["extra_metrics"]["rework_rounds"]["tasks_paired"])
 
     def test_zero_token_trial_is_insufficient_not_division_or_fake_savings(self) -> None:
         for zero_side in ("baseline", "candidate", "both"):
