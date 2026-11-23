@@ -30,6 +30,8 @@ REL_REF = re.compile(r"[A-Za-z0-9_./:-]{1,180}\Z")
 MAX_FILE = 128 * 1024
 MAX_EVIDENCE = 64
 MAX_PACKET = 8
+MIN_PAIRED_TASKS = 10
+EXTRA_PAIR_METRICS = ("wrong_routes", "rework_rounds", "repeated_verifications")
 
 
 class PreflightError(ValueError):
@@ -161,7 +163,7 @@ def _snapshot(value: Mapping[str, Any]) -> tuple[dict[str, Any], list[dict[str, 
         raise PreflightError("risk-invalid")
     if data["event_kind"] not in (
         "heartbeat", "ci_pending", "ci_completed", "ci_failed", "source_changed",
-        "user_updated", "tool_result", "review_required",
+        "user_updated", "tool_result", "review_required", "batch_edit",
     ):
         raise PreflightError("event-kind-invalid")
     if data["pending_action"] not in ("none", "tool", "verify", "model"):
@@ -212,6 +214,12 @@ def build_plan(snapshot: dict[str, Any], prior: dict[str, Any] | None = None) ->
     reason = "no-model-action"
     if not complete:
         action, reason = "needs-review", "incomplete-state-observation"
+    elif snapshot["event_kind"] == "batch_edit":
+        if (snapshot["pending_action"] != "none" or snapshot["risk"] == "high"
+                or any(entry["priority"] == "critical" for entry in evidence)):
+            action, reason = "needs-review", "batch-edit-requires-review"
+        else:
+            reason = "batch-awaiting-verification-boundary"
     elif (snapshot["event_kind"] == "review_required"
           and snapshot["pending_action"] in ("tool", "verify")):
         # A review gate is not a tool-execution authorization. Do not let an
@@ -276,14 +284,16 @@ def build_plan(snapshot: dict[str, Any], prior: dict[str, Any] | None = None) ->
         "goal_id": snapshot["goal_id"], "phase_id": snapshot["phase_id"],
         "fingerprint": fingerprint, "evidence": tracked["evidence"],
     }
+    batch_observation = snapshot["event_kind"] == "batch_edit" and action == "skip-model"
     return {
         "schema": PLAN_SCHEMA, "status": "observed-not-host-certified",
         "action": action, "reason": reason, "fingerprint": fingerprint,
         "model_invocation_required": action == "invoke-model",
-        "llm_packet": brief, "next_cursor": next_cursor,
+        "llm_packet": brief, "next_cursor": cursor if batch_observation else next_cursor,
         "raw_prompt_included": False, "owns_goal_completion": False,
         "cursor_commit_condition": (
-            "after-model-or-tool-receipt" if action in {"invoke-model", "run-tool", "run-verification"}
+            "retain-prior-cursor" if batch_observation
+            else "after-model-or-tool-receipt" if action in {"invoke-model", "run-tool", "run-verification"}
             else "after-reviewed-escalation" if action == "needs-review" else "read-only-observation"
         ),
         "suggested_effort": (
@@ -308,7 +318,8 @@ def _experiment(value: dict[str, Any]) -> tuple[str, dict[str, dict[str, Any]]]:
               "input_tokens", "cached_input_tokens", "output_tokens",
               "nonclosing_calls", "repeated_context_calls", "first_useful_action_ms"}
     for task in data["tasks"]:
-        optional = {"billed_fen"} if isinstance(task, dict) and "billed_fen" in task else set()
+        optional = (set(task) & {"billed_fen", *EXTRA_PAIR_METRICS}
+                    if isinstance(task, dict) else set())
         item = _fields(task, fields | optional, "task")
         task_id = _id(item["task_id"], "task-id")
         if task_id in seen or type(item["completed"]) is not bool:
@@ -321,8 +332,9 @@ def _experiment(value: dict[str, Any]) -> tuple[str, dict[str, dict[str, Any]]]:
         if (item["input_tokens"] is not None and item["cached_input_tokens"] is not None
                 and item["cached_input_tokens"] > item["input_tokens"]):
             raise PreflightError("cached-input-exceeds-total-input")
-        if item.get("billed_fen") is not None:
-            _int(item["billed_fen"], "billed_fen")
+        for key in optional:
+            if item[key] is not None:
+                _int(item[key], key)
         seen[task_id] = item
     return data["task_set_sha256"], seen
 
@@ -333,42 +345,59 @@ def compare_trials(baseline: dict[str, Any], candidate: dict[str, Any]) -> dict[
     source_b, cand = _experiment(candidate)
     if source_a != source_b or set(base) != set(cand):
         raise PreflightError("paired-task-set-identity-drift")
-    complete = len(base) >= 10 and all(
-        task[key] is not None for task in list(base.values()) + list(cand.values())
-        for key in ("input_tokens", "output_tokens", "cached_input_tokens")
-    )
-    if complete:
+    usage_keys = ("input_tokens", "output_tokens", "cached_input_tokens")
+    usage_pairs = sum(all(base[key][field] is not None and cand[key][field] is not None
+                          for field in usage_keys) for key in base)
+    before_milestones = sum(t["verified_milestones"] for t in base.values())
+    after_milestones = sum(t["verified_milestones"] for t in cand.values())
+    before_tokens = after_tokens = 0
+    missing = []
+    if len(base) < MIN_PAIRED_TASKS:
+        missing.append("insufficient-task-pairs")
+    if usage_pairs < len(base):
+        missing.append("missing-paired-usage")
+    elif base:
         before_tokens = sum(t["input_tokens"] + t["output_tokens"] for t in base.values())
         after_tokens = sum(t["input_tokens"] + t["output_tokens"] for t in cand.values())
-        before_milestones = sum(t["verified_milestones"] for t in base.values())
-        after_milestones = sum(t["verified_milestones"] for t in cand.values())
-        # A 10-task set with zero provider tokens is not a measurable
-        # efficiency comparison. Never divide by zero or claim 100% savings.
-        complete = bool(before_milestones and after_milestones
-                        and before_tokens > 0 and after_tokens > 0)
-    else:
-        before_tokens = after_tokens = before_milestones = after_milestones = 0
+        if not before_tokens or not after_tokens:
+            missing.append("nonpositive-provider-usage")
+    if base and (not before_milestones or not after_milestones):
+        missing.append("no-verified-milestones")
+    complete = not missing
+    extra_metrics = {}
+    for field in EXTRA_PAIR_METRICS:
+        matched = [key for key in base if base[key].get(field) is not None and cand[key].get(field) is not None]
+        full_coverage = bool(matched) and len(matched) == len(base)
+        observed_regression = any(cand[key][field] > base[key][field] for key in matched)
+        extra_metrics[field] = {
+            "tasks_paired": len(matched),
+            "baseline_total": sum(base[key][field] for key in matched) if full_coverage else None,
+            "candidate_total": sum(cand[key][field] for key in matched) if full_coverage else None,
+            "regression": observed_regression if full_coverage or observed_regression else None,
+        }
     no_regressions = all(
         (cand[key]["completed"] or not base[key]["completed"])
         and cand[key]["verified_milestones"] >= base[key]["verified_milestones"]
         for key in base
-    )
+    ) and extra_metrics["wrong_routes"]["regression"] is not True
     savings = round(100 * (1 - (after_tokens / after_milestones) /
                            (before_tokens / before_milestones)), 2) if complete else None
     base_nonclosing = sum(t["nonclosing_calls"] for t in base.values())
     cand_nonclosing = sum(t["nonclosing_calls"] for t in cand.values())
     base_repeated = sum(t["repeated_context_calls"] for t in base.values())
     cand_repeated = sum(t["repeated_context_calls"] for t in cand.values())
-    latency_complete = all(
+    latency_complete = bool(base) and all(
         t["first_useful_action_ms"] is not None for t in list(base.values()) + list(cand.values())
     )
     avg_before_ms = (round(sum(t["first_useful_action_ms"] for t in base.values()) / len(base), 2)
-                     if latency_complete and base else None)
+                     if latency_complete else None)
     avg_after_ms = (round(sum(t["first_useful_action_ms"] for t in cand.values()) / len(cand), 2)
-                    if latency_complete and cand else None)
+                    if latency_complete else None)
     no_efficiency_regression = (
         cand_nonclosing <= base_nonclosing and cand_repeated <= base_repeated
         and (not latency_complete or avg_after_ms <= avg_before_ms * 1.10)
+        and extra_metrics["rework_rounds"]["regression"] is not True
+        and extra_metrics["repeated_verifications"]["regression"] is not True
     )
     # Real billed cost may rise when cached-prefix writes become more expensive
     # even if token counts fall. Missing provider charges remain unknown, not zero.
@@ -388,6 +417,9 @@ def compare_trials(baseline: dict[str, Any], candidate: dict[str, Any]) -> dict[
         "schema": REPORT_SCHEMA, "status": "observed-not-provider-certified",
         "evidence_status": "PAIRED" if complete else "INSUFFICIENT",
         "task_set_sha256": source_a, "tasks_paired": len(base),
+        "baseline_source_sha": baseline["source_sha"], "candidate_source_sha": candidate["source_sha"],
+        "minimum_task_pairs": MIN_PAIRED_TASKS, "usage_task_pairs": usage_pairs,
+        "insufficient_reasons": missing, "extra_metrics": extra_metrics,
         "completed_baseline": sum(t["completed"] for t in base.values()),
         "completed_candidate": sum(t["completed"] for t in cand.values()),
         "quality_regression": not no_regressions,

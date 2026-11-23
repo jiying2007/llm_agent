@@ -56,6 +56,7 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import shlex
 import stat
 import sys
 from datetime import datetime, timedelta, timezone
@@ -227,15 +228,17 @@ contract_path.write_text(
 )
 
 cosign=fixture_dir/"cosign"
-cosign.write_text(
-    "#!/usr/bin/env python3\n"
+cosign_code=(
     "import pathlib,sys\n"
     "a=sys.argv[1:]\n"
     "blob=sys.stdin.buffer.read()\n"
     "ok=(len(a)==8 and a[0]=='verify-blob' and a[1]=='--bundle' "
     "and a[3]=='--certificate-identity' and a[5]=='--certificate-oidc-issuer' "
     "and pathlib.Path(a[2]).is_file() and a[7]=='/dev/stdin' and len(blob)>0)\n"
-    "sys.exit(0 if ok else 97)\n",
+    "sys.exit(0 if ok else 97)\n"
+)
+cosign.write_text(
+    f'#!/bin/sh\nexec {shlex.quote(sys.executable)} -c {shlex.quote(cosign_code)} "$@"\n',
     encoding="utf-8",
 )
 cosign.chmod(cosign.stat().st_mode | stat.S_IXUSR)

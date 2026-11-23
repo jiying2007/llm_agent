@@ -4,7 +4,7 @@
 
 ## 读取顺序与覆盖口径
 
-1. 运行 `knowledge-context`，由 cwd / 显式 project 解析 canonical route，读取 current、decision、validation 的摘要。
+1. 运行 Provider `context`，传目标仓库的绝对 `--cwd`。核对 `route_resolution.state=resolved` 以及 `execution_subject.id` 与预期项目一致，再读取 current、decision、validation 的摘要。
 2. 查 governed activity facts / session receipts，按显式 subject 与 repo identity 归并；活动回执是事实源，不自动成为长期 runbook。
 3. 查询 Hub registry 与正文索引；`reviewing`、历史条目和当前 source 分层陈述。零命中先看过滤原因、缩短 query 或用已知 item ID，不直接判定“没有知识”。
 4. 仅在需要全量覆盖或无法判断复现时，读取本地历史索引。`session_index.jsonl` 是发现入口，不是全部 Codex 会话全集。
@@ -17,7 +17,7 @@
 
 ```bash
 rtk bash ~/codex/scripts/knowledge-provider.sh context \
-  --cwd /path/to/repository --project agent-dev-kit \
+  --cwd /path/to/agent-dev-kit \
   --query 'Token 上下文 工作流' --task-type general \
   --context-budget small --limit 3 --summary-json
 
@@ -28,7 +28,12 @@ rtk bash ~/codex/scripts/workflow-mining-report.sh \
   --from 2026-04-04 --to 2026-09-05 --limit 3 --json
 ```
 
-最后一条当前仅做标题发现，不能用其 `total_threads` 声称全历史覆盖，也不能据其标题样本直接生成团队资产。
+Provider v4 的 `context` 不接受 `--project`。同一个工作区内查询 Root 和 ADK 时，分别传各自的仓库根目录，预期 subject 分别为 `llm-agent`、`agent-dev-kit`。项目活动报告是另一操作，沿用 `activity-report --scope project --project-id <id>`。
+
+最后一条做标题发现。可追加 `--session-root ~/.codex/sessions` 读取 session header，将有据可查的子线程归到主线程，报告未映射数量；文件日期、索引更新时间和工作事项日期使用不同分母。可重复传入 `--activity-receipt /path/to/sanitized-receipt.json`，聚合显式提供的 `activity-session-receipt` v2 工作事项。默认只输出计数，`--include-match-terms` 只显示命中的内置词汇。标题匹配、工作事项和项目计数都不能直接证明独立复现。
+
+- `--activity-project <Provider 项目 ID>` 只过滤显式传入的活动回执，报告日期窗外、项目缺失和项目不同的去重事项数。先通过 Provider 核对 canonical ID，路径别名和简称不会被当成项目身份。
+- 核验标题发现时可同时使用 `--session-root`、`--json` 和 `--include-thread-refs`。报告按组列出最多 20 个由会话头确认的主线程 ID 以及已有 Skill 提示。孤立子线程仍列入未映射计数。该选项不输出标题、原文或本机路径。
 
 ## 复用决策与交接
 
@@ -41,7 +46,7 @@ rtk bash ~/codex/scripts/workflow-mining-report.sh \
 | 新机制但独立复现不足 | needs-more-evidence | 同项目至少两独立会话，或跨两项目至少三会话后再评估 |
 | 缺少输入/结果或只命中模板 | skip | 如实记录原因，不增加 Skill 数量 |
 
-Codex `tools/codex_assets/workflow_mining_report.py` 的后续扩展范围：补充 governed receipt 优先输入、thread ID 去重、parent/child 和无法映射计数、时间范围、来源覆盖；增加效率治理/知识/团队主题，并将 raw title examples 改为显式可选且脱敏。保持 report-only。不要在 llm_agent 新建第二套 miner 或绕过 `~/codex` source-to-live。
+Miner 归属 Codex 源仓，保持 report-only。工作事项按显式主体、项目和事项 ID 去重，优先用于证明实际工作；标题和会话头用于发现及来源覆盖。未映射的标题不进入主线程数，事项计数也不进入独立会话数。
 
 ## 检索验收
 
